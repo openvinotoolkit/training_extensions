@@ -19,6 +19,10 @@ from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 from mmseg.datasets.builder import PIPELINES
 from ..datasets import get_annotation_mmseg_format
+from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_cached_image
+
+_CACHE_DIR = "/tmp/seg-img-cache"
+clean_up_cache_dir(_CACHE_DIR)  # Clean up cache directory per process launch
 
 
 @PIPELINES.register_module()
@@ -40,8 +44,8 @@ class LoadImageFromOTEDataset:
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        dataset_item = results['dataset_item']
-        img = dataset_item.numpy
+        # Get image (possibly from cache)
+        img = get_cached_image(results, _CACHE_DIR, to_float32=self.to_float32)
         shape = img.shape
 
         assert img.shape[0] == results['height'], f"{img.shape[0]} != {results['height']}"
@@ -59,11 +63,9 @@ class LoadImageFromOTEDataset:
         results['img_norm_cfg'] = dict(
             mean=np.zeros(num_channels, dtype=np.float32),
             std=np.ones(num_channels, dtype=np.float32),
-            to_rgb=False)
+            to_rgb=False,
+        )
         results['img_fields'] = ['img']
-
-        if self.to_float32:
-            results['img'] = results['img'].astype(np.float32)
 
         return results
 

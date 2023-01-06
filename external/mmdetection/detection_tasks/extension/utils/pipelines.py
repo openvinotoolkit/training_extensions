@@ -16,8 +16,6 @@ import copy
 
 from typing import Dict, Any, Optional
 import numpy as np
-import os
-import shutil
 
 from ote_sdk.entities.label import Domain
 from ote_sdk.utils.argument_checks import check_input_parameters_type
@@ -25,13 +23,10 @@ from ote_sdk.utils.argument_checks import check_input_parameters_type
 from mmdet.datasets.builder import PIPELINES
 
 from ..datasets import get_annotation_mmdet_format
+from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_cached_image
 
-
-# Clean up cache directory per process launch
-_CACHE_DIR = "/tmp/img-cache"
-shutil.rmtree(_CACHE_DIR, ignore_errors=True)
-os.makedirs(_CACHE_DIR)
-
+_CACHE_DIR = "/tmp/det-img-cache"
+clean_up_cache_dir(_CACHE_DIR)  # Clean up cache directory per process launch
 
 @PIPELINES.register_module()
 class LoadImageFromOTEDataset:
@@ -49,38 +44,11 @@ class LoadImageFromOTEDataset:
     @check_input_parameters_type()
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
-        self._pid = os.getpid()
-
-    @staticmethod
-    def _is_video_frame(media):
-        return "VideoFrame" in repr(media)
-        #return "Image" in repr(media)  # Uncomment for test
-
-    def _get_cached_image(self, results: Dict[str, Any]):
-        if self._is_video_frame(results["dataset_item"].media):
-            subset = results["dataset_item"].subset
-            index = results["index"]
-            filename = os.path.join(_CACHE_DIR, f"{self._pid}-{subset}-{index:06d}.npy")
-            if os.path.exists(filename):
-                # Might be slower than dict key checking, but persitent
-                # FIXME: faster cache checking?
-                print(f"Loading cache {filename}")
-                return np.load(filename)
-
-        img = results["dataset_item"].numpy  # this takes long for VideoFrame
-        if self.to_float32:
-            img = img.astype(np.float32)
-
-        if self._is_video_frame(results["dataset_item"].media):
-            print(f"Saving cache {filename}")
-            np.save(filename, img)
-
-        return img
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         # Get image (possibly from cache)
-        img =  self._get_cached_image(results)
+        img = get_cached_image(results, _CACHE_DIR, to_float32=self.to_float32)
         shape = img.shape
 
         assert shape[0] == results["height"], f"{shape[0]} != {results['height']}"
