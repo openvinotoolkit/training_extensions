@@ -246,5 +246,5 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                     Point(x=ann.points[i] / width, y=ann.points[i + 1] / height) for i in range(0, len(ann.points), 2)
                 ]
             ),
-            labels=[ScoredLabel(label=self.label_entities[ann.label])],
+            labels=[ScoredLabel(label=self.label_entities[ann.label-1])],
         )
