@@ -124,14 +124,8 @@ class TwoCropTransform:
         results2 = self.view1(deepcopy(results))
 
         results = deepcopy(results1)
-        results["img"] = to_tensor(
-            np.ascontiguousarray(np.stack((results1["img"], results2["img"]), axis=0).transpose(0, 3, 1, 2))
-        )
-        results["gt_semantic_seg"] = to_tensor(
-            np.ascontiguousarray(
-                np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0).transpose(0, 1, 2)
-            )
-        )
+        results["img"] = np.stack((results1["img"], results2["img"]), axis=0)
+        results["gt_semantic_seg"] = np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0)
         results["flip"] = [results1["flip"], results2["flip"]]
 
         return results

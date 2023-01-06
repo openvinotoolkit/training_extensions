@@ -17,6 +17,6 @@
 
 from .losses import DetConLoss
 from .necks import SelfSLMLP
-from .segmentors import DetConB
+from .segmentors import DetConB, SupConDetConB
 
-__all__ = ["DetConLoss", "SelfSLMLP", "DetConB"]
+__all__ = ["DetConLoss", "SelfSLMLP", "DetConB", "SupConDetConB"]
