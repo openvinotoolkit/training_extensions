@@ -3,7 +3,7 @@ TestToolsMPAInstanceSegmentation:
     number_of_fakequantizers: 165
   nncf:
     number_of_fakequantizers: -1
-TestToolsTilingDetection:
+TestToolsTilingInstanceSegmentation:
   pot:
     number_of_fakequantizers: 165
   nncf:
