@@ -13,7 +13,7 @@
 # and limitations under the License.
 
 import copy
-
+import tempfile
 from typing import Dict, Any, Optional
 import numpy as np
 
@@ -23,10 +23,10 @@ from ote_sdk.utils.argument_checks import check_input_parameters_type
 from mmdet.datasets.builder import PIPELINES
 
 from ..datasets import get_annotation_mmdet_format
-from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_image
+from mpa_tasks.utils.data_utils import get_image
 
-_CACHE_DIR = "/tmp/det-img-cache"
-clean_up_cache_dir(_CACHE_DIR)  # Clean up cache directory per process launch
+
+_CACHE_DIR = tempfile.TemporaryDirectory(prefix='img-cache-')
 
 @PIPELINES.register_module()
 class LoadImageFromOTEDataset:
@@ -48,7 +48,7 @@ class LoadImageFromOTEDataset:
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         # Get image (possibly from cache)
-        img = get_image(results, _CACHE_DIR, to_float32=self.to_float32)
+        img = get_image(results, _CACHE_DIR.name, to_float32=self.to_float32)
         shape = img.shape
 
         assert shape[0] == results["height"], f"{shape[0]} != {results['height']}"

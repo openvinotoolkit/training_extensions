@@ -1,17 +1,16 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+import tempfile
 from typing import Any, Dict
 
 import numpy as np
 from mmcls.datasets import PIPELINES
-from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_image
+from mpa_tasks.utils.data_utils import get_image
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 
-_CACHE_DIR = "/tmp/cls-img-cache"
-clean_up_cache_dir(_CACHE_DIR)  # Clean up cache directory per process launch
 
+_CACHE_DIR = tempfile.TemporaryDirectory(prefix='img-cache-')
 
 # Temporary copy from detection_tasks
 # TODO: refactoring to common modules
@@ -35,7 +34,7 @@ class LoadImageFromOTEDataset:
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         # Get image (possibly from cache)
-        img = get_image(results, _CACHE_DIR, to_float32=self.to_float32)
+        img = get_image(results, _CACHE_DIR.name, to_float32=self.to_float32)
         shape = img.shape
 
         assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
