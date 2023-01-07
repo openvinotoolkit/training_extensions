@@ -3,12 +3,13 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .builder import build_data_parallel, build_dataloader, build_dataset
+from ._builder_build_data_parallel import build_data_parallel
+from ._config_utils_get_configs_by_keys import get_configs_by_keys
+from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
+from .builder import build_dataloader, build_dataset
 from .config_utils import (
     align_data_config_with_recipe,
     config_from_string,
-    get_configs_by_keys,
-    get_configs_by_pairs,
     get_data_cfg,
     get_dataset_configs,
     get_meta_keys,

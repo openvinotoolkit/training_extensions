@@ -112,7 +112,7 @@ def model_eval(
         return eval_res[metric_name]
 
 
-# pylint: disable=too-many-branches,too-many-statements,too-many-locals
+# pylint: disable-next=too-many-branches,too-many-statements,too-many-locals
 def wrap_nncf_model(  # noqa: C901
     config: Config,
     model: nn.Module,

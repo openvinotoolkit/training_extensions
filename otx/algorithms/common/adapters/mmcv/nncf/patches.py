@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-
 from copy import deepcopy
 
 from otx.algorithms.common.adapters.nncf.patchers import (
@@ -15,14 +14,14 @@ from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled
 if is_nncf_enabled():
     from nncf.torch.nncf_network import NNCFNetwork
 
-    # pylint: disable=ungrouped-imports
+    # pylint: disable-next=ungrouped-imports
     from otx.algorithms.common.adapters.nncf.patches import nncf_train_step
 
     # add wrapper train_step method
     NNCFNetwork.train_step = nncf_train_step
 
 
-# pylint: disable=unused-argument,invalid-name
+# pylint: disable-next=unused-argument,invalid-name
 def _evaluation_wrapper(self, fn, runner, *args, **kwargs):
     out = fn(runner, *args, **kwargs)
     setattr(runner, "all_metrics", deepcopy(runner.log_buffer.output))

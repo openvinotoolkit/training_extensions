@@ -3,15 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import os
-from typing import TYPE_CHECKING, Callable, Literal, Union, overload
+from typing import Callable
 
-import torch
 from mmcv import Config
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from torch.utils.data import DataLoader, Dataset
 
 from otx.api.utils.argument_checks import check_input_parameters_type
+
+# pylint: disable-next=unused-import
+from ._builder_build_data_parallel import build_data_parallel  # noqa: F401
 
 
 @check_input_parameters_type()
@@ -46,10 +46,6 @@ def build_dataloader(
     **kwargs,
 ) -> DataLoader:
     """Build dataloader."""
-
-    #  samples_per_gpu = config.data.get("samples_per_gpu", 1)
-    #  if subset in ["test", "val"]:
-    #      samples_per_gpu = 1
 
     loader_cfg = dict(
         samples_per_gpu=config.data.get("samples_per_gpu", 1),
@@ -89,70 +85,3 @@ def build_dataloader(
         **loader_cfg,
     )
     return dataloader
-
-
-if TYPE_CHECKING:
-
-    @overload
-    def build_data_parallel(
-        model: torch.nn.Module,
-        config: Config,
-        *,
-        distributed: Literal[True],
-    ) -> MMDistributedDataParallel:
-        ...
-
-    @overload
-    def build_data_parallel(
-        model: torch.nn.Module,
-        config: Config,
-        *,
-        distributed: Literal[False] = False,
-    ) -> MMDataParallel:
-        ...
-
-    @overload
-    def build_data_parallel(
-        model: torch.nn.Module,
-        config: Config,
-        *,
-        distributed: bool,
-    ) -> Union[MMDataParallel, MMDistributedDataParallel]:
-        ...
-
-
-@check_input_parameters_type()
-def build_data_parallel(
-    model: torch.nn.Module,
-    config: Config,
-    *,
-    distributed: bool = False,
-) -> Union[MMDataParallel, MMDistributedDataParallel]:
-    """Prepare model for execution.
-
-    Return model import ast, MMDataParallel or MMDataCPU.
-
-    :param model: Model.
-    :param config: config.
-    :param distributed: Enable distributed training mode.
-    :return:
-    """
-    if torch.cuda.is_available():
-        if distributed:
-            model = model.cuda()
-            # put model on gpus
-            find_unused_parameters = config.get("find_unused_parameters", False)
-            # Sets the `find_unused_parameters` parameter in
-            # torch.nn.parallel.DistributedDataParallel
-            model = MMDistributedDataParallel(
-                model,
-                device_ids=[int(os.environ["LOCAL_RANK"])],
-                broadcast_buffers=False,
-                find_unused_parameters=find_unused_parameters,
-            )
-        else:
-            model = model.cuda(config.gpu_ids[0])
-            model = MMDataParallel(model, device_ids=config.gpu_ids)
-    else:
-        model = MMDataParallel(model, device_ids=[-1])
-    return model

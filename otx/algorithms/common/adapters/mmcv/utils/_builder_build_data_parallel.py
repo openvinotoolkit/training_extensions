@@ -1,0 +1,82 @@
+"""A file for a function build_data_parallel()."""
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# NOTE: a workaround for https://github.com/python/mypy/issues/5028
+
+import os
+from typing import Literal, Union, overload
+
+import torch
+from mmcv import Config
+from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
+
+from otx.api.utils.argument_checks import check_input_parameters_type
+
+
+@overload
+def build_data_parallel(
+    model: torch.nn.Module,
+    config: Config,
+    *,
+    distributed: Literal[True],
+) -> MMDistributedDataParallel:
+    ...
+
+
+@overload
+def build_data_parallel(
+    model: torch.nn.Module,
+    config: Config,
+    *,
+    distributed: Literal[False] = False,
+) -> MMDataParallel:
+    ...
+
+
+@overload
+def build_data_parallel(
+    model: torch.nn.Module,
+    config: Config,
+    *,
+    distributed: bool,
+) -> Union[MMDataParallel, MMDistributedDataParallel]:
+    ...
+
+
+@check_input_parameters_type()
+def build_data_parallel(
+    model: torch.nn.Module,
+    config: Config,
+    *,
+    distributed: bool = False,
+) -> Union[MMDataParallel, MMDistributedDataParallel]:
+    """Prepare model for execution.
+
+    Return model import ast, MMDataParallel or MMDataCPU.
+
+    :param model: Model.
+    :param config: config.
+    :param distributed: Enable distributed training mode.
+    :return:
+    """
+    if torch.cuda.is_available():
+        if distributed:
+            model = model.cuda()
+            # put model on gpus
+            find_unused_parameters = config.get("find_unused_parameters", False)
+            # Sets the `find_unused_parameters` parameter in
+            # torch.nn.parallel.DistributedDataParallel
+            model = MMDistributedDataParallel(
+                model,
+                device_ids=[int(os.environ["LOCAL_RANK"])],
+                broadcast_buffers=False,
+                find_unused_parameters=find_unused_parameters,
+            )
+        else:
+            model = model.cuda(config.gpu_ids[0])
+            model = MMDataParallel(model, device_ids=config.gpu_ids)
+    else:
+        model = MMDataParallel(model, device_ids=[-1])
+    return model
