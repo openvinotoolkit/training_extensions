@@ -194,6 +194,12 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
             remove_from_config(self._model_cfg, "fp16")
             logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
 
+        # FIXME: nncf quantizer does not work with SAMoptimizer
+        optimizer_config = self._recipe_cfg.optimizer_config
+        if optimizer_config.get("type", "OptimizerHook") == "SAMOptimizerHook":
+            optimizer_config.type = "OptimizerHook"
+            logger.warning("Updateed SAMOptimizerHook to OptimizerHook as not supported.")
+
         # merge nncf_cfg
         nncf_cfg = self._init_nncf_cfg()
         self._recipe_cfg.merge_from_dict(nncf_cfg)
