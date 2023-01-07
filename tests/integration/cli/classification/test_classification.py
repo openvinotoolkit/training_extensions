@@ -4,6 +4,7 @@
 #
 
 import os
+from copy import deepcopy
 from functools import wraps
 
 import pytest
@@ -98,7 +99,7 @@ class TestToolsMPAClassification:
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -229,7 +230,7 @@ class TestToolsMPAClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args1 = args.copy()
+        args1 = deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -277,7 +278,7 @@ class TestToolsMPAMultilabelClassification:
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args0_m)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args_m.copy()
+        args1 = deepcopy(args_m)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -405,7 +406,7 @@ class TestToolsMPAMultilabelClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args0 = args_m.copy()
+        args0 = deepcopy(args_m)
         args0["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
 
@@ -435,7 +436,7 @@ class TestToolsMPAHierarchicalClassification:
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args_h.copy()
+        args1 = deepcopy(args_h)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -563,7 +564,7 @@ class TestToolsMPAHierarchicalClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args1 = args_h.copy()
+        args1 = deepcopy(args_h)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -612,7 +613,7 @@ class TestToolsMPASelfSLClassification:
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 

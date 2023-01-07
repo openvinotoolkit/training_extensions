@@ -5,6 +5,7 @@
 
 import os
 import shutil
+from copy import deepcopy
 from functools import wraps
 
 import pytest
@@ -75,7 +76,7 @@ class TestToolsMPASemiSLSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        args_semisl = args.copy()
+        args_semisl = deepcopy(args)
         args_semisl["--unlabeled-data-roots"] = "data/segmentation/custom/images/training"
         args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
@@ -84,7 +85,7 @@ class TestToolsMPASemiSLSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
-        args_semisl = args.copy()
+        args_semisl = deepcopy(args)
         otx_eval_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
 
@@ -94,7 +95,7 @@ class TestToolsMPASegmentation:
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -217,7 +218,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args1 = args.copy()
+        args1 = deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -267,7 +268,7 @@ class TestToolsMPASelfSLSegmentation:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         shutil.rmtree(os.path.join(otx_dir, args_selfsl["--train-ann-file"]))
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 

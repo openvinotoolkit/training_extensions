@@ -54,7 +54,7 @@ def build_data_parallel(
 ) -> Union[MMDataParallel, MMDistributedDataParallel]:
     """Prepare model for execution.
 
-    Return model import ast, MMDataParallel or MMDataCPU.
+    Return MMDataParallel or MMDistributedDataParallel model.
 
     :param model: Model.
     :param config: config.
