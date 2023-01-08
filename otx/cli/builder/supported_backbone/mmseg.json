@@ -5,65 +5,95 @@
       "options": {
         "depth": [18, 34, 50, 101, 152]
       },
-      "available": ["ATSS", "YOLOX", "Segmentation", "Mask-RCNN"]
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
     },
     "mmseg.ResNetV1c": {
       "required": ["depth"],
       "options": {
         "depth": [18, 34, 50, 101, 152]
       },
-      "available": ["ATSS", "YOLOX", "Segmentation", "Mask-RCNN"]
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
     },
     "mmseg.ResNetV1d": {
       "required": ["depth"],
       "options": {
         "depth": [18, 34, 50, 101, 152]
       },
-      "available": ["ATSS", "YOLOX", "Segmentation", "Mask-RCNN"]
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
     },
     "mmseg.ResNeXt": {
       "required": ["depth"],
       "options": {
         "depth": [50, 101, 152]
       },
-      "available": ["ATSS", "YOLOX", "Segmentation", "Mask-RCNN"]
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
     },
     "mmseg.FastSCNN": {
       "required": [],
       "options": {},
-      "available": ["ATSS", "Mask-RCNN"]
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
     },
     "mmseg.ResNest": {
       "required": ["depth"],
       "options": {
         "depth": [50, 101, 152, 200]
       },
-      "available": ["ATSS", "Mask-RCNN"]
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
     },
     "mmseg.MobileNetV2": {
       "required": [],
       "options": {},
-      "available": ["ATSS", "YOLOX", "Segmentation", "Mask-RCNN"]
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
     },
     "mmseg.CGNet": {
       "required": [],
       "options": {},
-      "available": ["ATSS", "YOLOX", "Mask-RCNN"]
+      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
     },
     "mmseg.MobileNetV3": {
       "required": [],
       "options": {},
-      "available": ["ATSS", "YOLOX", "Mask-RCNN"]
+      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
     },
     "mmseg.VisionTransformer": {
       "required": [],
       "options": {},
-      "available": ["ATSS", "Mask-RCNN"]
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
     },
     "mmseg.UNet": {
       "required": [],
       "options": {},
-      "available": ["ATSS", "Mask-RCNN"]
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
     },
     "mmseg.HRNet": {
       "required": ["extra"],

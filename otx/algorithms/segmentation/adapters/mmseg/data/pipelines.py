@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, Dict
+from copy import deepcopy
+from typing import Any, Dict, List
 
 import numpy as np
+from mmcv.utils import build_from_cfg
 from mmseg.datasets.builder import PIPELINES
+from mmseg.datasets.pipelines import Compose, to_tensor
+from PIL import Image
+from torchvision import transforms as T
+from torchvision.transforms import functional as F
 
 from otx.api.utils.argument_checks import check_input_parameters_type
 
@@ -94,3 +100,220 @@ class LoadAnnotationFromOTXDataset:
         results["seg_fields"].append("gt_semantic_seg")
 
         return results
+
+
+@PIPELINES.register_module()
+class TwoCropTransform:
+    """TwoCropTransform to combine two pipelines.
+
+    :param view0: Pipeline for online network.
+    :param view1: Pipeline for target network.
+    """
+
+    def __init__(self, view0: List, view1: List):
+        self.view0 = Compose([build_from_cfg(p, PIPELINES) for p in view0])
+        self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
+
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of TwoCropTransform.
+
+        :param results: Inputs to be transformed.
+        """
+        results1 = self.view0(deepcopy(results))
+        results2 = self.view1(deepcopy(results))
+
+        results = deepcopy(results1)
+        results["img"] = to_tensor(
+            np.ascontiguousarray(np.stack((results1["img"], results2["img"]), axis=0).transpose(0, 3, 1, 2))
+        )
+        results["gt_semantic_seg"] = to_tensor(
+            np.ascontiguousarray(
+                np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0).transpose(0, 1, 2)
+            )
+        )
+        results["flip"] = [results1["flip"], results2["flip"]]
+
+        return results
+
+
+@PIPELINES.register_module
+class RandomResizedCrop(T.RandomResizedCrop):
+    """Wrapper for RandomResizedCrop in torchvision.transforms.
+
+    Since this transformation is applied to PIL Image,
+    `NDArrayToPILImage` must be applied first before this is applied.
+    """
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of RandomResizedCrop.
+
+        :param results: Inputs to be transformed.
+        """
+        img = results["img"]
+        i, j, height, width = self.get_params(img, self.scale, self.ratio)
+        img = F.resized_crop(img, i, j, height, width, self.size, self.interpolation)
+        results["img"] = img
+        results["img_shape"] = img.size
+        for key in results.get("seg_fields", []):
+            results[key] = np.array(
+                F.resized_crop(Image.fromarray(results[key]), i, j, height, width, self.size, self.interpolation)
+            )
+
+        # change order because of difference between numpy and PIL
+        w_scale = results["img_shape"][0] / results["ori_shape"][1]
+        h_scale = results["img_shape"][1] / results["ori_shape"][0]
+        results["scale_factor"] = np.array([w_scale, h_scale, w_scale, h_scale], dtype=np.float32)
+
+        return results
+
+
+@PIPELINES.register_module
+class RandomColorJitter(T.ColorJitter):
+    """Wrapper for ColorJitter in torchvision.transforms.
+
+    Since this transformation is applied to PIL Image,
+    `NDArrayToPILImage` must be applied first before this is applied.
+
+    :param p: Probability for transformation.
+    """
+
+    def __init__(self, p: float = 0.8, **kwargs):
+        super().__init__(**kwargs)
+        assert 0 <= p <= 1
+        self.p = p
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of ColorJitter.
+
+        :param results: Inputs to be transformed.
+        """
+        if np.random.random() < self.p:
+            results["img"] = self.forward(results["img"])
+        return results
+
+
+@PIPELINES.register_module
+class RandomGrayscale(T.RandomGrayscale):
+    """Wrapper for RandomGrayscale in torchvision.transforms.
+
+    Since this transformation is applied to PIL Image,
+    `NDArrayToPILImage` must be applied first before this is applied.
+    """
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of RandomGrayscale.
+
+        :param results: Inputs to be transformed.
+        """
+        results["img"] = self.forward(results["img"])
+        return results
+
+
+@PIPELINES.register_module
+class RandomGaussianBlur(T.GaussianBlur):
+    """Random Gaussian Blur augmentation inherited from torchvision.transforms.GaussianBlur.
+
+    Since this transformation is applied to PIL Image,
+    `NDArrayToPILImage` must be applied first before this is applied.
+
+    :param p: Probability for transformation.
+    """
+
+    def __init__(self, p: float = 0.1, **kwargs):
+        super().__init__(**kwargs)
+        assert 0 <= p <= 1
+        self.p = p
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of GaussianBlur.
+
+        :param results: Inputs to be transformed.
+        """
+        if np.random.random() < self.p:
+            results["img"] = self.forward(results["img"])
+        return results
+
+
+@PIPELINES.register_module
+class RandomSolarization:
+    """Random Solarization augmentation.
+
+    :param threshold: Threshold for solarization, defaults to 128.
+    :param p: Probability for transformation.
+    """
+
+    def __init__(self, threshold: int = 128, p: float = 0.2):
+        assert 0 <= p <= 1
+        self.threshold = threshold
+        self.p = p
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of Solarization.
+
+        :param results: inputs to be transformed.
+        """
+        if np.random.random() < self.p:
+            img = results["img"]
+            img = np.where(img < self.threshold, img, 255 - img)
+            results["img"] = img
+        return results
+
+    def __repr__(self):
+        """Set repr of Solarization."""
+        repr_str = self.__class__.__name__
+        return repr_str
+
+
+@PIPELINES.register_module()
+class NDArrayToPILImage:
+    """Convert image from numpy to PIL.
+
+    :param keys: Keys to be transformed.
+    """
+
+    def __init__(self, keys: List[str]):
+        self.keys = keys
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of NDArrayToPILImage.
+
+        :param results: inputs to be transformed.
+        """
+        for key in self.keys:
+            img = results[key]
+            img = Image.fromarray(img)
+            results[key] = img
+        return results
+
+    def __repr__(self):
+        """Set repr of NDArrayToPILImage."""
+        repr_str = self.__class__.__name__
+        return repr_str
+
+
+@PIPELINES.register_module()
+class PILImageToNDArray:
+    """Convert image from PIL to numpy.
+
+    :param keys: Keys to be transformed.
+    """
+
+    def __init__(self, keys: List[str]):
+        self.keys = keys
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of PILImageToNDArray.
+
+        :param results: inputs to be transformed.
+        """
+        for key in self.keys:
+            img = results[key]
+            img = np.asarray(img)
+            results[key] = img
+        return results
+
+    def __repr__(self):
+        """Set repr of PILImageToNDArray."""
+        repr_str = self.__class__.__name__
+        return repr_str
