@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/source/_images/logos/otx-logo-black.png" width="200px">
+<img src="docs/source/_static/logos/otx-logo-black.png" width="200px">
 
 # OpenVINO™ Training Extensions
 
@@ -12,8 +12,8 @@
 [![openvino](https://img.shields.io/badge/openvino-2021.4-purple)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/34245035749b4c4fa59a8dfe277133c2)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/34245035749b4c4fa59a8dfe277133c2)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Coverage)
+[![Codacy Badge](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Coverage)
+[![Codacy Badge](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
 [![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml)
 
 ---
@@ -50,7 +50,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
   - Update `find` command to find configurations of tasks/algorithms
   - Introduce `build` command to customize task or model configurations
   - Automatic algorihm selection for the `train` command using the given input dataset
-- Adaptation of [Datumaro](https://github.com/openvinotoolkit/datumaro) component as a dataset interface
+- Adaptation of [datumaro](https://github.com/openvinotoolkit/datumaro) component as a dataset interface
 - Integrate hyper-parameter optimizations
 - Support action recognition task
 
