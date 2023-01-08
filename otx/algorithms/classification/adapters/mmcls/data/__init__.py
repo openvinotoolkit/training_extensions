@@ -21,13 +21,12 @@ from .datasets import (
     SelfSLDataset,
 )
 from .pipelines import (
-    BranchField,
-    BranchImage,
     GaussianBlur,
     LoadImageFromOTXDataset,
     OTXColorJitter,
     PILImageToNDArray,
     RandomAppliedTrans,
+    SeparateAug,
 )
 
 __all__ = [
@@ -35,8 +34,7 @@ __all__ = [
     "MPAMultilabelClsDataset",
     "MPAHierarchicalClsDataset",
     "SelfSLDataset",
-    "BranchField",
-    "BranchImage",
+    "SeparateAug",
     "PILImageToNDArray",
     "LoadImageFromOTXDataset",
     "RandomAppliedTrans",

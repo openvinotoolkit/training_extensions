@@ -3,10 +3,12 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 from typing import Any, Dict, List
 
 import numpy as np
 from mmcls.datasets import PIPELINES
+from mmcls.datasets.pipelines import Compose
 from mmcv.utils.registry import build_from_cfg
 from PIL import Image, ImageFilter
 from torchvision import transforms as T
@@ -167,43 +169,31 @@ class PILImageToNDArray:
 
 
 @PIPELINES.register_module()
-class BranchField:
-    """Pipeline element that append given key in results["img_fields"] enable augmentations for mmcls.
+class SeparateAug:
+    """Pipeline element that separates augmentation pipeline for mmcls.
 
-    Expected entries in the "results" dict that should be passed to this pipeline element are:
-        results["img_fields"]: list of target image fields. ex) ["img", "img_weak"]
+    Expected entries in the 'results' dict that should be passed to this pipeline element are:
+        results['img']: PIL type image in data pipeline.
 
     :param keys: optional list, support appending multiple image fields.
     """
 
-    def __init__(self, key_map=None):
-        self.key_map = key_map
+    def __init__(self, pairs: dict):
+        if "img" not in pairs.keys():
+            raise ValueError("key 'img' should be included in pairs arugmenent")
+        self.pipelines = {key: Compose(pipeline) for key, pipeline in pairs.items()}
 
     def __call__(self, results):
-        """Callback function of BranchField."""
-        for src, dst in self.key_map.items():
-            if src in results["img_fields"]:
-                results["img_fields"].append(dst)
-        return results
+        """Callback function of SeparateAug."""
+        for key, pipeline in self.pipelines.items():
+            if key == "img":
+                output = pipeline(copy.deepcopy(results))
+            else:
+                output[key] = pipeline(results)["img"]
+                output["img_fields"].append(key)
+        return output
 
     def __repr__(self):
-        """Repr function of BranchField."""
+        """Repr function of SeparateAug."""
         repr_str = self.__class__.__name__
         return repr_str
-
-
-@PIPELINES.register_module()
-class BranchImage(BranchField):
-    """Pipeline element that append given key in results to bypass incoming augmentations.
-
-    Expected entries in the "results" dict that should be passed to this pipeline element are:
-        results["img"]: target image to copy.
-
-    """
-
-    def __call__(self, results):
-        """Callback function of BranchImage."""
-        for src, dst in self.key_map.items():
-            if src in results:
-                results[dst] = results[src]
-        return results

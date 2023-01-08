@@ -34,13 +34,13 @@ class SemiSLClassifier(SAMImageClassifier):
         x = {}
         x["labeled"] = self.extract_feat(imgs)
 
-        img_uw = unlabeled_data["img_weak"]
+        img_uw = unlabeled_data["img"]
         # weakly augmented images are used only for getting the pseudo label.
         # not required to calculate gradients.
         with torch.no_grad():
             x["unlabeled_weak"] = self.extract_feat(img_uw)
 
-        img_us = unlabeled_data["img"]
+        img_us = unlabeled_data["img_strong"]
         x["unlabeled_strong"] = self.extract_feat(img_us)
 
         losses = dict()
