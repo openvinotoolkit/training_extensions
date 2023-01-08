@@ -266,6 +266,7 @@ algo_backend:
     options:
       INCREMENTAL: "INCREMENTAL"
       SEMISUPERVISED: "SEMISUPERVISED"
+      SELFSUPERVISED: "SELFSUPERVISED"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING

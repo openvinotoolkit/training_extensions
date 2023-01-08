@@ -15,6 +15,16 @@
 # and limitations under the License.
 
 from .dataset import MPASegDataset, get_annotation_mmseg_format
-from .pipelines import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset
+from .pipelines import (
+    LoadAnnotationFromOTXDataset,
+    LoadImageFromOTXDataset,
+    TwoCropTransform,
+)
 
-__all__ = ["get_annotation_mmseg_format", "LoadImageFromOTXDataset", "LoadAnnotationFromOTXDataset", "MPASegDataset"]
+__all__ = [
+    "get_annotation_mmseg_format",
+    "LoadImageFromOTXDataset",
+    "LoadAnnotationFromOTXDataset",
+    "MPASegDataset",
+    "TwoCropTransform",
+]

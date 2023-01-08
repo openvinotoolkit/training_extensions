@@ -147,7 +147,7 @@ def parse_args():
     return parser.parse_args(), template, hyper_parameters
 
 
-def main():
+def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
@@ -169,11 +169,12 @@ def main():
             "ann_file": data_config["data"]["train"]["ann-files"],
             "data_root": data_config["data"]["train"]["data-roots"],
         },
-        val_subset={
+    )
+    if data_config["data"]["val"]["data-roots"]:
+        data_roots["val_subset"] = {
             "ann_file": data_config["data"]["val"]["ann-files"],
             "data_root": data_config["data"]["val"]["data-roots"],
-        },
-    )
+        }
     if data_config["data"]["unlabeled"]["data-roots"]:
         data_roots["unlabeled_subset"] = {
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
