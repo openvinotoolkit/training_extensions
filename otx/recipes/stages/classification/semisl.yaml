@@ -1,4 +1,4 @@
-_base_: ["./train.yaml", "../_base_/data/cls_semi_data.py", "../_base_/models/cls_semisl.py"]
+_base_: ["./train.yaml", "../_base_/models/cls_semisl.py"]
 
 runner:
   max_epochs: 50

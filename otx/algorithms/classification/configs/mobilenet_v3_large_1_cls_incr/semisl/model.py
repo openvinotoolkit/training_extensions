@@ -1,4 +1,4 @@
-"""MobileNet-V3-large-1 for multi-class config."""
+"""MobileNet-V3-large-1 config for semi-supervised multi-class classification."""
 
 # pylint: disable=invalid-name
 

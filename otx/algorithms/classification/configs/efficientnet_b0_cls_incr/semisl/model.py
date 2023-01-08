@@ -1,4 +1,4 @@
-"""EfficientNet-B0 for multi-class config."""
+"""EfficientNet-B0 config for semi-supervised multi-class classification."""
 
 # pylint: disable=invalid-name
 
