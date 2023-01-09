@@ -1,13 +1,12 @@
 Object Detection model
 ======================
 
-#TODO: Made Table of Content for this page?
-
 This tutorial reveals end-to-end solution from installation to model deploying for object detection task on a certain example.
 On this page we show how to train, validate, export and optimize ATSS model on BCCD public dataset.
 
-To learn how to deploy the trained model refer to deploy tutorial [#TODO link].
-To learn, how to run the demo and visualize results, refer to the demo tutorial [#TODO link].
+To learn how to deploy the trained model refer to: :doc:`../deploy`.
+
+To learn, how to run the demo and visualize results, refer to: :doc:`../demo`.
 
 The process has been tested on the following configuration.
 
@@ -21,7 +20,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a quick_start quide [#TODO link] to create a univesal virtual environment for all tasks. On other hand, to save memory and time, you can create task-specific environment following the process below.
+You can follow the installation process from a :doc:`quick_start quide <../../../get_started/quick_start>` to create a univesal virtual environment for all tasks. On other hand, to save memory and time, you can create task-specific environment following the process below.
 
 1. Install prerequisites with:
 
@@ -56,10 +55,12 @@ Dataset preparation
   curl -L "https://public.roboflow.com/ds/<YOUR_API_KEY>" > bccd.zip;
   unzip bccd.zip; rm bccd.zip
 
-This dataset contains images of blood cells. It's a great example to start with, because the training model achieves high accuracy right grom the beginning due to large and focused objects. 
-.. image:: ../../../../utils/images/bccd_sample_image.png
+This dataset contains images of blood cells. It's a great example to start with, because the training model achieves high accuracy right grom the beginning due to large and focused objects.
+
+.. image:: ../../../../utils/images/bccd_sample_image.jpg
   :width: 600
   :alt: this image uploaded from test set of this `source <https://public.roboflow.com/object-detection/bccd/3>`_
+
 
 2. Check the file structure of downloaded dataset, which should look like this.
 
@@ -105,9 +106,9 @@ Training
 
 .. note::
 
-  The characteristics and detailed comparison of the models could be found in Explanation section [#TODO link].
+  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/Main_algorithms/object_detection>`.
 
-  To modify the architecture of supported models with various backbones, please refer to the advanced tutorial for model customization  [#TODO link].
+  To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
 .. code-block::
 
@@ -154,6 +155,7 @@ If you created ``data.yaml`` file in previous step, you can simplify the trainin
 Looks much simplier, isn't it?
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iteration. More about template-specific parameters is in quick start [#TODO link].
+
 It can be done by manual updating parameters in ``template.yaml`` file or via comand line. 
 
 For example, to decrease batsch size to 4, fix the number of epochs to 100 and disable early stopping, extend the comand line above with the following line.
@@ -246,6 +248,7 @@ We will get this validation output:
   {"f-measure": 0.8315842078960519}
 
 4. ``Optional`` Additionally, we can tune testing parameters such as confidence threshold via comand line. Read more about template-specific parameters for validation in quick start [#TODO link].
+
 For example, to increase the confidence treshold and decrease the number of False Positive predictions (there we have prediction, but don't have annotated object for it) update the evaluation comand line as it's shown below. 
 
 Please note, that by default confidence treshold is detected automatically based on result to maximize the final F1 metric. So, to set custom confidence treshold, please disable ``result_based_confidence_threshold`` option.
@@ -259,9 +262,9 @@ Please note, that by default confidence treshold is detected automatically based
                             --postprocessing.confidence_threshold 0.5
                             --postprocessing.result_based_confidence_threshold false 
 
-...
+  ...
 
-2023-01-03 18:55:01,956 | INFO : F-measure after evaluation: 0.6274238227146813
+  2023-01-03 18:55:01,956 | INFO : F-measure after evaluation: 0.6274238227146813
 
 *********
 Export
@@ -294,7 +297,11 @@ Export
                             --save-performance outputs/openvino/performance.json
   
   ...
-
+  2023-01-05 17:09:13,684 | INFO : Start OpenVINO inference
+  2023-01-05 17:09:25,139 | INFO : OpenVINO inference completed
+  2023-01-05 17:09:25,139 | INFO : Start OpenVINO metric evaluation
+  2023-01-05 17:09:25,431 | INFO : OpenVINO metric evaluation completed
+  Performance(score: 0.8315842078960519, dashboard: (1 metric groups))
 
 
 *************
@@ -306,7 +313,7 @@ Optimization
 - NNCF optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
 - POT optimization is used for models exported in the OpenVINO™ IR format. It decreases floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
-The function results with a following files, which could be used to run ``otx demo``[link]:
+The function results with a following files, which could be used to run :doc:`otx demo <../demo>`:
 
 - confidence_threshold
 - config.json
@@ -314,7 +321,7 @@ The function results with a following files, which could be used to run ``otx de
 - openvino.bin
 - openvino.xml
 
-Read more about optimization in [#TODO link]
+To learn more about optimization, refer to `NNCF repository <https://github.com/openvinotoolkit/nncf>`_.
 
 2. Command example for optimizing a PyTorch model (.pth) with OpenVINO NNCF.
 
@@ -351,7 +358,9 @@ Read more about optimization in [#TODO link]
 
 
 #TODO significant drop of the loaded snapshot: 0.43 instead of 0.83
+
 #TODO The optimized model isn't being saved (TypeError: cannot pickle '_thread.lock' object)
+
 #TODO rebase on feature/otx once NNCF will be fixed
 
 3. Command example for optimizing OpenVINO model (.xml) with OpenVINO POT:
@@ -387,10 +396,4 @@ The POT optimization will take 5-10 minutes without logging.
 
 Now we have fully trained, optimized and exported in efficient model representation ready-to use object detection model.
 
-Following tutorial [#TODO link] provides further steps how to deploy and use your model in the demonstration mode and visualize results.
-
-***************
-Troubleshooting
-***************
-
-#TODO possible error logs and their solution?
+Following tutorials provides further steps how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
