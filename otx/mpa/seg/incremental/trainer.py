@@ -3,10 +3,10 @@
 #
 
 from otx.mpa.registry import STAGES
+from otx.mpa.seg.trainer import SegTrainer
 from otx.mpa.utils.logger import get_logger
 
 from .stage import IncrSegStage
-from otx.mpa.seg.trainer import SegTrainer
 
 logger = get_logger()
 

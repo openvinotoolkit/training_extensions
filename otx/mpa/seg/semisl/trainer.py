@@ -3,8 +3,9 @@
 #
 
 from otx.mpa.registry import STAGES
-from otx.mpa.utils.logger import get_logger
 from otx.mpa.seg.trainer import SegTrainer
+from otx.mpa.utils.logger import get_logger
+
 from .stage import SemiSegStage
 
 logger = get_logger()

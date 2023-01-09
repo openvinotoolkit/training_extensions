@@ -4,6 +4,7 @@
 
 from otx.mpa.registry import STAGES
 from otx.mpa.seg.inferrer import SegInferrer
+
 from .stage import IncrSegStage
 
 
