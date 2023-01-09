@@ -71,22 +71,6 @@ else:
     templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsMPASemiSLSegmentation:
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_train(self, template, tmp_dir_path):
-        args_semisl = args.copy()
-        args_semisl["--unlabeled-data-roots"] = "data/segmentation/custom/images/training"
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
-        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval(self, template, tmp_dir_path):
-        otx_eval_testing(template, tmp_dir_path, otx_dir, args)
-
-
 class TestToolsMPASegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -238,6 +222,26 @@ def set_dummy_data(func):
         os.remove("./data.yaml")
 
     return wrapper
+
+
+args_semisl = {
+    **args,
+    "--unlabeled-data-roots": "data/segmentation/custom/images/training",
+}
+args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+
+
+class TestToolsMPASemiSLSegmentation:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
 
 args_selfsl = {
