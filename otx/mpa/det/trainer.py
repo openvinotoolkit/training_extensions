@@ -61,7 +61,10 @@ class DetectionTrainer(DetectionStage):
 
         # Data
         datasets = [build_dataset(cfg.data.train)]
-        cfg.data.val.samples_per_gpu = cfg.data.get("samples_per_gpu", 1)
+
+        # FIXME Currently detection do not support multi batch evaluation. This will be fixed
+        # cfg.data.val.samples_per_gpu = cfg.data.get("samples_per_gpu", 1)
+        cfg.data.val.samples_per_gpu = 1
 
         # FIXME: scale_factors is fixed at 1 even batch_size > 1 in simple_test_mask
         # Need to investigate, possibly due to OpenVINO
