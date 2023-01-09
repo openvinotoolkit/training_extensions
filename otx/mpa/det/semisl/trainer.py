@@ -18,11 +18,12 @@ from mmdet.datasets import build_dataset
 from mmdet.models import build_detector
 from mmdet.utils import collect_env
 
-from otx.mpa.det.semisl import SemiSLDetectionStage
 from otx.mpa.det.trainer import DetectionTrainer
 from otx.mpa.modules.utils.task_adapt import extract_anchor_ratio
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
+
+from .stage import SemiSLDetectionStage
 
 # TODO[JAEGUK]: Remove import detection_tasks
 # from detection_tasks.apis.detection.config_utils import cluster_anchors

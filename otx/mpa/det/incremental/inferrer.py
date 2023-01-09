@@ -16,7 +16,6 @@ from mmdet.models import build_detector
 from mmdet.models.detectors import TwoStageDetector
 from mmdet.utils.misc import prepare_mmdet_model_for_execution
 
-from otx.mpa.det.incremental import IncrDetectionStage
 from otx.mpa.det.inferrer import DetectionInferrer
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
@@ -25,6 +24,8 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
 )
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
+
+from .stage import IncrDetectionStage
 
 logger = get_logger()
 

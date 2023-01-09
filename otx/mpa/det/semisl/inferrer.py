@@ -12,9 +12,10 @@ from mmdet.parallel import MMDataCPU
 from mmdet.utils.deployment import get_feature_vector, get_saliency_map
 
 from otx.mpa.det.inferrer import DetectionInferrer
-from otx.mpa.det.semisl import SemiSLDetectionStage
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
+
+from .stage import SemiSLDetectionStage
 
 logger = get_logger()
 
