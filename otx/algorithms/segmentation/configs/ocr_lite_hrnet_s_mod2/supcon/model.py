@@ -1,4 +1,4 @@
-"""Model configuration of OCR-Lite-HRnet-s-mod2 model for Self-SL Segmentation Task."""
+"""Model configuration of OCR-Lite-HRnet-s-mod2 model for SupCon Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
