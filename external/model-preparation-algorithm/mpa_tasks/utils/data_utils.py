@@ -4,7 +4,6 @@
 
 import fcntl
 import os
-import shutil
 from typing import Any, Dict
 
 import numpy as np
@@ -36,34 +35,46 @@ def get_old_new_img_indices(labels, new_classes, dataset):
     return {"old": ids_old, "new": ids_new}
 
 
-def clean_up_cache_dir(cache_dir: str):
-    shutil.rmtree(cache_dir, ignore_errors=True)
-    os.makedirs(cache_dir)
-
-
-def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
+def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     def is_video_frame(media):
         return "VideoFrame" in repr(media)
 
-    if is_video_frame(results["dataset_item"].media):
-        subset = results["dataset_item"].subset
-        index = results["index"]
-        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.npy")
-        if os.path.exists(filename):
-            # Might be slower than dict key checking, but persitent
-            with open(filename, "rb") as f:
-                fcntl.flock(f, fcntl.LOCK_SH)
+    def is_training_subset(subset):
+        return subset.name in ["TRAINING", "VALIDATION"]
+
+    def load_image_from_cache(filename: str):
+        with open(filename, "rb") as f:
+            fcntl.flock(f, fcntl.LOCK_SH)
+            try:
                 cached_img = np.load(f)
+                return cached_img['img']
+            except Exception as e:
+                logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
+            finally:
                 fcntl.flock(f, fcntl.LOCK_UN)
-                return cached_img
+    
+    def save_image_to_cache(img: np.array, filename: str):
+        with open(filename, "wb") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            try:
+                np.savez_compressed(f, img=img)
+            except Exception as e:
+                logger.warning(f"Skip caching for {filename} \nError msg: {e}")
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)
+
+    subset = results["dataset_item"].subset
+    if is_training_subset(subset) and is_video_frame(results["dataset_item"].media):
+        index = results["index"]
+        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.npz")
+        if os.path.exists(filename):
+            return load_image_from_cache(filename)
 
     img = results["dataset_item"].numpy  # this takes long for VideoFrame
     if to_float32:
         img = img.astype(np.float32)
 
-    if is_video_frame(results["dataset_item"].media) and not os.path.exists(filename):
-        with open(filename, "wb") as f:
-            fcntl.flock(f, fcntl.LOCK_EX)
-            np.save(f, img)
-            fcntl.flock(f, fcntl.LOCK_UN)
+    if is_training_subset(subset) and is_video_frame(results["dataset_item"].media) and not os.path.exists(filename):
+        save_image_to_cache(img, filename)
+
     return img
