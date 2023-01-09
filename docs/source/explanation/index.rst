@@ -18,7 +18,8 @@ This section consist of main algorithms explanation and additional features desc
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :titlesonly:
 
    Main_algorithms/index
    Additional_features/index

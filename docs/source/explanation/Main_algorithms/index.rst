@@ -2,8 +2,8 @@ Main algorithms
 ===============
 
 .. toctree::
-   :maxdepth: 1
-
+   :maxdepth: 2
+   :titlesonly:
 
    anomaly_classification
    classification/index

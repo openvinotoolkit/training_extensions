@@ -36,7 +36,7 @@ Besides that we support the following dataset format:
         └── val.json
 
 | Where annotations ``*.json`` consists of two keys: **"images"** and **"hierarchy"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"hierarchy"** describes each label group presented in the label tree.
-| An example of annotations structure can be found `here <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/data/car_tree_bug/annotations/hierarchical_default.json>`_. For more intuition below the hierarchical structure represented for the image example given above:
+| An example of annotations structure can be found `here <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/data/car_tree_bug/annotations/hierarchical_default.json>`_. For more intuition below the hierarchical structure represented for the image the example is given above:
 
 ::
 
@@ -78,7 +78,7 @@ Supervised Incremental Learning
 *******************************
 
 | We solve this task by assigning a separate head for each label group on each hierarchical level. Spicifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.
-| To have inclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.
+| To create non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.
 | In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for :doc:`multi_class_classification` task.
 
 
