@@ -14,10 +14,11 @@ from mmdet.models import build_detector
 from mmdet.utils import collect_env
 from torch import nn
 
-from otx.mpa.det.incremental import IncrDetectionStage
 from otx.mpa.modules.utils.task_adapt import extract_anchor_ratio
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
+
+from .stage import DetectionStage
 
 # TODO[JAEGUK]: Remove import detection_tasks
 # from detection_tasks.apis.detection.config_utils import cluster_anchors
@@ -26,9 +27,8 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 
-# FIXME DetectionTrainer does not inherit from stage
 @STAGES.register_module()
-class DetectionTrainer(IncrDetectionStage):
+class DetectionTrainer(DetectionStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

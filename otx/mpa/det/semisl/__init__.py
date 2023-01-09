@@ -3,6 +3,7 @@
 #
 
 from .inferrer import SemiSLDetectionInferrer
+from .stage import SemiSLDetectionStage
 from .trainer import SemiSLDetectionTrainer
 
-__all__ = ["SemiSLDetectionInferrer", "SemiSLDetectionTrainer"]
+__all__ = ["SemiSLDetectionStage", "SemiSLDetectionInferrer", "SemiSLDetectionTrainer"]
