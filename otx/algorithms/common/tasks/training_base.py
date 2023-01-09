@@ -46,6 +46,11 @@ from otx.mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
+TRAIN_TYPE_DIR_PATH = {
+    TrainType.INCREMENTAL.name: ".",
+    TrainType.SELFSUPERVISED.name: "selfsl",
+    TrainType.SEMISUPERVISED.name: "semisl",
+}
 
 
 # pylint: disable=too-many-instance-attributes, protected-access
@@ -67,7 +72,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_label_schema = []  # type: List[LabelEntity]
         self._optimization_methods = []  # type: List[OptimizationMethod]
         self._model_ckpt = None
-        self._data_pipeline_path = None
         self._anchors = {}  # type: Dict[str, int]
         if output_path is None:
             output_path = tempfile.mkdtemp(prefix="OTX-task-")
@@ -97,6 +101,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self.cancel_interface = None
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
+
+        # Initialize Train type related var
+        self._train_type = self._hyperparams.algo_backend.train_type
+        self._model_dir = os.path.join(
+            os.path.abspath(os.path.dirname(self.template_file_path)), TRAIN_TYPE_DIR_PATH[self._train_type.name]
+        )
 
         # to override configuration at runtime
         self.override_configs = {}  # type: Dict[str, str]
@@ -177,16 +187,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     @property
     def data_pipeline_path(self):
         """Base Data Pipeline file path."""
-        if self._data_pipeline_path is None:
-            self._data_pipeline_path = os.path.join(
-                os.path.dirname(os.path.abspath(self.template_file_path)),
-                self._task_environment.model_template.data_pipeline_path,
-            )
-        return self._data_pipeline_path
-
-    @data_pipeline_path.setter
-    def data_pipeline_path(self, path):
-        self._data_pipeline_path = path
+        # TODO: Temporarily use data_pipeline.py next to model.py.may change later.
+        return os.path.join(self._model_dir, "data_pipeline.py")
 
     @property
     def hyperparams(self):
@@ -241,6 +243,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if self._hyperparams.algo_backend.train_type != TrainType.SELFSUPERVISED:
             # to disenable early stopping during self-sl
             self.set_early_stopping_hook()
+
+        # add eval before train hook
+        update_or_add_custom_hook(self._recipe_cfg, ConfigDict(type="EvalBeforeTrainHook", priority="ABOVE_NORMAL"))
 
         # add Cancel tranining hook
         update_or_add_custom_hook(
