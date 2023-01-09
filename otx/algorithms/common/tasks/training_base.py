@@ -207,7 +207,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Hyper Parameters configuration."""
         return self._hyperparams
 
-    def _initialize(self, options=None):  # pylint: disable=too-many-branches  # noqa: C901
+    # pylint: disable-next=too-many-branches,too-many-statements
+    def _initialize(self, options=None):  # noqa: C901
         """Prepare configurations to run a task through MPA's stage."""
         if options is None:
             options = {}
@@ -294,17 +295,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         if export:
             options["deploy_cfg"] = self._init_deploy_cfg()
+            if options.get("precision", None) is None:
+                assert len(self._precision) == 1
+                options["precision"] = str(self._precision[0])
 
         self._initialize_post_hook(options)
 
         logger.info("initialized.")
 
     def _initialize_post_hook(self, options=None):
-        if options is None:
-            options = {}
-        if options.get("export", False) and options.get("precision", None) is None:
-            assert len(self._precision) == 1
-            options["precision"] = str(self._precision[0])
+        pass
 
     @abc.abstractmethod
     def _init_recipe(self):

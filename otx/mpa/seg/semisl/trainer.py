@@ -6,7 +6,6 @@ import glob
 import os
 import time
 
-import torch
 from mmcv import get_git_hash
 from mmseg import __version__
 from mmseg.apis import train_segmentor
@@ -114,7 +113,9 @@ class SemiSegTrainer(SemiSegStage):
         best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mIoU_*.pth"))
         if len(best_ckpt_path) > 0:
             output_ckpt_path = best_ckpt_path[0]
-        return dict(final_ckpt=output_ckpt_path)
+        return dict(
+            final_ckpt=output_ckpt_path,
+        )
 
     def _modify_cfg_for_distributed(self, model, cfg):
         nn.SyncBatchNorm.convert_sync_batchnorm(model)

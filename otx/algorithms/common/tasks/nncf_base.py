@@ -34,12 +34,6 @@ from otx.algorithms.common.adapters.nncf import (
     check_nncf_is_enabled,
     is_accuracy_aware_training_set,
 )
-from otx.algorithms.common.adapters.nncf.compression import (
-    COMPRESSION_STATE_NAME,
-    DATA_TO_BUILD_NAME,
-    NNCF_STATE_NAME,
-    STATE_TO_BUILD_NAME,
-)
 from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
@@ -211,7 +205,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
             if isinstance(metric_name, list):
                 metric_name = metric_name[0]
             nncf_config.target_metric_name = metric_name
-            logger.info("'target_metric_name' not found in nncf config. Using {metric_name} as target metric")
+            logger.info(f"'target_metric_name' not found in nncf config. Using {metric_name} as target metric")
 
         if is_accuracy_aware_training_set(nncf_config):
             # Prepare runner for Accuracy Aware
@@ -305,20 +299,13 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
             self._is_training = False
             return
 
-        compression_state = torch.load(results.get("compression_state_path"))
-        before_ckpt = torch.load(results.get("before_ckpt_path"))
-        final_ckpt = torch.load(results.get("final_ckpt"))
-
-        model_ckpt = {
-            NNCF_STATE_NAME: final_ckpt["state_dict"],
-            COMPRESSION_STATE_NAME: compression_state,
-            DATA_TO_BUILD_NAME: before_ckpt["meta"][DATA_TO_BUILD_NAME],
-            STATE_TO_BUILD_NAME: before_ckpt["meta"][STATE_TO_BUILD_NAME],
-        }
-
+        model_ckpt = results.get("final_ckpt")
+        if model_ckpt is None:
+            logger.error("cannot find final checkpoint from the results.")
+            # output_model.model_status = ModelStatus.FAILED
+            return
         # update checkpoint to the newly trained model
-        self._model_ckpt = os.path.join(os.path.dirname(results.get("final_ckpt")), "temporary.pth")
-        torch.save(model_ckpt, self._model_ckpt)
+        self._model_ckpt = model_ckpt
 
         self._optimize_post_hook(dataset, output_model)
 

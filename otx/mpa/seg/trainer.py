@@ -114,17 +114,8 @@ class SegTrainer(SegStage):
         best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mIoU_*.pth"))
         if len(best_ckpt_path) > 0:
             output_ckpt_path = best_ckpt_path[0]
-        # NNCF model
-        compression_state_path = osp.join(cfg.work_dir, "compression_state.pth")
-        if not os.path.exists(compression_state_path):
-            compression_state_path = None
-        before_ckpt_path = osp.join(cfg.work_dir, "before_training.pth")
-        if not os.path.exists(before_ckpt_path):
-            before_ckpt_path = None
         return dict(
             final_ckpt=output_ckpt_path,
-            compression_state_path=compression_state_path,
-            before_ckpt_path=before_ckpt_path,
         )
 
     def _modify_cfg_for_distributed(self, model, cfg):

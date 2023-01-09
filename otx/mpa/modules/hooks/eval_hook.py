@@ -7,12 +7,12 @@ from os import path as osp
 import mmcv
 import numpy as np
 import torch
-from mmcv.runner import HOOKS, Hook
+from mmcv.runner import HOOKS, EvalHook, Hook
 from torch.utils.data import DataLoader
 
 
 @HOOKS.register_module()
-class CustomEvalHook(Hook):
+class CustomEvalHook(EvalHook):
     """Custom Evaluation hook for the MPA
 
     Args:
@@ -20,19 +20,13 @@ class CustomEvalHook(Hook):
         interval (int): Evaluation interval (by epochs). Default: 1.
     """
 
-    def __init__(self, dataloader, interval=1, by_epoch=True, ema_eval_start_epoch=10, **eval_kwargs):
-        if not isinstance(dataloader, DataLoader):
-            raise TypeError("dataloader must be a pytorch DataLoader, but got" f" {type(dataloader)}")
-        self.dataloader = dataloader
-        self.interval = interval
-        self.ema_eval_start_epoch = ema_eval_start_epoch
-        self.eval_kwargs = eval_kwargs
-        self.by_epoch = by_epoch
-        self.best_loss = 9999999.0
-        self.best_score = 0.0
-        self.save_mode = eval_kwargs.get("save_mode", "score")
-        metric = self.eval_kwargs["metric"]
-
+    def __init__(
+        self,
+        *args,
+        ema_eval_start_epoch=10,
+        **kwargs,
+    ):
+        metric = kwargs["metric"]
         self.metric = None
         if isinstance(metric, str):
             self.metric = "top-1" if metric == "accuracy" else metric
@@ -42,6 +36,12 @@ class CustomEvalHook(Hook):
                 self.metric = "accuracy"
             elif metric.count("accuracy") > 0:
                 self.metric = "top-1"
+        super().__init__(*args, **kwargs, save_best=self.metric, rule="greater")
+        self.ema_eval_start_epoch = ema_eval_start_epoch
+
+        self.best_loss = 9999999.0
+        self.best_score = 0.0
+        self.save_mode = self.eval_kwargs.get("save_mode", "score")
 
     def _do_evaluate(self, runner, ema=False):
         """perform evaluation"""

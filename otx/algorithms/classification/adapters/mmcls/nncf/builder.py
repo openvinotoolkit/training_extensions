@@ -8,21 +8,18 @@ from typing import Optional, Union
 
 import torch
 from mmcls.utils import get_root_logger
-from mmcv.runner import CheckpointLoader, load_state_dict
+from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 
 from otx.algorithms.classification.adapters.mmcls.utils import build_classifier
+from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_keys,
     get_configs_by_pairs,
     remove_from_configs_by_type,
 )
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
-from otx.algorithms.common.adapters.nncf.compression import (
-    DATA_TO_BUILD_NAME,
-    NNCF_STATE_NAME,
-    STATE_TO_BUILD_NAME,
-)
+from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 
 logger = get_root_logger()
 
@@ -56,7 +53,6 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals
     if checkpoint is None:
         # load model in this function not in runner
         checkpoint = config.load_from
-        config.load_from = None
     assert checkpoint is not None
 
     model = build_classifier(config, from_scratch=True)
@@ -68,10 +64,11 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals
 
     init_dataloader = None
     model_eval_fn = None
-    if NNCF_STATE_NAME in state_dict:
+    if "meta" in state_dict and NNCF_META_KEY in state_dict["meta"]:
         # NNCF ckpt
-        data_to_build_nncf = state_dict[DATA_TO_BUILD_NAME]
-        state_to_build_nncf = state_dict[STATE_TO_BUILD_NAME]
+        nncf_meta_state = state_dict["meta"][NNCF_META_KEY]
+        data_to_build_nncf = nncf_meta_state.data_to_build
+        state_to_build_nncf = nncf_meta_state.state_to_build
     else:
         # pytorch ckpt
         state_to_build_nncf = state_dict
@@ -117,7 +114,6 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals
             distributed=distributed,
         )
         state_dict = None
-    load_state_dict(model, state_to_build_nncf)
 
     test_pipeline = Compose(config.data.test.pipeline)
     get_fake_input_fn = partial(
@@ -129,30 +125,29 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals
     compression_ctrl, model = wrap_nncf_model(
         config,
         model,
-        init_state_dict=state_dict,
         model_eval_fn=model_eval_fn,
         get_fake_input_fn=get_fake_input_fn,
         dataloader_for_init=init_dataloader,
         is_accuracy_aware=is_acc_aware,
     )
 
+    # update runner to save metadata
+    config.runner.nncf_meta = NNCFMetaState(
+        state_to_build=state_to_build_nncf,
+        data_to_build=data_to_build_nncf,
+    )
+
     # update custom hooks
     custom_hooks = config.get("custom_hooks", [])
-    custom_hooks.append(ConfigDict(type="CompressionHook", compression_ctrl=compression_ctrl))
     custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
     custom_hooks.append(
         ConfigDict(
-            type="CheckpointHookBeforeTraining",
-            save_optimizer=True,
-            meta={
-                DATA_TO_BUILD_NAME: data_to_build_nncf,
-                STATE_TO_BUILD_NAME: state_to_build_nncf,
-            },
+            type="CompressionHook",
+            compression_ctrl=compression_ctrl,
         )
     )
     remove_from_configs_by_type(custom_hooks, "CancelInterfaceHook")
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
-    remove_from_configs_by_type(custom_hooks, "AdaptiveTrainSchedulingHook")
 
     for hook in get_configs_by_pairs(custom_hooks, dict(type="OTXProgressHook")):
         time_monitor = hook.get("time_monitor", None)

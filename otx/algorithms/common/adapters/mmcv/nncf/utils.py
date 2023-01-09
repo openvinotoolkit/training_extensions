@@ -15,11 +15,11 @@ from mmcv.parallel import DataContainer, collate, scatter
 from torch import nn
 from torch.utils.data import DataLoader
 
+from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils.builder import build_data_parallel
 from otx.algorithms.common.adapters.nncf.compression import (
-    COMPRESSION_STATE_NAME,
-    NNCF_STATE_NAME,
     is_checkpoint_nncf,
+    is_state_nncf,
 )
 from otx.algorithms.common.adapters.nncf.utils import (
     check_nncf_is_enabled,
@@ -168,7 +168,6 @@ def wrap_nncf_model(  # noqa: C901
     elif config.get("load_from"):
         checkpoint_path = config.get("load_from")
         if not is_checkpoint_nncf(checkpoint_path):
-            checkpoint_path = None
             logger.info("Received non-NNCF checkpoint to start training -- initialization of NNCF fields will be done")
     else:
         checkpoint_path = None
@@ -180,18 +179,20 @@ def wrap_nncf_model(  # noqa: C901
             "quantizers will not be initialized"
         )
 
-    if checkpoint_path:
+    if init_state_dict:
+        assert is_state_nncf(init_state_dict)
+        meta_state = init_state_dict["meta"][NNCF_META_KEY]
+        resuming_state_dict = init_state_dict["state_dict"]
+        compression_state = meta_state.compression_ctrl
+    elif checkpoint_path:
         logger.info(f"Loading NNCF checkpoint from {checkpoint_path}")
         logger.info(
             "Please, note that this first loading is made before addition of "
             "NNCF FakeQuantize nodes to the model, so there may be some "
             "warnings on unexpected keys"
         )
-        compression_state = load_checkpoint(model, checkpoint_path)
+        compression_state, resuming_state_dict = load_checkpoint(model, checkpoint_path)
         logger.info(f"Loaded NNCF checkpoint from {checkpoint_path}")
-    elif init_state_dict:
-        resuming_state_dict = init_state_dict.get(NNCF_STATE_NAME)
-        compression_state = init_state_dict.get(COMPRESSION_STATE_NAME)
     else:
         compression_state = None
 

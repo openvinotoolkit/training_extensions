@@ -24,7 +24,7 @@ from .hooks import (
     ReduceLROnPlateauLrUpdaterHook,
     StopLossNanTrainingHook,
 )
-from .nncf.hooks import CheckpointHookBeforeTraining, CompressionHook
+from .nncf.hooks import CompressionHook
 from .nncf.runners import AccuracyAwareRunner
 from .runner import EpochRunnerWithCancel, IterBasedRunnerWithCancel
 
@@ -40,6 +40,5 @@ __all__ = [
     "StopLossNanTrainingHook",
     "EMAMomentumUpdateHook",
     "CompressionHook",
-    "CheckpointHookBeforeTraining",
     "AccuracyAwareRunner",
 ]

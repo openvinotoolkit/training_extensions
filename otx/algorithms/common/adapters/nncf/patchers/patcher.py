@@ -101,13 +101,21 @@ class Patcher:
 
         if isinstance(fn, (staticmethod, classmethod)):
 
-            def helper(*args, **kwargs):
+            def helper(*args, **kwargs):  # type: ignore
                 wrapper = kwargs.pop("__wrapper")
                 fn = kwargs.pop("__fn")
                 obj_cls = kwargs.pop("__obj_cls")
                 if isinstance(args[0], obj_cls):
                     return wrapper(args[0], fn.__get__(args[0]), *args[1:], **kwargs)
                 return wrapper(obj_cls, fn.__get__(obj_cls), *args, **kwargs)
+
+        elif isinstance(fn, type(all.__call__)):
+
+            def helper(self, *args, **kwargs):  # type: ignore
+                kwargs.pop("__obj_cls")
+                wrapper = kwargs.pop("__wrapper")
+                fn = kwargs.pop("__fn")
+                return wrapper(self, fn, *args, **kwargs)
 
         else:
 

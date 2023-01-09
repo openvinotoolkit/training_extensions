@@ -3,14 +3,35 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
+
+import numpy as np
 import torch
 
 from .utils import check_nncf_is_enabled, get_nncf_version, is_nncf_enabled
 
-NNCF_STATE_NAME = "nncf_model_state"
-COMPRESSION_STATE_NAME = "compression_state"
-DATA_TO_BUILD_NAME = "data_to_build_nncf"
-STATE_TO_BUILD_NAME = "state_dict_to_build_nncf"
+
+@dataclass
+class NNCFMetaState:
+    """NNCF meta state wrapper."""
+
+    state_to_build: Optional[Dict[str, torch.Tensor]] = field(default=None)
+    data_to_build: Optional[np.ndarray] = field(default=None)
+    compression_ctrl: Optional[Dict[Any, Any]] = field(default=None)
+
+    def __repr__(self):
+        """Repr."""
+        out = f"{self.__class__.__name__}("
+        if self.state_to_build is not None:
+            out += "state_to_build='<data>', "
+        if self.data_to_build is not None:
+            out += "data_to_build='<data>', "
+        if self.compression_ctrl is not None:
+            out += "compression_ctrl='<data>', "
+        out = out[:-2]
+        out += ")"
+        return out
 
 
 def get_nncf_metadata():

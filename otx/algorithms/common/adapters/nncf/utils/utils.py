@@ -45,18 +45,26 @@ def load_checkpoint(model, filename, map_location=None, strict=False):
     Returns:
         dict or OrderedDict: The loaded checkpoint.
     """
-    from nncf.torch import load_state
+    #  from nncf.torch import load_state
+    from mmcv.runner import load_state_dict
 
     checkpoint = torch.load(filename, map_location=map_location)
+    nncf_state = None
+    compression_state = None
     # get state_dict from checkpoint
     if isinstance(checkpoint, OrderedDict):
-        state_dict = checkpoint
+        base_state = checkpoint
     elif isinstance(checkpoint, dict) and "state_dict" in checkpoint:
-        state_dict = checkpoint["state_dict"]
+        if "meta" in checkpoint and "nncf_meta" in checkpoint["meta"]:
+            nncf_state = checkpoint["state_dict"]
+            compression_state = checkpoint["meta"]["nncf_meta"].compression_ctrl
+            base_state = checkpoint["meta"]["nncf_meta"].state_to_build
+        else:
+            base_state = checkpoint["state_dict"]
     else:
         raise RuntimeError(f"No state_dict found in checkpoint file {filename}")
-    _ = load_state(model, state_dict, strict)
-    return checkpoint
+    load_state_dict(model, base_state, strict=strict)
+    return compression_state, nncf_state
 
 
 @contextmanager

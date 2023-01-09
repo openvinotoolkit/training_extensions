@@ -89,7 +89,10 @@ class SemiSLDetectionTrainer(SemiSLDetectionStage):
         meta["seed"] = cfg.seed
         meta["exp_name"] = cfg.work_dir
         if cfg.checkpoint_config is not None:
-            cfg.checkpoint_config.meta = dict(mmdet_version=__version__ + get_git_hash()[:7], CLASSES=target_classes)
+            cfg.checkpoint_config.meta = dict(
+                mmdet_version=__version__ + get_git_hash()[:7],
+                CLASSES=target_classes,
+            )
             if "proposal_ratio" in locals():
                 cfg.checkpoint_config.meta.update({"anchor_ratio": proposal_ratio})
 
@@ -125,17 +128,8 @@ class SemiSLDetectionTrainer(SemiSLDetectionStage):
         best_ckpt_path = glob.glob(osp.join(cfg.work_dir, "best_*.pth"))
         if len(best_ckpt_path) > 0:
             output_ckpt_path = best_ckpt_path[0]
-        # NNCF model
-        compression_state_path = osp.join(cfg.work_dir, "compression_state.pth")
-        if not osp.exists(compression_state_path):
-            compression_state_path = None
-        before_ckpt_path = osp.join(cfg.work_dir, "before_training.pth")
-        if not osp.exists(before_ckpt_path):
-            before_ckpt_path = None
         return dict(
             final_ckpt=output_ckpt_path,
-            compression_state_path=compression_state_path,
-            before_ckpt_path=before_ckpt_path,
         )
 
     def _modify_cfg_for_distributed(self, model, cfg):
