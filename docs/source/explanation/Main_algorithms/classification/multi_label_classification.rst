@@ -64,7 +64,7 @@ For supervised learning we use the following algorithms components:
 
 - Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique, **Exponential Moving Average (EMA)** for the model's weights and adaptive **early stopping** to add adaptability and prevent overfitting.
 
-In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>` on some academic datasets is presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
+In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ on some academic datasets is presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
 
 +-----------------------+-----------------+-----------+-----------+-----------+
 | Model name            | Pascal-VOC 2007 |    COCO   |   VG500   | NUS-WIDE  |
