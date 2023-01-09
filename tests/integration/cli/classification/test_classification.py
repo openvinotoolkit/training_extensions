@@ -5,8 +5,6 @@
 
 import os
 from functools import wraps
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 import torch
@@ -74,12 +72,6 @@ args = {
 }
 
 otx_dir = os.getcwd()
-
-
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
 
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
@@ -561,7 +553,7 @@ def set_dummy_data(func):
             "data": {
                 "train": {"ann-files": None, "data-roots": None},
                 "val": {"ann-files": None, "data-roots": None},
-                "unlabeled": {"ann-files": None, "data-roots": None},
+                "unlabeled": {"file-list": None, "data-roots": None},
             },
         }
         yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
@@ -574,7 +566,7 @@ def set_dummy_data(func):
 
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
-args_w = {
+args_selfsl = {
     "--data": "./data.yaml",
     "--train-data-roots": "data/text_recognition/IL_data",
     "train_params": [
@@ -594,7 +586,7 @@ class TestToolsMPASelfSLClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @set_dummy_data
     def test_otx_selfsl_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args_w)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = args.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"

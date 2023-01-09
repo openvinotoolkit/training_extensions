@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>0</id>
+      <name>v0</name>
+      <size>10</size>
+      <mode>interpolation</mode>
+      <overlap>2</overlap>
+      <bugtracker></bugtracker>
+      <created></created>
+      <updated></updated>
+      <start_frame>0</start_frame>
+      <stop_frame>9</stop_frame>
+      <frame_filter>1</frame_filter>
+      <z_order>True</z_order>
+      <labels>
+        <label>
+          <name>EmptyFrame</name>
+          <attributes></attributes>
+        </label>
+        <label>
+          <name>1</name>
+          <attributes></attributes>
+        </label>
+      </labels>
+      <segments></segments>
+      <original_size>
+        <width>256</width>
+        <height>192</height>
+      </original_size>
+    </task>
+  </meta>
+  <track id="0" label="EmptyFrame">
+    <box frame="20" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="21" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="22" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="23" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="1">
+    <box frame="24" outside="0" occluded="0" xtl="0.27298716" ytl="0.0073581696" xbr="0.67030156" ybr="0.9858064" z_order="0" label="1"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="25" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="26" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="27" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="28" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+  <track id="0" label="EmptyFrame">
+    <box frame="29" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  </track>
+</annotations>
