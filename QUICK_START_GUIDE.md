@@ -26,10 +26,12 @@ Current version of OTE was tested under following environments
    ```bash
    $ sudo apt-get install python3-pip python3-venv
    # verify your python version
-   $ python3 --version; pip3 --version; virtualenv --version
+   $ python3 --version; pip3 --version; apt list python3-venv
    Python 3.8.10
    pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
-   virtualenv 20.0.17 from /usr/lib/python3/dist-packages/virtualenv/__init__.py
+   Listing... Done
+   python3-venv/focal,now 3.8.2-0ubuntu2 amd64 [installed]
+   python3-venv/focal 3.8.2-0ubuntu2 i386
    ```
 
    (Optional) You may also want to use Jupyter notebooks or OTE CLI tools:
