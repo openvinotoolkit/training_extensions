@@ -34,6 +34,7 @@ This format has the following structure:
 *********
 Models
 *********
+.. _classificaiton_models:
 
 We support the following ready-to-use model templates:
 

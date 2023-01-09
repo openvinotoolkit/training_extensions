@@ -44,7 +44,7 @@ Below a simple example of 2 classes presented:
 *********
 Models
 *********
-We use the same model templates as for multi-class classification. Please, refer: :doc:`multi_class_classification`.
+We use the same model templates as for multi-class classification. Please, refer: :ref:`Classificaiton Models <classificaiton_models>`.
 
 *******************************
 Supervised Incremental Learning

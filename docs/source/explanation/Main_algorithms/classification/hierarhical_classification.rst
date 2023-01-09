@@ -71,7 +71,7 @@ Besides that we support the following dataset format:
 Models
 *********
 
-We use the same model templates as for multi-class Classification. Please, refer: :doc:`multi_class_classification`.
+We use the same model templates as for multi-class Classification. Please, refer: :ref:`Classificaiton Models <classificaiton_models>`.
 
 *******************************
 Supervised Incremental Learning
