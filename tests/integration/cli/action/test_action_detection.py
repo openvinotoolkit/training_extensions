@@ -4,8 +4,6 @@
 #
 
 import os
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 
@@ -17,9 +15,9 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 # Finetuning arguments
 # TODO: Need to change sample dataset
 args = {
-    "--train-data-roots": "data/datumaro/cvat_dataset/action_detection/train/",
-    "--val-data-roots": "data/datumaro/cvat_dataset/action_detection/train/",
-    "--test-data-roots": "data/datumaro/cvat_dataset/action_detection/train/",
+    "--train-data-roots": "data/datumaro/cvat_dataset/action_detection/train",
+    "--val-data-roots": "data/datumaro/cvat_dataset/action_detection/train",
+    "--test-data-roots": "data/datumaro/cvat_dataset/action_detection/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
@@ -37,13 +35,7 @@ else:
     templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
-
-
-class TestToolsMPADetection:
+class TestToolsOTXActionDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):

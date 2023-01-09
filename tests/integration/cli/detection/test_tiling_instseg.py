@@ -4,8 +4,6 @@
 #
 
 import os
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 
@@ -37,7 +35,7 @@ args = {
     "--train-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--val-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--test-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
-    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images",
+    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -63,12 +61,6 @@ if TT_STABILITY_TESTS:
 else:
     templates = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
-
-
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
 
 
 class TestToolsTilingInstanceSegmentation:

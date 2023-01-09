@@ -4,8 +4,6 @@
 #
 
 import os
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 import torch
@@ -40,7 +38,7 @@ args0 = {
     "--train-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--val-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--test-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
-    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images",
+    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "2"],
 }
 
@@ -49,7 +47,7 @@ args = {
     "--train-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--val-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--test-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
-    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images",
+    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "2"],
 }
 
@@ -68,13 +66,7 @@ else:
     templates_ids = [template.model_template_id for template in templates]
 
 
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
-
-
-class TestToolsOTXInstanceSegmentation:
+class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):

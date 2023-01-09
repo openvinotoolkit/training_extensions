@@ -150,24 +150,26 @@ def main():  # pylint: disable=too-many-branches
         train_subset={
             "data_root": data_config["data"]["train"]["data-roots"],
         },
-        val_subset={
-            "data_root": data_config["data"]["val"]["data-roots"],
-        },
     )
-    is_include_unlabel_data = False
+    if data_config["data"]["val"]["data-roots"]:
+        data_roots["val_subset"] = {
+            "ann_file": data_config["data"]["val"]["ann-files"],
+            "data_root": data_config["data"]["val"]["data-roots"],
+        }
     if data_config["data"]["unlabeled"]["data-roots"]:
         data_roots["unlabeled_subset"] = {
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
             "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
-        is_include_unlabel_data = True
 
     # Datumaro
     dataset_adapter = get_dataset_adapter(
         template.task_type,
         train_data_roots=data_roots["train_subset"]["data_root"],
-        val_data_roots=data_roots["val_subset"]["data_root"],
-        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None,
+        val_data_roots=data_roots["val_subset"]["data_root"] if data_config["data"]["val"]["data-roots"] else None,
+        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"]
+        if data_config["data"]["unlabeled"]["data-roots"]
+        else None,
     )
     dataset = dataset_adapter.get_otx_dataset()
     label_schema = dataset_adapter.get_label_schema()

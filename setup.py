@@ -11,8 +11,11 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import List, Optional, Union
 
+import Cython
+import numpy
+from Cython.Build import cythonize
 from pkg_resources import Requirement
-from setuptools import find_packages, setup
+from setuptools import Extension, find_packages, setup
 
 
 def load_module(name: str = "otx/__init__.py"):
@@ -243,6 +246,26 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
     return requirements
 
 
+def _cython_modules(src_dir: str = "otx"):
+    Cython.Compiler.Options.annotate = True
+
+    ext_modules = []
+    print("_cython")
+
+    for root, dirs, files in os.walk(src_dir):
+        for fname in files:
+            name, ext = os.path.splitext(fname)
+            if ext != ".pyx":
+                continue
+            cython_aug_modl = root.replace("/", ".")
+            ext_modules += [
+                Extension(f"{cython_aug_modl}.{name}", [os.path.join(root, fname)],
+                        include_dirs=[numpy.get_include()], extra_compile_args=["-O3"])
+            ]
+
+    return cythonize(ext_modules, annotate=True)
+
+
 REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
 EXTRAS_REQUIRE = {
     "action": get_requirements(requirement_files="action"),
@@ -276,4 +299,5 @@ setup(
             "otx_build=otx.cli.tools.build:main",
         ]
     },
+    ext_modules=_cython_modules(),
 )

@@ -242,7 +242,6 @@ def convert_ava_dataset_to_datumaro(src_path, dst_path):
                         attributes = etree.Element("attributes")
                         attributes.text = ""
                         label.append(attributes)
-
                     box = etree.Element(
                         "box",
                         frame=str(frame_idx),

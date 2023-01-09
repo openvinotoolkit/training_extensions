@@ -35,3 +35,8 @@ dmypy.json
 
 # python version
 .python-version
+
+# Cython generated C-code & html
+otx/**/*.c
+otx/**/*.html
+otx/**/*.so
