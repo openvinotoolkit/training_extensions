@@ -6,6 +6,7 @@ Main algorithms
    :titlesonly:
 
    anomaly_classification
+   action_classification
    classification/index
    instance_segmentation
    semantic_segmentation

@@ -4,8 +4,8 @@ Explanation
 This section consist of main algorithms explanation and additional features description.
 ``Main algorithms`` section inludes:
 
-1. Description of dataset format for the task;
-2. Available templates (backbones);
+1. Description of datasets format for each task;
+2. Available templates (models);
 3. Description of supervised training pipelines;
 4. Semi-supervised and Self-supervised algorithms.
 
