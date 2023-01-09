@@ -148,7 +148,8 @@ class PILImageToNDArray:
     Expected entries in the 'results' dict that should be passed to this pipeline element are:
         results['img']: PIL type image in data pipeline.
 
-    :param keys: optional list, support multiple image converting. defaults to ["img"].
+    Args:
+        keys (list[str]): list to support multiple image converting from PIL to NDArray.
     """
 
     def __init__(self, keys=None):
@@ -175,7 +176,9 @@ class SeparateAug:
     Expected entries in the 'results' dict that should be passed to this pipeline element are:
         results['img']: PIL type image in data pipeline.
 
-    :param keys: optional list, support appending multiple image fields.
+    Args:
+        pairs (dict): pairs to separate pipeline. key 'img' should be included.
+                      ex) dict(img=origin_pipeline, img_strong=strong_pipeline)
     """
 
     def __init__(self, pairs: dict):
