@@ -1,1 +1,2 @@
 recursive-include requirements *
+recursive-exclude otx *.c *.html
