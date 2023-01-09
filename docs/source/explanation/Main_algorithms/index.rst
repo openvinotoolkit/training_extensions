@@ -5,7 +5,7 @@ Main algorithms
    :maxdepth: 2
    :titlesonly:
 
-   anomaly_classification
+   anomaly
    action_classification
    classification/index
    instance_segmentation
