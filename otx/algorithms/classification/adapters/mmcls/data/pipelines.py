@@ -183,7 +183,7 @@ class SeparateAug:
 
     def __init__(self, pairs: dict):
         if "img" not in pairs.keys():
-            raise ValueError("key 'img' should be included in pairs arugmenent")
+            raise ValueError("key 'img' should be included in pairs argumenent")
         self.pipelines = {key: Compose(pipeline) for key, pipeline in pairs.items()}
 
     def __call__(self, results):
