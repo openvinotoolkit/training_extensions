@@ -53,7 +53,7 @@ logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semi.yaml",
+    TrainType.SEMISUPERVISED: "semisl.yaml",
     TrainType.INCREMENTAL: "incremental.yaml",
     TrainType.SELFSUPERVISED: "selfsl.yaml",
 }

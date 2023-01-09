@@ -69,9 +69,9 @@ logger = get_logger()
 
 
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semi.yaml",
-    TrainType.INCREMENTAL: "incremental.yaml",
-    TrainType.SELFSUPERVISED: "selfsl.yaml",
+    TrainType.SEMISUPERVISED: "semisl.py",
+    TrainType.INCREMENTAL: "incremental.py",
+    TrainType.SELFSUPERVISED: "selfsl.py",
 }
 
 

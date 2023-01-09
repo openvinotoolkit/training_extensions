@@ -69,8 +69,8 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semi.yaml",
-    TrainType.INCREMENTAL: "incremental.yaml",
+    TrainType.SEMISUPERVISED: "semisl.py",
+    TrainType.INCREMENTAL: "incremental.py",
 }
 
 
