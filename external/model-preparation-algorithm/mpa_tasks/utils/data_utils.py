@@ -4,6 +4,7 @@
 
 import fcntl
 import os
+import cv2
 from typing import Any, Dict
 
 import numpy as np
@@ -42,12 +43,14 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     def is_training_subset(subset):
         return subset.name in ["TRAINING", "VALIDATION"]
 
-    def load_image_from_cache(filename: str):
+    def load_image_from_cache(filename: str, to_float32=False):
         with open(filename, "rb") as f:
             fcntl.flock(f, fcntl.LOCK_SH)
             try:
-                cached_img = np.load(f)
-                return cached_img['img']
+                cached_img = cv2.imread(filename)
+                if to_float32:
+                    cached_img = cached_img.astype(np.float32)
+                return cached_img
             except Exception as e:
                 logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
             finally:
@@ -57,7 +60,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
         with open(filename, "wb") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
             try:
-                np.savez_compressed(f, img=img)
+                cv2.imwrite(filename, img=img)
             except Exception as e:
                 logger.warning(f"Skip caching for {filename} \nError msg: {e}")
             finally:
@@ -66,9 +69,9 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     subset = results["dataset_item"].subset
     if is_training_subset(subset) and is_video_frame(results["dataset_item"].media):
         index = results["index"]
-        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.npz")
+        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.png")
         if os.path.exists(filename):
-            return load_image_from_cache(filename)
+            return load_image_from_cache(filename, to_float32=to_float32)
 
     img = results["dataset_item"].numpy  # this takes long for VideoFrame
     if to_float32:
