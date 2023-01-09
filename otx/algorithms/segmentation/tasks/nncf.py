@@ -97,11 +97,8 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         self._labels = task_environment.get_labels(include_empty=False)
         self._label_dictionary = dict(enumerate(self._labels, 1))
 
-        template_file_path = task_environment.model_template.model_template_path
-
         # Get and prepare mmseg config.
-        self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
-        config_file_path = os.path.join(self._base_dir, "model.py")
+        config_file_path = os.path.join(self._model_dir, "model.py")
         self._config = Config.fromfile(config_file_path)
 
         # Align MPA config for nncf task
@@ -112,7 +109,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             self._config.merge_from_dict(self._model_cfg)
             remove_custom_hook(self._config, "CancelInterfaceHook")
         else:
-            config_file_path = os.path.join(self._base_dir, "model.py")
+            config_file_path = os.path.join(self._model_dir, "model.py")
             self._config = Config.fromfile(config_file_path)
         # Disable task adaptation in NNCF task
         if hasattr(self._config.model, "is_task_adapt"):
@@ -159,7 +156,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
     def _load_model(self, model: Optional[ModelEntity]):
         # NNCF parts
-        nncf_config_path = os.path.join(self._base_dir, "compression_config.json")
+        nncf_config_path = os.path.join(self._model_dir, "compression_config.json")
 
         with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
