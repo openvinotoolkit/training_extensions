@@ -32,7 +32,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
     parser.add_argument(
-        "--train-type", help=f"The currently supported options: {SUPPORTED_TRAIN_TYPE}.", default="incremental"
+        "--train-type",
+        help=f"The currently supported options: {SUPPORTED_TRAIN_TYPE}.",
+        type=str,
+        default="incremental",
     )
     parser.add_argument("--workspace-root", help="The path to use as the workspace.")
     parser.add_argument("--model", help="Input OTX model config file (e.g model.py).", default=None)
@@ -56,7 +59,7 @@ def main():
         builder.build_task_config(
             task_type=args.task,
             model_type=args.model,
-            train_type=args.train_type,
+            train_type=args.train_type.lower(),
             workspace_path=args.workspace_root,
             otx_root=otx_root,
         )

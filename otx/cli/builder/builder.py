@@ -181,14 +181,14 @@ class Builder:
         template_config.hyper_parameters.base_path = "./configuration.yaml"
 
         # Configuration of Train Type value
-        sub_rel_path = "."
-        if train_type.lower() != "incremental":
-            sub_rel_path = train_type.lower()
-        model_dir = os.path.join(os.path.abspath(template_dir), sub_rel_path)
+        train_type_rel_path = ""
+        if train_type != "incremental":
+            train_type_rel_path = train_type
+        model_dir = os.path.join(os.path.abspath(template_dir), train_type_rel_path)
         if not os.path.exists(model_dir):
             raise ValueError(f"[otx build] {train_type} is not a type supported by OTX {task_type}")
-        sub_workspace_dir = os.path.join(workspace_path, sub_rel_path)
-        os.makedirs(sub_workspace_dir, exist_ok=True)
+        train_type_dir = os.path.join(workspace_path, train_type_rel_path)
+        os.makedirs(train_type_dir, exist_ok=True)
 
         # Update Hparams
         if os.path.exists(os.path.join(model_dir, "hparam.yaml")):
@@ -196,12 +196,12 @@ class Builder:
 
         # Load & Save Model config
         model_config = MPAConfig.fromfile(os.path.join(model_dir, "model.py"))
-        model_config.dump(os.path.join(sub_workspace_dir, "model.py"))
+        model_config.dump(os.path.join(train_type_dir, "model.py"))
 
         # Copy Data pipeline config
         if os.path.exists(os.path.join(model_dir, "data_pipeline.py")):
             data_pipeline_config = MPAConfig.fromfile(os.path.join(model_dir, "data_pipeline.py"))
-            data_pipeline_config.dump(os.path.join(sub_workspace_dir, "data_pipeline.py"))
+            data_pipeline_config.dump(os.path.join(train_type_dir, "data_pipeline.py"))
         template_config.dump(os.path.join(workspace_path, "template.yaml"))
 
         # Create Data.yaml
@@ -214,7 +214,7 @@ class Builder:
         if os.path.exists(os.path.join(model_dir, "compression_config.json")):
             shutil.copyfile(
                 os.path.join(model_dir, "compression_config.json"),
-                os.path.join(sub_workspace_dir, "compression_config.json"),
+                os.path.join(train_type_dir, "compression_config.json"),
             )
 
         print(f"[otx build] Create OTX workspace: {workspace_path}")
