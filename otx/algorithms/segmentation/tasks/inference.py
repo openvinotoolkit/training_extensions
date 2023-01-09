@@ -105,8 +105,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         stage_module = "SegInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
-        # Temporary disable dump (will be handled by 'otx explain')
-        dump_features = False
+
+        dump_features = True
 
         results = self._run_task(
             stage_module,

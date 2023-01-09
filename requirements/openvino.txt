@@ -1,6 +1,8 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # OpenVINO Requirements.                                                      #
-nncf==2.3.0
+# FIXME: nncf 2.3.0 has scipy version conflict
+# this is a temporary workaround to udpate nncf dependencies
+nncf @ git+https://github.com/cih9088/nncf@9b204857c11bc694c2ca6a62fc9a575c002a0a99#egg=nncf
 onnx==1.10.1
 openmodelzoo-modelapi==2022.3.0
 openvino==2022.3.0

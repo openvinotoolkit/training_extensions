@@ -23,7 +23,7 @@ def build_detector(
     """A builder function for mmdet model.
 
     Creates a model, based on the configuration in config.
-    Note that this function consumes/updates 'load_from' attribute of 'config'.
+    Note that this function updates 'load_from' attribute of 'config'.
     """
 
     from mmdet.models import build_detector as origin_build_detector
@@ -40,8 +40,6 @@ def build_detector(
     checkpoint = checkpoint if checkpoint else config.pop("load_from", None)
     if checkpoint is not None and not from_scratch:
         load_checkpoint(model, checkpoint, map_location=device)
-        config.load_from = None
-    else:
-        config.load_from = checkpoint
+    config.load_from = checkpoint
 
     return model

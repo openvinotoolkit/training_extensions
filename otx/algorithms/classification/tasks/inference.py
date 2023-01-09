@@ -108,11 +108,8 @@ class ClassificationInferenceTask(
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
 
-        # Temporary disable dump (will be handled by 'otx explain')
-        #  dump_features = True
-        #  dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
-        dump_features = False
-        dump_saliency_map = False
+        dump_features = True
+        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
         results = self._run_task(
             stage_module,

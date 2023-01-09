@@ -170,10 +170,14 @@ class DetectionInferrer(IncrDetectionStage):
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         if not dump_saliency_map:
             saliency_hook = nullcontext()
-        elif isinstance(model.module, TwoStageDetector):
-            saliency_hook = ActivationMapHook(model.module)
         else:
-            saliency_hook = DetSaliencyMapHook(model.module)
+            raw_model = model.module
+            if raw_model.__class__.__name__ == "NNCFNetwork":
+                raw_model = raw_model.get_nncf_wrapped_model()
+            if isinstance(raw_model, TwoStageDetector):
+                saliency_hook = ActivationMapHook(model.module)
+            else:
+                saliency_hook = DetSaliencyMapHook(model.module)
 
         eval_predictions = []
         with FeatureVectorHook(model.module) if dump_features else nullcontext() as feature_vector_hook:

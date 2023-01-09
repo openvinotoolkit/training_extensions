@@ -21,7 +21,7 @@ def build_classifier(
     """A builder function for mmcls model.
 
     Creates a model, based on the configuration in config.
-    Note that this function consumes/updates 'load_from' attribute of 'config'.
+    Note that this function updates 'load_from' attribute of 'config'.
     """
 
     from mmcls.models import build_classifier as origin_build_classifier
@@ -36,8 +36,6 @@ def build_classifier(
     checkpoint = checkpoint if checkpoint else config.pop("load_from", None)
     if checkpoint is not None and not from_scratch:
         load_checkpoint(model, checkpoint, map_location=device)
-        config.load_from = None
-    else:
-        config.load_from = checkpoint
+    config.load_from = checkpoint
 
     return model
