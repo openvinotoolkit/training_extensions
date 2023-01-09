@@ -1,5 +1,5 @@
-Anomaly classificaiton
-======================
+Anomaly
+=======
 
 **************
 Dataset format
