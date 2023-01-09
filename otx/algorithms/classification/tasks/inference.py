@@ -52,7 +52,11 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
-SUPPORTED_TRAIN_TYPE = (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SELFSUPERVISED)
+RECIPE_TRAIN_TYPE = {
+    TrainType.SEMISUPERVISED: "semi.yaml",
+    TrainType.INCREMENTAL: "incremental.yaml",
+    TrainType.SELFSUPERVISED: "selfsl.yaml",
+}
 
 
 class ClassificationInferenceTask(
@@ -332,15 +336,10 @@ class ClassificationInferenceTask(
 
         logger.info(f"train type = {self._train_type}")
 
-        if self._train_type not in SUPPORTED_TRAIN_TYPE:
+        if self._train_type in RECIPE_TRAIN_TYPE:
+            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
+        else:
             raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
-
-        if self._train_type == TrainType.INCREMENTAL:
-            recipe = os.path.join(recipe_root, "incremental.yaml")
-        elif self._train_type == TrainType.SELFSUPERVISED:
-            recipe = os.path.join(recipe_root, "selfsl.yaml")
-        elif self._train_type == TrainType.SEMISUPERVISED:
-            recipe = os.path.join(recipe_root, "semisl.yaml")
 
         logger.info(f"train type = {self._train_type} - loading {recipe}")
 

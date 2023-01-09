@@ -68,7 +68,10 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
-SUPPORTED_TRAIN_TYPE = (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL)
+RECIPE_TRAIN_TYPE = {
+    TrainType.SEMISUPERVISED: "semi.yaml",
+    TrainType.INCREMENTAL: "incremental.yaml",
+}
 
 
 # pylint: disable=too-many-locals, too-many-instance-attributes
@@ -265,13 +268,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         logger.info(f"train type = {self._train_type}")
 
-        if self._train_type not in SUPPORTED_TRAIN_TYPE:
+        if self._train_type in RECIPE_TRAIN_TYPE:
+            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
+        else:
             raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
-
-        if self._train_type == TrainType.INCREMENTAL:
-            recipe = os.path.join(recipe_root, "incremental.py")
-        elif self._train_type == TrainType.SEMISUPERVISED:
-            recipe = os.path.join(recipe_root, "semisl.py")
 
         logger.info(f"train type = {self._train_type} - loading {recipe}")
 
