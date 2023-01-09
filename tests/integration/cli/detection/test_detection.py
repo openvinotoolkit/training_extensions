@@ -59,6 +59,12 @@ args = {
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
+args_semisl = {
+    **args,
+    "--unlabeled-data-roots": "data/airport/train",
+}
+args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+
 otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
@@ -222,9 +228,6 @@ class TestToolsMPASemiSLDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        args_semisl = args.copy()
-        args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
