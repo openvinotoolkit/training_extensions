@@ -4,8 +4,6 @@
 #
 
 import os
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 
@@ -28,12 +26,6 @@ build_backbone_args = [
     ("SEGMENTATION", "torchvision.mobilenet_v3_large"),
 ]
 build_backbone_args_ids = [f"{task}_{backbone}" for task, backbone in build_backbone_args]
-
-
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
 
 
 class TestToolsOTXCLI:
