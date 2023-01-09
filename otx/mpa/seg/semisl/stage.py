@@ -11,7 +11,7 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 
-class SemiSegStage(SegStage):
+class SemiSLSegStage(SegStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

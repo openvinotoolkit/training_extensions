@@ -5,16 +5,16 @@
 from otx.mpa.registry import STAGES
 from otx.mpa.seg.inferrer import SegInferrer
 
-from .stage import SemiSegStage
+from .stage import SemiSLSegStage
 
 
 @STAGES.register_module()
-class SemiSegInferrer(SemiSegStage, SegInferrer):
+class SemiSLSegInferrer(SemiSLSegStage, SegInferrer):
     def __init__(self, **kwargs):
-        SemiSegStage.__init__(self, **kwargs)
+        SemiSLSegStage.__init__(self, **kwargs)
 
     def configure(self, model_cfg, model_ckpt, data_cfg, training=False, **kwargs):
-        cfg = SemiSegStage.configure(self, model_cfg, model_ckpt, data_cfg, training=training, **kwargs)
+        cfg = SemiSLSegStage.configure(self, model_cfg, model_ckpt, data_cfg, training=training, **kwargs)
 
         cfg.model.type = cfg.model.orig_type
         cfg.model.pop("orig_type", False)
