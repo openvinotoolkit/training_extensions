@@ -16,7 +16,6 @@ entrypoints:
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.OTXClassificationNNCFTask
 base_model_path: ../../adapters/deep_object_reid/configs/efficientnet_b0/template_experimental.yaml
-data_pipeline_path: ../base/data/data_pipeline.py
 
 # Capabilities.
 capabilities:
