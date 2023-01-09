@@ -15,8 +15,6 @@
 # and limitations under the License.
 
 import os
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 
@@ -57,12 +55,6 @@ otx_dir = os.getcwd()
 
 templates = Registry("otx/algorithms").filter(task_type="ANOMALY_SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
-
-
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
 
 
 class TestToolsAnomalySegmentation:

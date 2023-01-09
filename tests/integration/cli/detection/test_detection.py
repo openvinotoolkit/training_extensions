@@ -4,8 +4,6 @@
 #
 
 import os
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 import torch
@@ -74,12 +72,6 @@ if TT_STABILITY_TESTS:
 else:
     templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
     templates_ids = [template.model_template_id for template in templates]
-
-
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
 
 
 class TestToolsMPADetection:
