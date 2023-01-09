@@ -4,9 +4,9 @@ Object Detection model
 This tutorial reveals end-to-end solution from installation to model deploying for object detection task on a certain example.
 On this page we show how to train, validate, export and optimize ATSS model on BCCD public dataset.
 
-To learn how to deploy the trained model refer to: :doc:`../deploy`.
+To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
-To learn, how to run the demo and visualize results, refer to: :doc:`../demo`.
+To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
 
 The process has been tested on the following configuration.
 
@@ -20,7 +20,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick_start quide <../../../get_started/quick_start>` to create a univesal virtual environment for all tasks. On other hand, to save memory and time, you can create task-specific environment following the process below.
+You can follow the installation process from a :doc:`quick_start quide <../../../get_started/quick_start>` to create a universal virtual environment for all tasks. On the other hand, to save memory and time, you can create task-specific environment following the process below.
 
 1. Install prerequisites with:
 
@@ -80,7 +80,7 @@ This dataset contains images of blood cells. It's a great example to start with,
       └── <images>
 
 
-3. ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. The content of the ``training_extesions/data.yaml`` for BCCD dataset should have absolete paths and will be similar to that:
+3. ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. The content of the ``training_extesions/data.yaml`` for BCCD dataset should have absolute paths and will be similar to that:
 
 .. code-block::
 
@@ -102,7 +102,7 @@ This dataset contains images of blood cells. It's a great example to start with,
 Training
 *********
 
-1. First of all, we need to chose, which object detection model will we train. The list of supported templates for object detection is available with the command line below. 
+1. First of all, we need to choose which object detection model will we train. The list of supported templates for object detection is available with the command line below. 
 
 .. note::
 
@@ -156,16 +156,16 @@ Looks much simplier, isn't it?
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iteration. More about template-specific parameters is in quick start [#TODO link].
 
-It can be done by manual updating parameters in ``template.yaml`` file or via comand line. 
+It can be done by manually updating parameters in ``template.yaml`` file or via command line. 
 
-For example, to decrease batsch size to 4, fix the number of epochs to 100 and disable early stopping, extend the comand line above with the following line.
+For example, to decrease batsch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
 .. code-block::
 
                             params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false 
 
 
-5. The training results with ``weights.pth`` and ``label_schema.json`` files, located in ``outputs`` folder, while training logs can be found in the ``outputs/logs`` dir.
+5. The training results are ``weights.pth`` and ``label_schema.json`` files located in ``outputs`` folder, training logs can be found in the ``outputs/logs`` dir.
 
 .. code-block::
 
@@ -205,11 +205,11 @@ Validation
 1. ``otx eval`` runs evaluation of a trained model on a particular dataset.
 
 Eval function receives test annotation information and model snapshot, trained in previous step.
-Please note, that ``label schema.json`` file should be located in the same folder with model snapshot, as it contains meta information about the dataset.
+Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
 
 The default metric is F1 measure.
 
-2. That's how we can evaluate the snaphot in ``outputs`` folder on BCCD dataset and save results to ``outputs/performance``:
+2. That's how we can evaluate the snapshot in ``outputs`` folder on BCCD dataset and save results to ``outputs/performance``:
 
 .. code-block::
 
@@ -221,7 +221,7 @@ The default metric is F1 measure.
   
 
 If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter. 
-Note, that this line will run validation on the test set (not validation set):
+Note,  with ``data.yaml``, it runs evaluation on test JSON annotation file (not on validation JSON annotation file). 
 
 .. code-block::
 
@@ -247,11 +247,11 @@ We will get this validation output:
 
   {"f-measure": 0.8315842078960519}
 
-4. ``Optional`` Additionally, we can tune testing parameters such as confidence threshold via comand line. Read more about template-specific parameters for validation in quick start [#TODO link].
+4. ``Optional`` Additionally, we can tune evaluation parameters such as confidence threshold via the command line. Read more about template-specific parameters for validation in quick start [#TODO link].
 
-For example, to increase the confidence treshold and decrease the number of False Positive predictions (there we have prediction, but don't have annotated object for it) update the evaluation comand line as it's shown below. 
+For example, if there are too many False-Positive predictions (there we have prediction, but don't have annotated object for it) can suppress its number by increasing the confidence threshold as it is shown below.
 
-Please note, that by default confidence treshold is detected automatically based on result to maximize the final F1 metric. So, to set custom confidence treshold, please disable ``result_based_confidence_threshold`` option.
+Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. So, to set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
 
 .. code-block::
 
@@ -286,7 +286,7 @@ Export
   2022-12-29 01:39:11,990 | INFO : Exporting completed
 
 
-3. We can check the accuracy of exported model as simple as accuracy of the ``.pth`` model, using ``otx eval`` and passing IR model to ``--load-weights`` parameter.
+3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model, using ``otx eval`` and passing IR model path to ``--load-weights`` parameter.
 
 .. code-block::
 
@@ -308,22 +308,22 @@ Export
 Optimization
 *************
 
-1. We can even more optimize the model with ``otx optimize``. It uses NNCF or POT depending on the model format.
+1. We can further optimize the model with ``otx optimize``. It uses NNCF or POT depending on the model format.
 
 - NNCF optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
 - POT optimization is used for models exported in the OpenVINO™ IR format. It decreases floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
-The function results with a following files, which could be used to run :doc:`otx demo <../demo>`:
+The function results with the following files, which could be used to run :doc:`otx demo <../demo>`:
 
-- confidence_threshold
-- config.json
-- label_schema.json
-- openvino.bin
-- openvino.xml
+- ``confidence_threshold``
+- ``config.json``
+- ``label_schema.json``
+- ``openvino.bin``
+- ``openvino.xml``
 
 To learn more about optimization, refer to `NNCF repository <https://github.com/openvinotoolkit/nncf>`_.
 
-2. Command example for optimizing a PyTorch model (.pth) with OpenVINO NNCF.
+2. Command example for optimizing a PyTorch model (`.pth`) with OpenVINO NNCF.
 
 .. code-block::
 
