@@ -42,7 +42,7 @@ def lungpatch_classifier(modelpath,imgpath):
     criterion = nn.BCEWithLogitsLoss()
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5, verbose=True)
     testRunningCorrects = 0
-    testRunningLoss = 0 
+    testRunningLoss = 0
     testBatches = 0
     pred_arr = []
     label_arr = []
@@ -62,16 +62,14 @@ def lungpatch_classifier(modelpath,imgpath):
 
         testRunningLoss += net_loss.item()
         testRunningCorrects += torch.sum(preds == label.data.float())
-        
+
         for i,j in zip(preds.cpu().numpy(),label.cpu().numpy()):
             pred_arr.append(i)
             label_arr.append(j)
 
         testBatches += 1
         # if testBatches>0:
-        #     break   
-
-
+        #     break
 
     testepoch_loss = testRunningLoss/testBatches
     testepoch_acc = 100*(int(testRunningCorrects)/len(pred_arr))

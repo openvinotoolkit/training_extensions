@@ -90,8 +90,6 @@ def extract_slices(dataset_path,save_path,masktype='nodule'):
 
         nods = scan.cluster_annotations() #Function used to determine which annotation belongs to which nodule
 
-
-
         nodule_dict={} #Dict to store number of contour markings for that nodule
         slice_list=[] # List to store the slices which has nodules marked
         points_dictx={} # These dicts are to store the points to be plotted (key=slice_index, )

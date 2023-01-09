@@ -4,23 +4,23 @@ from torch import optim
 from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.autograd import Variable
-import numpy as np
 import matplotlib.pyplot as plt
 import time
 import os
 from tqdm import tqdm_notebook as tq
 from .data_loader import LungPatchDataLoader
 from .lenet import LeNet
+from .utils import plot_graphs
 
 
-def lungpatch_classifier(savepath,imgpath,lrate=1e-4,epochs=35):
+def lungpatch_classifier(save_path,img_path,lrate=1e-4,epochs=35):
     """Trains network to classify patches based on the presence of nodule
 
     Parameters
     ----------
-    savepath: str
+    save_path: str
         Folder location to save the plots and model
-    imgpath:
+    img_path:
         Folder location where patch images are stored.
     lrate: int,Default = 1e-4
         Learning rate
@@ -33,14 +33,14 @@ def lungpatch_classifier(savepath,imgpath,lrate=1e-4,epochs=35):
     None
     """
 
-    trainDset = LungPatchDataLoader(imgpath=imgpath,is_transform=True,split="train_set")
-    valDset = LungPatchDataLoader(imgpath=imgpath,is_transform=True,split="valid_set")
+    trainDset = LungPatchDataLoader(img_path=img_path,is_transform=True,split="train_set")
+    valDset = LungPatchDataLoader(img_path=img_path,is_transform=True,split="valid_set")
     trainDataLoader = data.DataLoader(trainDset,batch_size=16,shuffle=True,num_workers=4,pin_memory=True)
     validDataLoader = data.DataLoader(valDset,batch_size=16,shuffle=True,num_workers=4,pin_memory=True)
 
-    savePath = savepath
-    if not os.path.isdir(savePath):
-        os.makedirs(savePath)
+    save_path = save_path
+    if not os.path.isdir(save_path):
+        os.makedirs(save_path)
 
     net = LeNet()
 
@@ -139,57 +139,40 @@ def lungpatch_classifier(savepath,imgpath,lrate=1e-4,epochs=35):
 
         if validepoch_acc > bestValidAcc:
             bestValidAcc = validepoch_acc
-            torch.save(net.state_dict(), savePath+'lenet_best.pt')
+            torch.save(net.state_dict(), save_path+'lenet_best.pt')
 
         scheduler.step(validepoch_loss)
 
-        plt.figure()
-        plt.plot(range(len(trainLoss)),trainLoss,'-r',label='Train')
-        plt.plot(range(len(validLoss)),validLoss,'-g',label='Valid')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        if epoch==0:
-            plt.legend()
-        plt.savefig(savePath+'LossPlot.png')
-        plt.close()
+        plot_graphs(
+        train_values=trainLoss, valid_values=validLoss,
+        save_path=save_path, x_label='Epochs', y_label='Loss',
+        plot_title='Loss plot', save_name='LossPlot.png')
+
         epochEnd = time.time()-epochStart
         print(f'Epoch: {epoch+1}/{epochs} | Train Loss: {trainepoch_loss} | Valid Loss: {validepoch_loss}')
         print('Accuracy | Train_acc {trainepoch_acc} | Valid_acc  {validepoch_acc} |')
 
         print(f'Time: {epochEnd//60}m {epochEnd%60}s')
-        trainLoss_np = np.array(trainLoss)
-        validLoss_np = np.array(validLoss)
-        trainAcc_np = np.array(trainAcc)
-        validAcc_np = np.array(validAcc)
+
 
         print(f'Saving losses')
 
-        torch.save(trainLoss_np, savePath+'trainLoss.pt')
-        torch.save(validLoss_np, savePath+'validLoss.pt')
-        torch.save(trainAcc_np, savePath+'train_acc.pt')
-        torch.save(validAcc_np, savePath+'valid_acc.pt')
+        torch.save(trainLoss, save_path+'trainLoss.pt')
+        torch.save(validLoss, save_path+'validLoss.pt')
+        torch.save(trainAcc, save_path+'train_acc.pt')
+        torch.save(validAcc, save_path+'valid_acc.pt')
 
     #     if epoch>1:
     #         break
 
     end = time.time()-start
     print(f'Training completed in: {end//60}m {end%60}s')
-    plt.figure()
-    plt.plot(range(len(trainLoss)),trainLoss,'-r',label='Train')
-    plt.plot(range(len(validLoss)),validLoss,'-g',label='Valid')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Loss plot')
-    plt.legend()
-    plt.savefig(savePath+'trainLossFinal.png')
-    plt.close()
+    plot_graphs(
+    train_values=trainLoss, valid_values=validLoss,
+    save_path=save_path, x_label='Epochs', y_label='Loss',
+    plot_title='Loss plot', save_name='trainLossFinal.png')
 
-    plt.figure()
-    plt.plot(range(len(trainAcc)),trainAcc,'-r',label='Train')
-    plt.plot(range(len(validAcc)),validAcc,'-g',label='Valid')
-    plt.legend()
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy Plot')
-    plt.savefig(savePath+'acc_plot.png')
-    plt.close()
+    plot_graphs(
+    train_values=trainAcc, valid_values=validAcc,
+    save_path=save_path, x_label='Epochs', y_label='Accuracy',
+    plot_title='Accuracy Plot', save_name='acc_plot.png')

@@ -99,6 +99,4 @@ class LungPatchDataLoader(data.Dataset):
     def transform(self,img):
         img = torch.Tensor(img).unsqueeze(0)
         img = img.type(torch.FloatTensor)
-
-
         return img

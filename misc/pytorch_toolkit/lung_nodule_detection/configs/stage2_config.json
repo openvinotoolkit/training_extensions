@@ -1,0 +1,17 @@
+{"train":{
+    "savepath": "temp_data/stage2/",
+    "imgpath": "test_data/stage2/",
+    "lrate": 1e-4,
+    "epochs": 5 
+},
+"inference":{
+    "modelpath":"temp_data/stage2/",
+    "imgpath":"test_data/stage2/"
+},
+"export":{
+    "checkpoint": "downloads/model_weights/patch_class_best.pth",
+    "input_shape":[1, 1, 64, 64],
+    "model_name_onnx": "patch_class.onnx",
+    "model_name":"patch_class"
+}
+}

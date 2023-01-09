@@ -1,4 +1,12 @@
 import torch
+import matplotlib.pyplot as plt
+import os
+from .sumnet_bn_vgg import SUMNet
+from .r2unet import U_Net, R2U_Net
+from .lenet import LeNet
+
+
+
 
 def dice_coefficient(pred1, target):
     smooth = 1e-15
@@ -22,4 +30,34 @@ def dice_coefficient(pred1, target):
     score_1 = intersection_1/union_1
 
     return [score_1.mean()]
+
+
+def load_model(network):
+
+    if network == 'unet':
+        net = U_Net(img_ch=1,output_ch=2)
+    elif network == 'r2unet':
+        net = R2U_Net(img_ch=1,output_ch=2)
+    elif network == 'sumnet':
+        net = SUMNet(in_ch=1,out_ch=2)
+    else:
+        net = LeNet()
+    return net
+
+
+def plot_graphs(
+    train_values, valid_values,
+    save_path, x_label, y_label,
+    plot_title, save_name):
+
+    plt.figure()
+    plt.plot(range(len(train_values)),train_values,'-r',label='Train')
+    plt.plot(range(len(valid_values)),valid_values,'-g',label='Valid')
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title(plot_title)
+    plt.legend()
+    plt.savefig(os.path.join(save_path, save_name))
+    plt.close()
+
     

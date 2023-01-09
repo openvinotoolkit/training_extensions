@@ -5,7 +5,7 @@ import argparse
 
 def main(args):
 
-    if args.lungseg:
+    if args.lungseg or args.lungsegadv:
         foldno = args.foldno
         savepath = args.savepath
         jsonpath = args.jsonpath
@@ -13,22 +13,16 @@ def main(args):
         lungsegpath = args.lungmask
         network = args.network
         if args.epochs:
-            lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs)
-
+            if args.lungsegadv:
+                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs,adv=True)
+            else:
+                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs)
         else:
-            lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network)
+            if args.lungsegadv:
+                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs,adv=True)
+            else:
+                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network)
 
-    elif args.lungsegadv:
-        foldno = args.foldno
-        savepath = args.savepath
-        jsonpath = args.jsonpath
-        datapath = args.datapath
-        lungsegpath = args.lungmask
-        network = args.network
-        if args.epochs:
-            lung_seg_adv.train_advnetwork(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs)
-        else:
-            lung_seg_adv.train_advnetwork(foldno,savepath,jsonpath,datapath,lungsegpath,network)
     else:
         savepath = args.savepath
         imgpath = args.datapath
