@@ -175,8 +175,8 @@ class PostAug:
 
     PostAug copies current augmented image and apply post augmentations for given keys.
     For example, if we apply PostAug(keys=dict(img_strong=strong_pipeline),
-    PostAug will copy current augmented image and apply strong pipeline. 
-    Post augmented image will be saved at results["img_strong"]. 
+    PostAug will copy current augmented image and apply strong pipeline.
+    Post augmented image will be saved at results["img_strong"].
 
     Expected entries in the 'results' dict that should be passed to this pipeline element are:
         results['img']: PIL type image in data pipeline.

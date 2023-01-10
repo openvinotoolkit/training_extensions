@@ -25,8 +25,8 @@ from .pipelines import (
     LoadImageFromOTXDataset,
     OTXColorJitter,
     PILImageToNDArray,
-    RandomAppliedTrans,
     PostAug,
+    RandomAppliedTrans,
 )
 
 __all__ = [
