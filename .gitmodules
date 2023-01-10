@@ -1,0 +1,12 @@
+[submodule "external/mmdetection"]
+	path = external/mmdetection/submodule
+	url = ../../openvinotoolkit/mmdetection
+[submodule "external/deep-object-reid"]
+	path = external/deep-object-reid/submodule
+	url = ../../openvinotoolkit/deep-object-reid
+[submodule "external/mmsegmentation"]
+	path = external/mmsegmentation/submodule
+	url = ../../openvinotoolkit/mmsegmentation
+[submodule "external/model-preparation-algorithm/submodule"]
+	path = external/model-preparation-algorithm/submodule
+	url = https://github.com/openvinotoolkit/model_preparation_algorithm
