@@ -323,6 +323,7 @@ class DatasetEntity:
                     annotation_scene=empty_annotation,
                     roi=roi,
                     subset=dataset_item.subset,
+                    metadata=dataset_item.get_metadata(),
                 )
                 new_dataset.append(new_dataset_item)
         return new_dataset

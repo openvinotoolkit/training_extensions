@@ -15,9 +15,10 @@
 # and limitations under the License.
 
 import copy
-import json
+import os
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Union
+from logging import Logger
+from typing import Any, Dict, List, Sequence, Tuple
 
 import mmcv
 import numpy as np
@@ -28,9 +29,12 @@ from mmaction.datasets.pipelines import Compose
 from mmaction.utils import get_root_logger
 from mmcv.utils import print_log
 
+from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.algorithms.action.adapters.mmaction.utils import det_eval
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.metadata import VideoMetadata
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
@@ -39,7 +43,7 @@ from otx.api.utils.argument_checks import (
 root_logger = get_root_logger()
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-arguments, too-many-locals, super-init-not-called
 @DATASETS.register_module()
 class OTXActionDetDataset(AVADataset):
     """Wrapper that allows using a OTX dataset to train action detection models.
@@ -50,218 +54,213 @@ class OTXActionDetDataset(AVADataset):
     """
 
     class _DataInfoProxy:
-        def __init__(self, otx_dataset, labels):
-            self.otx_dataset = otx_dataset
+        def __init__(
+            self,
+            otx_dataset: DatasetEntity,
+            labels: List[LabelEntity],
+            person_det_score_thr: float = 0.9,
+            num_max_proposals: int = 1000,
+            modality: str = "RGB",
+            fps: int = 30,
+        ):
+            self.otx_dataset = copy.deepcopy(otx_dataset)
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
+            self.person_det_score_thr = person_det_score_thr
+            self.num_max_proposals = num_max_proposals
+            self.modality = modality
+            self.fps = fps
+            self.data_root = "/" + os.path.join(*os.path.abspath(self.otx_dataset[0].media.path).split("/")[:-4])
+            self.proposal_file_name = os.path.abspath(self.otx_dataset[0].media.path).split("/")[-4]
+            self.proposal_file = os.path.join(self.data_root, f"{self.proposal_file_name}.pkl")
+            self.video_info: Dict[str, Any] = {}
+
+            if os.path.exists(self.proposal_file):
+                self.proposals = mmcv.load(self.proposal_file)
+                self.patch_proposals()
+            else:
+                self.proposals = None
+
+            self._update_meta_data()
 
         def __len__(self):
             return len(self.otx_dataset)
 
-        def __getitem__(self, index):
+        def _update_meta_data(self):
+            """Update video metadata of each item in self.otx_dataset.
+
+            During iterating DatasetEntity, this function generate video_info(dictionary) to record metadata of video
+            After that, this function update metadata of each DatasetItemEntity of DatasetEntity
+                - start_index: Offset for the video, this value will be added to sampled frame indices
+                - timestamp: Timestamp of the DatasetItemEntity
+                - timestamp_start: Start timestamp of the video, this will be used to generate shot_info
+                - timestamp_end: End timestamp of the video, this will be used to generate shot_info
+                - shot_info = (0, (timestamp_end - timestamp_start)) * self.fps:
+                              Range of frame indices, this is used to sample frame indices
+                - img_key = "video_id,frame_idx": key of pre-proposal dictionary
+                - modality = Modality of data, 'RGB' or 'Flow(Optical Flow)'
+            This function removes empty frames(frame with no action), since they are only used for background of clips
+            """
+
+            video_info = {}
+            start_index = 0
+            for idx, item in enumerate(self.otx_dataset):
+                metadata = item.get_metadata()[0].data
+                if metadata.video_id in video_info:
+                    video_info[metadata.video_id]["start_index"] = start_index
+                    if metadata.frame_idx < video_info[metadata.video_id]["timestamp_start"]:
+                        video_info[metadata.video_id]["timestamp_start"] = metadata.frame_idx
+                    if metadata.frame_idx > video_info[metadata.video_id]["timestamp_end"]:
+                        video_info[metadata.video_id]["timestamp_end"] = metadata.frame_idx
+                else:
+                    video_info[metadata.video_id] = {
+                        "start_index": idx,
+                        "timestamp_start": metadata.frame_idx,
+                        "timestamp_end": metadata.frame_idx,
+                    }
+                    start_index = idx
+
+            remove_indices = []
+            for idx, item in enumerate(self.otx_dataset):
+                metadata = item.get_metadata()[0].data
+                if metadata.is_empty_frame:
+                    remove_indices.append(idx)
+                    continue
+
+                for key, value in video_info[metadata.video_id].items():
+                    metadata.update(key, value)
+
+                shot_info = (0, (metadata.timestamp_end - metadata.timestamp_start)) * self.fps
+                img_key = f"{metadata.video_id},{metadata.frame_idx}"
+                ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+                metadata.update("shot_info", shot_info)
+                metadata.update("img_key", img_key)
+                metadata.update("timestamp", metadata.frame_idx)
+                metadata.update("ignored_labels", ignored_labels)
+                metadata.update("modality", self.modality)
+
+                anns = item.get_annotations()
+                self._update_annotations(metadata, anns)
+
+            self.otx_dataset.remove_at_indices(remove_indices)
+            self.video_info.update(video_info)
+
+        def __getitem__(self, index: int):
             """Prepare a dict 'data_info' that is expected by the mmaction pipeline to handle images and annotations.
 
             :return data_info: dictionary that contains the image and image metadata, as well as the labels of
             the objects in the image
+            This iterates self.otx_dataset, which removes empty frames
             """
 
-            dataset = self.otx_dataset
-            item = dataset[index]
-            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+            item = self.otx_dataset[index]
+            metadata = item.get_metadata()[0].data
 
             data_info = dict(
-                dataset_item=item,
-                index=index,
+                **metadata.metadata,
                 ann_info=dict(label_list=self.labels),
-                ignored_labels=ignored_labels,
+                fps=self.fps,
             )
 
             return data_info
 
+        def patch_proposals(self):
+            """Remove fixed string format.
+
+            AVA dataset pre-proposals have fixed string format.
+            Fixed string format have scalability issues so here we remove it
+            """
+            # FIXME This may consume lots of time depends on size of proposals
+            root_logger.info("Patching pre proposals...")
+            for img_key in list(self.proposals):
+                proposal = self.proposals.pop(img_key)
+                new_img_key = img_key.split(",")[0] + "," + str(int(img_key.split(",")[1]))
+                self.proposals[f"{new_img_key}"] = proposal
+            root_logger.info("Done.")
+
+        def _update_annotations(self, metadata: VideoMetadata, anns: List[Annotation]):
+            """Update annotation information to item's metadata."""
+            if len(anns) > 0:
+                bboxes, labels = [], []
+                for ann in anns:
+                    bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
+                    valid_labels = np.array([int(label.id) for label in ann.get_labels()], dtype=int)
+                    label = np.zeros(len(self.labels) + 1, dtype=np.float32)
+                    label[valid_labels] = 1.0
+                    bboxes.append(bbox)
+                    labels.append(label)
+                metadata.update("gt_bboxes", np.stack(bboxes))
+                metadata.update("gt_labels", np.stack(labels))
+            else:
+                # Insert dummy gt bboxes for data pipeline in mmaction
+                metadata.update("gt_bboxes", np.zeros((1, 4)))
+
+            if self.proposals is not None:
+                if metadata.img_key in self.proposals:
+                    proposals = self.proposals[metadata.img_key]
+                else:
+                    proposals = np.array([[0, 0, 1, 1, 1]])
+                thr = min(self.person_det_score_thr, max(proposals[:, 4]))
+                positive_inds = proposals[:, 4] >= thr
+                proposals = proposals[positive_inds]
+                proposals = proposals[: self.num_max_proposals]
+                metadata.update("proposals", proposals[:, :4])
+                metadata.update("scores", proposals[:, 4])
+
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
-    # pylint: disable=too-many-arguments, invalid-name, super-init-not-called, too-many-locals
     # TODO Remove duplicated codes with mmaction's AVADataset
     def __init__(
         self,
         otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
-        exclude_file: Optional[str],
-        proposal_file: Optional[str],
-        timestamp_start: Union[int, str],
-        timestamp_end: Union[int, str],
         test_mode: bool = False,
         person_det_score_thr: float = 0.9,
         num_max_proposals: int = 1000,
-        filename_tmpl: str = "_{:06}.jpg",
-        start_index: int = 1,
         modality: str = "RGB",
         fps: int = 30,
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.test_mode = test_mode
-        self.filename_tmpl = filename_tmpl
-        self.start_index = start_index
         self.modality = modality
         self._FPS = fps
-        self.exclude_file = exclude_file
-        self.proposal_file = proposal_file
         self.person_det_score_thr = person_det_score_thr
         self.num_max_proposals = num_max_proposals
-
-        # Load start and end frame index
-        # This will be changed with CVAT annotation
-        if isinstance(timestamp_start, int):
-            self.timestamp_start = timestamp_start
-        else:
-            with open(timestamp_start, encoding="utf-8") as time_file:
-                self.timestamp_start = json.load(time_file)
-        if isinstance(timestamp_end, int):
-            self.timestamp_end = timestamp_end
-        else:
-            with open(timestamp_end, encoding="utf-8") as time_file:
-                self.timestamp_end = json.load(time_file)
 
         # OTX does not support custom_classes
         self.custom_classes = None
 
-        self.data_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels)
-
-        if self.proposal_file is not None:
-            self.proposals = mmcv.load(self.proposal_file)
-            self.patch_proposals()
-        else:
-            self.proposals = None
+        self.video_infos = OTXActionDetDataset._DataInfoProxy(
+            otx_dataset, labels, person_det_score_thr, num_max_proposals, modality, fps
+        )
 
         self.pipeline = Compose(pipeline)
-        self.video_infos: List[Dict[Any, Any]] = []
-        self.make_video_infos()
+        for pip in self.pipeline.transforms:
+            if isinstance(pip, RawFrameDecode):
+                pip.otx_dataset = self.otx_dataset
 
-        if not test_mode:
-            valid_indexes = self.filter_exclude_file()
-            self.video_infos = [self.video_infos[i] for i in valid_indexes]
-
-    def __len__(self):
-        """Return length of dataset."""
-        return len(self.data_infos)
-
-    def patch_proposals(self):
-        """Remove fixed string format.
-
-        AVA dataset pre-proposals have fixed string format.
-        Fixed string format have scalability issues so here we remove it
-        """
-        # TODO This may consume lots of time depends on size of proposals
-        # So handle proposals in offline or try remove this by using CVAT
-        root_logger.info("Patching pre proposals...")
-        for img_key in list(self.proposals):
-            proposal = self.proposals.pop(img_key)
-            new_img_key = img_key.split(",")[0] + "," + str(int(img_key.split(",")[1]))
-            self.proposals[f"{new_img_key}"] = proposal
-        root_logger.info("Done.")
+        # TODO. Handle exclude file for AVA dataset
+        self.exclude_file = None
 
     def prepare_train_frames(self, idx):
         """Prepare the frames for training given the index."""
-        results = self.pre_pipeline(idx)
+        results = copy.deepcopy(self.video_infos[idx])
         return self.pipeline(results)
 
     def prepare_test_frames(self, idx):
         """Prepare the frames for testing given the index."""
-        results = self.pre_pipeline(idx)
+        results = copy.deepcopy(self.video_infos[idx])
         return self.pipeline(results)
 
-    def pre_pipeline(self, idx):
-        """Prepare proper data for mmaction pipeline."""
-        results = copy.deepcopy(self.video_infos[idx])
-        img_key = results["img_key"]
-        video_id = results["video_id"]
-
-        results["filename_tmpl"] = self.get_filename_tmpl(img_key)
-        results["modality"] = self.modality
-        results["start_index"] = self.start_index
-        results["timestamp_start"] = self.get_timestamp("start", video_id)
-        results["timestamp_end"] = self.get_timestamp("end", video_id)
-
-        if self.proposals is not None:
-            if img_key not in self.proposals:
-                results["proposals"] = np.array([[0, 0, 1, 1]])
-                results["scores"] = np.array([1])
-            else:
-                proposals = self.proposals[img_key]
-                assert proposals.shape[-1] in [4, 5]
-                if proposals.shape[-1] == 5:
-                    thr = min(self.person_det_score_thr, max(proposals[:, 4]))
-                    positive_inds = proposals[:, 4] >= thr
-                    proposals = proposals[positive_inds]
-                    proposals = proposals[: self.num_max_proposals]
-                    results["proposals"] = proposals[:, :4]
-                    results["scores"] = proposals[:, 4]
-                else:
-                    proposals = proposals[: self.num_max_proposals]
-                    results["proposals"] = proposals
-
-        ann = results.pop("ann")
-        if ann is not None:
-            results["gt_bboxes"] = ann["gt_bboxes"]
-            results["gt_labels"] = ann["gt_labels"]
-            results["entity_ids"] = ann["entity_ids"]
-        else:
-            # This is for RawFrameDecode pipeline
-            results["gt_bboxes"] = np.zeros((1, 4))
-        return results
-
-    def get_timestamp(self, key, video_id=None):
-        """Get start or end timestamp for video."""
-        if key == "start":
-            timestamp = self.timestamp_start
-        else:
-            timestamp = self.timestamp_end
-        if isinstance(timestamp, int):
-            return timestamp
-        return timestamp[video_id]
-
-    def get_filename_tmpl(self, img_key):
-        """Get dataset's own filename template."""
-        # FIXME This is very heuristic way. CVAT format may change this
-        if self.filename_tmpl[0] == "_":
-            return img_key.split(",")[0] + self.filename_tmpl
-        return self.filename_tmpl
-
-    def make_video_infos(self):
-        """Make mmaction style video infos."""
-        for data_info in self.data_infos:
-            media = data_info["dataset_item"].media
-            media["fps"] = self._FPS
-            video_id = media["video_id"]
-            timestamp_start = self.get_timestamp("start", video_id)
-            timestamp_end = self.get_timestamp("end", video_id)
-            shot_info = (0, timestamp_end - timestamp_start) * self._FPS
-            anns = data_info["dataset_item"].get_annotations()
-            media["ann"] = None
-            media["shot_info"] = shot_info
-            if len(anns) > 0:
-                bboxes, labels = [], []
-                for ann in anns:
-                    bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
-                    valid_labels = np.array([int(label.id) for label in ann.get_labels()], dtype=np.int8)
-                    label = np.zeros(len(self.labels) + 1, dtype=np.float32)
-                    label[valid_labels] = 1.0
-                    bboxes.append(bbox)
-                    labels.append(label)
-                bboxes = np.stack(bboxes)
-                labels = np.stack(labels)
-                media["ann"] = {"gt_bboxes": bboxes, "gt_labels": labels, "entity_ids": []}
-            media["timestamp_start"] = timestamp_start
-            media["timestamp_end"] = timestamp_end
-            self.video_infos.append(media)
-
-        if not self.test_mode:
-            valid_indexes = self.filter_exclude_file()
-            self.video_infos = [self.video_infos[i] for i in valid_indexes]
-
     # pylint: disable=too-many-locals, unused-argument
-    def evaluate(self, results, *args, metrics=("mAP",), metric_options=None, logger=None, **kwargs):
+    def evaluate(
+        self,
+        results: List[List[np.ndarray]],
+        metrics: Tuple[str] = ("mAP",),
+        logger: Logger = None,
+        **kwargs,
+    ):
         """Evaluate the prediction results and report mAP."""
         assert len(metrics) == 1 and metrics[0] == "mAP", (
             'For evaluation on AVADataset, you need to use metrics "mAP" '
@@ -289,19 +288,19 @@ class OTXActionDetDataset(AVADataset):
             log_msg = []
             for key, value in eval_result.items():
                 log_msg.append(f"\n{key}\t{value: .4f}")
-            log_msg = "".join(log_msg)
-            print_log(log_msg, logger=logger)
+            str_log_msg = "".join(log_msg)
+            print_log(str_log_msg, logger=logger)
             ret.update(eval_result)
         return ret
 
     @staticmethod
-    def get_predictions(csv_results):
+    def get_predictions(csv_results: List[Tuple]):
         """Convert model's inference results to predictions."""
-        csv_results = np.array(csv_results)
-        _img_keys = csv_results[:, :2]
-        _boxes = csv_results[:, 2:6]
-        _labels = csv_results[:, 6]
-        _scores = csv_results[:, 7]
+        np_csv_results = np.array(csv_results)
+        _img_keys = np_csv_results[:, :2]
+        _boxes = np_csv_results[:, 2:6]
+        _labels = np_csv_results[:, 6]
+        _scores = np_csv_results[:, 7]
 
         boxes = defaultdict(list)
         labels = defaultdict(list)
