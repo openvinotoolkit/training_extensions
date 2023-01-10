@@ -39,6 +39,7 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.api.utils.shape_factory import ShapeFactory
 
 root_logger = get_root_logger()
 
@@ -70,8 +71,8 @@ class OTXActionDetDataset(AVADataset):
             self.num_max_proposals = num_max_proposals
             self.modality = modality
             self.fps = fps
-            self.data_root = "/" + os.path.join(*os.path.abspath(self.otx_dataset[0].media.path).split("/")[:-4])
-            self.proposal_file_name = os.path.abspath(self.otx_dataset[0].media.path).split("/")[-4]
+            self.data_root = "/" + os.path.join(*os.path.abspath(str(self.otx_dataset[0].media.path)).split("/")[:-4])
+            self.proposal_file_name = os.path.abspath(str(self.otx_dataset[0].media.path)).split("/")[-4]
             self.proposal_file = os.path.join(self.data_root, f"{self.proposal_file_name}.pkl")
             self.video_info: Dict[str, Any] = {}
 
@@ -183,7 +184,8 @@ class OTXActionDetDataset(AVADataset):
             if len(anns) > 0:
                 bboxes, labels = [], []
                 for ann in anns:
-                    bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
+                    rectangle = ShapeFactory.shape_as_rectangle(ann.shape)
+                    bbox = np.asarray([rectangle.x1, rectangle.y1, rectangle.x2, rectangle.y2])
                     valid_labels = np.array([int(label.id) for label in ann.get_labels()], dtype=int)
                     label = np.zeros(len(self.labels) + 1, dtype=np.float32)
                     label[valid_labels] = 1.0
@@ -196,8 +198,8 @@ class OTXActionDetDataset(AVADataset):
                 metadata.update("gt_bboxes", np.zeros((1, 4)))
 
             if self.proposals is not None:
-                if metadata.img_key in self.proposals:
-                    proposals = self.proposals[metadata.img_key]
+                if metadata.img_key in self.proposals:  # type: ignore[attr-defined]
+                    proposals = self.proposals[metadata.img_key]  # type: ignore[attr-defined]
                 else:
                     proposals = np.array([[0, 0, 1, 1, 1]])
                 thr = min(self.person_det_score_thr, max(proposals[:, 4]))
