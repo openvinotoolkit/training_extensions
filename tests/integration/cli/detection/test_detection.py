@@ -58,10 +58,22 @@ args = {
 }
 
 args_semisl = {
-    **args,
-    "--unlabeled-data-roots": "data/airport/train",
+    "--train-ann-file": "data/airport/annotation_example_train.json",
+    "--train-data-roots": "data/airport/train",
+    "--val-ann-file": "data/airport/annotation_example_train.json",
+    "--val-data-roots": "data/airport/train",
+    "--test-ann-files": "data/airport/annotation_example_train.json",
+    "--test-data-roots": "data/airport/train",
+    "--input": "data/airport/train",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4" "--algo_backend.train_type",
+        "SEMISUPERVISED",
+    ],
 }
-args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
 
 otx_dir = os.getcwd()
 

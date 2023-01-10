@@ -304,12 +304,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _update_stage_module(self, stage_module):
         if stage_module in ["DetectionTrainer", "DetectionInferrer"]:
-            if self.train_type == TrainType.INCREMENTAL:
+            if self._train_type == TrainType.INCREMENTAL:
                 stage_module = "Incr" + stage_module
-            elif self.train_type == TrainType.SEMISUPERVISED:
+            elif self._train_type == TrainType.SEMISUPERVISED:
                 stage_module = "SemiSL" + stage_module
             else:
-                raise NotImplementedError(f"{self.train_type} do not have own trainer or inferrer")
+                raise NotImplementedError(f"{self._train_type} do not have own trainer or inferrer")
         return stage_module
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
