@@ -10,7 +10,7 @@ This code/method is designed to retrieve medical images with semantic similarity
 > **Note:**  The model was first proposed for a dataset created by collecting images from the brain tumor dataset [(link)](https://figshare.com/articles/dataset/brain_tumor_dataset/1512427/5), dataset of breast ultrasound images [(link)](https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset) and Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images [(link)](https://data.mendeley.com/datasets/rscbjbr9sj/2). However, the dataset license clause does not abide by the criteria/requirements of the training_extension repository. Hence, a model trained using the MedMNISTv2 dataset comprising images of size 28x28 is provided here.
 
 
-> **Note:** The model trained on MedNISTv2 dataset is NOT intended for clinical use.
+> **Note:** The model trained on MedNISTv2 dataset is **NOT** intended for clinical use.
 
 
 > **Note:** The method used is yet to be published in a peer-reviewed journal. Appropriate changes will be made to the repository once it is published.
@@ -33,6 +33,7 @@ Few example images from the dataset
 <td align='center'> <img src="./media/tissue_7.png" width="84" height="84"> </td>
 </tr>
 </table>
+
 Image 1: Organ- Breast,  Pathology- normal or benign.      
 
 Image 2: Organ- Chest, Pathology- atelectasis.
@@ -86,9 +87,7 @@ Score of normalized discounted cumulative gain for hash code length 48 bit.
 | nDCG@1000 | 0.6151 | 
 
 
-
-
-Note: The newtork was trained for 100 epochs. 
+> **Note:** The newtork was trained for 100 epochs. 
 
 
 
