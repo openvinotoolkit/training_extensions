@@ -49,7 +49,11 @@ class OTXRawframeDataset(RawframeDataset):
             self.video_info: Dict[str, Any] = {}
             self._update_meta_data()
 
+<<<<<<< HEAD
         def __len__(self) -> int:
+=======
+        def __len__(self):
+>>>>>>> [OTX/Datumaro] Enable OTX Action task using Datumaro dataset (#1451)
             return len(self.video_info)
 
         def _update_meta_data(self):
@@ -75,7 +79,11 @@ class OTXRawframeDataset(RawframeDataset):
                         label = int(item.get_roi_labels(self.labels)[0].id)
                     else:
                         label = None
+<<<<<<< HEAD
                     ignored_labels = np.array([self.label_idx[label.id] for label in item.ignored_labels])
+=======
+                    ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+>>>>>>> [OTX/Datumaro] Enable OTX Action task using Datumaro dataset (#1451)
                     video_info[metadata.video_id] = {
                         "total_frames": 1,
                         "start_index": idx,
@@ -87,7 +95,11 @@ class OTXRawframeDataset(RawframeDataset):
 
             self.video_info.update(video_info)
 
+<<<<<<< HEAD
         def __getitem__(self, index: int) -> Dict[str, Any]:
+=======
+        def __getitem__(self, index: int):
+>>>>>>> [OTX/Datumaro] Enable OTX Action task using Datumaro dataset (#1451)
             """Prepare training data item.
 
             Action classification needs video for training, therefore this function generate item from video_info
@@ -115,30 +127,54 @@ class OTXRawframeDataset(RawframeDataset):
         self.video_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels, modality)
 
         self.pipeline = Compose(pipeline)
+<<<<<<< HEAD
         for transform in self.pipeline.transforms:
             if isinstance(transform, RawFrameDecode):
                 transform.otx_dataset = self.otx_dataset
 
     def __len__(self) -> int:
+=======
+        for pip in self.pipeline.transforms:
+            if isinstance(pip, RawFrameDecode):
+                pip.otx_dataset = self.otx_dataset
+
+    def __len__(self):
+>>>>>>> [OTX/Datumaro] Enable OTX Action task using Datumaro dataset (#1451)
         """Return length of dataset."""
         return len(self.video_infos)
 
     @check_input_parameters_type()
+<<<<<<< HEAD
     def prepare_train_frames(self, idx: int) -> Dict[str, Any]:
         """Get training data and annotations after pipeline.
 
         Args:
             idx (int): Index of data
+=======
+    def prepare_train_frames(self, idx: int) -> dict:
+        """Get training data and annotations after pipeline.
+
+        :param idx: int, Index of data.
+        :return dict: Training data and annotation after pipeline with new keys introduced by pipeline.
+>>>>>>> [OTX/Datumaro] Enable OTX Action task using Datumaro dataset (#1451)
         """
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
         return self.pipeline(item)
 
     @check_input_parameters_type()
+<<<<<<< HEAD
     def prepare_test_frames(self, idx: int) -> Dict[str, Any]:
         """Get testing data after pipeline.
 
         Args:
             idx (int): Index of data
+=======
+    def prepare_test_frames(self, idx: int) -> dict:
+        """Get testing data after pipeline.
+
+        :param idx: int, Index of data.
+        :return dict: Testing data after pipeline with new keys introduced by pipeline.
+>>>>>>> [OTX/Datumaro] Enable OTX Action task using Datumaro dataset (#1451)
         """
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
         return self.pipeline(item)
