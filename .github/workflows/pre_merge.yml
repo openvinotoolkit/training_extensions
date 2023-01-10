@@ -3,7 +3,7 @@ name: Pre-Merge Checks
 on:
   pull_request:
     branches:
-      - feature/otx
+      - es/check_gitmodule_test
     workflow_dispatch: # run on request (no need for PR)
     types:
       - opened
