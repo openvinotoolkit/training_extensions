@@ -3,8 +3,8 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-from datumaro.components.dataset import Dataset
 from otx.core.data.utils.datumaro_helper import DatumaroHelper
+from datumaro.components.dataset import Dataset
 
 class AutoConfigManager:
     """Auto configuration manager that could set the proper configuration."""
@@ -26,10 +26,8 @@ class AutoConfigManager:
             "ANOMALY_DETECTION": ['mvtec'],
             "ANOMALY_SEGMENTATION": ['mvtec'],
         }
-        
-        self.task = None # type: str
-         
-    def find_task_type(self, data_root: str) -> str:
+     
+    def get_task_type(self, data_format: str) -> str:
         """Detect task type.
         
         For some datasets (i.e. COCO, VOC, MVTec), can't be fully automated.
@@ -42,7 +40,6 @@ class AutoConfigManager:
         If Datumaro supports the Kinetics, AVA datasets, MVTec, _is_cvat_format(), _is_mvtec_format()
         functions will be deleted.
         """
-        data_format = DatumaroHelper.find_data_format(data_root)
         
         task = ""
         if data_format == "multi-cvat":
@@ -50,26 +47,11 @@ class AutoConfigManager:
         elif data_format == 'mvtec':
             task = "anomaly_classification"
         else:
+            # pick task type
             for task_key in self.task_data_dict:
                 if data_format in self.task_data_dict[task_key]:
                     task = task_key
         return task
     
-    def get_data_cfg(self, train_data_root: str, val_data_root: str = None) -> dict:
-        """Automatically generate data configuration."""
-        data_config = {}
-         
-        # Make Datumaro dataset by using training data 
-        train_data_format = self._find_data_format(train_data_root) 
-        datumaro_dataset = Dataset.import_from(train_data_root, format=train_data_format)
-        
-        # Find train and val set 
-        train_set = DatumaroHelper.get_train_dataset(datumaro_dataset)
-        val_set = DatumaroHelper.get_val_dataset(datumaro_dataset)
-        
-        # If there is input from user for validation dataset
-        # Make validation set by using user's input
-        # If Datumaro automatically made validation dataset, it will be overwritten
-        if val_data_root:
-            val_dataset = Dataset.import_from(val_data_root, format=self.task)
-            val_set = DatumaroHelper.get_val_dataset(val_dataset)
+    def write_data_with_cfg(self):
+        pass

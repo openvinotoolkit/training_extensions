@@ -23,6 +23,7 @@ import os
 from otx.cli.builder import Builder
 from otx.cli.utils.importing import get_otx_root_path
 from otx.core.auto_config.manager import AutoConfigManager
+from otx.core.data.utils.datumaro_helper import DatumaroHelper
 
 SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
