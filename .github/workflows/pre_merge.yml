@@ -16,7 +16,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-jobs:
+jobs: 
+  Check-Submodule:
+    Steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: cat gitmodule
+        id: gitmodule
+        run: echo "mpa_exist=$(cat .gitmodules | grep model-preparation-algorithm) >> $GITHUB_OUTPUT
+      - name: check gitmodule
+        run: if [ -n "${{steps.gitmodule.outputs.mpa_exist}}" ]; then exit 1; else exit 0; fi
   Code-Quality-Checks:
     runs-on: [self-hosted, linux, x64]
     steps:
