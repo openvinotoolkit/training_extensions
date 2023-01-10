@@ -1,21 +1,18 @@
-import numpy as np
 import torch
 import torch.nn as nn
 from torch import optim
-from tqdm import tqdm as tq
-import time
 from torch.utils import data
-import os
 import torch.nn.functional as F
 from torch.autograd import Variable
+import os
+from tqdm import tqdm as tq
+import time
 import matplotlib.pyplot as plt
-from .sumnet_bn_vgg import SUMNet
-from .r2unet import R2U_Net
-from .r2unet import U_Net
+from .models import SUMNet, U_Net, R2U_Net, Discriminator
 import json
 from .data_loader import LungDataLoader
-from .utils import dice_coefficient, plot_graphs
-from .discriminator import Discriminator, ch_shuffle
+from .utils import dice_coefficient, plot_graphs, ch_shuffle
+
 plt.switch_backend('agg')
 
 def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epochs=35,lrate=1e-4,adv=False):
@@ -221,3 +218,4 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
     plot_graphs(train_values=trainDiceCoeff_lungs, valid_values=validDiceCoeff_lungs,
     save_path=save_path, x_label='Epochs', y_label='Dice coefficient',
     plot_title='Dice coefficient', save_name='Dice_Plot.png')
+

@@ -1,20 +1,19 @@
-from .utils import infer_lung_seg
-from .utils import infer_patch_classifier
+from .utils import infer_stage1
+from .utils import infer_stage2
 import argparse
 
-def main(args):
+def main(config):
 
-    if args.lungseg:
-        foldno = args.foldno
-        savepath = args.savepath
-        jsonpath = args.jsonpath
-        network = args.network
-        infer_lung_seg.infer_lungseg(foldno,savepath,network,jsonpath)
+    if config["lungseg"]:
+        foldno = config["foldno"]
+        savepath = config["savepath"]
+        jsonpath = config["jsonpath"]
+        network = config["network"]
+        infer_stage1.infer_lungseg(foldno,savepath,network,jsonpath)
     else:
-        savepath = args.savepath
-        imgpath = args.imgpath
-        infer_patch_classifier.lungpatch_classifier(savepath,imgpath)
-
+        savepath = config["savepath"]
+        imgpath = config["imgpath"]
+        infer_stage2.lungpatch_classifier(savepath,imgpath)
 
 if __name__ == '__main__':
 
@@ -35,6 +34,16 @@ if __name__ == '__main__':
     parser.add_argument('--network',
                         help='Network to be trained')						
 
-    args= parser.parse_args()
+    args = parser.parse_args()
 
-    main(args)
+    configs = {
+        "lungseg": args.lungseg,
+        "patchclass": args.patchclass,
+        "savepath" : args.savepath,
+        "foldno" : args.foldno,
+        "jsonpath" : args.jsonpath,
+        "imgpath" : args.imgpath,
+        "network" : args.network
+    }
+
+    main(configs)

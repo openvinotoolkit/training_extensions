@@ -1,33 +1,32 @@
-from utils import lung_seg
-from utils import lung_seg_adv
+from utils import train_stage1
 from utils import patch_classifier
 import argparse
 
-def main(args):
+def main(config):
 
-    if args.lungseg or args.lungsegadv:
-        foldno = args.foldno
-        savepath = args.savepath
-        jsonpath = args.jsonpath
-        datapath = args.datapath
-        lungsegpath = args.lungmask
-        network = args.network
-        if args.epochs:
-            if args.lungsegadv:
-                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs,adv=True)
+    if config["lungseg"] or config["lungsegadv"]:
+        foldno = config["foldno"]
+        savepath = config["savepath"]
+        jsonpath = config["jsonpath"]
+        datapath = config["datapath"]
+        lungsegpath = config["lungmask"]
+        network = config["network"]
+        if config["epochs"]:
+            if config["lungsegadv"]:
+                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,config["epochs"],adv=True)
             else:
-                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs)
+                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,config["epochs"])
         else:
-            if args.lungsegadv:
-                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,args.epochs,adv=True)
+            if config["lungsegadv"]:
+                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,config["epochs"],adv=True)
             else:
-                lung_seg.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network)
+                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network)
 
     else:
-        savepath = args.savepath
-        imgpath = args.datapath
-        if args.epochs:
-            patch_classifier.lungpatch_classifier(savepath,imgpath,args.epochs)
+        savepath = config["savepath"]
+        imgpath = config["datapath"]
+        if config["epochs"]:
+            patch_classifier.lungpatch_classifier(savepath,imgpath,config["epochs"])
         else:
             patch_classifier.lungpatch_classifier(savepath,imgpath)
 
@@ -53,7 +52,6 @@ if __name__ == '__main__':
                         help='Folder location where img and masks are stored')
     parser.add_argument('--lungmask',
                         help='Folder location where lung masks are stored')
-
     parser.add_argument('--network',
                         help='Network to be trained')
     parser.add_argument('--epochs',
@@ -62,4 +60,17 @@ if __name__ == '__main__':
 
     args= parser.parse_args()
 
-    main(args)
+    configs = {
+        "lungseg": args.lungseg,
+        "lungsegadv": args.lungsegadv,
+        "patchclass": args.patchclass,
+        "savepath": args.savepath,
+        "foldno": args.foldno,
+        "jsonpath": args.jsonpath,
+        "datapath": args.datapath,
+        "lungmask": args.lungmask,
+        "network": args.network,
+        "epochs": args.epochs
+    }
+
+    main(configs)

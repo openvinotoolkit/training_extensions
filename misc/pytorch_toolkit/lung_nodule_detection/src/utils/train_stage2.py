@@ -4,12 +4,11 @@ from torch import optim
 from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.autograd import Variable
-import matplotlib.pyplot as plt
 import time
 import os
-from tqdm import tqdm_notebook as tq
+from tqdm import tqdm as tq
 from .data_loader import LungPatchDataLoader
-from .lenet import LeNet
+from .models import LeNet
 from .utils import plot_graphs
 
 

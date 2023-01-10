@@ -1,14 +1,14 @@
-from utils.exporter import Exporter
 import argparse
-from utils.get_config import get_config
+from .utils.exporter import Exporter
+from .utils.get_config import get_config
 
-def export(args):
-    export_config = get_config(action='export', phase=args.phase)
-    exporter = Exporter(export_config, args.optimised)
+def export(configs):
+    export_config = get_config(action='export', stage=configs["stage"])
+    exporter = Exporter(export_config, stage=configs["stage"])
 
-    if args.onnx:
+    if configs["onnx"]:
         exporter.export_model_onnx()
-    if args.ir:
+    if configs["ir"]:
         exporter.export_model_ir()
 
 if __name__ == '__main__':
@@ -24,9 +24,15 @@ if __name__ == '__main__':
                         help="Set to True, if you wish to export IR",
                         default=False,
                         action='store_true')
-    parser.add_argument('-ph', '--phase', type=int,
-                        required=True, default=1, help='Phase')
+    parser.add_argument('-s', '--stage', type=int,
+                        required=True, default=1, help='Stage')
 
-    custom_args = parser.parse_args()
+    args = parser.parse_args()
 
-    export(custom_args)
+    configs = {
+        "onnx": args.onnx,
+        "ir": args.ir,
+        "stage": args.stage
+
+   }
+    export(configs)

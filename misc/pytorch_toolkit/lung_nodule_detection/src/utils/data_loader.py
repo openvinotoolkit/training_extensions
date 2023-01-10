@@ -5,7 +5,6 @@ from torchvision import transforms
 from PIL import Image
 import numpy as np
 
-
 class LungDataLoader(data.Dataset):
     """Class represents the dataloader for Lung segmentation task
 

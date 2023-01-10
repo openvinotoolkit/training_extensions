@@ -2,16 +2,19 @@
     "savepath": "temp_data/stage2/",
     "imgpath": "test_data/stage2/",
     "lrate": 1e-4,
-    "epochs": 5 
+    "epochs": 5,
+    "network": "lenet"
 },
 "inference":{
     "modelpath":"temp_data/stage2/",
-    "imgpath":"test_data/stage2/"
+    "imgpath":"test_data/stage2/",
+    "network": "lenet"
 },
 "export":{
-    "checkpoint": "downloads/model_weights/patch_class_best.pth",
+    "checkpoint": "downloads/model_weights/stage2/lenet_best.pt",
     "input_shape":[1, 1, 64, 64],
-    "model_name_onnx": "patch_class.onnx",
-    "model_name":"patch_class"
+    "model_name_onnx": "lenet_best.onnx",
+    "model_name":"lenet_best",
+    "network": "lenet"
 }
 }

@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-# coding: utf-8
+import json
+import os
+from collections import defaultdict
 
 import numpy as np
-import os
 from natsort import natsorted
 from tqdm import tqdm as tq
-from collections import defaultdict
-import json
-import argparse
+
 
 def positive_negative_classifier(data_path,save_path):
     """Classifies slices as positive and negative slices.
@@ -283,8 +281,6 @@ def create_balanced_dataset(save_path,data_path,additional=False):
 
     if additional == True:
         fold_npy = add_additional_slices(series_uid_npylist,fold_npy,series_uid_train,series_uid_val,series_uid_test)
-
-
 
     print('Balanced dataset generated and saved')
 

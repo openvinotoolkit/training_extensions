@@ -1,11 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-import pickle
 import numpy as np
 import os
 import cv2
-from skimage.util.shape import view_as_windows
 import json
 from tqdm import tqdm as tq
 import matplotlib.pyplot as plt

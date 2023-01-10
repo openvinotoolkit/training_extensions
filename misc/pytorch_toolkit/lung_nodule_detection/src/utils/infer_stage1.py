@@ -1,14 +1,13 @@
-import numpy as np
 import torch
-from tqdm import tqdm as tq
 from torch.utils import data
-import os
 import torch.nn.functional as F
 from torch.autograd import Variable
+import os
+import numpy as np
+from tqdm import tqdm as tq
 import matplotlib.pyplot as plt
 import json
-from .sumnet_bn_vgg import SUMNet
-from .r2unet import R2U_Net, U_Net
+from .models import SUMNet, U_Net, R2U_Net
 from .data_loader import LungDataLoader
 from .utils import dice_coefficient
 plt.switch_backend('agg')
@@ -108,7 +107,6 @@ def infer_lungseg(fold_no,save_path,network,jsonpath):
     dice = np.mean(dice_list)
     print("Result:",fold,dice)
 
-
     #Plots distribution of min values per volume
     plt.figure()
     plt.title('Distribution of Dice values')
@@ -118,6 +116,8 @@ def infer_lungseg(fold_no,save_path,network,jsonpath):
     plt.savefig(save_path+'dice_dist.jpg')
     # plt.show()
     plt.close()
+
+    return dice
 
 
 

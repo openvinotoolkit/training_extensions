@@ -1,7 +1,7 @@
 import os
 import json
 
-def get_config(action, stage=1, config_path=""):
+def get_config(action, stage=1, config_path="configs/"):
 
     root_path = os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.realpath(__file__))))

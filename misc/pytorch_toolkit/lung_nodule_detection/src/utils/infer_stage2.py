@@ -1,29 +1,14 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-
-from __future__ import print_function, division
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from torch.utils import data
-from torchvision import transforms
-import torchvision
-from torchvision import datasets, models, transforms
-import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
-import matplotlib.pyplot as plt
-import time
-import os
-import copy
-from PIL import Image
-from tqdm import tqdm_notebook as tq
+from tqdm import tqdm as tq
 from sklearn.metrics import confusion_matrix
 from .data_loader import LungPatchDataLoader
-from .lenet import LeNet
+from .models import LeNet
 
 def lungpatch_classifier(modelpath,imgpath):
 
@@ -88,3 +73,5 @@ def lungpatch_classifier(modelpath,imgpath):
     sensitivity = tp/(tp+fn)
     print('Specificity :',specificity)
     print('Sensitivity :',sensitivity)
+
+    return testepoch_acc, specificity, sensitivity

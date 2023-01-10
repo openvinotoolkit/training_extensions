@@ -8,9 +8,7 @@ class Exporter:
         self.config = config
         self.checkpoint = config.get('checkpoint')
         self.stage = stage
-
         self.model = load_model(network=config["network"])
-
         self.model.eval()
         load_checkpoint(self.model, self.checkpoint)
 
@@ -19,11 +17,14 @@ class Exporter:
             os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
         input_shape = self.config.get('input_shape')
         output_dir = os.path.split(self.checkpoint)[0]
+        openvino_extension_path = '/home/deeptensor/rakshith_codes/training_extensions/misc/pytorch_toolkit/lung_nodule_detection/src/utils/openvino_pytorch_layers/mo_extensions'
         export_command = f"""mo \
         --framework onnx \
         --input_model {input_model} \
         --input_shape "{input_shape}" \
-        --output_dir {output_dir}"""
+        --output_dir {output_dir}\
+        --log_level=DEBUG\
+        --extension {openvino_extension_path}"""
 
         if self.config.get('verbose_export'):
             print(export_command)
@@ -40,8 +41,6 @@ class Exporter:
             dummy_input = torch.randn(1, 1, 512, 512)
 
         torch.onnx.export(self.model, dummy_input, res_path,
-                          opset_version=11, do_constant_folding=True,
                           input_names=['input'], output_names=['output'],
-                          dynamic_axes={'input': {0: 'batch_size'},
-                                        'output': {0: 'batch_size'}},
+                          operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK,
                           verbose=False)

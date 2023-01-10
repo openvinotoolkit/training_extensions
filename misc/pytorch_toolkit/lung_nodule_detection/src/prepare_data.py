@@ -1,8 +1,8 @@
 import argparse
-from .utils import visualize
-from .utils import generate_slices
-from .utils import create_folds
-from .utils import generate_patches
+from .utils.data_prep import visualize
+from .utils.data_prep import generate_slices
+from .utils.data_prep import create_folds
+from .utils.data_prep import generate_patches
 
 
 def main(args):
@@ -44,7 +44,6 @@ def main(args):
         else:
             generate_patches.generate_patchlist(jsonpath,patchtype,foldno)
             generate_patches.generate_negative_patch(jsonpath,foldno,data_path,lungsegpath,savepath,category)
-
 
     elif args.visualize:
         seriesuid = args.seriesuid

@@ -1,12 +1,18 @@
-import torch
-import matplotlib.pyplot as plt
 import os
-from .sumnet_bn_vgg import SUMNet
-from .r2unet import U_Net, R2U_Net
-from .lenet import LeNet
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from .models import LeNet, R2U_Net, SUMNet, U_Net
 
 
-
+def ch_shuffle(x):
+    shuffIdx1 = torch.from_numpy(np.random.randint(0,2,x.size(0)))
+    shuffIdx2 = 1-shuffIdx1
+    d_in = torch.Tensor(x.size()).cuda()
+    d_in[:,shuffIdx1] = x[:,0]
+    d_in[:,shuffIdx2] = x[:,1]
+    shuffLabel = torch.cat((shuffIdx1.unsqueeze(1),shuffIdx2.unsqueeze(1)),dim=1)
+    return d_in, shuffLabel
 
 def dice_coefficient(pred1, target):
     smooth = 1e-15
@@ -44,6 +50,12 @@ def load_model(network):
         net = LeNet()
     return net
 
+def load_checkpoint(model, checkpoint):
+    if checkpoint is not None:
+        model_checkpoint = torch.load(checkpoint)
+        model.load_state_dict(model_checkpoint)
+    else:
+        model.state_dict()
 
 def plot_graphs(
     train_values, valid_values,
