@@ -1,0 +1,18 @@
+{
+    "stage1": {
+        "dest_path_data": "test_data/phase1.zip",
+        "url_data": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi34/phase1/phase1.zip",
+        "url_model": "http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi34/cbis_a1_b1.zip",
+        "dest_path_model": "model_weights/cbis_a1_b1.zip"
+    },
+    "stage2": {
+        "dest_path_data": "test_data/phase2.zip",
+        "url_data": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi34/phase2/phase2.zip",
+        "url_model": "http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi34/final_d_3.zip",
+        "dest_path_model": "model_weights/final_d_3.zip"
+    },
+    "test_data": {
+        "url": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/rbis_ddsm_sample.zip",
+        "dest_path": "test_data/rbis_ddsm_sample.zip"
+    }
+}

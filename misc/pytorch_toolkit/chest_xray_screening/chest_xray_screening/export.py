@@ -1,11 +1,11 @@
-from .utils.exporter import Exporter
+from utils.exporter import Exporter
 import argparse
-from chest_xray_screening.utils.get_config import get_config
+from utils.get_config import get_config
 
 
 
 def export(args):
-    export_config = get_config(action = 'export', optimised = args.optimised)
+    export_config = get_config(action = 'export')
     exporter = Exporter(export_config, args.optimised)
 
     if args.onnx:
@@ -24,11 +24,6 @@ if __name__ == '__main__':
     parser.add_argument("--ir",
         required=False,
         help="Set to True, if you wish to export IR",
-        default=False,
-        action='store_true')
-    parser.add_argument("--optimised",
-        required=False,
-        help="Set to True, if you wish to export optimised model",
         default=False,
         action='store_true')
 

@@ -1,0 +1,15 @@
+{
+    "stage1":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi5/checkpoint_stage1.zip",
+        "dest_path":"model_weights/checkpoint_stage1.zip"
+
+    },
+    "stage2":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi5/checkpoint_stage2.zip",
+        "dest_path":"model_weights/checkpoint_stage2.zip"
+    },
+    "test_data":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi5/rbis_ddsm_sample.zip",
+        "dest_path":"test_data/rbis_ddsm_sample.zip"
+    }
+}

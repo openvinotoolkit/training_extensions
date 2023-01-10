@@ -1,0 +1,66 @@
+{
+    "train": {
+        "train_data": "test_data/phase1/train/",
+        "test_data": "test_data/phase1/test/",
+        "batch_size": 10,
+        "epochs": 5,
+        "gpu": "False",
+        "interval": 3,
+        "subset_size": 5,
+        "model_file_name": "model_weights/cbis_a1_b1.model",
+        "randomize_subset": "True",
+        "depth": 3,
+        "width": 64,
+        "alpha": 1,
+        "phi": 1,
+        "phase": 1,
+        "efficient_net": "True",
+        "iterate": 0,
+        "lr": 1e-8,
+        "checkpoint": "model_weights/cbis_a1_b1.model",
+        "device": "cuda",
+        "n_digestunits": 3,
+        "savepath": "model_weights/",
+        "image_path": "test_data/phase1/train/"
+    },
+    "inference": {
+        "model_file": "model_weights/cbis_a1_b1.model",
+        "inferdata": "test_data/phase1/test/",
+        "bit_depth": 8,
+        "gpu": "False",
+        "with_aac": "True",
+        "produce_latent_code": "True",
+        "produce_decompressed_image": "True",
+        "out_latent": "temp_data/phase1/latent/",
+        "out_decom": "temp_data/phase1/decom/",
+        "depth": 3,
+        "width": 64,
+        "max_samples": 10,
+        "phase": 1,
+        "checkpoint": "model_weights/cbis_a1_b1.model",
+        "class_count": 3,
+        "model_name_onnx": "cbis_a1_b1.onnx",
+        "input_shape": [
+            1,
+            1,
+            1024,
+            1024
+        ],
+        "image_path": "test_data/phase1/test/"
+    },
+    "export": {
+        "checkpoint": "model_weights/cbis_a1_b1.model",
+        "input_shape": [
+            1,
+            1,
+            1024,
+            1024
+        ],
+        "model_name_onnx": "cbis_a1_b1.onnx",
+        "model_name": "cbis_a1_b1",
+        "alpha": 1,
+        "beta": 1,
+        "phi": 1,
+        "phase": 1
+    }
+}

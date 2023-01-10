@@ -1,0 +1,5 @@
+model_weights/*
+venv/*
+test_data/*
+temp_data/*
+*.log

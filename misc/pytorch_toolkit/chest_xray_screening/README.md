@@ -85,9 +85,9 @@ The network when trained and evaluated using the CheXpert dataset with same alph
 
 ## **Model**
 
-Download `.pth`checkpoint for densenet with the following [link](http://miriad.digital-health.one/models/densenet.zip).
+Download `.pth`checkpoint for densenet with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi12/densenet.zip).
 
-Download `.pth` checkpoint for optimised model with the following [link](http://miriad.digital-health.one/models/densenet_eff.zip)
+Download `.pth` checkpoint for optimised model with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi12/densenet_eff.zip)
 
 Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public).
 
@@ -228,6 +228,12 @@ email: ramanathan.sethuraman@intel.com
 
 The codes/model was contributed to the OpenVINO project by
 
+<a href="https://github.com/Rakshith2597"> Rakshith Sathish</a>,</br>
+Advanced Technology Development Center,</br>
+Indian Institute of Technology Kharagpur</br>
+email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
+Github username: Rakshith2597
+
 <a href="https://www.linkedin.com/in/arunava-chakravarty-b1736b158/">Arunava Chakravarty</a>, </br>
 Department of Electrical Engineering, </br>
 Indian Institute of Technology Kharagpur</br>
@@ -236,12 +242,6 @@ email: arunavachakravarty1206@gmail.com </br>
 <a href="https://www.linkedin.com/in/thearkamitra/"> Arka Mitra</a>,</br>
 Electronics and Electrical Communication Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
-
-<a href="https://github.com/Rakshith2597"> Rakshith Sathish</a>,</br>
-Advanced Technology Development Center,</br>
-Indian Institute of Technology Kharagpur</br>
-email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
-Github username: Rakshith2597
 
 ## **References**
 
