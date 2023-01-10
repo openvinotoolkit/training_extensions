@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from typing import Any, Dict
+
 import numpy as np
 from mmaction.datasets.builder import PIPELINES
 
@@ -26,12 +28,12 @@ class RawFrameDecode:
 
     otx_dataset: DatasetEntity
 
-    def __call__(self, results):
+    def __call__(self, results: Dict[str, Any]):
         """Call function of RawFrameDecode."""
         results = self.decode_from_list(results)
         return results
 
-    def decode_from_list(self, results):
+    def decode_from_list(self, results: Dict[str, Any]):
         """Generate numpy array list from list of DatasetItemEntity."""
         imgs = []
         for index in results["frame_inds"]:

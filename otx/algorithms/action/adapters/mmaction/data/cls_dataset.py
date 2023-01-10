@@ -87,7 +87,7 @@ class OTXRawframeDataset(RawframeDataset):
 
             self.video_info.update(video_info)
 
-        def __getitem__(self, index):
+        def __getitem__(self, index: int):
             """Prepare training data item.
 
             Action classification needs video for training, therefore this function generate item from video_info

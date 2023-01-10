@@ -17,7 +17,8 @@
 import copy
 import os
 from collections import defaultdict
-from typing import Any, Dict, List, Sequence
+from logging import Logger
+from typing import Any, Dict, List, Sequence, Tuple
 
 import mmcv
 import numpy as np
@@ -30,8 +31,10 @@ from mmcv.utils import print_log
 
 from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.algorithms.action.adapters.mmaction.utils import det_eval
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.metadata import VideoMetadata
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
@@ -142,7 +145,7 @@ class OTXActionDetDataset(AVADataset):
             self.otx_dataset.remove_at_indices(remove_indices)
             self.video_info.update(video_info)
 
-        def __getitem__(self, index):
+        def __getitem__(self, index: int):
             """Prepare a dict 'data_info' that is expected by the mmaction pipeline to handle images and annotations.
 
             :return data_info: dictionary that contains the image and image metadata, as well as the labels of
@@ -175,7 +178,7 @@ class OTXActionDetDataset(AVADataset):
                 self.proposals[f"{new_img_key}"] = proposal
             root_logger.info("Done.")
 
-        def _update_annotations(self, metadata, anns):
+        def _update_annotations(self, metadata: VideoMetadata, anns: List[Annotation]):
             """Update annotation information to item's metadata."""
             if len(anns) > 0:
                 bboxes, labels = [], []
@@ -251,7 +254,13 @@ class OTXActionDetDataset(AVADataset):
         return self.pipeline(results)
 
     # pylint: disable=too-many-locals, unused-argument
-    def evaluate(self, results, *args, metrics=("mAP",), metric_options=None, logger=None, **kwargs):
+    def evaluate(
+        self,
+        results: List[List[np.ndarray]],
+        metrics: Tuple[str] = ("mAP",),
+        logger: Logger = None,
+        **kwargs,
+    ):
         """Evaluate the prediction results and report mAP."""
         assert len(metrics) == 1 and metrics[0] == "mAP", (
             'For evaluation on AVADataset, you need to use metrics "mAP" '
@@ -279,19 +288,19 @@ class OTXActionDetDataset(AVADataset):
             log_msg = []
             for key, value in eval_result.items():
                 log_msg.append(f"\n{key}\t{value: .4f}")
-            log_msg = "".join(log_msg)
-            print_log(log_msg, logger=logger)
+            str_log_msg = "".join(log_msg)
+            print_log(str_log_msg, logger=logger)
             ret.update(eval_result)
         return ret
 
     @staticmethod
-    def get_predictions(csv_results):
+    def get_predictions(csv_results: List[Tuple]):
         """Convert model's inference results to predictions."""
-        csv_results = np.array(csv_results)
-        _img_keys = csv_results[:, :2]
-        _boxes = csv_results[:, 2:6]
-        _labels = csv_results[:, 6]
-        _scores = csv_results[:, 7]
+        np_csv_results = np.array(csv_results)
+        _img_keys = np_csv_results[:, :2]
+        _boxes = np_csv_results[:, 2:6]
+        _labels = np_csv_results[:, 6]
+        _scores = np_csv_results[:, 7]
 
         boxes = defaultdict(list)
         labels = defaultdict(list)

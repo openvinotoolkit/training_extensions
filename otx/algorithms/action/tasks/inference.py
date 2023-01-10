@@ -17,7 +17,7 @@
 import copy
 import io
 import os
-from typing import Iterable, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
 import torch
@@ -288,14 +288,14 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def _get_metric(self, output_resultset):
+    def _get_metric(self, output_resultset: ResultSetEntity):
         if self._task_type == TaskType.ACTION_CLASSIFICATION:
             return MetricsHelper.compute_accuracy(output_resultset)
         if self._task_type == TaskType.ACTION_DETECTION:
             return MetricsHelper.compute_f_measure(output_resultset)
         raise NotImplementedError(f"{self._task_type} is not supported in action task")
 
-    def remove_empty_frames(self, dataset):
+    def remove_empty_frames(self, dataset: DatasetEntity):
         """Remove empty frame for action detection dataset."""
         remove_indices = []
         for idx, item in enumerate(dataset):
@@ -369,10 +369,10 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         model_cfg = Config.fromfile(os.path.join(base_dir, "model.py"))
         return model_cfg
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset):
+    def _add_predictions_to_dataset(self, prediction_results: Iterable, dataset: DatasetEntity):
         """Loop over dataset again to assign predictions. Convert from MM format to OTX format."""
         prediction_results = list(prediction_results)
-        video_info = {}
+        video_info: Dict[str, int] = {}
         for dataset_item in dataset:
             video_id = dataset_item.get_metadata()[0].data.video_id
             if video_id not in video_info:
@@ -400,7 +400,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
-    def _add_det_predictions_to_dataset(self, prediction_results, dataset):
+    def _add_det_predictions_to_dataset(self, prediction_results: Iterable, dataset: DatasetEntity):
         confidence_threshold = 0.05
         self.remove_empty_frames(dataset)
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
