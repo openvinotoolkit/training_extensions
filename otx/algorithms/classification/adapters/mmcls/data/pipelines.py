@@ -170,33 +170,32 @@ class PILImageToNDArray:
 
 
 @PIPELINES.register_module()
-class SeparateAug:
-    """Pipeline element that separates augmentation pipeline for mmcls.
+class PostAug:
+    """Pipeline element that postaugments for mmcls.
+
+    PostAug copies current augmented image and apply post augmentations for given keys.
+    For example, if we apply PostAug(keys=dict(img_strong=strong_pipeline),
+    PostAug will copy current augmented image and apply strong pipeline. 
+    Post augmented image will be saved at results["img_strong"]. 
 
     Expected entries in the 'results' dict that should be passed to this pipeline element are:
         results['img']: PIL type image in data pipeline.
 
     Args:
-        pairs (dict): pairs to separate pipeline. key 'img' should be included.
-                      ex) dict(img=origin_pipeline, img_strong=strong_pipeline)
+        keys (dict): keys to apply postaugmentaion. ex) dict(img_strong=strong_pipeline)
     """
 
-    def __init__(self, pairs: dict):
-        if "img" not in pairs.keys():
-            raise ValueError("key 'img' should be included in pairs argumenent")
-        self.pipelines = {key: Compose(pipeline) for key, pipeline in pairs.items()}
+    def __init__(self, keys: dict):
+        self.pipelines = {key: Compose(pipeline) for key, pipeline in keys.items()}
 
     def __call__(self, results):
-        """Callback function of SeparateAug."""
+        """Callback function of PostAug."""
         for key, pipeline in self.pipelines.items():
-            if key == "img":
-                output = pipeline(copy.deepcopy(results))
-            else:
-                output[key] = pipeline(results)["img"]
-                output["img_fields"].append(key)
-        return output
+            results[key] = pipeline(copy.deepcopy(results))["img"]
+            results["img_fields"].append(key)
+        return results
 
     def __repr__(self):
-        """Repr function of SeparateAug."""
+        """Repr function of PostAug."""
         repr_str = self.__class__.__name__
         return repr_str

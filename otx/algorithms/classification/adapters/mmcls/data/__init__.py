@@ -26,7 +26,7 @@ from .pipelines import (
     OTXColorJitter,
     PILImageToNDArray,
     RandomAppliedTrans,
-    SeparateAug,
+    PostAug,
 )
 
 __all__ = [
@@ -34,7 +34,7 @@ __all__ = [
     "MPAMultilabelClsDataset",
     "MPAHierarchicalClsDataset",
     "SelfSLDataset",
-    "SeparateAug",
+    "PostAug",
     "PILImageToNDArray",
     "LoadImageFromOTXDataset",
     "RandomAppliedTrans",
