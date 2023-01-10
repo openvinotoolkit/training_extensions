@@ -24,6 +24,7 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.cli.datasets import get_dataset_class
 from otx.cli.utils.io import generate_label_schema
 from tests.test_suite.e2e_test_system import e2e_pytest_api
@@ -222,6 +223,5 @@ class TestActionTaskAPI:
         assert performance_after_train == performance_after_load
 
         # Export
-        # TODO Implement export task
-        # exported_model = ModelEntity(dataset, action_environment.get_model_configuration())
-        # inference_task.export(ExportType.OPENVINO, exported_model)
+        exported_model = ModelEntity(dataset, action_environment.get_model_configuration())
+        inference_task.export(ExportType.OPENVINO, exported_model)

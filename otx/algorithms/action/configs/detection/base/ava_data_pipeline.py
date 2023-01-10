@@ -17,7 +17,7 @@
 # pylint: disable=invalid-name
 
 
-_base_ = ["./data.py"]
+_base_ = ["./data_pipeline.py"]
 # These should be assigned otx cli, but harded-coded
 # These wii be changed when annotation format is changed to CVAT
 anno_root = "/home/jaeguk/workspace/data/ava/annotations"

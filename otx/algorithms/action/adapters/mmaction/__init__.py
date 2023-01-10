@@ -5,8 +5,8 @@
 
 from .data import OTXRawframeDataset
 from .models import register_action_backbones
-from .utils import patch_config, set_data_classes
+from .utils import export_model, patch_config, set_data_classes
 
-__all__ = ["OTXRawframeDataset", "patch_config", "set_data_classes"]
+__all__ = ["OTXRawframeDataset", "patch_config", "set_data_classes", "export_model"]
 
 register_action_backbones()
