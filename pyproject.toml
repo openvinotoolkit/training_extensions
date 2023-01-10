@@ -2,7 +2,7 @@
 # SETUP CONFIGURATION.                                                        #
 [build-system]
 # FIXME: torch version hard-coded to build torch cpp extension
-requires = ["setuptools>=42", "wheel", "torch==1.8.1"]
+requires = ["setuptools>=42", "wheel", "Cython~=0.29.32", "numpy~=1.21.0", "torch==1.8.1"]
 build-backend = "setuptools.build_meta"
 
 

@@ -4,10 +4,13 @@
 
 import random
 import re
+from copy import deepcopy
 
 import numpy as np
 from mmcls.datasets.builder import PIPELINES
-from PIL import Image, ImageEnhance, ImageOps
+from PIL import Image
+
+from otx.mpa.modules.datasets.pipelines.transforms.augments import CythonAugments
 
 _AUGMIX_TRANSFORMS_GREY = [
     "SharpnessIncreasing",  # not in paper
@@ -56,19 +59,19 @@ class OpsFabric:
             "TranslateYRel": self._translate_rel_level_to_arg,
         }
         self.NAME_TO_OP = {
-            "AutoContrast": self.auto_contrast,
-            "Equalize": self.equalize,
-            "Rotate": self.rotate,
-            "PosterizeIncreasing": self.posterize,
-            "SolarizeIncreasing": self.solarize,
-            "ColorIncreasing": self.color,
-            "ContrastIncreasing": self.contrast,
-            "BrightnessIncreasing": self.brightness,
-            "SharpnessIncreasing": self.sharpness,
-            "ShearX": self.shear_x,
-            "ShearY": self.shear_y,
-            "TranslateXRel": self.translate_x_rel,
-            "TranslateYRel": self.translate_y_rel,
+            "AutoContrast": CythonAugments.autocontrast,
+            "Equalize": CythonAugments.equalize,
+            "Rotate": CythonAugments.rotate,
+            "PosterizeIncreasing": CythonAugments.posterize,
+            "SolarizeIncreasing": CythonAugments.solarize,
+            "ColorIncreasing": CythonAugments.color,
+            "ContrastIncreasing": CythonAugments.contrast,
+            "BrightnessIncreasing": CythonAugments.brightness,
+            "SharpnessIncreasing": CythonAugments.sharpness,
+            "ShearX": CythonAugments.shear_x,
+            "ShearY": CythonAugments.shear_y,
+            "TranslateXRel": CythonAugments.translate_x_rel,
+            "TranslateYRel": CythonAugments.translate_y_rel,
         }
         self.aug_fn = self.NAME_TO_OP[name]
         self.level_fn = self.LEVEL_TO_ARG[name]
@@ -76,76 +79,9 @@ class OpsFabric:
         self.magnitude_std = self.hparams.get("magnitude_std", float("inf"))
 
     @staticmethod
-    def check_args_tf(kwargs):
-        def _interpolation(kwargs):
-            interpolation = kwargs.pop("resample", Image.BILINEAR)
-            if isinstance(interpolation, (list, tuple)):
-                return random.choice(interpolation)
-            else:
-                return interpolation
-
-        kwargs["resample"] = _interpolation(kwargs)
-
-    @staticmethod
-    def auto_contrast(img, **__):
-        return ImageOps.autocontrast(img)
-
-    @staticmethod
-    def equalize(img, **__):
-        return ImageOps.equalize(img)
-
-    @staticmethod
-    def solarize(img, thresh, **__):
-        return ImageOps.solarize(img, thresh)
-
-    @staticmethod
-    def posterize(img, bits_to_keep, **__):
-        if bits_to_keep >= 8:
-            return img
-        return ImageOps.posterize(img, bits_to_keep)
-
-    @staticmethod
-    def contrast(img, factor, **__):
-        return ImageEnhance.Contrast(img).enhance(factor)
-
-    @staticmethod
-    def color(img, factor, **__):
-        return ImageEnhance.Color(img).enhance(factor)
-
-    @staticmethod
-    def brightness(img, factor, **__):
-        return ImageEnhance.Brightness(img).enhance(factor)
-
-    @staticmethod
-    def sharpness(img, factor, **__):
-        return ImageEnhance.Sharpness(img).enhance(factor)
-
-    @staticmethod
     def randomly_negate(v):
         """With 50% prob, negate the value"""
         return -v if random.random() > 0.5 else v
-
-    def shear_x(self, img, factor, **kwargs):
-        self.check_args_tf(kwargs)
-        return img.transform(img.size, Image.AFFINE, (1, factor, 0, 0, 1, 0), **kwargs)
-
-    def shear_y(self, img, factor, **kwargs):
-        self.check_args_tf(kwargs)
-        return img.transform(img.size, Image.AFFINE, (1, 0, 0, factor, 1, 0), **kwargs)
-
-    def translate_x_rel(self, img, pct, **kwargs):
-        pixels = pct * img.size[0]
-        self.check_args_tf(kwargs)
-        return img.transform(img.size, Image.AFFINE, (1, 0, pixels, 0, 1, 0), **kwargs)
-
-    def translate_y_rel(self, img, pct, **kwargs):
-        pixels = pct * img.size[1]
-        self.check_args_tf(kwargs)
-        return img.transform(img.size, Image.AFFINE, (1, 0, 0, 0, 1, pixels), **kwargs)
-
-    def rotate(self, img, degrees, **kwargs):
-        self.check_args_tf(kwargs)
-        return img.rotate(degrees, **kwargs)
 
     def _rotate_level_to_arg(self, level, _hparams):
         # range [-30, 30]
@@ -221,18 +157,16 @@ class AugMixAugment(object):
         # This is a literal adaptation of the paper/official implementation without normalizations and
         # PIL <-> Numpy conversions between every op. It is still quite CPU compute heavy compared to the
         # typical augmentation transforms, could use a GPU / Kornia implementation.
-        img_shape = img.size[0], img.size[1], len(img.getbands())
-        mixed = np.zeros(img_shape, dtype=np.float32)
+        mixed = (1 - m) * np.array(img, dtype=np.float32)
         for mw in mixing_weights:
             depth = self.depth if self.depth > 0 else np.random.randint(1, 4)
             ops = np.random.choice(self.ops, depth, replace=True)
-            img_aug = img  # no ops are in-place, deep copy not necessary
+            img_aug = deepcopy(img)
             for op in ops:
                 img_aug = op(img_aug)
-            mixed += mw * np.asarray(img_aug, dtype=np.float32)
+            CythonAugments.blend(img_aug, mixed, mw * m)
         np.clip(mixed, 0, 255.0, out=mixed)
-        mixed = Image.fromarray(mixed.astype(np.uint8))
-        return Image.blend(img, mixed, m)
+        return Image.fromarray(mixed.astype(np.uint8))
 
     def _augmix_ops(self, config_str, image_mean=None, translate_const=250, grey=False):
         if image_mean is None:

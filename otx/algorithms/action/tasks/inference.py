@@ -357,8 +357,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        model_cfg = Config.fromfile(os.path.join(base_dir, "model.py"))
+        model_cfg = Config.fromfile(os.path.join(self._model_dir, "model.py"))
         return model_cfg
 
     def _add_predictions_to_dataset(self, prediction_results, dataset):

@@ -15,7 +15,6 @@ entrypoints:
   base: otx.algorithms.detection.tasks.DetectionTrainTask
   openvino: otx.algorithms.detection.tasks.OpenVINODetectionTask
   nncf: otx.algorithms.detection.tasks.DetectionNNCFTask
-data_pipeline_path: ./data_pipeline.py
 
 # Capabilities.
 capabilities:

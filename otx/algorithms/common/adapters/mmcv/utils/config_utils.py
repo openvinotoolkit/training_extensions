@@ -139,6 +139,8 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
     if os.path.isfile(data_pipeline):
         data_pipeline_cfg = Config.fromfile(data_pipeline)
         config.merge_from_dict(data_pipeline_cfg)
+    else:
+        raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
 
 
 @check_input_parameters_type()

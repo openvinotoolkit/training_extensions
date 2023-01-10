@@ -59,6 +59,11 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
+RECIPE_TRAIN_TYPE = {
+    TrainType.SEMISUPERVISED: "semisl.yaml",
+    TrainType.INCREMENTAL: "incremental.yaml",
+    TrainType.SELFSUPERVISED: "selfsl.yaml",
+}
 
 
 class ClassificationInferenceTask(
@@ -77,7 +82,6 @@ class ClassificationInferenceTask(
             self._labels = task_environment.get_labels(include_empty=False)
         self._empty_label = get_empty_label(task_environment.label_schema)
 
-        self.model_dir = None
         self._multilabel = False
         self._hierarchical = False
         self._selfsl = False
@@ -338,40 +342,20 @@ class ClassificationInferenceTask(
         else:
             recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
 
-        train_type = self._hyperparams.algo_backend.train_type
-        logger.info(f"train type = {train_type}")
-        self.model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        pipeline_path = os.path.abspath(self.data_pipeline_path)
+        logger.info(f"train type = {self._train_type}")
 
-        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SELFSUPERVISED):
-            raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
-        if train_type == TrainType.SEMISUPERVISED:
-            if not self._multilabel and not self._hierarchical:
-                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
-                    recipe = os.path.join(recipe_root, "semisl.yaml")
-                else:
-                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
-                    train_type = TrainType.INCREMENTAL
-            else:
-                raise NotImplementedError(
-                    f"Train type {train_type} for multilabel and hierarchical is not implemented yet."
-                )
+        if self._train_type in RECIPE_TRAIN_TYPE:
+            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
+        else:
+            raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
 
-        if train_type == TrainType.INCREMENTAL:
-            recipe = os.path.join(recipe_root, "incremental.yaml")
-
-        if train_type == TrainType.SELFSUPERVISED:
-            recipe = os.path.join(recipe_root, "selfsl.yaml")
-            self.model_dir = os.path.join(self.model_dir, "selfsl")
-            pipeline_path = os.path.join(os.path.dirname(pipeline_path), "selfsl/data_pipeline.py")
-
-        logger.info(f"train type = {train_type} - loading {recipe}")
+        logger.info(f"train type = {self._train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
 
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
-        self._recipe_cfg.train_type = train_type.name
+        self._recipe_cfg.train_type = self._train_type.name
 
         options_for_patch_datasets = {"type": "MPAClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
@@ -386,7 +370,7 @@ class ClassificationInferenceTask(
             options_for_patch_datasets["type"] = "SelfSLDataset"
         patch_default_config(self._recipe_cfg)
         patch_runner(self._recipe_cfg)
-        patch_data_pipeline(self._recipe_cfg, pipeline_path)
+        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         patch_datasets(
             self._recipe_cfg,
             self._task_type.domain,
@@ -400,11 +384,11 @@ class ClassificationInferenceTask(
     # error log : ValueError: Unexpected type of 'data_loader' parameter
     def _init_model_cfg(self):
         if self._multilabel:
-            cfg_path = os.path.join(self.model_dir, "model_multilabel.py")
+            cfg_path = os.path.join(self._model_dir, "model_multilabel.py")
         elif self._hierarchical:
-            cfg_path = os.path.join(self.model_dir, "model_hierarchical.py")
+            cfg_path = os.path.join(self._model_dir, "model_hierarchical.py")
         else:
-            cfg_path = os.path.join(self.model_dir, "model.py")
+            cfg_path = os.path.join(self._model_dir, "model.py")
         cfg = MPAConfig.fromfile(cfg_path)
 
         cfg.model.multilabel = self._multilabel
