@@ -13,8 +13,8 @@ import otx.mpa.modules.models.losses.am_softmax_loss_with_ignore
 import otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore
 import otx.mpa.modules.models.losses.recall_loss
 import otx.mpa.modules.models.segmentors
+from otx.mpa.seg.incremental import IncrSegInferrer, IncrSegTrainer
+from otx.mpa.seg.semisl import SemiSLSegInferrer, SemiSLSegTrainer
 
 # flake8: noqa
 from . import evaluator, exporter, inferrer, stage, trainer
-from .incremental import inferrer, trainer
-from .semisl import inferrer, trainer

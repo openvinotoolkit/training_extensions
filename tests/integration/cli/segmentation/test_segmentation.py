@@ -225,10 +225,23 @@ def set_dummy_data(func):
 
 
 args_semisl = {
-    **args,
+    "--train-ann-file": "data/segmentation/custom/annotations/training",
+    "--train-data-roots": "data/segmentation/custom/images/training",
+    "--val-ann-file": "data/segmentation/custom/annotations/training",
+    "--val-data-roots": "data/segmentation/custom/images/training",
+    "--test-ann-files": "data/segmentation/custom/annotations/training",
+    "--test-data-roots": "data/segmentation/custom/images/training",
     "--unlabeled-data-roots": "data/segmentation/custom/images/training",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+        "--algo_backend.train_type",
+        "SEMISUPERVISED",
+    ],
 }
-args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
 
 
 class TestToolsMPASemiSLSegmentation:
