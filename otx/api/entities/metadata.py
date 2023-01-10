@@ -4,7 +4,7 @@
 #
 import abc
 from enum import Enum, auto
-from typing import Optional
+from typing import Any, Optional
 
 from otx.api.entities.model import ModelEntity
 
@@ -100,7 +100,7 @@ class MetadataItemEntity:
 
     def __init__(
         self,
-        data: IMetadata,
+        data: Any,
         model: Optional[ModelEntity] = None,
     ):
         self.data = data

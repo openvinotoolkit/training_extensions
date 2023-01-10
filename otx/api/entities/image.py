@@ -125,5 +125,5 @@ class Image(IMedia2DEntity):
 
     @property
     def path(self) -> Optional[str]:
-        """Retutns the file path of the image."""
+        """Returns the file path of the image."""
         return self.__file_path
