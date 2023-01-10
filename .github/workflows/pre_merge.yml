@@ -26,4 +26,4 @@ jobs:
         id: gitmodule
         run: cat .gitmodules | grep model-preparation-algorithm)
       - name: check gitmodule
-        run: if [[ "${{steps.gitmodule.conclusion != "failure" ]]; then exit 1; else exit 0; fi
+        run: if [[ "${{steps.gitmodule.conclusion}}" != "failure" ]]; then exit 1; else exit 0; fi
