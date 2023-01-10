@@ -326,7 +326,7 @@ class ClassificationInferenceTask(
             runner=runner,
         )
 
-        if self._hyperparams.algo_backend.train_type.value == "SEMISUPERVISED":
+        if self._train_type.value == "SEMISUPERVISED":
             unlabeled_config = ConfigDict(
                 data=ConfigDict(
                     unlabeled=ConfigDict(
