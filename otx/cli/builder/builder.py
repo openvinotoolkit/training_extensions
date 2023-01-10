@@ -135,7 +135,14 @@ def update_channels(model_config, out_channels):
 class Builder:
     """Class that implements a model templates registry."""
 
-    def build_task_config(self, task_type, model_type=None, workspace_path=None, otx_root="."):
+    def build_task_config(
+        self,
+        task_type: str,
+        model_type: str = None,
+        train_type: str = "incremental",
+        workspace_path: str = None,
+        otx_root=".",
+    ):
         """Create OTX workspace with Template configs from task type.
 
         This function provides a user-friendly OTX workspace and provides more intuitive
@@ -145,7 +152,6 @@ class Builder:
         workspace_path: This is the folder path of the workspace want to create (os.path)
         """
 
-        # TODO: OTX-workspace build with other tasks (semi, self, etc.)
         # Create OTX-workspace
         if workspace_path is None:
             workspace_path = f"./otx-workspace-{task_type}"
@@ -156,13 +162,13 @@ class Builder:
         # Load & Save Model Template
         otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
         if model_type:
-            template = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
-            if len(template) == 0:
+            template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
+            if len(template_lst) == 0:
                 raise ValueError(
                     f"[otx build] {model_type} is not a type supported by OTX {task_type}."
                     f"\n[otx build] Please refer to 'otx find --template --task_type {task_type}'"
                 )
-            template = template[0]
+            template = template_lst[0]
         else:
             template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
         template_dir = os.path.dirname(template.model_template_path)
@@ -174,15 +180,28 @@ class Builder:
         template_config = MPAConfig.fromfile(template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
 
+        # Configuration of Train Type value
+        train_type_rel_path = ""
+        if train_type != "incremental":
+            train_type_rel_path = train_type
+        model_dir = os.path.join(os.path.abspath(template_dir), train_type_rel_path)
+        if not os.path.exists(model_dir):
+            raise ValueError(f"[otx build] {train_type} is not a type supported by OTX {task_type}")
+        train_type_dir = os.path.join(workspace_path, train_type_rel_path)
+        os.makedirs(train_type_dir, exist_ok=True)
+
+        # Update Hparams
+        if os.path.exists(os.path.join(model_dir, "hparam.yaml")):
+            template_config.merge_from_dict(MPAConfig.fromfile(os.path.join(model_dir, "hparam.yaml")))
+
         # Load & Save Model config
-        model_config = MPAConfig.fromfile(os.path.join(template_dir, "model.py"))
-        model_config.dump(os.path.join(workspace_path, "model.py"))
+        model_config = MPAConfig.fromfile(os.path.join(model_dir, "model.py"))
+        model_config.dump(os.path.join(train_type_dir, "model.py"))
 
         # Copy Data pipeline config
-        if os.path.exists(os.path.join(template_dir, template_config.data_pipeline_path)):
-            data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, template_config.data_pipeline_path))
-            data_pipeline_config.dump(os.path.join(workspace_path, "data_pipeline.py"))
-            template_config.data_pipeline_path = "./data_pipeline.py"
+        if os.path.exists(os.path.join(model_dir, "data_pipeline.py")):
+            data_pipeline_config = MPAConfig.fromfile(os.path.join(model_dir, "data_pipeline.py"))
+            data_pipeline_config.dump(os.path.join(train_type_dir, "data_pipeline.py"))
         template_config.dump(os.path.join(workspace_path, "template.yaml"))
 
         # Create Data.yaml
@@ -192,10 +211,10 @@ class Builder:
         mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
 
         # Copy compression_config.json
-        if os.path.exists(os.path.join(template_dir, "compression_config.json")):
+        if os.path.exists(os.path.join(model_dir, "compression_config.json")):
             shutil.copyfile(
-                os.path.join(template_dir, "compression_config.json"),
-                os.path.join(workspace_path, "compression_config.json"),
+                os.path.join(model_dir, "compression_config.json"),
+                os.path.join(train_type_dir, "compression_config.json"),
             )
 
         print(f"[otx build] Create OTX workspace: {workspace_path}")
