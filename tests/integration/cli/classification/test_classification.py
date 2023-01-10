@@ -6,8 +6,6 @@
 import copy
 import os
 from functools import wraps
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 import torch
@@ -75,12 +73,6 @@ args = {
 }
 
 otx_dir = os.getcwd()
-
-
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
 
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
