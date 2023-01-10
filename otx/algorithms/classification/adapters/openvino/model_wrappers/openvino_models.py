@@ -141,17 +141,8 @@ def sigmoid_numpy(x: np.ndarray):
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
     """Softmax numpy."""
-    x = np.exp(x)
-    # FIXME: "x = np.exp(x - np.max(x))" is better for numerical stability.
-    # But it results in "ValueError: zero-size array to reduction operation maximum which has no identity"
-    inf_ind = np.isinf(x)
-    total_infs = np.sum(inf_ind)
-    if total_infs > 0:
-        x[inf_ind] = 1.0 / total_infs
-        x[~inf_ind] = 0
-    else:
-        x /= np.sum(x) + eps
-    return x
+    x = np.exp(x - np.max(x))
+    return x / (np.sum(x) + eps)
 
 
 @check_input_parameters_type()
@@ -162,7 +153,7 @@ def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
         logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
 
     if multihead_class_info["num_multilabel_classes"]:
-        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], -1
+        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], len(logits)
         logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
 
     return logits
@@ -184,7 +175,7 @@ def get_hierarchical_predictions(
         predicted_labels.append((multihead_class_info["label_to_idx"][label_str], head_logits[j]))
 
     if multihead_class_info["num_multilabel_classes"]:
-        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], -1
+        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], len(logits)
         head_logits = logits[logits_begin:logits_end]
         if activate:
             head_logits = sigmoid_numpy(head_logits)
