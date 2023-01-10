@@ -47,7 +47,8 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
         with open(filename, "rb") as f:
             fcntl.flock(f, fcntl.LOCK_SH)
             try:
-                cached_img = cv2.imread(filename)
+                cached_img = np.asarray(bytearray(f.read()))
+                cached_img = cv2.imdecode(cached_img, cv2.IMREAD_COLOR)
                 if to_float32:
                     cached_img = cached_img.astype(np.float32)
                 return cached_img
@@ -60,7 +61,8 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
         with open(filename, "wb") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
             try:
-                cv2.imwrite(filename, img=img)
+                _, binary_img = cv2.imencode('.png', img)  # imencode returns (compress_flag, binary_img)
+                f.write(binary_img)
             except Exception as e:
                 logger.warning(f"Skip caching for {filename} \nError msg: {e}")
             finally:
