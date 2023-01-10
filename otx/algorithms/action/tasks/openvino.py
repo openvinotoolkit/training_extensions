@@ -80,6 +80,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 # TODO: refactoring to Sphinx style.
 class ActionOpenVINOInferencer(BaseInferencer):
     """ActionOpenVINOInferencer class in OpenVINO task for action recognition."""
@@ -118,9 +119,9 @@ class ActionOpenVINOInferencer(BaseInferencer):
             self.converter = DetectionBoxToAnnotationConverter(self.label_schema)
 
     @check_input_parameters_type()
-    def pre_process(self, image: DatasetItemEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+    def pre_process(self, idx: int, dataset: DatasetEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Inferencer for Action Recognition."""
-        return self.model.preprocess(image)
+        return self.model.preprocess(idx, dataset)
 
     @check_input_parameters_type()
     def post_process(self, prediction, metadata: Dict[str, Any]) -> Optional[AnnotationSceneEntity]:
@@ -130,9 +131,9 @@ class ActionOpenVINOInferencer(BaseInferencer):
         return self.converter.convert_to_annotation(prediction, metadata)
 
     @check_input_parameters_type()
-    def predict(self, image: DatasetItemEntity) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
+    def predict(self, idx: int, dataset: DatasetEntity) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
         """Predict function of OpenVINO Action Inferencer for Action Recognition."""
-        data, metadata = self.pre_process(image)
+        data, metadata = self.pre_process(idx, dataset)
         raw_predictions = self.forward(data)
         predictions = self.post_process(raw_predictions, metadata)
         return predictions
@@ -156,9 +157,8 @@ class OTXOpenVinoDataLoader(DataLoader):
     @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Get item from dataset."""
-        image = self.dataset[index]
         annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(image)
+        inputs, metadata = self.inferencer.pre_process(index, self.dataset)
         return (index, annotation), inputs, metadata
 
     def __len__(self):
@@ -201,8 +201,9 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
         dataset_size = len(dataset)
-        for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene = self.inferencer.predict(dataset_item)
+        for i in range(dataset_size):
+            predicted_scene = self.inferencer.predict(i, dataset)
+            dataset_item = dataset[i]
             if self.task_type == "ACTION_CLASSIFICATION":
                 dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
             else:

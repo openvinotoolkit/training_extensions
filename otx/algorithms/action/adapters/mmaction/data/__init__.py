@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .cls_dataset import OTXRawframeDataset
+from .cls_dataset import OTXActionClsDataset
 from .det_dataset import OTXActionDetDataset
 from .pipelines import RawFrameDecode
 
-__all__ = ["OTXRawframeDataset", "OTXActionDetDataset", "RawFrameDecode"]
+__all__ = ["OTXActionClsDataset", "OTXActionDetDataset", "RawFrameDecode"]

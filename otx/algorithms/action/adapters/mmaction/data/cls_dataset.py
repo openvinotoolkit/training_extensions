@@ -33,7 +33,7 @@ from otx.api.utils.argument_checks import (
 
 # pylint: disable=too-many-instance-attributes
 @DATASETS.register_module()
-class OTXRawframeDataset(RawframeDataset):
+class OTXActionClsDataset(RawframeDataset):
     """Wrapper that allows using a OTX dataset to train mmaction models.
 
     This wrapper is not based on the filesystem,
@@ -112,7 +112,7 @@ class OTXRawframeDataset(RawframeDataset):
         self.test_mode = test_mode
         self.modality = modality
 
-        self.video_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels, modality)
+        self.video_infos = OTXActionClsDataset._DataInfoProxy(otx_dataset, labels, modality)
 
         self.pipeline = Compose(pipeline)
         for pip in self.pipeline.transforms:

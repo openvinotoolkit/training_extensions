@@ -16,13 +16,11 @@
 
 # pylint: disable=invalid-name
 
-import glob
 from typing import Any, Dict
 
-import cv2
 import numpy as np
 
-from otx.api.entities.datasets import DatasetItemEntity
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 try:
@@ -35,7 +33,7 @@ try:
 except ImportError as e:
     import warnings
 
-    warnings.warn("ModelAPI was not found.")
+    warnings.warn(f"{e}, ModelAPI was not found.")
 
 
 @check_input_parameters_type()
@@ -95,39 +93,24 @@ class OTXActionCls(Model):
         return layer_name
 
     @check_input_parameters_type()
-    def preprocess(self, inputs: DatasetItemEntity):
+    def preprocess(self, idx: int, dataset: DatasetEntity):
         """Pre-process."""
+        start = idx - (self.t // 2) * self.interval
+        end = idx + ((self.t + 1)) // 2 * self.interval
+        frame_inds = list(range(start, end, self.interval))
+        frame_inds = np.clip(frame_inds, 0, len(dataset) - 1)
         frames = []
-        # TODO: allow only .jpg, .png exts
-        rawframes = glob.glob(inputs.media["frame_dir"] + "/*")  # type: ignore[index]
-        rawframes.sort()
-        for rawframe in rawframes:
-            frame = cv2.imread(rawframe)
-            resized_frame = self.resize(frame, (self.w, self.h))
-            resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
-            resized_frame = self.input_transform(resized_frame)
-            frames.append(resized_frame)
+        meta = {"original_shape": dataset[0].media.numpy.shape}
+        for index in frame_inds:
+            dataset_item = dataset[int(index)]
+            frame = dataset_item.media.numpy
+            frame = self.resize(frame, (self.w, self.h))
+            frames.append(frame)
         np_frames = np.expand_dims(frames, axis=(0, 1))  # [1, 1, T, H, W, C]
         np_frames = np_frames.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
-        frame_inds = self.get_frame_inds(np_frames)
-        np_frames = np_frames[:, :, :, frame_inds, :, :]
         dict_inputs = {self.image_blob_name: np_frames}
-        meta = {"original_shape": np_frames.shape}
-        meta.update({"resized_shape": resized_frame.shape})
+        meta.update({"resized_shape": np_frames[0].shape})
         return dict_inputs, meta
-
-    def get_frame_inds(self, np_frames: np.ndarray):
-        """Get sampled index for given video input."""
-        frame_len = np_frames.shape[3]
-        ori_clip_len = self.t * self.interval
-        if frame_len > ori_clip_len - 1:
-            start = (frame_len - ori_clip_len + 1) / 2
-        else:
-            start = 0
-        frame_inds = np.arange(self.t) * self.interval + int(start)
-        frame_inds = np.clip(frame_inds, 0, frame_len - 1)
-        frame_inds = frame_inds.astype(np.int)
-        return frame_inds
 
     @check_input_parameters_type()
     # pylint: disable=unused-argument
@@ -177,44 +160,24 @@ class OTXActionDet(OTXActionCls):
         return out_names
 
     @check_input_parameters_type()
-    def preprocess(self, inputs: DatasetItemEntity):
+    def preprocess(self, idx: int, dataset: DatasetEntity):
         """Pre-process."""
-        # SampleFrame -> RawFrameDecode -> Resize
+        start = idx - (self.t // 2) * self.interval
+        end = idx + ((self.t + 1)) // 2 * self.interval
+        frame_inds = list(range(start, end, self.interval))
+        frame_inds = np.clip(frame_inds, 0, len(dataset) - 1)
         frames = []
-        rawframes = glob.glob(inputs.media["frame_dir"] + "/*")  # type: ignore[index]
-        rawframes.sort()
-        for rawframe in rawframes:
-            frame = cv2.imread(rawframe)
-            resized_frame = self.resize(frame, (self.w, self.h))
-            resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
-            resized_frame = self.input_transform(resized_frame)
-            frames.append(resized_frame)
+        meta = {"original_shape": dataset[0].media.numpy.shape}
+        for index in frame_inds:
+            dataset_item = dataset[int(index)]
+            frame = dataset_item.media.numpy
+            frame = self.resize(frame, (self.w, self.h))
+            frames.append(frame)
         np_frames = np.expand_dims(frames, axis=(0))  # [1, T, H, W, C]
-        np_frames = np_frames.transpose(0, 4, 1, 2, 3)  # [1, C, T, H, W]
-        frame_inds = self.get_frame_inds(np_frames)
-        np_frames = np_frames[:, :, frame_inds, :, :]
+        np_frames = np_frames.transpose(0, -1, 1, 2, 3)  # [1, C, T, H, W]
         dict_inputs = {self.image_blob_name: np_frames}
-        meta = {"original_shape": frame.shape}
-        meta.update({"resized_shape": resized_frame.shape})
+        meta.update({"resized_shape": np_frames[0].shape})
         return dict_inputs, meta
-
-    def get_frame_inds(self, np_frames: np.ndarray):
-        """Get sampled index for given np_frames.
-
-        Sample clips from middle frame of video
-        """
-        timestamp = np_frames.shape[2] // 2
-        timestamp_start = 1
-        timestamp_end = np_frames.shape[2]
-        shot_info = (0, timestamp_end - timestamp_start) * self.fps
-
-        center_index = self.fps * (timestamp - timestamp_start) + 1
-
-        start = center_index - (self.t // 2) * self.frame_interval
-        end = center_index + ((self.t + 1) // 2) * self.frame_interval
-        frame_inds = list(range(start, end, self.frame_interval))
-        frame_inds = np.clip(frame_inds, shot_info[0], shot_info[1] - 1)
-        return frame_inds
 
     @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):
