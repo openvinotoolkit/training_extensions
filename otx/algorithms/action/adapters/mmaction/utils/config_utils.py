@@ -53,15 +53,12 @@ def patch_config(config: Config, data_pipeline_path: str, work_dir: str, task_ty
 def patch_cls_datasets(config: Config):
     """Patch cls dataset config suitable to mmaction."""
 
-    # FIXME start_index and modality is hard-coded
     assert "data" in config
     for subset in ("train", "val", "test", "unlabeled"):
         cfg = config.data.get(subset, None)
         if not cfg:
             continue
         cfg.type = "OTXRawframeDataset"
-        cfg.start_index = 1
-        cfg.modality = "RGB"
         cfg.otx_dataset = None
         cfg.labels = None
 
