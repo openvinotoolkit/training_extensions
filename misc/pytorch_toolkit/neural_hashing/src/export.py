@@ -2,8 +2,6 @@ from src.utils.exporter import Exporter
 import argparse
 from src.utils.get_config import get_config
 
-
-
 def export(args):
     export_config = get_config(action = 'export')
     exporter = Exporter(export_config, openvino=1)

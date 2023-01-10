@@ -1,6 +1,5 @@
 import torch
 import os
-import subprocess
 from src.utils.network import Encoder, load_checkpoint
 
 
@@ -18,7 +17,6 @@ class Exporter:
             load_checkpoint(self.model, parent_dir + self.checkpoint)
 
     def export_model_ir(self, parent_dir):
-        #input_model = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
         input_model = parent_dir + self.config.get('model_name_onnx')
         input_shape = self.config.get('input_shape')
         output_dir = parent_dir + "/src/utils/model_weights"
@@ -30,11 +28,10 @@ class Exporter:
 
         if self.config.get('verbose_export'):
             print(export_command)
-            print("a")
-        subprocess.run(export_command, shell = True, check = False)
+
+        os.system(export_command)
 
     def export_model_onnx(self, parent_dir):
-        #output_dir = parent_dir + "/src/utils/model_weights/"
         print(f"Saving model to {parent_dir + self.config.get('model_name_onnx')}")
         res_path = os.path.join(os.path.split(self.checkpoint)[0], parent_dir + self.config.get('model_name_onnx'))
         dummy_input = torch.randn(1,1, 28, 28)

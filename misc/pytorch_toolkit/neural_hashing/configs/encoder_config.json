@@ -1,0 +1,47 @@
+{
+    "train":{
+        "lr":0.001,
+        "class_names":["Breast","Chestxray","Oct", "Tissue"],
+        "class_count":4,
+        "checkpoint":"/src/utils/model_weights/encoder-100.pkl",
+        "device":"cuda",
+        "batch_size":256,
+        "max_epoch":20,
+        "zSize":48,
+        "alpha1":0.5,
+        "alpha2":0.6,
+        "beta":0.5,
+        "gamma":1,
+        "savepath":"/src/utils/model_weights",
+        "default_image_path":"src/utils/dataset/train",
+        "train_path":"/src/utils/dataset/train",
+        "val_path":"/src/utils/dataset/val"
+    },
+
+    "evaluation":{
+        "checkpoint": "/src/utils/model_weights/encoder-100.pkl",
+        "gallery_path":"/src/utils/dataset/gallery",
+        "query_path":"/src/utils/dataset/query",
+        "zSize":48,
+        "class_count":4,
+        "model_name_onnx": "/src/utils/model_weights/encoder.onnx",
+        "input_shape":[1,1, 28, 28],
+        "sample_image_path": "/src/utils/dataset/query/Tissue_7_18646.npy",
+        "map_target_metric":0.20,
+        "ndcg_target_metric":0.20
+    },
+
+
+
+    "export":{
+        "checkpoint": "/src/utils/model_weights/encoder-100.pkl",
+        "zSize":48,
+        "input_shape":[1,1, 28, 28],
+        "model_name_onnx": "/src/utils/model_weights/encoder.onnx",
+        "model_name":"encoder",
+        "alpha":1.833,
+        "beta":1.044,
+        "phi":-0.1,
+        "class_count": 3
+    }
+}

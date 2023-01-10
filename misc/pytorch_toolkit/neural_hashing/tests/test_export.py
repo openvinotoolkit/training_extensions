@@ -4,8 +4,6 @@ from src.utils.exporter import Exporter
 from src.utils.get_config import get_config
 from src.utils.downloader import download_checkpoint
 
-
-
 def create_export_test_for_encoder():
     class ExportTest(unittest.TestCase):
         @classmethod
@@ -54,8 +52,8 @@ def create_export_test_for_encoder():
             self.assertListEqual(self.input_shape, [1,1, 28, 28])
     return ExportTest
 
-class TestInference(create_export_test_for_encoder()):
-    'Test case for Encoder'
+class TestExporter(create_export_test_for_encoder()):
+    'Test case for exporting encoder'
 
 if __name__ == '__main__':
     unittest.main()

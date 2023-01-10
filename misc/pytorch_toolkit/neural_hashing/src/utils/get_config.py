@@ -1,7 +1,6 @@
 import os
 import json
 
-
 def get_config(action):
     """ action: train, val, export or gdrive
     """

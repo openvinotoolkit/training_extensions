@@ -11,32 +11,25 @@ from src.utils.network import Encoder, Classifier1, Discriminator
 from src.utils.dataloader import DataloderImg
 from src.utils.vectorHandle import shuffler
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-# os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 
 def main(args):
-    # global device
+
     lr = args.lr
-    #checkpoint = args.checkpoint
     batch_size = args.bs
     max_epoch = args.epochs
-    #class_count = args.clscount  #The objective is to classify the image into 3 classes
     zsize = args.zsize
     alpha1 = args.alpha1
     alpha2 = args.alpha2
     beta = args.beta
     gamma = args.gamma
-    #device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # use gpu if available
-    #class_names = ["Breast","Chest","Retina", "Tissue"]
     numclasses = args.clscount
-    #savepath = args.spath
     current_dir =  os.path.abspath(os.path.dirname(__file__))
-    train_path = current_dir + os.path.join(args.dpath, 'train')
-    val_path = current_dir + os.path.join(args.dpath, 'val')
+    train_path =  os.path.join(current_dir, args.dpath, 'train')
+    val_path =  os.path.join(current_dir, args.dpath, 'val')
 
     transform = transforms.Compose([
     transforms.Resize((28, 28), transforms.InterpolationMode("bicubic")),
-    # transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     ])
     #Data loading
@@ -71,16 +64,13 @@ def main(args):
 def Trainer(encoder, classifier, discriminator,
             trainloader, valloader, lr, max_epoch, batch_size,
             zsize, alpha1, alpha2, beta, gamma):
+
     similarity_loss_dict = {}
-    #test_similarity_loss_dict = {}
     relational_loss_dict = {}
-    #test_relational_loss_dict = {}
     classifier_loss_dict = {}
     discriminator_loss_dict = {}
-    #hd_item = {}
-    #discTestAccuracyDict = {}
-    #classifierTestAccuracyDict = {}
-    #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    current_dir =  os.path.abspath(os.path.dirname(__file__))
+    savepath = os.path.join(current_dir, 'utils','model_weights')
     encoder_optimizer = optim.Adam(encoder.parameters(), lr=lr, eps=0.0001, amsgrad=True)
     classifier1_optimizer = optim.Adam(classifier.parameters(), lr=lr, eps=0.0001, amsgrad=True)
     discriminator_optimizer = optim.Adam(discriminator.parameters(),
@@ -92,7 +82,6 @@ def Trainer(encoder, classifier, discriminator,
     encoder.train()
 
     for epoch in range(max_epoch):
-        #print ("Epoch:%d/%s."%(epoch+1,max_epoch))
         print (f"Epoch: {epoch+1}/{max_epoch}")
         similarity_loss = 0
         similarity_loss_temp = 0
@@ -137,9 +126,8 @@ def Trainer(encoder, classifier, discriminator,
             hash1, out1 = encoder(input1)
             hash2, _ = encoder(input2)
 
-            #########################
-            ##### Discriminator #####
-            #########################
+            # Discriminator
+
             if len(indexes0) > 0:
                 d_h1 = hash1[indexes0]
                 d_h2 = hash2[indexes0]
@@ -154,26 +142,24 @@ def Trainer(encoder, classifier, discriminator,
                 discriminator_optimizer.step()
                 discriminator_count_temp += 1
                 discriminator_count_full += 1
-            #################################
-            ##### AUXILARY CLASSIFIER1  #####
-            #################################
+
+            # AUXILARY CLASSIFIER1
+
 
             pred = classifier(out1)
             ac1_loss =  ac1_loss_criterion(pred.cuda(), groundtruths1)
 
             classifier1_optimizer.zero_grad()
-            #encoder_optimizer.zero_grad()
 
             ac1_loss.backward(retain_graph=True)
 
             classifier1_optimizer.step()
-            #encoder_optimizer.step()
             classifier_count_temp += 1
             classifier_count_full += 1
 
-            ###########################################
-            ##### CAUCHY LOSS 1 [t =2 vs t=1,t=0] #####
-            ###########################################
+
+            # CAUCHY LOSS 1 [t =2 vs t=1,t=0]
+
             torch.autograd.set_detect_anomaly(True)
             del input1
             del input2
@@ -196,10 +182,7 @@ def Trainer(encoder, classifier, discriminator,
             similarity_count_temp += 1
             similarity_count_full += 1
 
-
-            #######################################
-            #####  CAUCHY LOSS 2 [t=1 vs t=0] #####
-            #######################################
+            # CAUCHY LOSS 2 [t=1 vs t=0]
 
             if not len(indexes2) == batch_size:
                 cos = F.cosine_similarity(h1_new, h2_new, dim=1, eps=1e-6)
@@ -253,8 +236,6 @@ def Trainer(encoder, classifier, discriminator,
                 d_correct = 0
                 print('\n Testing ....')
                 for _, t_data in enumerate(valloader):
-                    # if t_i > 10:
-                    #     break
 
                     t_input1, t_input2, t_labels, t_gt1, t_gt2 = t_data
                     t_indexes = np.where(t_labels.numpy() == 0)[0].tolist()
@@ -331,12 +312,7 @@ def Trainer(encoder, classifier, discriminator,
 
                     del t_input1
                     del t_input2
-                #print('Classification Accuracy over test images: %.5f'
-                #        % ((100.0*ac1_correct) / ac1_total))
-                #print('Discriminator Accuracy over test images: %.5f'
-                #    % ((100.0*d_correct) / d_total))
     return similarity_loss_dict, relational_loss_dict
-
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -401,4 +377,5 @@ if __name__=="__main__":
         default=1,
         type=float)
     custom_args = parser.parse_args()
+
     main(custom_args)

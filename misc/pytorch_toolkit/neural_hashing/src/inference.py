@@ -7,16 +7,14 @@ import operator
 import math
 from torch.backends import cudnn
 from torchvision import  transforms
-
 import onnx
 import onnxruntime
 from openvino.inference_engine import IECore
-
 from src.utils.network import Encoder, load_checkpoint
 from src.utils.vectorHandle import  precision, re_classes, discounted_cumulative_gain
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-#os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
 
 class RetrievalInference():
     def __init__(self, model, gallery_path, query_path, zSize,  checkpoint, device):
@@ -34,25 +32,14 @@ class RetrievalInference():
         # The validity of the ONNX graph is verified by checking the model’s version,
         # the graph’s structure, as well as the nodes and their inputs and outputs.
         ort_session = onnxruntime.InferenceSession(onnx_checkpoint)
-        #sample_image = Image.open(img_path).convert('RGB')
         to_tensor = transforms.ToTensor()
-        #sample_image = to_tensor(sample_image)
-        #sample_image.unsqueeze_(0)
         sample_image = np.load(sample_image_path)
-        #print(sample_image.shape)
         ort_inputs = {ort_session.get_inputs()[0].name: sample_image}
-        #print(ort_inputs['input'].shape)
-        #print(ort_inputs['input'].astype(float))
-        #for k, v in ort_inputs.items():
-        #    ort_inputs[k] = float(v)
         ort_inputs['input'] = np.reshape(ort_inputs['input'].astype('float32'), [1,1,28,28])
-        #print(ort_inputs['input'].shape)
         _ = ort_session.run(None, ort_inputs, None)
-        #print(ort_outs)
         sample_image = to_tensor(sample_image)
         sample_image = torch.reshape(sample_image, [1,1,28,28]).cuda()
         _ = self.model(sample_image)
-        #np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
 
     def load_inference_model(self, run_type, onnx_checkpoint):
         if run_type == 'pytorch':
@@ -80,26 +67,17 @@ class RetrievalInference():
         print("\n\n Building Gallery .... \n")
         for img in gNimage:
             np_img = np.load(os.path.join(self.gallery_path, img))
-            # print(pil_im)
             im = np.resize(np_img,(28, 28))
-            #print(im.shape)
             numpy_image = np.array(im)
-            #print(numpy_image.shape)
             if len(numpy_image.shape) < 3:
                 numpy_image = np.stack((numpy_image,)*1, axis=-1)
-            #print(numpy_image.shape)
             numpy_image1 = numpy_image.transpose((2, 0, 1))
-            #print(numpy_image.shape)
-            #numpy_image = imagenormalize(numpy_image)
             numpy_image = np.array([numpy_image1])
-            #print(numpy_image.shape)
             torch_image = torch.from_numpy(numpy_image)
             torch_image = torch_image.type('torch.cuda.FloatTensor')
-            #hash, _ = model(torch_image)
             if run_type == 'pytorch':
                 hashcode, _ = model(torch_image)
-                #print(hashcode.shape)
-                #print(hashcode)
+
             elif run_type == 'onnx':
                 ort_inputs = {model.get_inputs()[0].name: numpy_image1}
                 ort_inputs['input'] = np.reshape(ort_inputs['input'].astype('float32'), [1,1,28,28])
@@ -109,7 +87,7 @@ class RetrievalInference():
             else:
                 out = model.infer(inputs={'input':numpy_image})['output']
                 hashcode = to_tensor(out).to(self.device)
-            #print(hash)
+
             gallery[img] = hashcode
             del torch_image
         print("\n Building Complete. \n")
@@ -117,7 +95,6 @@ class RetrievalInference():
 
 
     def distance(self, q_name, gallery):
-        #q_class = q_name.split(".")[0].split("_")[0]
         query_image = os.path.join(self.query_path, q_name)
         np_im_q =np.load(query_image)
         im_q = np.resize(np_im_q ,(28, 28))
@@ -170,7 +147,7 @@ class RetrievalInference():
         print("Model" + " ::  mAP@10 :", q_prec/len((qNimage)))
         print("Model" + " ::  mAP@100 :", q_prec_100/len((qNimage)))
         print("Model" + " ::  mAP@1000 :", q_prec_1000/len((qNimage)))
-        #print("Model" + " ::  mAP@10000 :", q_prec_10000/len((qNimage)))
+
         return q_prec/len((qNimage)), q_prec_100/len((qNimage)), q_prec_1000/len((qNimage)), q_prec_10000/len((qNimage))
     def nornalized_discounted_cumulative_gain(self, gallery):
         qNimage  = random.sample(os.listdir(self.query_path), int(len(os.listdir(self.query_path))))
@@ -193,12 +170,9 @@ class RetrievalInference():
             sorted_pool_100 = sorted(dist.items(), key=operator.itemgetter(1))[0:100]
             set1_100,set2_100 = re_classes(sorted_pool_100,q_name)
             dcg_100 = discounted_cumulative_gain(set1_100)
-            #print(dcg)
             idcg_100 = discounted_cumulative_gain(set2_100)
-            #print(idcg)
             if dcg_100 and idcg_100:
                 ndcg_im_100.append(dcg_100 / idcg_100)
-            #print(ndcg_im)
 
             # nDCG for top 100 retrieval
             sorted_pool_1000 = sorted(dist.items(), key=operator.itemgetter(1))[0:1000]
@@ -207,17 +181,13 @@ class RetrievalInference():
             idcg_1000 = discounted_cumulative_gain(set2_1000)
             if dcg_1000 and idcg_1000:
                 ndcg_im_1000.append(dcg_1000 / idcg_1000)
-            #print(ndcg_im)
             #nDCG for top 1000 retrieval
             sorted_pool_10000 = sorted(dist.items(), key=operator.itemgetter(1))[0:10000]
             set1_10000,set2_10000 = re_classes(sorted_pool_10000,q_name)
             dcg_10000 = discounted_cumulative_gain(set1_10000)
-            #print(dcg)
             idcg_10000 = discounted_cumulative_gain(set2_10000)
-            #print(idcg)
             if dcg_10000 and idcg_10000:
                 ndcg_im_10000.append(dcg_10000 / idcg_10000)
-            #print(ndcg_im)
             print(count_ndcg)
         ndcg_10 = [x for x in ndcg_im_10 if math.isnan(x) is False] # to avoid empty list
         ndcg_10 = sum(ndcg_10) / len(ndcg_im_10)
@@ -232,7 +202,6 @@ class RetrievalInference():
         print('NDCG@10', ndcg_10)
         print('NDCG@100', ndcg_100)
         print('NDCG@1000', ndcg_1000)
-        #print('NDCG@10000', ndcg_10000)
         return ndcg_10, ndcg_100, ndcg_1000, ndcg_10000
 
     def validate_models(self, run_type, onnx_checkpoint =''):
@@ -260,7 +229,6 @@ def main(args):
     current_dir =  os.path.abspath(os.path.dirname(__file__))
 
     # Data Path
-    #dpath = args.dpath
     gallery_path = current_dir + os.path.join(args.dpath, 'gallery')
     query_path = current_dir + os.path.join(args.dpath, 'query')
 
@@ -298,4 +266,5 @@ if __name__=="__main__":
         default=48,
         type=float)
     custom_args = parser.parse_args()
+
     main(custom_args)

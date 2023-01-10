@@ -18,13 +18,12 @@ def create_train_test_for_encoder():
             parent_dir = os.path.abspath(current_dir + "/../")
             train_path = parent_dir + config['train_path']
             val_path =  parent_dir + config["val_path"]
-            print(train_path)
+
             if not os.path.exists(train_path):
                 download_data()
             batch_size = config["batch_size"]
             transform = transforms.Compose([
             transforms.Resize((28, 28), transforms.InterpolationMode.BICUBIC),
-            # transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
              ])
             #Data loading
@@ -63,7 +62,7 @@ def create_train_test_for_encoder():
 
 
 class TestTrainer(create_train_test_for_encoder()):
-    'Test case for model'
+    'Test case for training encoder'
 
 
 if __name__ == '__main__':

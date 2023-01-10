@@ -5,21 +5,17 @@ import numpy as np
 
 def shuffler(h1, h2):
     sh = torch.randint(0, 2, (h1.size(0),))  # 1 means keeping h1 and 0 means keeping h2
-    #print(sh)
     h1new = torch.matmul(torch.diag(1-sh).float(), h2.cpu())+torch.matmul(
         torch.diag(sh).float(),h1.cpu())
     h2new = torch.matmul(torch.diag(1-sh).float(),h1.cpu())+torch.matmul(
         torch.diag(sh).float(),h2.cpu())
-    #print(h1new.shape)
-    #print(h2new.shape)
-    return h1new.cuda(), h2new.cuda(), sh
 
+    return h1new.cuda(), h2new.cuda(), sh
 
 def precision(q_class, ret_classes):
     initlist = [int(q_class == i) for i in ret_classes]
-    #print(initlist)
     den = np.sum(initlist)
-    #print(den)
+
     if den == 0:
         return 0
     x = 0
@@ -27,15 +23,11 @@ def precision(q_class, ret_classes):
     for idx, pts in enumerate(initlist):
         x += pts #rel(n)
         preclist[idx] = x/(idx+1) #rel(n)/k
-    #print(preclist)
+
     num = np.dot(preclist, initlist)
-    #print(num)
-    #print(num/den)
     return num/den
 
-
 def imagenormalize(img):
-    # print(img.shape)
     img = img.astype(np.float32)  # converting array of ints to floats
     img_a = img[0, :, :]
     img_b = img[1, :, :]
@@ -52,13 +44,11 @@ def imagenormalize(img):
     img_norm[2, :, :] = img_c
     return img_norm
 
-
 def normaliser(x):
     minx = torch.min(x)
     maxx = torch.max(x)
     normalised_vector = (x-minx) / (maxx-minx)
     return normalised_vector
-
 
 def rescale_vector(width, vec, sf):
     count = width
@@ -70,8 +60,6 @@ def rescale_vector(width, vec, sf):
     x_plus = torch.cat((x_plus, x_plus, x_plus), 0)
     x_plus = F.interpolate(x_plus, scale_factor=sf)
     return x_plus
-
-#print("a")
 
 def re_classes(sorted_pool,q_name):
     value = []
@@ -87,6 +75,7 @@ def re_classes(sorted_pool,q_name):
             value.append(0)
     value2 = sorted(value, reverse=True)
     return value, value2
+
 def discounted_cumulative_gain(result):
     dcg = []
     for idx, val in enumerate(result):
