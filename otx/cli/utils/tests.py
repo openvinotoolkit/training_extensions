@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import asyncio
 import json
 import os
 import shutil
-import subprocess  # nosec
 import sys
 
 import pytest
@@ -49,12 +49,64 @@ def get_template_dir(template, root) -> str:
     return template_work_dir
 
 
+def runner(
+    cmd,
+    stdout_stream=sys.stdout.buffer,
+    stderr_stream=sys.stderr.buffer,
+    **kwargs,
+):
+    async def stream_handler(in_stream, out_stream):
+        output = []
+        while True:
+            line = await in_stream.readline()
+            if not line:
+                break
+            output.append(line)
+            out_stream.write(line)  # assume it doesn't block
+        return b"".join(output)
+
+    async def run_and_capture(cmd):
+        environ = os.environ.copy()
+        environ["PYTHONUNBUFFERED"] = "1"
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=environ,
+            limit=2**24,  # 16 MiB
+            **kwargs,
+        )
+
+        try:
+            stdout, stderr = await asyncio.gather(
+                stream_handler(process.stdout, stdout_stream),
+                stream_handler(process.stderr, stderr_stream),
+            )
+        except Exception:
+            process.kill()
+            raise
+        finally:
+            rc = await process.wait()
+        return rc, stdout, stderr
+
+    rc, stdout, stderr = asyncio.run(run_and_capture(cmd))
+
+    return rc, stdout, stderr
+
+
 def check_run(cmd, **kwargs):
-    p = subprocess.Popen(cmd, stderr=subprocess.PIPE, text=True, bufsize=1, **kwargs)
-    for c in iter(lambda: p.stderr.read(1), ""):
-        sys.stderr.write(c)
-    p.communicate()
-    assert p.returncode == 0, "The process returned non zero."
+    rc, _, stderr = runner(cmd, **kwargs)
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+    if rc != 0:
+        stderr = stderr.decode("utf-8").splitlines()
+        i = 0
+        for i, line in enumerate(stderr):
+            if line.startswith("Traceback"):
+                break
+        stderr = "\n".join(stderr[i:])
+    assert rc == 0, stderr
 
 
 def otx_train_testing(template, root, otx_dir, args):

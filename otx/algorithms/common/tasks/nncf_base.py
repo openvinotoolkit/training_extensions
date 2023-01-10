@@ -18,7 +18,6 @@
 import io
 import json
 import os
-import tempfile
 from collections.abc import Mapping
 from copy import deepcopy
 from typing import Dict, List, Optional
@@ -83,9 +82,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
         self._nncf_preset = None
         self._optimization_methods: List[OptimizationMethod] = []
         self._precision = [ModelPrecision.FP32]
-
-        self._scratch_space = tempfile.mkdtemp(prefix="otx-nncf-scratch-")
-        logger.info(f"Scratch space created at {self._scratch_space}")
 
         # Extra control variables.
         self._training_work_dir = None

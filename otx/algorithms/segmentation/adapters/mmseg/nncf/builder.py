@@ -77,6 +77,8 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals
     else:
         # pytorch ckpt
         state_to_build_nncf = state_dict
+        if "state_dict" in state_dict:
+            state_to_build_nncf = state_dict["state_dict"]
 
         # This data and state dict will be used to build NNCF graph later
         # when loading NNCF model
