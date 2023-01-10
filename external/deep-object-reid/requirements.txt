@@ -1,6 +1,6 @@
-openvino==2022.1.0
-openvino-dev==2022.1.0
-openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2022/SCv1.1#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
-nncf@ git+https://github.com/openvinotoolkit/nncf@e85a695da95b202b4579ea11f880f1b14bfcda2e#egg=nncf
+openvino==2022.3.0
+openvino-dev==2022.3.0
+openmodelzoo-modelapi==2022.3.0
+nncf@ git+https://github.com/openvinotoolkit/nncf@e2848e58ca3608c9a7145d0b5f2b91277095b87a#egg=nncf
 networkx<=2.8.0
 numpy<=1.23.5  # np.bool was removed in 1.24.0 which was used in openvino runtime

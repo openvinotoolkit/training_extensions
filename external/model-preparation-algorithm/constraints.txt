@@ -1,2 +1,2 @@
-optuna==2.10.1 # remedy for fixed optuna version incompatible in OTE CI
+optuna==3.0.2 # remedy for fixed optuna version incompatible in OTE CI
 numpy<=1.23.5  # np.bool was removed in 1.24.0 which was used in openvino runtime
