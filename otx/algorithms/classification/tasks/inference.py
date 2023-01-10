@@ -343,6 +343,7 @@ class ClassificationInferenceTask(
                 and not self._multilabel
                 and not self._hierarchical
                 and self._hyperparams.learning_parameters.enable_supcon
+                and not self._model_dir.endswith("supcon")
             ):
                 recipe = os.path.join(recipe_root, "supcon.yaml")
                 self._model_dir = os.path.join(self._model_dir, "supcon")
