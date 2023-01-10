@@ -60,7 +60,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
                 fcntl.flock(f, fcntl.LOCK_UN)
                 f.close()
             except Exception:
-                pass
+                return None
 
     def save_image_to_cache(img: np.array, filename: str):
         try:
@@ -76,7 +76,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
                 fcntl.flock(f, fcntl.LOCK_UN)
                 f.close()
             except Exception:
-                pass
+                return None
 
     subset = results["dataset_item"].subset
     if is_training_subset(subset) and is_video_frame(results["dataset_item"].media):
