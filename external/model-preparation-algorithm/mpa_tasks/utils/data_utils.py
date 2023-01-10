@@ -44,29 +44,31 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
         return subset.name in ["TRAINING", "VALIDATION"]
 
     def load_image_from_cache(filename: str, to_float32=False):
-        with open(filename, "rb") as f:
-            fcntl.flock(f, fcntl.LOCK_SH)
-            try:
-                cached_img = np.asarray(bytearray(f.read()))
-                cached_img = cv2.imdecode(cached_img, cv2.IMREAD_COLOR)
-                if to_float32:
-                    cached_img = cached_img.astype(np.float32)
-                return cached_img
-            except Exception as e:
-                logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
+        f = open(filename, "rb")
+        fcntl.flock(f, fcntl.LOCK_SH)
+        try:
+            cached_img = np.asarray(bytearray(f.read()))
+            cached_img = cv2.imdecode(cached_img, cv2.IMREAD_COLOR)
+            if to_float32:
+                cached_img = cached_img.astype(np.float32)
+            return cached_img
+        except Exception as e:
+            logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
+            f.close()
     
     def save_image_to_cache(img: np.array, filename: str):
-        with open(filename, "wb") as f:
-            fcntl.flock(f, fcntl.LOCK_EX)
-            try:
-                _, binary_img = cv2.imencode('.png', img)  # imencode returns (compress_flag, binary_img)
-                f.write(binary_img)
-            except Exception as e:
-                logger.warning(f"Skip caching for {filename} \nError msg: {e}")
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
+        f = open(filename, "wb")
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            _, binary_img = cv2.imencode('.png', img)  # imencode returns (compress_flag, binary_img)
+            f.write(binary_img)
+        except Exception as e:
+            logger.warning(f"Skip caching for {filename} \nError msg: {e}")
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
+            f.close()
 
     subset = results["dataset_item"].subset
     if is_training_subset(subset) and is_video_frame(results["dataset_item"].media):
