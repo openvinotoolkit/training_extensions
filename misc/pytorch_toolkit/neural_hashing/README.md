@@ -9,12 +9,12 @@ This code/method is designed to retrieve medical images with semantic similarity
 
 > **Note:**  The model was first proposed for a dataset created by collecting images from the brain tumor dataset [(link)](https://figshare.com/articles/dataset/brain_tumor_dataset/1512427/5), dataset of breast ultrasound images [(link)](https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset) and Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images [(link)](https://data.mendeley.com/datasets/rscbjbr9sj/2). However, the dataset license clause does not abide by the criteria/requirements of the training_extension repository. Hence, a model trained using the MedMNISTv2 dataset comprising images of size 28x28 is provided here.
 
-```
-The model trained on MedNISTv2 dataset is NOT intended for clinical use.
-```
-```
-The method used is yet to be published in a peer-reviewed journal. Appropriate changes will be made to the repository once it is published.
-```
+
+> **Note:** The model trained on MedNISTv2 dataset is NOT intended for clinical use.
+
+
+> **Note:** The method used is yet to be published in a peer-reviewed journal. Appropriate changes will be made to the repository once it is published.
+
 </div>
 
 
@@ -224,7 +224,7 @@ Necessary unit tests are `test_train.py`, `test_inference.py`, `test_export.py` 
 
 ## **Acknowledgement**
 
-This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
+> This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
 
 
 **Principal Investigators**
