@@ -17,7 +17,7 @@
 import copy
 import io
 import os
-from typing import Iterable, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
 import torch
@@ -71,8 +71,6 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
-        # self._should_stop = False
-        self._model = None
         self.task_environment = task_environment
         super().__init__(ActionConfig, task_environment, **kwargs)
 
@@ -115,7 +113,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     def _infer_model(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
-    ) -> Tuple[Iterable, float]:
+    ) -> Tuple[Iterable, Optional[float]]:
         """Inference wrapper.
 
         This method triggers the inference and returns `prediction_results` zipped with prediction results,
@@ -139,7 +137,6 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
         test_config = prepare_for_testing(self._recipe_cfg, dataset)
         mm_test_dataset = build_dataset(test_config.data.test)
-        mm_test_dataset.test_mode = True
         # TODO Get batch size and num_gpus autometically
         batch_size = 1
         mm_test_dataloader = build_dataloader(
@@ -202,6 +199,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
         return predictions, metric
 
+    # pylint: disable=attribute-defined-outside-init
     def _init_task(self, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
@@ -220,7 +218,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             buffer = io.BytesIO(model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
+            self.confidence_threshold: float = model_data.get("confidence_threshold", self.confidence_threshold)
             model = self._create_model(self._recipe_cfg, from_scratch=True)
 
             try:
@@ -283,18 +281,27 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     ):
         """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
+        self.remove_empty_frames(output_resultset.ground_truth_dataset)
         metric = self._get_metric(output_resultset)
         performance = metric.get_performance()
         logger.info(f"Final model performance: {str(performance)}")
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def _get_metric(self, output_resultset):
+    def _get_metric(self, output_resultset: ResultSetEntity):
         if self._task_type == TaskType.ACTION_CLASSIFICATION:
             return MetricsHelper.compute_accuracy(output_resultset)
         if self._task_type == TaskType.ACTION_DETECTION:
             return MetricsHelper.compute_f_measure(output_resultset)
         raise NotImplementedError(f"{self._task_type} is not supported in action task")
+
+    def remove_empty_frames(self, dataset: DatasetEntity):
+        """Remove empty frame for action detection dataset."""
+        remove_indices = []
+        for idx, item in enumerate(dataset):
+            if item.get_metadata()[0].data.is_empty_frame:
+                remove_indices.append(idx)
+        dataset.remove_at_indices(remove_indices)
 
     def unload(self):
         """Unload the task."""
@@ -361,9 +368,17 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         model_cfg = Config.fromfile(os.path.join(self._model_dir, "model.py"))
         return model_cfg
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset):
+    def _add_predictions_to_dataset(self, prediction_results: Iterable, dataset: DatasetEntity):
         """Loop over dataset again to assign predictions. Convert from MM format to OTX format."""
-        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
+        prediction_results = list(prediction_results)
+        video_info: Dict[str, int] = {}
+        for dataset_item in dataset:
+            video_id = dataset_item.get_metadata()[0].data.video_id
+            if video_id not in video_info:
+                video_info[video_id] = len(video_info)
+        for dataset_item in dataset:
+            video_id = dataset_item.get_metadata()[0].data.video_id
+            all_results, feature_vector, saliency_map = prediction_results[video_info[video_id]]
             item_labels = []
             label = ScoredLabel(label=self._labels[all_results.argmax()], probability=all_results.max())
             item_labels.append(label)
@@ -384,8 +399,9 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
-    def _add_det_predictions_to_dataset(self, prediction_results, dataset):
+    def _add_det_predictions_to_dataset(self, prediction_results: Iterable, dataset: DatasetEntity):
         confidence_threshold = 0.05
+        self.remove_empty_frames(dataset)
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             shapes = []
             for label_idx, detections in enumerate(all_results):

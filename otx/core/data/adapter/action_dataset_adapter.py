@@ -10,6 +10,7 @@ import os.path as osp
 from typing import Dict, List
 
 from datumaro.components.annotation import AnnotationType
+from datumaro.components.annotation import Bbox as DatumaroBbox
 from datumaro.components.dataset import Dataset as DatumaroDataset
 
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -51,6 +52,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
             cvat_data_list.append(DatumaroDataset.import_from(cvat_data_path, "cvat"))
         return cvat_data_list
 
+    # pylint: disable=protected-access, too-many-nested-blocks
     def _prepare_label_information(self, datumaro_dataset: dict) -> dict:
         """Prepare and reorganize the label information for merging multiple video information.
 
@@ -66,34 +68,43 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         However, Since overall labels are [0, 1, 2, 4], 'video2/frame_000.jpg' should has the label index as 3.
         """
         outputs = {
-            "category_items": [],
-            "label_groups": [],
             "label_entities": [],
         }  # type: dict
 
-        category_list = []  # to check the duplicate case
-        for cvat_data in datumaro_dataset[Subset.TRAINING]:
-            # Making overall categories
+        # Making overall categories
+        has_EmptyFrame = False
+        category_names: List[str] = []  # to check the duplicate case
+        subset = list(datumaro_dataset.keys())[0]
+        for cvat_data in datumaro_dataset[subset]:
             categories = cvat_data.categories().get(AnnotationType.label, None)
+            if categories is not None:
+                indices = categories._indices
+                for name in indices:
+                    if name == "EmptyFrame":
+                        has_EmptyFrame = True
+                        continue
+                    if name not in category_names:
+                        category_names.append(name)
+        category_names.sort()
 
-            if categories not in category_list:
-                outputs["category_items"].extend(categories.items)
-                outputs["label_groups"].extend(categories.label_groups)
+        if has_EmptyFrame:
+            category_names.append("EmptyFrame")
 
-            category_list.append(categories)
-
-            # Reindexing the each label index of multiple video datasets
-            for cvat_data_item in cvat_data:
-                for ann in cvat_data_item.annotations:
-                    ann_name = categories.items[ann.label].name
-                    ann.label = [
-                        i for i, category_item in enumerate(outputs["category_items"]) if category_item.name == ann_name
-                    ][0]
+        # Reindexing the each label index of multiple video datasets
+        for subset_data in datumaro_dataset.values():
+            for cvat_data in subset_data:
+                for cvat_data_item in cvat_data:
+                    categories = cvat_data.categories().get(AnnotationType.label, None)
+                    if categories is not None:
+                        for ann in cvat_data_item.annotations:
+                            ann_name = self.find_ann_name(categories._indices, ann.label)
+                            if ann_name is not None:
+                                ann.label = self.find_ann_label(category_names, ann_name)
 
         # Generate label_entity list according to overall categories
         outputs["label_entities"] = [
-            LabelEntity(name=class_name.name, domain=self.domain, is_empty=False, id=ID(i))
-            for i, class_name in enumerate(outputs["category_items"])
+            LabelEntity(name=name, domain=self.domain, is_empty=False, id=ID(index))
+            for index, name in enumerate(category_names)
         ]
         return outputs
 
@@ -114,23 +125,22 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
             for datumaro_items in subset_data:
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
+                    video_name = datumaro_item.media.path.split("/")[-3]
                     shapes = []
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.label:
                             shapes.append(self._get_label_entity(ann))
 
-                    meta_item = [
-                        MetadataItemEntity(
-                            data=VideoMetadata(
-                                name="video_meta",
-                                video_id=int(datumaro_item.media.path.split("/")[-3].split("_")[-1]),
-                                frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
-                            )
+                    meta_item = MetadataItemEntity(
+                        data=VideoMetadata(
+                            video_id=video_name,
+                            frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
+                            is_empty_frame=False,
                         )
-                    ]
+                    )
 
                     dataset_item = DatasetItemEntity(
-                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=meta_item
+                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[meta_item]
                     )
                     dataset_items.append(dataset_item)
         return DatasetEntity(items=dataset_items)
@@ -139,22 +149,44 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
+    # pylint: disable=too-many-nested-blocks
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Detection."""
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
+
+        # Detection use index 0 as a background category
+        for label_entity in self.label_entities:
+            label_entity.id = ID(int(label_entity.id) + 1)
 
         dataset_items = []
         for subset, subset_data in self.dataset.items():
             for datumaro_items in subset_data:
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
+                    video_name = datumaro_item.media.path.split("/")[-3]
                     shapes = []
+                    is_empty_frame = False
                     for ann in datumaro_item.annotations:
-                        if ann.type == AnnotationType.bbox:
-                            shapes.append(self._get_original_bbox_entity(ann))
-
-                    dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
+                        if isinstance(ann, DatumaroBbox):
+                            if self.label_entities[ann.label].name == "EmptyFrame":
+                                is_empty_frame = True
+                                shapes.append(self._get_label_entity(ann))
+                            else:
+                                shapes.append(self._get_original_bbox_entity(ann))
+                    meta_item = MetadataItemEntity(
+                        data=VideoMetadata(
+                            video_id=video_name,
+                            frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].split("_")[-1]),
+                            is_empty_frame=is_empty_frame,
+                        )
+                    )
+                    dataset_item = DatasetItemEntity(
+                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[meta_item]
+                    )
                     dataset_items.append(dataset_item)
+
+        if self.label_entities[-1].name == "EmptyFrame":
+            self.label_entities = self.label_entities[:-1]
 
         return DatasetEntity(items=dataset_items)

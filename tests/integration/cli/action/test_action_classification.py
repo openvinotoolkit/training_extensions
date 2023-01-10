@@ -35,7 +35,7 @@ else:
     templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsMPADetection:
+class TestToolsOTXActionClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
