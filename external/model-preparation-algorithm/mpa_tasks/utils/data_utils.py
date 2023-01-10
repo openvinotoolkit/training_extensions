@@ -44,38 +44,48 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
         return subset.name in ["TRAINING", "VALIDATION"]
 
     def load_image_from_cache(filename: str, to_float32=False):
-        f = open(filename, "rb")
-        fcntl.flock(f, fcntl.LOCK_SH)
         try:
+            f = open(filename, "rb")
+            fcntl.flock(f, fcntl.LOCK_SH)
             cached_img = np.asarray(bytearray(f.read()))
+            fcntl.flock(f, fcntl.LOCK_UN)
+            f.close()
             cached_img = cv2.imdecode(cached_img, cv2.IMREAD_COLOR)
             if to_float32:
                 cached_img = cached_img.astype(np.float32)
             return cached_img
         except Exception as e:
             logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
-        finally:
-            fcntl.flock(f, fcntl.LOCK_UN)
-            f.close()
-    
+            try:  # to handle the case that f is not defined: failed open(filename, "rb")
+                fcntl.flock(f, fcntl.LOCK_UN)
+                f.close()
+            except Exception:
+                pass
+
     def save_image_to_cache(img: np.array, filename: str):
-        f = open(filename, "wb")
-        fcntl.flock(f, fcntl.LOCK_EX)
         try:
+            f = open(filename, "wb")
+            fcntl.flock(f, fcntl.LOCK_EX)
             _, binary_img = cv2.imencode('.png', img)  # imencode returns (compress_flag, binary_img)
             f.write(binary_img)
-        except Exception as e:
-            logger.warning(f"Skip caching for {filename} \nError msg: {e}")
-        finally:
             fcntl.flock(f, fcntl.LOCK_UN)
             f.close()
+        except Exception as e:
+            logger.warning(f"Skip caching for {filename} \nError msg: {e}")
+            try:  # to handle the case that f is not defined: failed open(filename, "wb")
+                fcntl.flock(f, fcntl.LOCK_UN)
+                f.close()
+            except Exception:
+                pass
 
     subset = results["dataset_item"].subset
     if is_training_subset(subset) and is_video_frame(results["dataset_item"].media):
         index = results["index"]
         filename = os.path.join(cache_dir, f"{subset}-{index:06d}.png")
         if os.path.exists(filename):
-            return load_image_from_cache(filename, to_float32=to_float32)
+            loaded_img = load_image_from_cache(filename, to_float32=to_float32)
+            if loaded_img is not None:
+                return loaded_img
 
     img = results["dataset_item"].numpy  # this takes long for VideoFrame
     if to_float32:
