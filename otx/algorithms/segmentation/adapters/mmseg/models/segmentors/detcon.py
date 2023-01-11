@@ -538,6 +538,7 @@ class SupConDetConB(EncoderDecoder):
         if img.ndim == 4:
             # supervised learning with interval
             embd = self.detconb.online_backbone(img)
+            mask = gt_semantic_seg
         else:
             # supcon training
             mask = gt_semantic_seg[:, :, 0]

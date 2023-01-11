@@ -207,6 +207,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         if self._recipe_cfg.get("evaluation", None):
             self.metric = self._recipe_cfg.evaluation.metric
 
+        if self._recipe_cfg.get("override_configs", None):
+            self.override_configs.update(self._recipe_cfg.override_configs)
+
         if not self.freeze:
             remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
         logger.info(f"initialized recipe = {recipe}")

@@ -106,6 +106,8 @@ class LoadAnnotationFromOTXDataset:
 class TwoCropTransform:
     """TwoCropTransform to combine two pipelines.
 
+    Through `SwitchPipelineHook`, how frequently both pipelines (view0 + view1) is applied can be set.
+
     :param view0: Pipeline for online network.
     :param view1: Pipeline for target network.
     """
@@ -113,6 +115,7 @@ class TwoCropTransform:
     def __init__(self, view0: List, view1: List):
         self.view0 = Compose([build_from_cfg(p, PIPELINES) for p in view0])
         self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
+        self.is_both = False
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
@@ -120,13 +123,19 @@ class TwoCropTransform:
 
         :param results: Inputs to be transformed.
         """
-        results1 = self.view0(deepcopy(results))
-        results2 = self.view1(deepcopy(results))
+        if self.is_both:
+            results1 = self.view0(deepcopy(results))
+            results2 = self.view1(deepcopy(results))
 
-        results = deepcopy(results1)
-        results["img"] = np.stack((results1["img"], results2["img"]), axis=0)
-        results["gt_semantic_seg"] = np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0)
-        results["flip"] = [results1["flip"], results2["flip"]]
+            results = deepcopy(results1)
+            results["img"] = np.stack((results1["img"], results2["img"]), axis=0)
+            results["gt_semantic_seg"] = np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0)
+            results["flip"] = [results1["flip"], results2["flip"]]
+        
+        else:
+            results = self.view0(results)
+
+        results['is_both'] = self.is_both
 
         return results
 

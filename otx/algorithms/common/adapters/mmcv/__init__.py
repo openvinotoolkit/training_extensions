@@ -23,6 +23,7 @@ from .hooks import (
     OTXProgressHook,
     ReduceLROnPlateauLrUpdaterHook,
     StopLossNanTrainingHook,
+    SwitchPipelineHook,
 )
 from .nncf.hooks import CompressionHook
 from .nncf.runners import AccuracyAwareRunner
@@ -41,4 +42,5 @@ __all__ = [
     "EMAMomentumUpdateHook",
     "CompressionHook",
     "AccuracyAwareRunner",
+    "SwitchPipelineHook",
 ]
