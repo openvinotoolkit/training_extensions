@@ -4,7 +4,7 @@
 
 from mmcv import ConfigDict
 
-from otx.mpa.det.incremental import IncrDetectionStage
+from otx.mpa.det.stage import DetectionStage
 from otx.mpa.utils.config_utils import update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 

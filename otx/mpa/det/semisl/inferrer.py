@@ -3,6 +3,7 @@
 #
 
 from otx.mpa.det.inferrer import DetectionInferrer
+from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
 from .stage import SemiSLDetectionStage

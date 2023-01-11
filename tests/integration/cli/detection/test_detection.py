@@ -64,6 +64,7 @@ args_semisl = {
     "--val-data-roots": "data/airport/train",
     "--test-ann-files": "data/airport/annotation_example_train.json",
     "--test-data-roots": "data/airport/train",
+    "--unlabeled-data-roots": "data/airport/train",
     "--input": "data/airport/train",
     "train_params": [
         "params",
