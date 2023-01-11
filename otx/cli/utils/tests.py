@@ -56,14 +56,19 @@ def runner(
     **kwargs,
 ):
     async def stream_handler(in_stream, out_stream):
-        output = []
+        output = bytearray()
+        # buffer line
+        line = bytearray()
         while True:
-            line = await in_stream.readline()
-            if not line:
+            c = await in_stream.read(1)
+            if not c:
                 break
-            output.append(line)
-            out_stream.write(line)  # assume it doesn't block
-        return b"".join(output)
+            line.extend(c)
+            if c == b"\n":
+                out_stream.write(line)
+                output.extend(line)
+                line = bytearray()
+        return output
 
     async def run_and_capture(cmd):
         environ = os.environ.copy()
@@ -73,7 +78,6 @@ def runner(
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             env=environ,
-            limit=2**24,  # 16 MiB
             **kwargs,
         )
 
