@@ -62,7 +62,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
             else:
                 raise NotImplementedError("Anomaly task needs validation dataset.")
         if test_data_roots:
-            dataset[Subset.VALIDATION] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
+            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
         return dataset
 
     def _prepare_anomaly_label_information(self) -> List[LabelEntity]:

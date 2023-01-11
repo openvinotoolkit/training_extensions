@@ -42,6 +42,7 @@ args = {
     "--train-data-roots": "data/datumaro/mvtec/train",
     "--val-data-roots": "data/datumaro/mvtec/test",
     "--test-data-roots": "data/datumaro/mvtec/test",
+    "--input": "data/anomaly/shapes/test/hexagon",
     "train_params": [],
 }
 
