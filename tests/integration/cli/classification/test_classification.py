@@ -425,7 +425,7 @@ args_h = {
         "--learning_parameters.num_iters",
         "2",
         "--learning_parameters.batch_size",
-        "12",
+        "4",
     ],
 }
 
