@@ -176,7 +176,9 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             dataset_item.append_annotations(predicted_scene.annotations)
 
             if feature_vector is not None:
-                feature_vector_media = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+                feature_vector_media = TensorEntity(
+                    name="representation_vector", numpy=np.copy(feature_vector.reshape(-1))
+                )
                 dataset_item.append_metadata_item(feature_vector_media, model=self.model)
 
             if dump_soft_prediction:
