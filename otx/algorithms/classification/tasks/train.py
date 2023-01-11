@@ -108,7 +108,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         if train_parameters is not None:
             update_progress_callback = train_parameters.update_progress  # type: ignore
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = defaultdict(OTXLoggerHook.Curve)
+        self._learning_curves = defaultdict(OTXLoggerHook.Curve)  # type: defaultdict
 
         stage_module = "ClsTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)
@@ -159,6 +159,10 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                     val=ConfigDict(
                         otx_dataset=dataset.get_subset(Subset.VALIDATION),
                         labels=self._labels,
+                    ),
+                    unlabeled=ConfigDict(
+                        otx_dataset=dataset.get_subset(Subset.UNLABELED),
+                        labels=None,
                     ),
                 )
             )

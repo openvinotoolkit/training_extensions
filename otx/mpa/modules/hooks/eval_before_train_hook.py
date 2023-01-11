@@ -26,6 +26,7 @@ class EvalBeforeTrainHook(Hook):
     def before_train_epoch(self, runner):
         """Execute the evaluation hook before training"""
         if not self._executed:
+            is_training = runner.model.training
             for hook in runner.hooks:
                 if self.check_eval_hook(hook):
                     self.execute_hook(hook, runner)
@@ -38,6 +39,10 @@ class EvalBeforeTrainHook(Hook):
                     break
 
             self._executed = True
+            if is_training:
+                runner.model.train()
+            else:
+                runner.model.eval()
 
     @staticmethod
     def check_eval_hook(hook: Hook):

@@ -16,3 +16,7 @@ custom_hooks:
   - type: ModelEmaV2Hook
     priority: ABOVE_NORMAL
   - type: SemiSLClsHook
+
+task_adapt:
+  type: "mpa"
+  op: "REPLACE"
