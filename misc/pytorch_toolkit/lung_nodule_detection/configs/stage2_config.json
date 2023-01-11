@@ -1,13 +1,15 @@
 {"train":{
     "savepath": "temp_data/stage2/",
-    "imgpath": "test_data/stage2/",
+    "imgpath": "downloads/test_data/stage2/",
+    "jsonpath": "downloads/test_data/patch_data_split.json",
     "lrate": 1e-4,
     "epochs": 5,
     "network": "lenet"
 },
 "inference":{
     "modelpath":"temp_data/stage2/",
-    "imgpath":"test_data/stage2/",
+    "imgpath":"downloads/test_data/stage2/",
+    "jsonpath": "downloads/test_data/patch_data_split.json",
     "network": "lenet"
 },
 "export":{

@@ -3,7 +3,7 @@
     "save_path": "temp_data/stage1/",
     "json_path": "downloads/test_data/fold4_pos_neg_eq.json",
     "datapath": "downloads/test_data/stage1/",
-    "lung_segpath": "temp_data/stage1/",
+    "lung_segpath": "downloads/test_data/stage1/mask/",
     "network": "sumnet",
     "epochs": 5,
     "lrate": 1e-4,
@@ -17,7 +17,7 @@
 },
 "export":{
     "checkpoint": "downloads/model_weights/stage1/sumnet_adv_best_lungs.pt",
-    "input_shape":[2, 1, 512, 512],
+    "input_shape":[1, 1, 512, 512],
     "model_name_onnx": "lung_seg.onnx",
     "model_name":"lung_seg",
     "network": "sumnet"

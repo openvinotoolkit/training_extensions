@@ -23,7 +23,7 @@ class Exporter:
         --input_model {input_model} \
         --input_shape "{input_shape}" \
         --output_dir {output_dir}\
-        --log_level=DEBUG\
+        --log_level=ERROR\
         --extension {openvino_extension_path}"""
 
         if self.config.get('verbose_export'):
@@ -42,5 +42,5 @@ class Exporter:
 
         torch.onnx.export(self.model, dummy_input, res_path,
                           input_names=['input'], output_names=['output'],
-                          operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK,
+                          operator_export_type=torch.onnx.OperatorExportTypes.ONNX_FALLTHROUGH,
                           verbose=False)

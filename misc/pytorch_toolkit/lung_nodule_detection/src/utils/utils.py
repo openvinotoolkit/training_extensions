@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import json
 from .models import LeNet, R2U_Net, SUMNet, U_Net
 
 
@@ -37,7 +38,6 @@ def dice_coefficient(pred1, target):
 
     return [score_1.mean()]
 
-
 def load_model(network):
 
     if network == 'unet':
@@ -72,4 +72,21 @@ def plot_graphs(
     plt.savefig(os.path.join(save_path, save_name))
     plt.close()
 
-    
+def create_dummy_json_file(json_path,stage):
+    test_data_path = os.path.split(json_path)[0]
+    if stage == 1:
+        img_path = os.path.join(test_data_path,'stage1','img')
+    else:
+        img_path = os.path.join(test_data_path,'stage2','img')
+    file_list = os.listdir(img_path)
+    train_list = file_list[:7]
+    valid_list = file_list[7:10]
+    test_list = file_list[10:15]
+    dummy_dict = {
+        "train_set":train_list,
+        "valid_set": valid_list,
+        "test_set": test_list
+    }
+
+    with open(json_path, 'w') as h:
+        json.dump(dummy_dict, h)

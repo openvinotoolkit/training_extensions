@@ -15,7 +15,7 @@ from .utils import dice_coefficient, plot_graphs, ch_shuffle
 
 plt.switch_backend('agg')
 
-def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epochs=35,lrate=1e-4,adv=False):
+def train_network(config):
     """Training function for SUMNet,UNet,R2Unet
 
     Parameters
@@ -43,21 +43,29 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
     None
     """
 
+    
+    fold_no = config["fold_no"]
     fold = 'fold'+str(fold_no)
-    save_path = save_path+'/'+network+'/'+fold+'/'
+    save_path = config["save_path"]
+    json_path = config["json_path"]
+    datapath = config["datapath"]
+    lung_segpath = config["lung_segpath"]
+    network = config["network"]
+    lrate = config["lrate"]
+    adv = config["adv"]
+    epochs = config["epochs"]
+
+    save_path = os.path.join(save_path, network, fold)
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
-    with open(json_path+fold+'_pos_neg_eq.json') as f:
+    with open(json_path) as f:
         json_file = json.load(f)
-        train_set = json_file['train_set']
-        val_set = json_file['valid_set']
-
 
     trainDset = LungDataLoader(datapath=datapath,lung_path=lung_segpath,is_transform=True,json_file=json_file,split="train_set",img_size=512)
     valDset = LungDataLoader(datapath=datapath,lung_path=lung_segpath,is_transform=True,json_file=json_file,split="valid_set",img_size=512)
     trainDataLoader = data.DataLoader(trainDset,batch_size=4,shuffle=True,num_workers=4,pin_memory=True,drop_last=True)
-    validDataLoader = data.DataLoader(valDset,batch_size=4,shuffle=False,num_workers=4,pin_memory=True,drop_last=True)
+    validDataLoader = data.DataLoader(valDset,batch_size=1,shuffle=False,num_workers=4,pin_memory=True,drop_last=True)
 
     if network == 'unet':
         net = U_Net(img_ch=1,output_ch=2)
@@ -89,7 +97,6 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
     validDiceCoeff_lungs = []
     start = time.time()
 
-    bestValidDice = torch.zeros(1)
     bestValidDice_lungs = 0.0
 
 
@@ -113,7 +120,6 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
                 labels = labels.cuda()
 
             net_out = net(Variable(inputs))
-
 
             net_out_sf = F.softmax(net_out,dim=1)
 
@@ -218,4 +224,6 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
     plot_graphs(train_values=trainDiceCoeff_lungs, valid_values=validDiceCoeff_lungs,
     save_path=save_path, x_label='Epochs', y_label='Dice coefficient',
     plot_title='Dice coefficient', save_name='Dice_Plot.png')
+
+    return trainLoss
 

@@ -1,35 +1,13 @@
 from utils import train_stage1
-from utils import patch_classifier
+from utils import train_stage2
 import argparse
 
 def main(config):
 
     if config["lungseg"] or config["lungsegadv"]:
-        foldno = config["foldno"]
-        savepath = config["savepath"]
-        jsonpath = config["jsonpath"]
-        datapath = config["datapath"]
-        lungsegpath = config["lungmask"]
-        network = config["network"]
-        if config["epochs"]:
-            if config["lungsegadv"]:
-                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,config["epochs"],adv=True)
-            else:
-                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,config["epochs"])
-        else:
-            if config["lungsegadv"]:
-                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network,config["epochs"],adv=True)
-            else:
-                train_stage1.train_network(foldno,savepath,jsonpath,datapath,lungsegpath,network)
-
+        train_stage1.train_network(config)
     else:
-        savepath = config["savepath"]
-        imgpath = config["datapath"]
-        if config["epochs"]:
-            patch_classifier.lungpatch_classifier(savepath,imgpath,config["epochs"])
-        else:
-            patch_classifier.lungpatch_classifier(savepath,imgpath)
-
+        train_stage2.lungpatch_classifier(config)
 
 if __name__ == '__main__':
 

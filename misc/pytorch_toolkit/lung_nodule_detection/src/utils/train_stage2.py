@@ -7,12 +7,13 @@ from torch.autograd import Variable
 import time
 import os
 from tqdm import tqdm as tq
+import json
 from .data_loader import LungPatchDataLoader
 from .models import LeNet
 from .utils import plot_graphs
 
 
-def lungpatch_classifier(save_path,img_path,lrate=1e-4,epochs=35):
+def lungpatch_classifier(config):
     """Trains network to classify patches based on the presence of nodule
 
     Parameters
@@ -31,9 +32,17 @@ def lungpatch_classifier(save_path,img_path,lrate=1e-4,epochs=35):
 
     None
     """
+    save_path = config["savepath"]
+    img_path = config["imgpath"]
+    lrate  = config["lrate"]
+    epochs = config["epochs"]
+    json_path = config["jsonpath"]
 
-    trainDset = LungPatchDataLoader(img_path=img_path,is_transform=True,split="train_set")
-    valDset = LungPatchDataLoader(img_path=img_path,is_transform=True,split="valid_set")
+    with open(json_path) as f:
+        json_file = json.load(f)
+
+    trainDset = LungPatchDataLoader(imgpath=img_path,json_file=json_file,is_transform=True,split="train_set")
+    valDset = LungPatchDataLoader(imgpath=img_path,json_file=json_file,is_transform=True,split="valid_set")
     trainDataLoader = data.DataLoader(trainDset,batch_size=16,shuffle=True,num_workers=4,pin_memory=True)
     validDataLoader = data.DataLoader(valDset,batch_size=16,shuffle=True,num_workers=4,pin_memory=True)
 
@@ -175,3 +184,5 @@ def lungpatch_classifier(save_path,img_path,lrate=1e-4,epochs=35):
     train_values=trainAcc, valid_values=validAcc,
     save_path=save_path, x_label='Epochs', y_label='Accuracy',
     plot_title='Accuracy Plot', save_name='acc_plot.png')
+
+    return trainLoss

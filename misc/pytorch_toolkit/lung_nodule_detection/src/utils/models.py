@@ -2,8 +2,6 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torchvision import models
-from .max_unpool_2d import Unpool2d as MaxUnpool2d
-
 
 class SUMNet(nn.Module):
     def __init__(self,in_ch,out_ch):
@@ -33,18 +31,18 @@ class SUMNet(nn.Module):
         self.bn8       = self.encoder[26]
         self.pool5     = nn.MaxPool2d(2, 2, return_indices = True)
 
-        self.unpool5   = MaxUnpool2d()
+        self.unpool5   = nn.MaxUnpool2d(2, 2)
         self.donv5b    = nn.Conv2d(1024, 512, 3, padding = 1)
         self.donv5a    = nn.Conv2d(512, 512, 3, padding = 1)
-        self.unpool4   = MaxUnpool2d()
+        self.unpool4   = nn.MaxUnpool2d(2, 2)
         self.donv4b    = nn.Conv2d(1024, 512, 3, padding = 1)
         self.donv4a    = nn.Conv2d(512, 256, 3, padding = 1)
-        self.unpool3   = MaxUnpool2d()
+        self.unpool3   = nn.MaxUnpool2d(2, 2)
         self.donv3b    = nn.Conv2d(512, 256, 3, padding = 1)
         self.donv3a    = nn.Conv2d(256,128, 3, padding = 1)
-        self.unpool2   = MaxUnpool2d()
+        self.unpool2   = nn.MaxUnpool2d(2, 2)
         self.donv2     = nn.Conv2d(256, 64, 3, padding = 1)
-        self.unpool1   = MaxUnpool2d()
+        self.unpool1   = nn.MaxUnpool2d(2, 2)
         self.donv1     = nn.Conv2d(128, 32, 3, padding = 1)
         self.output    = nn.Conv2d(32, out_ch, 1)
 
@@ -64,18 +62,18 @@ class SUMNet(nn.Module):
         conv5b         = F.relu(self.bn8(self.conv5b(conv5a)), inplace = True)
         pool5, idxs5   = self.pool5(conv5b)
 
-        unpool5        = torch.cat([self.unpool5.apply(pool5, idxs5), conv5b], 1)
+        unpool5        = torch.cat([self.unpool5(pool5 + 1e-10, idxs5), conv5b], 1)
         donv5b         = F.relu(self.donv5b(unpool5), inplace = True)
         donv5a         = F.relu(self.donv5a(donv5b), inplace = True)
-        unpool4        = torch.cat([self.unpool4.apply(donv5a, idxs4), conv4b], 1)
+        unpool4        = torch.cat([self.unpool4(donv5a, idxs4), conv4b], 1)
         donv4b         = F.relu(self.donv4b(unpool4), inplace = True)
         donv4a         = F.relu(self.donv4a(donv4b), inplace = True)
-        unpool3        = torch.cat([self.unpool3.apply(donv4a, idxs3), conv3b], 1)
+        unpool3        = torch.cat([self.unpool3(donv4a, idxs3), conv3b], 1)
         donv3b         = F.relu(self.donv3b(unpool3), inplace = True)
         donv3a         = F.relu(self.donv3a(donv3b))
-        unpool2        = torch.cat([self.unpool2.apply(donv3a, idxs2), conv2], 1)
+        unpool2        = torch.cat([self.unpool2(donv3a, idxs2), conv2], 1)
         donv2          = F.relu(self.donv2(unpool2), inplace = True)
-        unpool1        = torch.cat([self.unpool1.apply(donv2, idxs1), conv1], 1)
+        unpool1        = torch.cat([self.unpool1(donv2, idxs1), conv1], 1)
         donv1          = F.relu(self.donv1(unpool1), inplace = True)
         output         = self.output(donv1)
         return output
