@@ -67,10 +67,7 @@ class ClsTrainer(ClsStage):
         # meta['config'] = cfg.pretty_text
         meta["seed"] = cfg.seed
 
-        if isinstance(datasets[0], list):
-            repr_ds = datasets[0][0]
-        else:
-            repr_ds = datasets[0]
+        repr_ds = datasets[0]
 
         if cfg.checkpoint_config is not None:
             cfg.checkpoint_config.meta = dict(mmcls_version=__version__)

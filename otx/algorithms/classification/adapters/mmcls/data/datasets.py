@@ -46,17 +46,8 @@ class MPAClsDataset(BaseDataset):
             new_classes = kwargs.pop("new_classes", [])
             self.img_indices = self.get_indices(new_classes)
 
-        if isinstance(pipeline, dict):
-            self.pipeline = {}
-            for k, v in pipeline.items():
-                _pipeline = [dict(type="LoadImageFromOTXDataset"), *v]
-                _pipeline = [build_from_cfg(p, PIPELINES) for p in _pipeline]
-                self.pipeline[k] = Compose(_pipeline)
-            self.num_pipes = len(pipeline)
-        elif isinstance(pipeline, list):
-            self.num_pipes = 1
-            _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
-            self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
+        _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
+        self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
         self.load_annotations()
 
     def get_indices(self, *args):  # pylint: disable=unused-argument

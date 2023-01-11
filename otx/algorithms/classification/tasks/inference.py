@@ -323,7 +323,7 @@ class ClassificationInferenceTask(
         else:
             runner = ConfigDict(max_epochs=int(params.num_iters))
 
-        return ConfigDict(
+        config = ConfigDict(
             optimizer=ConfigDict(lr=params.learning_rate),
             lr_config=lr_config,
             early_stop=early_stop,
@@ -333,6 +333,18 @@ class ClassificationInferenceTask(
             ),
             runner=runner,
         )
+
+        if self._train_type.value == "SEMISUPERVISED":
+            unlabeled_config = ConfigDict(
+                data=ConfigDict(
+                    unlabeled=ConfigDict(
+                        samples_per_gpu=int(params.unlabeled_batch_size),
+                        workers_per_gpu=int(params.num_workers),
+                    )
+                )
+            )
+            config.update(unlabeled_config)
+        return config
 
     def _init_recipe(self):
         logger.info("called _init_recipe()")

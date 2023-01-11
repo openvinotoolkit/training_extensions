@@ -6,47 +6,24 @@ import torch
 from mmcls.models.builder import HEADS
 from mmcls.models.heads.linear_head import LinearClsHead
 
+from otx.mpa.modules.models.heads.non_linear_cls_head import NonLinearClsHead
 
-@HEADS.register_module()
-class SemiSLClsHead(LinearClsHead):
-    """Semi-SL for Classification Head
 
-    This ClsHead is a classification linear head based on the FixMatch algorithm.
-    This head uses the dynamic threshold for each class calculated based on
-    the confidence value of the model.
+class SemiClsHead:
+    """Classification head for Semi-SL.
 
     Args:
-        num_classes (int): The number of classes of dataset used for training
-        in_channels (int): The channels of input data from classifier
-        loss (dict): configuration of loss, default is CrossEntropyLoss
-        topk (set): evaluation topk score, default is (1, )
-        unlabeled_coef (float): unlabeled loss coefficient
+        unlabeled_coef (float): unlabeled loss coefficient, default is 1.0
         dynamic_threshold (boolean): whether to use dynamic threshold, default is True
         min_threshold (float): Minimum value of threshold determining pseudo-label, default is 0.5
     """
 
-    def __init__(
-        self,
-        num_classes,
-        in_channels,
-        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
-        topk=(1,),
-        unlabeled_coef=1.0,
-        use_dynamic_threshold=True,
-        min_threshold=0.5,
-    ):
-        if in_channels <= 0:
-            raise ValueError(f"in_channels={in_channels} must be a positive integer")
-        if num_classes <= 0:
-            raise ValueError("at least one class must be exist num_classes.")
-
-        topk = (1,) if num_classes < 5 else (1, 5)
-        super(SemiSLClsHead, self).__init__(num_classes, in_channels, loss=loss, topk=topk)
+    def __init__(self, unlabeled_coef=1.0, use_dynamic_threshold=True, min_threshold=0.5):
         self.unlabeled_coef = unlabeled_coef
-
-        # class wise accuracy for dynamic Threshold (min_thr ~ 1.0)
         self.use_dynamic_threshold = use_dynamic_threshold
-        self.min_threshold = min_threshold if self.use_dynamic_threshold else 0.95
+        self.min_threshold = (
+            min_threshold if self.use_dynamic_threshold else 0.95
+        )  # the range of threshold will be [min_thr, 1.0]
         self.num_pseudo_label = 0
         self.classwise_acc = torch.ones((self.num_classes,)) * self.min_threshold
         if torch.cuda.is_available():
@@ -76,29 +53,31 @@ class SemiSLClsHead(LinearClsHead):
             # compute unsupervised loss
             lu = self.compute_loss(logits_u_s, pseudo_label, avg_factor=len(logits_u_s)) * mask
         losses["loss"] = lx + self.unlabeled_coef * lu
+        losses["unlabeled_loss"] = self.unlabeled_coef * lu
 
         # compute accuracy
         acc = self.compute_accuracy(logits_x, gt_label)
         losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         return losses
 
-    def forward_train(self, x, gt_label):
+    def forward_train(self, x, gt_label, final_layer=None):
         """forward_train head using pseudo-label selected through threshold
 
         Args:
             x (dict or Tensor): dict(labeled, unlabeled_weak, unlabeled_strong) or NxC input features.
             gt_label (Tensor): NxC target features.
+            final_layer (nn.Linear or nn.Sequential): a final layer forwards feature from backbone.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
         label_u, mask = None, None
         if isinstance(x, dict):
-            outputs = self.fc(x["labeled"])  # Logit of Labeled Img
+            outputs = final_layer(x["labeled"])  # Logit of Labeled Img
             batch_size = len(outputs)
 
             with torch.no_grad():
-                logit_uw = self.fc(x["unlabeled_weak"])
+                logit_uw = final_layer(x["unlabeled_weak"])
                 pseudo_label = torch.softmax(logit_uw.detach(), dim=-1)
                 max_probs, label_u = torch.max(pseudo_label, dim=-1)
 
@@ -125,9 +104,9 @@ class SemiSLClsHead(LinearClsHead):
                         current_conf = current_conf[~current_conf.isnan()].mean()
                         self.classwise_acc[i] = max(current_conf, self.min_threshold)
 
-            outputs = torch.cat((outputs, self.fc(x["unlabeled_strong"])))
+            outputs = torch.cat((outputs, final_layer(x["unlabeled_strong"])))
         else:
-            outputs = self.fc(x)
+            outputs = final_layer(x)
             batch_size = len(outputs)
 
         logits_x = outputs[:batch_size]
@@ -136,3 +115,97 @@ class SemiSLClsHead(LinearClsHead):
         logits = (logits_x, logits_u)
         losses = self.loss(logits, gt_label, label_u, mask)
         return losses
+
+
+@HEADS.register_module()
+class SemiLinearClsHead(SemiClsHead, LinearClsHead):
+    """Linear classification head for Semi-SL
+
+    This head is designed to support FixMatch algorithm. (https://arxiv.org/abs/2001.07685)
+        - [OTX] supports dynamic threshold based on confidence for each class
+
+    Args:
+        num_classes (int): The number of classes of dataset used for training
+        in_channels (int): The channels of input data from classifier
+        loss (dict): configuration of loss, default is CrossEntropyLoss
+        topk (set): evaluation topk score, default is (1, )
+        unlabeled_coef (float): unlabeled loss coefficient, default is 1.0
+        dynamic_threshold (boolean): whether to use dynamic threshold, default is True
+        min_threshold (float): Minimum value of threshold determining pseudo-label, default is 0.5
+    """
+
+    def __init__(
+        self,
+        num_classes,
+        in_channels,
+        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        topk=(1,),
+        unlabeled_coef=1.0,
+        use_dynamic_threshold=True,
+        min_threshold=0.5,
+    ):
+        if in_channels <= 0:
+            raise ValueError(f"in_channels={in_channels} must be a positive integer")
+        if num_classes <= 0:
+            raise ValueError("at least one class must be exist num_classes.")
+
+        topk = (1,) if num_classes < 5 else (1, 5)
+        LinearClsHead.__init__(self, num_classes, in_channels, loss=loss, topk=topk)
+        SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
+
+    def forward_train(self, x, gt_label):
+        return SemiClsHead.forward_train(self, x, gt_label, final_layer=self.fc)
+
+
+@HEADS.register_module()
+class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
+    """Non-linear classification head for Semi-SL
+
+    This head is designed to support FixMatch algorithm. (https://arxiv.org/abs/2001.07685)
+        - [OTX] supports dynamic threshold based on confidence for each class
+
+    Args:
+        num_classes (int): The number of classes of dataset used for training
+        in_channels (int): The channels of input data from classifier
+        hid_channels (int): Number of channels of hidden layer.
+        act_cfg (dict): Config of activation layer.
+        loss (dict): configuration of loss, default is CrossEntropyLoss
+        topk (set): evaluation topk score, default is (1, )
+        unlabeled_coef (float): unlabeled loss coefficient, default is 1.0
+        dynamic_threshold (boolean): whether to use dynamic threshold, default is True
+        min_threshold (float): Minimum value of threshold determining pseudo-label, default is 0.5
+    """
+
+    def __init__(
+        self,
+        num_classes,
+        in_channels,
+        hid_channels=1280,
+        act_cfg=dict(type="ReLU"),
+        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        topk=(1,),
+        dropout=False,
+        unlabeled_coef=1.0,
+        use_dynamic_threshold=True,
+        min_threshold=0.5,
+    ):
+        if in_channels <= 0:
+            raise ValueError(f"in_channels={in_channels} must be a positive integer")
+        if num_classes <= 0:
+            raise ValueError("at least one class must be exist num_classes.")
+
+        topk = (1,) if num_classes < 5 else (1, 5)
+        NonLinearClsHead.__init__(
+            self,
+            num_classes,
+            in_channels,
+            hid_channels=hid_channels,
+            act_cfg=act_cfg,
+            loss=loss,
+            topk=topk,
+            dropout=dropout,
+        )
+        SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
+
+    def forward_train(self, x, gt_label):
+        return SemiClsHead.forward_train(self, x, gt_label, final_layer=self.classifier)

@@ -15,7 +15,7 @@ class SemiSLClsHook(Hook):
     This hook includes unlabeled warm-up loss coefficient (default: True):
         unlabeled_coef = (0.5 - cos(min(pi, 2 * pi * k) / K)) / 2
         k: current step, K: total steps
-    Also, this hook adds semi-sl-related data to the log (unlabeled_loss, pseudo_label)
+    Also, this hook adds semi-sl-related data to the log (unlabeled_coef, pseudo_label)
 
     Args:
         total_steps (int): total steps for training (iteration)
@@ -51,7 +51,7 @@ class SemiSLClsHook(Hook):
     def after_epoch(self, runner):
         # Add data related to Semi-SL to the log
         if self.unlabeled_warmup:
-            runner.log_buffer.output.update({"unlabeled_loss": round(self.unlabeled_coef, 4)})
+            runner.log_buffer.output.update({"unlabeled_coef": round(self.unlabeled_coef, 4)})
         runner.log_buffer.output.update({"pseudo_label": self.num_pseudo_label})
         self.num_pseudo_label = 0
 
