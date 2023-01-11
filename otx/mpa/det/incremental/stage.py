@@ -2,13 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
-import torch
 from mmcv import ConfigDict
-from mmdet.datasets import build_dataset
 
 from otx.mpa.det.stage import DetectionStage
-from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 

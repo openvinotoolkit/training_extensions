@@ -11,7 +11,7 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 
-class SemiSLDetectionStage(IncrDetectionStage):
+class SemiSLDetectionStage(DetectionStage):
     """Patch config to support semi supervised learning for object detection"""
 
     def __init__(self, **kwargs):
