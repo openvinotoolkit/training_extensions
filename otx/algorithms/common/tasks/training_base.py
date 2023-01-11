@@ -278,6 +278,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
+        # make sure model to be in a training mode even after model is evaluated (mmcv bug)
+        update_or_add_custom_hook(
+            self._recipe_cfg,
+            ConfigDict(type="ForceTrainModeHook", priority="LOWEST"),
+        )
+
         # if num_workers is 0, persistent_workers must be False
         data_cfg = self._recipe_cfg.data
         for subset in ["train", "val", "test", "unlabeled"]:
