@@ -24,6 +24,8 @@ from .pipelines import (
     GaussianBlur,
     LoadImageFromOTXDataset,
     OTXColorJitter,
+    PILImageToNDArray,
+    PostAug,
     RandomAppliedTrans,
 )
 
@@ -32,6 +34,8 @@ __all__ = [
     "MPAMultilabelClsDataset",
     "MPAHierarchicalClsDataset",
     "SelfSLDataset",
+    "PostAug",
+    "PILImageToNDArray",
     "LoadImageFromOTXDataset",
     "RandomAppliedTrans",
     "GaussianBlur",
