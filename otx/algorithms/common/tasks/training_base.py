@@ -49,6 +49,7 @@ from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import (
     MPAConfig,
+    add_custom_hook_if_not_exists,
     remove_custom_hook,
     update_or_add_custom_hook,
 )
@@ -247,11 +248,28 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             elif isinstance(self._model_cfg, ConfigDict):
                 del self._model_cfg["fp16"]
 
+        # default adaptive hook for evaluating before and after training
+        add_custom_hook_if_not_exists(
+            self._recipe_cfg,
+            ConfigDict(
+                type="AdaptiveTrainSchedulingHook",
+                enable_adaptive_interval_hook=False,
+                enable_eval_before_run=True,
+            ),
+        )
         # Add/remove adaptive interval hook
         if self._recipe_cfg.get("use_adaptive_interval", False):
-            self._recipe_cfg.adaptive_validation_interval = self._recipe_cfg.get(
-                "adaptive_validation_interval",
-                dict(max_interval=5, eval_before_train=True, eval_after_train=True),
+            update_or_add_custom_hook(
+                self._recipe_cfg,
+                ConfigDict(
+                    {
+                        "type": "AdaptiveTrainSchedulingHook",
+                        "max_interval": 5,
+                        "enable_adaptive_interval_hook": True,
+                        "enable_eval_before_run": True,
+                        **self._recipe_cfg.pop("adaptive_validation_interval", {}),
+                    }
+                ),
             )
         else:
             self._recipe_cfg.pop("adaptive_validation_interval", None)

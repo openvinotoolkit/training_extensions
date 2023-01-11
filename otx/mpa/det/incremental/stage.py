@@ -115,7 +115,6 @@ class IncrDetectionStage(DetectionStage):
             self.configure_bbox_head(cfg, org_model_classes, model_classes)
             self.configure_task_adapt_hook(cfg, org_model_classes, model_classes)
             self.configure_ema(cfg)
-            self.configure_val_interval(cfg)
         else:
             src_data_cfg = self.get_data_cfg(cfg, "train")
             src_data_cfg.pop("old_new_indices", None)
@@ -204,15 +203,6 @@ class IncrDetectionStage(DetectionStage):
             update_or_add_custom_hook(
                 cfg,
                 ConfigDict(type="EMAHook", priority="ABOVE_NORMAL", resume_from=cfg.get("resume_from"), momentum=0.1),
-            )
-
-    @staticmethod
-    def configure_val_interval(cfg):
-        """Patch validation interval."""
-        adaptive_validation_interval = cfg.get("adaptive_validation_interval", {})
-        if adaptive_validation_interval:
-            update_or_add_custom_hook(
-                cfg, ConfigDict(type="AdaptiveTrainSchedulingHook", **adaptive_validation_interval)
             )
 
     @staticmethod

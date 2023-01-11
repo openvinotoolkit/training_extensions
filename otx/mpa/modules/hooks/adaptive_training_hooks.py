@@ -39,8 +39,8 @@ class AdaptiveTrainSchedulingHook(Hook):
         base_es_patience=10,
         min_es_patience=3,
         decay=-0.025,
-        eval_before_train=False,
-        eval_after_train=False,
+        enable_adaptive_interval_hook=False,
+        enable_eval_before_run=False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -51,27 +51,36 @@ class AdaptiveTrainSchedulingHook(Hook):
         self.base_es_patience = base_es_patience
         self.min_es_patience = min_es_patience
         self.decay = decay
-        self.eval_before_train = eval_before_train
-        self.eval_after_train = eval_after_train
-        self.enabled = False
-        self.initialized = False
+        self.enable_adaptive_interval_hook = enable_adaptive_interval_hook
+        self.enable_eval_before_run = enable_eval_before_run
 
-        self._done_eval_before_train = False
+        self._initialized = False
+        self._original_interval = None
 
-    def before_train_epoch(self, runner):
-        if self.eval_before_train and not self._done_eval_before_train:
-            for hook in runner.hooks:
-                if isinstance(hook, EvalHook):
-                    hook.start = 0
-                    hook.interval = 1
-            self._done_eval_before_train = True
+    def before_run(self, runner):
+        if self.enable_eval_before_run:
+            hook = self.get_evalhook(runner)
+            if hook is None:
+                logger.warning("EvalHook is not found in runner. Skipping enabling evaluation before run.")
+                return
+            self._original_interval = hook.interval
+            hook.interval = 1
+            hook.start = 0
 
     def before_train_iter(self, runner):
-        if not self.initialized:
+        if self.enable_eval_before_run and self._original_interval is not None:
+            hook = self.get_evalhook(runner)
+            hook.interval = self._original_interval
+            self._original_interval = None
+
+        if self.enable_adaptive_interval_hook and not self._initialized:
             iter_per_epoch = len(runner.data_loader)
             adaptive_interval = self.get_adaptive_interval(iter_per_epoch)
             for hook in runner.hooks:
                 if isinstance(hook, EvalHook):
+                    # make sure evaluation is done at last to save best checkpoint
+                    limit = runner.max_epochs if hook.by_epoch else runner.max_iters
+                    adaptive_interval = min(adaptive_interval, limit)
                     logger.info(f"Update EvalHook interval: {hook.interval} -> {adaptive_interval}")
                     hook.interval = adaptive_interval
                 elif isinstance(hook, LrUpdaterHook):
@@ -92,17 +101,21 @@ class AdaptiveTrainSchedulingHook(Hook):
                     hook.interval = adaptive_interval
                     hook.patience = patience
                 elif isinstance(hook, CheckpointHook):
+                    # make sure checkpoint is saved at last
+                    limit = runner.max_epochs if hook.by_epoch else runner.max_iters
+                    adaptive_interval = min(adaptive_interval, limit)
                     logger.info(f"Update CheckpointHook interval: {hook.interval} -> {adaptive_interval}")
                     hook.interval = adaptive_interval
-            self.initialized = True
-
-    def after_train_epoch(self, runner):
-        if runner.iter >= runner.max_iters:
-            for hook in runner.hooks:
-                if isinstance(hook, EvalHook):
-                    hook.start = 0
-                    hook.interval = 1
+            self._initialized = True
 
     def get_adaptive_interval(self, iter_per_epoch):
         adaptive_interval = max(round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1)
         return adaptive_interval
+
+    def get_evalhook(self, runner):
+        target_hook = None
+        for hook in runner.hooks:
+            if isinstance(hook, EvalHook):
+                assert target_hook is None, "More than 1 EvalHook is found in runner."
+                target_hook = hook
+        return target_hook
