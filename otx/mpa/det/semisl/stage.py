@@ -37,7 +37,6 @@ class SemiSLDetectionStage(IncrDetectionStage):
         if task_adapt_type == "mpa":
             self.configure_bbox_head(cfg, org_model_classes, model_classes)
             self.configure_task_adapt_hook(cfg, org_model_classes, model_classes)
-            self.configure_val_interval(cfg)
         else:
             src_data_cfg = self.get_data_cfg(cfg, "train")
             src_data_cfg.pop("old_new_indices", None)

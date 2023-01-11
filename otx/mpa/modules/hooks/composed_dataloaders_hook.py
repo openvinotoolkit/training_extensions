@@ -37,8 +37,8 @@ class ComposedDataLoadersHook(Hook):
         if self.composed_loader is None:
             logger.info(
                 "Creating ComposedDL "
-                f"(runner's -> {[len(runner.data_loader)]}, "
-                f"hook's -> {[len(i) for i in self.data_loaders]})"
+                f"(runner's -> {runner.data_loader}, "
+                f"hook's -> {[i for i in self.data_loaders]})"
             )
             self.composed_loader = ComposedDL([runner.data_loader, *self.data_loaders])
         # Per-epoch replacement: train-only loader -> train loader + additional loaders

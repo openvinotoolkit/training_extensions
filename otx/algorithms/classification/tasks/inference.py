@@ -337,7 +337,7 @@ class ClassificationInferenceTask(
         if self._train_type.value == "SEMISUPERVISED":
             unlabeled_config = ConfigDict(
                 data=ConfigDict(
-                    unlabeled=ConfigDict(
+                    unlabeled_dataloader=ConfigDict(
                         samples_per_gpu=int(params.unlabeled_batch_size),
                         workers_per_gpu=int(params.num_workers),
                     )
