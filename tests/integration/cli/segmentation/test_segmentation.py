@@ -275,6 +275,7 @@ class TestToolsMPASemiSLSegmentation:
 
 
 args_selfsl = {
+    "--data": "./data.yaml",
     "--train-ann-file": "data/segmentation/custom/annotations/detcon_masks",
     "--train-data-roots": "data/segmentation/custom/images/training",
     "--input": "data/segmentation/custom/images/training",

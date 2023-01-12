@@ -5,6 +5,7 @@
 import torch.nn as nn
 from mmseg.core import add_prefix
 from mmseg.models.builder import build_loss
+from mmseg.ops import resize
 
 from ..losses.utils import LossEqualizer
 

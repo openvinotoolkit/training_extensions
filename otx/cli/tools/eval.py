@@ -56,8 +56,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
     if not os.path.exists("./template.yaml"):
         parser.add_argument("template")
-    parser.add_argument("--data", required=False, default="./data.yaml")
-    required = not os.path.exists("./data.yaml")
+    parser.add_argument("--data", required=False)
+    parsed, _ = parser.parse_known_args()
+    required = True
+    if parsed.data is not None:
+        assert os.path.exists(parsed.data)
+        required = False
 
     parser.add_argument(
         "--test-ann-files",

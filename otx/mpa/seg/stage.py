@@ -3,7 +3,6 @@
 #
 
 from mmcv import ConfigDict
-from mmcv.runner import load_checkpoint
 
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.mpa.stage import Stage
