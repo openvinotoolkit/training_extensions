@@ -2,7 +2,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+import copy
 import os
 
 import pytest
@@ -87,7 +87,7 @@ class TestToolsTilingInstanceSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
-        args1 = args.copy()
+        args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
         args1["--resume-from"] = f"{tmp_dir_path}/trained_for_resume_{template.model_template_id}/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)

@@ -60,9 +60,9 @@ class ClsExporter(ClsStage):
 
         # build the model and load checkpoint
         model = build_classifier(cfg.model)
-
+        model_ckpt = cfg.load_from
         logger.info("load checkpoint from " + cfg.load_from)
-        _ = load_checkpoint(model, cfg.load_from, map_location="cpu")
+        _ = load_checkpoint(model, model_ckpt, map_location="cpu")
         if hasattr(model, "is_export"):
             model.is_export = True
         model.eval()

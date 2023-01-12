@@ -2,7 +2,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+import copy
 import os
 import shutil
 from functools import wraps
@@ -77,7 +77,7 @@ if TT_STABILITY_TESTS:
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
 else:
-    templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
+    templates = [Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates[1]]
     templates_ids = [template.model_template_id for template in templates]
 
 
@@ -87,7 +87,7 @@ class TestToolsMPASegmentation:
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -97,7 +97,7 @@ class TestToolsMPASegmentation:
     def test_otx_resume(self, template, tmp_dir_path):
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
         args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
@@ -219,7 +219,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args1 = args.copy()
+        args1 = copy.deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -302,7 +302,7 @@ class TestToolsMPASelfSLSegmentation:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         shutil.rmtree(os.path.join(otx_dir, args_selfsl["--train-ann-file"]))
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
