@@ -218,36 +218,11 @@ class TestToolsMPASegmentation:
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
-
-# tmp: create & remove data.yaml to only use train-data-roots
-def set_dummy_data(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # create data.yaml
-        to_save_data_args = {
-            "data": {
-                "train": {"ann-files": None, "data-roots": None},
-                "val": {"ann-files": None, "data-roots": None},
-                "unlabeled": {"file-list": None, "data-roots": None},
-            },
-        }
-        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
-        # run test
-        func(*args, **kwargs)
-        # remove data.yaml
-        os.remove("./data.yaml")
-
-    return wrapper
-
-
 args_semisl = {
-    "--train-ann-file": "data/segmentation/custom/annotations/training",
-    "--train-data-roots": "data/segmentation/custom/images/training",
-    "--val-ann-file": "data/segmentation/custom/annotations/training",
-    "--val-data-roots": "data/segmentation/custom/images/training",
-    "--test-ann-files": "data/segmentation/custom/annotations/training",
-    "--test-data-roots": "data/segmentation/custom/images/training",
-    "--unlabeled-data-roots": "data/segmentation/custom/images/training",
+    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
+    "--unlabeled-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -258,7 +233,6 @@ args_semisl = {
         "SEMISUPERVISED",
     ],
 }
-
 
 class TestToolsMPASemiSLSegmentation:
     @e2e_pytest_component
