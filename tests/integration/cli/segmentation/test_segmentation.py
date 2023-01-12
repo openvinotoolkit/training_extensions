@@ -77,7 +77,7 @@ if TT_STABILITY_TESTS:
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
 else:
-    templates = [Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates[1]]
+    templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 
