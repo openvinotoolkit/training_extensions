@@ -2,5 +2,5 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .inferrer import SemiSLSegInferrer
-from .trainer import SemiSLSegTrainer
+from .inferrer import IncrSegInferrer
+from .trainer import IncrSegTrainer
