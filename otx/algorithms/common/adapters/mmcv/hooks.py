@@ -491,7 +491,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
 
-    def _should_check_stopping(self, runner):
+    def _is_check_timing(self, runner):
         """Called _should_check_stopping in ReduceLROnPlateauLrUpdaterHook."""
         check_time = self.every_n_epochs if self.by_epoch else self.every_n_iters
         if not check_time(runner, self.interval):
@@ -502,11 +502,11 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
     @check_input_parameters_type()
     def get_lr(self, runner: BaseRunner, base_lr: float):
         """Called get_lr in ReduceLROnPlateauLrUpdaterHook."""
-        if not self._should_check_stopping(runner) or self.warmup_iters > runner.iter:
-            return base_lr
-
         if self.current_lr < 0:
             self.current_lr = base_lr
+
+        if not self._is_check_timing(runner) or self.warmup_iters > runner.iter:
+            return self.current_lr
 
         if hasattr(runner, self.metric):
             score = getattr(runner, self.metric, 0.0)
