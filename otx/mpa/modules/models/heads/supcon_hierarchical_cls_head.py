@@ -2,10 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-from torch import nn
-
 from mmcls.models.builder import HEADS, build_loss
 from mmcls.models.heads.base_head import BaseHead
+from torch import nn
 
 
 @HEADS.register_module()
