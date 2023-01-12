@@ -6,12 +6,12 @@ from otx.mpa.registry import STAGES
 from otx.mpa.seg.trainer import SegTrainer
 from otx.mpa.utils.logger import get_logger
 
-from .stage import SemiSLSegStage
+from .stage import IncrSegStage
 
 logger = get_logger()
 
 
 @STAGES.register_module()
-class SemiSLSegTrainer(SemiSLSegStage, SegTrainer):
+class IncrSegTrainer(IncrSegStage, SegTrainer):
     def __init__(self, **kwargs):
-        SemiSLSegStage.__init__(self, **kwargs)
+        IncrSegStage.__init__(self, **kwargs)

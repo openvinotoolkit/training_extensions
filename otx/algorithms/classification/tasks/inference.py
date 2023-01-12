@@ -40,6 +40,10 @@ from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.mpa import MPAConstants
@@ -64,6 +68,7 @@ class ClassificationInferenceTask(
 ):  # pylint: disable=too-many-instance-attributes
     """Inference Task Implementation of OTX Classification."""
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         self._should_stop = False
         super().__init__(TASK_CONFIG, task_environment, **kwargs)
@@ -93,6 +98,7 @@ class ClassificationInferenceTask(
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self,
         dataset: DatasetEntity,
@@ -155,6 +161,7 @@ class ClassificationInferenceTask(
         self._add_saliency_maps_to_dataset(saliency_maps, dataset, update_progress_callback)
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(
         self,
         output_resultset: ResultSetEntity,
@@ -174,6 +181,7 @@ class ClassificationInferenceTask(
         logger.info("called unload()")
         self.finalize()
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Classification Task."""
 

@@ -11,7 +11,7 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 
-class SemiSegStage(SegStage):
+class SemiSLSegStage(SegStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -19,9 +19,6 @@ class SemiSegStage(SegStage):
         """Adjust settings for task adaptation"""
         super().configure_task(cfg, training, **kwargs)
 
-        self.configure_semi(cfg, **kwargs)
-
-    def configure_semi(self, cfg, **kwargs):
         # Set unlabeled data hook
         if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
             update_or_add_custom_hook(

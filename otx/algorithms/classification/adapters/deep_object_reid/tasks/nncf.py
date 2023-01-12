@@ -459,6 +459,7 @@ class ClassificationNNCFTask(
 ):  # pylint: disable=too-many-instance-attributes
     """Task for compressing classification models using NNCF."""
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         curr_model_path = task_environment.model_template.model_template_path
         base_model_path = os.path.join(
