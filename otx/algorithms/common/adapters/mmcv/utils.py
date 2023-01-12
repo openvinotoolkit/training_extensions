@@ -18,7 +18,7 @@ import copy
 import glob
 import os
 import tempfile
-from typing import Union
+from typing import Sequence, Union
 
 from mmcv import Config, ConfigDict
 
@@ -79,20 +79,20 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
         raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
 
 
-def patch_color_conversion(pipeline):
+@check_input_parameters_type()
+def patch_color_conversion(pipeline: Sequence[dict]):
     """Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag."""
     for pipeline_step in pipeline:
-        if pipeline_step.type == "Normalize":
-            to_rgb = False
-            if "to_rgb" in pipeline_step:
-                to_rgb = pipeline_step.to_rgb
+        pipeline_type = pipeline_step.get("type", None)
+        if pipeline_type == "Normalize":
+            to_rgb = pipeline_step.get("to_rgb", False)
             to_rgb = not bool(to_rgb)
-            pipeline_step.to_rgb = to_rgb
-        elif pipeline_step.type == "MultiScaleFlipAug":
-            patch_color_conversion(pipeline_step.transforms)
-        elif pipeline_step.type == "TwoCropTransform":
-            patch_color_conversion(pipeline_step.view0)
-            patch_color_conversion(pipeline_step.view1)
+            pipeline_step["to_rgb"] = to_rgb
+        elif pipeline_type == "MultiScaleFlipAug":
+            patch_color_conversion(pipeline_step.get("transforms", []))
+        elif pipeline_type == "TwoCropTransform":
+            patch_color_conversion(pipeline_step.get("view0", []))
+            patch_color_conversion(pipeline_step.get("view1", []))
 
 
 DEFAULT_META_KEYS = (
