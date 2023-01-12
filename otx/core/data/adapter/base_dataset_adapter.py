@@ -148,23 +148,24 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     Mainly, BaseDatasetAdapter detect and import the dataset by using the function implemented in Datumaro.
     And it could prepare common variable, function (EmptyLabelSchema, LabelSchema, ..) commonly consumed under all tasks
-
+    
+    
     Args:
-        task_type (TaskType): type of the task
-        train_data_roots (str): Path for training data
-        val_data_roots (str): Path for validation data
-        test_data_roots (str): Path for test data
-        unlabeled_data_roots (str): Path for unlabeled data
+        task_type [TaskType]: type of the task
+        train_data_roots (Optional[str]): Path for training data
+        val_data_roots (Optional[str]): Path for validation data
+        test_data_roots (Optional[str]): Path for test data
+        unlabeled_data_roots (Optional[str]): Path for unlabeled data
 
     """
 
     def __init__(
         self,
         task_type: TaskType,
-        train_data_roots: str = None,
-        val_data_roots: str = None,
-        test_data_roots: str = None,
-        unlabeled_data_roots: str = None,
+        train_data_roots: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
     ):
         self.task_type = task_type
         self.domain = task_type.domain
@@ -177,7 +178,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             test_data_roots=test_data_roots,
             unlabeled_data_roots=unlabeled_data_roots,
         )
-
+        
         self.category_items: Dict[DatumaroAnnotationType, DatumaroCategories]
         self.label_groups: List[str]
         self.label_entities: List[LabelEntity]
@@ -185,19 +186,18 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _import_dataset(
         self,
-        train_data_roots: str = None,
-        val_data_roots: str = None,
-        test_data_roots: str = None,
-        unlabeled_data_roots: str = None,
+        train_data_roots: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import dataset by using Datumaro.import_from() method.
-
+        
         Args:
-            train_data_roots (str): Path for training data
-            val_data_roots (str): Path for validation data
-            test_data_roots (str): Path for test data
-            unlabeled_data_roots (str): Path for unlabeled data
-            unlabeled_file_lists (str): Path for unlabeled file list
+            train_data_roots (Optional[str]): Path for training data
+            val_data_roots (Optional[str]): Path for validation data
+            test_data_roots (Optional[str]): Path for test data
+            unlabeled_data_roots (Optional[str]): Path for unlabeled data
 
         Returns:
             DatumaroDataset: Datumaro Dataset

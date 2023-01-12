@@ -36,18 +36,18 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
 
     def _import_dataset(
         self,
-        train_data_roots: str = None,
-        val_data_roots: str = None,
-        test_data_roots: str = None,
-        unlabeled_data_roots: str = None,
+        train_data_roots: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
-        """Import dataset by using Datumaro.import_from() method.
+        """Import MVTec dataset.
 
         Args:
-            train_data_roots (str): Path for training data
-            val_data_roots (str): Path for validation data
-            test_data_roots (str): Path for test data
-            unlabeled_data_roots (str): Path for unlabeled data
+            train_data_roots (Optional[str]): Path for training data
+            val_data_roots (Optional[str]): Path for validation data
+            test_data_roots (Optional[str]): Path for test data
+            unlabeled_data_roots (Optional[str]): Path for unlabeled data
 
         Returns:
             DatumaroDataset: Datumaro Dataset
@@ -55,6 +55,9 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         # Construct dataset for training, validation, unlabeled
         # TODO: currently, only MVTec dataset format can be used
         dataset = {}
+        if train_data_roots is None and test_data_roots is None:
+            raise ValueError("At least 1 data_root is needed to train/test.")
+        
         if train_data_roots:
             dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
             if val_data_roots:
