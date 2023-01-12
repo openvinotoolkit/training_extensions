@@ -8,11 +8,12 @@
 
 import abc
 from abc import abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import datumaro
 from datumaro.components.annotation import Annotation as DatumaroAnnotation
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
+from datumaro.components.annotation import Categories as DatumaroCategories
 from datumaro.components.dataset import Dataset as DatumaroDataset
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.dataset import Dataset as DatumaroDataset
@@ -167,8 +168,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     ):
         self.task_type = task_type
         self.domain = task_type.domain
-        self.data_type = None  # type: Any
-        self.is_train_phase = None  # type: Any
+        self.data_type: str
+        self.is_train_phase: bool
 
         self.dataset = self._import_dataset(
             train_data_roots=train_data_roots,
@@ -177,10 +178,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             unlabeled_data_roots=unlabeled_data_roots,
         )
 
-        self.category_items = None  # type: Any
-        self.label_groups = None  # type: Any
-        self.label_entities = None  # type: Any
-        self.label_schema = None  # type: Union[LabelSchemaEntity, None]
+        self.category_items: Dict[DatumaroAnnotationType, DatumaroCategories]
+        self.label_groups: List[str]
+        self.label_entities: List[LabelEntity]
+        self.label_schema: LabelSchemaEntity
 
     def _import_dataset(
         self,
@@ -239,14 +240,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     @abstractmethod
     def get_otx_dataset(self) -> DatasetEntity:
-        """Get DatasetEntity.
-
-        Args:
-            datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
-
-        Returns:
-            DatasetEntity:
-        """
+        """Get DatasetEntity."""
         raise NotImplementedError
 
     def get_label_schema(self) -> LabelSchemaEntity:
@@ -263,7 +257,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         return empty_group
 
-    def _generate_default_label_schema(self, label_entities: list) -> LabelSchemaEntity:
+    def _generate_default_label_schema(self, label_entities: List[LabelEntity]) -> LabelSchemaEntity:
         """Generate Default Label Schema for Multi-class Classification, Detecion, Etc."""
         label_schema = LabelSchemaEntity()
         main_group = LabelGroup(
@@ -276,8 +270,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _prepare_label_information(
         self,
-        datumaro_dataset: dict,
-    ) -> dict:
+        datumaro_dataset: Dict[Subset, DatumaroDataset],
+    ) -> Dict[str, Any]:
         # Get datumaro category information
         if self.is_train_phase:
             label_categories_list = (
@@ -298,11 +292,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
-    def _select_data_type(self, data_candidates: Union[list, str]) -> str:
+    def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
         """Select specific type among candidates.
 
         Args:
-            data_candidates (list): Type candidates made by Datumaro.Environment().detect_dataset()
+            data_candidates (Union[List[str], str]): Type candidates made by Datumaro.Environment().detect_dataset()
 
         Returns:
             str: Selected data type
@@ -310,48 +304,51 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         return data_candidates[0]
 
     def _get_ann_scene_entity(self, shapes: List[Annotation]) -> AnnotationSceneEntity:
-        annotation_scene = None  # type: Union[NullAnnotationSceneEntity, AnnotationSceneEntity, None]
+        annotation_scene: Optional[AnnotationSceneEntity] = None
         if len(shapes) == 0:
             annotation_scene = NullAnnotationSceneEntity()
         else:
             annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
         return annotation_scene
 
-    def _get_label_entity(self, ann: DatumaroAnnotation) -> Annotation:
+    def _get_label_entity(self, annotation: DatumaroAnnotation) -> Annotation:
         """Get label entity."""
-        return Annotation(Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.label_entities[ann.label])])
+        return Annotation(
+            Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.label_entities[annotation.label])]
+        )
 
-    def _get_normalized_bbox_entity(self, ann: DatumaroAnnotation, width: int, height: int) -> Annotation:
+    def _get_normalized_bbox_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
         """Get bbox entity w/ normalization."""
         return Annotation(
             Rectangle(
-                x1=ann.points[0] / width,
-                y1=ann.points[1] / height,
-                x2=ann.points[2] / width,
-                y2=ann.points[3] / height,
+                x1=annotation.points[0] / width,
+                y1=annotation.points[1] / height,
+                x2=annotation.points[2] / width,
+                y2=annotation.points[3] / height,
             ),
-            labels=[ScoredLabel(label=self.label_entities[ann.label])],
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
-    def _get_original_bbox_entity(self, ann: DatumaroAnnotation) -> Annotation:
+    def _get_original_bbox_entity(self, annotation: DatumaroAnnotation) -> Annotation:
         """Get bbox entity w/o normalization."""
         return Annotation(
             Rectangle(
-                x1=ann.points[0],
-                y1=ann.points[1],
-                x2=ann.points[2],
-                y2=ann.points[3],
+                x1=annotation.points[0],
+                y1=annotation.points[1],
+                x2=annotation.points[2],
+                y2=annotation.points[3],
             ),
-            labels=[ScoredLabel(label=self.label_entities[ann.label])],
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
-    def _get_polygon_entity(self, ann: DatumaroAnnotation, width: int, height: int) -> Annotation:
+    def _get_polygon_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
         """Get polygon entity."""
         return Annotation(
             Polygon(
                 points=[
-                    Point(x=ann.points[i] / width, y=ann.points[i + 1] / height) for i in range(0, len(ann.points), 2)
+                    Point(x=annotation.points[i] / width, y=annotation.points[i + 1] / height)
+                    for i in range(0, len(annotation.points), 2)
                 ]
             ),
-            labels=[ScoredLabel(label=self.label_entities[ann.label - 1])],
+            labels=[ScoredLabel(label=self.label_entities[annotation.label - 1])],
         )

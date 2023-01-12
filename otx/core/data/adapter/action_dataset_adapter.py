@@ -7,7 +7,7 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
 import os.path as osp
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.components.annotation import Bbox as DatumaroBbox
@@ -36,6 +36,10 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
     ) -> Dict[Subset, DatumaroDataset]:
         """Import multiple videos that have CVAT format annotation."""
         dataset = {}
+
+        if train_data_roots is None and test_data_roots is None:
+            raise ValueError("At least 1 data_root is needed to train/test.")
+
         if train_data_roots:
             dataset[Subset.TRAINING] = self._prepare_cvat_pair_data(train_data_roots)
             if val_data_roots:
@@ -54,7 +58,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         return cvat_data_list
 
     # pylint: disable=protected-access, too-many-nested-blocks
-    def _prepare_label_information(self, datumaro_dataset: dict) -> Dict[str, List[LabelEntity]]:
+    def _prepare_label_information(self, datumaro_dataset: dict) -> Dict[str, Any]:
         """Prepare and reorganize the label information for merging multiple video information.
 
         Description w/ examples:

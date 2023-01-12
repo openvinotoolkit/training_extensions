@@ -1,4 +1,4 @@
-"""Convert a mask to border image."""
+"""Convert a mask to a border image."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 #
@@ -16,12 +16,21 @@
 
 # pylint: disable=invalid-name
 
+from typing import List
+
 import numpy as np
 from skimage.measure import find_contours, label, regionprops
 
 
 def mask_to_border(mask):
-    """By using binary mask, make border."""
+    """Make a border by using a binary mask.
+
+    Args:
+        mask (np.ndarray): Input binary mask
+
+    Returns:
+        np.ndarray: Border image.
+    """
     h, w = mask.shape
     border = np.zeros((h, w))
 
@@ -36,8 +45,15 @@ def mask_to_border(mask):
 
 
 def mask2bbox(mask):
-    """Mask to bounding boxes."""
-    bboxes = []
+    """Mask to bounding boxes.
+
+    Args:
+        mask (np.ndarray): Input binary mask
+
+    Returns:
+        List[int]: Bounding box coordinates
+    """
+    bboxes: List[int] = []
 
     mask = mask_to_border(mask)
     lbl = label(mask)

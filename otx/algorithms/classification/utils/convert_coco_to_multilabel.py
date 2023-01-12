@@ -1,6 +1,6 @@
 """Convert dataset: Public dataset (COCO) --> Multi-label dataset (Datumaro format).
 
-It contains lots of hard-coded to make .json file consumed on Datumaro.
+this script contains a lot of hard-coding to create .json file that Datumaro can consume.
 """
 
 import argparse
@@ -101,7 +101,7 @@ def main():
     if args.data_format == "coco":
         coco_to_datumaro_multilabel(args.ann_file_path, args.data_root_dir, args.output)
     else:
-        raise NotImplementedError()
+        raise ValueError(f"Unknown data format {args.data_format}.This script only support `coco`.")
 
 
 if __name__ == "__main__":

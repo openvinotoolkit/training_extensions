@@ -4,11 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from datumaro.components.annotation import AnnotationType
-
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
+from typing import List
+
+from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.transforms import MasksToPolygons
 
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
@@ -27,12 +29,12 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
 
-        dataset_items = []
+        dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    shapes = []
+                    shapes: List[Annotation] = []
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.mask:
                             # TODO: consider case -> didn't include the background information
