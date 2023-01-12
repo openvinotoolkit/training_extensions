@@ -18,6 +18,7 @@
 from functools import partial
 from typing import Optional
 
+import otx.algorithms.detection.adapters.mmdet.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector

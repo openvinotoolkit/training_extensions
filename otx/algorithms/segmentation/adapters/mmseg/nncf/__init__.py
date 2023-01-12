@@ -7,7 +7,6 @@
 
 from .builder import build_nncf_segmentor
 from .hooks import CustomstepLrUpdaterHook
-from .patches import *
 
 __all__ = [
     "build_nncf_segmentor",

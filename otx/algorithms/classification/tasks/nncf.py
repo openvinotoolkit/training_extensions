@@ -17,6 +17,8 @@
 from functools import partial
 from typing import Optional
 
+import otx.algorithms.classification.adapters.mmcls.nncf.patches  # noqa: F401  # pylint: disable=unused-import
+import otx.algorithms.classification.adapters.mmcls.nncf.registers  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
     build_nncf_classifier,
 )

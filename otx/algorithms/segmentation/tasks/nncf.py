@@ -17,6 +17,7 @@
 from functools import partial
 from typing import Optional
 
+import otx.algorithms.segmentation.adapters.mmseg.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.algorithms.segmentation.adapters.mmseg.nncf import build_nncf_segmentor
 from otx.api.entities.datasets import DatasetEntity

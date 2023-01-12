@@ -5,7 +5,6 @@
 
 # flake8: noqa
 
-from .patches import *
 from .utils import get_fake_input, model_eval, wrap_nncf_model
 
 __all__ = [

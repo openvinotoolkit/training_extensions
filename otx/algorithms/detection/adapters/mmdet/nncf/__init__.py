@@ -6,7 +6,6 @@
 # flake8: noqa
 
 from .builder import build_nncf_detector
-from .patches import *
 
 __all__ = [
     "build_nncf_detector",

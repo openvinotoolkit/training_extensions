@@ -25,6 +25,7 @@ from typing import Dict, List, Optional
 import torch
 from mmcv.utils import ConfigDict
 
+import otx.algorithms.common.adapters.mmcv.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_keys,
     remove_from_config,
