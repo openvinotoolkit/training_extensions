@@ -492,7 +492,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.compare_func = self.rule_map[self.rule]
 
     def _is_check_timing(self, runner):
-        """Called _should_check_stopping in ReduceLROnPlateauLrUpdaterHook."""
+        """Called _is_check_timing in ReduceLROnPlateauLrUpdaterHook."""
         check_time = self.every_n_epochs if self.by_epoch else self.every_n_iters
         if not check_time(runner, self.interval):
             # No evaluation during the interval.
