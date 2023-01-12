@@ -10,6 +10,7 @@ import pytest
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from otx.cli.utils.tests import (
+    get_template_dir,
     nncf_eval_openvino_testing,
     nncf_eval_testing,
     nncf_export_testing,
@@ -87,9 +88,10 @@ class TestToolsTilingInstanceSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{tmp_dir_path}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
