@@ -54,10 +54,7 @@ class ClsTrainer(ClsStage):
         logger.info("Environment info:\n" + dash_line + env_info + "\n" + dash_line)
 
         # Data
-        if "unlabeled" in cfg.data:
-            datasets = [[build_dataset(cfg.data.train), build_dataset(cfg.data.unlabeled)]]
-        else:
-            datasets = [build_dataset(cfg.data.train)]
+        datasets = [build_dataset(cfg.data.train)]
 
         # Dataset for HPO
         hp_config = kwargs.get("hp_config", None)
@@ -76,10 +73,7 @@ class ClsTrainer(ClsStage):
         # meta['config'] = cfg.pretty_text
         meta["seed"] = cfg.seed
 
-        if isinstance(datasets[0], list):
-            repr_ds = datasets[0][0]
-        else:
-            repr_ds = datasets[0]
+        repr_ds = datasets[0]
 
         if cfg.checkpoint_config is not None:
             cfg.checkpoint_config.meta = dict(mmcls_version=__version__)
@@ -114,40 +108,20 @@ class ClsTrainer(ClsStage):
         if train_data_cfg.get("hierarchical_info", None) and dataset_len > cfg.data.get("samples_per_gpu", 2):
             drop_last = True
         # updated to adapt list of dataset for the 'train'
-        data_loaders = []
-        sub_loaders = []
-        for ds in datasets:
-            if isinstance(ds, list):
-                sub_loaders = [
-                    build_dataloader(
-                        sub_ds,
-                        sub_ds.samples_per_gpu if hasattr(sub_ds, "samples_per_gpu") else cfg.data.samples_per_gpu,
-                        sub_ds.workers_per_gpu if hasattr(sub_ds, "workers_per_gpu") else cfg.data.workers_per_gpu,
-                        num_gpus=len(cfg.gpu_ids),
-                        dist=self.distributed,
-                        round_up=True,
-                        seed=cfg.seed,
-                        drop_last=drop_last,
-                        persistent_workers=False,
-                    )
-                    for sub_ds in ds
-                ]
-                data_loaders.append(ComposedDL(sub_loaders))
-            else:
-                data_loaders.append(
-                    build_dataloader(
-                        ds,
-                        cfg.data.samples_per_gpu,
-                        cfg.data.workers_per_gpu,
-                        # cfg.gpus will be ignored if distributed
-                        num_gpus=len(cfg.gpu_ids),
-                        dist=self.distributed,
-                        round_up=True,
-                        seed=cfg.seed,
-                        drop_last=drop_last,
-                        persistent_workers=False,
-                    )
-                )
+        data_loaders = [
+            build_dataloader(
+                datasets[0],
+                cfg.data.samples_per_gpu,
+                cfg.data.workers_per_gpu,
+                # cfg.gpus will be ignored if distributed
+                num_gpus=len(cfg.gpu_ids),
+                dist=self.distributed,
+                round_up=True,
+                seed=cfg.seed,
+                drop_last=drop_last,
+                persistent_workers=False,
+            )
+        ]
 
         # put model on gpus
         model = self._put_model_on_gpu(model, cfg)
