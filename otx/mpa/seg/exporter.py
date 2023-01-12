@@ -35,6 +35,7 @@ class SegExporter(SegStage):
         output_path = os.path.join(cfg.work_dir, "export")
         os.makedirs(output_path, exist_ok=True)
         model = build_segmentor(cfg.model)
+        model_ckpt = cfg.load_from
         if model_ckpt:
             logger.info(f"model checkpoint load: {model_ckpt}")
             load_checkpoint(model=model, filename=model_ckpt, map_location="cpu")

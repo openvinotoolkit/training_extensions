@@ -299,6 +299,8 @@ class Stage(object):
         # for MPA classification legacy compatibility
         classes = meta.get("CLASSES", [])
         classes = meta.get("classes", classes)
+        if classes is None:
+            classes = []
 
         if len(classes) == 0:
             ckpt_path = cfg.get("load_from", None)
