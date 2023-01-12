@@ -84,7 +84,7 @@ class VideoMetadata(IMetadata):
         """Checks if two VideoMetadata have the same name, value and type."""
         return self.metadata == other.metadata
 
-    def update(self, key, value):
+    def update(self, key: str, value: Any):
         """Update metadata infomation."""
         setattr(self, key, value)
         self.metadata[key] = value

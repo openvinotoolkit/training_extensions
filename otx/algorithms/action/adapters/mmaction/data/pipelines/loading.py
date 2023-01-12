@@ -28,7 +28,7 @@ class RawFrameDecode:
 
     otx_dataset: DatasetEntity
 
-    def __call__(self, results: Dict[str, Any]):
+    def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Call function of RawFrameDecode."""
         results = self.decode_from_list(results)
         return results

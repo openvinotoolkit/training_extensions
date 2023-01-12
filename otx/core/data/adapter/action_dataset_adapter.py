@@ -7,12 +7,13 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
 import os.path as osp
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.components.annotation import Bbox as DatumaroBbox
 from datumaro.components.dataset import Dataset as DatumaroDataset
 
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
@@ -53,7 +54,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         return cvat_data_list
 
     # pylint: disable=protected-access, too-many-nested-blocks
-    def _prepare_label_information(self, datumaro_dataset: dict) -> dict:
+    def _prepare_label_information(self, datumaro_dataset: dict) -> Dict[str, List[LabelEntity]]:
         """Prepare and reorganize the label information for merging multiple video information.
 
         Description w/ examples:
@@ -97,10 +98,10 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
                 for cvat_data_item in cvat_data:
                     categories = cvat_data.categories().get(AnnotationType.label, None)
                     if categories is not None:
-                        for ann in cvat_data_item.annotations:
-                            ann_name = self.find_ann_name(categories._indices, ann.label)
+                        for annotation in cvat_data_item.annotations:
+                            ann_name = self.get_ann_name(categories._indices, annotation.label)
                             if ann_name is not None:
-                                ann.label = self.find_ann_label(category_names, ann_name)
+                                annotation.label = self.get_ann_label(category_names, ann_name)
 
         # Generate label_entity list according to overall categories
         outputs["label_entities"] = [
@@ -110,7 +111,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         return outputs
 
     @staticmethod
-    def find_ann_name(indices, label):
+    def get_ann_name(indices: Dict[str, int], label: int) -> Optional[str]:
         """Get action name from index."""
         for _name, _label in indices.items():
             if _label == label:
@@ -118,7 +119,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         return None
 
     @staticmethod
-    def find_ann_label(category_names, ann_name):
+    def get_ann_label(category_names: List[str], ann_name: str) -> Optional[int]:
         """Get action index from name."""
         for idx, name in enumerate(category_names):
             if name == ann_name:
@@ -145,18 +146,18 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
 
-        dataset_items = []
+        dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for datumaro_items in subset_data:
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
                     video_name = datumaro_item.media.path.split("/")[-3]
-                    shapes = []
-                    for ann in datumaro_item.annotations:
-                        if ann.type == AnnotationType.label:
-                            shapes.append(self._get_label_entity(ann))
+                    shapes: List[Annotation] = []
+                    for annotation in datumaro_item.annotations:
+                        if annotation.type == AnnotationType.label:
+                            shapes.append(self._get_label_entity(annotation))
 
-                    meta_item = MetadataItemEntity(
+                    metadata_item = MetadataItemEntity(
                         data=VideoMetadata(
                             video_id=video_name,
                             frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
@@ -165,7 +166,7 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
                     )
 
                     dataset_item = DatasetItemEntity(
-                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[meta_item]
+                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[metadata_item]
                     )
                     dataset_items.append(dataset_item)
         return DatasetEntity(items=dataset_items)
@@ -184,22 +185,22 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
         for label_entity in self.label_entities:
             label_entity.id = ID(int(label_entity.id) + 1)
 
-        dataset_items = []
+        dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for datumaro_items in subset_data:
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
                     video_name = datumaro_item.media.path.split("/")[-3]
-                    shapes = []
+                    shapes: List[Annotation] = []
                     is_empty_frame = False
-                    for ann in datumaro_item.annotations:
-                        if isinstance(ann, DatumaroBbox):
-                            if self.label_entities[ann.label].name == "EmptyFrame":
+                    for annotation in datumaro_item.annotations:
+                        if isinstance(annotation, DatumaroBbox):
+                            if self.label_entities[annotation.label].name == "EmptyFrame":
                                 is_empty_frame = True
-                                shapes.append(self._get_label_entity(ann))
+                                shapes.append(self._get_label_entity(annotation))
                             else:
-                                shapes.append(self._get_original_bbox_entity(ann))
-                    meta_item = MetadataItemEntity(
+                                shapes.append(self._get_original_bbox_entity(annotation))
+                    metadata_item = MetadataItemEntity(
                         data=VideoMetadata(
                             video_id=video_name,
                             frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].split("_")[-1]),
@@ -207,7 +208,7 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
                         )
                     )
                     dataset_item = DatasetItemEntity(
-                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[meta_item]
+                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[metadata_item]
                     )
                     dataset_items.append(dataset_item)
 
