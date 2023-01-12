@@ -58,7 +58,7 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 TRAIN_TYPE_DIR_PATH = {
-    TrainType.INCREMENTAL.name: ".",
+    TrainType.INCREMENTAL.name: "",
     TrainType.SELFSUPERVISED.name: "selfsl",
     TrainType.SEMISUPERVISED.name: "semisl",
 }
