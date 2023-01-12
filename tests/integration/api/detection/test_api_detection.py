@@ -129,8 +129,8 @@ class TestDetectionTaskAPI(DetectionTaskAPIBase):
     """
 
     @e2e_pytest_api
-    def test_reading_detection_cls_incr_model_template(self):
-        detection_template = ["mobilenetv2_atss_cls_incr"]
+    def test_reading_detection_model_template(self):
+        detection_template = ["mobilenetv2_atss"]
         for model_template in detection_template:
             parse_model_template(
                 osp.join("otx/algorithms/detection/configs", "detection", model_template, "template.yaml")

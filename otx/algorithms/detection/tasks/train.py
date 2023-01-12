@@ -48,6 +48,10 @@ from otx.api.entities.train_parameters import TrainParameters, default_progress_
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
@@ -59,6 +63,7 @@ logger = get_logger()
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Detection."""
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in DetectionTrainTask."""
         assert self._model_cfg is not None
@@ -105,6 +110,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             logger.info("but training was not started yet. reserved it to cancel")
             self.reserved_cancel = True
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(
         self,
         dataset: DatasetEntity,

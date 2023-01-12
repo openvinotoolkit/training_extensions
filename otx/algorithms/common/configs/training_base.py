@@ -179,6 +179,13 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
+        enable_supcon = configurable_boolean(
+            default_value=False,
+            header="Enable Supervised Contrastive helper loss",
+            description="This auxiliar loss might increase robustness and accuracy for small datasets",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""

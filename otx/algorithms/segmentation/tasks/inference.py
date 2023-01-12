@@ -59,7 +59,10 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
@@ -92,6 +95,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         super().__init__(SegmentationConfig, task_environment, **kwargs)
         self._label_dictionary = dict(enumerate(self._labels, 1))
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
@@ -124,6 +128,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OTX Segmentation Task."""
         logger.info("called evaluate()")
@@ -141,6 +146,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         """Unload the task."""
         self._delete_scratch_space()
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
@@ -240,11 +246,10 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):
-        if self._train_type == TrainType.SEMISUPERVISED:
-            if stage_module == "SegTrainer":
-                return "SemiSegTrainer"
-            if stage_module == "SegInferrer":
-                return "SemiSegInferrer"
+        module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
+        if self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
+            stage_module = module_prefix[self._train_type] + stage_module
+
         return stage_module
 
     def _init_model_cfg(self):

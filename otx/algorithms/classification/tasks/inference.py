@@ -48,6 +48,10 @@ from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.mpa import MPAConstants
@@ -71,6 +75,7 @@ class ClassificationInferenceTask(
 ):  # pylint: disable=too-many-instance-attributes
     """Inference Task Implementation of OTX Classification."""
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         self._should_stop = False
         super().__init__(TASK_CONFIG, task_environment, **kwargs)
@@ -100,6 +105,7 @@ class ClassificationInferenceTask(
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self,
         dataset: DatasetEntity,
@@ -163,6 +169,7 @@ class ClassificationInferenceTask(
         self._add_saliency_maps_to_dataset(saliency_maps, dataset, update_progress_callback)
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(
         self,
         output_resultset: ResultSetEntity,
@@ -182,6 +189,7 @@ class ClassificationInferenceTask(
         logger.info("called unload()")
         self.finalize()
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Classification Task."""
 
@@ -357,7 +365,18 @@ class ClassificationInferenceTask(
         logger.info(f"train type = {self._train_type}")
 
         if self._train_type in RECIPE_TRAIN_TYPE:
-            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
+            # TODO: this condition will be simplified after adding support for multlabel and hierarchical to SupCon.
+            if (
+                self._train_type == TrainType.INCREMENTAL
+                and not self._multilabel
+                and not self._hierarchical
+                and self._hyperparams.learning_parameters.enable_supcon
+                and not self._model_dir.endswith("supcon")
+            ):
+                recipe = os.path.join(recipe_root, "supcon.yaml")
+                self._model_dir = os.path.join(self._model_dir, "supcon")
+            else:
+                recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
             raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
 
