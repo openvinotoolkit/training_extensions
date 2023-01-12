@@ -395,7 +395,7 @@ class OpenVINODetectionTask(
             feature_vector, saliency_map = features
             if feature_vector is not None:
                 representation_vector = TensorEntity(
-                    name="representation_vector", numpy=np.copy(feature_vector.reshape(-1))
+                    name="representation_vector", numpy=feature_vector.reshape(-1)
                 )
                 dataset_item.append_metadata_item(
                     representation_vector, model=self.model
