@@ -27,6 +27,8 @@ import otx.mpa.modules.models.heads.multi_classifier_head
 import otx.mpa.modules.models.heads.non_linear_cls_head
 import otx.mpa.modules.models.heads.semisl_cls_head
 import otx.mpa.modules.models.heads.supcon_cls_head
+import otx.mpa.modules.models.heads.supcon_hierarchical_cls_head
+import otx.mpa.modules.models.heads.supcon_multi_label_cls_head
 import otx.mpa.modules.models.heads.task_incremental_classifier_head
 import otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore
 import otx.mpa.modules.models.losses.asymmetric_loss_with_ignore
