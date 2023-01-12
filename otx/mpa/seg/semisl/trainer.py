@@ -15,4 +15,3 @@ logger = get_logger()
 class SemiSLSegTrainer(SemiSLSegStage, SegTrainer):
     def __init__(self, **kwargs):
         SemiSLSegStage.__init__(self, **kwargs)
-

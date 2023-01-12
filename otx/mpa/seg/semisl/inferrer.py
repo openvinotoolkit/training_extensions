@@ -22,4 +22,3 @@ class SemiSLSegInferrer(SemiSLSegStage, SegInferrer):
         cfg.model.pop("semisl_start_iter", False)
 
         return cfg
-

@@ -6,7 +6,7 @@ import mmcv
 import numpy as np
 from mmcv.parallel import DataContainer as DC
 from mmseg.datasets import PIPELINES
-from mmseg.datasets.pipelines.formating import to_tensor
+from mmseg.datasets.pipelines.formatting import to_tensor
 
 
 @PIPELINES.register_module(force=True)
