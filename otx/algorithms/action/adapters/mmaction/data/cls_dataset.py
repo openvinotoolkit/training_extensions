@@ -49,7 +49,7 @@ class OTXRawframeDataset(RawframeDataset):
             self.video_info: Dict[str, Any] = {}
             self._update_meta_data()
 
-        def __len__(self):
+        def __len__(self) -> int:
             return len(self.video_info)
 
         def _update_meta_data(self):
@@ -75,7 +75,7 @@ class OTXRawframeDataset(RawframeDataset):
                         label = int(item.get_roi_labels(self.labels)[0].id)
                     else:
                         label = None
-                    ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+                    ignored_labels = np.array([self.label_idx[label.id] for label in item.ignored_labels])
                     video_info[metadata.video_id] = {
                         "total_frames": 1,
                         "start_index": idx,
@@ -87,7 +87,7 @@ class OTXRawframeDataset(RawframeDataset):
 
             self.video_info.update(video_info)
 
-        def __getitem__(self, index: int):
+        def __getitem__(self, index: int) -> Dict[str, Any]:
             """Prepare training data item.
 
             Action classification needs video for training, therefore this function generate item from video_info
@@ -115,30 +115,30 @@ class OTXRawframeDataset(RawframeDataset):
         self.video_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels, modality)
 
         self.pipeline = Compose(pipeline)
-        for pip in self.pipeline.transforms:
-            if isinstance(pip, RawFrameDecode):
-                pip.otx_dataset = self.otx_dataset
+        for transform in self.pipeline.transforms:
+            if isinstance(transform, RawFrameDecode):
+                transform.otx_dataset = self.otx_dataset
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return length of dataset."""
         return len(self.video_infos)
 
     @check_input_parameters_type()
-    def prepare_train_frames(self, idx: int) -> dict:
+    def prepare_train_frames(self, idx: int) -> Dict[str, Any]:
         """Get training data and annotations after pipeline.
 
-        :param idx: int, Index of data.
-        :return dict: Training data and annotation after pipeline with new keys introduced by pipeline.
+        Args:
+            idx (int): Index of data
         """
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
         return self.pipeline(item)
 
     @check_input_parameters_type()
-    def prepare_test_frames(self, idx: int) -> dict:
+    def prepare_test_frames(self, idx: int) -> Dict[str, Any]:
         """Get testing data after pipeline.
 
-        :param idx: int, Index of data.
-        :return dict: Testing data after pipeline with new keys introduced by pipeline.
+        Args:
+            idx (int): Index of data
         """
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
         return self.pipeline(item)

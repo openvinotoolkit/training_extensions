@@ -1,6 +1,6 @@
 """Convert dataset: Public dataset (Jester[RawFrames], AVA) --> Datumaro dataset (CVAT).
 
-It contains lots of hard-coded to make .xml file consumed on Datumaro.
+This script contains a lot of hardcoding to create an.xml file that Datumaro can consume.
 
 Current Datumaro format for video (CVAT)
 
