@@ -57,7 +57,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         dataset = {}
         if train_data_roots is None and test_data_roots is None:
             raise ValueError("At least 1 data_root is needed to train/test.")
-        
+
         if train_data_roots:
             dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
             if val_data_roots:
