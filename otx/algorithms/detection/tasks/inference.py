@@ -303,11 +303,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         return data_cfg
 
     def _update_stage_module(self, stage_module):
-        if self._train_type == TrainType.SEMISUPERVISED:
-            if stage_module == "DetectionTrainer":
-                stage_module = "SemiSLDetectionTrainer"
-            elif stage_module == "DetectionInferrer":
-                stage_module = "SemiSLDetectionInferrer"
+        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
+        if self._train_type in module_prefix and stage_module in ["DetectionTrainer", "DetectionInferrer"]:
+            stage_module = module_prefix[self._train_type] + stage_module
         return stage_module
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
