@@ -1,5 +1,4 @@
-"""Data Pipeline of Class-Incr model for Classification Task."""
-
+"""Data Pipeline of Semi-SL model for Classification Task."""
 # Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,20 +14,36 @@
 # and limitations under the License.
 
 # pylint: disable=invalid-name
-
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 __resize_target_size = 224
 
-__train_pipeline = [
+__common_pipeline = [
     dict(type="Resize", size=__resize_target_size),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
     dict(type="AugMixAugment", config_str="augmix-m5-w3"),
     dict(type="RandomRotate", p=0.35, angle=(-10, 10)),
+]
+
+__strong_pipeline = [
+    dict(type="MPARandAugment", n=8, m=10),
+]
+
+__train_pipeline = [
+    *__common_pipeline,
     dict(type="PILImageToNDArray", keys=["img"]),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="ToTensor", keys=["gt_label"]),
     dict(type="Collect", keys=["img", "gt_label"]),
+]
+
+__unlabeled_pipeline = [
+    *__common_pipeline,
+    dict(type="PostAug", keys=dict(img_strong=__strong_pipeline)),
+    dict(type="PILImageToNDArray", keys=["img", "img_strong"]),
+    dict(type="Normalize", **__img_norm_cfg),
+    dict(type="ImageToTensor", keys=["img", "img_strong"]),
+    dict(type="Collect", keys=["img", "img_strong"]),
 ]
 
 __test_pipeline = [
@@ -46,6 +61,10 @@ data = dict(
     samples_per_gpu=__samples_per_gpu,
     workers_per_gpu=__workers_per_gpu,
     train=dict(type=__dataset_type, pipeline=__train_pipeline),
+    unlabeled=dict(
+        type=__dataset_type,
+        pipeline=__unlabeled_pipeline,
+    ),
     val=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
     test=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
 )

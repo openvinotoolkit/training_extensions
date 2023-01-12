@@ -16,7 +16,7 @@ TASK_LIB_NAME = {"classification": "mmcls", "detection": "mmdet", "segmentation"
 @HOOKS.register_module()
 class UnlabeledDataHook(Hook):
     def __init__(self, unlabeled_data_cfg, samples_per_gpu, workers_per_gpu, model_task, seed=None, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__()
 
         # Build unlabeled dataset & loader
         task_lib_module = importlib.import_module(f"{TASK_LIB_NAME[model_task]}.datasets")
