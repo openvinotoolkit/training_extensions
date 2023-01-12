@@ -149,7 +149,6 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     Mainly, BaseDatasetAdapter detect and import the dataset by using the function implemented in Datumaro.
     And it could prepare common variable, function (EmptyLabelSchema, LabelSchema, ..) commonly consumed under all tasks
     
-    
     Args:
         task_type [TaskType]: type of the task
         train_data_roots (Optional[str]): Path for training data
@@ -157,6 +156,12 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         test_data_roots (Optional[str]): Path for test data
         unlabeled_data_roots (Optional[str]): Path for unlabeled data
 
+    Since all adapters can be used for training and validation, 
+    the default value of train/val/test_data_roots was set to None.
+    
+    i.e)
+    For the training/validation phase, test_data_roots is not used.
+    For the test phase, train_data_roots and val_data_root are not used.
     """
 
     def __init__(
