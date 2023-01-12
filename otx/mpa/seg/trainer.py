@@ -40,6 +40,7 @@ class SegTrainer(SegStage):
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, **kwargs)
         logger.info("train!")
 
+        # FIXME: what is this? Why do we need?
         if cfg.runner.type == "IterBasedRunner":
             cfg.runner = dict(type=cfg.runner.type, max_iters=cfg.runner.max_iters)
 
@@ -94,6 +95,10 @@ class SegTrainer(SegStage):
 
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
+
+        # Save config
+        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
+        # logger.info(f'Config:\n{cfg.pretty_text}')
 
         validate = True if cfg.data.get("val", None) else False
         train_segmentor(

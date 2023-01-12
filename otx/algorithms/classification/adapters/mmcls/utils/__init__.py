@@ -4,14 +4,14 @@
 
 from .builder import build_classifier
 from .config_utils import (
+    patch_config,
     patch_datasets,
     patch_evaluation,
-    patch_recipe_config,
     prepare_for_training,
 )
 
 __all__ = [
-    "patch_recipe_config",
+    "patch_config",
     "patch_datasets",
     "patch_evaluation",
     "prepare_for_training",

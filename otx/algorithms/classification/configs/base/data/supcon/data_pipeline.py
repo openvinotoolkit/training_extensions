@@ -44,9 +44,8 @@ __test_pipeline = [
     dict(type="Collect", keys=["img"]),
 ]
 
-
 __dataset_type = "ClsDirDataset"
-__samples_per_gpu = 32
+__samples_per_gpu = 16
 __workers_per_gpu = 2
 
 data = dict(

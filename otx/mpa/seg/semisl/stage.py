@@ -13,12 +13,13 @@ class SemiSLSegStage(SegStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def configure_data(self, cfg, data_cfg, training, **kwargs):
+    def configure_data(self, cfg, training, data_cfg, **kwargs):
         """Patch cfg.data."""
-        super().configure_data(cfg, data_cfg, training, **kwargs)
+        super().configure_data(cfg, training, data_cfg, **kwargs)
         # Set unlabeled data hook
-        if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
-            self.configure_unlabeled_dataloader(cfg, self.distributed)
+        if training:
+            if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
+                self.configure_unlabeled_dataloader(cfg, self.distributed)
 
     def configure_task(self, cfg, training, **kwargs):
         """Adjust settings for task adaptation"""

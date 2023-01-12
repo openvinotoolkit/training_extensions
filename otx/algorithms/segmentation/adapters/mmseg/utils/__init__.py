@@ -5,16 +5,16 @@
 
 from .builder import build_segmentor
 from .config_utils import (
+    patch_config,
     patch_datasets,
     patch_evaluation,
-    patch_recipe_config,
     prepare_for_training,
     set_hyperparams,
 )
 from .data_utils import load_dataset_items
 
 __all__ = [
-    "patch_recipe_config",
+    "patch_config",
     "patch_datasets",
     "patch_evaluation",
     "prepare_for_training",

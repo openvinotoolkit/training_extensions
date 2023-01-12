@@ -24,7 +24,7 @@ class DetectionStage(Stage):
         cfg = self.cfg
         self.configure_model(cfg, model_cfg, training, **kwargs)
         self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
-        self.configure_data(cfg, data_cfg, training, **kwargs)
+        self.configure_data(cfg, training, data_cfg)
         self.configure_regularization(cfg, training)
         self.configure_hyperparams(cfg, training, **kwargs)
         self.configure_task(cfg, training, **kwargs)
@@ -54,19 +54,6 @@ class DetectionStage(Stage):
             cfg.model.arch_type = cfg.model.type
             cfg.model.type = super_type
 
-        # OMZ-plugin
-        if cfg.model.backbone.type == "OmzBackboneDet":
-            ir_path = kwargs.get("ir_path")
-            if not ir_path:
-                raise RuntimeError("OMZ model needs OpenVINO bin/xml files.")
-            cfg.model.backbone.model_path = ir_path
-            if cfg.model.type == "SingleStageDetector":
-                cfg.model.bbox_head.model_path = ir_path
-            elif cfg.model.type == "FasterRCNN":
-                cfg.model.rpn_head.model_path = ir_path
-            else:
-                raise NotImplementedError(f"Unknown model type - {cfg.model.type}")
-
         # OV-plugin
         ir_model_path = kwargs.get("ir_model_path")
         if ir_model_path:
@@ -84,21 +71,7 @@ class DetectionStage(Stage):
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-    def configure_ckpt(self, cfg, model_ckpt, pretrained):
-        """Patch checkpoint path for pretrained weight.
-        Replace cfg.load_from to model_ckpt
-        Replace cfg.load_from to pretrained
-        Replace cfg.resume_from to cfg.load_from
-        """
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
-        if pretrained and isinstance(pretrained, str):
-            logger.info(f"Overriding cfg.load_from -> {pretrained}")
-            cfg.load_from = pretrained  # Overriding by stage input
-        if cfg.get("resume", False):
-            cfg.resume_from = cfg.load_from
-
-    def configure_data(self, cfg, data_cfg, training, **kwargs):  # noqa: C901
+    def configure_data(self, cfg, training, data_cfg, **kwargs):  # noqa: C901
         """Patch cfg.data.
         Merge cfg and data_cfg
         Match cfg.data.train.type to super_type
@@ -107,7 +80,7 @@ class DetectionStage(Stage):
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
 
-        Stage.configure_data(cfg, training, **kwargs)
+        super().configure_data(cfg, training, **kwargs)
         super_type = cfg.data.train.pop("super_type", None)
         if super_type:
             cfg.data.train.org_type = cfg.data.train.type
@@ -148,6 +121,7 @@ class DetectionStage(Stage):
     def configure_task(self, cfg, training, **kwargs):
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
+            logger.info(f"task config!!!!: training={training}")
             self.task_adapt_type = cfg["task_adapt"].get("type", None)
             self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
             self.configure_classes(cfg)

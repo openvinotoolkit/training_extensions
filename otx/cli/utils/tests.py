@@ -144,6 +144,33 @@ def otx_train_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
 
 
+def otx_resume_testing(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    command_line = [
+        "otx",
+        "train",
+        template.model_template_path,
+    ]
+    for option in [
+        "--data",
+        "--train-ann-file",
+        "--train-data-roots",
+        "--val-ann-file",
+        "--val-data-roots",
+        "--unlabeled-data-roots",
+        "--unlabeled-file-list",
+        "--resume-from",
+    ]:
+        if option in args:
+            command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
+
+    command_line.extend(["--save-model-to", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
+    command_line.extend(args["train_params"])
+    check_run(command_line)
+    assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth")
+    assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/label_schema.json")
+
+
 def otx_hpo_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):

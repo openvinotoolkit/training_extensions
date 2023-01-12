@@ -101,10 +101,6 @@ class DetectionTrainer(DetectionStage):
             if "proposal_ratio" in locals():
                 cfg.checkpoint_config.meta.update({"anchor_ratio": proposal_ratio})
 
-        # Save config
-        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
-        # logger.info(f'Config:\n{cfg.pretty_text}')
-
         self.configure_samples_per_gpu(cfg, "train", self.distributed)
         self.configure_fp16_optimizer(cfg, self.distributed)
 
@@ -116,6 +112,10 @@ class DetectionTrainer(DetectionStage):
 
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
+
+        # Save config
+        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
+        # logger.info(f'Config:\n{cfg.pretty_text}')
 
         validate = True if cfg.data.get("val", None) else False
         train_detector(

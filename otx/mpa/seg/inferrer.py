@@ -61,6 +61,7 @@ class SegInferrer(SegStage):
         # TODO: distributed inference
 
         data_cfg = cfg.data.test.copy()
+
         # Input source
         input_source = cfg.get("input_source", "test")
         logger.info(f"Inferring on input source: data.{input_source}")
@@ -111,6 +112,11 @@ class SegInferrer(SegStage):
         # Target classes
         if "task_adapt" in cfg:
             target_classes = cfg.task_adapt.final
+            if len(target_classes) < 1:
+                raise KeyError(
+                    f"target_classes={target_classes} is empty check the metadata from model ckpt or recipe "
+                    "configuration"
+                )
         else:
             target_classes = self.dataset.CLASSES
 
@@ -129,6 +135,7 @@ class SegInferrer(SegStage):
         model = self.build_model(cfg, model_builder, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
+        feature_model = self._get_feature_module(model)
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -136,7 +143,7 @@ class SegInferrer(SegStage):
 
         eval_predictions = []
         feature_vectors = []
-        with FeatureVectorHook(model.module) if dump_features else nullcontext() as fhook:
+        with FeatureVectorHook(feature_model) if dump_features else nullcontext() as fhook:
             for data in test_dataloader:
                 with torch.no_grad():
                     result = model(return_loss=False, output_logits=True, **data)

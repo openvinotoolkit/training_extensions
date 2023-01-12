@@ -180,40 +180,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
 
-    def _init_recipe_hparam(self) -> dict:
-        params = self._hyperparams.learning_parameters
-        warmup_iters = int(params.learning_rate_warmup_iters)
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
-
-        if params.enable_early_stopping:
-            early_stop = ConfigDict(
-                start=int(params.early_stop_start),
-                patience=int(params.early_stop_patience),
-                iteration_patience=int(params.early_stop_iteration_patience),
-            )
-        else:
-            early_stop = False
-
-        if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
-            runner = ConfigDict(max_iters=int(params.num_iters))
-        else:
-            runner = ConfigDict(max_epochs=int(params.num_iters))
-
-        return ConfigDict(
-            optimizer=ConfigDict(lr=params.learning_rate),
-            lr_config=lr_config,
-            early_stop=early_stop,
-            data=ConfigDict(
-                samples_per_gpu=int(params.batch_size),
-                workers_per_gpu=int(params.num_workers),
-            ),
-            runner=runner,
-        )
-
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 

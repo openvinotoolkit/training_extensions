@@ -30,9 +30,9 @@ class DetectionEvaluator(DetectionInferrer):
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
         logger.info("evaluate!")
 
-        # Save config
-        cfg.dump(osp.join(cfg.work_dir, "config.yaml"))
-        logger.info(f"Config:\n{cfg.pretty_text}")
+        #  # Save config
+        #  cfg.dump(osp.join(cfg.work_dir, "config.yaml"))
+        #  logger.info(f"Config:\n{cfg.pretty_text}")
 
         # Inference
         model_builder = kwargs.get("model_builder", None)

@@ -224,6 +224,3 @@ class DetectionInferrer(DetectionStage):
             saliency_maps=saliency_maps,
         )
         return outputs
-
-    def _get_feature_module(self, model):
-        return model

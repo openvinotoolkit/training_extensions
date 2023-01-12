@@ -254,44 +254,52 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
     return requirements
 
 
-def _cython_modules(src_dir: str = "otx"):
-    Cython.Compiler.Options.annotate = True
-
-    ext_modules = []
-    print("_cython")
-
-    for root, dirs, files in os.walk(src_dir):
-        for fname in files:
-            name, ext = os.path.splitext(fname)
-            if ext != ".pyx":
-                continue
-            cython_aug_modl = root.replace("/", ".")
-            ext_modules += [
-                Extension(f"{cython_aug_modl}.{name}", [os.path.join(root, fname)],
-                        include_dirs=[numpy.get_include()], extra_compile_args=["-O3"])
-            ]
-
-    return cythonize(ext_modules, annotate=True)
-
-
 def get_extensions():
+    def _cython_modules(src_dir: str = "otx"):
+        Cython.Compiler.Options.annotate = True
+
+        ext_modules = []
+        print("_cython")
+
+        for root, dirs, files in os.walk(src_dir):
+            for fname in files:
+                name, ext = os.path.splitext(fname)
+                if ext != ".pyx":
+                    continue
+                cython_aug_modl = root.replace("/", ".")
+                ext_modules += [
+                    Extension(
+                        f"{cython_aug_modl}.{name}",
+                        [os.path.join(root, fname)],
+                        include_dirs=[numpy.get_include()],
+                        extra_compile_args=["-O3"]
+                    )
+                ]
+
+        return cythonize(ext_modules, annotate=True)
+
+    def _torch_modules():
+        ext_modules = []
+
+        # prevent ninja from using too many resources
+        os.environ.setdefault('MAX_JOBS', '4')
+        extra_compile_args = {'cxx': []}
+
+        # otx.mpa.modules._mpl
+        op_files = glob("./otx/mpa/csrc/mpl/*.cpp")
+        include_path = os.path.abspath("./otx/mpa/csrc/mpl")
+        ext_ops = CppExtension(
+            name="otx.mpa.modules._mpl",
+            sources=op_files,
+            include_dirs=[include_path],
+            define_macros=[],
+            extra_compile_args=extra_compile_args)
+        ext_modules.append(ext_ops)
+        return ext_modules
+
     extensions = []
 
-    # prevent ninja from using too many resources
-    os.environ.setdefault('MAX_JOBS', '4')
-    extra_compile_args = {'cxx': []}
-
-    # mp.modules._mpl
-    op_files = glob("./otx/mpa/csrc/mpl/*.cpp")
-    include_path = os.path.abspath("./otx/mpa/csrc/mpl")
-    ext_ops = CppExtension(
-        name="otx.mpa.modules._mpl",
-        sources=op_files,
-        include_dirs=[include_path],
-        define_macros=[],
-        extra_compile_args=extra_compile_args)
-    extensions.append(ext_ops)
-
+    extensions.extend(_torch_modules())
     extensions.extend(_cython_modules())
 
     return extensions

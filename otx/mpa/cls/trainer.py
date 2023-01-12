@@ -82,10 +82,6 @@ class ClsTrainer(ClsStage):
                 else:
                     cfg.checkpoint_config.meta.update({"CLASSES": self.model_classes})
 
-        # Save config
-        # cfg.dump(osp.join(cfg.work_dir, 'config.yaml')) # FIXME bug to save
-        # logger.info(f'Config:\n{cfg.pretty_text}')
-
         self.configure_samples_per_gpu(cfg, "train", self.distributed)
         self.configure_fp16_optimizer(cfg, self.distributed)
 
@@ -96,6 +92,10 @@ class ClsTrainer(ClsStage):
 
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
+
+        # Save config
+        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
+        # logger.info(f'Config:\n{cfg.pretty_text}')
 
         # register custom eval hooks
         validate = True if cfg.data.get("val", None) else False

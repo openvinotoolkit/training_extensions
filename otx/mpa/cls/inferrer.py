@@ -55,7 +55,13 @@ class ClsInferrer(ClsStage):
         dump_features = kwargs.get("dump_features", False)
         dump_saliency_map = kwargs.get("dump_saliency_map", False)
         eval = kwargs.get("eval", False)
-        outputs = self.infer(cfg, model_builder, eval, dump_features, dump_saliency_map)
+        outputs = self.infer(
+            cfg,
+            model_builder=model_builder,
+            eval=eval,
+            dump_features=dump_features,
+            dump_saliency_map=dump_saliency_map,
+        )
 
         if cfg.get("task_adapt", False) and self.extract_prob:
             output_file_path = osp.join(cfg.work_dir, "pre_stage_res.npy")
@@ -108,6 +114,7 @@ class ClsInferrer(ClsStage):
         model = self.build_model(cfg, model_builder, fp16=cfg.get("fp16", False))
         self.extract_prob = hasattr(model, "extract_prob")
         model.eval()
+        feature_model = self._get_feature_module(model)
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -117,15 +124,15 @@ class ClsInferrer(ClsStage):
         feature_vectors = []
         saliency_maps = []
         if cfg.get("task_adapt", False) and not eval and self.extract_prob:
-            old_prob, feats = prob_extractor(model.module, test_dataloader)
+            old_prob, feats = prob_extractor(feature_model, test_dataloader)
             data_infos = self.dataset.data_infos
             # pre-stage for LwF
             for i, data_info in enumerate(data_infos):
                 data_info["soft_label"] = {task: value[i] for task, value in old_prob.items()}
             outputs = data_infos
         else:
-            with FeatureVectorHook(model.module) if dump_features else nullcontext() as feature_vector_hook:
-                with ReciproCAMHook(model.module) if dump_saliency_map else nullcontext() as forward_explainer_hook:
+            with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
+                with ReciproCAMHook(feature_model) if dump_saliency_map else nullcontext() as forward_explainer_hook:
                     for data in test_dataloader:
                         with torch.no_grad():
                             result = model(return_loss=False, **data)

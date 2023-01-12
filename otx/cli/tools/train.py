@@ -109,6 +109,11 @@ def parse_args():
         help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
+        "--resume-from",
+        required=False,
+        help="Resume training from previously saved checkpoint",
+    )
+    parser.add_argument(
         "--save-model-to",
         required=False,
         help="Location where trained model will be stored.",
@@ -202,14 +207,18 @@ def main():  # pylint: disable=too-many-branches
         model_template=template,
     )
 
-    if args.load_weights:
+    if args.load_weights or args.resume_from:
+        ckpt_path = args.resume_from if args.resume_from else args.load_weights
         model_adapters = {
-            "weights.pth": ModelAdapter(read_binary(args.load_weights)),
+            "weights.pth": ModelAdapter(read_binary(ckpt_path)),
+            "resume": bool(args.resume_from),
         }
-        if os.path.exists(os.path.join(os.path.dirname(args.load_weights), "label_schema.json")):
+
+        if os.path.exists(os.path.join(os.path.dirname(ckpt_path), "label_schema.json")):
             model_adapters.update(
-                {"label_schema.json": ModelAdapter(label_schema_to_bytes(read_label_schema(args.load_weights)))}
+                {"label_schema.json": ModelAdapter(label_schema_to_bytes(read_label_schema(ckpt_path)))}
             )
+
         environment.model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),

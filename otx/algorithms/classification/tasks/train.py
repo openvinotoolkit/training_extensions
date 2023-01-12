@@ -61,7 +61,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {
-            "model": model_ckpt["state_dict"],
+            "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
             "VERSION": 1,

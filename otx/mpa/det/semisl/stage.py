@@ -17,11 +17,12 @@ class SemiSLDetectionStage(DetectionStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def configure_data(self, cfg, data_cfg, training, **kwargs):
+    def configure_data(self, cfg, training, data_cfg, **kwargs):
         """Patch cfg.data."""
-        super().configure_data(cfg, data_cfg, training, **kwargs)
+        super().configure_data(cfg, training, data_cfg, **kwargs)
+        # Set unlabeled data hook
         if training:
-            if "unlabeled" in cfg.data:
+            if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 if len(cfg.data.unlabeled.get("pipeline", [])) == 0:
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
                 self.configure_unlabeled_dataloader(cfg, self.distributed)

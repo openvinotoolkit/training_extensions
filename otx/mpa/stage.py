@@ -250,6 +250,20 @@ class Stage(object):
                 configure_split("test")
             configure_split("unlabeled")
 
+    def configure_ckpt(self, cfg, model_ckpt, pretrained=None):
+        """Patch checkpoint path for pretrained weight.
+        Replace cfg.load_from to model_ckpt
+        Replace cfg.load_from to pretrained
+        Replace cfg.resume_from to cfg.load_from
+        """
+        if model_ckpt:
+            cfg.load_from = self.get_model_ckpt(model_ckpt)
+        if pretrained and isinstance(pretrained, str):
+            logger.info(f"Overriding cfg.load_from -> {pretrained}")
+            cfg.load_from = pretrained  # Overriding by stage input
+        if cfg.get("resume", False):
+            cfg.resume_from = cfg.load_from
+
     @staticmethod
     def configure_hook(cfg, **kwargs):
         """Update cfg.custom_hooks based on cfg.custom_hook_options"""
@@ -388,6 +402,8 @@ class Stage(object):
         # for MPA classification legacy compatibility
         classes = meta.get("CLASSES", [])
         classes = meta.get("classes", classes)
+        if classes is None:
+            classes = []
 
         if len(classes) == 0:
             ckpt_path = cfg.get("load_from", None)
@@ -459,4 +475,7 @@ class Stage(object):
         model = model_builder(cfg, **kwargs)
         if bool(fp16):
             wrap_fp16_model(model)
+        return model
+
+    def _get_feature_module(self, model):
         return model

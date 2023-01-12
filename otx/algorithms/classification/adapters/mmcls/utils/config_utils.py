@@ -42,7 +42,7 @@ logger = get_logger()
 
 
 @check_input_parameters_type({"work_dir": DirectoryPathCheck})
-def patch_recipe_config(
+def patch_config(
     config: Config,
     work_dir: str,
     labels: List[LabelEntity],
