@@ -193,7 +193,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             probs_meta = TensorEntity(name="probabilities", numpy=probs.reshape(-1))
             dataset_item.append_metadata_item(probs_meta, model=self.model)
 
-            feature_vec_media = TensorEntity(name="representation_vector", numpy=np.copy(repr_vector.reshape(-1)))
+            feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
             dataset_item.append_metadata_item(feature_vec_media, model=self.model)
             if dump_features:
                 if saliency_map.ndim == 2:
