@@ -29,14 +29,23 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
 
     def _import_dataset(
         self,
-        train_data_roots: str = None,
-        val_data_roots: str = None,
-        test_data_roots: str = None,
-        unlabeled_data_roots: str = None,
+        train_data_roots: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
-        """Import multiple videos that have CVAT format annotation."""
-        dataset = {}
+        """Import multiple videos that have CVAT format annotation.
 
+        Args:
+            train_data_roots (Optional[str]): Path for training data
+            val_data_roots (Optional[str]): Path for validation data
+            test_data_roots (Optional[str]): Path for test data
+            unlabeled_data_roots (Optional[str]): Path for unlabeled data
+
+        Returns:
+            DatumaroDataset: Datumaro Dataset
+        """
+        dataset = {}
         if train_data_roots is None and test_data_roots is None:
             raise ValueError("At least 1 data_root is needed to train/test.")
 
