@@ -357,7 +357,18 @@ class ClassificationInferenceTask(
         logger.info(f"train type = {self._train_type}")
 
         if self._train_type in RECIPE_TRAIN_TYPE:
-            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
+            # TODO: this condition will be simplified after adding support for multlabel and hierarchical to SupCon.
+            if (
+                self._train_type == TrainType.INCREMENTAL
+                and not self._multilabel
+                and not self._hierarchical
+                and self._hyperparams.learning_parameters.enable_supcon
+                and not self._model_dir.endswith("supcon")
+            ):
+                recipe = os.path.join(recipe_root, "supcon.yaml")
+                self._model_dir = os.path.join(self._model_dir, "supcon")
+            else:
+                recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
             raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
 

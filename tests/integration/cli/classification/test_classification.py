@@ -5,6 +5,7 @@
 
 import copy
 import os
+from copy import deepcopy
 from functools import wraps
 
 import pytest
@@ -94,6 +95,13 @@ else:
 
 
 class TestToolsMultiClassClassification:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_supcon(self, template, tmp_dir_path):
+        args1 = deepcopy(args)
+        args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
