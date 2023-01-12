@@ -1,4 +1,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Anomaly Requirements.                                                       #
+# kornia dropped torch 1.8 support from 0.6.9
+# https://github.com/kornia/kornia/pull/2024
+kornia<0.6.9
 anomalib==0.3.6
 pytorch-lightning>=1.6.0,<1.7.0
