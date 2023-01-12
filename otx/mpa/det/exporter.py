@@ -10,15 +10,16 @@ from mmcv.runner import load_checkpoint
 from mmdet.apis import export_model
 from mmdet.models import build_detector
 
-from otx.mpa.det.incremental import IncrDetectionStage
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
+
+from .stage import DetectionStage
 
 logger = get_logger()
 
 
 @STAGES.register_module()
-class DetectionExporter(IncrDetectionStage):
+class DetectionExporter(DetectionStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

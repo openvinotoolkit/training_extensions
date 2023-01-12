@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .stage import IncrDetectionStage
+from .inferrer import IncrDetectionInferrer
+from .trainer import IncrDetectionTrainer
 
-__all__ = ["IncrDetectionStage"]
+__all__ = ["IncrDetectionTrainer", "IncrDetectionInferrer"]

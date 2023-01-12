@@ -4,14 +4,14 @@
 
 from mmcv import ConfigDict
 
-from otx.mpa.det.incremental import IncrDetectionStage
+from otx.mpa.det.stage import DetectionStage
 from otx.mpa.utils.config_utils import update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
 
-class SemiSLDetectionStage(IncrDetectionStage):
+class SemiSLDetectionStage(DetectionStage):
     """Patch config to support semi supervised learning for object detection"""
 
     def __init__(self, **kwargs):
@@ -37,36 +37,21 @@ class SemiSLDetectionStage(IncrDetectionStage):
                 )
 
     def configure_task(self, cfg, training, **kwargs):
+        """Patch config to support training algorithm."""
         logger.info(f"Semi-SL task config!!!!: training={training}")
-        super().configure_task(cfg, training, **kwargs)
+        if "task_adapt" in cfg:
+            self.task_adapt_type = cfg["task_adapt"].get("type", None)
+            self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
+            self.configure_classes(cfg)
 
-    def configure_task_cls_incr(self, cfg, task_adapt_type, org_model_classes, model_classes):
-        """Patch for class incremental learning.
-        Semi supervised learning should support incrmental learning
-        """
-        if task_adapt_type == "mpa":
-            self.configure_bbox_head(cfg, org_model_classes, model_classes)
-            self.configure_task_adapt_hook(cfg, org_model_classes, model_classes)
-            self.configure_val_interval(cfg)
-        else:
-            src_data_cfg = self.get_data_cfg(cfg, "train")
-            src_data_cfg.pop("old_new_indices", None)
-
-    @staticmethod
-    def configure_task_adapt_hook(cfg, org_model_classes, model_classes):
-        """Add TaskAdaptHook for sampler.
-
-        TaskAdaptHook does not support ComposedDL
-        """
-        sampler_flag = False
-        update_or_add_custom_hook(
-            cfg,
-            ConfigDict(
-                type="TaskAdaptHook",
-                src_classes=org_model_classes,
-                dst_classes=model_classes,
-                model_type=cfg.model.type,
-                sampler_flag=sampler_flag,
-                efficient_mode=cfg["task_adapt"].get("efficient_mode", False),
-            ),
-        )
+            if self.data_classes != self.model_classes:
+                self.configure_task_data_pipeline(cfg)
+            # TODO[JAEGUK]: configure_anchor is not working
+            if cfg["task_adapt"].get("use_mpa_anchor", False):
+                self.configure_anchor(cfg)
+            if self.task_adapt_type == "mpa":
+                self.configure_bbox_head(cfg)
+                self.configure_val_interval(cfg)
+            else:
+                src_data_cfg = self.get_data_cfg(cfg, "train")
+                src_data_cfg.pop("old_new_indices", None)
