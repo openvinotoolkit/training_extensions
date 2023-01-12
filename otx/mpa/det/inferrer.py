@@ -25,15 +25,15 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
-from .incremental import IncrDetectionStage
+from .stage import DetectionStage
 
 logger = get_logger()
 
 
 @STAGES.register_module()
-class DetectionInferrer(IncrDetectionStage):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class DetectionInferrer(DetectionStage):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.dataset = None
 
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
@@ -162,6 +162,7 @@ class DetectionInferrer(IncrDetectionStage):
         model = self.build_model(cfg, model_builder, fp16=False)
         model.CLASSES = target_classes
         model.eval()
+        feature_model = self._get_feature_module(model)
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -171,16 +172,16 @@ class DetectionInferrer(IncrDetectionStage):
         if not dump_saliency_map:
             saliency_hook = nullcontext()
         else:
-            raw_model = model.module
+            raw_model = feature_model
             if raw_model.__class__.__name__ == "NNCFNetwork":
                 raw_model = raw_model.get_nncf_wrapped_model()
             if isinstance(raw_model, TwoStageDetector):
-                saliency_hook = ActivationMapHook(model.module)
+                saliency_hook = ActivationMapHook(feature_model)
             else:
-                saliency_hook = DetSaliencyMapHook(model.module)
+                saliency_hook = DetSaliencyMapHook(feature_model)
 
         eval_predictions = []
-        with FeatureVectorHook(model.module) if dump_features else nullcontext() as feature_vector_hook:
+        with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
             with saliency_hook:
                 for data in test_dataloader:
                     with torch.no_grad():
@@ -223,3 +224,6 @@ class DetectionInferrer(IncrDetectionStage):
             saliency_maps=saliency_maps,
         )
         return outputs
+
+    def _get_feature_module(self, model):
+        return model

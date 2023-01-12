@@ -9,13 +9,13 @@ from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
-from .incremental import IncrDetectionStage
+from .stage import DetectionStage
 
 logger = get_logger()
 
 
 @STAGES.register_module()
-class DetectionExporter(ExporterMixin, IncrDetectionStage):
+class DetectionExporter(ExporterMixin, DetectionStage):
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):  # noqa: C901
         """Run exporter stage"""
 
