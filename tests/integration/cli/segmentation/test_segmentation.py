@@ -218,7 +218,6 @@ class TestToolsMPASegmentation:
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
-
 args_semisl = {
     "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
     "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
@@ -234,7 +233,6 @@ args_semisl = {
         "SEMISUPERVISED",
     ],
 }
-
 
 class TestToolsMPASemiSLSegmentation:
     @e2e_pytest_component
