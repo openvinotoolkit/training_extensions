@@ -190,7 +190,7 @@ def train_network(config):
 
         if validDice_lungs.cpu() > bestValidDice_lungs:
             bestValidDice_lungs = validDice_lungs.cpu()
-            torch.save(net.state_dict(), save_path+'sumnet_best_lungs.pt')
+            torch.save(net.state_dict(), save_path+'/sumnet_best_lungs.pt')
         
         plot_graphs(train_values=trainLoss, valid_values=validLoss,
         save_path=save_path, x_label='Epochs', y_label='Loss',
@@ -206,10 +206,10 @@ def train_network(config):
 
         print('Saving losses')
 
-        torch.save(trainLoss, save_path+'trainLoss.pt')
-        torch.save(validLoss, save_path+'validLoss.pt')
-        torch.save(trainDiceCoeff_lungs, save_path+'trainDice_lungs.pt')
-        torch.save(validDiceCoeff_lungs, save_path+'validDice_lungs.pt')
+        torch.save(trainLoss, save_path+'/trainLoss.pt')
+        torch.save(validLoss, save_path+'/validLoss.pt')
+        torch.save(trainDiceCoeff_lungs, save_path+'/trainDice_lungs.pt')
+        torch.save(validDiceCoeff_lungs, save_path+'/validDice_lungs.pt')
 
     #     if epoch>1:
     #         break

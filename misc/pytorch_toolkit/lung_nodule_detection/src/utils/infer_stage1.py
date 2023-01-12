@@ -1,7 +1,7 @@
 import torch
 from torch.utils import data
 import torch.nn.functional as F
-from torch.autograd import Variable
+from torchvision import transforms
 import os
 import numpy as np
 from tqdm import tqdm as tq
@@ -9,10 +9,14 @@ import matplotlib.pyplot as plt
 import json
 from .models import SUMNet, U_Net, R2U_Net
 from .data_loader import LungDataLoader
-from .utils import dice_coefficient
-plt.switch_backend('agg')
+from .utils import dice_coefficient, load_inference_model, load_checkpoint
 
-def infer_lungseg(fold_no,save_path,network,jsonpath):
+plt.switch_backend('agg')
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
+
+def infer_lungseg(config, run_type='pytorch'):
     """ Inference script for lung segmentation
 
     Parameters
@@ -31,49 +35,64 @@ def infer_lungseg(fold_no,save_path,network,jsonpath):
     None
 
     """
-
+    fold_no = config["fold_no"]
+    save_path = config["save_path"]
+    network = config["network"]
+    print(network)
+    jsonpath = config["json_path"]
+    datapath = config["data_path"]
+    lung_segpath = config["lung_segpath"]
     fold = 'fold'+str(fold_no)
-
     save_path = os.path.join(save_path,network,fold)
 
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
 
-    with open(os.path.join(jsonpath,fold+'_pos_neg_eq.json')) as f:
+    with open(jsonpath) as f:
         json_file = json.load(f)
-
-    testDset = LungDataLoader(is_transform=True,json_file=json_file,split="test_set",img_size=512)
-    testDataLoader = data.DataLoader(testDset,batch_size=1,shuffle=True,num_workers=4,pin_memory=True,drop_last=True)
+    testDset = LungDataLoader(datapath=datapath,lung_path = lung_segpath,is_transform=True,json_file=json_file,split="valid_set",img_size=512)
+    testDataLoader = data.DataLoader(testDset,batch_size=1,shuffle=False,num_workers=4,pin_memory=True,drop_last=True)
 
     testBatches = 0
     testDice_lungs = 0
-
-    if network == 'sumnet':
-        net = SUMNet(in_ch=1,out_ch=2)
-    elif network == 'unet':
-        net = U_Net(img_ch=1,output_ch=2)
-    else:
-        net = R2U_Net(img_ch=1,output_ch=2)
-
-
     dice_list = []
     use_gpu = torch.cuda.is_available()
 
-    if use_gpu:
-        net = net.cuda()
+    if run_type == 'pytorch':
+        if network == 'sumnet':
+            net = SUMNet(in_ch=1,out_ch=2)
+        elif network == 'unet':
+            net = U_Net(img_ch=1,output_ch=2)
+        else:
+            net = R2U_Net(img_ch=1,output_ch=2)
+        if use_gpu:
+            net = net.cuda()
+        net = load_checkpoint(net,save_path+network+'_best_lungs.pt')
 
-    net.load_state_dict(torch.load(save_path+network+'_best_lungs.pt'))
+    elif run_type == 'onnx':
+        net = load_inference_model(config,run_type='onnx')
+    else:
+        net = load_inference_model(config,run_type='ir')
 
     for data1 in tq(testDataLoader):
+        inputs, labels = data1
+        to_tensor = transforms.ToTensor()
+        if run_type == 'pytorch':
+            if use_gpu:
+                inputs = inputs.cuda()
 
-        imgs, mask = data1
-        labels = mask
-        if use_gpu:
-            inputs = imgs.cuda()
-            labels = labels.cuda()
-
-        net_out = net(Variable(inputs))
-        net_out_sf = F.softmax(net_out.data,dim=1)
+            net_out = net(inputs)
+            net_out_sf = F.softmax(net_out.data,dim=1).detach().cpu()
+        elif run_type == 'ir':
+            net_out = net.infer(inputs={'input': inputs})['output']
+            net_out = torch.tensor(net_out)
+            net_out_sf = F.softmax(net_out.data,dim=0)
+        else:
+            ort_inputs = {net.get_inputs()[0].name: to_numpy(inputs)}
+            net_out = net.run(None, ort_inputs)
+            net_out = np.array(net_out)
+            net_out = to_tensor(net_out).squeeze(1).transpose(dim0=1, dim1=0)
+            net_out_sf = F.softmax(net_out.data,dim=1)
 
         test_dice = dice_coefficient(net_out_sf,torch.argmax(labels,dim=1))
         pred_max = torch.argmax(net_out_sf, dim=1)

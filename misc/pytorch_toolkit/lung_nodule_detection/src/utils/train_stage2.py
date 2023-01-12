@@ -49,10 +49,10 @@ def lungpatch_classifier(config):
     save_path = save_path
     if not os.path.isdir(save_path):
         os.makedirs(save_path)
+    use_gpu = torch.cuda.is_available()
 
     net = LeNet()
 
-    use_gpu = torch.cuda.is_available()
     if use_gpu:
         net = net.cuda()
 

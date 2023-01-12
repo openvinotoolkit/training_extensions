@@ -7,7 +7,7 @@
     "network": "lenet"
 },
 "inference":{
-    "modelpath":"temp_data/stage2/",
+    "modelpath":"downloads/model_weights/stage2/",
     "imgpath":"downloads/test_data/stage2/",
     "jsonpath": "downloads/test_data/patch_data_split.json",
     "network": "lenet"

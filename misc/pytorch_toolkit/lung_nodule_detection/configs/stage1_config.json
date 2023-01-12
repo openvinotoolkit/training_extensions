@@ -12,7 +12,10 @@
 "inference":{
     "fold_no": 4,
     "save_path": "temp_data/stage1/",
+    "data_path": "downloads/test_data/stage1/",
+    "lung_segpath": "downloads/test_data/stage1/mask/",
     "json_path": "downloads/test_data/fold4_pos_neg_eq.json",
+    "onnx_checkpoint": "downloads/model_weights/stage1/lung_seg.onnx",
     "network": "sumnet"
 },
 "export":{

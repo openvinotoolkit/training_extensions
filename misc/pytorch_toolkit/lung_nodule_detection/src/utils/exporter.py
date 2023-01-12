@@ -17,7 +17,8 @@ class Exporter:
             os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
         input_shape = self.config.get('input_shape')
         output_dir = os.path.split(self.checkpoint)[0]
-        openvino_extension_path = '/home/deeptensor/rakshith_codes/training_extensions/misc/pytorch_toolkit/lung_nodule_detection/src/utils/openvino_pytorch_layers/mo_extensions'
+        current_dir =  os.path.abspath(os.path.dirname(__file__))
+        openvino_extension_path = os.path.join(current_dir,'openvino_pytorch_layers','mo_extensions')
         export_command = f"""mo \
         --framework onnx \
         --input_model {input_model} \

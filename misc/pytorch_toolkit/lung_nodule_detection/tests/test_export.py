@@ -10,7 +10,7 @@ def create_export_test_for_stage1():
         def setUpClass(cls):
             cls.config = get_config(action='export', stage=1)
             if not os.path.exists(cls.config['checkpoint']):
-                download_checkpoint(stage=1)
+                download_checkpoint()
             cls.model_path = cls.config['checkpoint']
 
         def test_export_onnx(self):
@@ -33,7 +33,6 @@ def create_export_test_for_stage1():
             self.assertTrue(bin_status)
 
         def test_config(self):
-            self.config = get_config(action='export', stage=1)
             self.model_path = self.config['checkpoint']
             self.input_shape = self.config['input_shape']
             self.output_dir = os.path.split(self.model_path)[0]
@@ -49,13 +48,10 @@ def create_export_test_for_stage2():
         def setUpClass(cls):
             cls.config = get_config(action='export', stage=2)
             if not os.path.exists(cls.config['checkpoint']):
-                download_checkpoint(stage=2)
+                download_checkpoint()
             cls.model_path = cls.config['checkpoint']
 
         def test_export_onnx(self):
-            self.config = get_config(action='export', stage=2)
-            if not os.path.exists(self.config['checkpoint']):
-                download_checkpoint(stage=2)
             self.exporter = Exporter(self.config, stage=2)
             self.exporter.export_model_onnx()
             checkpoint = os.path.split(self.config['checkpoint'])[0]
@@ -63,9 +59,6 @@ def create_export_test_for_stage2():
                 checkpoint, self.config.get('model_name_onnx')))
 
         def test_export_ir(self):
-            self.config = get_config(action='export', stage=2)
-            if not os.path.exists(self.config['checkpoint']):
-                download_checkpoint(stage=2)
             self.exporter = Exporter(self.config, stage=2)
             self.model_path = os.path.split(self.config['checkpoint'])[0]
             if not os.path.exists(os.path.join(self.model_path, self.config.get('model_name_onnx'))):
@@ -81,7 +74,6 @@ def create_export_test_for_stage2():
             self.assertTrue(bin_status)
 
         def test_config(self):
-            self.config = get_config(action='export', stage=2)
             self.model_path = self.config['checkpoint']
             self.input_shape = self.config['input_shape']
             self.output_dir = os.path.split(self.model_path)[0]

@@ -6,22 +6,35 @@ from torch.utils import data
 from torch.autograd import Variable
 import numpy as np
 from tqdm import tqdm as tq
+import json
 from sklearn.metrics import confusion_matrix
 from .data_loader import LungPatchDataLoader
 from .models import LeNet
+from .utils import load_inference_model
 
-def lungpatch_classifier(modelpath,imgpath):
+def lungpatch_classifier(config, run_type):
+    imgpath = config["imgpath"]
+    modelpath = config["modelpath"]
+    jsonpath = config["jsonpath"]
 
-    testDset = LungPatchDataLoader(imgpath,is_transform=True,split="test")
+    with open(jsonpath) as f:
+        json_file = json.load(f)
+
+    testDset = LungPatchDataLoader(imgpath,json_file,is_transform=True,split="test_set")
     testDataLoader = data.DataLoader(testDset,batch_size=1,shuffle=True,num_workers=4,pin_memory=True)
     classification_model_loadPath = modelpath
-    net = LeNet()
 
     use_gpu = torch.cuda.is_available()
+    if run_type == 'pytorch':
+        net = LeNet()
+        if use_gpu:
+            net = net.cuda()
+        net.load_state_dict(torch.load(classification_model_loadPath+'lenet_best.pt'))
+    elif run_type == 'onnx':
+        net = load_inference_model(config, run_type='onnx')
+    else:
+        net = load_inference_model(config, run_type='ir')
 
-    if use_gpu:
-        net = net.cuda()
-    net.load_state_dict(torch.load(classification_model_loadPath+'lenet_best.pt'))
 
     optimizer = optim.Adam(net.parameters(), lr = 1e-4, weight_decay = 1e-5)
     criterion = nn.BCEWithLogitsLoss()
@@ -32,13 +45,22 @@ def lungpatch_classifier(modelpath,imgpath):
     pred_arr = []
     label_arr = []
     for data1 in tq(testDataLoader):
-        img, label = data1
-        if use_gpu:
-            inputs = img.cuda()
-            label = label.float()
-            label = label.cuda()
+        inputs, label = data1
 
-        net_out = net(Variable(inputs))
+        if run_type == 'pytorch':
+            if use_gpu:
+                inputs = inputs.cuda()
+                label = label.float()
+                label = label.cuda()
+            net_out = net(Variable(inputs))
+        elif run_type == 'ir':
+            net_out = net.infer(inputs={'input': inputs})['output']
+            net_out = torch.tensor(net_out)
+        else:
+            ort_inputs = {net.get_inputs()[0].name: to_numpy(inputs)}
+            net_out = net.run(None, ort_inputs)
+            net_out = np.array(net_out)
+            net_out = torch.tensor(net_out)
 
         net_loss = criterion(net_out,label)
         preds = torch.zeros(net_out.shape).cuda()
@@ -62,16 +84,4 @@ def lungpatch_classifier(modelpath,imgpath):
     print(' Loss: {:.4f} | accuracy: {:.4f} '.format(
              testepoch_loss,testepoch_acc))
 
-
-    tn, fp, fn, tp = confusion_matrix(np.array(label_arr).flatten(), np.array(pred_arr).flatten()).ravel()
-
-    print('True Negative :',tn)
-    print('false Negative :',fn)
-    print('True positive :',tp)
-    print('False positive :',fp)
-    specificity = tn/(tn+fp)
-    sensitivity = tp/(tp+fn)
-    print('Specificity :',specificity)
-    print('Sensitivity :',sensitivity)
-
-    return testepoch_acc, specificity, sensitivity
+    return testepoch_acc

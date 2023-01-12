@@ -4,7 +4,9 @@ import numpy as np
 import torch
 import json
 from .models import LeNet, R2U_Net, SUMNet, U_Net
-
+from openvino.inference_engine import IECore
+import onnx
+import onnxruntime
 
 def ch_shuffle(x):
     shuffIdx1 = torch.from_numpy(np.random.randint(0,2,x.size(0)))
@@ -56,6 +58,7 @@ def load_checkpoint(model, checkpoint):
         model.load_state_dict(model_checkpoint)
     else:
         model.state_dict()
+    return model
 
 def plot_graphs(
     train_values, valid_values,
@@ -72,6 +75,18 @@ def plot_graphs(
     plt.savefig(os.path.join(save_path, save_name))
     plt.close()
 
+def load_inference_model(config, run_type):
+
+        if run_type == 'onnx':
+            model = onnxruntime.InferenceSession(config['onnx_checkpoint'])
+        else:
+            ie = IECore()
+            model_xml = os.path.splitext(config['onnx_checkpoint'])[0] + ".xml"
+            model_bin = os.path.splitext(model_xml)[0] + ".bin"
+            model_temp = ie.read_network(model_xml, model_bin)
+            model = ie.load_network(network=model_temp, device_name='CPU')
+        return model
+
 def create_dummy_json_file(json_path,stage):
     test_data_path = os.path.split(json_path)[0]
     if stage == 1:
@@ -79,9 +94,10 @@ def create_dummy_json_file(json_path,stage):
     else:
         img_path = os.path.join(test_data_path,'stage2','img')
     file_list = os.listdir(img_path)
-    train_list = file_list[:7]
-    valid_list = file_list[7:10]
-    test_list = file_list[10:15]
+    no_files = len(file_list)
+    train_list = file_list[:int(0.6*no_files)]
+    valid_list = file_list[int(0.6*no_files):int(0.8*no_files)]
+    test_list = file_list[int(0.8*no_files):no_files]
     dummy_dict = {
         "train_set":train_list,
         "valid_set": valid_list,
