@@ -141,13 +141,14 @@ class DetectionExplainer(DetectionStage):
         model = self.build_model(cfg, model_builder, fp16=False)
         model.CLASSES = target_classes
         model.eval()
+        feature_model = self._get_feature_module(model)
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
         self.set_inference_progress_callback(model, cfg)
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
-        with self.explainer_hook(model.module) as saliency_hook:
+        with self.explainer_hook(feature_model) as saliency_hook:
             for data in test_dataloader:
                 _ = model(return_loss=False, rescale=True, **data)
             saliency_maps = saliency_hook.records

@@ -4,7 +4,7 @@ __width_mult = 1.0
 
 model = dict(
     bbox_head=dict(
-        type="CustomSSDHead",
+        type="SSDHead",
         num_classes=80,
         in_channels=(int(__width_mult * 96), int(__width_mult * 320)),
         anchor_generator=dict(

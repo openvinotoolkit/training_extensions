@@ -75,12 +75,13 @@ class ClsExplainer(ClsStage):
         model = self.build_model(cfg, model_builder, fp16=cfg.get("fp16", False))
         self.extract_prob = hasattr(model, "extract_prob")
         model.eval()
+        feature_model = self._get_feature_module(model)
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
         self.set_inference_progress_callback(model, cfg)
 
-        with self.explainer_hook(model.module) as forward_explainer_hook:
+        with self.explainer_hook(feature_model) as forward_explainer_hook:
             # do inference and record intermediate fmap
             for data in explain_data_loader:
                 with torch.no_grad():

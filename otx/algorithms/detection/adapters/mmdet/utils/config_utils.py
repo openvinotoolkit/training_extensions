@@ -21,6 +21,7 @@ from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_keys,
+    get_configs_by_pairs,
     get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
@@ -225,17 +226,15 @@ def patch_datasets(
         subsets = ["train", "val", "test", "unlabeled"]
 
     def update_pipeline(cfg):
-        for pipeline_step in cfg.pipeline:
-            if pipeline_step.type == "LoadImageFromFile":
-                pipeline_step.type = "LoadImageFromOTXDataset"
-            if pipeline_step.type == "LoadAnnotations":
-                pipeline_step.type = "LoadAnnotationFromOTXDataset"
-                pipeline_step.domain = domain
-                pipeline_step.min_size = cfg.pop("min_size", -1)
-            if subset == "train" and pipeline_step.type == "Collect":
-                pipeline_step = get_meta_keys(pipeline_step)
-
-    assert "data" in config
+        if subset == "train":
+            for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
+                get_meta_keys(collect_cfg)
+        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
+            cfg_.type = "LoadImageFromOTXDataset"
+        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
+            cfg_.type = "LoadAnnotationFromOTXDataset"
+            cfg_.domain = domain
+            cfg_.min_size = cfg.pop("min_size", -1)
 
     for subset in subsets:
         if subset not in config.data:
@@ -252,12 +251,8 @@ def patch_datasets(
             remove_from_config(cfg, "ann_file")
             remove_from_config(cfg, "img_prefix")
             remove_from_config(cfg, "classes")  # Get from DatasetEntity
-            update_pipeline(cfg)
 
-        # 'MultiImageMixDataset' wrapper dataset has pipeline as well
-        # which we should update
-        if len(cfgs) > 0 and config.data[subset].type == "MultiImageMixDataset":
-            update_pipeline(config.data[subset])
+            update_pipeline(cfg)
 
     patch_color_conversion(config)
 

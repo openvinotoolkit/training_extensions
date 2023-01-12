@@ -175,6 +175,11 @@ def patch_datasets(
     if subsets is None:
         subsets = ["train", "val", "test", "unlabeled"]
 
+    def update_pipeline(cfg):
+        if subset == "train":
+            for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
+                get_meta_keys(collect_cfg)
+
     for subset in subsets:
         if subset not in config.data:
             continue
@@ -191,9 +196,7 @@ def patch_datasets(
             cfg.labels = None
             cfg.update(kwargs)
 
-            if subset == "train":
-                for collect_cfg in get_configs_by_pairs(cfg.pipeline, dict(type="Collect")):
-                    get_meta_keys(collect_cfg)
+            update_pipeline(cfg)
 
     patch_color_conversion(config)
 

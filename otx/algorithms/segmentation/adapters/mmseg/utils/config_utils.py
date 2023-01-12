@@ -309,15 +309,14 @@ def patch_datasets(
         subsets = ["train", "val", "test", "unlabeled"]
 
     def update_pipeline(cfg):
-        for pipeline_step in cfg.pipeline:
-            if pipeline_step.type == "LoadImageFromFile":
-                pipeline_step.type = "LoadImageFromOTXDataset"
-            if pipeline_step.type == "LoadAnnotations":
-                pipeline_step.type = "LoadAnnotationFromOTXDataset"
-            if subset == "train" and pipeline_step.type == "Collect":
-                pipeline_step = get_meta_keys(pipeline_step)
+        if subset == "train":
+            for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
+                get_meta_keys(collect_cfg)
+        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
+            cfg_.type = "LoadImageFromOTXDataset"
+        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
+            cfg_.type = "LoadAnnotationFromOTXDataset"
 
-    assert "data" in config
     for subset in subsets:
         if subset not in config.data:
             continue
@@ -335,12 +334,8 @@ def patch_datasets(
             remove_from_config(cfg, "data_root")
             remove_from_config(cfg, "split")
             remove_from_config(cfg, "classes")
-            update_pipeline(cfg)
 
-        # 'MultiImageMixDataset' wrapper dataset has pipeline as well
-        # which we should update
-        if len(cfgs) > 0 and config.data[subset].type == "MultiImageMixDataset":
-            update_pipeline(config.data[subset])
+            update_pipeline(cfg)
 
     patch_color_conversion(config)
 

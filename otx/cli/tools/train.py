@@ -150,7 +150,7 @@ def parse_args():
         "--base-rank",
         type=int,
         default=0,
-        help="Base rank of the worker.",
+        help="Base rank of the current node workers.",
     )
     parser.add_argument(
         "--world-size",

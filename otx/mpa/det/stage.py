@@ -24,7 +24,7 @@ class DetectionStage(Stage):
         cfg = self.cfg
         self.configure_model(cfg, model_cfg, training, **kwargs)
         self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
-        self.configure_data(cfg, training, data_cfg)
+        self.configure_data(cfg, training, data_cfg, **kwargs)
         self.configure_regularization(cfg, training)
         self.configure_hyperparams(cfg, training, **kwargs)
         self.configure_task(cfg, training, **kwargs)
@@ -246,8 +246,6 @@ class DetectionStage(Stage):
         # This is not related with patching bbox head
         elif bbox_head.type in ["YOLOXHead", "CustomYOLOXHead"]:
             if cfg.data.train.type == "MultiImageMixDataset":
-                cfg.data.train.pop("ann_file", None)
-                cfg.data.train.pop("img_prefix", None)
                 self.add_yolox_hooks(cfg)
 
         if cfg.get("ignore", False):

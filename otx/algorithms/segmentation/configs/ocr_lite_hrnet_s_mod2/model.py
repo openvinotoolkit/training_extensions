@@ -24,7 +24,7 @@ model = dict(
     type="ClassIncrEncoderDecoder",
     pretrained=None,
     decode_head=dict(
-        type="CustomFCNHead",
+        type="FCNHead",
         in_channels=[60, 120, 240],
         in_index=[0, 1, 2],
         input_transform="multiple_select",
@@ -43,9 +43,8 @@ model = dict(
         enable_loss_equalizer=True,
         loss_decode=[
             dict(
-                type="CrossEntropyLossWithIgnore",
-                reduction="mean",
-                sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
+                type="CrossEntropyLoss",
+                use_sigmoid=False,
                 loss_weight=1.0,
             ),
         ],
