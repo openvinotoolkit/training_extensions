@@ -16,7 +16,6 @@ from mmdet.models import build_detector
 from mmdet.models.detectors import TwoStageDetector
 from mmdet.utils.misc import prepare_mmdet_model_for_execution
 
-from otx.mpa.det.incremental import IncrDetectionStage
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
     DetSaliencyMapHook,
@@ -25,11 +24,13 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
+from .stage import DetectionStage
+
 logger = get_logger()
 
 
 @STAGES.register_module()
-class DetectionInferrer(IncrDetectionStage):
+class DetectionInferrer(DetectionStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -153,6 +154,7 @@ class DetectionInferrer(IncrDetectionStage):
         if torch.cuda.is_available():
             model = model.cuda()
         eval_model = prepare_mmdet_model_for_execution(model, cfg, self.distributed)
+        feature_module = self._get_feature_module(eval_model)
 
         # Use a single gpu for testing. Set in both mm_val_dataloader and eval_model
         if is_module_wrapper(model):
@@ -162,12 +164,12 @@ class DetectionInferrer(IncrDetectionStage):
         if not dump_saliency_map:
             saliency_hook = nullcontext()
         elif isinstance(model, TwoStageDetector):
-            saliency_hook = ActivationMapHook(eval_model.module)
+            saliency_hook = ActivationMapHook(feature_module)
         else:
-            saliency_hook = DetSaliencyMapHook(eval_model.module)
+            saliency_hook = DetSaliencyMapHook(feature_module)
 
         eval_predictions = []
-        with FeatureVectorHook(eval_model.module) if dump_features else nullcontext() as feature_vector_hook:
+        with FeatureVectorHook(feature_module) if dump_features else nullcontext() as feature_vector_hook:
             with saliency_hook:
                 for data in data_loader:
                     with torch.no_grad():
@@ -209,3 +211,6 @@ class DetectionInferrer(IncrDetectionStage):
             saliency_maps=saliency_maps,
         )
         return outputs
+
+    def _get_feature_module(self, eval_model):
+        return eval_model.module
