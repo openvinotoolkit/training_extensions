@@ -154,7 +154,10 @@ class ClsStage(Stage):
 
         model_classes = Stage.get_model_classes(cfg)
         data_classes = Stage.get_data_classes(cfg)
-        if model_classes:
+
+        if cfg.get("model_classes", []):
+            cfg.model.head.num_classes = len(cfg.model_classes)
+        elif model_classes:
             cfg.model.head.num_classes = len(model_classes)
         elif data_classes:
             cfg.model.head.num_classes = len(data_classes)
