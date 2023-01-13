@@ -194,6 +194,7 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
                     encoding="utf-8",
                 )
 
+
 def convert_ava_dataset_to_datumaro(src_path, dst_path):
     """Convert AVA dataset to multi-video CVAT (Datumaro) format."""
     # Prepare dst_path
@@ -308,6 +309,7 @@ def main(src_path, dst_path, task):
     else:
         convert_ava_dataset_to_datumaro(src_path, dst_path)
 
+
 if __name__ == "__main__":
     try:
         src, dst, data_type = sys.argv[1:4]
@@ -315,4 +317,4 @@ if __name__ == "__main__":
         print("Usage: python convert_public_data_to_cvat.py data_src data_dst data_type(cls or det)")
         raise Exception from e
     main(src, dst, data_type)
-    
+ 
