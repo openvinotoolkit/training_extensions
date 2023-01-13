@@ -417,6 +417,12 @@ class ClassificationInferenceTask(
         )
         return data_cfg
 
+    def _update_stage_module(self, stage_module):
+        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
+        if self._train_type in module_prefix and stage_module in ["ClsTrainer", "ClsInferrer"]:
+            stage_module = module_prefix[self._train_type] + stage_module
+        return stage_module
+
     def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):  # noqa: C901
         def patch_color_conversion(pipeline):
             # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.

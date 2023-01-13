@@ -34,94 +34,16 @@ class ClsStage(Stage):
 
         # Recipe + model
         cfg = self.cfg
-        if model_cfg:
-            if hasattr(cfg, "model"):
-                cfg.merge_from_dict(model_cfg._cfg_dict)
-            else:
-                cfg.model = copy.deepcopy(model_cfg.model)
-
-        cfg.model_task = cfg.model.pop("task", "classification")
-        if cfg.model_task != "classification":
-            raise ValueError(f"Given model_cfg ({model_cfg.filename}) is not supported by classification recipe")
-
-        # Checkpoint
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
-
-        if cfg.get("resume", False):
-            cfg.resume_from = cfg.load_from
-
-        # OV-plugin
-        ir_model_path = kwargs.get("ir_model_path")
-        if ir_model_path:
-
-            def is_mmov_model(k, v):
-                if k == "type" and v.startswith("MMOV"):
-                    return True
-                return False
-
-            ir_weight_path = kwargs.get("ir_weight_path", None)
-            ir_weight_init = kwargs.get("ir_weight_init", False)
-            recursively_update_cfg(
-                cfg,
-                is_mmov_model,
-                {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
-            )
-
-        self.configure_model(cfg, training, **kwargs)
-
-        pretrained = kwargs.get("pretrained", None)
-        if pretrained and isinstance(pretrained, str):
-            logger.info(f"Overriding cfg.load_from -> {pretrained}")
-            cfg.load_from = pretrained
-
-        # Data
-        if data_cfg:
-            cfg.merge_from_dict(data_cfg)
-        self.configure_data(cfg, training, **kwargs)
-
-        if training:
-            if "unlabeled" in cfg.data and cfg.train_type == "SEMISUPERVISED":
-                update_or_add_custom_hook(
-                    cfg,
-                    ConfigDict(
-                        type="UnlabeledDataHook",
-                        unlabeled_data_cfg=cfg.data.unlabeled,
-                        samples_per_gpu=cfg.data.unlabeled.pop("samples_per_gpu", cfg.data.samples_per_gpu),
-                        workers_per_gpu=cfg.data.unlabeled.pop("workers_per_gpu", cfg.data.workers_per_gpu),
-                        model_task=cfg.model_task,
-                        seed=cfg.seed,
-                        persistent_workers=False,
-                    ),
-                )
-
-        # Task
-        if "task_adapt" in cfg:
-            model_meta = self.get_model_meta(cfg)
-            model_tasks, dst_classes = self.configure_task(cfg, training, model_meta, **kwargs)
-            if model_tasks is not None:
-                self.model_tasks = model_tasks
-            if dst_classes is not None:
-                self.model_classes = dst_classes
-        else:
-            if "num_classes" not in cfg.data:
-                cfg.data.num_classes = len(cfg.data.train.get("classes", []))
-            cfg.model.head.num_classes = cfg.data.num_classes
-
-        if cfg.model.head.get("topk", False) and isinstance(cfg.model.head.topk, tuple):
-            cfg.model.head.topk = (1,) if cfg.model.head.num_classes < 5 else (1, 5)
-            if cfg.model.get("multilabel", False) or cfg.model.get("hierarchical", False):
-                cfg.model.head.pop("topk", None)
-
+        self.configure_model(cfg, model_cfg, training, **kwargs)
+        self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
+        self.configure_data(cfg, data_cfg, training, **kwargs)
+        self.configure_task(cfg, training, **kwargs)
         return cfg
 
     @staticmethod
-    def configure_model(cfg, training, **kwargs):
+    def sub_configure_model(cfg, training, **kwargs):
         # verify and update model configurations
         # check whether in/out of the model layers require updating
-
-        if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
-            cfg.model.backbone.pretrained = None
 
         update_required = False
         if cfg.model.get("neck") is not None:
@@ -178,8 +100,40 @@ class ClsStage(Stage):
 
     # noqa: C901
     @staticmethod
-    def configure_task(cfg, training, model_meta=None, **kwargs):
+    def sub_configure_task(cfg, training, model_meta=None, **kwargs):
         """Configure for Task Adaptation Task"""
+
+        def refine_tasks(train_cfg, meta, adapt_type):
+            new_tasks = train_cfg["tasks"]
+            if adapt_type == "REPLACE":
+                old_tasks = {}
+                model_tasks = new_tasks
+            elif adapt_type == "MERGE":
+                old_tasks = meta["tasks"]
+                model_tasks = copy.deepcopy(old_tasks)
+                for task, cls in new_tasks.items():
+                    if model_tasks.get(task):
+                        model_tasks[task] = model_tasks[task] + [c for c in cls if c not in model_tasks[task]]
+                    else:
+                        model_tasks.update({task: cls})
+            else:
+                raise KeyError(f"{adapt_type} is not supported for task_adapt options!")
+            return model_tasks, old_tasks
+
+        def refine_cls(train_cfg, data_classes, meta, adapt_type):
+            # Get 'new_classes' in data.train_cfg & get 'old_classes' pretreained model meta data CLASSES
+            new_classes = train_cfg["new_classes"]
+            old_classes = meta["CLASSES"]
+            if adapt_type == "REPLACE":
+                # if 'REPLACE' operation, then dst_classes -> data_classes
+                dst_classes = data_classes.copy()
+            elif adapt_type == "MERGE":
+                # if 'MERGE' operation, then dst_classes -> old_classes + new_classes (merge)
+                dst_classes = old_classes + [cls for cls in new_classes if cls not in old_classes]
+            else:
+                raise KeyError(f"{adapt_type} is not supported for task_adapt options!")
+            return dst_classes, old_classes
+
         task_adapt_type = cfg["task_adapt"].get("type", None)
         adapt_type = cfg["task_adapt"].get("op", "REPLACE")
 
@@ -327,35 +281,69 @@ class ClsStage(Stage):
 
         return model
 
-
-def refine_tasks(train_cfg, meta, adapt_type):
-    new_tasks = train_cfg["tasks"]
-    if adapt_type == "REPLACE":
-        old_tasks = {}
-        model_tasks = new_tasks
-    elif adapt_type == "MERGE":
-        old_tasks = meta["tasks"]
-        model_tasks = copy.deepcopy(old_tasks)
-        for task, cls in new_tasks.items():
-            if model_tasks.get(task):
-                model_tasks[task] = model_tasks[task] + [c for c in cls if c not in model_tasks[task]]
+    def configure_model(self, cfg, model_cfg, training, **kwargs):
+        if model_cfg:
+            if hasattr(cfg, "model"):
+                cfg.merge_from_dict(model_cfg._cfg_dict)
             else:
-                model_tasks.update({task: cls})
-    else:
-        raise KeyError(f"{adapt_type} is not supported for task_adapt options!")
-    return model_tasks, old_tasks
+                cfg.model = copy.deepcopy(model_cfg.model)
 
+        cfg.model_task = cfg.model.pop("task", "classification")
+        if cfg.model_task != "classification":
+            raise ValueError(f"Given model_cfg ({model_cfg.filename}) is not supported by classification recipe")
 
-def refine_cls(train_cfg, data_classes, meta, adapt_type):
-    # Get 'new_classes' in data.train_cfg & get 'old_classes' pretreained model meta data CLASSES
-    new_classes = train_cfg["new_classes"]
-    old_classes = meta["CLASSES"]
-    if adapt_type == "REPLACE":
-        # if 'REPLACE' operation, then dst_classes -> data_classes
-        dst_classes = data_classes.copy()
-    elif adapt_type == "MERGE":
-        # if 'MERGE' operation, then dst_classes -> old_classes + new_classes (merge)
-        dst_classes = old_classes + [cls for cls in new_classes if cls not in old_classes]
-    else:
-        raise KeyError(f"{adapt_type} is not supported for task_adapt options!")
-    return dst_classes, old_classes
+        # OV-plugin
+        ir_model_path = kwargs.get("ir_model_path")
+        if ir_model_path:
+
+            def is_mmov_model(k, v):
+                if k == "type" and v.startswith("MMOV"):
+                    return True
+                return False
+
+            ir_weight_path = kwargs.get("ir_weight_path", None)
+            ir_weight_init = kwargs.get("ir_weight_init", False)
+            recursively_update_cfg(
+                cfg,
+                is_mmov_model,
+                {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
+            )
+
+        self.sub_configure_model(cfg, training, **kwargs)
+
+    def configure_ckpt(self, cfg, model_ckpt, pretrained):
+        # Checkpoint
+        if model_ckpt:
+            cfg.load_from = self.get_model_ckpt(model_ckpt)
+        if pretrained and isinstance(pretrained, str):
+            logger.info(f"Overriding cfg.load_from -> {pretrained}")
+            cfg.load_from = pretrained  # Overriding by stage input
+        if cfg.get("resume", False):
+            cfg.resume_from = cfg.load_from
+        if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
+            cfg.model.backbone.pretrained = None
+
+    def configure_data(self, cfg, data_cfg, training, **kwargs):
+        # Data
+        if data_cfg:
+            cfg.merge_from_dict(data_cfg)
+        Stage.configure_data(cfg, training, **kwargs)
+
+    def configure_task(self, cfg, training, **kwargs):
+        # Task
+        if "task_adapt" in cfg:
+            model_meta = self.get_model_meta(cfg)
+            model_tasks, dst_classes = self.sub_configure_task(cfg, training, model_meta, **kwargs)
+            if model_tasks is not None:
+                self.model_tasks = model_tasks
+            if dst_classes is not None:
+                self.model_classes = dst_classes
+        else:
+            if "num_classes" not in cfg.data:
+                cfg.data.num_classes = len(cfg.data.train.get("classes", []))
+            cfg.model.head.num_classes = cfg.data.num_classes
+
+        if cfg.model.head.get("topk", False) and isinstance(cfg.model.head.topk, tuple):
+            cfg.model.head.topk = (1,) if cfg.model.head.num_classes < 5 else (1, 5)
+            if cfg.model.get("multilabel", False) or cfg.model.get("hierarchical", False):
+                cfg.model.head.pop("topk", None)
