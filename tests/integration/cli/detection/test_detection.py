@@ -53,14 +53,11 @@ args = {
 }
 
 args_semisl = {
-    "--train-ann-file": "data/airport/annotation_example_train.json",
-    "--train-data-roots": "data/airport/train",
-    "--val-ann-file": "data/airport/annotation_example_train.json",
-    "--val-data-roots": "data/airport/train",
-    "--test-ann-files": "data/airport/annotation_example_train.json",
-    "--test-data-roots": "data/airport/train",
-    "--unlabeled-data-roots": "data/airport/train",
-    "--input": "data/airport/train",
+    "--train-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--val-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--test-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--unlabeled-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--input": "data/datumaro/coco_dataset/coco_detection/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
