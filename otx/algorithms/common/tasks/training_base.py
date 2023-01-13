@@ -190,6 +190,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def data_pipeline_path(self):
         """Base Data Pipeline file path."""
         # TODO: Temporarily use data_pipeline.py next to model.py.may change later.
+        if self._hyperparams.tiling_parameters.enable_tiling:
+            return os.path.join(self._model_dir, "tile_pipeline.py")
         return os.path.join(self._model_dir, "data_pipeline.py")
 
     @property

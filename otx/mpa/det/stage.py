@@ -116,12 +116,13 @@ class DetectionStage(Stage):
             cfg.data.train.org_type = cfg.data.train.type
             cfg.data.train.type = super_type
         if training:
-            if "dataset" in cfg.data.train:
-                train_cfg = self.get_data_cfg(cfg, "train")
-                train_cfg.otx_dataset = cfg.data.train.pop("otx_dataset", None)
-                train_cfg.labels = cfg.data.train.get("labels", None)
-                train_cfg.data_classes = cfg.data.train.pop("data_classes", None)
-                train_cfg.new_classes = cfg.data.train.pop("new_classes", None)
+            for subset in ("train", "val", "test"):
+                if "dataset" in cfg.data[subset]:
+                    subset_cfg = self.get_data_cfg(cfg, subset)
+                    subset_cfg.otx_dataset = cfg.data[subset].pop("otx_dataset", None)
+                    subset_cfg.labels = cfg.data[subset].get("labels", None)
+                    subset_cfg.data_classes = cfg.data[subset].pop("data_classes", None)
+                    subset_cfg.new_classes = cfg.data[subset].pop("new_classes", None)
 
     def configure_regularization(self, cfg, training):
         """Patch regularization parameters."""

@@ -20,6 +20,7 @@ from typing import List, Optional, Union
 
 import torch
 from mmcv import Config, ConfigDict
+from mmdet.datasets import RepeatDataset, MultiImageMixDataset, ImageTilingDataset, DATASETS
 from mmdet.models.detectors import BaseDetector
 
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -224,22 +225,29 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 
 @check_input_parameters_type()
 def patch_datasets(config: Config, domain: Domain):
-    """Update dataset configs."""
+    """ Patch dataset config.
+
+    Patching CocoDataset in config as OTX customised dataset module is being used.
+
+    Args:
+        config: mmcv Config
+        domain: Algorithm domain such as classification, detection, etc.
+
+    """
 
     assert "data" in config
     for subset in ("train", "val", "test", "unlabeled"):
         cfg = config.data.get(subset, None)
         if not cfg:
             continue
-        if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
+        if DATASETS.get(cfg.type) in (RepeatDataset, MultiImageMixDataset, ImageTilingDataset):
+            remove_from_config(cfg, ["ann_file", "img_prefix", "classes"])
             cfg = cfg.dataset
         cfg.type = "MPADetDataset"
         cfg.domain = domain
         cfg.otx_dataset = None
         cfg.labels = None
-        remove_from_config(cfg, "ann_file")
-        remove_from_config(cfg, "img_prefix")
-        remove_from_config(cfg, "classes")  # Get from DatasetEntity
+        remove_from_config(cfg, ["ann_file", "img_prefix", "classes"])
         for pipeline_step in cfg.pipeline:
             if pipeline_step.type == "LoadImageFromFile":
                 pipeline_step.type = "LoadImageFromOTXDataset"

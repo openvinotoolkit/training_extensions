@@ -18,7 +18,7 @@ import copy
 import glob
 import os
 import tempfile
-from typing import Sequence, Union
+from typing import Sequence, Union, List, Tuple
 
 from mmcv import Config, ConfigDict
 
@@ -29,17 +29,24 @@ from otx.api.utils.argument_checks import (
 )
 
 
-@check_input_parameters_type()
-def remove_from_config(config: Union[Config, ConfigDict], key: str):
-    """Update & Remove configs."""
-    if key in config:
-        if isinstance(config, Config):
-            del config._cfg_dict[key]  # pylint: disable=protected-access
-        elif isinstance(config, ConfigDict):
-            del config[key]
-        else:
-            raise ValueError(f"Unknown config type {type(config)}")
+def remove_from_config(config: Union[Config, ConfigDict], keys: Union[str, List[str], Tuple[str]]):
+    """ Remove keys from mmcv Config.
 
+    Args:
+        config: mmcv Config or ConfigDict
+        keys: keys to be removed from Config
+
+    """
+
+    if isinstance(config, Config):
+        config = config._cfg_dict
+
+    if isinstance(keys, str):
+        keys = [keys]
+
+    for key in keys:
+        if key in config:
+            del config[key]
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntity) -> Config:

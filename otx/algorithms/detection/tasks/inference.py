@@ -268,6 +268,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         logger.info(f"train type = {self._train_type}")
 
+        # Incremental Learning Recipe is the default for Detection
         if self._train_type in RECIPE_TRAIN_TYPE:
             recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
