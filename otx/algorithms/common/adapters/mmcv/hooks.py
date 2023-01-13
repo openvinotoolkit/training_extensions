@@ -491,7 +491,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
 
-    def _is_check_timing(self, runner) -> bool:
+    def _is_check_timing(self, runner: BaseRunner) -> bool:
         """Check whether current epoch or iter is multiple of self.interval."""
         check_time = self.every_n_epochs if self.by_epoch else self.every_n_iters
         return check_time(runner, self.interval)
