@@ -61,7 +61,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {
-            "model": model_ckpt["state_dict"],
+            "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
             "VERSION": 1,
@@ -174,10 +174,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             )
             unlabeled_dataset = get_unlabeled_dataset(dataset)
             if unlabeled_dataset:
-                data_cfg.data.unlabeled = ConfigDict(
-                    otx_dataset=unlabeled_dataset,
-                    labels=self._labels,
-                )
+                data_cfg.data.unlabeled = ConfigDict(otx_dataset=unlabeled_dataset, labels=self._labels)
 
             for label in self._labels:
                 label.hotkey = "a"

@@ -69,7 +69,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {
-            "model": model_ckpt["state_dict"],
+            "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
             "confidence_threshold": self.confidence_threshold,
@@ -82,10 +82,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             and hasattr(self._model_cfg.model.bbox_head.anchor_generator, "reclustering_anchors")
         ):
             modelinfo["anchors"] = {}
-            self._update_anchors(
-                modelinfo["anchors"],
-                self._model_cfg.model.bbox_head.anchor_generator,
-            )
+            self._update_anchors(modelinfo["anchors"], self._model_cfg.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -134,11 +131,16 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)
+        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: ignore
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task("DetectionTrainer", mode="train", dataset=dataset, parameters=train_parameters)
+        results = self._run_task(
+            "DetectionTrainer",
+            mode="train",
+            dataset=dataset,
+            parameters=train_parameters,
+        )
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
@@ -210,10 +212,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         logger.info("init data cfg.")
         data_cfg = ConfigDict(
             data=ConfigDict(
-                train=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.TRAINING),
-                    labels=self._labels,
-                ),
+                train=ConfigDict(otx_dataset=dataset.get_subset(Subset.TRAINING), labels=self._labels),
                 val=ConfigDict(
                     otx_dataset=dataset.get_subset(Subset.VALIDATION),
                     labels=self._labels,
@@ -223,10 +222,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
 
         unlabeled_dataset = get_unlabeled_dataset(dataset)
         if unlabeled_dataset:
-            data_cfg.data.unlabeled = ConfigDict(
-                otx_dataset=unlabeled_dataset,
-                labels=self._labels,
-            )
+            data_cfg.data.unlabeled = ConfigDict(otx_dataset=unlabeled_dataset, labels=self._labels)
 
         # Temparory remedy for cfg.pretty_text error
         for label in self._labels:
