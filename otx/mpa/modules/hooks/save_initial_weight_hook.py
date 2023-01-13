@@ -13,11 +13,7 @@ class SaveInitialWeightHook(Hook):
         self._args = kwargs
 
     def before_run(self, runner):
-        runner.logger.info('Saving weight before training')
+        runner.logger.info("Saving weight before training")
         runner.save_checkpoint(
-            self._save_path,
-            filename_tmpl=self._file_name,
-            save_optimizer=False,
-            create_symlink=False,
-            **self._args
+            self._save_path, filename_tmpl=self._file_name, save_optimizer=False, create_symlink=False, **self._args
         )

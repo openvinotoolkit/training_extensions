@@ -1,23 +1,21 @@
-"""
-Utils for HPO with hpopt
-"""
+"""Utils for HPO with hpopt."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import glob
+import json
+import logging
 import os
 import re
 import shutil
-import logging
-import json
 from enum import Enum
 from functools import partial
 from inspect import isclass
 from math import floor
 from os import path as osp
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 import yaml
@@ -64,7 +62,7 @@ def _check_hpo_enabled_task(task_type):
 
 
 def check_hpopt_available() -> bool:
-    """Check whether hpopt is avaiable/"""
+    """Check whether hpopt is avaiable."""
     return hpopt is not None
 
 
@@ -74,11 +72,13 @@ class TaskManager:
     Args:
         task_type (TaskType): otx task type
     """
+
     def __init__(self, task_type: TaskType):
         self._task_type = task_type
 
     @property
     def task_type(self):
+        """Task_type property."""
         return self._task_type
 
     def is_mpa_framework_task(self) -> bool:
@@ -135,11 +135,12 @@ class TaskManager:
         Returns:
             str: batch size name
         """
-        batch_size_name = None
         if self.is_mpa_framework_task():
             batch_size_name = "learning_parameters.batch_size"
         elif self.is_anomaly_framework_task():
             batch_size_name = "learning_parameters.train_batch_size"
+        else:
+            raise RuntimeError(f"There is no information about {self._task_type} batch size name")
 
         return batch_size_name
 
@@ -149,11 +150,12 @@ class TaskManager:
         Returns:
             str: epoch name
         """
-        epoch_name = None
         if self.is_mpa_framework_task():
             epoch_name = "num_iters"
         elif self.is_anomaly_framework_task():
             epoch_name = "max_epochs"
+        else:
+            raise RuntimeError(f"There is no information about {self._task_type} epoch name")
 
         return epoch_name
 
@@ -186,7 +188,7 @@ class TaskManager:
             current_latest_epoch = -1
             latest_weight = None
 
-            for weight_name in  glob.iglob(osp.join(workdir, "**/epoch_*.pth"), recursive=True):
+            for weight_name in glob.iglob(osp.join(workdir, "**/epoch_*.pth"), recursive=True):
                 ret = pattern.search(weight_name)
                 epoch = int(ret.group(1))
                 if current_latest_epoch < epoch:
@@ -204,6 +206,7 @@ class TaskEnvironmentManager:
     Args:
         environment (TaskEnvironment): OTX task environment
     """
+
     def __init__(self, environment: TaskEnvironment):
         self._environment = environment
         self.task = TaskManager(environment.model_template.task_type)
@@ -217,6 +220,7 @@ class TaskEnvironmentManager:
         return self._environment.model_template.task_type
 
     def get_model_template(self):
+        """Get model template."""
         return self._environment.model_template
 
     def get_model_template_path(self) -> str:
@@ -247,7 +251,7 @@ class TaskEnvironmentManager:
             setattr(target, param_key[-1], param_val)
 
     def get_dict_type_hyper_parameter(self) -> Dict[str, Any]:
-        """Get dictionary type hyper parmaeter of environment
+        """Get dictionary type hyper parmaeter of environment.
 
         Returns:
             Dict[str, Any]: dictionary type hyper parameter of environment
@@ -259,7 +263,7 @@ class TaskEnvironmentManager:
 
     @staticmethod
     def convert_parameter_group_to_dict(parameter_group) -> Dict[str, Any]:
-        """Convert parameter group to dictionary
+        """Convert parameter group to dictionary.
 
         Args:
             parameter_group : parameter gruop
@@ -301,7 +305,7 @@ class TaskEnvironmentManager:
 
         Returns:
             bool: whether model weight is saved successfully
-        """        
+        """
         if self._environment.model is None:
             # if task isn't anomaly, then save model weight during first trial
             if self.task.is_anomaly_framework_task():
@@ -364,8 +368,14 @@ class TaskEnvironmentManager:
         )
 
     def set_epoch(self, epoch: int):
-        hp = {f"learning_parameters.{self.task.get_epoch_name()}": epoch}
-        self.set_hyper_parameter_using_str_key(hp)
+        """Set epoch on environment.
+
+        Args:
+            epoch (int): epoch to set
+        """
+        hyper_parameter = {f"learning_parameters.{self.task.get_epoch_name()}": epoch}
+        self.set_hyper_parameter_using_str_key(hyper_parameter)
+
 
 class HpoRunner:
     """Class which is in charge of preparing and running HPO.
@@ -376,7 +386,8 @@ class HpoRunner:
         val_dataset_size (int): validation dataset size
         hpo_workdir (str): work directory for HPO
         hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
-    """    
+    """
+
     def __init__(
         self,
         environment: TaskEnvironment,
@@ -439,7 +450,7 @@ class HpoRunner:
 
         Returns:
             Dict[str, Any]: optimized hyper parameters
-        """        
+        """
         self._environment.save_initial_weight(self._get_initial_model_weight_path())
         hpo_algo = self._get_hpo_algo()
         resource_type = "gpu" if torch.cuda.is_available() else "cpu"
@@ -482,8 +493,8 @@ class HpoRunner:
         args = {
             "search_space": self._hpo_config["hp_space"],
             "save_path": self._hpo_workdir,
-            "maximum_resource" : self._hpo_config.get("maximum_resource"),
-            "minimum_resource" : self._hpo_config.get("minimum_resource"),
+            "maximum_resource": self._hpo_config.get("maximum_resource"),
+            "minimum_resource": self._hpo_config.get("minimum_resource"),
             "mode": self._hpo_config.get("mode", "max"),
             "num_workers": 1,
             "num_full_iterations": self._environment.get_max_epoch(),
@@ -520,7 +531,7 @@ class HpoRunner:
 
 
 def run_hpo(args, environment: TaskEnvironment, dataset, data_roots: Dict[str, str]):
-    """Run HPO and load optimized hyper parameter and best HPO model weight
+    """Run HPO and load optimized hyper parameter and best HPO model weight.
 
     Args:
         args: arguments passed to otx train
@@ -549,9 +560,9 @@ def run_hpo(args, environment: TaskEnvironment, dataset, data_roots: Dict[str, s
         args.hpo_time_ratio,
     )
 
-    logger.info(f"started hyper-parameter optimization")
+    logger.info("started hyper-parameter optimization")
     best_config = hpo_runner.run_hpo(run_trial, data_roots)
-    logger.info(f"completed hyper-parameter optimization")
+    logger.info("completed hyper-parameter optimization")
 
     env_manager = TaskEnvironmentManager(environment)
     env_manager.set_hyper_parameter_using_str_key(best_config["config"])
@@ -562,12 +573,13 @@ def run_hpo(args, environment: TaskEnvironment, dataset, data_roots: Dict[str, s
         logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
         env_manager.load_model_weight(best_hpo_weight)
 
+
 def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> str:
-    """get best model weight path of the HPO trial
+    """Get best model weight path of the HPO trial.
 
     Args:
         hpo_dir (str): HPO work directory path
-        trial_id (str): trial id 
+        trial_id (str): trial id
 
     Returns:
         str: best HPO model weight
@@ -579,9 +591,9 @@ def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> str:
 
     with open(trial_output_file) as f:
         trial_output = json.load(f)
-    
+
     best_epochs = []
-    best_score = None 
+    best_score = None
     for eph, score in trial_output["score"].items():
         if best_score is None:
             best_score = score
@@ -600,6 +612,7 @@ def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> str:
 
     return best_weight
 
+
 class Trainer:
     """Class which prepares and trains a model given hyper parameters.
 
@@ -612,7 +625,8 @@ class Trainer:
         hpo_workdir (str): work directory for HPO
         initial_weight_name (str): initial model weight name for each trials to load
         metric (str): metric name
-    """    
+    """
+
     def __init__(
         self,
         hp_config: Dict[str, Any],
@@ -636,7 +650,7 @@ class Trainer:
         del self._hp_config["configuration"]["iterations"]
 
     def run(self):
-        """Run each training of each trial with given hyper parameters"""
+        """Run each training of each trial with given hyper parameters."""
         hyper_parameters = self._prepare_hyper_parameter()
         dataset = self._prepare_dataset()
 
@@ -762,14 +776,14 @@ def run_trial(
 
 
 class HpoCallback(UpdateProgressCallback):
-    """Callback class to report score to hpopt
+    """Callback class to report score to hpopt.
 
     Args:
         report_func (Callable): function to report score
         metric (str): metric name
         max_epoch (int): max_epoch
         task: OTX train task
-    """        
+    """
 
     def __init__(self, report_func: Callable, metric: str, max_epoch: int, task):
         super().__init__()
@@ -779,6 +793,7 @@ class HpoCallback(UpdateProgressCallback):
         self._task = task
 
     def __call__(self, progress: Union[int, float], score: Optional[float] = None):
+        """When callback is called, report a score to HPO algorithm."""
         if score is not None:
             epoch = round(self._max_epoch * progress / 100)
             logger.debug(f"In hpo callback : {score} / {progress} / {epoch}")
@@ -787,24 +802,30 @@ class HpoCallback(UpdateProgressCallback):
 
 
 class HpoDataset:
-    """
-    Wrapper class for DatasetEntity of dataset.
-    It's used to make subset during HPO.
+    """Wrapper class for DatasetEntity of dataset. It's used to make subset during HPO.
+
+    Args:
+        fullset: full dataset
+        config (Optional[Dict[str, Any]], optional): hyper parameter trial config
+        indices (Optional[List[int]]): datatset index. Defaults to None.
     """
 
-    def __init__(self, fullset, config=None, indices=None):
+    def __init__(self, fullset, config: Optional[Dict[str, Any]] = None, indices: Optional[List[int]] = None):
         self.fullset = fullset
         self.indices = indices
         subset_ratio = config["train_environment"]["subset_ratio"]
         self.subset_ratio = 1 if subset_ratio is None else subset_ratio
 
     def __len__(self) -> int:
+        """Get length of subset."""
         return len(self.indices)
 
     def __getitem__(self, indx) -> dict:
+        """Get dataset at index."""
         return self.fullset[self.indices[indx]]
 
     def __getattr__(self, name):
+        """When trying to get other attributes, not dataset, get values from fullset."""
         if name == "__setstate__":
             raise AttributeError(name)
         return getattr(self.fullset, name)
@@ -817,7 +838,7 @@ class HpoDataset:
 
         Returns:
             HpoDataset: subset wrapped by HpoDataset
-        """        
+        """
         dataset = self.fullset.get_subset(subset)
         if subset != Subset.TRAINING or self.subset_ratio > 0.99:
             return dataset

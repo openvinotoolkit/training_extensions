@@ -40,6 +40,7 @@ class TrainingProgressCallback(TimeMonitorCallback):
             score = logs.get(self.update_progress_callback.metric, None)
         self.update_progress_callback(progress, score=score)
 
+
 class InferenceProgressCallback(TimeMonitorCallback):
     """InferenceProgressCallback class for time monitoring."""
 
