@@ -23,7 +23,6 @@ from mmcv.runner import (
 from torch import nn
 
 from otx.mpa.cls.stage import ClsStage
-from otx.mpa.modules.datasets.composed_dataloader import ComposedDL
 from otx.mpa.modules.hooks.eval_hook import CustomEvalHook, DistCustomEvalHook
 from otx.mpa.modules.hooks.fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
 from otx.mpa.registry import STAGES
@@ -73,20 +72,11 @@ class ClsTrainer(ClsStage):
         # meta['config'] = cfg.pretty_text
         meta["seed"] = cfg.seed
 
-        repr_ds = datasets[0]
-
         if cfg.checkpoint_config is not None:
             cfg.checkpoint_config.meta = dict(mmcls_version=__version__)
-            if hasattr(repr_ds, "tasks"):
-                cfg.checkpoint_config.meta["tasks"] = repr_ds.tasks
-            else:
-                cfg.checkpoint_config.meta["CLASSES"] = repr_ds.CLASSES
+            cfg.checkpoint_config.meta["CLASSES"] = datasets[0].CLASSES
             if "task_adapt" in cfg:
-                if hasattr(self, "model_tasks"):  # for incremnetal learning
-                    cfg.checkpoint_config.meta.update({"tasks": self.model_tasks})
-                    # instead of update(self.old_tasks), update using "self.model_tasks"
-                else:
-                    cfg.checkpoint_config.meta.update({"CLASSES": self.model_classes})
+                cfg.checkpoint_config.meta.update({"CLASSES": self.model_classes})
 
         # Save config
         # cfg.dump(osp.join(cfg.work_dir, 'config.yaml')) # FIXME bug to save
@@ -119,7 +109,7 @@ class ClsTrainer(ClsStage):
                 round_up=True,
                 seed=cfg.seed,
                 drop_last=drop_last,
-                persistent_workers=False,
+                persistent_workers=True if cfg.data.workers_per_gpu > 0 else False,
             )
         ]
 
@@ -183,7 +173,7 @@ class ClsTrainer(ClsStage):
                 dist=self.distributed,
                 shuffle=False,
                 round_up=True,
-                persistent_workers=False,
+                persistent_workers=True if cfg.data.workers_per_gpu > 0 else False,
             )
             eval_cfg = cfg.get("evaluation", {})
             eval_cfg["by_epoch"] = cfg.runner["type"] != "IterBasedRunner"

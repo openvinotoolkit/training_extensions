@@ -6,11 +6,11 @@ import copy
 
 import numpy as np
 import torch
-from mmcv import ConfigDict, build_from_cfg
+from mmcv import build_from_cfg
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
+from otx.mpa.utils.config_utils import recursively_update_cfg
 from otx.mpa.utils.data_cpu import MMDataCPU
 from otx.mpa.utils.logger import get_logger
 

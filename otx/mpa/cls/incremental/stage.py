@@ -1,7 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import copy
 
 from mmcv import ConfigDict
 
@@ -32,74 +31,41 @@ class IncrClsStage(ClsStage):
         """Patch config to support incremental learning"""
         super().configure_task(cfg, training, **kwargs)
         if "task_adapt" in cfg:
-            self.sub_configure_task(cfg, training, **kwargs)
+            self.configure_task_adapt(cfg, training, **kwargs)
 
     # noqa: C901
-    def sub_configure_task(self, cfg, training, **kwargs):
+    def configure_task_adapt(self, cfg, training, **kwargs):
         """Configure for Task Adaptation Task"""
 
-        self.task_type = cfg["task_adapt"].get("type", None)
         self.adapt_type = cfg["task_adapt"].get("op", "REPLACE")
-
-        model_tasks, self.dst_classes = None, None
         train_data_cfg = Stage.get_data_cfg(cfg, "train")
-
         if training:
-            # if Trainer to Stage configure, training = True
-            if train_data_cfg.get("tasks"):
-                # Task Adaptation
-                if self.model_meta.get("tasks", False):
-                    self.refine_tasks(train_data_cfg)
-                else:
-                    raise KeyError(f"can not find task meta data from {cfg.load_from}.")
-                cfg.model.head.update({"old_tasks": self.old_tasks})
-                # update model.head.tasks with training dataset's tasks if it's configured as None
-                if cfg.model.head.get("tasks") is None:
-                    logger.info(
-                        "'tasks' in model.head is None. updated with configuration on train data "
-                        f"{train_data_cfg.get('tasks')}"
-                    )
-                    cfg.model.head.update({"tasks": train_data_cfg.get("tasks")})
-            elif "new_classes" in train_data_cfg:
-                # Class-Incremental
-                self.refine_cls(train_data_cfg)
-            else:
-                raise KeyError('"new_classes" or "tasks" should be defined for incremental learning w/ current model.')
+            if train_data_cfg.type not in CLASS_INC_DATASET:
+                raise NotImplementedError(f"Class Incremental Learning for {train_data_cfg.type} is not yet supported!")
+            if "new_classes" not in train_data_cfg:
+                raise KeyError('"new_classes" should be defined for incremental learning w/ current model.')
+            if cfg.model.type not in WEIGHT_MIX_CLASSIFIER:
+                raise NotImplementedError(f"Weight mixing for {cfg.mode.type} is not yet supported!")
 
-            if self.task_type == "mpa":
-                if train_data_cfg.type not in CLASS_INC_DATASET:  # task incremental is not supported yet
-                    raise NotImplementedError(
-                        f"Class Incremental Learning for {train_data_cfg.type} is not yet supported!"
-                    )
+            # refine self.dst_class following adapt_type (REPLACE, MERGE)
+            self.refine_classes(train_data_cfg)
+            cfg.model.head.num_classes = len(self.dst_classes)
 
-                if cfg.model.type in WEIGHT_MIX_CLASSIFIER:
-                    cfg.model.task_adapt = ConfigDict(
-                        src_classes=self.model_classes,
-                        dst_classes=self.data_classes,
-                    )
+            # for weight mixing
+            cfg.model.task_adapt = ConfigDict(
+                src_classes=self.model_classes,
+                dst_classes=self.data_classes,
+            )
 
-                # Train dataset config update
-                train_data_cfg.classes = self.dst_classes
+            # configure loss, sampler, task_adapt_hook
+            self.configure_task_modules(cfg)
 
-                # model configuration update
-                cfg.model.head.num_classes = len(self.dst_classes)
-                self.configure_task_adapt(cfg)
-
-        else:  # if not training phase (eval)
-            if train_data_cfg.get("tasks"):
-                if self.model_meta.get("tasks", False):
-                    cfg.model.head["tasks"] = self.model_meta["tasks"]
-                else:
-                    raise KeyError(f"can not find task meta data from {cfg.load_from}.")
-            elif train_data_cfg.get("new_classes"):
-                self.refine_cls(train_data_cfg)
+        else:  # if eval phase (eval)
+            if train_data_cfg.get("new_classes"):
+                self.refine_classes(train_data_cfg)
                 cfg.model.head.num_classes = len(self.dst_classes)
 
-        self.model_tasks = model_tasks
-        self.model_classes = self.dst_classes
-        self.configure_pseudo_label(cfg, **kwargs)
-
-    def configure_task_adapt(self, cfg):
+    def configure_task_modules(self, cfg):
         if not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False):
             efficient_mode = cfg["task_adapt"].get("efficient_mode", True)
             sampler_type = "balanced"
@@ -143,44 +109,7 @@ class IncrClsStage(ClsStage):
             )
             update_or_add_custom_hook(cfg, ib_loss_hook)
 
-    def configure_pseudo_label(self, cfg, **kwargs):
-        # Pseudo label augmentation
-        train_data_cfg = Stage.get_data_cfg(cfg, "train")
-        pre_stage_res = kwargs.get("pre_stage_res", None)
-        if pre_stage_res:
-            logger.info(f"pre-stage dataset: {pre_stage_res}")
-            if train_data_cfg.type not in PSEUDO_LABEL_ENABLE_DATASET:
-                raise NotImplementedError(f"Pseudo label loading for {train_data_cfg.type} is not yet supported!")
-            train_data_cfg.pre_stage_res = pre_stage_res
-            if train_data_cfg.get("tasks"):
-                train_data_cfg.model_tasks = self.model_tasks
-                cfg.model.head.old_tasks = self.old_tasks
-            elif train_data_cfg.get("CLASSES"):
-                train_data_cfg.dst_classes = self.dst_classes
-                cfg.data.val.dst_classes = self.dst_classes
-                cfg.data.test.dst_classes = self.dst_classes
-                cfg.model.head.num_classes = len(self.dst_classes)
-                cfg.model.head.num_old_classes = len(self.old_classes)
-
-    def refine_tasks(self, train_cfg):
-        new_tasks = train_cfg["tasks"]
-        if self.adapt_type == "REPLACE":
-            old_tasks = {}
-            model_tasks = new_tasks
-        elif self.adapt_type == "MERGE":
-            old_tasks = self.model_meta["tasks"]
-            model_tasks = copy.deepcopy(old_tasks)
-            for task, cls in new_tasks.items():
-                if model_tasks.get(task):
-                    model_tasks[task] = model_tasks[task] + [c for c in cls if c not in model_tasks[task]]
-                else:
-                    model_tasks.update({task: cls})
-        else:
-            raise KeyError(f"{self.adapt_type} is not supported for task_adapt options!")
-        self.model_tasks = model_tasks
-        self.old_tasks = old_tasks
-
-    def refine_cls(self, train_cfg):
+    def refine_classes(self, train_cfg):
         # Get 'new_classes' in data.train_cfg & get 'old_classes' pretreained model meta data CLASSES
         new_classes = train_cfg["new_classes"]
         self.old_classes = self.model_meta["CLASSES"]
@@ -192,3 +121,4 @@ class IncrClsStage(ClsStage):
             self.dst_classes = self.old_classes + [cls for cls in new_classes if cls not in self.old_classes]
         else:
             raise KeyError(f"{self.adapt_type} is not supported for task_adapt options!")
+        train_cfg.classes = self.dst_classes
