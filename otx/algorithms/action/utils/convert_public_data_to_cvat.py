@@ -316,3 +316,4 @@ if __name__ == "__main__":
         print("Usage: python convert_public_data_to_cvat.py data_src data_dst data_type(cls or det)")
         raise Exception from e
     main(src, dst, data_type)
+    
