@@ -38,7 +38,7 @@ class TestOTXCLIBuilder:
         otx_root = get_otx_root_path()
 
         # 1. Create Classification custom workspace
-        workspace_path = os.path.join(tmp_dir_path, "otx_cli_builder")
+        workspace_path = os.path.join(tmp_dir_path, "test_builder_build_task_config_1")
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": otx_root}
         otx_builder.build_task_config(**inputs)
         assert os.path.exists(workspace_path)
@@ -53,7 +53,7 @@ class TestOTXCLIBuilder:
             otx_builder.build_task_config(**inputs)
 
         # 3. Update hparam.yaml with train_type="selfsl"
-        workspace_path = os.path.join(tmp_dir_path, "otx_cli_builder_selfsl")
+        workspace_path = os.path.join(tmp_dir_path, "test_builder_build_task_config_2")
         train_type = "selfsl"
         inputs = {
             "task_type": "classification",
@@ -75,7 +75,7 @@ class TestOTXCLIBuilder:
         assert os.path.exists(os.path.join(model_dir, "data_pipeline.py"))
 
         # 4. Raising ValueError with wrong train_type
-        workspace_path = os.path.join(tmp_dir_path, "otx_cli_builder_wrong")
+        workspace_path = os.path.join(tmp_dir_path, "test_builder_build_task_config_3")
         train_type = "unexpected"
         inputs = {
             "task_type": "classification",
@@ -87,7 +87,7 @@ class TestOTXCLIBuilder:
             otx_builder.build_task_config(**inputs)
 
         # 5. Build workspace with model_type argments
-        workspace_path = os.path.join(tmp_dir_path, "otx_cli_builder_yolox")
+        workspace_path = os.path.join(tmp_dir_path, "test_builder_build_task_config_4")
         model_type = "yolox"
         inputs = {
             "task_type": "detection",
@@ -101,7 +101,7 @@ class TestOTXCLIBuilder:
         assert template.name.lower() == model_type
 
         # 6. Raise ValueError when build workspace with wrong model_type argments
-        workspace_path = os.path.join(tmp_dir_path, "otx_cli_builder_atss_2")
+        workspace_path = os.path.join(tmp_dir_path, "test_builder_build_task_config_5")
         inputs = {
             "task_type": "detection",
             "model_type": "unexpected",
@@ -112,7 +112,8 @@ class TestOTXCLIBuilder:
             otx_builder.build_task_config(**inputs)
 
     @e2e_pytest_unit
-    def test_builder_build_backbone_config(self, tmp_dir_path):
+    @pytest.mark.parametrize("backbone_type", ["mmcls.MMOVBackbone"])
+    def test_builder_build_backbone_config(self, tmp_dir_path, backbone_type):
         """
         <b>Description:</b>
         Check "Builder.build_backbone_config" function that generate backbone configuration file is working well
@@ -125,7 +126,6 @@ class TestOTXCLIBuilder:
 
         # 1. Generate backbone config file (mmcls.MMOVBackbone)
         tmp_backbone_path = os.path.join(tmp_dir_path, "backbone.yaml")
-        backbone_type = "mmcls.MMOVBackbone"
         otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
         assert os.path.exists(tmp_backbone_path)
         backbone_config = mmcv.load(tmp_backbone_path)
@@ -153,7 +153,7 @@ class TestOTXCLIBuilder:
         otx_root = get_otx_root_path()
 
         # 1. Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)
-        workspace_path = os.path.join(tmp_dir_path, "test_builder_build_model_config_cls")
+        workspace_path = os.path.join(tmp_dir_path, "test_builder_build_model_config")
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": otx_root}
         otx_builder.build_task_config(**inputs)
         tmp_model_path = os.path.join(workspace_path, "model.py")
