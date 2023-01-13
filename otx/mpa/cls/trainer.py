@@ -8,6 +8,7 @@ import time
 import warnings
 
 import mmcv
+import torch.distributed as dist
 from mmcls import __version__
 from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
@@ -105,7 +106,11 @@ class ClsTrainer(ClsStage):
         drop_last = False
         dataset_len = len(otx_dataset) if otx_dataset else 0
         # if task == h-label & dataset size is bigger than batch size
-        if train_data_cfg.get("hierarchical_info", None) and dataset_len > cfg.data.get("samples_per_gpu", 2):
+        num_worlds = dist.get_world_size() if self.distributed else 1
+        if (
+            train_data_cfg.get("hierarchical_info", None)
+            and dataset_len > cfg.data.get("samples_per_gpu", 2) * num_worlds
+        ):
             drop_last = True
         # updated to adapt list of dataset for the 'train'
         data_loaders = [
