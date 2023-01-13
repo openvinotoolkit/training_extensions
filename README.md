@@ -36,7 +36,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 - Integrated efficient hyper-parameter optimization
   - OTX has an integrated, efficient hyper-parameter optimization module. So, you don't need to worry about searching right hyper-parameters. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 - Support widely-used annotation formats
-  - OTX uses [datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by datumaro are also consumable by OTX without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via datumaro CLI and API.
+  - OTX uses [Datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by Datumaro are also consumable by OTX without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via Datumaro CLI and API.
 
 ---
 
@@ -50,7 +50,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
   - Update `find` command to find configurations of tasks/algorithms
   - Introduce `build` command to customize task or model configurations
   - Automatic algorihm selection for the `train` command using the given input dataset
-- Adaptation of [datumaro](https://github.com/openvinotoolkit/datumaro) component as a dataset interface
+- Adaptation of [Datumaro](https://github.com/openvinotoolkit/datumaro) component as a dataset interface
 - Integrate hyper-parameter optimizations
 - Support action recognition task
 
