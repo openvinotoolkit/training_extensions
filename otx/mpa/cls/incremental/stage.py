@@ -41,21 +41,21 @@ class IncrClsStage(ClsStage):
         train_data_cfg = Stage.get_data_cfg(cfg, "train")
         if training:
             if train_data_cfg.type not in CLASS_INC_DATASET:
-                raise NotImplementedError(f"Class Incremental Learning for {train_data_cfg.type} is not yet supported!")
+                logger.warning(f"Class Incremental Learning for {train_data_cfg.type} is not yet supported!")
             if "new_classes" not in train_data_cfg:
-                raise KeyError('"new_classes" should be defined for incremental learning w/ current model.')
-            if cfg.model.type not in WEIGHT_MIX_CLASSIFIER:
-                raise NotImplementedError(f"Weight mixing for {cfg.mode.type} is not yet supported!")
+                logger.warning('"new_classes" should be defined for incremental learning w/ current model.')
+
+            if cfg.model.type in WEIGHT_MIX_CLASSIFIER:
+                cfg.model.task_adapt = ConfigDict(
+                    src_classes=self.model_classes,
+                    dst_classes=self.data_classes,
+                )
+            else:
+                logger.warning(f"Weight mixing for {cfg.model.type} is not yet supported!")
 
             # refine self.dst_class following adapt_type (REPLACE, MERGE)
             self.refine_classes(train_data_cfg)
             cfg.model.head.num_classes = len(self.dst_classes)
-
-            # for weight mixing
-            cfg.model.task_adapt = ConfigDict(
-                src_classes=self.model_classes,
-                dst_classes=self.data_classes,
-            )
 
             # configure loss, sampler, task_adapt_hook
             self.configure_task_modules(cfg)
