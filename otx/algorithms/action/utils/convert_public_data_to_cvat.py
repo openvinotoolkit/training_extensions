@@ -308,7 +308,6 @@ def main(src_path, dst_path, task):
     else:
         convert_ava_dataset_to_datumaro(src_path, dst_path)
 
-
 if __name__ == "__main__":
     try:
         src, dst, data_type = sys.argv[1:4]
