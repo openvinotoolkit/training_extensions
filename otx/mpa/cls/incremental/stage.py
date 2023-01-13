@@ -17,7 +17,7 @@ CLASS_INC_DATASET = [
     "ClsDirDataset",
     "ClsTVDataset",
 ]
-PSEUDO_LABEL_ENABLE_DATASET = ["ClassIncDataset", "LwfTaskIncDataset", "ClsTVDataset"]
+PSEUDO_LABEL_ENABLE_DATASET = ["ClassIncDataset", "ClsTVDataset"]
 WEIGHT_MIX_CLASSIFIER = ["SAMImageClassifier"]
 
 
