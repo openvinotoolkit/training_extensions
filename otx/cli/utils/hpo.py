@@ -63,15 +63,17 @@ def _check_hpo_enabled_task(task_type):
     ]
 
 
-def check_hpopt_available():
-    """Check whether hpopt is avaiable"""
-
-    if hpopt is None:
-        return False
-    return True
+def check_hpopt_available() -> bool:
+    """Check whether hpopt is avaiable/"""
+    return hpopt is not None
 
 
 class TaskManager:
+    """Task utility class to give common interface from different task.
+
+    Args:
+        task_type (TaskType): otx task type
+    """
     def __init__(self, task_type: TaskType):
         self._task_type = task_type
 
@@ -79,30 +81,60 @@ class TaskManager:
     def task_type(self):
         return self._task_type
 
-    def is_mpa_framework_task(self):
+    def is_mpa_framework_task(self) -> bool:
+        """Check task is run on MPA.
+
+        Returns:
+            bool: whether task is run on MPA
+        """
         return self.is_cls_framework_task() or self.is_det_framework_task() or self.is_seg_framework_task()
 
-    def is_cls_framework_task(self):
+    def is_cls_framework_task(self) -> bool:
+        """Check that task is run on mmcls framework.
+
+        Returns:
+            bool: whether task is run on mmcls
+        """
         return self._task_type == TaskType.CLASSIFICATION
 
-    def is_det_framework_task(self):
+    def is_det_framework_task(self) -> bool:
+        """Check that task is one of a task run on mmdet framework.
+
+        Returns:
+            bool: whether task is run on mmdet
+        """
         return self._task_type in [
             TaskType.DETECTION,
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ROTATED_DETECTION,
         ]
 
-    def is_seg_framework_task(self):
+    def is_seg_framework_task(self) -> bool:
+        """Check that task is run on mmseg framework.
+
+        Returns:
+            bool: whether tasks is run on mmseg
+        """
         return self._task_type == TaskType.SEGMENTATION
 
-    def is_anomaly_framework_task(self):
+    def is_anomaly_framework_task(self) -> bool:
+        """Check taht task is run on anomalib.
+
+        Returns:
+            bool: whether task is run on anomalib
+        """
         return self._task_type in [
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_SEGMENTATION,
         ]
 
-    def get_batch_size_name(self):
+    def get_batch_size_name(self) -> str:
+        """Give an proper batch size name depending on frameowrk.
+
+        Returns:
+            str: batch size name
+        """
         batch_size_name = None
         if self.is_mpa_framework_task():
             batch_size_name = "learning_parameters.batch_size"
@@ -111,7 +143,12 @@ class TaskManager:
 
         return batch_size_name
 
-    def get_epoch_name(self):
+    def get_epoch_name(self) -> str:
+        """Give an proper epoch name depending on frameowrk.
+
+        Returns:
+            str: epoch name
+        """
         epoch_name = None
         if self.is_mpa_framework_task():
             epoch_name = "num_iters"
@@ -121,12 +158,28 @@ class TaskManager:
         return epoch_name
 
     def copy_weight(self, src: str, det: str):
+        """Copy all model weights from work directory.
+
+        Args:
+            src (str): path where model weights are saved
+            det (str): path to save model weights
+        """
         if self.is_mpa_framework_task():
             for weight_candidate in glob.iglob(osp.join(src, "**/*epoch*.pth"), recursive=True):
                 if not (osp.islink(weight_candidate) or osp.exists(osp.join(det, osp.basename(weight_candidate)))):
                     shutil.copy(weight_candidate, det)
+        else:
+            raise NotImplementedError
 
-    def get_latest_weight(self, workdir: str):
+    def get_latest_weight(self, workdir: str) -> Optional[str]:
+        """Get latest model weight from all weights.
+
+        Args:
+            workdir (str): path where model weights are saved
+
+        Returns:
+            Optional[str]: latest model weight path. If not found, than return None value.
+        """
         latest_weight = None
         if self.is_mpa_framework_task():
             pattern = re.compile(r"(\d+)\.pth")
@@ -139,25 +192,50 @@ class TaskManager:
                 if current_latest_epoch < epoch:
                     current_latest_epoch = epoch
                     latest_weight = weight_name
+        else:
+            raise NotImplementedError
 
         return latest_weight
 
 
 class TaskEnvironmentManager:
+    """OTX environment utility class to set or get a value from environment class.
+
+    Args:
+        environment (TaskEnvironment): OTX task environment
+    """
     def __init__(self, environment: TaskEnvironment):
         self._environment = environment
         self.task = TaskManager(environment.model_template.task_type)
 
-    def get_task(self):
+    def get_task(self) -> TaskType:
+        """Get task type of environment.
+
+        Returns:
+            TaskType: task type
+        """
         return self._environment.model_template.task_type
 
     def get_model_template(self):
         return self._environment.model_template
 
-    def get_model_template_path(self):
+    def get_model_template_path(self) -> str:
+        """Get model template path.
+
+        Returns:
+            str: path of model template
+        """
         return self._environment.model_template.model_template_path
 
-    def set_hyper_parameter_from_flatten_format_dict(self, hyper_parameter: Dict):
+    def set_hyper_parameter_using_str_key(self, hyper_parameter: Dict[str, Any]):
+        """Set hyper parameter to environment using string key hyper_parameter.
+
+        Set hyper parameter to environment. Argument `hyper_parameter` is a dictionary which has string key.
+        For example, hyper_parameter has a key "a.b.c", then value is set at env_hp.a.b.c.
+
+        Args:
+            hyper_parameter (Dict[str, Any]): hyper parameter to set which has a string format
+        """
         env_hp = self._environment.get_hyper_parameters()
 
         for param_key, param_val in hyper_parameter.items():
@@ -168,14 +246,27 @@ class TaskEnvironmentManager:
                 target = getattr(target, val)
             setattr(target, param_key[-1], param_val)
 
-    def get_dict_type_hyper_parameter(self):
+    def get_dict_type_hyper_parameter(self) -> Dict[str, Any]:
+        """Get dictionary type hyper parmaeter of environment
+
+        Returns:
+            Dict[str, Any]: dictionary type hyper parameter of environment
+        """
         learning_parameters = self._environment.get_hyper_parameters().learning_parameters
-        learning_parameters = self._convert_parameter_group_to_dict(learning_parameters)
+        learning_parameters = self.convert_parameter_group_to_dict(learning_parameters)
         hyper_parameter = {f"learning_parameters.{key}": val for key, val in learning_parameters.items()}
         return hyper_parameter
 
     @staticmethod
-    def _convert_parameter_group_to_dict(parameter_group):
+    def convert_parameter_group_to_dict(parameter_group) -> Dict[str, Any]:
+        """Convert parameter group to dictionary
+
+        Args:
+            parameter_group : parameter gruop
+
+        Returns:
+            Dict[str, Any]: parameter group converted to dictionary
+        """
         groups = getattr(parameter_group, "groups", None)
         parameters = getattr(parameter_group, "parameters", None)
 
@@ -188,44 +279,85 @@ class TaskEnvironmentManager:
 
         ret = {}
         for key in total_arr:
-            val = TaskEnvironmentManager._convert_parameter_group_to_dict(getattr(parameter_group, key))
+            val = TaskEnvironmentManager.convert_parameter_group_to_dict(getattr(parameter_group, key))
             if not (isclass(val) or isinstance(val, Enum)):
                 ret[key] = val
 
         return ret
 
-    def get_max_epoch(self):
+    def get_max_epoch(self) -> int:
+        """Get max epoch from environment.
+
+        Returns:
+            int: max epoch of environment
+        """
         return getattr(self._environment.get_hyper_parameters().learning_parameters, self.task.get_epoch_name())
 
-    def save_initial_weight(self, save_path: str):
+    def save_initial_weight(self, save_path: str) -> bool:
+        """Save an initial model weight.
+
+        Args:
+            save_path (str): path to save initial model weight
+
+        Returns:
+            bool: whether model weight is saved successfully
+        """        
         if self._environment.model is None:
+            # if task isn't anomaly, then save model weight during first trial
             if self.task.is_anomaly_framework_task():
-                # if task isn't anomaly, then save model weight during first trial
                 task = self.get_train_task(self._environment)
-                model = self.get_output_model()
+                model = self.get_new_model_entity()
                 task.save_model(model)
                 save_model_data(model, save_path)
                 return True
         else:
-            save_model_data(self._environment.model, self.save_path)
+            save_model_data(self._environment.model, save_path)
             return True
         return False
 
     def get_train_task(self):
+        """Get OTX train task instance.
+
+        Returns:
+           OTX task: OTX train task instance
+        """
         impl_class = get_impl_class(self._environment.model_template.entrypoints.base)
         return impl_class(task_environment=self._environment)
 
-    def get_batch_size_name(self):
+    def get_batch_size_name(self) -> str:
+        """Get proper batch size name depending on task.
+
+        Returns:
+            str: batch size name
+        """
         return self.task.get_batch_size_name()
 
     def load_model_weight(self, model_weight_path: str):
+        """Set model weight on environment to load the weight during training.
+
+        Args:
+            model_weight_path (str): model weight to load during training
+        """
         self._environment.model = read_model(self._environment.get_model_configuration(), model_weight_path, None)
 
     def resume_model_weight(self, model_weight_path: str):
+        """Set model weight on environment to resume the weight during training.
+
+        Args:
+            model_weight_path (str): model weight to resume during training
+        """
         self.load_model_weight(model_weight_path)
         self._environment.model.model_adapters["resume"] = True
 
-    def get_output_model(self, dataset=None):
+    def get_new_model_entity(self, dataset=None) -> ModelEntity:
+        """Get new model entity using environment.
+
+        Args:
+            dataset (Optional[DatasetEntity]): OTX dataset
+
+        Returns:
+            ModelEntity: new model entity
+        """
         return ModelEntity(
             dataset,
             self._environment.get_model_configuration(),
@@ -233,9 +365,18 @@ class TaskEnvironmentManager:
 
     def set_epoch(self, epoch: int):
         hp = {f"learning_parameters.{self.task.get_epoch_name()}": epoch}
-        self.set_hyper_parameter_from_flatten_format_dict(hp)
+        self.set_hyper_parameter_using_str_key(hp)
 
 class HpoRunner:
+    """Class which is in charge of preparing and running HPO.
+
+    Args:
+        environment (TaskEnvironment): OTX environment
+        train_dataset_size (int): train dataset size
+        val_dataset_size (int): validation dataset size
+        hpo_workdir (str): work directory for HPO
+        hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
+    """    
     def __init__(
         self,
         environment: TaskEnvironment,
@@ -285,11 +426,20 @@ class HpoRunner:
                     )
                     del self._hpo_config["hp_space"][batch_size_name]
                     self._fixed_hp[batch_size_name] = self._train_dataset_size
-                    self._environment.set_hyper_parameter_from_flatten_format_dict(self._fixed_hp)
+                    self._environment.set_hyper_parameter_using_str_key(self._fixed_hp)
             else:
                 raise NotImplementedError
 
-    def run_hpo(self, train_func: Callable, data_roots: Dict[str, str]):
+    def run_hpo(self, train_func: Callable, data_roots: Dict[str, str]) -> Dict[str, Any]:
+        """Run HPO and provides optimized hyper parameters.
+
+        Args:
+            train_func (Callable): training model function
+            data_roots (Dict[str, str]): dataset path of each dataset type
+
+        Returns:
+            Dict[str, Any]: optimized hyper parameters
+        """        
         self._environment.save_initial_weight(self._get_initial_model_weight_path())
         hpo_algo = self._get_hpo_algo()
         resource_type = "gpu" if torch.cuda.is_available() else "cpu"
@@ -369,8 +519,15 @@ class HpoRunner:
         return osp.join(self._hpo_workdir, self._initial_weight_name)
 
 
-def run_hpo(args, environment, dataset, data_roots: Dict[str, str]):
-    """Update the environment with better hyper-parameters found by HPO"""
+def run_hpo(args, environment: TaskEnvironment, dataset, data_roots: Dict[str, str]):
+    """Run HPO and load optimized hyper parameter and best HPO model weight
+
+    Args:
+        args: arguments passed to otx train
+        environment (TaskEnvironment): otx task environment
+        dataset: dataset to use for training
+        data_roots (Dict[str, str]): dataset path of each dataset type
+    """
     if not check_hpopt_available():
         logger.warning("hpopt isn't available. hpo is skipped.")
         return None
@@ -397,7 +554,7 @@ def run_hpo(args, environment, dataset, data_roots: Dict[str, str]):
     logger.info(f"completed hyper-parameter optimization")
 
     env_manager = TaskEnvironmentManager(environment)
-    env_manager.set_hyper_parameter_from_flatten_format_dict(best_config["config"])
+    env_manager.set_hyper_parameter_using_str_key(best_config["config"])
     best_hpo_weight = get_best_hpo_weight(hpo_save_path, best_config["id"])
     if best_hpo_weight is None:
         logger.warning("Can not find the best HPO weight. Best HPO wegiht won't be used.")
@@ -405,7 +562,16 @@ def run_hpo(args, environment, dataset, data_roots: Dict[str, str]):
         logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
         env_manager.load_model_weight(best_hpo_weight)
 
-def get_best_hpo_weight(hpo_dir: str, trial_id: str):
+def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> str:
+    """get best model weight path of the HPO trial
+
+    Args:
+        hpo_dir (str): HPO work directory path
+        trial_id (str): trial id 
+
+    Returns:
+        str: best HPO model weight
+    """
     trial_output_file = glob.glob(f"{hpo_dir}/**/{trial_id}.json")
     if not trial_output_file:
         return None
@@ -435,6 +601,18 @@ def get_best_hpo_weight(hpo_dir: str, trial_id: str):
     return best_weight
 
 class Trainer:
+    """Class which prepares and trains a model given hyper parameters.
+
+    Args:
+        hp_config (Dict[str, Any]): hyper parameter to use on training
+        report_func (Callable): function to report score
+        model_template: model template
+        data_roots (Dict[str, str]): dataset path of each dataset type
+        task_type (TaskType): OTX task type
+        hpo_workdir (str): work directory for HPO
+        initial_weight_name (str): initial model weight name for each trials to load
+        metric (str): metric name
+    """    
     def __init__(
         self,
         hp_config: Dict[str, Any],
@@ -480,7 +658,7 @@ class Trainer:
         if need_to_save_initial_weight:
             self._add_initial_weight_saving_hook(task)
 
-        output_model = environment.get_output_model(dataset)
+        output_model = environment.get_new_model_entity(dataset)
         score_report_callback = self._prepare_score_report_callback(task)
         task.train(dataset=dataset, output_model=output_model, train_parameters=score_report_callback)
         self._finalize_trial(task)
@@ -496,7 +674,7 @@ class Trainer:
         return dataset
 
     def _set_hyper_parameter(self, environment: TaskEnvironmentManager):
-        environment.set_hyper_parameter_from_flatten_format_dict(self._hp_config["configuration"])
+        environment.set_hyper_parameter_using_str_key(self._hp_config["configuration"])
         environment.set_epoch(self._epoch)
 
     def _prepare_environment(self, hyper_parameters, dataset):
@@ -556,7 +734,7 @@ class Trainer:
 
 
 def run_trial(
-    hp_config: Dict,
+    hp_config: Dict[str, Any],
     report_func: Callable,
     model_template,
     data_roots: Dict[str, str],
@@ -565,6 +743,18 @@ def run_trial(
     initial_weight_name: str,
     metric: str,
 ):
+    """Function to train a model given hyper parameters.
+
+    Args:
+        hp_config (Dict[str, Any]): hyper parameter to use on training
+        report_func (Callable): function to report score
+        model_template: model template
+        data_roots (Dict[str, str]): dataset path of each dataset type
+        task_type (TaskType): OTX task type
+        hpo_workdir (str): work directory for HPO
+        initial_weight_name (str): initial model weight name for each trials to load
+        metric (str): metric name
+    """
     trainer = Trainer(
         hp_config, report_func, model_template, data_roots, task_type, hpo_workdir, initial_weight_name, metric
     )
@@ -572,7 +762,14 @@ def run_trial(
 
 
 class HpoCallback(UpdateProgressCallback):
-    """Callback class to report score to hpopt"""
+    """Callback class to report score to hpopt
+
+    Args:
+        report_func (Callable): function to report score
+        metric (str): metric name
+        max_epoch (int): max_epoch
+        task: OTX train task
+    """        
 
     def __init__(self, report_func: Callable, metric: str, max_epoch: int, task):
         super().__init__()
@@ -613,10 +810,14 @@ class HpoDataset:
         return getattr(self.fullset, name)
 
     def get_subset(self, subset: Subset):
-        """
-        Get subset according to subset_ratio if trainin dataset is requeseted.
-        """
+        """Get subset according to subset_ratio if trainin dataset is requeseted.
 
+        Args:
+            subset (Subset): which subset to get
+
+        Returns:
+            HpoDataset: subset wrapped by HpoDataset
+        """        
         dataset = self.fullset.get_subset(subset)
         if subset != Subset.TRAINING or self.subset_ratio > 0.99:
             return dataset
