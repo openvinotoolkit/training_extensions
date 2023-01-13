@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
+
 from mmcv import ConfigDict
 
-from otx.mpa.cls.stage import Stage, ClsStage
+from otx.mpa.cls.stage import ClsStage, Stage
 from otx.mpa.utils.config_utils import update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 
@@ -19,6 +20,7 @@ CLASS_INC_DATASET = [
 ]
 PSEUDO_LABEL_ENABLE_DATASET = ["ClassIncDataset", "LwfTaskIncDataset", "ClsTVDataset"]
 WEIGHT_MIX_CLASSIFIER = ["SAMImageClassifier"]
+
 
 class IncrClsStage(ClsStage):
     """Patch config to support incremental learning for object Cls"""
@@ -106,7 +108,9 @@ class IncrClsStage(ClsStage):
             efficient_mode = cfg["task_adapt"].get("efficient_mode", False)
             sampler_type = "cls_incr"
 
-        if len(set(self.model_classes) & set(self.dst_classes)) == 0 or set(self.model_classes) == set(self.dst_classes):
+        if len(set(self.model_classes) & set(self.dst_classes)) == 0 or set(self.model_classes) == set(
+            self.dst_classes
+        ):
             sampler_flag = False
         else:
             sampler_flag = True
@@ -124,7 +128,9 @@ class IncrClsStage(ClsStage):
         update_or_add_custom_hook(cfg, task_adapt_hook)
 
     def configure_loss(self, cfg):
-        if len(set(self.model_classes) & set(self.dst_classes)) == 0 or set(self.model_classes) == set(self.dst_classes):
+        if len(set(self.model_classes) & set(self.dst_classes)) == 0 or set(self.model_classes) == set(
+            self.dst_classes
+        ):
             cfg.model.head.loss = dict(type="CrossEntropyLoss", loss_weight=1.0)
         else:
             cfg.model.head.loss = ConfigDict(

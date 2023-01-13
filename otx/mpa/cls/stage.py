@@ -16,6 +16,7 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
+
 class ClsStage(Stage):
     def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
         """Create MMCV-consumable config from given inputs"""
@@ -73,6 +74,7 @@ class ClsStage(Stage):
 
         # update model layer's in/out configuration
         from mmcv.cnn import MODELS as backbone_reg
+
         layer = build_from_cfg(cfg.model.backbone, backbone_reg)
         layer.eval()
         input_shape = [3, 224, 224]
