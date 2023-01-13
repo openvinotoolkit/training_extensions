@@ -455,10 +455,10 @@ class ClassificationInferenceTask(
             # In train dataset, when sample size is smaller than batch size
             if subset == "train" and self._data_cfg:
                 train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
-                num_gpus = dist.get_world_size() if dist.is_initialized() else 1
+                num_worlds = dist.get_world_size() if dist.is_initialized() else 1
                 if (
                     len(train_data_cfg.get("otx_dataset", []))
-                    < self._recipe_cfg.data.get("samples_per_gpu", 2) * num_gpus
+                    < self._recipe_cfg.data.get("samples_per_gpu", 2) * num_worlds
                 ):
                     cfg.drop_last = False
 

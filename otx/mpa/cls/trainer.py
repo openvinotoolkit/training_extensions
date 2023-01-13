@@ -106,10 +106,10 @@ class ClsTrainer(ClsStage):
         drop_last = False
         dataset_len = len(otx_dataset) if otx_dataset else 0
         # if task == h-label & dataset size is bigger than batch size
-        num_gpus = dist.get_world_size() if self.distributed else 1
+        num_worlds = dist.get_world_size() if self.distributed else 1
         if (
             train_data_cfg.get("hierarchical_info", None)
-            and dataset_len > cfg.data.get("samples_per_gpu", 2) * num_gpus
+            and dataset_len > cfg.data.get("samples_per_gpu", 2) * num_worlds
         ):
             drop_last = True
         # updated to adapt list of dataset for the 'train'
