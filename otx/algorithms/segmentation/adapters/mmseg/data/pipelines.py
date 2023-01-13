@@ -115,7 +115,7 @@ class TwoCropTransform:
     def __init__(self, view0: List, view1: List):
         self.view0 = Compose([build_from_cfg(p, PIPELINES) for p in view0])
         self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
-        self.is_both = False
+        self.is_both = True
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
