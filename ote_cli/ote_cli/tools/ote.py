@@ -26,6 +26,7 @@ from .export import main as ote_export
 from .find import main as ote_find
 from .optimize import main as ote_optimize
 from .train import main as ote_train
+from ote_cli.utils import telemetry
 
 __all__ = [
     "ote_demo",
@@ -64,7 +65,24 @@ def main():
     name = parse_args().operation
     sys.argv[0] = f"ote {name}"
     del sys.argv[1]
-    globals()[f"ote_{name}"]()
+
+    tm = telemetry.init_telemetry_session()
+    results = {}
+    try:
+        retcode = globals()[f"ote_{name}"]()
+        if retcode is None:
+            retcode = 0
+    except Exception as e:
+        results['exception'] = type(e)
+        results['retcode'] = retcode
+        telemetry.send_cmd_results(tm, name, results)
+        raise
+    else:
+        results['retcode'] = retcode
+        telemetry.send_cmd_results(tm, name, results)
+        return retcode
+    finally:
+        telemetry.close_telemetry_session(tm)
 
 
 if __name__ == "__main__":

@@ -17,8 +17,35 @@ Setup configuration.
 # and limitations under the License.
 
 import os
+import re
 
 from setuptools import find_packages, setup
+
+def find_version():
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+
+    file_path = os.path.join(project_dir, "ote_cli", "version.py")
+
+    version_text = None
+    with open(file_path, "r") as version_file:
+        lines = version_file.readlines()
+        for line in lines:
+            if "VERSION = " in line:
+                version_text = line
+
+    if version_text is None:
+        raise RuntimeError(f"Failed to find version string 'VERSION = ' in '{file_path}'")
+
+    # PEP440:
+    # https://www.python.org/dev/peps/pep-0440/#appendix-b-parsing-version-strings-with-regular-expressions
+    pep_regex = r"([1-9]\d*!)?(0|[1-9]\d*)(\.(0|[1-9]\d*))*((a|b|rc)(0|[1-9]\d*))?(\.post(0|[1-9]\d*))?(\.dev(0|[1-9]\d*))?"
+    version_regex = r"VERSION\s*=\s*.(" + pep_regex + ")."
+    match = re.match(version_regex, version_text)
+    if not match:
+        raise RuntimeError(f"Failed to find version string in '{file_path}'")
+
+    version = version_text[match.start(1) : match.end(1)]
+    return version
 
 with open(
     os.path.join(os.path.dirname(__file__), "requirements.txt"), encoding="UTF-8"
@@ -27,7 +54,7 @@ with open(
 
 setup(
     name="ote_cli",
-    version="0.2",
+    version=find_version(),
     packages=find_packages(exclude=("tools",)),
     install_requires=requirements,
     entry_points={
