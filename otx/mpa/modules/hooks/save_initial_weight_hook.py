@@ -2,17 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Optional, Callable
-
 from mmcv.runner import HOOKS, Hook
 
 
 @HOOKS.register_module()
 class SaveInitialWeightHook(Hook):
-    def __init__(self, save_path, file_name: str = "weights.pth", after_save_func: Optional[Callable] = None, **kwargs):
+    def __init__(self, save_path, file_name: str = "weights.pth", **kwargs):
         self._save_path = save_path
         self._file_name = file_name
-        self._after_save_func = after_save_func
         self._args = kwargs
 
     def before_run(self, runner):
@@ -24,6 +21,3 @@ class SaveInitialWeightHook(Hook):
             create_symlink=False,
             **self._args
         )
-
-        if self._after_save_func is not None:
-            self._after_save_func()
