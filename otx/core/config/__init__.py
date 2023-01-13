@@ -1,4 +1,4 @@
-"""OTX Auto Configuration."""
+"""OTX Configuration."""
 
 # Copyright (C) 2022 Intel Corporation
 #

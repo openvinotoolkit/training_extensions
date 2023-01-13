@@ -157,7 +157,7 @@ class Builder:
             workspace_path = f"./otx-workspace-{task_type}"
             if model_type:
                 workspace_path += f"-{model_type}"
-        os.makedirs(workspace_path, exist_ok=False)
+        os.makedirs(workspace_path, exist_ok=True)
 
         # Load & Save Model Template
         otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
@@ -217,11 +217,10 @@ class Builder:
                 os.path.join(train_type_dir, "compression_config.json"),
             )
 
-        print(f"[otx build] Create OTX workspace: {workspace_path}")
-        print(f"\tTask Type: {template.task_type}")
-        print(f"\tLoad Model Template ID: {template.model_template_id}")
-        print(f"\tLoad Model Name: {template.name}")
-        print(f"\tYou need to edit that file: {os.path.join(workspace_path, 'data.yaml')}")
+        print(f"[*] Load Model Template ID: {template.model_template_id}")
+        print(f"[*] Load Model Name: {template.name}")
+        print(f"\n[*] Note! If you want to change configurations, please edit the below files")
+        print(f"{os.path.join(workspace_path)}\n")
 
     def build_backbone_config(self, backbone_type, output_path):
         """Build Backbone configs from backbone type.

@@ -4,15 +4,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
-from typing import Optional
 
 import datumaro
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset import DatasetSubset
+from datumaro.components.dataset_base import DatasetItem
+from datumaro.plugins.splitter import Split
 
 
-class DatumaroHelper:
-    """The aim of DatumaroHelper is support datumaro functions at easy use.
+class DatasetManager:
+    """The aim of DatasetManager is support datumaro functions at easy use.
     All kind of functions implemented in Datumaro are supported by this helper.
     """
     @staticmethod
@@ -34,15 +35,15 @@ class DatumaroHelper:
         """Find the format of dataset."""
         data_root = os.path.abspath(data_root)
         
-        data_format = ""
+        data_format: str = ""
         
         # TODO #
         # Currently, below `if/else` statements is mandatory 
         # because Datumaro can't detect the multi-cvat and mvtec.
         # After, the upgrade of Datumaro, below codes will be changed. 
-        if DatumaroHelper._is_cvat_format(data_root):
+        if DatasetManager._is_cvat_format(DatasetManager, data_root):
             data_format = "multi-cvat"
-        elif DatumaroHelper._is_mvtec_format(data_root):
+        elif DatasetManager._is_mvtec_format(DatasetManager, data_root):
             data_format = "mvtec"
         else: 
             data_formats = datumaro.Environment().detect_dataset(data_root)
@@ -50,34 +51,36 @@ class DatumaroHelper:
             data_format = data_formats[0] if 'imagenet' not in data_formats else 'imagenet'
         return data_format
     
+    @staticmethod
+    def get_image_path(data_item:DatasetItem) -> str:
+        """Returns the path of image."""
+        return data_item.media.path
+
+    @staticmethod
+    def get_classification_label(data_item:DatasetItem) -> str:
+        """Returns the classfication label (multi-class)."""
+        assert len(data_item.annotations) == 1, "Not implemented for multi-label"
+        return data_item.annotations[0].label
+    
+    @staticmethod
+    def export_dataset(dataset:Dataset, output_dir: str, data_format: str, save_media=True):
+        """Export the Datumaro Dataset."""
+        return Dataset.export(dataset, output_dir, data_format, save_media=save_media)
+    
     @staticmethod 
-    def import_dataset(
-            self, 
-            train_data_root: str, 
-            train_data_format: str,
-            val_data_root: Optional[str] = None
-        ) -> dict:
+    def import_dataset(data_root: str, data_format: str) -> dict:
         """Import dataset."""
-         
-        # Make Datumaro dataset by using training data 
-        train_data_format = self._find_data_format(train_data_root) 
-        datumaro_dataset = Dataset.import_from(train_data_root, format=train_data_format)
-        
-        # Find train and val set 
-        train_set = DatumaroHelper.get_train_dataset(datumaro_dataset)
-        val_set = DatumaroHelper.get_val_dataset(datumaro_dataset)
-        
-        # If there is input from user for validation dataset
-        # Make validation set by using user's input
-        # If Datumaro automatically made validation dataset, it will be overwritten
-        if val_data_root:
-            val_dataset = Dataset.import_from(val_data_root, format=self.task)
-            val_set = DatumaroHelper.get_val_dataset(val_dataset)
-        pass
+        return Dataset.import_from(data_root, format=data_format)
      
     @staticmethod
-    def auto_split(task, dataset:Dataset):
-        pass 
+    def auto_split(
+        task: str, 
+        dataset: Dataset,
+        default_split_ratio: list = [("train", 0.8), ("val", 0.2)]
+    ) -> dict:
+        """Automatically split the dataset: train --> train/val."""
+        splitter = Split(dataset, task.lower(), default_split_ratio)
+        return splitter.subsets()
 
     def _is_cvat_format(self, path: str) -> bool:
         """Detect whether data path is CVAT format or not.
@@ -129,4 +132,4 @@ class DatumaroHelper:
             if os.path.isdir(sub_folder_path):
                 folder_list.append(sub_folder)
         return sorted(folder_list) == mvtec_format
-        
+     
