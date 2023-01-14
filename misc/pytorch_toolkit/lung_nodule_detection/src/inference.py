@@ -5,15 +5,9 @@ import argparse
 def main(config):
 
     if config["lungseg"]:
-        foldno = config["foldno"]
-        savepath = config["savepath"]
-        jsonpath = config["jsonpath"]
-        network = config["network"]
-        infer_stage1.infer_lungseg(foldno,savepath,network,jsonpath)
+        infer_stage1.infer_lungseg(config, run_type=config['run_type'])
     else:
-        savepath = config["savepath"]
-        imgpath = config["imgpath"]
-        infer_stage2.lungpatch_classifier(savepath,imgpath)
+        infer_stage2.lungpatch_classifier(config, run_type=config['run_type'])
 
 if __name__ == '__main__':
 
@@ -32,7 +26,9 @@ if __name__ == '__main__':
     parser.add_argument('--imgpath',
                         help='Folder location where test images are stored')
     parser.add_argument('--network',
-                        help='Network to be trained')						
+                        help='Network to be trained')	
+    parser.add_argument('--runtype',
+                        help='Select runtype: {pytorch, onnx, ir}')					
 
     args = parser.parse_args()
 

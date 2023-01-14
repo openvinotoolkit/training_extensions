@@ -32,18 +32,69 @@ The ground truth annotations were marked in a two-phase image annotation process
 
 >**License**: Both the datasets are published by the creators under [Creative Commons Attribution 3.0 Unported License](https://creativecommons.org/licenses/by/3.0/)
 
+
+## Code and Directory Organization
+
+lung_nodule_detection/
+	src/
+      utils/
+        data_prep/
+            create_folds.py
+            generate_patches.py
+            generate_slices.py
+            visualize.py
+        downloader.py
+        data_loader.py
+        exporter.py
+        get_config.py
+        models.py
+        infer_stage1.py
+        infer_stage2.py
+        train_stage1.py
+        train_stage2.py
+        utils.py
+      export.py
+      inference.py
+      train.py
+      prepare_data.py
+	configs/
+      stage1_config.json
+      stage2_config.json
+      download_config.json
+  media/
+	tests/
+      test_export.py
+      test_inference.py
+      test_train.py
+	init_venv.sh
+	README.md
+	requirements.txt
+	setup.py
+
+## System Specifications
+
+The code and models were tested on system with the following hardware and software specifications.
+- Ubuntu* 16.04
+- Python* 3.6
+- NVidia* GPU for training
+- 16GB RAM for inference
+
 # Using the code
 
-## Code Organization
-Code directory is organised into 3 subfolders; Data preparation, Training and Evaluation. Each of these subfolders has a .py file and a package folder containing function definitions. 
-## Requirements
-
+## Creating Virtual Environment
 Create a virtual environment with all dependencies using 
 ```
 sh init_venv.sh
 ```
- 
-## Data preparation
+The network used in stage 1, lung segmentation relies on MaxUnpool2D operation. This operation is not supported for ONNX and IR conversions in its current versions. As a work around we use [openvino_pytorch_layers](https://github.com/dkurt/openvino_pytorch_layers) and [max_unpool2d_decomposition.py](https://github.com/openvinotoolkit/openvino/pull/11400/files).
+
+After creating the virtual environment, users need to keep the `openvino_pytorch_layers` in the `src/utils/` directory and `max_unpool2d_decomposition.py` in `venv/lib/python3.9/site-packages/openvino/tools/mo/front/onnx/` directory.
+
+Thanks to [@dkurt](https://github.com/dkurt) for the solution. Users can follow the entire discussion [here](https://github.com/dkurt/openvino_pytorch_layers/issues/40).
+
+>**Note** This is needed only for exporting and inferencing the ONNX and IR model.
+
+## Data Preparation
 Follow the below steps to prepare and organise the data for training.
 > Details about the arguments being passed and its purpose is explained within the code. To see the details run `python prepare_data.py -h`
 
@@ -88,8 +139,14 @@ To evaluate the classifier network execute
 `python inference.py --patchclass --savepath <path> --imgpath <path>`
 
 ## Pre-trained Models
-## Results
 
+Pretrained models for inference are available [here](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi11/model_weights.zip). Users can also use the `downloader.py` script in utils directory to download the model.
+
+### Run Tests
+
+Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here]http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi11/test_data.zip).
+
+>**Note**: Unit tests for inference using ONNX model is commented/disabled at the moment as MaxUnpool2D operation is yet to be supported in onnxruntime. 
 
 ## Acknowledgement
 
@@ -117,3 +174,7 @@ email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
 Github username: Rakshith2597
 
 ## References
+
+<div id="densenet">
+<a href="#abs">[1]</a> R. Sathish, R. Sathish, R. Sethuraman, D. Sheet.Lung Segmentation and Nodule Detection in Computed Tomography Scan using a Convolutional Neural Network Trained Adversarially using Turing Test Loss. In Proceedings of 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), 2020. <a href="https://ieeexplore.ieee.org/abstract/document/9175649"> (link) </a> 
+</div>

@@ -44,7 +44,7 @@ def create_train_test_for_stage2():
         def test_trainer(self):
             self.model = LeNet()
             loss_list = lungpatch_classifier(self.config)
-            self.assertLessEqual(loss_list[2], loss_list[0])
+            self.assertLessEqual(loss_list[1], loss_list[0])
 
         def test_config(self):
             self.config = get_config(action='train', stage=2)
