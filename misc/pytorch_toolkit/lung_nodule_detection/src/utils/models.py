@@ -308,7 +308,7 @@ class R2U_Net(nn.Module):
 
 class Discriminator(nn.Module):
     def __init__(self,in_ch, out_ch):
-        super(Discriminator, self).__init__()
+        super().__init__()
         self.main = nn.Sequential(
             # input is (nc) x 64 x 64
             nn.Conv2d(in_ch, 64, 3, 1, 0, bias=False),
@@ -336,6 +336,6 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
             nn.Sigmoid()
         )
-    def forward(self, input):
-        output = self.main(input)
+    def forward(self, x):
+        output = self.main(x)
         return output.view(-1, 2) #.squeeze(1)

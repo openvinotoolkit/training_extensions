@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+from torch import nn
 from torch import optim
 from torch.utils import data
 import torch.nn.functional as F
@@ -14,6 +14,7 @@ from .data_loader import LungDataLoader
 from .utils import dice_coefficient, plot_graphs, ch_shuffle
 
 plt.switch_backend('agg')
+
 
 def train_network(config):
     """Training function for SUMNet,UNet,R2Unet
@@ -43,7 +44,6 @@ def train_network(config):
     None
     """
 
-    
     fold_no = config["fold_no"]
     fold = 'fold'+str(fold_no)
     save_path = config["save_path"]
@@ -62,35 +62,59 @@ def train_network(config):
     with open(json_path) as f:
         json_file = json.load(f)
 
-    trainDset = LungDataLoader(datapath=datapath,lung_path=lung_segpath,is_transform=True,json_file=json_file,split="train_set",img_size=512)
-    valDset = LungDataLoader(datapath=datapath,lung_path=lung_segpath,is_transform=True,json_file=json_file,split="valid_set",img_size=512)
-    trainDataLoader = data.DataLoader(trainDset,batch_size=4,shuffle=True,num_workers=4,pin_memory=True,drop_last=True)
-    validDataLoader = data.DataLoader(valDset,batch_size=1,shuffle=False,num_workers=4,pin_memory=True,drop_last=True)
+    trainDset = LungDataLoader(
+        datapath=datapath,
+        lung_path=lung_segpath,
+        is_transform=True,
+        json_file=json_file,
+        split="train_set",
+        img_size=512)
+    valDset = LungDataLoader(
+        datapath=datapath,
+        lung_path=lung_segpath,
+        is_transform=True,
+        json_file=json_file,
+        split="valid_set",
+        img_size=512)
+    trainDataLoader = data.DataLoader(
+        trainDset,
+        batch_size=4,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=True,
+        drop_last=True)
+    validDataLoader = data.DataLoader(
+        valDset,
+        batch_size=1,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+        drop_last=True)
 
     if network == 'unet':
-        net = U_Net(img_ch=1,output_ch=2)
+        net = U_Net(img_ch=1, output_ch=2)
     if network == 'r2unet':
-        net = R2U_Net(img_ch=1,output_ch=2)
+        net = R2U_Net(img_ch=1, output_ch=2)
     if network == 'sumnet':
-        net = SUMNet(in_ch=1,out_ch=2)
+        net = SUMNet(in_ch=1, out_ch=2)
 
     use_gpu = torch.cuda.is_available()
 
     if use_gpu:
         net = net.cuda()
 
-    optimizer = optim.Adam(net.parameters(), lr = lrate, weight_decay = 1e-5)
+    optimizer = optim.Adam(net.parameters(), lr=lrate, weight_decay=1e-5)
     if adv:
-        netD2 = Discriminator(in_ch=2,out_ch=2)
+        netD2 = Discriminator(in_ch=2, out_ch=2)
         if use_gpu:
             netD2 = netD2.cuda()
-        optimizerD2 = optim.Adam(netD2.parameters(), lr = 1e-4, weight_decay = 1e-5)
+        optimizerD2 = optim.Adam(
+            netD2.parameters(), lr=1e-4, weight_decay=1e-5)
         criterionD = nn.BCELoss()
         D2_losses = []
 
     criterion = nn.BCEWithLogitsLoss()
 
-    epochs = epochs
     trainLoss = []
     validLoss = []
     trainDiceCoeff_lungs = []
@@ -98,7 +122,6 @@ def train_network(config):
     start = time.time()
 
     bestValidDice_lungs = 0.0
-
 
     for epoch in range(epochs):
         epochStart = time.time()
@@ -108,7 +131,6 @@ def train_network(config):
         validBatches = 0
         trainDice_lungs = 0
         validDice_lungs = 0
-
 
         net.train(True)
 
@@ -121,18 +143,19 @@ def train_network(config):
 
             net_out = net(Variable(inputs))
 
-            net_out_sf = F.softmax(net_out,dim=1)
+            net_out_sf = F.softmax(net_out, dim=1)
 
             if adv:
                 optimizerD2.zero_grad()
                 # Concatenate real (GT) and fake (segmented) samples along dim 1
-                d_in = torch.cat((net_out[:,1].unsqueeze(1),labels[:,1].unsqueeze(1).float()),dim=1)
+                d_in = torch.cat((net_out[:, 1].unsqueeze(
+                    1), labels[:, 1].unsqueeze(1).float()), dim=1)
                 # Shuffling aling dim 1: {real,fake} OR {fake,real}
-                d_in,shuffLabel = ch_shuffle(d_in)
+                d_in, shuffLabel = ch_shuffle(d_in)
                 # D2 prediction
-                confr = netD2(Variable(d_in)).view(d_in.size(0),-1)
+                confr = netD2(Variable(d_in)).view(d_in.size(0), -1)
                 # Compute loss
-                LD2 = criterionD(confr,shuffLabel.float().cuda())
+                LD2 = criterionD(confr, shuffLabel.float().cuda())
                 # Compute gradients
                 LD2.backward()
                 # Backpropagate
@@ -140,19 +163,25 @@ def train_network(config):
                 # Appending loss for each batch into the list
                 D2_losses.append(LD2.item())
                 optimizerD2.zero_grad()
-                d2_in = torch.cat((net_out[:,1].unsqueeze(1),labels[:,1].unsqueeze(1).float()),dim=1)
+                d2_in = torch.cat((net_out[:, 1].unsqueeze(
+                    1), labels[:, 1].unsqueeze(1).float()), dim=1)
                 d2_in, d2_lb = ch_shuffle(d2_in)
-                conffs2 = netD2(d2_in).view(d2_in.size(0),-1)
-                LGadv2 = criterionD(conffs2,d2_lb.float().cuda()) # Aversarial loss 2
+                conffs2 = netD2(d2_in).view(d2_in.size(0), -1)
+                # Aversarial loss 2
+                LGadv2 = criterionD(conffs2, d2_lb.float().cuda())
 
-            BCE_Loss = criterion(net_out[:,1],labels[:,1])
-            net_loss = BCE_Loss
+            BCE_Loss = criterion(net_out[:, 1], labels[:, 1])
+            if adv:
+                net_loss = BCE_Loss + LGadv2
+            else:
+                net_loss = BCE_Loss
             optimizer.zero_grad()
             net_loss.backward()
             optimizer.step()
             trainRunningLoss += net_loss.item()
 
-            trainDice = dice_coefficient(net_out_sf,torch.argmax(labels,dim=1))
+            trainDice = dice_coefficient(
+                net_out_sf, torch.argmax(labels, dim=1))
             trainDice_lungs += trainDice[0]
 
             trainBatches += 1
@@ -172,13 +201,13 @@ def train_network(config):
                     labels = labels.cuda()
 
                 net_out = net(Variable(inputs))
-                net_out_sf = F.softmax(net_out.data,dim=1)
+                net_out_sf = F.softmax(net_out.data, dim=1)
 
-
-                BCE_Loss = criterion(net_out[:,1],labels[:,1])
+                BCE_Loss = criterion(net_out[:, 1], labels[:, 1])
                 net_loss = BCE_Loss
 
-                val_dice = dice_coefficient(net_out_sf,torch.argmax(labels,dim=1))
+                val_dice = dice_coefficient(
+                    net_out_sf, torch.argmax(labels, dim=1))
                 validDice_lungs += val_dice[0]
                 validRunningLoss += net_loss.item()
                 validBatches += 1
@@ -191,18 +220,21 @@ def train_network(config):
         if validDice_lungs.cpu() > bestValidDice_lungs:
             bestValidDice_lungs = validDice_lungs.cpu()
             torch.save(net.state_dict(), save_path+'/sumnet_best_lungs.pt')
-        
+
         plot_graphs(train_values=trainLoss, valid_values=validLoss,
-        save_path=save_path, x_label='Epochs', y_label='Loss',
-        plot_title='Running Loss', save_name='LossPlot.png')
+                    save_path=save_path, x_label='Epochs', y_label='Loss',
+                    plot_title='Running Loss', save_name='LossPlot.png')
 
         epochEnd = time.time()-epochStart
-        print('Epoch: {:.0f}/{:.0f} | Train Loss: {:.5f} | Valid Loss: {:.5f}'
-              .format(epoch+1, epochs, trainRunningLoss/trainBatches, validRunningLoss/validBatches))
-        print('Dice | Train  | Lung {:.3f}  | Valid | Lung {:.3f} | '
-              .format(trainDice_lungs/trainBatches, validDice_lungs/validBatches))
+        train_r_loss = trainRunningLoss/trainBatches
+        valid_r_loss = validRunningLoss/validBatches
+        train_r_dice = trainDice_lungs/trainBatches
+        valid_r_dice = validDice_lungs/validBatches
+        print(
+            f'Epoch: {epoch+1}/{epochs} | Train Loss:{train_r_loss} | Valid Loss: {valid_r_loss}')
+        print(f'Dice | Train{train_r_dice}  | Valid {valid_r_dice}')
 
-        print('\nTime: {:.0f}m {:.0f}s'.format(epochEnd//60,epochEnd%60))
+        print(f'\nTime: {epochEnd//60}m {epochEnd%60}s')
 
         print('Saving losses')
 
@@ -215,15 +247,14 @@ def train_network(config):
     #         break
 
     end = time.time()-start
-    print('Training completed in {:.0f}m {:.0f}s'.format(end//60,end%60))
+    print(f'Training completed in {end//60}m {end%60}s')
 
     plot_graphs(train_values=trainLoss, valid_values=validLoss,
-    save_path=save_path, x_label='Epochs', y_label='Loss',
-    plot_title='Loss plot', save_name='LossPlotFinal.png')
+                save_path=save_path, x_label='Epochs', y_label='Loss',
+                plot_title='Loss plot', save_name='LossPlotFinal.png')
 
     plot_graphs(train_values=trainDiceCoeff_lungs, valid_values=validDiceCoeff_lungs,
-    save_path=save_path, x_label='Epochs', y_label='Dice coefficient',
-    plot_title='Dice coefficient', save_name='Dice_Plot.png')
+                save_path=save_path, x_label='Epochs', y_label='Dice coefficient',
+                plot_title='Dice coefficient', save_name='Dice_Plot.png')
 
     return trainLoss
-

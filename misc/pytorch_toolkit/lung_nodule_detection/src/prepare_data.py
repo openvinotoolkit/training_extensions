@@ -94,6 +94,6 @@ if __name__ == '__main__':
     parser.add_argument('--seriesuid',
                         help='Seriesuid of slice to visualize')
 
-    args=parser.parse_args()
+    arg=parser.parse_args()
 
-    main(args)
+    main(arg)

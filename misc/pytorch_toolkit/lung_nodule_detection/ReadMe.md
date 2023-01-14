@@ -142,7 +142,7 @@ To evaluate the classifier network execute
 
 Pretrained models for inference are available [here](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi11/model_weights.zip). Users can also use the `downloader.py` script in utils directory to download the model.
 
-### Run Tests
+## Run Tests
 
 Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here]http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi11/test_data.zip).
 

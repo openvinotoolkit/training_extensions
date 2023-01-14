@@ -29,10 +29,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    configs = {
+    config = {
         "onnx": args.onnx,
         "ir": args.ir,
         "stage": args.stage
 
    }
-    export(configs)
+    export(config)

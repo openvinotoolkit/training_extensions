@@ -26,9 +26,9 @@ if __name__ == '__main__':
     parser.add_argument('--imgpath',
                         help='Folder location where test images are stored')
     parser.add_argument('--network',
-                        help='Network to be trained')	
+                        help='Network to be trained')
     parser.add_argument('--runtype',
-                        help='Select runtype: {pytorch, onnx, ir}')					
+                        help='Select runtype: {pytorch, onnx, ir}')
 
     args = parser.parse_args()
 
