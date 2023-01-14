@@ -14,12 +14,6 @@ Models
 To be added soon
 
 *******************
-Supervised Learning
-*******************
-
-To be added soon
-
-*******************
 Tiling Pipeline
 *******************
 

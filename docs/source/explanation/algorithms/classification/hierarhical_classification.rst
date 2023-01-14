@@ -91,12 +91,6 @@ Models
 
 We use the same model templates as for Multi-class Classification. Please, refer: :ref:`Classificaiton Models <classificaiton_models>`.
 
-*******************
-Supervised Learning
-*******************
-
-To be added soon
-
 ********************
 Incremental Learning
 ********************
