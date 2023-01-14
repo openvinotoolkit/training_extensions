@@ -1,11 +1,37 @@
 Multi-class Classification
 ==========================
 
+Multi-class Classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
+For the supervised training we use the following algorithms components:
+
+- ``Augmentations``: Besides basic augmentations like random flip and random rotate, we use `Augmix <https://arxiv.org/abs/1912.02781>`_. This advanced type of augmentations helps to significantly expand the training distribution.
+
+- ``Optimizer``: `Sharpness Aware Minimization (SAM) <https://arxiv.org/abs/2209.06585>`_. Wrapper upon the `SGD <https://en.wikipedia.org/wiki/Stochastic_gradient_descent>`_ optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.
+
+- ``Learning rate schedule``: `Cosine Annealing <https://arxiv.org/abs/1608.03983v5>`_. It is a common learning rate scheduler that tends to work well on average for this task on variety of different datasets.
+
+- ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. This is a balancing training method that helps us to solve the imbalanced data problem.
+
+- Additionaly, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
+To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
+
+In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
+
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
++=======================+=================+===========+===========+===========+===========+
+| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+
 **************
 Dataset Format
 **************
 
-We support a commonly used format for classification tasks: `imagenet <https://www.image-net.org/>`_ class folder format.
+We support a commonly used format for multi-class image classification task: `imagenet <https://www.image-net.org/>`_ class folder format.
 This format has the following structure:
 
 ::
@@ -60,36 +86,6 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
-
-*******************
-Supervised Learning
-*******************
-
-We solve the multi-class classification problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the probability of each label presented on the image.
-For the supervised training we use the following algorithms components:
-
-- ``Augmentations``: Besides basic augmentations like random flip and random rotate, we use `Augmix <https://arxiv.org/abs/1912.02781>`_. This advanced type of augmentations helps to significantly expand the training distribution.
-
-- ``Optimizer``: `Sharpness Aware Minimization (SAM) <https://arxiv.org/abs/2209.06585>`_. Wrapper upon the `SGD <https://en.wikipedia.org/wiki/Stochastic_gradient_descent>`_ optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.
-
-- ``Learning rate schedule``: `Cosine Annealing <https://arxiv.org/abs/1608.03983v5>`_. It is a common learning rate scheduler that tends to work well on average for this task on variety of different datasets.
-
-- ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. This is a balancing training method that helps us to solve the imbalanced data problem.
-
-- Additionaly, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
-To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
-
-In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
-
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
-+=======================+=================+===========+===========+===========+===========+
-| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 ************************
 Semi-supervised Learning

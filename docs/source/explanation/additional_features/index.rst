@@ -1,6 +1,8 @@
 Additional Features
 ===================
 
+.. _features_section_ref:
+
 .. toctree::
    :maxdepth: 1
 
