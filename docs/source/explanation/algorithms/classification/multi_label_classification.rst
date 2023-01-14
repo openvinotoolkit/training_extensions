@@ -14,7 +14,7 @@ For supervised learning we use the following algorithms components:
 
 - ``Loss function``: We use **Asymmetric Angular Margin Loss**. We can formulate this loss as follows: :math:`L_j (cos\Theta_j,y) = \frac{k}{s}y p_-^{\gamma^-}\log{p_+} + \frac{1-k}{s}(1-y)p_+^{\gamma^+}\log{p_-}`, where :math:`s` is a scale parameter, :math:`m` is an angular margin, :math:`k` is negative-positive weighting coefficient, :math:`\gamma^+` and :math:`\gamma^-` are weighting parameters. For further information about loss function, ablation studies, and experiments, please refer to our dedicated `paper <https://arxiv.org/abs/2209.06585>`_.
 
-- Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique, **Exponential Moving Average (EMA)** for the model's weights and adaptive **early stopping** to add adaptability and prevent overfitting.
+- Additionally, we use the `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique, **Exponential Moving Average (EMA)** for the model's weights and adaptive **early stopping** to add adaptability and prevent overfitting.
 
 In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
 
@@ -35,7 +35,7 @@ Dataset Format
 As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: `COCO <https://cocodataset.org/#format-data>`_ and `VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_.
 Specifically, these formats will be converted in our internal representation via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
 
-We also support our custom and simple dataset format for multi-label classificaiton. It has the following structure:
+We also support our custom and simple dataset format for multi-label classification. It has the following structure:
 
 ::
 
@@ -55,8 +55,8 @@ We also support our custom and simple dataset format for multi-label classificai
         ├── train.json
         └── val.json
 
-Where ``*.json`` annotations have two keys: **"images"** and **"classes"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"classes"** consists of list with all classes in the dataset.
-Below a simple example of 2 classes presented:
+Where ``*.json`` annotations have two keys: **"images"** and **"classes"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"classes"** consists of a list with all classes in the dataset.
+Below is a simple example of 2 classes presented:
 
 ::
 
@@ -67,7 +67,7 @@ Below a simple example of 2 classes presented:
     ],
     "classes": ["class_0", "class_1"]}
 
-To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to CLI command:
+To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to the CLI command:
 
 .. code-block::
 

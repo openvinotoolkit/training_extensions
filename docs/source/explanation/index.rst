@@ -4,12 +4,12 @@ Explanation
 This section consists of an algorithms explanation and describes additional features that are supported by OTX.
 :ref:`Algorithms <algo_section_ref>` section includes a description of all supported algorithms:
 
-1. Description of supported datasets formats for each task.
-2. Available templates and models.
-3. Description of supervised training pipelines.
+1. Explanation of the task and main supervised training pipeline.
+2. Description of the supported datasets formats for each task.
+3. Available templates and models.
 4. Incremental learning approach.
 5. Semi-supervised and Self-supervised algorithms.
-6. Additional algorithm-specific features such as tiling method for Instance Segmentation and Rotated Object Detection.
+6. Additional algorithm-specific features such as a tiling method for Instance Segmentation and Rotated Object Detection.
 
 :ref:`Algorithms <features_section_ref>` section consists of:
 

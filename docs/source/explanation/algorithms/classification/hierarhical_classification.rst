@@ -1,8 +1,9 @@
 Hierarchical Classification
 ===========================
-| Hierarchical Classification is an extension of the classification task where besides the set of the categories to predict we have hierarchical relationship between them. The goal of this task is to predict the hierarchical tree of the categories for the given image.
-| We solve this task by assigning a separate head for each label group on each hierarchical level. Spicifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.
-| To create non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.
+
+| Hierarchical Classification is an extension of the classification task where besides the set of categories to predict we have a hierarchical relationship between them. The goal of this task is to predict the hierarchical tree of the categories for the given image.
+| We solve this task by assigning a separate head for each label group on each hierarchical level. Specifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.
+| To create a non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.
 | In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for :doc:`multi_class_classification` task.
 
 
@@ -24,7 +25,7 @@ Hierarchical Classification
 Dataset Format
 **************
 
-For hierarchical image classificaiton we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
+For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
 
 Besides that we support the following custom dataset format:
 
@@ -78,7 +79,7 @@ Besides that we support the following custom dataset format:
     }
   ]
 
-To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to CLI command:
+To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to the CLI command:
 
 .. code-block::
 
