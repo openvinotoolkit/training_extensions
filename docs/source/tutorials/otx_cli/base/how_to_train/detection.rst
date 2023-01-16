@@ -340,28 +340,13 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
   ...
 
-  2023-01-10 06:27:19,553 | INFO : Loaded model weights from Task Environment
-  2023-01-10 06:27:19,553 | INFO : Model architecture: ATSS
-  2023-01-10 06:27:19,553 | INFO : Task initialization completed
-  INFO:nncf:Please, provide execution parameters for optimal model initialization
-  2023-01-10 06:27:24,523 - mmdet - INFO - Received non-NNCF checkpoint to start training -- initialization of NNCF fields will be done
-  [ INFO ] Received non-NNCF checkpoint to start training -- initialization of NNCF fields will be done
-  [ INFO ]  Received non-NNCF checkpoint to start training -- initialization of NNCF fields will be done
-  2023-01-10 06:27:24,525 - mmdet - INFO - Calculating an original model accuracy
-  [ INFO ] Calculating an original model accuracy
-  ...
+  2023-01-17 06:46:08,208 | INFO : run task done.
+  2023-01-17 06:46:08,618 | INFO : Inference completed
+  2023-01-17 06:46:08,618 | INFO : called evaluate()
+  2023-01-17 06:46:08,829 | INFO : F-measure after evaluation: 0.5446735395189003
+  2023-01-17 06:46:08,829 | INFO : Evaluation completed
+  Performance(score: 0.5446735395189003, dashboard: (1 metric groups))
 
-  INFO:nncf:The accuracy criteria is reached after the initialization step.
-  INFO:nncf:Original model accuracy: 0.3363
-  INFO:nncf:Compressed model accuracy: 0.4670
-  INFO:nncf:Absolute accuracy drop: -0.1307
-  INFO:nncf:Relative accuracy drop: -38.86%
-  INFO:nncf:Accuracy budget: 0.1407
-
-
-.. #TODO significant drop of the loaded snapshot. The optimized model isn't being saved (TypeError: cannot pickle '_thread.lock' object)
-
-.. #TODO rebase on feature/otx once NNCF will be fixed
 
 3. Command example for optimizing OpenVINO model (.xml) with OpenVINO POT. We can also simplify the commanline by adding ``--data data.yaml`` parameter instead of specifying training and validation paths there.
 
