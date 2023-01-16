@@ -3,8 +3,5 @@ Classification  model
 
 <Guidelines for writing>
 
-:ref: `Classification`
-:ref: `Hierarhical Classification`
-:ref: `Multilabel Classification`
 
-It has cross page references for Hierarhical, Multilabel Classification
+This tutorial explores the OTX classification task that could be used for standard, hierarchical, and multi-label use cases.

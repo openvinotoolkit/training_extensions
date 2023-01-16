@@ -3,4 +3,4 @@ How to deploy the model
 
 <Guidelines for writing>
 
-What we expect to get after otx deploy. Concrete model. 
+This guide uses a real-world example to show how to deploy an OTX model after successful training. 

@@ -4,4 +4,4 @@ Use Semi-Supervised Learning
 
 <Guidelines for writing>
 
-It describes how to use Semi-Supervised Learning.
+This tutorial explains how to employ semi-supervised learning with OTX.

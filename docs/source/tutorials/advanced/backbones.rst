@@ -4,4 +4,4 @@ Modify used backbones
 
 <Guidelines for writing>
 
-It describes how to change hyperparameters and configs. How to use public backbones.
+This tutorial explains how to modify hyper-parameters and configurations, as well as how to utilize public backbones.

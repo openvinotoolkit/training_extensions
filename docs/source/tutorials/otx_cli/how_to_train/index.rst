@@ -8,4 +8,4 @@ How to train, validate, export and optimize the model
    detection
    instance_segmentation
    semantic_segmentation
-   anomaly_classification
+   anomaly_detection

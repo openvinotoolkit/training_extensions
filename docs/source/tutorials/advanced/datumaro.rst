@@ -4,4 +4,4 @@ Convert a custom user dataset with Datumaro
 
 <Guidelines for writing>
 
-It described how to construct a user dataset for each task. How to use datumaro together with OTX (concrete example).
+This tutorial illustrates how to build a user dataset for each task. The tutorial also demonstrates how to utilize datumaro in conjunction with OTX using a real-world example.

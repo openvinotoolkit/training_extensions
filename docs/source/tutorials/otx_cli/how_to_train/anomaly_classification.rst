@@ -1,2 +1,0 @@
-Anomaly Classification model
-================================

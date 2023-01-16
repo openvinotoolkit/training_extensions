@@ -2,11 +2,13 @@ Object Detection model
 ======================
 
 This tutorial reveals end-to-end solution from installation to model deploying for object detection task on a certain example.
-On this page we show how to train, validate, export and optimize ATSS model on BCCD public dataset.
+On this page we show how to train, validate, export and optimize ATSS model on WGISD public dataset.
 
-To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+.. note::
 
-To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
+  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+
+  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
 
 The process has been tested on the following configuration.
 
@@ -20,29 +22,28 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick_start quide <../../../get_started/quick_start>` to create a universal virtual environment for all tasks. On the other hand, you can create a task-specific environment following the process below.
+You can follow the installation process from a :doc:`quick_start guide <../../../get_started/quick_start>` to create a universal virtual environment for all tasks. On the other hand, you can create a task-specific environment following the process below.
 
-1. Install prerequisites with:
+1. Check your python version:
 
 .. code-block::
 
-    sudo apt-get install python3-pip python3-venv
-    # verify your python version
     python3 --version; pip3 --version; 
 
     Python 3.8.10
-    pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
 
 2. Create and activate a virtual environment for the obect detection task.
 The following example creates a virtual environment in the ``det_venv`` folder for detection task.
 
 .. code-block::
 
+    sudo apt-get install python3-venv
     # create virtual env
     bash ./otx/algorithms/detection/init_venv.sh det_venv
     # activate virtual env
     source det_venv/bin/activate
 
+.. #TODO: Update installation part: virtual env, install prerequisite, pip install -e . or pip install otx
 
 ***************************
 Dataset preparation
@@ -58,13 +59,14 @@ Dataset preparation
 
 
 This dataset contains images of grapevines with the annotation for different varieties of grapes. 
+
 - ``CDY``	- Chardonnay
 - ``CFR``	- Cabernet Franc
 - ``CSV``	- Cabernet Sauvignon
 - ``SVB``	- Sauvignon Blanc
 - ``SYH``	- Syrah
 
-It's a great example to start with. The model achieves high accuracy right from the beginning of the training due to large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
+It's a great example to start with. The model achieves high accuracy righ from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
 
 .. image:: ../../../../utils/images/wgisd_dataset_sample.jpg
   :width: 600
@@ -85,7 +87,7 @@ It's a great example to start with. The model achieves high accuracy right from 
   ...
 
 
-3. ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. The content of the ``training_extesions/data.yaml`` for BCCD dataset should have absolute paths and will be similar to that:
+3. ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. The content of the ``training_extesions/data.yaml`` for WGISD dataset should have absolute paths and will be similar to that:
 
 .. code-block::
 
@@ -102,7 +104,7 @@ It's a great example to start with. The model achieves high accuracy right from 
     }
   }
 
-``Ann-files`` contains a path to the annotation., while ``data-roots`` is a path to the folder, where images are stored.
+``Ann-files`` contains a path to the annotation, while ``data-roots`` is a path to the folder, where images are stored.
 
 *********
 Training
@@ -137,7 +139,7 @@ These are needed as inputs for the further commands: ``export``, ``eval``,  ``op
 
 3. To have a specific example in this tutorial, all commands will be run on the ATSS model. It's a medium model, that achieves relatively high accuracy, while keeping the inference fast.
 
-The following command line starts 1 GPU training of the medium object detection model on BCCD dataset:
+The following command line starts training of the medium object detection model on the first GPU on WGISD dataset:
 
 .. code-block::
 
@@ -149,6 +151,8 @@ The following command line starts 1 GPU training of the medium object detection 
                             --save-model-to outputs
                             --work-dir outputs/logs
                             --gpus 1
+
+To start multi-gpu training, list the indexes of gpus you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
 
 If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter:
 
@@ -173,9 +177,10 @@ For example, to decrease batsch size to 4, fix the number of epochs to 100 and d
                             params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false 
 
 
-5. The training results are ``weights.pth`` and ``label_schema.json`` files located in ``outputs`` folder, training logs can be found in the ``outputs/logs`` dir.
+5. The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``outputs`` folder, while training logs and tf_logs for `Tensorboard` visualization can be found in the ``outputs/logs`` dir.
 
 .. code-block::
+
   ...
   2023-01-10 05:40:21,520 | INFO : Update Lr patience: 3
   2023-01-10 05:40:21,520 | INFO : Update Validation Interval: 2
@@ -190,7 +195,9 @@ For example, to decrease batsch size to 4, fix the number of epochs to 100 and d
   2023-01-10 05:52:35,907 | INFO : Evaluation completed
   Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 
-After about 15 minutes of training we have the PyTorch object detection model trained with OTX, that we can use for evaliation, export, optimization and deployment. 
+The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 15 minutes.
+
+After that we have the PyTorch object detection model trained with OTX, that we can use for evaliation, export, optimization and deployment. 
 
 ***********
 Validation
@@ -203,7 +210,7 @@ Please note, ``label_schema.json`` file contains meta-information about the data
 
 The default metric is F1 measure.
 
-2. That's how we can evaluate the snapshot in ``outputs`` folder on BCCD dataset and save results to ``outputs/performance``:
+2. That's how we can evaluate the snapshot in ``outputs`` folder on WGISD dataset and save results to ``outputs/performance``:
 
 .. code-block::
 
@@ -263,7 +270,8 @@ Please note, by default, the optimal confidence threshold is detected based on v
 *********
 Export
 *********
-1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. It allows to efficiently run it on Intel hardware, especially on CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model contains of 2 files: openvino.xml for weights and openvino.bin for architecture.
+1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. 
+It allows to efficiently run it on Intel hardware, especially on CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model contains of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. That's how we can export the trained model ``outputs/weights.pth`` from the previous section and save the exported model to the ``outputs/openvino/`` folder.
 
@@ -350,11 +358,9 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
   INFO:nncf:Accuracy budget: 0.1407
 
 
-#TODO significant drop of the loaded snapshot:
+.. #TODO significant drop of the loaded snapshot. The optimized model isn't being saved (TypeError: cannot pickle '_thread.lock' object)
 
-#TODO The optimized model isn't being saved (TypeError: cannot pickle '_thread.lock' object)
-
-#TODO rebase on feature/otx once NNCF will be fixed
+.. #TODO rebase on feature/otx once NNCF will be fixed
 
 3. Command example for optimizing OpenVINO model (.xml) with OpenVINO POT. We can also simplify the commanline by adding ``--data data.yaml`` parameter instead of specifying training and validation paths there.
 
@@ -380,9 +386,10 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
   2023-01-10 06:34:33,451 | INFO : OpenVINO metric evaluation completed
   Performance(score: 0.5389435989256938, dashboard: (1 metric groups))
 
-The POT optimization will take 5-10 minutes without logging.
+The optimization time highly relies on the hardware characteristics, for example on 1 GeForce 3090 it took about 10 minutes.
+Please note, that POT will take some time without logging to optimize the model.
 
-4. We can evaluate the optimized model passing it to ``otx eval`` function.
+4. Finally, we can also evaluate the optimized model passing it to ``otx eval`` function.
 
 Now we have fully trained, optimized and exported in efficient model representation ready-to use object detection model.
 
