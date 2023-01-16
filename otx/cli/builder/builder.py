@@ -251,7 +251,7 @@ class Builder:
             raise ValueError("The backbone config support file format is as follows: (.yml, .yaml, .json)")
         return missing_args
 
-    def build_model_config(
+    def merge_backbone(
         self,
         model_config_path: Union[Path, str],
         backbone_config_path: Union[Path, str],

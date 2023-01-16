@@ -38,7 +38,7 @@ class TestOTXCLIBuilder:
         1. Generate backbone config file (mmcls.MMOVBackbone)
         2. Raise ValueError with wrong output_path
 
-    3. Check "Builder.build_model_config" function that update model config with new backbone is working well
+    3. Check "Builder.merge_backbone" function that update model config with new backbone is working well
     <Steps>
         1. Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)
         2. Raise ValueError with wrong model_config_path
@@ -161,9 +161,9 @@ class TestOTXCLIBuilder:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone_type", ["mmcls.ResNet"])
-    def test_builder_build_model_config_update_model_config(self, backbone_type: str) -> None:
+    def test_builder_merge_backbone_update_model_config(self, backbone_type: str) -> None:
         """Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
         self.otx_builder.build_task_config(**inputs)
         tmp_model_path = workspace_path.joinpath("model.py")
@@ -175,51 +175,51 @@ class TestOTXCLIBuilder:
         self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
         assert tmp_backbone_path.exists()
 
-        self.otx_builder.build_model_config(tmp_model_path, tmp_backbone_path)
+        self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
         assert tmp_model_path.exists()
         updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert updated_model_config.model.backbone.type == backbone_type
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_abnormal_model_path(self) -> None:
+    def test_builder_merge_backbone_abnormal_model_path(self) -> None:
         """Raise ValueError with wrong model_config_path."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
         tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
         with pytest.raises(ValueError):
-            self.otx_builder.build_model_config("unexpected", tmp_backbone_path)
+            self.otx_builder.merge_backbone("unexpected", tmp_backbone_path)
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_abnormal_backbone_path(self) -> None:
+    def test_builder_merge_backbone_abnormal_backbone_path(self) -> None:
         """Raise ValueError with wrong backbone_config_path."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
         tmp_model_path = workspace_path.joinpath("model.py")
         with pytest.raises(ValueError):
-            self.otx_builder.build_model_config(tmp_model_path, "unexpected")
+            self.otx_builder.merge_backbone(tmp_model_path, "unexpected")
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_without_out_indices(self) -> None:
+    def test_builder_merge_backbone_without_out_indices(self) -> None:
         """Update model config without backbone's out_indices."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
         tmp_model_path = workspace_path.joinpath("model.py")
         tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
         backbone_config = mmcv.load(str(tmp_backbone_path))
         assert backbone_config["backbone"].pop("out_indices") == (3,)
         mmcv.dump(backbone_config, str(tmp_backbone_path))
-        self.otx_builder.build_model_config(tmp_model_path, tmp_backbone_path)
+        self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
         updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert "out_indices" in updated_model_config.model.backbone
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_backbone_pretrained(self) -> None:
+    def test_builder_merge_backbone_backbone_pretrained(self) -> None:
         """Update model config with backbone's pretrained path."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
         tmp_model_path = workspace_path.joinpath("model.py")
         tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
         backbone_config = mmcv.load(str(tmp_backbone_path))
         expected_pretrained = "pretrained.path"
         backbone_config["backbone"]["pretrained"] = expected_pretrained
         mmcv.dump(backbone_config, str(tmp_backbone_path))
-        self.otx_builder.build_model_config(tmp_model_path, tmp_backbone_path)
+        self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
         updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert updated_model_config.model.pretrained == expected_pretrained
 

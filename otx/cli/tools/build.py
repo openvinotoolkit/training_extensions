@@ -77,7 +77,7 @@ def main():
         if args.model:
             if missing_args:
                 raise ValueError("The selected backbone has inputs that the user must enter.")
-            builder.build_model_config(args.model, args.backbone)
+            builder.merge_backbone(args.model, args.backbone)
 
 
 if __name__ == "__main__":
