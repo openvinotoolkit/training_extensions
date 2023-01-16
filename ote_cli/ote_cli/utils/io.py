@@ -81,6 +81,8 @@ def read_model(model_configuration, path, train_dataset):
             full_path = os.path.join(os.path.dirname(path), key)
             if os.path.exists(full_path):
                 model_adapters[key] = ModelAdapter(read_binary(full_path))
+            else:
+                model_adapters[key] = ModelAdapter(bytes())
     elif path.endswith(".pth"):
         # PyTorch
         model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
