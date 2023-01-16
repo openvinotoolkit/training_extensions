@@ -195,8 +195,7 @@ def main():  # pylint: disable=too-many-branches
         data_roots["val_subset"] = {
             "ann_file": data_config["data"]["val"]["ann-files"],
             "data_root": data_config["data"]["val"]["data-roots"],
-        },
-    )
+        }
     if data_config["data"]["unlabeled"]["data-roots"]:
         data_roots["unlabeled_subset"] = {
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
