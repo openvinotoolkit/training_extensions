@@ -1,7 +1,7 @@
 Object Detection model
 ======================
 
-This tutorial reveals end-to-end solution from installation to model deploying for object detection task on a certain example.
+This tutorial reveals end-to-end solution from installation to model export and optimization for object detection task on a certain example.
 On this page we show how to train, validate, export and optimize ATSS model on WGISD public dataset.
 
 .. note::
@@ -52,6 +52,7 @@ Dataset preparation
 1. Clone a repository with `WGISD dataset <https://github.com/thsant/wgisd>`_. 
 
 .. code-block::
+
   cd data
   git clone https://github.com/thsant/wgisd.git
   cd wgisd
@@ -68,7 +69,7 @@ This dataset contains images of grapevines with the annotation for different var
 
 It's a great example to start with. The model achieves high accuracy righ from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
 
-.. image:: ../../../../utils/images/wgisd_dataset_sample.jpg
+.. image:: ../../../../../utils/images/wgisd_dataset_sample.jpg
   :width: 600
   :alt: this image uploaded from this `source <https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg>`_
 
@@ -114,7 +115,7 @@ Training
 
 .. note::
 
-  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/Main_algorithms/object_detection>`.
+  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../../explanation/Main_algorithms/object_detection>`.
 
   To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
