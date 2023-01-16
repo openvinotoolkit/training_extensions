@@ -53,6 +53,7 @@ class TestOTXCLIBuilder:
         self.otx_root = get_otx_root_path()
         self.tmp_dir_path = tmp_dir_path if isinstance(tmp_dir_path, Path) else Path(tmp_dir_path)
 
+    # TODO: [CVS-101239] Add test case for cover default root workspace build
     @e2e_pytest_unit
     def test_builder_build_task_config_workspace_path(self) -> None:
         """Create Classification custom workspace."""
