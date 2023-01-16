@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import asyncio
 import json
 import os
 import shutil
-import subprocess  # nosec
+import sys
 
 import pytest
 import yaml
@@ -50,9 +51,68 @@ def get_template_dir(template, root) -> str:
     return template_work_dir
 
 
+def runner(
+    cmd,
+    stdout_stream=sys.stdout.buffer,
+    stderr_stream=sys.stderr.buffer,
+    **kwargs,
+):
+    async def stream_handler(in_stream, out_stream):
+        output = bytearray()
+        # buffer line
+        line = bytearray()
+        while True:
+            c = await in_stream.read(1)
+            if not c:
+                break
+            line.extend(c)
+            if c == b"\n":
+                out_stream.write(line)
+                output.extend(line)
+                line = bytearray()
+        return output
+
+    async def run_and_capture(cmd):
+        environ = os.environ.copy()
+        environ["PYTHONUNBUFFERED"] = "1"
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=environ,
+            **kwargs,
+        )
+
+        try:
+            stdout, stderr = await asyncio.gather(
+                stream_handler(process.stdout, stdout_stream),
+                stream_handler(process.stderr, stderr_stream),
+            )
+        except Exception:
+            process.kill()
+            raise
+        finally:
+            rc = await process.wait()
+        return rc, stdout, stderr
+
+    rc, stdout, stderr = asyncio.run(run_and_capture(cmd))
+
+    return rc, stdout, stderr
+
+
 def check_run(cmd, **kwargs):
-    result = subprocess.run(cmd, stderr=subprocess.PIPE, **kwargs)
-    assert result.returncode == 0, result.stderr.decode("utf=8")
+    rc, _, stderr = runner(cmd, **kwargs)
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+    if rc != 0:
+        stderr = stderr.decode("utf-8").splitlines()
+        i = 0
+        for i, line in enumerate(stderr):
+            if line.startswith("Traceback"):
+                break
+        stderr = "\n".join(stderr[i:])
+    assert rc == 0, stderr
 
 
 def otx_train_testing(template, root, otx_dir, args):
@@ -84,6 +144,33 @@ def otx_train_testing(template, root, otx_dir, args):
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
+
+
+def otx_resume_testing(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    command_line = [
+        "otx",
+        "train",
+        template.model_template_path,
+    ]
+    for option in [
+        "--data",
+        "--train-ann-file",
+        "--train-data-roots",
+        "--val-ann-file",
+        "--val-data-roots",
+        "--unlabeled-data-roots",
+        "--unlabeled-file-list",
+        "--resume-from",
+    ]:
+        if option in args:
+            command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
+
+    command_line.extend(["--save-model-to", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
+    command_line.extend(args["train_params"])
+    check_run(command_line)
+    assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth")
+    assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/label_schema.json")
 
 
 def otx_hpo_testing(template, root, otx_dir, args):
@@ -149,6 +236,7 @@ def otx_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(args.get("eval_params", []))
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 

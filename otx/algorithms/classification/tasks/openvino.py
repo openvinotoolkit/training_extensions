@@ -137,11 +137,13 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         return self.model.preprocess(image)
 
     @check_input_parameters_type()
-    def post_process(self, prediction, metadata: Dict[str, Any]) -> Optional[AnnotationSceneEntity]:
+    def post_process(
+        self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
+    ) -> Optional[AnnotationSceneEntity]:
         """Post-process function of OpenVINO Classification Inferencer."""
 
-        prediction = self.model.postprocess(prediction, metadata)
-        return self.converter.convert_to_annotation(prediction, metadata)
+        classification = self.model.postprocess(prediction, metadata)
+        return self.converter.convert_to_annotation(classification, metadata)
 
     @check_input_parameters_type()
     def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, np.ndarray, Any]:

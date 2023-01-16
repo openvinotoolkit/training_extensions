@@ -67,6 +67,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         cls_score = self.fc(x) * self.scale
         if img_metas:
             valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)
+            valid_label_mask = valid_label_mask.to(x.device)
             losses = self.loss(cls_score, gt_label, valid_label_mask=valid_label_mask)
         else:
             losses = self.loss(cls_score, gt_label)
@@ -89,7 +90,6 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
             mask = torch.Tensor([1 for _ in range(self.num_classes)])
             if "ignored_labels" in meta and meta["ignored_labels"]:
                 mask[meta["ignored_labels"]] = 0
-            mask = mask.cuda() if torch.cuda.is_available() else mask
             valid_label_mask.append(mask)
         valid_label_mask = torch.stack(valid_label_mask, dim=0)
         return valid_label_mask

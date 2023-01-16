@@ -2,7 +2,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+import copy
 import os
 
 import pytest
@@ -28,6 +28,7 @@ from otx.cli.utils.tests import (
     otx_explain_testing,
     otx_export_testing,
     otx_hpo_testing,
+    otx_resume_testing,
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
@@ -59,6 +60,35 @@ args = {
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
+args_semisl = {
+    "--train-ann-file": "data/airport/annotation_example_train.json",
+    "--train-data-roots": "data/airport/train",
+    "--val-ann-file": "data/airport/annotation_example_train.json",
+    "--val-data-roots": "data/airport/train",
+    "--test-ann-files": "data/airport/annotation_example_train.json",
+    "--test-data-roots": "data/airport/train",
+    "--unlabeled-data-roots": "data/airport/train",
+    "--input": "data/airport/train",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+        "--algo_backend.train_type",
+        "SEMISUPERVISED",
+    ],
+}
+
+# Training params for resume, num_iters*2
+resume_params = [
+    "params",
+    "--learning_parameters.num_iters",
+    "8",
+    "--learning_parameters.batch_size",
+    "4",
+]
+
 otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
@@ -80,9 +110,20 @@ class TestToolsMPADetection:
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = args.copy()
+        args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_resume(self, template, tmp_dir_path):
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args0)
+        args1["train_params"] = resume_params
+        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -153,7 +194,6 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_optimize(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -163,7 +203,6 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_export(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -173,7 +212,6 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -183,7 +221,6 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -193,7 +230,6 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -223,7 +259,7 @@ class TestToolsMPADetection:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args1 = args.copy()
+        args1 = copy.deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
@@ -232,9 +268,6 @@ class TestToolsMPASemiSLDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        args_semisl = args.copy()
-        args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component

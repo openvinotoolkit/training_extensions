@@ -5,8 +5,9 @@
 import torch
 import torch.nn.functional as F
 from mmseg.models.builder import LOSSES
-from mmseg.models.losses.pixel_base import BasePixelLoss
 from mmseg.models.losses.utils import get_class_weight
+
+from .base_pixel_loss import BasePixelLoss
 
 
 def recallCE(input, target, class_weight=None, ignore_index=255):

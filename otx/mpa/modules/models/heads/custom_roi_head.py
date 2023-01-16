@@ -1,10 +1,10 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
 import torch
 from mmcv.runner import force_fp32
 from mmdet.core import bbox2roi, multi_apply
-from mmdet.integration.nncf.utils import no_nncf_trace
 from mmdet.models.builder import HEADS, build_head, build_roi_extractor
 from mmdet.models.losses import accuracy
 from mmdet.models.roi_heads.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
@@ -105,6 +105,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
             cfg=rcnn_train_cfg,
         )
         valid_label_mask = self.get_valid_label_mask(img_metas=img_metas, all_labels=labels, use_bg=True)
+        valid_label_mask = [i.to(gt_bboxes[0].device) for i in valid_label_mask]
 
         if concat:
             labels = torch.cat(labels, 0)
@@ -127,50 +128,49 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
         reduction_override=None,
         valid_label_mask=None,
     ):
-        with no_nncf_trace():
-            losses = dict()
-            if cls_score is not None and cls_score.numel() > 0:
-                avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
-                if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
-                    losses["loss_cls"] = self.loss_cls(
-                        cls_score,
-                        labels,
-                        label_weights,
-                        avg_factor=avg_factor,
-                        reduction_override=reduction_override,
-                        use_bg=True,
-                        valid_label_mask=valid_label_mask,
-                    )
+        losses = dict()
+        if cls_score is not None and cls_score.numel() > 0:
+            avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
+            if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
+                losses["loss_cls"] = self.loss_cls(
+                    cls_score,
+                    labels,
+                    label_weights,
+                    avg_factor=avg_factor,
+                    reduction_override=reduction_override,
+                    use_bg=True,
+                    valid_label_mask=valid_label_mask,
+                )
+            else:
+                losses["loss_cls"] = self.loss_cls(
+                    cls_score, labels, label_weights, avg_factor=avg_factor, reduction_override=reduction_override
+                )
+            losses["acc"] = accuracy(cls_score, labels)
+        if bbox_pred is not None:
+            bg_class_ind = self.num_classes
+            # 0~self.num_classes-1 are FG, self.num_classes is BG
+            pos_inds = (labels >= 0) & (labels < bg_class_ind)
+            # do not perform bounding box regression for BG anymore.
+            if pos_inds.any():
+                if self.reg_decoded_bbox:
+                    # When the regression loss (e.g. `IouLoss`,
+                    # `GIouLoss`, `DIouLoss`) is applied directly on
+                    # the decoded bounding boxes, it decodes the
+                    # already encoded coordinates to absolute format.
+                    bbox_pred = self.bbox_coder.decode(rois[:, 1:], bbox_pred)
+                if self.reg_class_agnostic:
+                    pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), 4)[pos_inds.type(torch.bool)]
                 else:
-                    losses["loss_cls"] = self.loss_cls(
-                        cls_score, labels, label_weights, avg_factor=avg_factor, reduction_override=reduction_override
-                    )
-                losses["acc"] = accuracy(cls_score, labels)
-            if bbox_pred is not None:
-                bg_class_ind = self.num_classes
-                # 0~self.num_classes-1 are FG, self.num_classes is BG
-                pos_inds = (labels >= 0) & (labels < bg_class_ind)
-                # do not perform bounding box regression for BG anymore.
-                if pos_inds.any():
-                    if self.reg_decoded_bbox:
-                        # When the regression loss (e.g. `IouLoss`,
-                        # `GIouLoss`, `DIouLoss`) is applied directly on
-                        # the decoded bounding boxes, it decodes the
-                        # already encoded coordinates to absolute format.
-                        bbox_pred = self.bbox_coder.decode(rois[:, 1:], bbox_pred)
-                    if self.reg_class_agnostic:
-                        pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), 4)[pos_inds.type(torch.bool)]
-                    else:
-                        pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), -1, 4)[
-                            pos_inds.type(torch.bool), labels[pos_inds.type(torch.bool)]
-                        ]
-                    losses["loss_bbox"] = self.loss_bbox(
-                        pos_bbox_pred,
-                        bbox_targets[pos_inds.type(torch.bool)],
-                        bbox_weights[pos_inds.type(torch.bool)],
-                        avg_factor=bbox_targets.size(0),
-                        reduction_override=reduction_override,
-                    )
-                else:
-                    losses["loss_bbox"] = bbox_pred[pos_inds].sum()
-            return losses
+                    pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), -1, 4)[
+                        pos_inds.type(torch.bool), labels[pos_inds.type(torch.bool)]
+                    ]
+                losses["loss_bbox"] = self.loss_bbox(
+                    pos_bbox_pred,
+                    bbox_targets[pos_inds.type(torch.bool)],
+                    bbox_weights[pos_inds.type(torch.bool)],
+                    avg_factor=bbox_targets.size(0),
+                    reduction_override=reduction_override,
+                )
+            else:
+                losses["loss_bbox"] = bbox_pred[pos_inds].sum()
+        return losses

@@ -91,7 +91,7 @@ def patch_config(config: Config, work_dir: str, labels: List[LabelEntity], domai
     # Patch data pipeline, making it OTE-compatible.
     patch_datasets(config, domain)
 
-    # Remove FP16 config if running on CPU device and revert to FP32 
+    # Remove FP16 config if running on CPU device and revert to FP32
     # https://github.com/pytorch/pytorch/issues/23377
     if not torch.cuda.is_available() and 'fp16' in config:
         logger.info(f'Revert FP16 to FP32 on CPU device')
@@ -344,12 +344,12 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
     config_generator = config.model.bbox_head.anchor_generator
     config_generator.widths, config_generator.heights = widths, heights
 
-    model_generator = model.bbox_head.anchor_generator
+    model_generator = model.bbox_head.prior_generator
     model_generator.widths, model_generator.heights = widths, heights
     model_generator.base_anchors = model_generator.gen_base_anchors()
 
     config.model.bbox_head.anchor_generator = config_generator
-    model.bbox_head.anchor_generator = model_generator
+    model.bbox_head.prior_generator = model_generator
     return config, model
 
 
