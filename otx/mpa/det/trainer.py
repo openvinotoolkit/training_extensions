@@ -55,6 +55,11 @@ class DetectionTrainer(DetectionStage):
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
+        # FIXME: Latest MMDetection can't take the cfg.data.samples_per_gpu 
+        # and cfg.train_dataloader.samples_per_gpu at the same time.
+        if 'samples_per_gpu' in cfg.data:
+            cfg.train_dataloader.samples_per_gpu = cfg.data.pop('samples_per_gpu')
+        
         # FIXME: Currently detection do not support multi batch evaluation. This will be fixed
         cfg.data.val_dataloader.samples_per_gpu = 1
 
