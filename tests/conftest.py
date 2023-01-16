@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Generator
 
 import pytest
 
@@ -23,13 +24,13 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope="session")
-def tmp_dir_path():
+def tmp_dir_path() -> Generator[Path, None, None]:
     with TemporaryDirectory() as tmp_dir:
         yield Path(tmp_dir)
 
 
 @pytest.fixture(autouse=True)
-def set_default_tmp_path(tmp_dir_path):
+def set_default_tmp_path(tmp_dir_path: Path) -> Generator[None, None, None]:
     origin_tmp_dir = os.environ.get("TMPDIR", None)
     os.environ["TMPDIR"] = str(tmp_dir_path)
     yield

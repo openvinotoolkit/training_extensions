@@ -2,7 +2,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import os
+from pathlib import Path
+from typing import Union
 
 import mmcv
 import pytest
@@ -47,36 +48,36 @@ class TestOTXCLIBuilder:
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self, tmp_dir_path):
+    def setup(self, tmp_dir_path: Union[Path, str]) -> None:
         self.otx_builder = Builder()
         self.otx_root = get_otx_root_path()
-        self.tmp_dir_path = tmp_dir_path
+        self.tmp_dir_path = tmp_dir_path if isinstance(tmp_dir_path, Path) else Path(tmp_dir_path)
 
     @e2e_pytest_unit
-    def test_builder_build_task_config_create_workspace(self):
+    def test_builder_build_task_config_create_workspace(self) -> None:
         """Create Classification custom workspace."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_task_config_create_workspace")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_create_workspace")
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
         self.otx_builder.build_task_config(**inputs)
-        assert os.path.exists(workspace_path)
-        assert os.path.exists(os.path.join(workspace_path, "configuration.yaml"))
-        assert os.path.exists(os.path.join(workspace_path, "template.yaml"))
-        assert os.path.exists(os.path.join(workspace_path, "model.py"))
-        assert os.path.exists(os.path.join(workspace_path, "data.yaml"))
-        assert os.path.exists(os.path.join(workspace_path, "data_pipeline.py"))
+        assert workspace_path.exists()
+        assert workspace_path.joinpath("configuration.yaml").exists()
+        assert workspace_path.joinpath("template.yaml").exists()
+        assert workspace_path.joinpath("model.py").exists()
+        assert workspace_path.joinpath("data.yaml").exists()
+        assert workspace_path.joinpath("data_pipeline.py").exists()
 
     @e2e_pytest_unit
-    def test_builder_build_task_config_reuse_same_path(self):
+    def test_builder_build_task_config_reuse_same_path(self) -> None:
         """Raising Error of building workspace with already created path."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_task_config_create_workspace")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_create_workspace")
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
         with pytest.raises(FileExistsError):
             self.otx_builder.build_task_config(**inputs)
 
     @e2e_pytest_unit
-    def test_builder_build_task_config_normal_train_type(self):
+    def test_builder_build_task_config_normal_train_type(self) -> None:
         """Update hparam.yaml with train_type="selfsl"."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_task_config_check_update_hparams")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_check_update_hparams")
         train_type = "selfsl"
         inputs = {
             "task_type": "classification",
@@ -85,22 +86,22 @@ class TestOTXCLIBuilder:
             "otx_root": self.otx_root,
         }
         self.otx_builder.build_task_config(**inputs)
-        assert os.path.exists(workspace_path)
-        assert os.path.exists(os.path.join(workspace_path, "configuration.yaml"))
-        assert os.path.exists(os.path.join(workspace_path, "template.yaml"))
-        assert os.path.exists(os.path.join(workspace_path, "data.yaml"))
-        template = MPAConfig.fromfile(os.path.join(workspace_path, "template.yaml"))
+        assert workspace_path.exists()
+        assert workspace_path.joinpath("configuration.yaml").exists()
+        assert workspace_path.joinpath("template.yaml").exists()
+        assert workspace_path.joinpath("data.yaml").exists()
+        template = MPAConfig.fromfile(str(workspace_path.joinpath("template.yaml")))
         expected_template_train_type = {"default_value": "SELFSUPERVISED"}
         assert template.hyper_parameters.parameter_overrides.algo_backend.train_type == expected_template_train_type
-        model_dir = os.path.join(workspace_path, train_type)
-        assert os.path.exists(model_dir)
-        assert os.path.exists(os.path.join(model_dir, "model.py"))
-        assert os.path.exists(os.path.join(model_dir, "data_pipeline.py"))
+        model_dir = workspace_path.joinpath(train_type)
+        assert model_dir.exists()
+        assert model_dir.joinpath("model.py").exists()
+        assert model_dir.joinpath("data_pipeline.py").exists()
 
     @e2e_pytest_unit
-    def test_builder_build_task_config_abnormal_train_type(self):
+    def test_builder_build_task_config_abnormal_train_type(self) -> None:
         """Raising ValueError with wrong train_type."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_task_config_abnormal_train_type")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_abnormal_train_type")
         train_type = "unexpected"
         inputs = {
             "task_type": "classification",
@@ -112,9 +113,9 @@ class TestOTXCLIBuilder:
             self.otx_builder.build_task_config(**inputs)
 
     @e2e_pytest_unit
-    def test_builder_build_task_config_normal_model_type(self):
+    def test_builder_build_task_config_normal_model_type(self) -> None:
         """Build workspace with model_type argments."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_task_config_normal_model_type")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_normal_model_type")
         model_type = "yolox"
         inputs = {
             "task_type": "detection",
@@ -123,14 +124,14 @@ class TestOTXCLIBuilder:
             "otx_root": self.otx_root,
         }
         self.otx_builder.build_task_config(**inputs)
-        assert os.path.exists(os.path.join(workspace_path, "template.yaml"))
-        template = MPAConfig.fromfile(os.path.join(workspace_path, "template.yaml"))
+        assert workspace_path.joinpath("template.yaml").exists()
+        template = MPAConfig.fromfile(str(workspace_path.joinpath("template.yaml")))
         assert template.name.lower() == model_type
 
     @e2e_pytest_unit
-    def test_builder_build_task_config_abnormal_model_type(self):
+    def test_builder_build_task_config_abnormal_model_type(self) -> None:
         """Raise ValueError when build workspace with wrong model_type argments."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_task_config_abnormal_model_type")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_abnormal_model_type")
         inputs = {
             "task_type": "detection",
             "model_type": "unexpected",
@@ -142,89 +143,89 @@ class TestOTXCLIBuilder:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone_type", ["mmcls.MMOVBackbone"])
-    def test_builder_build_backbone_config_generate_backbone(self, backbone_type):
+    def test_builder_build_backbone_config_generate_backbone(self, backbone_type: str) -> None:
         """Generate backbone config file (mmcls.MMOVBackbone)."""
-        tmp_backbone_path = os.path.join(self.tmp_dir_path, "backbone.yaml")
-        self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
-        assert os.path.exists(tmp_backbone_path)
-        backbone_config = mmcv.load(tmp_backbone_path)
+        tmp_backbone_path = self.tmp_dir_path.joinpath("backbone.yaml")
+        self.otx_builder.build_backbone_config(backbone_type, str(tmp_backbone_path))
+        assert tmp_backbone_path.exists()
+        backbone_config = mmcv.load(str(tmp_backbone_path))
         assert backbone_config["backbone"]["type"] == backbone_type
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone_type", ["mmcls.MMOVBackbone"])
-    def test_builder_build_backbone_config_abnormal_output_path(self, backbone_type):
+    def test_builder_build_backbone_config_abnormal_output_path(self, backbone_type: str) -> None:
         """Raise ValueError with wrong output_path."""
-        tmp_backbone_path = os.path.join(self.tmp_dir_path, "wrong.path")
+        tmp_backbone_path = self.tmp_dir_path.joinpath("wrong.path")
         with pytest.raises(ValueError):
-            self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
+            self.otx_builder.build_backbone_config(backbone_type, str(tmp_backbone_path))
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone_type", ["mmcls.ResNet"])
-    def test_builder_build_model_config_update_model_config(self, backbone_type):
+    def test_builder_build_model_config_update_model_config(self, backbone_type: str) -> None:
         """Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_model_config")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
         self.otx_builder.build_task_config(**inputs)
-        tmp_model_path = os.path.join(workspace_path, "model.py")
-        assert os.path.exists(tmp_model_path)
-        pre_model_config = MPAConfig.fromfile(tmp_model_path)
+        tmp_model_path = workspace_path.joinpath("model.py")
+        assert tmp_model_path.exists()
+        pre_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert pre_model_config.model.backbone.type == "otx.OTXEfficientNet"
 
-        tmp_backbone_path = os.path.join(workspace_path, "backbone.yaml")
+        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
         self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
-        assert os.path.exists(tmp_backbone_path)
+        assert tmp_backbone_path.exists()
 
         self.otx_builder.build_model_config(tmp_model_path, tmp_backbone_path)
-        assert os.path.exists(tmp_model_path)
-        updated_model_config = MPAConfig.fromfile(tmp_model_path)
+        assert tmp_model_path.exists()
+        updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert updated_model_config.model.backbone.type == backbone_type
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_abnormal_model_path(self):
+    def test_builder_build_model_config_abnormal_model_path(self) -> None:
         """Raise ValueError with wrong model_config_path."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_model_config")
-        tmp_backbone_path = os.path.join(workspace_path, "backbone.yaml")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
         with pytest.raises(ValueError):
             self.otx_builder.build_model_config("unexpected", tmp_backbone_path)
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_abnormal_backbone_path(self):
+    def test_builder_build_model_config_abnormal_backbone_path(self) -> None:
         """Raise ValueError with wrong backbone_config_path."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_model_config")
-        tmp_model_path = os.path.join(workspace_path, "model.py")
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        tmp_model_path = workspace_path.joinpath("model.py")
         with pytest.raises(ValueError):
             self.otx_builder.build_model_config(tmp_model_path, "unexpected")
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_without_out_indices(self):
+    def test_builder_build_model_config_without_out_indices(self) -> None:
         """Update model config without backbone's out_indices."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_model_config")
-        tmp_model_path = os.path.join(workspace_path, "model.py")
-        tmp_backbone_path = os.path.join(workspace_path, "backbone.yaml")
-        backbone_config = mmcv.load(tmp_backbone_path)
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        tmp_model_path = workspace_path.joinpath("model.py")
+        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
+        backbone_config = mmcv.load(str(tmp_backbone_path))
         assert backbone_config["backbone"].pop("out_indices") == (3,)
-        mmcv.dump(backbone_config, tmp_backbone_path)
+        mmcv.dump(backbone_config, str(tmp_backbone_path))
         self.otx_builder.build_model_config(tmp_model_path, tmp_backbone_path)
-        updated_model_config = MPAConfig.fromfile(tmp_model_path)
+        updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert "out_indices" in updated_model_config.model.backbone
 
     @e2e_pytest_unit
-    def test_builder_build_model_config_backbone_pretrained(self):
+    def test_builder_build_model_config_backbone_pretrained(self) -> None:
         """Update model config with backbone's pretrained path."""
-        workspace_path = os.path.join(self.tmp_dir_path, "test_builder_build_model_config")
-        tmp_model_path = os.path.join(workspace_path, "model.py")
-        tmp_backbone_path = os.path.join(workspace_path, "backbone.yaml")
-        backbone_config = mmcv.load(tmp_backbone_path)
+        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_model_config")
+        tmp_model_path = workspace_path.joinpath("model.py")
+        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
+        backbone_config = mmcv.load(str(tmp_backbone_path))
         expected_pretrained = "pretrained.path"
         backbone_config["backbone"]["pretrained"] = expected_pretrained
-        mmcv.dump(backbone_config, tmp_backbone_path)
+        mmcv.dump(backbone_config, str(tmp_backbone_path))
         self.otx_builder.build_model_config(tmp_model_path, tmp_backbone_path)
-        updated_model_config = MPAConfig.fromfile(tmp_model_path)
+        updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert updated_model_config.model.pretrained == expected_pretrained
 
 
 class MockBackbone(nn.Module):
-    def __init__(self):
+    def __init__(self) -> None:
         super(MockBackbone, self).__init__()
 
     def forward(self, x):
@@ -232,7 +233,7 @@ class MockBackbone(nn.Module):
 
 
 class MockRegistry(Registry):
-    def __init__(self, name, parent=None, scope=None):
+    def __init__(self, name: str, parent: Registry = None, scope: str = None) -> None:
         super(MockRegistry, self).__init__(name=name, parent=parent, scope=scope)
 
 
@@ -263,12 +264,12 @@ class TestOTXBuilderUtils:
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup(self) -> None:
         self.registry = MockRegistry(name="test")
         self.backbone = MockBackbone
 
     @e2e_pytest_unit
-    def test_get_backbone_out_channels(self):
+    def test_get_backbone_out_channels(self) -> None:
         """Check "get_backbone_out_channels" function that checking backbone's output channels is working well.
 
         1. Check default input_size = 64
@@ -286,7 +287,7 @@ class TestOTXBuilderUtils:
         assert out_channels == expected_result
 
     @e2e_pytest_unit
-    def test_update_backbone_args_without_required_args(self):
+    def test_update_backbone_args_without_required_args(self) -> None:
         """Update backbone args (Case without Required Args)."""
 
         def mock_init(self, a=1, b=2):
@@ -295,16 +296,14 @@ class TestOTXBuilderUtils:
         self.backbone.__init__ = mock_init
         self.registry.register_module(module=self.backbone)
 
-        backbone_config = {
-            "type": "MockBackbone",
-        }
+        backbone_config = {"type": "MockBackbone"}
         inputs = {"backbone_config": backbone_config, "registry": self.registry, "backend": "mmseg"}
         results = update_backbone_args(**inputs)
         expected_results = []
         assert results == expected_results
 
     @e2e_pytest_unit
-    def test_update_backbone_args_required_args(self):
+    def test_update_backbone_args_required_args(self) -> None:
         """Update required Args in Backbone (Check Missing Args)."""
 
         def mock_init(self, depth, a=1, b=2):
@@ -312,16 +311,14 @@ class TestOTXBuilderUtils:
 
         self.backbone.__init__ = mock_init
         self.registry.register_module(module=self.backbone, force=True)
-        backbone_config = {
-            "type": "MockBackbone",
-        }
+        backbone_config = {"type": "MockBackbone"}
         inputs = {"backbone_config": backbone_config, "registry": self.registry, "backend": "mmseg"}
         results = update_backbone_args(**inputs)
         expected_results = ["depth"]
         assert results == expected_results
 
     @e2e_pytest_unit
-    def test_update_backbone_args_with_out_indices(self):
+    def test_update_backbone_args_with_out_indices(self) -> None:
         """Update Args with out_indices."""
         backbone_config = {"type": "MockBackbone", "out_indices": (0, 1, 2, 3)}
         self.registry.register_module(module=self.backbone, force=True)
@@ -332,12 +329,10 @@ class TestOTXBuilderUtils:
         assert "use_out_indices" in backbone_config
 
     @e2e_pytest_unit
-    def test_update_backbone_args_with_option(self):
+    def test_update_backbone_args_with_option(self) -> None:
         """Update backbone using the backbone name from the backbone list (Check updating with options)."""
         child_registry = MockRegistry(name="mmseg", parent=self.registry, scope="mmseg")
-        backbone_config = {
-            "type": "mmseg.ResNet",
-        }
+        backbone_config = {"type": "mmseg.ResNet"}
         child_registry.register_module(name="ResNet", module=self.backbone, force=True)
         inputs = {"backbone_config": backbone_config, "registry": self.registry, "backend": "mmseg"}
         results = update_backbone_args(**inputs)
@@ -348,15 +343,13 @@ class TestOTXBuilderUtils:
         assert backbone_config["depth"] == expected_depth
 
     @e2e_pytest_unit
-    def test_update_backbone_args_without_options(self):
+    def test_update_backbone_args_without_options(self) -> None:
         """Update backbone using the backbone name from the backbone list (Check updating without options)."""
 
         def mock_init(self, extra):
             super(MockBackbone, self).__init__()
 
-        backbone_config = {
-            "type": "mmseg.HRNet",
-        }
+        backbone_config = {"type": "mmseg.HRNet"}
         self.backbone.__init__ = mock_init
         child_registry = MockRegistry(name="mmseg", parent=self.registry, scope="mmseg")
         child_registry.register_module(name="HRNet", module=self.backbone, force=True)
@@ -369,17 +362,15 @@ class TestOTXBuilderUtils:
         assert backbone_config["extra"] == expected_extra_value
 
     @e2e_pytest_unit
-    def test_update_backbone_args_abnormal_backbone_type(self):
+    def test_update_backbone_args_abnormal_backbone_type(self) -> None:
         """Raise ValueError with unexpected backbone."""
-        backbone_config = {
-            "type": "unexpected",
-        }
+        backbone_config = {"type": "unexpected"}
         inputs = {"backbone_config": backbone_config, "registry": self.registry, "backend": "mmseg"}
         with pytest.raises(ValueError):
             update_backbone_args(**inputs)
 
     @e2e_pytest_unit
-    def test_update_channels_neck(self):
+    def test_update_channels_neck(self) -> None:
         """Remove model.neck.in_channels."""
         cfg_dict = {"model": {"neck": {"type": "GlobalAveragePooling", "in_channels": 100}}}
         model_config = MPAConfig(cfg_dict=cfg_dict)
@@ -392,7 +383,7 @@ class TestOTXBuilderUtils:
         assert model_config.model.neck.in_channels == -1
 
     @e2e_pytest_unit
-    def test_update_channels_decode_head(self):
+    def test_update_channels_decode_head(self) -> None:
         """Update model.decode_head.in_channels & in_index (segmentation case)."""
         cfg_dict = {"model": {"decode_head": {"in_channels": (0, 1, 2), "in_index": (0, 1, 2)}}}
         out_channels = (10, 20, 30, 40)
@@ -402,7 +393,7 @@ class TestOTXBuilderUtils:
         assert model_config.model.decode_head.in_channels == out_channels
 
     @e2e_pytest_unit
-    def test_update_channels_head(self):
+    def test_update_channels_head(self) -> None:
         """Update model.head.in_channels."""
         out_channels = (10, 20, 30, 40)
         cfg_dict = {"model": {"head": {"in_channels": (0, 1, 2)}}}
@@ -411,7 +402,7 @@ class TestOTXBuilderUtils:
         assert model_config.model.head.in_channels == out_channels
 
     @e2e_pytest_unit
-    def test_update_channels_abnormal_inputs(self):
+    def test_update_channels_abnormal_inputs(self) -> None:
         """Raise NotImplementedError with unexpected model key."""
         out_channels = (10, 20, 30, 40)
         cfg_dict = {"model": {"unexpected": {"in_channels": (0, 1, 2)}}}
