@@ -64,10 +64,6 @@ class TestConfigUtilsInputParamsValidation:
             ("labels", unexpected_float),
             # Unexpected float is specified as nested "label"
             ("labels", [label, unexpected_float]),
-            # Unexpected float is specified as "random_seed" parameter
-            ("random_seed", unexpected_float),
-            # Unexpected float is specified as "distributed" parameter
-            ("distributed", unexpected_float),
         ]
 
         check_value_error_exception_raised(

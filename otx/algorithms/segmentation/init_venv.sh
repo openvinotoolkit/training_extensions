@@ -71,7 +71,7 @@ fi
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.2
 export TORCHVISION_VERSION=0.9.2
-export MMCV_VERSION=1.3.14
+export MMCV_VERSION=1.6.1
 
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
@@ -120,6 +120,9 @@ pip install -r ../../../requirements/segmentation.txt
 pip install numpy==1.21.0
 pip uninstall -y mmpycocotools
 pip install mmpycocotools
+
+# Temp install MPA from submodule
+pip install -e ../../../external/model-preparation-algorithm/submodule
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."

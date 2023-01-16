@@ -89,9 +89,13 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
             return losses
         with torch.no_grad():
             teacher_outputs = self.model_t.forward_test(
-                [ul_img0], [ul_img_metas], rescale=False, postprocess=False  # easy augmentation
+                [ul_img0],
+                [ul_img_metas],
+                rescale=False,  # easy augmentation
             )
-        pseudo_bboxes, pseudo_labels, pseudo_ratio = self.generate_pseudo_labels(teacher_outputs, **kwargs)
+        pseudo_bboxes, pseudo_labels, pseudo_ratio = self.generate_pseudo_labels(
+            teacher_outputs, device=ul_img0.device, **kwargs
+        )
         ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
         losses.update(ps_recall=ps_recall)
         losses.update(ps_ratio=torch.Tensor([pseudo_ratio]))
@@ -116,22 +120,23 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, **kwargs):
+        device = kwargs.pop("device")
         all_pseudo_bboxes = []
         all_pseudo_labels = []
         num_all_bboxes = 0
         num_all_pseudo = 0
-        if len(teacher_outputs[0][0].shape) == len(teacher_outputs[0][1].shape):
-            teacher_outputs = [(teacher_outputs[0][i], teacher_outputs[1][i]) for i in range(len(teacher_outputs[0]))]
-        for teacher_bboxes, teacher_labels in teacher_outputs:
-            # print(teacher_bboxes.shape, teacher_labels.shape)
-            confidences = teacher_bboxes[:, -1]
-            pseudo_indices = confidences > self.pseudo_conf_thresh
-            pseudo_bboxes = teacher_bboxes[pseudo_indices, :4]  # model output: [x y w h conf]
-            pseudo_labels = teacher_labels[pseudo_indices]
-            all_pseudo_bboxes.append(pseudo_bboxes)
-            all_pseudo_labels.append(pseudo_labels)
-            num_all_bboxes += teacher_bboxes.shape[0]
-            num_all_pseudo += pseudo_bboxes.shape[0]
+        for teacher_bboxes_labels in teacher_outputs:
+            pseudo_bboxes = []
+            pseudo_labels = []
+            for label, teacher_bboxes in enumerate(teacher_bboxes_labels):
+                confidences = teacher_bboxes[:, -1]
+                pseudo_indices = confidences > self.pseudo_conf_thresh
+                pseudo_bboxes.append(teacher_bboxes[pseudo_indices, :4])  # model output: [x y w h conf]
+                pseudo_labels.append(np.full([sum(pseudo_indices)], label))
+                num_all_bboxes += teacher_bboxes.shape[0]
+                num_all_pseudo += pseudo_bboxes[-1].shape[0]
+            all_pseudo_bboxes.append(torch.from_numpy(np.concatenate(pseudo_bboxes)).to(device))
+            all_pseudo_labels.append(torch.from_numpy(np.concatenate(pseudo_labels)).to(device))
         # print(f'{num_all_pseudo} / {num_all_bboxes}')
         pseudo_ratio = float(num_all_pseudo) / num_all_bboxes if num_all_bboxes > 0 else 0.0
         return all_pseudo_bboxes, all_pseudo_labels, pseudo_ratio
@@ -160,15 +165,20 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
         return torch.Tensor(recall)
 
     @staticmethod
-    def state_dict_hook(module, state_dict, *args, **kwargs):
+    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):
         """Redirect teacher model as output state_dict (student as auxilliary)"""
         logger.info("----------------- UnbiasedTeacher.state_dict_hook() called")
-        output = OrderedDict()
-        for k, v in state_dict.items():
-            if "model_t." in k:
-                k = k.replace("model_t.", "")
-            output[k] = v
-        return output
+        for k in list(state_dict.keys()):
+            v = state_dict.pop(k)
+            if not prefix or k.startswith(prefix):
+                k = k.replace(prefix, "", 1)
+                if k.startswith("model_t."):
+                    k = k.replace("model_t.", "", 1)
+                elif k.startswith("model_s."):
+                    continue
+                k = prefix + k
+            state_dict[k] = v
+        return state_dict
 
     @staticmethod
     def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):

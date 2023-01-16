@@ -110,6 +110,8 @@ class EarlyStoppingHook(Hook):
             if isinstance(hook, LrUpdaterHook):
                 self.warmup_iters = hook.warmup_iters
                 break
+        if getattr(self, "warmup_iters", None) is None:
+            raise ValueError("LrUpdaterHook must be registered to runner.")
 
     def after_train_iter(self, runner: BaseRunner):
         """Called after every training iter to evaluate the results."""

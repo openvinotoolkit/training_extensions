@@ -21,9 +21,8 @@ import torch
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
-from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
-from otx.algorithms.common.utils.data import get_unlabeled_dataset
+from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -158,34 +157,22 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
         logger.info("init data cfg.")
-        if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
-            data_cfg = ConfigDict(data=ConfigDict(train=ConfigDict(otx_dataset=dataset.get_subset(Subset.TRAINING))))
-        else:
-            data_cfg = ConfigDict(
-                data=ConfigDict(
-                    train=ConfigDict(
-                        dataset=ConfigDict(
-                            otx_dataset=dataset.get_subset(Subset.TRAINING),
-                            labels=self._labels,
-                        )
-                    ),
-                    val=ConfigDict(
-                        otx_dataset=dataset.get_subset(Subset.VALIDATION),
-                        labels=self._labels,
-                    ),
-                )
-            )
+        data_cfg = ConfigDict(data=ConfigDict())
 
-            unlabeled_dataset = get_unlabeled_dataset(dataset)
-            if unlabeled_dataset:
-                data_cfg.data.unlabeled = ConfigDict(
-                    otx_dataset=unlabeled_dataset,
+        for cfg_key, subset in zip(
+            ["train", "val", "unlabeled"],
+            [Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED],
+        ):
+            subset = get_dataset(dataset, subset)
+            if subset:
+                data_cfg.data[cfg_key] = ConfigDict(
+                    otx_dataset=subset,
                     labels=self._labels,
                 )
 
-            # Temparory remedy for cfg.pretty_text error
-            for label in self._labels:
-                label.hotkey = "a"
+        # Temparory remedy for cfg.pretty_text error
+        for label in self._labels:
+            label.hotkey = "a"
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves):

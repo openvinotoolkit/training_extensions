@@ -14,6 +14,7 @@ framework: OTESegmentation v0.14.0
 entrypoints:
   base: otx.algorithms.segmentation.tasks.SegmentationTrainTask
   openvino: otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask
+  nncf: otx.algorithms.segmentation.tasks.SegmentationNNCFTask
 
 # Capabilities.
 capabilities:
@@ -38,7 +39,7 @@ hyper_parameters:
         default_value: 300
     nncf_optimization:
       enable_quantization:
-        default_value: false
+        default_value: true
       enable_pruning:
         default_value: false
       pruning_supported:

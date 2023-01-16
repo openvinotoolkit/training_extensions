@@ -16,5 +16,6 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage, DetectionInferrer):
     def __init__(self, **kwargs):
         SemiSLDetectionStage.__init__(self, **kwargs)
 
-    def _get_feature_module(self, eval_model):
-        return eval_model.module.model_t
+    def _get_feature_module(self, model):
+        model = super()._get_feature_module(model)
+        return model.model_t
