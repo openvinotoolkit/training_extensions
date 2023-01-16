@@ -146,7 +146,7 @@ class TestOTXCLIBuilder:
     def test_builder_build_backbone_config_generate_backbone(self, backbone_type: str) -> None:
         """Generate backbone config file (mmcls.MMOVBackbone)."""
         tmp_backbone_path = self.tmp_dir_path.joinpath("backbone.yaml")
-        self.otx_builder.build_backbone_config(backbone_type, str(tmp_backbone_path))
+        self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
         assert tmp_backbone_path.exists()
         backbone_config = mmcv.load(str(tmp_backbone_path))
         assert backbone_config["backbone"]["type"] == backbone_type
@@ -157,7 +157,7 @@ class TestOTXCLIBuilder:
         """Raise ValueError with wrong output_path."""
         tmp_backbone_path = self.tmp_dir_path.joinpath("wrong.path")
         with pytest.raises(ValueError):
-            self.otx_builder.build_backbone_config(backbone_type, str(tmp_backbone_path))
+            self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone_type", ["mmcls.ResNet"])
