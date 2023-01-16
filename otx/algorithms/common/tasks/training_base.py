@@ -20,6 +20,7 @@ import io
 import os
 import shutil
 import tempfile
+from copy import deepcopy
 from typing import DefaultDict, Dict, List, Optional, Union
 
 import numpy as np
@@ -27,6 +28,10 @@ import torch
 from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.adapters.mmcv.utils import (
+    align_data_config_with_recipe,
+    get_configs_by_pairs,
+)
 from otx.algorithms.common.configs import TrainType
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
@@ -42,7 +47,12 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.builder import build
 from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
+from otx.mpa.utils.config_utils import (
+    MPAConfig,
+    add_custom_hook_if_not_exists,
+    remove_custom_hook,
+    update_or_add_custom_hook,
+)
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -114,11 +124,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self.override_configs = {}  # type: Dict[str, str]
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
-        # FIXME: Temporary remedy for CVS-88098
-        export = kwargs.get("export", False)
-        self._initialize(export=export)
+        self._initialize(kwargs)
         stage_module = self._update_stage_module(stage_module)
-
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -129,7 +136,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-        logger.info(f"running task... kwargs = {kwargs}")
+        logger.info(  # pylint: disable=logging-not-lazy
+            "running task... kwargs = "
+            + str({k: v if k != "model_builder" else object.__repr__(v) for k, v in kwargs.items()})
+        )
         if self._recipe_cfg is None:
             raise RuntimeError("'recipe_cfg' is not initialized yet. call prepare() method before calling this method")
 
@@ -139,11 +149,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         common_cfg = ConfigDict(dict(output_path=self._output_path, resume=self._resume))
 
         # build workflow using recipe configuration
-        workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
+        workflow = build(
+            deepcopy(self._recipe_cfg),
+            self._mode,
+            stage_type=stage_module,
+            common_cfg=common_cfg,
+        )
 
         # run workflow with task specific model config and data config
         output = workflow.run(
-            model_cfg=self._model_cfg,
+            model_cfg=deepcopy(self._model_cfg),
             data_cfg=self._data_cfg,
             ir_model_path=None,
             ir_weight_path=None,
@@ -199,16 +214,19 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Hyper Parameters configuration."""
         return self._hyperparams
 
-    @property
-    def _precision_from_config(self):
-        return [ModelPrecision.FP16] if self._config.get("fp16", None) else [ModelPrecision.FP32]
-
-    def _initialize(self, export=False):
+    # pylint: disable-next=too-many-branches,too-many-statements
+    def _initialize(self, options=None):  # noqa: C901
         """Prepare configurations to run a task through MPA's stage."""
+        if options is None:
+            options = {}
+
+        export = options.get("export", False)
+
         logger.info("initializing....")
         self._init_recipe()
 
         if not export:
+            # FIXME: Temporary remedy for CVS-88098
             recipe_hparams = self._init_recipe_hparam()
             if len(recipe_hparams) > 0:
                 self._recipe_cfg.merge_from_dict(recipe_hparams)
@@ -233,12 +251,29 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 del self._model_cfg._cfg_dict["fp16"]
             elif isinstance(self._model_cfg, ConfigDict):
                 del self._model_cfg["fp16"]
-        self._precision = [ModelPrecision.FP32]
 
+        # default adaptive hook for evaluating before and after training
+        add_custom_hook_if_not_exists(
+            self._recipe_cfg,
+            ConfigDict(
+                type="AdaptiveTrainSchedulingHook",
+                enable_adaptive_interval_hook=False,
+                enable_eval_before_run=True,
+            ),
+        )
         # Add/remove adaptive interval hook
         if self._recipe_cfg.get("use_adaptive_interval", False):
-            self._recipe_cfg.adaptive_validation_interval = self._recipe_cfg.get(
-                "adaptive_validation_interval", dict(max_interval=5)
+            update_or_add_custom_hook(
+                self._recipe_cfg,
+                ConfigDict(
+                    {
+                        "type": "AdaptiveTrainSchedulingHook",
+                        "max_interval": 5,
+                        "enable_adaptive_interval_hook": True,
+                        "enable_eval_before_run": True,
+                        **self._recipe_cfg.pop("adaptive_validation_interval", {}),
+                    }
+                ),
             )
         else:
             self._recipe_cfg.pop("adaptive_validation_interval", None)
@@ -247,9 +282,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if self._hyperparams.algo_backend.train_type != TrainType.SELFSUPERVISED:
             # to disenable early stopping during self-sl
             self.set_early_stopping_hook()
-
-        # add eval before train hook
-        update_or_add_custom_hook(self._recipe_cfg, ConfigDict(type="EvalBeforeTrainHook", priority="ABOVE_NORMAL"))
 
         # add Cancel tranining hook
         update_or_add_custom_hook(
@@ -268,7 +300,41 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
+        # make sure model to be in a training mode even after model is evaluated (mmcv bug)
+        update_or_add_custom_hook(
+            self._recipe_cfg,
+            ConfigDict(type="ForceTrainModeHook", priority="LOWEST"),
+        )
+
+        # if num_workers is 0, persistent_workers must be False
+        data_cfg = self._recipe_cfg.data
+        for subset in ["train", "val", "test", "unlabeled"]:
+            if subset not in data_cfg:
+                continue
+            dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
+            workers_per_gpu = dataloader_cfg.get(
+                "workers_per_gpu",
+                data_cfg.get("workers_per_gpu", 0),
+            )
+            if workers_per_gpu == 0:
+                dataloader_cfg["persistent_workers"] = False
+                data_cfg[f"{subset}_dataloader"] = dataloader_cfg
+
+        if self._data_cfg is not None:
+            align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
+
+        if export:
+            options["deploy_cfg"] = self._init_deploy_cfg()
+            if options.get("precision", None) is None:
+                assert len(self._precision) == 1
+                options["precision"] = str(self._precision[0])
+
+        self._initialize_post_hook(options)
+
         logger.info("initialized.")
+
+    def _initialize_post_hook(self, options=None):
+        pass
 
     @abc.abstractmethod
     def _init_recipe(self):
@@ -289,6 +355,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     def _init_recipe_hparam(self) -> dict:
         """Initialize recipe hyperparamter as dict."""
+        assert self._recipe_cfg is not None
+
         params = self._hyperparams.learning_parameters
         warmup_iters = int(params.learning_rate_warmup_iters)
         lr_config = (
@@ -306,6 +374,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         else:
             early_stop = False
 
+        runner = ConfigDict(max_epochs=int(params.num_iters))
+        if self._recipe_cfg.get("runner", None) and self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):
+            runner = ConfigDict(max_iters=int(params.num_iters))
+
         return ConfigDict(
             optimizer=ConfigDict(lr=params.learning_rate),
             lr_config=lr_config,
@@ -314,11 +386,83 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 samples_per_gpu=int(params.batch_size),
                 workers_per_gpu=int(params.num_workers),
             ),
-            runner=ConfigDict(max_epochs=int(params.num_iters)),
+            runner=runner,
         )
 
     def _update_stage_module(self, stage_module: str):
         return stage_module
+
+    def _init_deploy_cfg(self) -> Union[Config, None]:
+        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        deploy_cfg_path = os.path.join(base_dir, "deployment.py")
+        deploy_cfg = None
+        if os.path.exists(deploy_cfg_path):
+            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+
+            def patch_input_preprocessing(deploy_cfg):
+
+                normalize_cfg = get_configs_by_pairs(
+                    self._recipe_cfg.data.test.pipeline,
+                    dict(type="Normalize"),
+                )
+                assert len(normalize_cfg) == 1
+                normalize_cfg = normalize_cfg[0]
+
+                options = dict(flags=[], args={})
+                # NOTE: OTX loads image in RGB format
+                # so that `to_rgb=True` means a format change to BGR instead.
+                # Conventionally, OpenVINO IR expects a image in BGR format
+                # but OpenVINO IR under OTX assumes a image in RGB format.
+                #
+                # `to_rgb=True` -> a model was trained with images in BGR format
+                #                  and a OpenVINO IR needs to reverse input format from RGB to BGR
+                # `to_rgb=False` -> a model was trained with images in RGB format
+                #                   and a OpenVINO IR does not need to do a reverse
+                if normalize_cfg.get("to_rgb", False):
+                    options["flags"] += ["--reverse_input_channels"]
+                # value must be a list not a tuple
+                if normalize_cfg.get("mean", None) is not None:
+                    options["args"]["--mean_values"] = list(normalize_cfg.get("mean"))
+                if normalize_cfg.get("std", None) is not None:
+                    options["args"]["--scale_values"] = list(normalize_cfg.get("std"))
+
+                # fill default
+                backend_config = deploy_cfg.backend_config
+                if backend_config.get("mo_options") is None:
+                    backend_config.mo_options = ConfigDict()
+                mo_options = backend_config.mo_options
+                if mo_options.get("args") is None:
+                    mo_options.args = ConfigDict()
+                if mo_options.get("flags") is None:
+                    mo_options.flags = []
+
+                # already defiend options have higher priority
+                options["args"].update(mo_options.args)
+                mo_options.args = ConfigDict(options["args"])
+                # make sure no duplicates
+                mo_options.flags.extend(options["flags"])
+                mo_options.flags = list(set(mo_options.flags))
+
+            def patch_input_shape(deploy_cfg):
+                resize_cfg = get_configs_by_pairs(
+                    self._recipe_cfg.data.test.pipeline,
+                    dict(type="Resize"),
+                )
+                assert len(resize_cfg) == 1
+                resize_cfg = resize_cfg[0]
+                size = resize_cfg.size
+                if isinstance(size, int):
+                    size = (size, size)
+                assert all(isinstance(i, int) and i > 0 for i in size)
+                # default is static shape to prevent an unexpected error
+                # when converting to OpenVINO IR
+                deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
+
+            patch_input_preprocessing(deploy_cfg)
+            if not deploy_cfg.backend_config.get("model_inputs", []):
+                patch_input_shape(deploy_cfg)
+
+        return deploy_cfg
 
     def _load_model_ckpt(self, model: Optional[ModelEntity]):
         if model and "weights.pth" in model.model_adapters:
@@ -397,14 +541,29 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         def __init__(self, task_instance):
             self.task_instance = task_instance
+            self.__findable = False  # a barrier to block segmentation fault
 
         def __call__(self, cancel_interface):
             """Function call in OnHookInitialized."""
+            if isinstance(self.task_instance, int) and self.__findable:
+                import ctypes
+
+                # NOTE: BE AWARE OF SEGMENTATION FAULT
+                self.task_instance = ctypes.cast(self.task_instance, ctypes.py_object).value
             self.task_instance.cancel_hook_initialized(cancel_interface)
 
         def __repr__(self):
             """Function repr in OnHookInitialized."""
             return f"'{__name__}.OnHookInitialized'"
+
+        def __deepcopy__(self, memo):
+            """Function deepcopy in OnHookInitialized."""
+            cls = self.__class__
+            result = cls.__new__(cls)
+            memo[id(self)] = result
+            result.task_instance = self.task_instance
+            result.__findable = True  # pylint: disable=unused-private-member
+            return result
 
         def __reduce__(self):
             """Function reduce in OnHookInitialized."""

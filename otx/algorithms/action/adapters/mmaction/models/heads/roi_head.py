@@ -5,7 +5,7 @@ from mmdet.models import HEADS as MMDET_HEADS
 
 
 @MMDET_HEADS.register_module(force=True)
-# pylint: disable=abstract-method, unused-argument
+# pylint: disable=abstract-method, unused-argument,too-many-ancestors
 class AVARoIHead(MMAVARoIHead):
     """AVARoIHead for OTX."""
 

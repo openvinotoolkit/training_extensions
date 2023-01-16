@@ -95,10 +95,10 @@ def load_unlabeled_dataset_items(
     return dataset_items
 
 
-def get_unlabeled_dataset(dataset: DatasetEntity):
-    """Get unlabeled dataset from otx dataset."""
-    unlabeled_data = dataset.get_subset(Subset.UNLABELED)
-    return unlabeled_data if len(unlabeled_data) > 0 else None
+def get_dataset(dataset: DatasetEntity, subset: Subset):
+    """Get dataset from datasetentity."""
+    data = dataset.get_subset(subset)
+    return data if len(data) > 0 else None
 
 
 def get_cls_img_indices(labels, dataset):

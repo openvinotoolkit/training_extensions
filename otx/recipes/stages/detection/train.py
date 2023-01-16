@@ -21,8 +21,8 @@ optimizer = dict(
 
 optimizer_config = dict(
     _delete_=True,
-    type="SAMOptimizerHook",
-    start_epoch=1000,  # set 1 ~ total_epochs to enable
+    type="OptimizerHook",
+    #  type="SAMOptimizerHook",
     grad_clip=dict(max_norm=35, norm_type=2),
 )
 

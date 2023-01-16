@@ -71,7 +71,7 @@ fi
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.2
 export TORCHVISION_VERSION=0.9.2
-export MMCV_VERSION=1.3.14
+export MMCV_VERSION=1.6.1
 
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
@@ -114,10 +114,16 @@ sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/
 
 # Install deep-object-reid and mpa
 pip install torchreid@git+https://github.com/openvinotoolkit/deep-object-reid@otx
-pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
+# pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
 
-# Install otx
+# Install OTX
 pip install -e ../../../ || exit 1
+
+# Install mmcls & MPA for classification training
+pip install --no-cache-dir -r ../../../requirements/classification.txt
+
+# Temp install MPA from submodule
+pip install -e ../../../external/model-preparation-algorithm/submodule
 
 # Remedy solution for numpy lib conflict
 pip install numpy==1.21.0

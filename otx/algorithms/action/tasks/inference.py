@@ -204,8 +204,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     def _init_task(self, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
-        export = kwargs.get("export", False)
-        self._initialize(export=export)
+        self._initialize(kwargs)
         logger.info(f"running task... kwargs = {kwargs}")
         if self._recipe_cfg is None:
             raise RuntimeError("'config' is not initialized yet. call prepare() method before calling this method")

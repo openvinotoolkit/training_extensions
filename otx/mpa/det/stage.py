@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
-import torch
-from mmcv import ConfigDict
-from mmdet.datasets import build_dataset
+from mmcv.utils import ConfigDict
 
+from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
@@ -17,8 +15,7 @@ logger = get_logger()
 class DetectionStage(Stage):
     """Patch config to support otx train."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    MODEL_BUILDER = build_detector
 
     def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
         """Create MMCV-consumable config from given inputs"""
@@ -27,14 +24,14 @@ class DetectionStage(Stage):
         cfg = self.cfg
         self.configure_model(cfg, model_cfg, training, **kwargs)
         self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
-        self.configure_data(cfg, data_cfg, training, **kwargs)
+        self.configure_data(cfg, training, data_cfg, **kwargs)
         self.configure_regularization(cfg, training)
         self.configure_hyperparams(cfg, training, **kwargs)
         self.configure_task(cfg, training, **kwargs)
         self.configure_hook(cfg)
         return cfg
 
-    def configure_model(self, cfg, model_cfg, training, **kwargs):
+    def configure_model(self, cfg, model_cfg, training, **kwargs):  # noqa: C901
         """Patch config's model.
         Replace cfg.model to model_cfg
         Change model type to super type
@@ -57,19 +54,6 @@ class DetectionStage(Stage):
             cfg.model.arch_type = cfg.model.type
             cfg.model.type = super_type
 
-        # OMZ-plugin
-        if cfg.model.backbone.type == "OmzBackboneDet":
-            ir_path = kwargs.get("ir_path")
-            if not ir_path:
-                raise RuntimeError("OMZ model needs OpenVINO bin/xml files.")
-            cfg.model.backbone.model_path = ir_path
-            if cfg.model.type == "SingleStageDetector":
-                cfg.model.bbox_head.model_path = ir_path
-            elif cfg.model.type == "FasterRCNN":
-                cfg.model.rpn_head.model_path = ir_path
-            else:
-                raise NotImplementedError(f"Unknown model type - {cfg.model.type}")
-
         # OV-plugin
         ir_model_path = kwargs.get("ir_model_path")
         if ir_model_path:
@@ -87,21 +71,7 @@ class DetectionStage(Stage):
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-    def configure_ckpt(self, cfg, model_ckpt, pretrained):
-        """Patch checkpoint path for pretrained weight.
-        Replace cfg.load_from to model_ckpt
-        Replace cfg.load_from to pretrained
-        Replace cfg.resume_from to cfg.load_from
-        """
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
-        if pretrained and isinstance(pretrained, str):
-            logger.info(f"Overriding cfg.load_from -> {pretrained}")
-            cfg.load_from = pretrained  # Overriding by stage input
-        if cfg.get("resume", False):
-            cfg.resume_from = cfg.load_from
-
-    def configure_data(self, cfg, data_cfg, training, **kwargs):
+    def configure_data(self, cfg, training, data_cfg, **kwargs):  # noqa: C901
         """Patch cfg.data.
         Merge cfg and data_cfg
         Match cfg.data.train.type to super_type
@@ -110,21 +80,13 @@ class DetectionStage(Stage):
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
 
-        Stage.configure_data(cfg, training, **kwargs)
+        super().configure_data(cfg, training, **kwargs)
         super_type = cfg.data.train.pop("super_type", None)
         if super_type:
             cfg.data.train.org_type = cfg.data.train.type
             cfg.data.train.type = super_type
-        if training:
-            for subset in ("train", "val", "test"):
-                if "dataset" in cfg.data[subset]:
-                    subset_cfg = self.get_data_cfg(cfg, subset)
-                    subset_cfg.otx_dataset = cfg.data[subset].pop("otx_dataset", None)
-                    subset_cfg.labels = cfg.data[subset].get("labels", None)
-                    subset_cfg.data_classes = cfg.data[subset].pop("data_classes", None)
-                    subset_cfg.new_classes = cfg.data[subset].pop("new_classes", None)
 
-    def configure_regularization(self, cfg, training):
+    def configure_regularization(self, cfg, training):  # noqa: C901
         """Patch regularization parameters."""
         if training:
             if cfg.model.get("l2sp_weight", 0.0) > 0.0:
@@ -159,6 +121,7 @@ class DetectionStage(Stage):
     def configure_task(self, cfg, training, **kwargs):
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
+            logger.info(f"task config!!!!: training={training}")
             self.task_adapt_type = cfg["task_adapt"].get("type", None)
             self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
             self.configure_classes(cfg)
@@ -171,7 +134,6 @@ class DetectionStage(Stage):
             if self.task_adapt_type == "mpa":
                 self.configure_bbox_head(cfg)
                 self.configure_ema(cfg)
-                self.configure_val_interval(cfg)
             else:
                 src_data_cfg = self.get_data_cfg(cfg, "train")
                 src_data_cfg.pop("old_new_indices", None)
@@ -284,9 +246,6 @@ class DetectionStage(Stage):
         # This is not related with patching bbox head
         elif bbox_head.type in ["YOLOXHead", "CustomYOLOXHead"]:
             if cfg.data.train.type == "MultiImageMixDataset":
-                cfg.data.train.pop("ann_file", None)
-                cfg.data.train.pop("img_prefix", None)
-                cfg.data.train["labels"] = cfg.data.train.pop("labels", None)
                 self.add_yolox_hooks(cfg)
 
         if cfg.get("ignore", False):
@@ -319,26 +278,33 @@ class DetectionStage(Stage):
             )
 
     @staticmethod
-    def configure_val_interval(cfg):
-        """Patch validation interval."""
-        adaptive_validation_interval = cfg.get("adaptive_validation_interval", {})
-        if adaptive_validation_interval:
-            update_or_add_custom_hook(
-                cfg, ConfigDict(type="AdaptiveTrainSchedulingHook", **adaptive_validation_interval)
-            )
-
-    @staticmethod
     def add_yolox_hooks(cfg):
-        update_or_add_custom_hook(cfg, ConfigDict(type="YOLOXModeSwitchHook", num_last_epochs=15, priority=48))
         update_or_add_custom_hook(
             cfg,
             ConfigDict(
-                type="SyncRandomSizeHook",
-                ratio_range=(10, 20),
-                img_scale=(640, 640),
-                interval=1,
+                type="YOLOXModeSwitchHook",
+                num_last_epochs=15,
                 priority=48,
-                device="cuda" if torch.cuda.is_available() else "cpu",
             ),
         )
-        update_or_add_custom_hook(cfg, ConfigDict(type="SyncNormHook", num_last_epochs=15, interval=1, priority=48))
+        # FIXME: is this hook deprecated?
+        #  update_or_add_custom_hook(
+        #      cfg,
+        #      ConfigDict(
+        #          type="SyncRandomSizeHook",
+        #          ratio_range=(10, 20),
+        #          img_scale=(640, 640),
+        #          interval=1,
+        #          priority=48,
+        #          device="cuda" if torch.cuda.is_available() else "cpu",
+        #      ),
+        #  )
+        update_or_add_custom_hook(
+            cfg,
+            ConfigDict(
+                type="SyncNormHook",
+                num_last_epochs=15,
+                interval=1,
+                priority=48,
+            ),
+        )

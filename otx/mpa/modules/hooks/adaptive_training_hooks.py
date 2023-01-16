@@ -6,6 +6,7 @@ import math
 
 from mmcv.runner import HOOKS, Hook, LrUpdaterHook
 from mmcv.runner.hooks.checkpoint import CheckpointHook
+from mmcv.runner.hooks.evaluation import EvalHook
 
 from otx.mpa.modules.hooks.early_stopping_hook import EarlyStoppingHook
 from otx.mpa.utils.logger import get_logger
@@ -38,6 +39,8 @@ class AdaptiveTrainSchedulingHook(Hook):
         base_es_patience=10,
         min_es_patience=3,
         decay=-0.025,
+        enable_adaptive_interval_hook=False,
+        enable_eval_before_run=False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -48,36 +51,71 @@ class AdaptiveTrainSchedulingHook(Hook):
         self.base_es_patience = base_es_patience
         self.min_es_patience = min_es_patience
         self.decay = decay
-        self.initialized = False
-        self.enabled = False
+        self.enable_adaptive_interval_hook = enable_adaptive_interval_hook
+        self.enable_eval_before_run = enable_eval_before_run
 
-    def before_train_epoch(self, runner):
-        if not self.initialized:
+        self._initialized = False
+        self._original_interval = None
+
+    def before_run(self, runner):
+        if self.enable_eval_before_run:
+            hook = self.get_evalhook(runner)
+            if hook is None:
+                logger.warning("EvalHook is not found in runner. Skipping enabling evaluation before run.")
+                return
+            self._original_interval = hook.interval
+            hook.interval = 1
+            hook.start = 0
+
+    def before_train_iter(self, runner):
+        if self.enable_eval_before_run and self._original_interval is not None:
+            hook = self.get_evalhook(runner)
+            hook.interval = self._original_interval
+            self._original_interval = None
+
+        if self.enable_adaptive_interval_hook and not self._initialized:
             iter_per_epoch = len(runner.data_loader)
             adaptive_interval = self.get_adaptive_interval(iter_per_epoch)
             for hook in runner.hooks:
-                if "EvalHook" in str(hook):
+                if isinstance(hook, EvalHook):
+                    # make sure evaluation is done at last to save best checkpoint
+                    limit = runner.max_epochs if hook.by_epoch else runner.max_iters
+                    adaptive_interval = min(adaptive_interval, limit)
+                    logger.info(f"Update EvalHook interval: {hook.interval} -> {adaptive_interval}")
                     hook.interval = adaptive_interval
-                    logger.info(f"Update Validation Interval: {adaptive_interval}")
                 elif isinstance(hook, LrUpdaterHook):
-                    hook.interval = adaptive_interval
-                    hook.patience = max(
+                    patience = max(
                         math.ceil((self.base_lr_patience / adaptive_interval)),
                         self.min_lr_patience,
                     )
-                    logger.info(f"Update Lr patience: {hook.patience}")
-                elif isinstance(hook, EarlyStoppingHook):
-                    hook.start = adaptive_interval
+                    logger.info(f"Update LrUpdaterHook patience: {hook.patience} -> {patience}")
                     hook.interval = adaptive_interval
-                    hook.patience = max(
+                    hook.patience = patience
+                elif isinstance(hook, EarlyStoppingHook):
+                    patience = max(
                         math.ceil((self.base_es_patience / adaptive_interval)),
                         self.min_es_patience,
                     )
-                    logger.info(f"Update Early-Stop patience: {hook.patience}")
-                elif isinstance(hook, CheckpointHook):
+                    logger.info(f"Update EarlyStoppingHook patience: {hook.patience} -> {patience}")
+                    hook.start = adaptive_interval
                     hook.interval = adaptive_interval
-            self.initialized = True
+                    hook.patience = patience
+                elif isinstance(hook, CheckpointHook):
+                    # make sure checkpoint is saved at last
+                    limit = runner.max_epochs if hook.by_epoch else runner.max_iters
+                    adaptive_interval = min(adaptive_interval, limit)
+                    logger.info(f"Update CheckpointHook interval: {hook.interval} -> {adaptive_interval}")
+                    hook.interval = adaptive_interval
+            self._initialized = True
 
     def get_adaptive_interval(self, iter_per_epoch):
         adaptive_interval = max(round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1)
         return adaptive_interval
+
+    def get_evalhook(self, runner):
+        target_hook = None
+        for hook in runner.hooks:
+            if isinstance(hook, EvalHook):
+                assert target_hook is None, "More than 1 EvalHook is found in runner."
+                target_hook = hook
+        return target_hook
