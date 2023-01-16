@@ -205,10 +205,11 @@ class Builder:
         template_config.dump(os.path.join(workspace_path, "template.yaml"))
 
         # Create Data.yaml
-        data_subset_format = {"ann-files": None, "data-roots": None}
-        data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
-        data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
-        mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
+        if not os.path.exists(os.path.join(workspace_path, "data.yaml")):
+            data_subset_format = {"ann-files": None, "data-roots": None}
+            data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
+            data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
+            mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
 
         # Copy compression_config.json
         if os.path.exists(os.path.join(model_dir, "compression_config.json")):
@@ -219,7 +220,7 @@ class Builder:
 
         print(f"[*] Load Model Template ID: {template.model_template_id}")
         print(f"[*] Load Model Name: {template.name}")
-        print(f"\n[*] Note! If you want to change configurations, please edit the below files")
+        print("\n[*] Note! If you want to change configurations, please edit the below file")
         print(f"{os.path.join(workspace_path)}\n")
 
     def build_backbone_config(self, backbone_type, output_path):

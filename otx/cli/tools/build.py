@@ -32,8 +32,8 @@ SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 def parse_args():
     """Parses command line arguments."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train-data-roots", help="data root for training data", type=str, default=None )
-    parser.add_argument("--val-data-roots", help="data root for validation data", type=str, default=None )
+    parser.add_argument("--train-data-roots", help="data root for training data", type=str, default=None)
+    parser.add_argument("--val-data-roots", help="data root for validation data", type=str, default=None)
     parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
     parser.add_argument(
         "--train-type",
@@ -53,11 +53,12 @@ def main():
     """Main function for model or backbone or task building."""
 
     args = parse_args()
+    args.task = args.task.upper() if args.task is not None else args.task
 
     builder = Builder()
 
     otx_root = get_otx_root_path()
-    
+
     # Auto configuration & Datumaro Helper
     # First, find the format of train dataset and import it by using DatasetManager
     # Second, find the task type
@@ -67,49 +68,49 @@ def main():
     if args.train_data_roots:
         train_data_format = DatasetManager.get_data_format(args.train_data_roots)
         print(f"[*] Train data format: {train_data_format}")
-        
+
         train_datumaro_dataset = DatasetManager.import_dataset(
-            data_root=args.train_data_roots,
-            data_format=train_data_format
+            data_root=args.train_data_roots, data_format=train_data_format
         )
-        
+
         splitted_dataset = {}
         splitted_dataset["train"] = DatasetManager.get_train_dataset(train_datumaro_dataset)
-        
+
         config_manager = ConfigManager()
         train_task_type = config_manager.get_task_type(train_data_format)
         print(f"[*] Train task type: {train_task_type}")
-        
+        if args.task: 
+            assert args.task == train_task_type, f"Dataset format({train_data_format}) can't be used for {args.task} task."
+
         # Overwrite the args.task to train_task_type to select default template
         args.task = train_task_type if args.task is None else args.task
-        
+
         # Create workspace
         if args.workspace_root is None:
             args.workspace_root = f"./otx-workspace-{args.task}"
-        
+
         os.makedirs(args.workspace_root, exist_ok=False)
-        
+
         print(f"[*] Create workspace to: {args.workspace_root}")
         # If no validation dataset, auto_split will be triggered
         if args.val_data_roots is not None:
             val_data_format = DatasetManager.get_data_format(args.val_data_roots)
             val_datumaro_dataset = DatasetManager.import_dataset(
-                data_root=args.val_data_roots,
-                data_format=val_data_format
+                data_root=args.val_data_roots, data_format=val_data_format
             )
             splitted_dataset["val"] = DatasetManager.get_val_dataset(val_datumaro_dataset)
         else:
             # TODO: consider automatic validation import i.e. COCO
             # Currently, automatic import will be ignored
             splitted_dataset = DatasetManager.auto_split(train_task_type, splitted_dataset["train"])
-        
+
         # Will save the spliited dataset to workspace with .yaml file
         # For the classification task, imagenet_text format will be used to save the data
         # Also, data.yaml will be saved
         config_manager.write_data_with_cfg(splitted_dataset, train_data_format, args.workspace_root)
-    
+
     # Build with task_type and create user workspace
-    if args.task and args.task.upper() in SUPPORTED_TASKS:
+    if args.task and args.task in SUPPORTED_TASKS:
         builder.build_task_config(
             task_type=args.task,
             model_type=args.model,

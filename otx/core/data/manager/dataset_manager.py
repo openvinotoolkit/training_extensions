@@ -6,88 +6,85 @@
 import os
 
 import datumaro
-from datumaro.components.dataset import Dataset
-from datumaro.components.dataset import DatasetSubset
+from datumaro.components.dataset import Dataset, DatasetSubset
 from datumaro.components.dataset_base import DatasetItem
 from datumaro.plugins.splitter import Split
 
 
 class DatasetManager:
     """The aim of DatasetManager is support datumaro functions at easy use.
-    All kind of functions implemented in Datumaro are supported by this helper.
+    All kind of functions implemented in Datumaro are supported by this Manager.
     """
+
     @staticmethod
-    def get_train_dataset(dataset:Dataset) -> DatasetSubset:
+    def get_train_dataset(dataset: Dataset) -> DatasetSubset:
         """Returns train dataset."""
         for k, v in dataset.subsets().items():
             if "train" in k or "default" in k:
                 return v
-    
+
     @staticmethod
-    def get_val_dataset(dataset:Dataset) -> DatasetSubset:
+    def get_val_dataset(dataset: Dataset) -> DatasetSubset:
         """Returns validation dataset."""
         for k, v in dataset.subsets().items():
             if "val" in k or "default" in k:
                 return v
-    
-    @staticmethod 
+
+    @staticmethod
     def get_data_format(data_root: str) -> str:
         """Find the format of dataset."""
         data_root = os.path.abspath(data_root)
-        
+
         data_format: str = ""
-        
+
         # TODO #
-        # Currently, below `if/else` statements is mandatory 
+        # Currently, below `if/else` statements is mandatory
         # because Datumaro can't detect the multi-cvat and mvtec.
-        # After, the upgrade of Datumaro, below codes will be changed. 
-        if DatasetManager._is_cvat_format(DatasetManager, data_root):
+        # After, the upgrade of Datumaro, below codes will be changed.
+        if DatasetManager.is_cvat_format(data_root):
             data_format = "multi-cvat"
-        elif DatasetManager._is_mvtec_format(DatasetManager, data_root):
+        elif DatasetManager.is_mvtec_format(data_root):
             data_format = "mvtec"
-        else: 
+        else:
             data_formats = datumaro.Environment().detect_dataset(data_root)
-            #TODO: how to avoid hard-coded part
-            data_format = data_formats[0] if 'imagenet' not in data_formats else 'imagenet'
+            # TODO: how to avoid hard-coded part
+            data_format = data_formats[0] if "imagenet" not in data_formats else "imagenet"
         return data_format
-    
+
     @staticmethod
-    def get_image_path(data_item:DatasetItem) -> str:
+    def get_image_path(data_item: DatasetItem) -> str:
         """Returns the path of image."""
         return data_item.media.path
 
     @staticmethod
-    def get_classification_label(data_item:DatasetItem) -> str:
+    def get_classification_label(data_item: DatasetItem) -> str:
         """Returns the classfication label (multi-class)."""
         assert len(data_item.annotations) == 1, "Not implemented for multi-label"
         return data_item.annotations[0].label
-    
+
     @staticmethod
-    def export_dataset(dataset:Dataset, output_dir: str, data_format: str, save_media=True):
+    def export_dataset(dataset: Dataset, output_dir: str, data_format: str, save_media=True):
         """Export the Datumaro Dataset."""
         return Dataset.export(dataset, output_dir, data_format, save_media=save_media)
-    
-    @staticmethod 
+
+    @staticmethod
     def import_dataset(data_root: str, data_format: str) -> dict:
         """Import dataset."""
         return Dataset.import_from(data_root, format=data_format)
-     
+
     @staticmethod
-    def auto_split(
-        task: str, 
-        dataset: Dataset,
-        default_split_ratio: list = [("train", 0.8), ("val", 0.2)]
-    ) -> dict:
+    def auto_split(task: str, dataset: Dataset, default_split_ratio: list = [("train", 0.8), ("val", 0.2)]) -> dict:
         """Automatically split the dataset: train --> train/val."""
         splitter = Split(dataset, task.lower(), default_split_ratio)
         return splitter.subsets()
 
-    def _is_cvat_format(self, path: str) -> bool:
+    @staticmethod
+    def is_cvat_format(path: str) -> bool:
         """Detect whether data path is CVAT format or not.
         Currently, we used multi-video CVAT format for Action tasks.
-        
+
         This function can detect the multi-video CVAT format.
-        
+
         Multi-video CVAT format
         root
         |--video_0
@@ -96,11 +93,11 @@ class DatasetManager:
             |--annotations.xml
         |--video_1
         |--video_2
-        
+
         will be deprecated soon.
         """
-        
-        cvat_format = sorted(['images', 'annotations.xml'])
+
+        cvat_format = sorted(["images", "annotations.xml"])
         for sub_folder in os.listdir(path):
             # video_0, video_1, ...
             sub_folder_path = os.path.join(path, sub_folder)
@@ -111,20 +108,21 @@ class DatasetManager:
                     return False
         return True
 
-    def _is_mvtec_format(self, path: str) -> bool:
+    @staticmethod
+    def is_mvtec_format(path: str) -> bool:
         """Detect whether data path is MVTec format or not.
         Check the first-level architecture folder, to know whether the dataset is MVTec or not.
-        
+
         MVTec default structure like as below:
         root
         |--ground_truth
         |--train
         |--test
-        
+
         will be deprecated soon.
         """
-        
-        mvtec_format = sorted(['ground_truth', 'train', 'test'])
+
+        mvtec_format = sorted(["ground_truth", "train", "test"])
         folder_list = []
         for sub_folder in os.listdir(path):
             sub_folder_path = os.path.join(path, sub_folder)
@@ -132,4 +130,3 @@ class DatasetManager:
             if os.path.isdir(sub_folder_path):
                 folder_list.append(sub_folder)
         return sorted(folder_list) == mvtec_format
-     
