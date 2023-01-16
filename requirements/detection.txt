@@ -1,5 +1,5 @@
 mmcv-full==1.6.1
 mmdet==2.25.1
 pytorchcv
-mmcls==0.24
+mmcls==0.24.0
 timm
