@@ -711,22 +711,21 @@ class SwitchPipelineHook(Hook):
         self.decide_pipeline(dataset.pipeline.transforms)
 
     @check_input_parameters_type()
-    def before_train_iter(self, runner: BaseRunner):
-        dataset = self.get_dataset(runner)
-        self.decide_pipeline(dataset.pipeline.transforms)
-
-    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
         if self.cnt < self.interval-1:
             # Instead of using `runner.every_n_iters` or `runner.every_n_inner_iters`,
             # this condition is used to compare `self.cnt` with `self.interval` throughout the entire epochs.
             self.cnt += 1
 
-        elif self.cnt == self.interval-1:
-            # end using both pipelines
+        if self.cnt == self.interval-1:
             dataset = self.get_dataset(runner)
             for transform in dataset.pipeline.transforms:
-                if transform.__class__.__name__ == "TwoCropTransform" and self.cnt == self.interval-1:
-                    transform.is_both = False
-
-            self.cnt = 0
+                if transform.__class__.__name__ == "TwoCropTransform":
+                    if not transform.is_both:
+                        # if self.cnt == self.interval-1, there are two cases,
+                        # 1. self.cnt was updated in L696, so is_both must be on.
+                        # 2. if iter was already conducted, is_both must be off.
+                        transform.is_both = True
+                    else:
+                        transform.is_both = False
+                        self.cnt = 0
