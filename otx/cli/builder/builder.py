@@ -160,7 +160,7 @@ class Builder:
             if model_type:
                 workspace_path += f"-{model_type}"
         workspace_path = workspace_path if isinstance(workspace_path, Path) else Path(workspace_path)
-        Path.mkdir(workspace_path, exist_ok=False)
+        workspace_path.mkdir(exist_ok=False)
 
         # Load & Save Model Template
         otx_registry = OTXRegistry(str(otx_root)).filter(task_type=task_type)
@@ -177,8 +177,8 @@ class Builder:
         template_dir = Path(template.model_template_path).parent
 
         # Copy task base configuration file
-        task_configuration_path = template_dir.joinpath(template.hyper_parameters.base_path)
-        shutil.copyfile(task_configuration_path, str(workspace_path.joinpath("configuration.yaml")))
+        task_configuration_path = template_dir / template.hyper_parameters.base_path
+        shutil.copyfile(task_configuration_path, str(workspace_path / "configuration.yaml"))
         # Load Model Template
         template_config = MPAConfig.fromfile(template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
@@ -187,44 +187,44 @@ class Builder:
         train_type_rel_path = ""
         if train_type != "incremental":
             train_type_rel_path = train_type
-        model_dir = template_dir.absolute().joinpath(train_type_rel_path)
+        model_dir = template_dir.absolute() / train_type_rel_path
         if not model_dir.exists():
             raise ValueError(f"[otx build] {train_type} is not a type supported by OTX {task_type}")
-        train_type_dir = workspace_path.joinpath(train_type_rel_path)
-        Path.mkdir(train_type_dir, exist_ok=True)
+        train_type_dir = workspace_path / train_type_rel_path
+        train_type_dir.mkdir(exist_ok=True)
 
         # Update Hparams
-        if model_dir.joinpath("hparam.yaml").exists():
-            template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir.joinpath("hparam.yaml"))))
+        if (model_dir / "hparam.yaml").exists():
+            template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
 
         # Load & Save Model config
-        model_config = MPAConfig.fromfile(str(model_dir.joinpath("model.py")))
-        model_config.dump(str(train_type_dir.joinpath("model.py")))
+        model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
+        model_config.dump(str(train_type_dir / "model.py"))
 
         # Copy Data pipeline config
-        if model_dir.joinpath("data_pipeline.py").exists():
-            data_pipeline_config = MPAConfig.fromfile(str(model_dir.joinpath("data_pipeline.py")))
-            data_pipeline_config.dump(str(train_type_dir.joinpath("data_pipeline.py")))
-        template_config.dump(str(workspace_path.joinpath("template.yaml")))
+        if (model_dir / "data_pipeline.py").exists():
+            data_pipeline_config = MPAConfig.fromfile(str(model_dir / "data_pipeline.py"))
+            data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
+        template_config.dump(str(workspace_path / "template.yaml"))
 
         # Create Data.yaml
         data_subset_format = {"ann-files": None, "data-roots": None}
         data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
         data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
-        mmcv.dump(data_config, str(workspace_path.joinpath("data.yaml")))
+        mmcv.dump(data_config, str(workspace_path / "data.yaml"))
 
         # Copy compression_config.json
-        if model_dir.joinpath("compression_config.json").exists():
+        if (model_dir / "compression_config.json").exists():
             shutil.copyfile(
-                str(model_dir.joinpath("compression_config.json")),
-                str(train_type_dir.joinpath("compression_config.json")),
+                str(model_dir / "compression_config.json"),
+                str(train_type_dir / "compression_config.json"),
             )
 
-        print(f"[otx build] Create OTX workspace: {str(workspace_path)}")
+        print(f"[otx build] Create OTX workspace: {str(workspace_path.absolute())}")
         print(f"\tTask Type: {template.task_type}")
         print(f"\tLoad Model Template ID: {template.model_template_id}")
         print(f"\tLoad Model Name: {template.name}")
-        print(f"\tYou need to edit that file: {str(workspace_path.joinpath('data.yaml'))}")
+        print(f"\tYou need to edit that file: {str(workspace_path.absolute() / 'data.yaml')}")
 
     def build_backbone_config(self, backbone_type: str, output_path: Union[Path, str]):
         """Build Backbone configs from backbone type.

@@ -54,22 +54,22 @@ class TestOTXCLIBuilder:
         self.tmp_dir_path = tmp_dir_path if isinstance(tmp_dir_path, Path) else Path(tmp_dir_path)
 
     @e2e_pytest_unit
-    def test_builder_build_task_config_create_workspace(self) -> None:
+    def test_builder_build_task_config_workspace_path(self) -> None:
         """Create Classification custom workspace."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_create_workspace")
+        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
         self.otx_builder.build_task_config(**inputs)
         assert workspace_path.exists()
-        assert workspace_path.joinpath("configuration.yaml").exists()
-        assert workspace_path.joinpath("template.yaml").exists()
-        assert workspace_path.joinpath("model.py").exists()
-        assert workspace_path.joinpath("data.yaml").exists()
-        assert workspace_path.joinpath("data_pipeline.py").exists()
+        assert (workspace_path / "configuration.yaml").exists()
+        assert (workspace_path / "template.yaml").exists()
+        assert (workspace_path / "model.py").exists()
+        assert (workspace_path / "data.yaml").exists()
+        assert (workspace_path / "data_pipeline.py").exists()
 
     @e2e_pytest_unit
     def test_builder_build_task_config_reuse_same_path(self) -> None:
         """Raising Error of building workspace with already created path."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_create_workspace")
+        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
         with pytest.raises(FileExistsError):
             self.otx_builder.build_task_config(**inputs)
@@ -77,7 +77,7 @@ class TestOTXCLIBuilder:
     @e2e_pytest_unit
     def test_builder_build_task_config_normal_train_type(self) -> None:
         """Update hparam.yaml with train_type="selfsl"."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_check_update_hparams")
+        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_check_update_hparams"
         train_type = "selfsl"
         inputs = {
             "task_type": "classification",
@@ -87,21 +87,21 @@ class TestOTXCLIBuilder:
         }
         self.otx_builder.build_task_config(**inputs)
         assert workspace_path.exists()
-        assert workspace_path.joinpath("configuration.yaml").exists()
-        assert workspace_path.joinpath("template.yaml").exists()
-        assert workspace_path.joinpath("data.yaml").exists()
-        template = MPAConfig.fromfile(str(workspace_path.joinpath("template.yaml")))
+        assert (workspace_path / "configuration.yaml").exists()
+        assert (workspace_path / "template.yaml").exists()
+        assert (workspace_path / "data.yaml").exists()
+        template = MPAConfig.fromfile(str(workspace_path / "template.yaml"))
         expected_template_train_type = {"default_value": "SELFSUPERVISED"}
         assert template.hyper_parameters.parameter_overrides.algo_backend.train_type == expected_template_train_type
-        model_dir = workspace_path.joinpath(train_type)
+        model_dir = workspace_path / train_type
         assert model_dir.exists()
-        assert model_dir.joinpath("model.py").exists()
-        assert model_dir.joinpath("data_pipeline.py").exists()
+        assert (model_dir / "model.py").exists()
+        assert (model_dir / "data_pipeline.py").exists()
 
     @e2e_pytest_unit
     def test_builder_build_task_config_abnormal_train_type(self) -> None:
         """Raising ValueError with wrong train_type."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_abnormal_train_type")
+        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_abnormal_train_type"
         train_type = "unexpected"
         inputs = {
             "task_type": "classification",
@@ -115,7 +115,7 @@ class TestOTXCLIBuilder:
     @e2e_pytest_unit
     def test_builder_build_task_config_normal_model_type(self) -> None:
         """Build workspace with model_type argments."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_normal_model_type")
+        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_normal_model_type"
         model_type = "yolox"
         inputs = {
             "task_type": "detection",
@@ -124,14 +124,14 @@ class TestOTXCLIBuilder:
             "otx_root": self.otx_root,
         }
         self.otx_builder.build_task_config(**inputs)
-        assert workspace_path.joinpath("template.yaml").exists()
-        template = MPAConfig.fromfile(str(workspace_path.joinpath("template.yaml")))
+        assert (workspace_path / "template.yaml").exists()
+        template = MPAConfig.fromfile(str(workspace_path / "template.yaml"))
         assert template.name.lower() == model_type
 
     @e2e_pytest_unit
     def test_builder_build_task_config_abnormal_model_type(self) -> None:
         """Raise ValueError when build workspace with wrong model_type argments."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_build_task_config_abnormal_model_type")
+        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_abnormal_model_type"
         inputs = {
             "task_type": "detection",
             "model_type": "unexpected",
@@ -145,7 +145,7 @@ class TestOTXCLIBuilder:
     @pytest.mark.parametrize("backbone_type", ["mmcls.MMOVBackbone"])
     def test_builder_build_backbone_config_generate_backbone(self, backbone_type: str) -> None:
         """Generate backbone config file (mmcls.MMOVBackbone)."""
-        tmp_backbone_path = self.tmp_dir_path.joinpath("backbone.yaml")
+        tmp_backbone_path = self.tmp_dir_path / "backbone.yaml"
         self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
         assert tmp_backbone_path.exists()
         backbone_config = mmcv.load(str(tmp_backbone_path))
@@ -155,7 +155,7 @@ class TestOTXCLIBuilder:
     @pytest.mark.parametrize("backbone_type", ["mmcls.MMOVBackbone"])
     def test_builder_build_backbone_config_abnormal_output_path(self, backbone_type: str) -> None:
         """Raise ValueError with wrong output_path."""
-        tmp_backbone_path = self.tmp_dir_path.joinpath("wrong.path")
+        tmp_backbone_path = self.tmp_dir_path / "wrong.path"
         with pytest.raises(ValueError):
             self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
 
@@ -163,15 +163,15 @@ class TestOTXCLIBuilder:
     @pytest.mark.parametrize("backbone_type", ["mmcls.ResNet"])
     def test_builder_merge_backbone_update_model_config(self, backbone_type: str) -> None:
         """Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
+        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
         inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
         self.otx_builder.build_task_config(**inputs)
-        tmp_model_path = workspace_path.joinpath("model.py")
+        tmp_model_path = workspace_path / "model.py"
         assert tmp_model_path.exists()
         pre_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert pre_model_config.model.backbone.type == "otx.OTXEfficientNet"
 
-        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
+        tmp_backbone_path = workspace_path / "backbone.yaml"
         self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
         assert tmp_backbone_path.exists()
 
@@ -183,25 +183,25 @@ class TestOTXCLIBuilder:
     @e2e_pytest_unit
     def test_builder_merge_backbone_abnormal_model_path(self) -> None:
         """Raise ValueError with wrong model_config_path."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
-        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
+        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
+        tmp_backbone_path = workspace_path / "backbone.yaml"
         with pytest.raises(ValueError):
             self.otx_builder.merge_backbone("unexpected", tmp_backbone_path)
 
     @e2e_pytest_unit
     def test_builder_merge_backbone_abnormal_backbone_path(self) -> None:
         """Raise ValueError with wrong backbone_config_path."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
-        tmp_model_path = workspace_path.joinpath("model.py")
+        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
+        tmp_model_path = workspace_path / "model.py"
         with pytest.raises(ValueError):
             self.otx_builder.merge_backbone(tmp_model_path, "unexpected")
 
     @e2e_pytest_unit
     def test_builder_merge_backbone_without_out_indices(self) -> None:
         """Update model config without backbone's out_indices."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
-        tmp_model_path = workspace_path.joinpath("model.py")
-        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
+        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
+        tmp_model_path = workspace_path / "model.py"
+        tmp_backbone_path = workspace_path / "backbone.yaml"
         backbone_config = mmcv.load(str(tmp_backbone_path))
         assert backbone_config["backbone"].pop("out_indices") == (3,)
         mmcv.dump(backbone_config, str(tmp_backbone_path))
@@ -212,9 +212,9 @@ class TestOTXCLIBuilder:
     @e2e_pytest_unit
     def test_builder_merge_backbone_backbone_pretrained(self) -> None:
         """Update model config with backbone's pretrained path."""
-        workspace_path = self.tmp_dir_path.joinpath("test_builder_merge_backbone")
-        tmp_model_path = workspace_path.joinpath("model.py")
-        tmp_backbone_path = workspace_path.joinpath("backbone.yaml")
+        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
+        tmp_model_path = workspace_path / "model.py"
+        tmp_backbone_path = workspace_path / "backbone.yaml"
         backbone_config = mmcv.load(str(tmp_backbone_path))
         expected_pretrained = "pretrained.path"
         backbone_config["backbone"]["pretrained"] = expected_pretrained
