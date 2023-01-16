@@ -33,7 +33,15 @@ class ClsDirDataset(BaseDataset):
         use_labels (bool): dataset with labels or unlabels
     """
 
-    def __init__(self, data_dir, pipeline=[], classes=[], new_classes=[], use_labels=True, **kwargs):
+    def __init__(
+        self,
+        data_dir,
+        pipeline=[],
+        classes=[],
+        new_classes=[],
+        use_labels=True,
+        **kwargs,
+    ):
         self.data_dir = data_dir
         self._samples_per_gpu = kwargs.pop("samples_per_gpu", 1)
         self._workers_per_gpu = kwargs.pop("workers_per_gpu", 1)
@@ -111,12 +119,18 @@ class ClsDirDataset(BaseDataset):
     def load_annotations(self):
         img_path_list, img_class_list, img_prefix_list = self._read_dir()
         data_infos = []
-        for i, (img_path, img_cls, img_prefix) in enumerate(zip(img_path_list, img_class_list, img_prefix_list)):
+        for i, (img_path, img_cls, img_prefix) in enumerate(
+            zip(img_path_list, img_class_list, img_prefix_list)
+        ):
             if self.use_labels:
                 gt_label = np.array(self.class_to_idx[img_cls])
             else:
                 gt_label = np.array([-1])
-            info = {"img_prefix": img_prefix, "img_info": {"filename": img_path}, "gt_label": gt_label}
+            info = {
+                "img_prefix": img_prefix,
+                "img_info": {"filename": img_path},
+                "gt_label": gt_label,
+            }
             data_infos.append(info)
             if img_cls in self.new_classes:
                 self.img_indices["new"].append(i)
@@ -147,7 +161,9 @@ class ClsDirDataset(BaseDataset):
         if self.pipeline is None:
             return self.data_infos[idx]
 
-        data_infos = [copy.deepcopy(self.data_infos[idx]) for _ in range(self.num_pipes)]
+        data_infos = [
+            copy.deepcopy(self.data_infos[idx]) for _ in range(self.num_pipes)
+        ]
         if isinstance(self.pipeline, dict):
             results = {}
             for i, (k, v) in enumerate(self.pipeline.items()):
@@ -195,7 +211,9 @@ class ClsDirDataset(BaseDataset):
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
             accuracies = self.class_accuracy(results, gt_labels)
-            eval_results.update({f"{c} accuracy": a for c, a in zip(self.CLASSES, accuracies)})
+            eval_results.update(
+                {f"{c} accuracy": a for c, a in zip(self.CLASSES, accuracies)}
+            )
             eval_results.update({"mean accuracy": np.mean(accuracies)})
 
         return eval_results
