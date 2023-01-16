@@ -5,8 +5,9 @@
 import torch
 from mmcls.models.builder import CLASSIFIERS
 
-from otx.mpa.modules.models.classifiers.sam_classifier import SAMImageClassifier
 from otx.mpa.utils.logger import get_logger
+
+from .sam_classifier import SAMImageClassifier
 
 logger = get_logger()
 

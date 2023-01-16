@@ -203,12 +203,15 @@ class BYOL(nn.Module):
         return loss, log_vars
 
     @staticmethod
-    def state_dict_hook(module, state_dict, *args, **kwargs):
+    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):
         """Save only online backbone as output state_dict."""
         logger.info("----------------- BYOL.state_dict_hook() called")
-        output = OrderedDict()
-        for k, v in state_dict.items():
-            if "online_backbone." in k:
-                k = k.replace("online_backbone.", "")
-                output[k] = v
-        return output
+        for k in list(state_dict.keys()):
+            v = state_dict.pop(k)
+            if not prefix or k.startswith(prefix):
+                k = k.replace(prefix, "", 1)
+                if k.startswith("online_backbone."):
+                    k = k.replace("online_backbone.", "", 1)
+                k = prefix + k
+            state_dict[k] = v
+        return state_dict

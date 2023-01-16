@@ -3,8 +3,8 @@
 #
 
 from mmcv import ConfigDict
-from mmseg.utils import get_root_logger
 
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import recursively_update_cfg
 from otx.mpa.utils.logger import get_logger
@@ -13,8 +13,7 @@ logger = get_logger()
 
 
 class SegStage(Stage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    MODEL_BUILDER = build_segmentor
 
     def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
         """Create MMCV-consumable config from given inputs"""
@@ -23,13 +22,27 @@ class SegStage(Stage):
         cfg = self.cfg
         self.configure_model(cfg, model_cfg, training, **kwargs)
         self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
-        self.configure_data(cfg, data_cfg, training)
+        self.configure_data(cfg, training, data_cfg)
         self.configure_task(cfg, training, **kwargs)
+        self.configure_hook(cfg)
 
         return cfg
 
     def configure_model(self, cfg, model_cfg, training, **kwargs):
 
+        if model_cfg:
+            if hasattr(model_cfg, "model"):
+                cfg.merge_from_dict(model_cfg._cfg_dict)
+            else:
+                raise ValueError(
+                    "Unexpected config was passed through 'model_cfg'. "
+                    "it should have 'model' attribute in the config"
+                )
+            cfg.model_task = cfg.model.pop("task", "segmentation")
+            if cfg.model_task != "segmentation":
+                raise ValueError(f"Given model_cfg ({model_cfg.filename}) is not supported by segmentation recipe")
+
+        # OV-plugin
         ir_model_path = kwargs.get("ir_model_path")
         if ir_model_path:
 
@@ -46,37 +59,13 @@ class SegStage(Stage):
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-        if model_cfg:
-            if hasattr(model_cfg, "model"):
-                cfg.merge_from_dict(model_cfg._cfg_dict)
-            else:
-                raise ValueError(
-                    "Unexpected config was passed through 'model_cfg'. "
-                    "it should have 'model' attribute in the config"
-                )
-            cfg.model_task = cfg.model.pop("task", "segmentation")
-            if cfg.model_task != "segmentation":
-                raise ValueError(f"Given model_cfg ({model_cfg.filename}) is not supported by segmentation recipe")
-
-    def configure_ckpt(self, cfg, model_ckpt, pretrained=None):
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
-        if pretrained and isinstance(pretrained, str):
-            logger.info(f"Overriding cfg.load_from -> {pretrained}")
-            cfg.load_from = pretrained  # Overriding by stage input
-
-        if cfg.get("resume", False):
-            cfg.resume_from = cfg.load_from
-
-    def configure_data(self, cfg, data_cfg, training):
+    def configure_data(self, cfg, training, data_cfg, **kwargs):  # noqa: C901
         # Data
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
 
-        if training:
-            if cfg.data.get("val", False):
-                self.validate = True
         # Dataset
+        super().configure_data(cfg, training, **kwargs)
         src_data_cfg = Stage.get_data_cfg(cfg, "train")
         for mode in ["train", "val", "test"]:
             if src_data_cfg.type == "MPASegDataset" and cfg.data.get(mode, False):
@@ -88,9 +77,8 @@ class SegStage(Stage):
 
     def configure_task(self, cfg, training, **kwargs):
         """Adjust settings for task adaptation"""
-        self.logger = get_root_logger()
         if cfg.get("task_adapt", None):
-            self.logger.info(f"task config!!!!: training={training}")
+            logger.info(f"task config!!!!: training={training}")
             task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
 
             # Task classes

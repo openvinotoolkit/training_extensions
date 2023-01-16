@@ -643,3 +643,20 @@ class EMAMomentumUpdateHook(Hook):
                 runner.model.module.momentum_update()
             else:
                 runner.model.momentum_update()
+
+
+@HOOKS.register_module()
+class ForceTrainModeHook(Hook):
+    """Force train mode for model.
+
+    This is a workaround of a bug in EvalHook from MMCV.
+    If a model evaluation is enabled before training by setting 'start=0' in EvalHook,
+    EvalHook does not put a model in a training mode again after evaluation.
+
+    This simple hook forces to put a model in a training mode before every train epoch
+    with the lowest priority.
+    """
+
+    def before_train_epoch(self, runner):
+        """Make sure to put a model in a training mode before train epoch."""
+        runner.model.train()

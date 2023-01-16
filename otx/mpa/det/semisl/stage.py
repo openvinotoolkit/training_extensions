@@ -17,24 +17,15 @@ class SemiSLDetectionStage(DetectionStage):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def configure_data(self, cfg, data_cfg, training, **kwargs):
+    def configure_data(self, cfg, training, data_cfg, **kwargs):
         """Patch cfg.data."""
-        super().configure_data(cfg, data_cfg, training, **kwargs)
+        super().configure_data(cfg, training, data_cfg, **kwargs)
+        # Set unlabeled data hook
         if training:
-            if "unlabeled" in cfg.data:
+            if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 if len(cfg.data.unlabeled.get("pipeline", [])) == 0:
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
-                update_or_add_custom_hook(
-                    cfg,
-                    ConfigDict(
-                        type="UnlabeledDataHook",
-                        unlabeled_data_cfg=cfg.data.unlabeled,
-                        samples_per_gpu=cfg.data.unlabeled.pop("samples_per_gpu", cfg.data.samples_per_gpu),
-                        workers_per_gpu=cfg.data.unlabeled.pop("workers_per_gpu", cfg.data.workers_per_gpu),
-                        model_task=cfg.model_task,
-                        seed=cfg.seed,
-                    ),
-                )
+                self.configure_unlabeled_dataloader(cfg, self.distributed)
 
     def configure_task(self, cfg, training, **kwargs):
         """Patch config to support training algorithm."""
@@ -51,7 +42,6 @@ class SemiSLDetectionStage(DetectionStage):
                 self.configure_anchor(cfg)
             if self.task_adapt_type == "mpa":
                 self.configure_bbox_head(cfg)
-                self.configure_val_interval(cfg)
             else:
                 src_data_cfg = self.get_data_cfg(cfg, "train")
                 src_data_cfg.pop("old_new_indices", None)
