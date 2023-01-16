@@ -246,7 +246,7 @@ class TestToolsMultiClassClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.skip  # disable multi GPU test until resolving a bug
+    @pytest.mark.skip  # TODO: Enable after fix this - https://jira.devtools.intel.com/browse/CVS-101246
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -442,7 +442,7 @@ class TestToolsMultilabelClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
-    @pytest.mark.skip  # disable multi GPU test until resolving a bug
+    @pytest.mark.skip  # TODO: Enable after fix this - https://jira.devtools.intel.com/browse/CVS-101246
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -604,7 +604,7 @@ class TestToolsHierarchicalClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
-    @pytest.mark.skip  # disable multi GPU test until resolving a bug
+    @pytest.mark.skip  # TODO: Enable after fix this - https://jira.devtools.intel.com/browse/CVS-101246
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
