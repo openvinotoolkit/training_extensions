@@ -19,7 +19,7 @@ import json
 import logging
 import os
 import tempfile
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import numpy as np
@@ -30,7 +30,11 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 
-from otx.algorithms.action.adapters.openvino import model_wrappers
+from otx.algorithms.action.adapters.openvino import (
+    ActionClsDataLoader,
+    get_dataloader,
+    model_wrappers,
+)
 from otx.algorithms.action.configs.base import ActionConfig
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
@@ -119,51 +123,54 @@ class ActionOpenVINOInferencer(BaseInferencer):
             self.converter = DetectionBoxToAnnotationConverter(self.label_schema)
 
     @check_input_parameters_type()
-    def pre_process(self, idx: int, dataset: DatasetEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+    def pre_process(self, image: List[DatasetItemEntity]) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Inferencer for Action Recognition."""
-        return self.model.preprocess(idx, dataset)
+        return self.model.preprocess(image)
 
     @check_input_parameters_type()
-    def post_process(self, prediction, metadata: Dict[str, Any]) -> Optional[AnnotationSceneEntity]:
+    def post_process(
+        self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
+    ) -> Optional[AnnotationSceneEntity]:
         """Post-process function of OpenVINO Inferencer for Action Recognition."""
 
         prediction = self.model.postprocess(prediction, metadata)
         return self.converter.convert_to_annotation(prediction, metadata)
 
     @check_input_parameters_type()
-    def predict(self, idx: int, dataset: DatasetEntity) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
+    def predict(self, image: List[DatasetItemEntity]) -> AnnotationSceneEntity:
         """Predict function of OpenVINO Action Inferencer for Action Recognition."""
-        data, metadata = self.pre_process(idx, dataset)
+        data, metadata = self.pre_process(image)
         raw_predictions = self.forward(data)
         predictions = self.post_process(raw_predictions, metadata)
         return predictions
 
     # @check_input_parameters_type()
-    def forward(self, image: Dict[str, DatasetItemEntity]) -> Dict[str, np.ndarray]:
+    def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Action Inferencer for Action Recognition."""
 
         return self.model.infer_sync(image)
 
 
-class OTXOpenVinoDataLoader(DataLoader):
+class DataLoaderWrapper(DataLoader):
     """DataLoader implementation for ActionOpenVINOTask."""
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
+    @check_input_parameters_type()
+    def __init__(self, dataloader: DataLoader, inferencer: BaseInferencer):
         super().__init__(config=None)
-        self.dataset = dataset
+        self.dataloader = dataloader
         self.inferencer = inferencer
 
     @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Get item from dataset."""
-        annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(index, self.dataset)
+        item = self.dataloader[index]
+        annotation = item[len(item) // 2].annotation_scene
+        inputs, metadata = self.inferencer.pre_process(item)
         return (index, annotation), inputs, metadata
 
     def __len__(self):
         """Get length of dataset."""
-        return len(self.dataset)
+        return len(self.dataloader)
 
 
 class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
@@ -191,23 +198,24 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
             self.model.get_data("openvino.bin"),
         )
 
+    # pylint: disable=no-value-for-parameter
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
         """Infer function of OpenVINOTask for Action Recognition."""
-
         update_progress_callback = default_progress_callback
-        if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress  # type: ignore
-        dataset_size = len(dataset)
-        for i in range(dataset_size):
-            predicted_scene = self.inferencer.predict(i, dataset)
-            dataset_item = dataset[i]
-            if self.task_type == "ACTION_CLASSIFICATION":
-                dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
+        clip_len = self.inferencer.model.t
+        width = self.inferencer.model.w
+        height = self.inferencer.model.h
+        dataloader = get_dataloader(dataset, self.task_type, clip_len, width, height)
+        dataset_size = len(dataloader)
+        for i, data in enumerate(dataloader):
+            prediction = self.inferencer.predict(data)
+            if isinstance(dataloader, ActionClsDataLoader):
+                dataloader.add_prediction(dataset, data, prediction)
             else:
-                dataset_item.append_annotations(predicted_scene.annotations)
+                dataloader.add_prediction(data, prediction)
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
@@ -272,7 +280,11 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
-        data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
+        clip_len = self.inferencer.model.t
+        width = self.inferencer.model.w
+        height = self.inferencer.model.h
+        data_loader = get_dataloader(dataset, self.task_type, clip_len, width, height)
+        data_loader = DataLoaderWrapper(data_loader, self.inferencer)
 
         if self.model is None:
             raise RuntimeError("optimize failed, model is None")

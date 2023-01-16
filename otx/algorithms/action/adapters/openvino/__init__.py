@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from .dataloader import ActionClsDataLoader, get_dataloader
 from .model_wrappers import OTXActionCls, OTXActionDet
 
-__all__ = ["OTXActionCls", "OTXActionDet"]
+__all__ = ["OTXActionCls", "OTXActionDet", "ActionClsDataLoader", "get_dataloader"]

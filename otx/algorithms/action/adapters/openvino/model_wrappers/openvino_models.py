@@ -16,11 +16,11 @@
 
 # pylint: disable=invalid-name
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import numpy as np
 
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetItemEntity
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 try:
@@ -93,24 +93,26 @@ class OTXActionCls(Model):
         return layer_name
 
     @check_input_parameters_type()
-    def preprocess(self, idx: int, dataset: DatasetEntity):
+    def preprocess(self, inputs: List[DatasetItemEntity]):
         """Pre-process."""
-        start = idx - (self.t // 2) * self.interval
-        end = idx + ((self.t + 1)) // 2 * self.interval
-        frame_inds = list(range(start, end, self.interval))
-        frame_inds = np.clip(frame_inds, 0, len(dataset) - 1)
+        meta = {"original_shape": inputs[0].media.numpy.shape}
         frames = []
-        meta = {"original_shape": dataset[0].media.numpy.shape}
-        for index in frame_inds:
-            dataset_item = dataset[int(index)]
-            frame = dataset_item.media.numpy
+        for item in inputs:
+            frame = item.media.numpy
             frame = self.resize(frame, (self.w, self.h))
             frames.append(frame)
-        np_frames = np.expand_dims(frames, axis=(0, 1))  # [1, 1, T, H, W, C]
-        np_frames = np_frames.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
+        np_frames = self.reshape(frames)
         dict_inputs = {self.image_blob_name: np_frames}
         meta.update({"resized_shape": np_frames[0].shape})
         return dict_inputs, meta
+
+    @staticmethod
+    @check_input_parameters_type()
+    def reshape(inputs: List[np.ndarray]) -> np.ndarray:
+        """Reshape(expand, transpose, permute) the input np.ndarray."""
+        np_inputs = np.expand_dims(inputs, axis=(0, 1))  # [1, 1, T, H, W, C]
+        np_inputs = np_inputs.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
+        return np_inputs
 
     @check_input_parameters_type()
     # pylint: disable=unused-argument
@@ -159,25 +161,13 @@ class OTXActionDet(OTXActionCls):
                 out_names["labels"] = name
         return out_names
 
+    @staticmethod
     @check_input_parameters_type()
-    def preprocess(self, idx: int, dataset: DatasetEntity):
-        """Pre-process."""
-        start = idx - (self.t // 2) * self.interval
-        end = idx + ((self.t + 1)) // 2 * self.interval
-        frame_inds = list(range(start, end, self.interval))
-        frame_inds = np.clip(frame_inds, 0, len(dataset) - 1)
-        frames = []
-        meta = {"original_shape": dataset[0].media.numpy.shape}
-        for index in frame_inds:
-            dataset_item = dataset[int(index)]
-            frame = dataset_item.media.numpy
-            frame = self.resize(frame, (self.w, self.h))
-            frames.append(frame)
-        np_frames = np.expand_dims(frames, axis=(0))  # [1, T, H, W, C]
-        np_frames = np_frames.transpose(0, -1, 1, 2, 3)  # [1, C, T, H, W]
-        dict_inputs = {self.image_blob_name: np_frames}
-        meta.update({"resized_shape": np_frames[0].shape})
-        return dict_inputs, meta
+    def reshape(inputs: List[np.ndarray]) -> np.ndarray:
+        """Reshape(expand, transpose, permute) the input np.ndarray."""
+        np_inputs = np.expand_dims(inputs, axis=(0))  # [1, T, H, W, C]
+        np_inputs = np_inputs.transpose(0, -1, 1, 2, 3)  # [1, C, T, H, W]
+        return np_inputs
 
     @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):
