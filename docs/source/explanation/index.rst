@@ -11,7 +11,7 @@ This section consists of an algorithms explanation and describes additional feat
 5. Semi-supervised and Self-supervised algorithms.
 6. Additional algorithm-specific features such as a tiling method for Instance Segmentation and Rotated Object Detection.
 
-:ref:`Algorithms <features_section_ref>` section consists of:
+:ref:`Additional Features <features_section_ref>` section consists of:
 
 1. Overview of model optimization algorithms.
 2. Hyper parameters optimization functionality (HPO).
