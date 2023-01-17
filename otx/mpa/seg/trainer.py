@@ -56,6 +56,9 @@ class SegTrainer(SegStage):
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
+        # FIXME: Currently segmentor does not support multi batch evaluation.
+        cfg.data.val_dataloader.samples_per_gpu = 1
+
         # Dataset for HPO
         hp_config = kwargs.get("hp_config", None)
         if hp_config is not None:
@@ -95,6 +98,8 @@ class SegTrainer(SegStage):
 
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
+
+        self.configure_compat_cfg(cfg)
 
         # Save config
         # cfg.dump(osp.join(cfg.work_dir, 'config.py'))

@@ -98,6 +98,7 @@ class ClsInferrer(ClsStage):
             )
         )
         self.configure_samples_per_gpu(data_cfg, "test", distributed=False)
+        self.configure_compat_cfg(data_cfg)
 
         # Data loader
         self.dataset = build_dataset(data_cfg, "test", mmcls_build_dataset)

@@ -306,6 +306,46 @@ class Stage(object):
         cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
     @staticmethod
+    def configure_compat_cfg(
+        cfg: Config,
+    ):
+        """Modify config to keep the compatibility."""
+
+        def _configure_dataloader(cfg):
+            """Consume all the global dataloader config and convert them
+            to specific dataloader config as it would be deprecated in the future.
+            """
+            global_dataloader_cfg = {}
+            global_dataloader_cfg.update(
+                {
+                    k: cfg.data.pop(k)
+                    for k in list(cfg.data.keys())
+                    if k
+                    not in [
+                        "train",
+                        "val",
+                        "test",
+                        "unlabeled",
+                        "train_dataloader",
+                        "val_dataloader",
+                        "test_dataloader",
+                        "unlabeled_dataloader",
+                    ]
+                }
+            )
+
+            for subset in ["train", "val", "test", "unlabeled"]:
+                if subset not in cfg.data:
+                    continue
+                dataloader_cfg = cfg.data.get(f"{subset}_dataloader", None)
+                if dataloader_cfg is None:
+                    raise AttributeError(f"{subset}_dataloader is not found in config.")
+                dataloader_cfg = {**global_dataloader_cfg, **dataloader_cfg}
+                cfg.data[f"{subset}_dataloader"] = dataloader_cfg
+
+        _configure_dataloader(cfg)
+
+    @staticmethod
     def configure_fp16_optimizer(cfg: Config, distributed: bool = False):
         """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
 
