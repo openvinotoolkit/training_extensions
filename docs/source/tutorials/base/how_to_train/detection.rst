@@ -115,7 +115,7 @@ Training
 
 .. note::
 
-  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../../explanation/Main_algorithms/object_detection>`.
+  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/Main_algorithms/object_detection>`.
 
   To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
