@@ -34,7 +34,6 @@ def get_requirements() -> List[str]:
 
 setup(
     name="anomaly tasks",
-    version="ote-alpha",
     packages=find_packages(
         include=[
             "adapters",
