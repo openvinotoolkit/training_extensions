@@ -119,9 +119,7 @@ class ClsDirDataset(BaseDataset):
     def load_annotations(self):
         img_path_list, img_class_list, img_prefix_list = self._read_dir()
         data_infos = []
-        for i, (img_path, img_cls, img_prefix) in enumerate(
-            zip(img_path_list, img_class_list, img_prefix_list)
-        ):
+        for i, (img_path, img_cls, img_prefix) in enumerate(zip(img_path_list, img_class_list, img_prefix_list)):
             if self.use_labels:
                 gt_label = np.array(self.class_to_idx[img_cls])
             else:
@@ -161,9 +159,7 @@ class ClsDirDataset(BaseDataset):
         if self.pipeline is None:
             return self.data_infos[idx]
 
-        data_infos = [
-            copy.deepcopy(self.data_infos[idx]) for _ in range(self.num_pipes)
-        ]
+        data_infos = [copy.deepcopy(self.data_infos[idx]) for _ in range(self.num_pipes)]
         if isinstance(self.pipeline, dict):
             results = {}
             for i, (k, v) in enumerate(self.pipeline.items()):
@@ -211,9 +207,7 @@ class ClsDirDataset(BaseDataset):
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
             accuracies = self.class_accuracy(results, gt_labels)
-            eval_results.update(
-                {f"{c} accuracy": a for c, a in zip(self.CLASSES, accuracies)}
-            )
+            eval_results.update({f"{c} accuracy": a for c, a in zip(self.CLASSES, accuracies)})
             eval_results.update({"mean accuracy": np.mean(accuracies)})
 
         return eval_results

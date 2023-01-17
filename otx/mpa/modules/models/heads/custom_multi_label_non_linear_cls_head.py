@@ -31,9 +31,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         hid_channels=1280,
         act_cfg=dict(type="ReLU"),
         scale=1.0,
-        loss=dict(
-            type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0
-        ),
+        loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
         dropout=False,
         normalized=False,
     ):
