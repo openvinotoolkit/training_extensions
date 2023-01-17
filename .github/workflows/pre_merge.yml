@@ -27,7 +27,7 @@ jobs:
       - name: Code Quality Checks
         run: tox -re pre-commit
   Pre-Merge-Tests:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64, gpu_label]
     needs: Code-Quality-Checks
     timeout-minutes: 1440
     if: github.event.pull_request.draft == false
