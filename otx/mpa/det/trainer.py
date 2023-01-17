@@ -113,6 +113,8 @@ class DetectionTrainer(DetectionStage):
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
 
+        self.configure_compat_cfg(cfg)
+
         # Save config
         # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
         # logger.info(f'Config:\n{cfg.pretty_text}')

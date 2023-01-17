@@ -93,6 +93,8 @@ class ClsTrainer(ClsStage):
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
 
+        self.configure_compat_cfg(cfg)
+
         # Save config
         # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
         # logger.info(f'Config:\n{cfg.pretty_text}')
@@ -102,8 +104,6 @@ class ClsTrainer(ClsStage):
         if validate:
             val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
             val_loader_cfg = {
-                "samples_per_gpu": cfg.data.samples_per_gpu,
-                "workers_per_gpu": cfg.data.workers_per_gpu,
                 # cfg.gpus will be ignored if distributed
                 "num_gpus": len(cfg.gpu_ids),
                 "dist": self.distributed,
