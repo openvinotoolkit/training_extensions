@@ -28,8 +28,6 @@ def build_detector(
 
     from mmdet.models import build_detector as origin_build_detector
 
-    model_cfg = deepcopy(config.model)
-
     if cfg_options is not None:
         config.merge_from_dict(cfg_options)
 

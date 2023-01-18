@@ -54,7 +54,7 @@ fi
 pip install --upgrade 'pip>=22.0' wheel setuptools build || exit 1
 
 # Get CUDA version.
-CUDA_HOME_CANDIDATE=/usr/local/cuda
+CUDA_HOME_CANDIDATE=/usr/local/cuda-11.1
 if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
   echo "Exporting CUDA_HOME as ${CUDA_HOME_CANDIDATE}"
   export CUDA_HOME=${CUDA_HOME_CANDIDATE}
@@ -104,7 +104,7 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 #   - numpy: mmpycocotool uses source distribution, setup.py imports numpy
 #   - torch: mmdet/seg are installed via source, setup.py imports torch
 # shellcheck disable=SC2102
-pip install -e ../../[full] || exit 1
+pip install -e ../../[full] -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
 deactivate
 
