@@ -89,10 +89,8 @@ class SegInferrer(SegStage):
             )
         )
         self.configure_samples_per_gpu(data_cfg, "test", distributed=False)
-        samples_per_gpu = data_cfg.data.test_dataloader.get(
-            "samples_per_gpu",
-            data_cfg.data.get("samples_per_gpu", 1),
-        )
+        self.configure_compat_cfg(data_cfg)
+        samples_per_gpu = data_cfg.data.test_dataloader.get("samples_per_gpu", 1)
         if samples_per_gpu > 1:
             # Replace 'ImageToTensor' to 'DefaultFormatBundle'
             data_cfg.data.test.pipeline = replace_ImageToTensor(data_cfg.data.test.pipeline)

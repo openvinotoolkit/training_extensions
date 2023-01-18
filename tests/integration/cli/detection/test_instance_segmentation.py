@@ -1,4 +1,4 @@
-"""Tests for MPA Class-Incremental Learning for object detection with OTX CLI"""
+"""Tests for Class-Incremental Learning for object detection with OTX CLI"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -16,6 +16,7 @@ from otx.cli.utils.tests import (
     nncf_eval_testing,
     nncf_export_testing,
     nncf_optimize_testing,
+    nncf_validate_fq_testing,
     otx_demo_deployment_testing,
     otx_demo_openvino_testing,
     otx_demo_testing,
@@ -31,30 +32,25 @@ from otx.cli.utils.tests import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    pot_validate_fq_testing,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'car & tree' class
 args0 = {
-    "--train-ann-file": "data/car_tree_bug/annotations/instances_car_tree.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/instances_car_tree.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/instances_car_tree.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
+    "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
+    "--test-data-roots": "data/coco_dataset/coco_instance_segmentation",
+    "--input": "data/coco_dataset/coco_instance_segmentation/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "2"],
 }
 
-# Class-Incremental learning w/ 'car', 'tree', 'bug' classes
+# Class-Incremental learning w/ 'car', 'tree', 'bug' classes ## TODO: add class incr sample
 args = {
-    "--train-ann-file": "data/car_tree_bug/annotations/instances_default.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/instances_default.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/instances_default.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
+    "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
+    "--test-data-roots": "data/coco_dataset/coco_instance_segmentation",
+    "--input": "data/coco_dataset/coco_instance_segmentation/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "2"],
 }
 
@@ -190,6 +186,15 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -214,10 +219,17 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_validate_fq(self, template, tmp_dir_path):
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

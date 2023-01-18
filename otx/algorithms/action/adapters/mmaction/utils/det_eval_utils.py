@@ -115,8 +115,8 @@ def load_gt(video_infos):
     labels = defaultdict(list)
     for video_info in video_infos:
         img_key = video_info["img_key"]
-        gt_bboxes = video_info["ann"]["gt_bboxes"]
-        gt_labels = video_info["ann"]["gt_labels"]
+        gt_bboxes = video_info["gt_bboxes"]
+        gt_labels = video_info["gt_labels"]
         for gt_label, gt_bbox in zip(gt_labels, gt_bboxes):
             for idx, val in enumerate(gt_label):
                 if val == 1:

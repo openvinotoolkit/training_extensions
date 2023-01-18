@@ -1,4 +1,4 @@
-"""Tests for MPA Class-Incremental Learning for object detection with OTX CLI"""
+"""Tests for Class-Incremental Learning for object detection with OTX CLI"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -16,6 +16,7 @@ from otx.cli.utils.tests import (
     nncf_eval_testing,
     nncf_export_testing,
     nncf_optimize_testing,
+    nncf_validate_fq_testing,
     otx_demo_deployment_testing,
     otx_demo_openvino_testing,
     otx_demo_testing,
@@ -31,42 +32,34 @@ from otx.cli.utils.tests import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    pot_validate_fq_testing,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
-# Pre-train w/ 'person' class
+# Pre-train w/ 'person' class ##TODO: Currently, it is closed to sample test. need to change other sample
 args0 = {
-    "--train-ann-file": "data/airport/annotation_person_train.json",
-    "--train-data-roots": "data/airport/train",
-    "--val-ann-file": "data/airport/annotation_person_train.json",
-    "--val-data-roots": "data/airport/train",
-    "--test-ann-files": "data/airport/annotation_person_train.json",
-    "--test-data-roots": "data/airport/train",
-    "--input": "data/airport/train",
+    "--train-data-roots": "data/coco_dataset/coco_detection",
+    "--val-data-roots": "data/coco_dataset/coco_detection",
+    "--test-data-roots": "data/coco_dataset/coco_detection",
+    "--input": "data/coco_dataset/coco_detection/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
 args = {
-    "--train-ann-file": "data/airport/annotation_example_train.json",
-    "--train-data-roots": "data/airport/train",
-    "--val-ann-file": "data/airport/annotation_example_train.json",
-    "--val-data-roots": "data/airport/train",
-    "--test-ann-files": "data/airport/annotation_example_train.json",
-    "--test-data-roots": "data/airport/train",
-    "--input": "data/airport/train",
+    "--train-data-roots": "data/coco_dataset/coco_detection",
+    "--val-data-roots": "data/coco_dataset/coco_detection",
+    "--test-data-roots": "data/coco_dataset/coco_detection",
+    "--input": "data/coco_dataset/coco_detection/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
 args_semisl = {
-    "--train-ann-file": "data/airport/annotation_example_train.json",
-    "--train-data-roots": "data/airport/train",
-    "--val-ann-file": "data/airport/annotation_example_train.json",
-    "--val-data-roots": "data/airport/train",
-    "--test-ann-files": "data/airport/annotation_example_train.json",
-    "--test-data-roots": "data/airport/train",
-    "--unlabeled-data-roots": "data/airport/train",
-    "--input": "data/airport/train",
+    "--train-data-roots": "data/coco_dataset/coco_detection",
+    "--val-data-roots": "data/coco_dataset/coco_detection",
+    "--test-data-roots": "data/coco_dataset/coco_detection",
+    "--unlabeled-data-roots": "data/coco_dataset/coco_detection",
+    "--input": "data/coco_dataset/coco_detection/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -210,6 +203,15 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -234,10 +236,17 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_validate_fq(self, template, tmp_dir_path):
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
