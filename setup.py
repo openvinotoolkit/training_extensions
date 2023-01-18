@@ -20,10 +20,11 @@ from setuptools import Extension, find_packages, setup
 
 try:
     from torch.utils.cpp_extension import CppExtension, BuildExtension
-    cmd_class = {'build_ext': BuildExtension}
+
+    cmd_class = {"build_ext": BuildExtension}
 except ModuleNotFoundError:
     cmd_class = {}
-    print('Skip building ext ops due to the absence of torch.')
+    print("Skip building ext ops due to the absence of torch.")
 
 
 def load_module(name: str = "otx/__init__.py"):
@@ -242,7 +243,9 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 
     requirements: List[str] = []
     for requirement_file in requirement_files:
-        with open(f"requirements/{requirement_file}.txt", "r", encoding="UTF-8") as file:
+        with open(
+            f"requirements/{requirement_file}.txt", "r", encoding="UTF-8"
+        ) as file:
             for line in file:
                 package = line.strip()
                 if package and not package.startswith(("#", "-f")):
@@ -255,26 +258,23 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 
 
 def get_extensions():
-    def _cython_modules(src_dir: str = "otx"):
-        Cython.Compiler.Options.annotate = True
+    def _cython_modules():
+        package_root = os.path.dirname(__file__)
 
-        ext_modules = []
-        print("_cython")
+        cython_files = [
+            "otx/mpa/modules/datasets/pipelines/transforms/cython_augments/pil_augment.pyx",
+            "otx/mpa/modules/datasets/pipelines/transforms/cython_augments/cv_augment.pyx",
+        ]
 
-        for root, dirs, files in os.walk(src_dir):
-            for fname in files:
-                name, ext = os.path.splitext(fname)
-                if ext != ".pyx":
-                    continue
-                cython_aug_modl = root.replace("/", ".")
-                ext_modules += [
-                    Extension(
-                        f"{cython_aug_modl}.{name}",
-                        [os.path.join(root, fname)],
-                        include_dirs=[numpy.get_include()],
-                        extra_compile_args=["-O3"]
-                    )
-                ]
+        ext_modules = [
+            Extension(
+                cython_file.rstrip(".pyx").replace("/", "."),
+                [os.path.join(package_root, cython_file)],
+                include_dirs=[numpy.get_include()],
+                extra_compile_args=["-O3"],
+            )
+            for cython_file in cython_files
+        ]
 
         return cythonize(ext_modules, annotate=True)
 
@@ -282,8 +282,8 @@ def get_extensions():
         ext_modules = []
 
         # prevent ninja from using too many resources
-        os.environ.setdefault('MAX_JOBS', '4')
-        extra_compile_args = {'cxx': []}
+        os.environ.setdefault("MAX_JOBS", "4")
+        extra_compile_args = {"cxx": []}
 
         # otx.mpa.modules._mpl
         op_files = glob("./otx/mpa/csrc/mpl/*.cpp")
@@ -293,7 +293,8 @@ def get_extensions():
             sources=op_files,
             include_dirs=[include_path],
             define_macros=[],
-            extra_compile_args=extra_compile_args)
+            extra_compile_args=extra_compile_args,
+        )
         ext_modules.append(ext_ops)
         return ext_modules
 
@@ -312,8 +313,18 @@ EXTRAS_REQUIRE = {
     "classification": get_requirements(requirement_files="classification"),
     "detection": get_requirements(requirement_files="detection"),
     "segmentation": get_requirements(requirement_files="segmentation"),
-    "mpa": get_requirements(requirement_files=["classification", "detection", "segmentation", "action"]),
-    "full": get_requirements(requirement_files=["anomaly", "classification", "detection", "segmentation", "action"]),
+    "mpa": get_requirements(
+        requirement_files=["classification", "detection", "segmentation", "action"]
+    ),
+    "full": get_requirements(
+        requirement_files=[
+            "anomaly",
+            "classification",
+            "detection",
+            "segmentation",
+            "action",
+        ]
+    ),
 }
 DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
 
@@ -322,7 +333,9 @@ setup(
     name="otx",
     version=get_otx_version(),
     packages=find_packages(exclude=("tests",)),
-    package_data={"": ["requirements.txt", "README.md", "LICENSE"]},  # Needed for exportable code
+    package_data={
+        "": ["requirements.txt", "README.md", "LICENSE"]
+    },  # Needed for exportable code
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     install_requires=REQUIRED_PACKAGES,
