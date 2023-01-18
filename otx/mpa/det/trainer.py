@@ -59,12 +59,6 @@ class DetectionTrainer(DetectionStage):
         if 'val' in cfg.data:
             cfg.data.val_dataloader.samples_per_gpu = 1
 
-        # FIXME: scale_factors is fixed at 1 even batch_size > 1 in simple_test_mask
-        # Need to investigate, possibly due to OpenVINO
-        if "roi_head" in model_cfg.model:
-            if "mask_head" in model_cfg.model.roi_head:
-                cfg.data.val_dataloader.samples_per_gpu = 1
-
         if hasattr(cfg, "hparams"):
             if cfg.hparams.get("adaptive_anchor", False):
                 num_ratios = cfg.hparams.get("num_anchor_ratios", 5)
