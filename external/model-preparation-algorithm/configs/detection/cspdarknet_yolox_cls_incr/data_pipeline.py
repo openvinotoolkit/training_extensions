@@ -52,7 +52,6 @@ data = dict(
             pipeline=[dict(type="LoadImageFromFile", to_float32=True), dict(type="LoadAnnotations", with_bbox=True)],
         ),
         pipeline=train_pipeline,
-        dynamic_scale=img_scale,
     ),
     val=dict(
         type=dataset_type,

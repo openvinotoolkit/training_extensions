@@ -21,7 +21,7 @@ _base_ = [
 ]
 
 model = dict(
-    type="ClassIncrSegmentor",
+    type="ClassIncrEncoderDecoder",
     pretrained=None,
     decode_head=dict(
         type="FCNHead",
@@ -42,7 +42,6 @@ model = dict(
             dict(
                 type="CrossEntropyLoss",
                 use_sigmoid=False,
-                sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
                 loss_weight=1.0,
             ),
         ],

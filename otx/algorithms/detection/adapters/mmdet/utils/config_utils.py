@@ -1,6 +1,6 @@
 """Collection of utils for task implementation in Detection Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +15,20 @@
 # and limitations under the License.
 
 import math
-from collections import defaultdict
 from typing import List, Optional, Union
 
-import torch
 from mmcv import Config, ConfigDict
-from mmdet.models.detectors import BaseDetector
 
 from otx.algorithms.common.adapters.mmcv.utils import (
+    get_configs_by_keys,
+    get_configs_by_pairs,
+    get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
     patch_color_conversion,
     prepare_work_dir,
     remove_from_config,
+    update_config,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
@@ -37,7 +38,6 @@ from otx.algorithms.detection.utils.data import (
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     DirectoryPathCheck,
@@ -63,78 +63,52 @@ def patch_config(
     config: Config,
     work_dir: str,
     labels: List[LabelEntity],
-    domain: Domain,
-    random_seed: Optional[int] = None,
 ):  # pylint: disable=too-many-branches
     """Update config function."""
-    # Set runner if not defined.
-    if "runner" not in config:
-        config.runner = ConfigDict({"type": "EpochBasedRunner"})
-
-    # Check that there is no conflict in specification of number of training epochs.
-    # Move global definition of epochs inside runner config.
-    if "total_epochs" in config:
-        if is_epoch_based_runner(config.runner):
-            if config.runner.max_epochs != config.total_epochs:
-                logger.warning("Conflicting declaration of training epochs number.")
-            config.runner.max_epochs = config.total_epochs
-        else:
-            logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
-        remove_from_config(config, "total_epochs")
-
-    # Change runner's type.
-    if is_epoch_based_runner(config.runner):
-        logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-        config.runner.type = "EpochRunnerWithCancel"
-    else:
-        logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-        config.runner.type = "IterBasedRunnerWithCancel"
 
     # Add training cancelation hook.
     if "custom_hooks" not in config:
         config.custom_hooks = []
     if "CancelTrainingHook" not in {hook.type for hook in config.custom_hooks}:
-        config.custom_hooks.append({"type": "CancelTrainingHook"})
+        config.custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
 
     # Remove high level data pipelines definition leaving them only inside `data` section.
     remove_from_config(config, "train_pipeline")
     remove_from_config(config, "test_pipeline")
-    # Patch data pipeline, making it OTX-compatible.
-    patch_datasets(config, domain)
 
-    # Remove FP16 config if running on CPU device and revert to FP32
-    # https://github.com/pytorch/pytorch/issues/23377
-    if not torch.cuda.is_available() and "fp16" in config:
-        logger.info("Revert FP16 to FP32 on CPU device")
-        remove_from_config(config, "fp16")
-
-    if "log_config" not in config:
-        config.log_config = ConfigDict()
-    if "evaluation" not in config:
-        config.evaluation = ConfigDict()
     evaluation_metric = config.evaluation.get("metric")
     if evaluation_metric is not None:
         config.evaluation.save_best = evaluation_metric
-    if "checkpoint_config" not in config:
-        config.checkpoint_config = ConfigDict()
     config.checkpoint_config.max_keep_ckpts = 5
     config.checkpoint_config.interval = config.evaluation.get("interval", 1)
+
     set_data_classes(config, labels)
+
     config.gpu_ids = range(1)
     config.work_dir = work_dir
-    config.seed = random_seed
+
+
+@check_input_parameters_type()
+def patch_model_config(
+    config: Config,
+    labels: List[LabelEntity],
+):
+    """Patch model config."""
+    set_num_classes(config, len(labels))
 
 
 @check_input_parameters_type()
 def set_hyperparams(config: Config, hyperparams: DetectionConfig):
     """Set function for hyperparams (DetectionConfig)."""
+    config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
+    config.data.workers_per_gpu = int(hyperparams.learning_parameters.num_workers)
     config.optimizer.lr = float(hyperparams.learning_parameters.learning_rate)
+
+    total_iterations = int(hyperparams.learning_parameters.num_iters)
+
     config.lr_config.warmup_iters = int(hyperparams.learning_parameters.learning_rate_warmup_iters)
     if config.lr_config.warmup_iters == 0:
         config.lr_config.warmup = None
-    config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
-    config.data.workers_per_gpu = int(hyperparams.learning_parameters.num_workers)
-    total_iterations = int(hyperparams.learning_parameters.num_iters)
     if is_epoch_based_runner(config.runner):
         config.runner.max_epochs = total_iterations
     else:
@@ -175,22 +149,34 @@ def patch_adaptive_repeat_dataset(
             data_train.times = new_repeat
 
 
-@check_input_parameters_type({"train_dataset": DatasetParamTypeCheck, "val_dataset": DatasetParamTypeCheck})
+@check_input_parameters_type()
 def prepare_for_training(
     config: Union[Config, ConfigDict],
-    train_dataset: DatasetEntity,
-    val_dataset: DatasetEntity,
-    time_monitor: TimeMonitorCallback,
-    learning_curves: defaultdict,
-) -> Config:
+    data_config: ConfigDict,
+) -> Union[Config, ConfigDict]:
     """Prepare configs for training phase."""
     prepare_work_dir(config)
-    data_train = get_data_cfg(config)
-    data_train.otx_dataset = train_dataset
-    config.data.val.otx_dataset = val_dataset
-    patch_adaptive_repeat_dataset(config, len(train_dataset))
-    config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
-    config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
+
+    train_num_samples = 0
+    for subset in ["train", "val", "test"]:
+        data_config_ = data_config.data.get(subset)
+        config_ = config.data.get(subset)
+        if data_config_ is None:
+            continue
+        for key in ["otx_dataset", "labels"]:
+            found = get_configs_by_keys(data_config_, key, return_path=True)
+            if len(found) == 0:
+                continue
+            assert len(found) == 1
+            if subset == "train" and key == "otx_dataset":
+                found_value = list(found.values())[0]
+                if found_value:
+                    train_num_samples = len(found_value)
+            update_config(config_, found)
+
+    if train_num_samples > 0:
+        patch_adaptive_repeat_dataset(config, train_num_samples)
+
     return config
 
 
@@ -199,13 +185,16 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
     """Setter data classes into config."""
     # Save labels in data configs.
     for subset in ("train", "val", "test"):
-        cfg = get_data_cfg(config, subset)
-        cfg.labels = labels
-        config.data[subset].labels = labels
+        for cfg in get_dataset_configs(config, subset):
+            cfg.labels = labels
+            #  config.data[subset].labels = labels
 
+
+@check_input_parameters_type()
+def set_num_classes(config: Config, num_classes: int):
+    """Set num classes."""
     # Set proper number of classes in model's detection heads.
     head_names = ("mask_head", "bbox_head", "segm_head")
-    num_classes = len(labels)
     if "roi_head" in config.model:
         for head_name in head_names:
             if head_name in config.model.roi_head:
@@ -223,33 +212,49 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 
 
 @check_input_parameters_type()
-def patch_datasets(config: Config, domain: Domain):
+def patch_datasets(
+    config: Config,
+    domain: Domain = Domain.DETECTION,
+    subsets: Optional[List[str]] = None,
+    **kwargs,
+):
     """Update dataset configs."""
-
     assert "data" in config
-    for subset in ("train", "val", "test", "unlabeled"):
-        cfg = config.data.get(subset, None)
-        if not cfg:
+    assert "type" in kwargs
+
+    if subsets is None:
+        subsets = ["train", "val", "test", "unlabeled"]
+
+    def update_pipeline(cfg):
+        if subset == "train":
+            for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
+                get_meta_keys(collect_cfg)
+        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
+            cfg_.type = "LoadImageFromOTXDataset"
+        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
+            cfg_.type = "LoadAnnotationFromOTXDataset"
+            cfg_.domain = domain
+            cfg_.min_size = cfg.pop("min_size", -1)
+
+    for subset in subsets:
+        if subset not in config.data:
             continue
-        if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
-            cfg = cfg.dataset
-        cfg.type = "MPADetDataset"
-        cfg.domain = domain
-        cfg.otx_dataset = None
-        cfg.labels = None
-        remove_from_config(cfg, "ann_file")
-        remove_from_config(cfg, "img_prefix")
-        remove_from_config(cfg, "classes")  # Get from DatasetEntity
-        for pipeline_step in cfg.pipeline:
-            if pipeline_step.type == "LoadImageFromFile":
-                pipeline_step.type = "LoadImageFromOTXDataset"
-            if pipeline_step.type == "LoadAnnotations":
-                pipeline_step.type = "LoadAnnotationFromOTXDataset"
-                pipeline_step.domain = domain
-                pipeline_step.min_size = cfg.pop("min_size", -1)
-            if subset == "train" and pipeline_step.type == "Collect":
-                pipeline_step = get_meta_keys(pipeline_step)
-        patch_color_conversion(cfg.pipeline)
+        config.data[f"{subset}_dataloader"] = config.data.get(f"{subset}_dataloader", ConfigDict())
+
+        cfgs = get_dataset_configs(config, subset)
+        for cfg in cfgs:
+            cfg.domain = domain
+            cfg.otx_dataset = None
+            cfg.labels = None
+            cfg.update(kwargs)
+
+            remove_from_config(cfg, "ann_file")
+            remove_from_config(cfg, "img_prefix")
+            remove_from_config(cfg, "classes")  # Get from DatasetEntity
+
+            update_pipeline(cfg)
+
+    patch_color_conversion(config)
 
 
 def patch_evaluation(config: Config):
@@ -263,8 +268,23 @@ def patch_evaluation(config: Config):
     config.early_stop_metric = "mAP"
 
 
+def should_cluster_anchors(model_cfg: Config):
+    """Check whether cluster anchors or not."""
+    if (
+        hasattr(model_cfg.model, "bbox_head")
+        and hasattr(model_cfg.model.bbox_head, "anchor_generator")
+        and getattr(
+            model_cfg.model.bbox_head.anchor_generator,
+            "reclustering_anchors",
+            False,
+        )
+    ):
+        return True
+    return False
+
+
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector):
+def cluster_anchors(model_config: Config, data_config: Config, dataset: DatasetEntity):
     """Update configs for cluster_anchors."""
     if not KMEANS_IMPORT:
         raise ImportError(
@@ -274,9 +294,9 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
 
     logger.info("Collecting statistics from training dataset to cluster anchor boxes...")
     [target_wh] = [
-        transforms.img_scale for transforms in config.data.test.pipeline if transforms.type == "MultiScaleFlipAug"
+        transforms.img_scale for transforms in data_config.data.test.pipeline if transforms.type == "MultiScaleFlipAug"
     ]
-    prev_generator = config.model.bbox_head.anchor_generator
+    prev_generator = model_config.model.bbox_head.anchor_generator
     group_as = [len(width) for width in prev_generator.widths]
     wh_stats = get_sizes_from_dataset_entity(dataset, list(target_wh))
 
@@ -285,7 +305,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
             f"There are not enough objects to cluster: {len(wh_stats)} were detected, while it should be "
             f"at least {sum(group_as)}. Anchor box clustering was skipped."
         )
-        return config, model
+        return
 
     widths, heights = get_anchor_boxes(wh_stats, group_as)
     logger.info(
@@ -296,23 +316,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
         f"Anchor boxes heights have been updated from {format_list_to_str(prev_generator.heights)} "
         f"to {format_list_to_str(heights)}"
     )
-    config_generator = config.model.bbox_head.anchor_generator
+    config_generator = model_config.model.bbox_head.anchor_generator
     config_generator.widths, config_generator.heights = widths, heights
 
-    model_generator = model.bbox_head.anchor_generator
-    model_generator.widths, model_generator.heights = widths, heights
-    model_generator.base_anchors = model_generator.gen_base_anchors()
-
-    config.model.bbox_head.anchor_generator = config_generator
-    model.bbox_head.anchor_generator = model_generator
-    return config, model
-
-
-# TODO Replace this with function in common
-@check_input_parameters_type()
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
+    model_config.model.bbox_head.anchor_generator = config_generator

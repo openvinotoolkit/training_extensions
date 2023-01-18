@@ -23,7 +23,10 @@ from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
-from otx.algorithms.common.utils.data import get_unlabeled_dataset
+from otx.algorithms.common.utils.data import get_dataset
+from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    should_cluster_anchors,
+)
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -63,6 +66,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in DetectionTrainTask."""
+        assert self._model_cfg is not None
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
@@ -75,12 +79,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             "confidence_threshold": self.confidence_threshold,
             "VERSION": 1,
         }
-        if (
-            self._model_cfg
-            and hasattr(self._model_cfg.model, "bbox_head")
-            and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
-            and hasattr(self._model_cfg.model.bbox_head.anchor_generator, "reclustering_anchors")
-        ):
+        if should_cluster_anchors(self._model_cfg):
             modelinfo["anchors"] = {}
             self._update_anchors(modelinfo["anchors"], self._model_cfg.model.bbox_head.anchor_generator)
 
@@ -158,15 +157,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         # update checkpoint to the newly trained model
         self._model_ckpt = model_ckpt
 
-        # Update anchors
-        if (
-            self._model_cfg
-            and hasattr(self._model_cfg.model, "bbox_head")
-            and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
-            and hasattr(self._model_cfg.model.bbox_head.anchor_generator, "reclustering_anchors")
-        ):
-            self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
-
         # get prediction on validation set
         self._is_training = False
         val_dataset = dataset.get_subset(Subset.VALIDATION)
@@ -210,19 +200,18 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
         logger.info("init data cfg.")
-        data_cfg = ConfigDict(
-            data=ConfigDict(
-                train=ConfigDict(otx_dataset=dataset.get_subset(Subset.TRAINING), labels=self._labels),
-                val=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
-                    labels=self._labels,
-                ),
-            )
-        )
+        data_cfg = ConfigDict(data=ConfigDict())
 
-        unlabeled_dataset = get_unlabeled_dataset(dataset)
-        if unlabeled_dataset:
-            data_cfg.data.unlabeled = ConfigDict(otx_dataset=unlabeled_dataset, labels=self._labels)
+        for cfg_key, subset in zip(
+            ["train", "val", "unlabeled"],
+            [Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED],
+        ):
+            subset = get_dataset(dataset, subset)
+            if subset:
+                data_cfg.data[cfg_key] = ConfigDict(
+                    otx_dataset=subset,
+                    labels=self._labels,
+                )
 
         # Temparory remedy for cfg.pretty_text error
         for label in self._labels:

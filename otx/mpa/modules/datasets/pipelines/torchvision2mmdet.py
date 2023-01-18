@@ -7,7 +7,7 @@ from mmcv.utils import build_from_cfg
 from mmdet.datasets import PIPELINES
 
 # import torchvision.transforms.functional as F
-from mmdet.datasets.pipelines.formating import ImageToTensor, to_tensor
+from mmdet.datasets.pipelines.formatting import ImageToTensor, to_tensor
 
 # from mmdet.datasets.pipelines.transforms import Normalize
 from PIL import Image, ImageFilter

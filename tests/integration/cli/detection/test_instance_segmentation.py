@@ -16,6 +16,7 @@ from otx.cli.utils.tests import (
     nncf_eval_testing,
     nncf_export_testing,
     nncf_optimize_testing,
+    nncf_validate_fq_testing,
     otx_demo_deployment_testing,
     otx_demo_openvino_testing,
     otx_demo_testing,
@@ -31,6 +32,7 @@ from otx.cli.utils.tests import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    pot_validate_fq_testing,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
@@ -172,7 +174,6 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_optimize(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -182,7 +183,6 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_export(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -192,7 +192,15 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
+    def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -202,7 +210,6 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-94790")
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -218,10 +225,17 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_validate_fq(self, template, tmp_dir_path):
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

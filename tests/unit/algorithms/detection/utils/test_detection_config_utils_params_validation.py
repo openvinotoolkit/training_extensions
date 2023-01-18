@@ -46,7 +46,6 @@ class TestConfigUtilsInputParamsValidation:
             "config": Config(),
             "work_dir": "./work_dir",
             "labels": [label],
-            "domain": Domain.DETECTION,
         }
         unexpected_float = 1.1
         unexpected_values = [
@@ -64,10 +63,6 @@ class TestConfigUtilsInputParamsValidation:
             ("labels", unexpected_float),
             # Unexpected float is specified as nested "label"
             ("labels", [label, unexpected_float]),
-            # Unexpected float is specified as "domain" parameter
-            ("domain", unexpected_float),
-            # Unexpected float is specified as "random_seed" parameter
-            ("random_seed", unexpected_float),
         ]
 
         check_value_error_exception_raised(
