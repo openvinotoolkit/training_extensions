@@ -18,14 +18,10 @@ concurrency:
 
 jobs:
   Code-Quality-Checks:
-    runs-on: ubuntu-20.04
+    runs-on: [self-hosted, linux, x64, dev]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: 3.8
       - name: Install dependencies
         run: python -m pip install tox
       - name: Code Quality Checks
