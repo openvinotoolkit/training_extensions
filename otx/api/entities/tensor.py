@@ -21,7 +21,7 @@ class TensorEntity(IMetadata):
 
     def __init__(self, name: str, numpy: np.ndarray):
         self.name = name
-        self._numpy = numpy
+        self._numpy = np.copy(numpy)
 
     @property
     def numpy(self) -> np.ndarray:

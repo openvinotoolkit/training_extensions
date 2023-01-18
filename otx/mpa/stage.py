@@ -293,12 +293,15 @@ class Stage(object):
         subset: str,
         distributed: bool = False,
     ):
-        task_lib_module = importlib.import_module(f"{MODEL_TASK[cfg.model_task]}.datasets")
-        dataset_builder = getattr(task_lib_module, "build_dataset")
 
         dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
         samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
-        dataset_len = len(build_dataset(cfg, subset, dataset_builder))
+
+        if getattr(cfg.data[subset], 'dataset', None):
+            dataset_len = len(cfg.data[subset].dataset.otx_dataset)
+        else:
+            dataset_len = len(cfg.data[subset].otx_dataset)
+
         if distributed:
             dataset_len = dataset_len // dist.get_world_size()
         if dataset_len < samples_per_gpu:
