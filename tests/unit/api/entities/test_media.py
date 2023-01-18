@@ -74,7 +74,7 @@ class TestIMedia2DEntity:
 
         assert type(IMedia2DEntity) is abc.ABCMeta
         abc_methods = IMedia2DEntity.__abstractmethods__
-        assert len(abc_methods) == 4
+        assert len(abc_methods) == 5
         assert "width" in abc_methods
         assert "roi_numpy" in abc_methods
         assert "numpy" in abc_methods

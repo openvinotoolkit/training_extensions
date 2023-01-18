@@ -117,24 +117,18 @@ def check_run(cmd, **kwargs):
 
 def otx_train_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
-    command_line = [
-        "otx",
-        "train",
-        template.model_template_path,
-    ]
-    for option in [
-        "--data",
-        "--train-ann-file",
+    command_line = ["otx", "train", template.model_template_path]
+    for arg in [
+        "--train-ann_file",
         "--train-data-roots",
         "--val-ann-file",
         "--val-data-roots",
         "--unlabeled-data-roots",
         "--unlabeled-file-list",
-        "--load-weights",
     ]:
-        if option in args:
-            command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
-
+        arg_value = args.get(arg, None)
+        if arg_value:
+            command_line.extend([arg, os.path.join(otx_dir, arg_value)])
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
@@ -177,24 +171,16 @@ def otx_hpo_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):
         shutil.rmtree(f"{template_work_dir}/hpo")
-    command_line = [
-        "otx",
-        "train",
-        template.model_template_path,
-        "--train-ann-file",
-        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
-        "--train-data-roots",
-        f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-ann-file",
-        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
-        "--val-data-roots",
-        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
-        "--save-model-to",
-        f"{template_work_dir}/hpo_trained_{template.model_template_id}",
-        "--enable-hpo",
-        "--hpo-time-ratio",
-        "1",
-    ]
+
+    command_line = ["otx", "train", template.model_template_path]
+
+    for arg in ["--train-data-roots", "--val-data-roots"]:
+        arg_value = args.get(arg, None)
+        if arg_value:
+            command_line.extend([arg, os.path.join(otx_dir, arg_value)])
+    command_line.extend(["--save-model-to", f"{template_work_dir}/hpo_trained_{template.model_template_id}"])
+    command_line.extend(["--enable-hpo", "--hpo-time-ratio", "1"])
+
     command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
@@ -223,12 +209,11 @@ def otx_export_testing(template, root):
 
 def otx_eval_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+
     command_line = [
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -247,8 +232,6 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -364,8 +347,6 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -409,12 +390,8 @@ def pot_optimize_testing(template, root, otx_dir, args):
         "otx",
         "optimize",
         template.model_template_path,
-        "--train-ann-file",
-        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
         f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-ann-file",
-        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
@@ -453,8 +430,6 @@ def pot_eval_testing(template, root, otx_dir, args):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -472,12 +447,8 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         "otx",
         "optimize",
         template.model_template_path,
-        "--train-ann-file",
-        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
         f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-ann-file",
-        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
@@ -531,8 +502,6 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -560,8 +529,6 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",

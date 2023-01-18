@@ -5,11 +5,9 @@
 
 import copy
 import os
-from functools import wraps
 
 import pytest
 import torch
-import yaml
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -39,15 +37,12 @@ from otx.cli.utils.tests import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
-# Pre-train w/ 'intel', 'openvino' classes
+# Pre-train w/ 'label_0', 'label_1' classes
 args0 = {
-    "--train-ann-file": "",
-    "--train-data-roots": "data/text_recognition/initial_data",
-    "--val-ann-file": "",
-    "--val-data-roots": "data/text_recognition/initial_data",
-    "--test-ann-files": "",
-    "--test-data-roots": "data/text_recognition/initial_data",
-    "--input": "data/text_recognition/initial_data/intel",
+    "--train-data-roots": "data/datumaro/imagenet_dataset",
+    "--val-data-roots": "data/datumaro/imagenet_dataset",
+    "--test-data-roots": "data/datumaro/imagenet_dataset",
+    "--input": "data/datumaro/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -57,15 +52,12 @@ args0 = {
     ],
 }
 
-# Pre-train w/ 'intel', 'openvino', 'opencv' classes
+# Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-ann-file": "",
-    "--train-data-roots": "data/text_recognition/IL_data",
-    "--val-ann-file": "",
-    "--val-data-roots": "data/text_recognition/IL_data",
-    "--test-ann-files": "",
-    "--test-data-roots": "data/text_recognition/IL_data",
-    "--input": "data/text_recognition/IL_data/intel",
+    "--train-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
+    "--val-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
+    "--test-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
+    "--input": "data/datumaro/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -291,13 +283,10 @@ class TestToolsMultiClassSemiSLClassification:
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro/datumaro_multilabel",
+    "--input": "data/datumaro/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -308,14 +297,12 @@ args0_m = {
 }
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
+# TODO: Not include incremental case yet
 args_m = {
-    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro/datumaro_multilabel",
+    "--input": "data/datumaro/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -486,13 +473,10 @@ class TestToolsMultilabelClassification:
 
 # TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
-    "--train-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_h-label",
+    "--val-data-roots": "data/datumaro/datumaro_h-label",
+    "--test-data-roots": "data/datumaro/datumaro_h-label",
+    "--input": "data/datumaro/datumaro_h-label/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -661,27 +645,6 @@ class TestToolsHierarchicalClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
 
-# tmp: create & remove data.yaml to only use train-data-roots
-def set_dummy_data(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # create data.yaml
-        to_save_data_args = {
-            "data": {
-                "train": {"ann-files": None, "data-roots": None},
-                "val": {"ann-files": None, "data-roots": None},
-                "unlabeled": {"file-list": None, "data-roots": None},
-            },
-        }
-        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
-        # run test
-        func(*args, **kwargs)
-        # remove data.yaml
-        os.remove("./data.yaml")
-
-    return wrapper
-
-
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
     "--data": "./data.yaml",
@@ -701,7 +664,6 @@ args_selfsl = {
 class TestToolsSelfSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @set_dummy_data
     def test_otx_selfsl_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path)
