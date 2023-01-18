@@ -492,9 +492,9 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.compare_func = self.rule_map[self.rule]
 
     def _is_check_timing(self, runner: BaseRunner) -> bool:
-        """Check whether current epoch or iter is multiple of self.interval."""
+        """Check whether current epoch or iter is multiple of self.interval, skip during warmup interations."""
         check_time = self.every_n_epochs if self.by_epoch else self.every_n_iters
-        return check_time(runner, self.interval)
+        return check_time(runner, self.interval) or (self.warmup_iters > runner.iter)
 
     @check_input_parameters_type()
     def get_lr(self, runner: BaseRunner, base_lr: float):
@@ -502,7 +502,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         if self.current_lr < 0:
             self.current_lr = base_lr
 
-        if not self._is_check_timing(runner) or self.warmup_iters > runner.iter:
+        if not self._is_check_timing(runner):
             return self.current_lr
 
         if hasattr(runner, "all_metrics"):
