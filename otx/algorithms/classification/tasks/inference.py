@@ -365,11 +365,8 @@ class ClassificationInferenceTask(
         logger.info(f"train type = {self._train_type}")
 
         if self._train_type in RECIPE_TRAIN_TYPE:
-            # TODO: this condition will be simplified after adding support for multlabel and hierarchical to SupCon.
             if (
                 self._train_type == TrainType.INCREMENTAL
-                and not self._multilabel
-                and not self._hierarchical
                 and self._hyperparams.learning_parameters.enable_supcon
                 and not self._model_dir.endswith("supcon")
             ):
