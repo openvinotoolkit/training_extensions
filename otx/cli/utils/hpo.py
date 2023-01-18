@@ -19,8 +19,10 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 import yaml
+from mmcv import ConfigDict
 
 from otx.api.configuration.helper import create
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
@@ -190,10 +192,11 @@ class TaskManager:
 
             for weight_name in glob.iglob(osp.join(workdir, "**/epoch_*.pth"), recursive=True):
                 ret = pattern.search(weight_name)
-                epoch = int(ret.group(1))
-                if current_latest_epoch < epoch:
-                    current_latest_epoch = epoch
-                    latest_weight = weight_name
+                if ret is not None:
+                    epoch = int(ret.group(1))
+                    if current_latest_epoch < epoch:
+                        current_latest_epoch = epoch
+                        latest_weight = weight_name
         else:
             raise NotImplementedError
 
@@ -240,15 +243,15 @@ class TaskEnvironmentManager:
         Args:
             hyper_parameter (Dict[str, Any]): hyper parameter to set which has a string format
         """
-        env_hp = self._environment.get_hyper_parameters()
+        env_hp = self._environment.get_hyper_parameters()  # type: ConfigDict
 
         for param_key, param_val in hyper_parameter.items():
-            param_key = param_key.split(".")
+            splited_param_key = param_key.split(".")
 
             target = env_hp
-            for val in param_key[:-1]:
+            for val in splited_param_key[:-1]:
                 target = getattr(target, val)
-            setattr(target, param_key[-1], param_val)
+            setattr(target, splited_param_key[-1], param_val)
 
     def get_dict_type_hyper_parameter(self) -> Dict[str, Any]:
         """Get dictionary type hyper parmaeter of environment.
@@ -256,7 +259,7 @@ class TaskEnvironmentManager:
         Returns:
             Dict[str, Any]: dictionary type hyper parameter of environment
         """
-        learning_parameters = self._environment.get_hyper_parameters().learning_parameters
+        learning_parameters = self._environment.get_hyper_parameters().learning_parameters  # type: ignore
         learning_parameters = self.convert_parameter_group_to_dict(learning_parameters)
         hyper_parameter = {f"learning_parameters.{key}": val for key, val in learning_parameters.items()}
         return hyper_parameter
@@ -295,7 +298,9 @@ class TaskEnvironmentManager:
         Returns:
             int: max epoch of environment
         """
-        return getattr(self._environment.get_hyper_parameters().learning_parameters, self.task.get_epoch_name())
+        return getattr(
+            self._environment.get_hyper_parameters().learning_parameters, self.task.get_epoch_name()  # type: ignore
+        )
 
     def save_initial_weight(self, save_path: str) -> bool:
         """Save an initial model weight.
@@ -309,7 +314,7 @@ class TaskEnvironmentManager:
         if self._environment.model is None:
             # if task isn't anomaly, then save model weight during first trial
             if self.task.is_anomaly_framework_task():
-                task = self.get_train_task(self._environment)
+                task = self.get_train_task()
                 model = self.get_new_model_entity()
                 task.save_model(model)
                 save_model_data(model, save_path)
@@ -336,22 +341,24 @@ class TaskEnvironmentManager:
         """
         return self.task.get_batch_size_name()
 
-    def load_model_weight(self, model_weight_path: str):
+    def load_model_weight(self, model_weight_path: str, dataset: DatasetEntity):
         """Set model weight on environment to load the weight during training.
 
         Args:
             model_weight_path (str): model weight to load during training
+            dataset (DatasetEntity): dataset for training a model
         """
-        self._environment.model = read_model(self._environment.get_model_configuration(), model_weight_path, None)
+        self._environment.model = read_model(self._environment.get_model_configuration(), model_weight_path, dataset)
 
-    def resume_model_weight(self, model_weight_path: str):
+    def resume_model_weight(self, model_weight_path: str, dataset: DatasetEntity):
         """Set model weight on environment to resume the weight during training.
 
         Args:
             model_weight_path (str): model weight to resume during training
+            dataset (DatasetEntity): dataset for training a model
         """
-        self.load_model_weight(model_weight_path)
-        self._environment.model.model_adapters["resume"] = True
+        self.load_model_weight(model_weight_path, dataset)
+        self._environment.model.model_adapters["resume"] = True  # type: ignore
 
     def get_new_model_entity(self, dataset=None) -> ModelEntity:
         """Get new model entity using environment.
@@ -388,6 +395,8 @@ class HpoRunner:
         hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
     """
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(
         self,
         environment: TaskEnvironment,
@@ -402,7 +411,7 @@ class HpoRunner:
         self._hpo_config: Dict = self._set_hpo_config()
         self._train_dataset_size = train_dataset_size
         self._val_dataset_size = val_dataset_size
-        self._fixed_hp = {}
+        self._fixed_hp: Dict[str, Any] = {}
         self._initial_weight_name = "initial_weight.pth"
 
         self._align_batch_size_search_space_to_dataset_size()
@@ -504,7 +513,7 @@ class HpoRunner:
             "expected_time_ratio": self._hpo_time_ratio,
             "prior_hyper_parameters": self._get_default_hyper_parameters(),
             "asynchronous_bracket": True,
-            "asynchronous_sha": False if torch.cuda.device_count() == 1 else True,
+            "asynchronous_sha": torch.cuda.device_count() != 1,
         }
 
         logger.debug(f"ASHA args for create hpopt = {args}")
@@ -530,18 +539,18 @@ class HpoRunner:
         return osp.join(self._hpo_workdir, self._initial_weight_name)
 
 
-def run_hpo(args, environment: TaskEnvironment, dataset, data_roots: Dict[str, str]):
+def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, str]):
     """Run HPO and load optimized hyper parameter and best HPO model weight.
 
     Args:
         args: arguments passed to otx train
         environment (TaskEnvironment): otx task environment
-        dataset: dataset to use for training
+        dataset (DatasetEntity): dataset to use for training
         data_roots (Dict[str, str]): dataset path of each dataset type
     """
     if not check_hpopt_available():
         logger.warning("hpopt isn't available. hpo is skipped.")
-        return None
+        return
 
     task_type = environment.model_template.task_type
     if not _check_hpo_enabled_task(task_type):
@@ -549,7 +558,7 @@ def run_hpo(args, environment: TaskEnvironment, dataset, data_roots: Dict[str, s
             "Currently supported task types are classification, detection, segmentation and anomaly"
             f"{task_type} is not supported yet."
         )
-        return None
+        return
 
     hpo_save_path = os.path.abspath(os.path.join(os.path.dirname(args.save_model_to), "hpo"))
     hpo_runner = HpoRunner(
@@ -571,10 +580,10 @@ def run_hpo(args, environment: TaskEnvironment, dataset, data_roots: Dict[str, s
         logger.warning("Can not find the best HPO weight. Best HPO wegiht won't be used.")
     else:
         logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
-        env_manager.load_model_weight(best_hpo_weight)
+        env_manager.load_model_weight(best_hpo_weight, dataset)
 
 
-def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> str:
+def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> Optional[str]:
     """Get best model weight path of the HPO trial.
 
     Args:
@@ -582,14 +591,14 @@ def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> str:
         trial_id (str): trial id
 
     Returns:
-        str: best HPO model weight
+        Optional[str]: best HPO model weight
     """
-    trial_output_file = glob.glob(f"{hpo_dir}/**/{trial_id}.json")
-    if not trial_output_file:
+    trial_output_files = glob.glob(f"{hpo_dir}/**/{trial_id}.json")
+    if not trial_output_files:
         return None
-    trial_output_file = trial_output_file[0]
+    trial_output_file = trial_output_files[0]
 
-    with open(trial_output_file) as f:
+    with open(trial_output_file, "r", encoding="utf-8") as f:
         trial_output = json.load(f)
 
     best_epochs = []
@@ -627,6 +636,8 @@ class Trainer:
         metric (str): metric name
     """
 
+    # pylint: disable=too-many-arguments, too-many-instance-attributes
+
     def __init__(
         self,
         hp_config: Dict[str, Any],
@@ -660,11 +671,11 @@ class Trainer:
         need_to_save_initial_weight = False
         resume_weight_path = self._get_resume_weight_path()
         if resume_weight_path is not None:
-            environment.resume_model_weight(resume_weight_path)
+            environment.resume_model_weight(resume_weight_path, dataset)
         else:
             initial_weight = self._load_fixed_initial_weight()
             if initial_weight is not None:
-                environment.load_model_weight(initial_weight)
+                environment.load_model_weight(initial_weight, dataset)
             else:
                 need_to_save_initial_weight = True
 
@@ -713,7 +724,7 @@ class Trainer:
             return initial_weight_path
         return None
 
-    def _prepare_task(self, environment: TaskEnvironment):
+    def _prepare_task(self, environment):
         task_class = get_impl_class(environment.model_template.entrypoints.base)
         return task_class(task_environment=environment)
 
@@ -769,6 +780,7 @@ def run_trial(
         initial_weight_name (str): initial model weight name for each trials to load
         metric (str): metric name
     """
+    # pylint: disable=too-many-arguments
     trainer = Trainer(
         hp_config, report_func, model_template, data_roots, task_type, hpo_workdir, initial_weight_name, metric
     )
@@ -813,15 +825,20 @@ class HpoDataset:
     def __init__(self, fullset, config: Optional[Dict[str, Any]] = None, indices: Optional[List[int]] = None):
         self.fullset = fullset
         self.indices = indices
-        subset_ratio = config["train_environment"]["subset_ratio"]
-        self.subset_ratio = 1 if subset_ratio is None else subset_ratio
+        if config is not None:
+            subset_ratio = config["train_environment"]["subset_ratio"]
+            self.subset_ratio = 1 if subset_ratio is None else subset_ratio
 
     def __len__(self) -> int:
         """Get length of subset."""
+        if self.indices is None:
+            raise RuntimeError("This function shouldn't be called before get_subset() is called.")
         return len(self.indices)
 
     def __getitem__(self, indx) -> dict:
         """Get dataset at index."""
+        if self.indices is None:
+            raise RuntimeError("This function shouldn't be called before get_subset() is called.")
         return self.fullset[self.indices[indx]]
 
     def __getattr__(self, name):
