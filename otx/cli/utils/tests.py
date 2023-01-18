@@ -19,9 +19,11 @@ import shutil
 import sys
 
 import pytest
+import yaml
 
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
+from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
 from otx.mpa.utils.config_utils import MPAConfig
 
 
@@ -426,6 +428,25 @@ def pot_optimize_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
 
 
+def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name):
+    num_fq = get_number_of_fakequantizers_in_xml(xml_path)
+    assert os.path.exists(path_to_ref_data), f"Reference file does not exist: {path_to_ref_data} [num_fq = {num_fq}]"
+
+    with open(path_to_ref_data, encoding="utf-8") as stream:
+        ref_data = yaml.safe_load(stream)
+    ref_num_fq = ref_data.get(test_name, {}).get(compression_type, {}).get("number_of_fakequantizers", -1)
+    assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
+
+
+def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    template_work_dir = get_template_dir(template, root)
+    xml_path = f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
+    path_to_ref_data = os.path.join(
+        otx_dir, "tests", "regression", task_type, "reference", template.model_template_id, "compressed_model.yml"
+    )
+    _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
+
+
 def pot_eval_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     command_line = [
@@ -492,6 +513,16 @@ def nncf_export_testing(template, root):
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin"
     )
     assert compressed_bin_size < original_bin_size, f"{compressed_bin_size=}, {original_bin_size=}"
+
+
+def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    template_work_dir = get_template_dir(template, root)
+    xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
+    path_to_ref_data = os.path.join(
+        otx_dir, "tests", "regression", task_type, "reference", template.model_template_id, "compressed_model.yml"
+    )
+
+    _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf", test_name)
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold):

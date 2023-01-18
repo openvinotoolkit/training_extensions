@@ -19,6 +19,7 @@ from otx.cli.utils.tests import (
     nncf_eval_testing,
     nncf_export_testing,
     nncf_optimize_testing,
+    nncf_validate_fq_testing,
     otx_demo_deployment_testing,
     otx_demo_openvino_testing,
     otx_demo_testing,
@@ -32,6 +33,7 @@ from otx.cli.utils.tests import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    pot_validate_fq_testing,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
@@ -177,6 +179,15 @@ class TestToolsMPASegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "segmentation", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -200,6 +211,15 @@ class TestToolsMPASegmentation:
         if template.model_template_id.startswith("ClassIncremental_Semantic_Segmentation_Lite-HRNet-"):
             pytest.skip("CVS-82482")
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Need to check POT with openvino 2022.2.0")
+    def test_pot_validate_fq(self, template, tmp_dir_path):
+        if template.model_template_id.startswith("ClassIncremental_Semantic_Segmentation_Lite-HRNet-"):
+            pytest.skip("CVS-82482")
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "segmentation", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
