@@ -436,19 +436,24 @@ class HpoRunner:
                 if max_val > self._train_dataset_size:
                     max_val = self._train_dataset_size
                     self._hpo_config["hp_space"][batch_size_name]["range"][1] = max_val
-
-                # If trainset size is lower than min batch size range,
-                # fix batch size to trainset size
-                if min_val >= max_val:
-                    logger.info(
-                        "Train set size is equal or lower than batch size range."
-                        "Batch size is fixed to train set size."
-                    )
-                    del self._hpo_config["hp_space"][batch_size_name]
-                    self._fixed_hp[batch_size_name] = self._train_dataset_size
-                    self._environment.set_hyper_parameter_using_str_key(self._fixed_hp)
             else:
-                raise NotImplementedError
+                max_val = self._hpo_config["hp_space"][batch_size_name]["max"]
+                min_val = self._hpo_config["hp_space"][batch_size_name]["min"]
+
+                if max_val > self._train_dataset_size:
+                    max_val = self._train_dataset_size
+                    self._hpo_config["hp_space"][batch_size_name]["max"] = max_val
+
+            # If trainset size is lower than min batch size range,
+            # fix batch size to trainset size
+            if min_val >= max_val:
+                logger.info(
+                    "Train set size is equal or lower than batch size range."
+                    "Batch size is fixed to train set size."
+                )
+                del self._hpo_config["hp_space"][batch_size_name]
+                self._fixed_hp[batch_size_name] = self._train_dataset_size
+                self._environment.set_hyper_parameter_using_str_key(self._fixed_hp)
 
     def run_hpo(self, train_func: Callable, data_roots: Dict[str, str]) -> Dict[str, Any]:
         """Run HPO and provides optimized hyper parameters.
