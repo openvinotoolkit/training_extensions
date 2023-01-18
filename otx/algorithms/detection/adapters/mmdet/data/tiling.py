@@ -1,3 +1,4 @@
+"""Tiling for detection and instance segmentation task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,7 +10,7 @@ import uuid
 from itertools import product
 from multiprocessing import Pool
 from time import time
-from typing import Dict, List
+from typing import Callable, Dict, List, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -19,7 +20,16 @@ from mmdet.core import BitmapMasks, bbox2result
 from tqdm import tqdm
 
 
-def timeit(func):
+def timeit(func) -> Callable:
+    """Decorator to measure time of function execution.
+
+    Args:
+        func:
+
+    Returns:
+        Callable function with time measurement.
+    """
+
     def wrapper(*args, **kwargs):
         begin = time()
         result = func(*args, **kwargs)
@@ -29,6 +39,7 @@ def timeit(func):
     return wrapper
 
 
+# pylint: disable=too-many-instance-attributes, too-many-arguments
 class Tile:
     """Tile and merge datasets.
 
@@ -74,7 +85,7 @@ class Tile:
         self.stride = int(tile_size * (1 - overlap))
         self.num_images = len(dataset)
         self.num_classes = len(dataset.CLASSES)
-        self.CLASSES = dataset.CLASSES
+        self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
         self.tmp_folder = tmp_dir.name
         self.nproc = nproc
         self.img2fp32 = False
@@ -89,6 +100,7 @@ class Tile:
 
     @timeit
     def cache_tiles(self):
+        """Cache tiles to disk."""
         pbar = tqdm(total=len(self.tiles))
         pre_img_idx = None
         for i, tile in enumerate(self.tiles):
@@ -124,7 +136,7 @@ class Tile:
         return tiles
 
     def gen_single_img(self, result: Dict, dataset_idx: int) -> Dict:
-        """Add full-size image for inference or training
+        """Add full-size image for inference or training.
 
         Args:
             result (Dict): the original image-level result (i.e. the original image annotation)
@@ -139,6 +151,7 @@ class Tile:
         result["uuid"] = str(uuid.uuid4())
         return result
 
+    # pylint: disable=too-many-locals
     def gen_tiles_single_img(self, result: Dict, dataset_idx: int) -> List[Dict]:
         """Generate tile annotation for a single image.
 
@@ -160,7 +173,7 @@ class Tile:
 
         num_patches_h = int((height - self.tile_size) / self.stride) + 1
         num_patches_w = int((width - self.tile_size) / self.stride) + 1
-        for (tile_i, tile_j), (loc_i, loc_j) in zip(
+        for (_, _), (loc_i, loc_j) in zip(
             product(range(num_patches_h), range(num_patches_w)),
             product(
                 range(0, height - self.tile_size + 1, self.stride),
@@ -212,19 +225,18 @@ class Tile:
         gt_bboxes: np.ndarray,
         gt_masks: BitmapMasks,
         gt_labels: np.ndarray,
-    ) -> Dict:
+    ):
         """Assign new annotation to this tile.
 
         Ground-truth is discarded if the overlap with this tile is lower than
         min_area_ratio.
 
         Args:
+            tile_result (Dict): the tile-level result (i.e. the tile annotation)
             tile_box (np.ndarray): the coordinate for this tile box (i.e. the tile coordinate relative to the image)
             gt_bboxes (np.ndarray): the original image-level boxes
+            gt_masks (BitmapMasks): the original image-level masks
             gt_labels (np.ndarray): the original image-level labels
-
-        Returns:
-            Dict: bboxes, masks in this tile, labels in this tile
         """
         x_1, y_1 = tile_box[0][:2]
         overlap_ratio = self.tile_boxes_overlap(tile_box, gt_bboxes)
@@ -316,8 +328,7 @@ class Tile:
         max_per_img: int,
         detection: bool,
     ):
-        """NMS after aggregation suppressing duplicate boxes in tile-overlap
-        areas.
+        """NMS after aggregation suppressing duplicate boxes in tile-overlap areas.
 
         Args:
             bbox_results (List[List]): image-level box prediction
@@ -325,6 +336,7 @@ class Tile:
             label_results (List[List]): image-level label prediction
             iou_threshold (float): IoU threshold to be used to suppress boxes in tiles' overlap areas.
             max_per_img (int): if there are more than max_per_img bboxes after NMS, only top max_per_img will be kept.
+            detection (bool): whether it is a detection task
         """
         assert len(bbox_results) == len(mask_results) == len(label_results)
         for i, result in enumerate(zip(bbox_results, mask_results, label_results)):
@@ -346,6 +358,7 @@ class Tile:
                 mask_results[i] = [list(np.asarray(masks)[labels == i]) for i in range(self.num_classes)]
 
     def __len__(self):
+        """Total number of tiles."""
         return len(self.tiles)
 
     def __getitem__(self, idx):
@@ -374,7 +387,7 @@ class Tile:
 
     @staticmethod
     def readjust_tile_mask(tile_rle: Dict):
-        """Shift tile-level mask to image-level mask
+        """Shift tile-level mask to image-level mask.
 
         Args:
             tile_rle (Dict): _description_
@@ -383,9 +396,9 @@ class Tile:
             _type_: _description_
         """
         x1, y1, x2, y2 = tile_rle.pop("tile_box")
-        H, W = tile_rle.pop("img_size")
+        height, width = tile_rle.pop("img_size")
         tile_mask = mask_util.decode(tile_rle)
-        tile_mask = np.pad(tile_mask, ((y1, H - y2), (x1, W - x2)))
+        tile_mask = np.pad(tile_mask, ((y1, height - y2), (x1, width - x2)))
         return mask_util.encode(tile_mask)
 
     def process_masks(self, tile_masks: List[Dict]):
@@ -397,12 +410,13 @@ class Tile:
         Returns:
             _type_: _description_
         """
-        pool = Pool(self.nproc)
+        pool = Pool(self.nproc)  # pylint: disable=consider-using-with
         results = pool.map(Tile.readjust_tile_mask, tile_masks)
         return results
 
+    # pylint: disable=too-many-locals
     @timeit
-    def merge(self, results: List[List]) -> List[List]:
+    def merge(self, results: List[List]) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
         """Merge/Aggregate tile-level prediction to image-level prediction.
 
         Args:
@@ -424,20 +438,20 @@ class Tile:
         else:
             raise RuntimeError("Unknown data type")
 
-        merged_bbox_results = [np.empty((0, 5), dtype=dtype) for _ in range(self.num_images)]
-        merged_mask_results = [[] for _ in range(self.num_images)]
-        merged_label_results = [[] for _ in range(self.num_images)]
+        merged_bbox_results: List[np.ndarray] = [np.empty((0, 5), dtype=dtype) for _ in range(self.num_images)]
+        merged_mask_results: List[List] = [[] for _ in range(self.num_images)]
+        merged_label_results: List[Union[List, np.ndarray]] = [[] for _ in range(self.num_images)]
 
         for result, tile in zip(results, self.tiles):
-            tile_x1, tile_y1, tile_x2, tile_y2 = tile["tile_box"]
+            tile_x1, tile_y1, _, _ = tile["tile_box"]
             img_idx = tile["dataset_idx"]
             img_h, img_w, _ = tile["original_shape_"]
 
+            mask_result: List[List] = [[] for _ in range(num_classes)]
             if isinstance(result, tuple):
                 bbox_result, mask_result = result
-            elif isinstance(result, list):
+            else:
                 bbox_result = result
-                mask_result = [[] for _ in range(num_classes)]
 
             for cls_idx, cls_result in enumerate(zip(bbox_result, mask_result)):
                 cls_bbox_result, cls_mask_result = cls_result
@@ -453,8 +467,8 @@ class Tile:
                     [merged_label_results[img_idx], len(cls_bbox_result) * [cls_idx]]
                 )
 
-                for m in cls_mask_result:
-                    m.update(dict(tile_box=tile["tile_box"], img_size=(img_h, img_w)))
+                for cls_mask_dict in cls_mask_result:
+                    cls_mask_dict.update(dict(tile_box=tile["tile_box"], img_size=(img_h, img_w)))
                 merged_mask_results[img_idx] += cls_mask_result
 
         # run NMS after aggregation suppressing duplicate boxes in

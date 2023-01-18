@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import tempfile
 from collections import OrderedDict
 from copy import copy
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import numpy as np
+from mmcv import Config
 from mmcv.utils import print_log
 from mmdet.core import PolygonMasks, eval_map, eval_recalls
 from mmdet.datasets.builder import DATASETS, build_dataset
@@ -35,9 +37,9 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.api.utils.shape_factory import ShapeFactory
+
 from .tiling import Tile
-import tempfile
-from mmcv import Config
+
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 @check_input_parameters_type()
@@ -357,6 +359,7 @@ class MPADetDataset(CustomDataset):
         return eval_results
 
 
+# pylint: disable=too-many-arguments
 @DATASETS.register_module()
 class ImageTilingDataset:
     """A wrapper of tiling dataset.
@@ -364,6 +367,7 @@ class ImageTilingDataset:
     Suitable for training small object dataset. This wrapper composed of `Tile`
     that crops an image into tiles and merges tile-level predictions to
     image-level prediction for evaluation.
+
     Args:
         dataset (Config): The dataset to be tiled.
         pipeline (List): Sequence of transform object or
@@ -395,7 +399,7 @@ class ImageTilingDataset:
     ):
         self.dataset = build_dataset(dataset)
         self.CLASSES = self.dataset.CLASSES
-        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.tmp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
 
         self.tile_dataset = Tile(
             self.dataset,
@@ -412,13 +416,15 @@ class ImageTilingDataset:
         self.pipeline = Compose(pipeline)
         self.test_mode = test_mode
         self.num_samples = len(self.dataset)  # number of original samples
-        self.merged_results = None
+        self.merged_results: Union[List[Tuple[np.ndarray, list]], List[np.ndarray]] = []
 
     def __len__(self) -> int:
+        """Get the length of the dataset."""
         return len(self.tile_dataset)
 
     def __getitem__(self, idx: int) -> Dict:
         """Get training/test tile.
+
         Args:
             idx (int): Index of data.
 
@@ -440,10 +446,19 @@ class ImageTilingDataset:
         self.merged_results = self.tile_dataset.merge(results)
         return self.dataset.evaluate(self.merged_results, **kwargs)
 
-    def merge(self, results):
+    def merge(self, results) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
+        """Merge tile-level results to image-level results.
+
+        Args:
+            results: tile-level results.
+
+        Returns:
+            merged_results (list[list | tuple]): Merged results of the dataset.
+        """
         self.merged_results = self.tile_dataset.merge(results)
         return self.merged_results
 
     def __del__(self):
+        """Delete the temporary directory when the object is deleted."""
         if getattr(self, "tmp_dir", False):
             self.tmp_dir.cleanup()
