@@ -28,20 +28,21 @@ You can follow the installation process from a :doc:`quick_start guide <../../..
 
 .. code-block::
 
-    python3 --version; pip3 --version; 
+  python3 --version; pip3 --version; 
 
-    Python 3.8.10
+  Python 3.8.10
 
 2. Create and activate a virtual environment for the obect detection task.
+
 The following example creates a virtual environment in the ``det_venv`` folder for detection task.
 
 .. code-block::
 
-    sudo apt-get install python3-venv
-    # create virtual env
-    bash ./otx/algorithms/detection/init_venv.sh det_venv
-    # activate virtual env
-    source det_venv/bin/activate
+  sudo apt-get install python3-venv
+  # create virtual env
+  bash ./otx/algorithms/detection/init_venv.sh det_venv
+  # activate virtual env
+  source det_venv/bin/activate
 
 .. #TODO: Update installation part: virtual env, install prerequisite, pip install -e . or pip install otx
 
@@ -69,7 +70,7 @@ This dataset contains images of grapevines with the annotation for different var
 
 It's a great example to start with. The model achieves high accuracy righ from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
 
-.. image:: ../../../../../utils/images/wgisd_dataset_sample.jpg
+.. image:: ../../../../utils/images/wgisd_dataset_sample.jpg
   :width: 600
   :alt: this image uploaded from this `source <https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg>`_
 
@@ -271,6 +272,7 @@ Please note, by default, the optimal confidence threshold is detected based on v
 *********
 Export
 *********
+
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. 
 It allows to efficiently run it on Intel hardware, especially on CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model contains of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
@@ -312,8 +314,9 @@ Optimization
 
 1. We can further optimize the model with ``otx optimize``. It uses NNCF or POT depending on the model format.
 
-- NNCF optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
-- POT optimization is used for models exported in the OpenVINO™ IR format. It decreases floating-point precision to integer precision of the exported model by performing the post-training optimization.
+``NNCF`` optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
+
+``POT`` optimization is used for models exported in the OpenVINO™ IR format. It decreases floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
 The function results with the following files, which could be used to run :doc:`otx demo <../demo>`:
 
