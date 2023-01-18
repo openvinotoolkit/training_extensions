@@ -6,6 +6,8 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 
+from typing import List
+
 import numpy as np
 from mmcls.core import average_performance, mAP
 from mmcls.datasets.base_dataset import BaseDataset
@@ -16,6 +18,12 @@ from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_indices
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.label import LabelEntity
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -26,8 +34,9 @@ logger = get_logger()
 class MPAClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
+    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     def __init__(
-        self, otx_dataset=None, labels=None, empty_label=None, **kwargs
+        self, otx_dataset: DatasetEntity, labels: List[LabelEntity], empty_label=None, **kwargs
     ):  # pylint: disable=super-init-not-called
         self.otx_dataset = otx_dataset
         self.labels = labels
@@ -37,8 +46,8 @@ class MPAClsDataset(BaseDataset):
         self.class_acc = False
 
         self.CLASSES = list(label.name for label in labels)
-        self.gt_labels = []
-        pipeline = kwargs["pipeline"]
+        self.gt_labels = []  # type: List
+        pipeline = kwargs.get("pipeline", [])
         self.num_classes = len(self.CLASSES)
 
         test_mode = kwargs.get("test_mode", False)
@@ -46,17 +55,8 @@ class MPAClsDataset(BaseDataset):
             new_classes = kwargs.pop("new_classes", [])
             self.img_indices = self.get_indices(new_classes)
 
-        if isinstance(pipeline, dict):
-            self.pipeline = {}
-            for k, v in pipeline.items():
-                _pipeline = [dict(type="LoadImageFromOTXDataset"), *v]
-                _pipeline = [build_from_cfg(p, PIPELINES) for p in _pipeline]
-                self.pipeline[k] = Compose(_pipeline)
-            self.num_pipes = len(pipeline)
-        elif isinstance(pipeline, list):
-            self.num_pipes = 1
-            _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
-            self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
+        _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
+        self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
         self.load_annotations()
 
     def get_indices(self, *args):  # pylint: disable=unused-argument
@@ -81,7 +81,8 @@ class MPAClsDataset(BaseDataset):
             self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
-    def __getitem__(self, index):
+    @check_input_parameters_type()
+    def __getitem__(self, index: int):
         """Get item from dataset."""
         dataset = self.otx_dataset
         item = dataset[index]
@@ -147,7 +148,7 @@ class MPAClsDataset(BaseDataset):
             metrics.remove("class_accuracy")
             self.class_acc = True
 
-        eval_results = super().evaluate(results, metrics, metric_options, logger)
+        eval_results = super().evaluate(results, metrics, metric_options, logger=logger)
 
         # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
         if self.class_acc:
@@ -281,7 +282,6 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 if k in metrics:
                     eval_results[k] = v
 
-        eval_results["accuracy"] = mAP_value
         return eval_results
 
 

@@ -285,10 +285,11 @@ class TestDatasetItemEntity:
         # Checking __repr__ method for DatasetItemEntity object initialized with default optional parameters
         default_values_dataset_item = DatasetItemEntity(media, annotation_scene)
         generated_roi = default_values_dataset_item.roi
+
         assert repr(default_values_dataset_item) == (
             f"DatasetItemEntity(media=Image(with data, width=16, height=10), "
             f"annotation_scene={annotation_scene}, roi={generated_roi}, "
-            f"subset=NONE)"
+            f"subset=NONE), meta=[]"
         )
         # Checking __repr__ method for DatasetItemEntity object initialized with specified optional parameters
         roi = DatasetItemParameters().roi()
@@ -297,7 +298,7 @@ class TestDatasetItemEntity:
         specified_values_dataset_item = DatasetItemEntity(media, annotation_scene, roi, metadata, subset)
         assert repr(specified_values_dataset_item) == (
             f"DatasetItemEntity(media=Image(with data, width=16, height=10), annotation_scene={annotation_scene}, "
-            f"roi={roi}, subset=TESTING)"
+            f"roi={roi}, subset=TESTING), meta={metadata}"
         )
 
     @pytest.mark.priority_medium

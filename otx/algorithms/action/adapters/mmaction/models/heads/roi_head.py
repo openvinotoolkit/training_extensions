@@ -7,7 +7,7 @@ from torch.onnx import is_in_onnx_export
 
 
 @MMDET_HEADS.register_module(force=True)
-# pylint: disable=abstract-method, unused-argument
+# pylint: disable=abstract-method, unused-argument,too-many-ancestors
 class AVARoIHead(MMAVARoIHead):
     """AVARoIHead for OTX."""
 

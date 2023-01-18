@@ -171,3 +171,15 @@ def recursively_update_cfg(
             recursively_update_cfg(v, criterion, update_dict)
         if criterion(k, v):
             cfg.update(update_dict)
+
+
+def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict):
+    custom_hooks = cfg.get("custom_hooks", [])
+    found = False
+    for hook in custom_hooks:
+        if hook["type"] == hook_cfg["type"]:
+            found = True
+            break
+    if not found:
+        custom_hooks.append(hook_cfg)
+        cfg["custom_hooks"] = custom_hooks

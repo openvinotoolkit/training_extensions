@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import copy
 import os
 from collections import defaultdict
+from copy import copy, deepcopy
 from logging import Logger
 from typing import Any, Dict, List, Sequence, Tuple
 
@@ -64,7 +64,7 @@ class OTXActionDetDataset(AVADataset):
             modality: str = "RGB",
             fps: int = 30,
         ):
-            self.otx_dataset = copy.deepcopy(otx_dataset)
+            self.otx_dataset = deepcopy(otx_dataset)
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
             self.person_det_score_thr = person_det_score_thr
@@ -84,7 +84,7 @@ class OTXActionDetDataset(AVADataset):
 
             self._update_meta_data()
 
-        def __len__(self):
+        def __len__(self) -> int:
             return len(self.otx_dataset)
 
         def _update_meta_data(self):
@@ -133,7 +133,7 @@ class OTXActionDetDataset(AVADataset):
 
                 shot_info = (0, (metadata.timestamp_end - metadata.timestamp_start)) * self.fps
                 img_key = f"{metadata.video_id},{metadata.frame_idx}"
-                ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+                ignored_labels = np.array([self.label_idx[label.id] for label in item.ignored_labels])
                 metadata.update("shot_info", shot_info)
                 metadata.update("img_key", img_key)
                 metadata.update("timestamp", metadata.frame_idx)
@@ -146,7 +146,7 @@ class OTXActionDetDataset(AVADataset):
             self.otx_dataset.remove_at_indices(remove_indices)
             self.video_info.update(video_info)
 
-        def __getitem__(self, index: int):
+        def __getitem__(self, index: int) -> Dict[str, Any]:
             """Prepare a dict 'data_info' that is expected by the mmaction pipeline to handle images and annotations.
 
             :return data_info: dictionary that contains the image and image metadata, as well as the labels of
@@ -238,22 +238,32 @@ class OTXActionDetDataset(AVADataset):
         )
 
         self.pipeline = Compose(pipeline)
-        for pip in self.pipeline.transforms:
-            if isinstance(pip, RawFrameDecode):
-                pip.otx_dataset = self.otx_dataset
+        for transform in self.pipeline.transforms:
+            if isinstance(transform, RawFrameDecode):
+                transform.otx_dataset = self.otx_dataset
 
         # TODO. Handle exclude file for AVA dataset
         self.exclude_file = None
 
-    def prepare_train_frames(self, idx):
-        """Prepare the frames for training given the index."""
-        results = copy.deepcopy(self.video_infos[idx])
-        return self.pipeline(results)
+    @check_input_parameters_type()
+    def prepare_train_frames(self, idx: int) -> Dict[str, Any]:
+        """Get training data and annotations after pipeline.
 
-    def prepare_test_frames(self, idx):
-        """Prepare the frames for testing given the index."""
-        results = copy.deepcopy(self.video_infos[idx])
-        return self.pipeline(results)
+        Args:
+            idx (int): Index of data
+        """
+        item = copy(self.video_infos[idx])  # Copying dict(), not contents
+        return self.pipeline(item)
+
+    @check_input_parameters_type()
+    def prepare_test_frames(self, idx: int) -> Dict[str, Any]:
+        """Get testing data after pipeline.
+
+        Args:
+            idx (int): Index of data
+        """
+        item = copy(self.video_infos[idx])  # Copying dict(), not contents
+        return self.pipeline(item)
 
     # pylint: disable=too-many-locals, unused-argument
     def evaluate(

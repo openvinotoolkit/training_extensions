@@ -29,6 +29,11 @@ model = dict(
         type="CustomSSDHead",
         num_classes=80,
         in_channels=(int(__width_mult * 96), int(__width_mult * 320)),
+        use_depthwise=True,
+        norm_cfg=dict(type="BN"),
+        act_cfg=dict(type="ReLU"),
+        init_cfg=dict(type="Xavier", layer="Conv2d", distribution="uniform"),
+        loss_balancing=False,
         anchor_generator=dict(
             type="SSDAnchorGeneratorClustered",
             strides=(16, 32),
@@ -69,9 +74,6 @@ model = dict(
             target_means=(0.0, 0.0, 0.0, 0.0),
             target_stds=(0.1, 0.1, 0.2, 0.2),
         ),
-        depthwise_heads=True,
-        depthwise_heads_activations="relu",
-        loss_balancing=False,
     ),
     train_cfg=dict(
         assigner=dict(

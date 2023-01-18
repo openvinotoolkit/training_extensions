@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import LOSSES
+from mmcls.models.losses import CrossEntropyLoss
 from mmcls.models.losses.utils import weight_reduce_loss
 
 
@@ -77,3 +79,92 @@ class WeightedCrossEntropyLoss(nn.Module):
             **kwargs
         )
         return loss_cls
+
+
+class CrossEntropySmoothLoss(nn.Module):
+    def __init__(self, epsilon=0.1, weight=1.0):
+        super(CrossEntropySmoothLoss, self).__init__()
+        self.epsilon = epsilon
+        self.weight = weight
+
+    def __call__(self, logits, target):
+        with torch.no_grad():
+            b, n, h, w = logits.size()
+            assert n > 1
+
+            target_value = 1.0 - self.epsilon
+            blank_value = self.epsilon / float(n - 1)
+
+            targets = logits.new_full((b * h * w, n), blank_value).scatter_(1, target.view(-1, 1), target_value)
+            targets = targets.view(b, h, w, n).permute(0, 3, 1, 2)
+
+        log_softmax = F.log_softmax(logits, dim=1)
+        losses = torch.neg((targets * log_softmax).sum(dim=1))
+
+        return self.weight * losses
+
+
+class NormalizedCrossEntropyLoss(nn.Module):
+    def __init__(self, weight=1.0):
+        super(NormalizedCrossEntropyLoss, self).__init__()
+        self.weight = weight
+
+    def forward(self, logits, target):
+        log_softmax = F.log_softmax(logits, dim=1)
+        b, c, h, w = log_softmax.size()
+
+        log_softmax = log_softmax.permute(0, 2, 3, 1).reshape(-1, c)
+        target = target.view(-1)
+
+        target_log_softmax = log_softmax[torch.arange(target.size(0), device=target.device), target]
+        target_log_softmax = target_log_softmax.view(b, h, w)
+
+        sum_log_softmax = log_softmax.sum(dim=1)
+        losses = self.weight * target_log_softmax / sum_log_softmax
+
+        return losses
+
+
+class ReverseCrossEntropyLoss(nn.Module):
+    def __init__(self, scale=4.0, weight=1.0):
+        super(ReverseCrossEntropyLoss, self).__init__()
+        self.weight = weight * abs(float(scale))
+
+    def forward(self, logits, target):
+        all_probs = F.softmax(logits, dim=1)
+        b, c, h, w = all_probs.size()
+
+        all_probs = all_probs.permute(0, 2, 3, 1).reshape(-1, c)
+        target = target.view(-1)
+
+        target_probs = all_probs[torch.arange(target.size(0), device=target.device), target]
+        target_probs = target_probs.view(b, h, w)
+
+        losses = self.weight * (1.0 - target_probs)
+
+        return losses
+
+
+class SymmetricCrossEntropyLoss(nn.Module):
+    def __init__(self, alpha=1.0, beta=1.0):
+        super(SymmetricCrossEntropyLoss, self).__init__()
+        self.ce = CrossEntropyLoss(
+            use_sigmoid=False,
+            use_soft=False,
+            reduction="none",
+            loss_weight=alpha,
+        )
+        self.rce = ReverseCrossEntropyLoss(weight=beta)
+
+    def forward(self, logits, target):
+        return self.ce(logits, target) + self.rce(logits, target)
+
+
+class ActivePassiveLoss(nn.Module):
+    def __init__(self, alpha=100.0, beta=1.0):
+        super(ActivePassiveLoss, self).__init__()
+        self.active_loss = NormalizedCrossEntropyLoss(weight=alpha)
+        self.passive_loss = ReverseCrossEntropyLoss(weight=beta)
+
+    def forward(self, logits, target):
+        return self.active_loss(logits, target) + self.passive_loss(logits, target)

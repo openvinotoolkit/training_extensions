@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
-from typing import Any, Dict, List
+from typing import Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -36,18 +36,18 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
 
     def _import_dataset(
         self,
-        train_data_roots: str = None,
-        val_data_roots: str = None,
-        test_data_roots: str = None,
-        unlabeled_data_roots: str = None,
+        train_data_roots: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
-        """Import dataset by using Datumaro.import_from() method.
+        """Import MVTec dataset.
 
         Args:
-            train_data_roots (str): Path for training data
-            val_data_roots (str): Path for validation data
-            test_data_roots (str): Path for test data
-            unlabeled_data_roots (str): Path for unlabeled data
+            train_data_roots (Optional[str]): Path for training data
+            val_data_roots (Optional[str]): Path for validation data
+            test_data_roots (Optional[str]): Path for test data
+            unlabeled_data_roots (Optional[str]): Path for unlabeled data
 
         Returns:
             DatumaroDataset: Datumaro Dataset
@@ -55,6 +55,9 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         # Construct dataset for training, validation, unlabeled
         # TODO: currently, only MVTec dataset format can be used
         dataset = {}
+        if train_data_roots is None and test_data_roots is None:
+            raise ValueError("At least 1 data_root is needed to train/test.")
+
         if train_data_roots:
             dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
             if val_data_roots:
@@ -62,7 +65,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
             else:
                 raise NotImplementedError("Anomaly task needs validation dataset.")
         if test_data_roots:
-            dataset[Subset.VALIDATION] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
+            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
         return dataset
 
     def _prepare_anomaly_label_information(self) -> List[LabelEntity]:
@@ -77,14 +80,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         return [normal_label, abnormal_label]
 
     def get_otx_dataset(self) -> DatasetEntity:
-        """Get DatasetEntity.
-
-        Args:
-            datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
-
-        Returns:
-            DatasetEntity:
-        """
+        """Get DatasetEntity."""
         raise NotImplementedError()
 
 
@@ -97,7 +93,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
         self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
-        dataset_items = []
+        dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -109,8 +105,8 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         )
                     ]
+                    annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
-                    annotation_scene = None  # type: Any
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
@@ -132,7 +128,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
         self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
-        dataset_items = []
+        dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -166,8 +162,8 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                                     labels=[ScoredLabel(label=abnormal_label)],
                                 )
                             )
+                    annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
-                    annotation_scene = None  # type: Any
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
@@ -189,7 +185,7 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
         self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
-        dataset_items = []
+        dataset_items: List[DatasetItemEntity] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -216,8 +212,8 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
                                 label_map={0: normal_label, 1: abnormal_label},
                             )
                         )
+                    annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
-                    annotation_scene = None  # type: Any
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:

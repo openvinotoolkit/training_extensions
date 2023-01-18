@@ -73,6 +73,19 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        unlabeled_batch_size = configurable_integer(
+            default_value=5,
+            min_value=1,
+            max_value=512,
+            header="Unlabeled batch size",
+            description="The number of unlabeled training samples seen in each iteration of semi-supervised learning."
+            "Increasing this value improves training time and may make the training more stable."
+            "A larger batch size has higher memory requirements.",
+            warning="Increasing this value may cause the system to use more memory than available, "
+            "potentially causing out of memory errors, please update with caution.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
         num_iters = configurable_integer(
             default_value=1,
             min_value=1,
@@ -164,6 +177,13 @@ class BaseConfig(ConfigurableParameters):
             header="Number of checkpoints that is done during the single training round",
             description="",
             affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        enable_supcon = configurable_boolean(
+            default_value=False,
+            header="Enable Supervised Contrastive helper loss",
+            description="This auxiliar loss might increase robustness and accuracy for small datasets",
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
     @attrs

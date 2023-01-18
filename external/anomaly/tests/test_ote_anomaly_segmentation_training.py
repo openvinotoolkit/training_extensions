@@ -437,9 +437,15 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
                 "fn_get_compressed_model": get_dummy_compressed_model,
             }
 
+        def _pot_validate_fq_factory() -> Dict:
+            return {
+                "reference_dir": ote_current_reference_dir_fx,
+            }
+
         params_factories_for_test_actions = {
             "training": _training_params_factory,
             "nncf_graph": _nncf_graph_params_factory,
+            "pot_validate_fq": _pot_validate_fq_factory,
         }
         logger.debug("params_factories_for_test_actions_fx: end")
         return params_factories_for_test_actions

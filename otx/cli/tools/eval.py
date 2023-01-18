@@ -57,7 +57,9 @@ def parse_args():
     if not os.path.exists("./template.yaml"):
         parser.add_argument("template")
     parser.add_argument("--data", required=False, default="./data.yaml")
-    required = not os.path.exists("./data.yaml")
+    parsed, _ = parser.parse_known_args()
+    required = not os.path.exists(parsed.data)
+
     parser.add_argument(
         "--test-data-roots",
         required=required,

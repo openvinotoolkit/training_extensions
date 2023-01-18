@@ -17,29 +17,35 @@
 # pylint: disable=invalid-name
 
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-__img_size = 224
+__resize_target_size = 224
 
-train_pipeline = [
-    dict(type="Resize", size=__img_size),
+__train_pipeline = [
+    dict(type="Resize", size=__resize_target_size),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
     dict(type="AugMixAugment", config_str="augmix-m5-w3"),
     dict(type="RandomRotate", p=0.35, angle=(-10, 10)),
-    dict(type="ToNumpy"),
+    dict(type="PILImageToNDArray", keys=["img"]),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="ToTensor", keys=["gt_label"]),
     dict(type="Collect", keys=["img", "gt_label"]),
 ]
 
-test_pipeline = [
-    dict(type="Resize", size=__img_size),
+__test_pipeline = [
+    dict(type="Resize", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="Collect", keys=["img"]),
 ]
 
+__dataset_type = "ClsDirDataset"
+__samples_per_gpu = 32
+__workers_per_gpu = 2
+
 data = dict(
-    train=dict(pipeline=train_pipeline),
-    val=dict(test_mode=True, pipeline=test_pipeline),
-    test=dict(test_mode=True, pipeline=test_pipeline),
+    samples_per_gpu=__samples_per_gpu,
+    workers_per_gpu=__workers_per_gpu,
+    train=dict(type=__dataset_type, pipeline=__train_pipeline),
+    val=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
+    test=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
 )
