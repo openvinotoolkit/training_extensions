@@ -14,15 +14,47 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.algorithms.classification.adapters.deep_object_reid.tasks import (
-    ClassificationNNCFTask,
+from functools import partial
+from typing import Optional
+
+import otx.algorithms.classification.adapters.mmcls.nncf.patches  # noqa: F401  # pylint: disable=unused-import
+import otx.algorithms.classification.adapters.mmcls.nncf.registers  # noqa: F401  # pylint: disable=unused-import
+from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
+    build_nncf_classifier,
 )
-from otx.api.entities.task_environment import TaskEnvironment
+from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.optimization_parameters import OptimizationParameters
+from otx.mpa.utils.logger import get_logger
+
+from .inference import ClassificationInferenceTask
+
+logger = get_logger()
 
 
-# pylint: disable=too-many-ancestors
-class OTXClassificationNNCFTask(ClassificationNNCFTask):
-    """Task for compressing classification models using NNCF."""
+class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):  # pylint: disable=too-many-ancestors
+    """ClassificationNNCFTask."""
 
-    def __init__(self, task_environment: TaskEnvironment, **kwargs):  # pylint: disable=useless-parent-delegation
-        super().__init__(task_environment, **kwargs)
+    def _initialize_post_hook(self, options=None):
+        super()._initialize_post_hook(options)
+
+        export = options.get("export", False)
+        options["model_builder"] = partial(
+            self.model_builder,
+            nncf_model_builder=build_nncf_classifier,
+            return_compression_ctrl=False,
+            is_export=export,
+        )
+
+    def _optimize(
+        self,
+        dataset: DatasetEntity,
+        optimization_parameters: Optional[OptimizationParameters] = None,
+    ):
+        results = self._run_task(
+            "ClsTrainer",
+            mode="train",
+            dataset=dataset,
+            parameters=optimization_parameters,
+        )
+        return results

@@ -39,4 +39,13 @@ import otx.mpa.modules.models.losses.triplet_loss
 import otx.mpa.modules.optimizer.lars
 
 # flake8: noqa
-from . import evaluator, explainer, exporter, inferrer, stage, trainer
+from . import (
+    evaluator,
+    explainer,
+    exporter,
+    incremental,
+    inferrer,
+    semisl,
+    stage,
+    trainer,
+)

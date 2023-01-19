@@ -64,17 +64,14 @@ data = dict(
     test_dataloader=dict(videos_per_gpu=1),
     train=dict(
         type=dataset_type,
-        filename_tmpl="{:05}.jpg",
         pipeline=train_pipeline,
     ),
     val=dict(
         type=dataset_type,
-        filename_tmpl="{:05}.jpg",
         pipeline=val_pipeline,
     ),
     test=dict(
         type=dataset_type,
-        filename_tmpl="{:05}.jpg",
         pipeline=test_pipeline,
     ),
 )

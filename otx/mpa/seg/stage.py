@@ -2,20 +2,18 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
 from mmcv import ConfigDict
-from mmseg.utils import get_root_logger
 
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
+from otx.mpa.utils.config_utils import recursively_update_cfg
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
 
 class SegStage(Stage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    MODEL_BUILDER = build_segmentor
 
     def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
         """Create MMCV-consumable config from given inputs"""
@@ -24,13 +22,27 @@ class SegStage(Stage):
         cfg = self.cfg
         self.configure_model(cfg, model_cfg, training, **kwargs)
         self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
-        self.configure_data(cfg, data_cfg, training)
+        self.configure_data(cfg, training, data_cfg)
         self.configure_task(cfg, training, **kwargs)
+        self.configure_hook(cfg)
 
         return cfg
 
     def configure_model(self, cfg, model_cfg, training, **kwargs):
 
+        if model_cfg:
+            if hasattr(model_cfg, "model"):
+                cfg.merge_from_dict(model_cfg._cfg_dict)
+            else:
+                raise ValueError(
+                    "Unexpected config was passed through 'model_cfg'. "
+                    "it should have 'model' attribute in the config"
+                )
+            cfg.model_task = cfg.model.pop("task", "segmentation")
+            if cfg.model_task != "segmentation":
+                raise ValueError(f"Given model_cfg ({model_cfg.filename}) is not supported by segmentation recipe")
+
+        # OV-plugin
         ir_model_path = kwargs.get("ir_model_path")
         if ir_model_path:
 
@@ -47,37 +59,13 @@ class SegStage(Stage):
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-        if model_cfg:
-            if hasattr(model_cfg, "model"):
-                cfg.merge_from_dict(model_cfg._cfg_dict)
-            else:
-                raise ValueError(
-                    "Unexpected config was passed through 'model_cfg'. "
-                    "it should have 'model' attribute in the config"
-                )
-            cfg.model_task = cfg.model.pop("task", "segmentation")
-            if cfg.model_task != "segmentation":
-                raise ValueError(f"Given model_cfg ({model_cfg.filename}) is not supported by segmentation recipe")
-
-    def configure_ckpt(self, cfg, model_ckpt, pretrained=None):
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
-        if pretrained and isinstance(pretrained, str):
-            logger.info(f"Overriding cfg.load_from -> {pretrained}")
-            cfg.load_from = pretrained  # Overriding by stage input
-
-        if cfg.get("resume", False):
-            cfg.resume_from = cfg.load_from
-
-    def configure_data(self, cfg, data_cfg, training):
+    def configure_data(self, cfg, training, data_cfg, **kwargs):  # noqa: C901
         # Data
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
 
-        if training:
-            if cfg.data.get("val", False):
-                self.validate = True
         # Dataset
+        super().configure_data(cfg, training, **kwargs)
         src_data_cfg = Stage.get_data_cfg(cfg, "train")
         for mode in ["train", "val", "test"]:
             if src_data_cfg.type == "MPASegDataset" and cfg.data.get(mode, False):
@@ -89,16 +77,14 @@ class SegStage(Stage):
 
     def configure_task(self, cfg, training, **kwargs):
         """Adjust settings for task adaptation"""
-        self.logger = get_root_logger()
         if cfg.get("task_adapt", None):
-            self.logger.info(f"task config!!!!: training={training}")
+            logger.info(f"task config!!!!: training={training}")
             task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
 
             # Task classes
-            org_model_classes, model_classes, data_classes = self.configure_classes(cfg, task_adapt_op)
-
-            # Incremental learning
-            self.configure_cls_incr(cfg, org_model_classes, model_classes)
+            self.configure_classes(cfg, task_adapt_op)
+            # Ignored mode
+            self.configure_ignore(cfg)
 
     def configure_classes(self, cfg, task_adapt_op):
         # Task classes
@@ -135,48 +121,22 @@ class SegStage(Stage):
                 for head in decode_head:
                     head.num_classes = len(model_classes)
 
-        return org_model_classes, model_classes, data_classes
+        # Task classes
+        self.org_model_classes = org_model_classes
+        self.model_classes = model_classes
 
-    def configure_cls_incr(self, cfg, org_model_classes, model_classes):
-
-        new_classes = np.setdiff1d(model_classes, org_model_classes).tolist()
-
-        # FIXME : can be naive supervised learning (from-scratch ver.)
-        # Check if new classes are added
-        has_new_class = True if len(new_classes) > 0 else False
-        if has_new_class is False:
-            ValueError("Incremental learning should have at least one new class!")
-
+    def configure_ignore(self, cfg):
         # Change to incremental loss (ignore mode)
         if cfg.get("ignore", False):
+            cfg_loss_decode = ConfigDict(
+                type="CrossEntropyLossWithIgnore",
+                reduction="mean",
+                sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
+                loss_weight=1.0,
+            )
+
             if "decode_head" in cfg.model:
                 decode_head = cfg.model.decode_head
-                if isinstance(decode_head, dict):
-                    if decode_head.type == "FCNHead":
-                        decode_head.type = "CustomFCNHead"
-                        decode_head.loss_decode = self.configure_cross_entropy_loss_with_ignore(model_classes)
-                elif isinstance(decode_head, list):
-                    for head in decode_head:
-                        if head.type == "FCNHead":
-                            head.type = "CustomFCNHead"
-                            head.loss_decode = [self.configure_cross_entropy_loss_with_ignore(model_classes)]
-
-        # Update TaskAdaptHook (use incremental sampler)
-        task_adapt_hook = ConfigDict(
-            type="TaskAdaptHook",
-            src_classes=org_model_classes,
-            dst_classes=model_classes,
-            model_type=cfg.model.type,
-            sampler_flag=has_new_class,
-            efficient_mode=cfg["task_adapt"].get("efficient_mode", False),
-        )
-        update_or_add_custom_hook(cfg, task_adapt_hook)
-
-    def configure_cross_entropy_loss_with_ignore(self, model_classes):
-        cfg_loss_decode = ConfigDict(
-            type="CrossEntropyLossWithIgnore",
-            reduction="mean",
-            sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
-            loss_weight=1.0,
-        )
-        return cfg_loss_decode
+                if decode_head.type == "FCNHead":
+                    decode_head.type = "CustomFCNHead"
+                    decode_head.loss_decode = cfg_loss_decode

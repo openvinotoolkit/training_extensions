@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
-import torch
-from mmcv import ConfigDict
-from mmdet.datasets import build_dataset
+from mmcv.utils import ConfigDict
 
+from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
@@ -17,8 +15,7 @@ logger = get_logger()
 class DetectionStage(Stage):
     """Patch config to support otx train."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    MODEL_BUILDER = build_detector
 
     def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
         """Create MMCV-consumable config from given inputs"""
@@ -27,14 +24,14 @@ class DetectionStage(Stage):
         cfg = self.cfg
         self.configure_model(cfg, model_cfg, training, **kwargs)
         self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
-        self.configure_data(cfg, data_cfg, training, **kwargs)
+        self.configure_data(cfg, training, data_cfg, **kwargs)
         self.configure_regularization(cfg, training)
         self.configure_hyperparams(cfg, training, **kwargs)
         self.configure_task(cfg, training, **kwargs)
         self.configure_hook(cfg)
         return cfg
 
-    def configure_model(self, cfg, model_cfg, training, **kwargs):
+    def configure_model(self, cfg, model_cfg, training, **kwargs):  # noqa: C901
         """Patch config's model.
         Replace cfg.model to model_cfg
         Change model type to super type
@@ -57,19 +54,6 @@ class DetectionStage(Stage):
             cfg.model.arch_type = cfg.model.type
             cfg.model.type = super_type
 
-        # OMZ-plugin
-        if cfg.model.backbone.type == "OmzBackboneDet":
-            ir_path = kwargs.get("ir_path")
-            if not ir_path:
-                raise RuntimeError("OMZ model needs OpenVINO bin/xml files.")
-            cfg.model.backbone.model_path = ir_path
-            if cfg.model.type == "SingleStageDetector":
-                cfg.model.bbox_head.model_path = ir_path
-            elif cfg.model.type == "FasterRCNN":
-                cfg.model.rpn_head.model_path = ir_path
-            else:
-                raise NotImplementedError(f"Unknown model type - {cfg.model.type}")
-
         # OV-plugin
         ir_model_path = kwargs.get("ir_model_path")
         if ir_model_path:
@@ -87,21 +71,7 @@ class DetectionStage(Stage):
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-    def configure_ckpt(self, cfg, model_ckpt, pretrained):
-        """Patch checkpoint path for pretrained weight.
-        Replace cfg.load_from to model_ckpt
-        Replace cfg.load_from to pretrained
-        Replace cfg.resume_from to cfg.load_from
-        """
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
-        if pretrained and isinstance(pretrained, str):
-            logger.info(f"Overriding cfg.load_from -> {pretrained}")
-            cfg.load_from = pretrained  # Overriding by stage input
-        if cfg.get("resume", False):
-            cfg.resume_from = cfg.load_from
-
-    def configure_data(self, cfg, data_cfg, training, **kwargs):
+    def configure_data(self, cfg, training, data_cfg, **kwargs):  # noqa: C901
         """Patch cfg.data.
         Merge cfg and data_cfg
         Match cfg.data.train.type to super_type
@@ -110,20 +80,13 @@ class DetectionStage(Stage):
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
 
-        Stage.configure_data(cfg, training, **kwargs)
+        super().configure_data(cfg, training, **kwargs)
         super_type = cfg.data.train.pop("super_type", None)
         if super_type:
             cfg.data.train.org_type = cfg.data.train.type
             cfg.data.train.type = super_type
-        if training:
-            if "dataset" in cfg.data.train:
-                train_cfg = self.get_data_cfg(cfg, "train")
-                train_cfg.otx_dataset = cfg.data.train.pop("otx_dataset", None)
-                train_cfg.labels = cfg.data.train.get("labels", None)
-                train_cfg.data_classes = cfg.data.train.pop("data_classes", None)
-                train_cfg.new_classes = cfg.data.train.pop("new_classes", None)
 
-    def configure_regularization(self, cfg, training):
+    def configure_regularization(self, cfg, training):  # noqa: C901
         """Patch regularization parameters."""
         if training:
             if cfg.model.get("l2sp_weight", 0.0) > 0.0:
@@ -156,8 +119,192 @@ class DetectionStage(Stage):
                     cfg.optimizer.lr = lr
 
     def configure_task(self, cfg, training, **kwargs):
-        """Patch config to support training algorithm.
+        """Patch config to support training algorithm."""
+        if "task_adapt" in cfg:
+            logger.info(f"task config!!!!: training={training}")
+            self.task_adapt_type = cfg["task_adapt"].get("type", None)
+            self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
+            self.configure_classes(cfg)
 
-        This should be implemented each algorithm
+            if self.data_classes != self.model_classes:
+                self.configure_task_data_pipeline(cfg)
+            # TODO[JAEGUK]: configure_anchor is not working
+            if cfg["task_adapt"].get("use_mpa_anchor", False):
+                self.configure_anchor(cfg)
+            if self.task_adapt_type == "mpa":
+                self.configure_bbox_head(cfg)
+                self.configure_ema(cfg)
+            else:
+                src_data_cfg = self.get_data_cfg(cfg, "train")
+                src_data_cfg.pop("old_new_indices", None)
+
+    def configure_classes(self, cfg):
+        """Patch classes for model and dataset."""
+        org_model_classes = self.get_model_classes(cfg)
+        data_classes = self.get_data_classes(cfg)
+
+        # Model classes
+        if self.task_adapt_op == "REPLACE":
+            if len(data_classes) == 0:
+                model_classes = org_model_classes.copy()
+            else:
+                model_classes = data_classes.copy()
+        elif self.task_adapt_op == "MERGE":
+            model_classes = org_model_classes + [cls for cls in data_classes if cls not in org_model_classes]
+        else:
+            raise KeyError(f"{self.task_adapt_op} is not supported for task_adapt options!")
+
+        if self.task_adapt_type == "mpa":
+            data_classes = model_classes
+        cfg.task_adapt.final = model_classes
+        cfg.model.task_adapt = ConfigDict(
+            src_classes=org_model_classes,
+            dst_classes=model_classes,
+        )
+
+        # Model architecture
+        head_names = ("mask_head", "bbox_head", "segm_head")
+        num_classes = len(model_classes)
+        if "roi_head" in cfg.model:
+            # For Faster-RCNNs
+            for head_name in head_names:
+                if head_name in cfg.model.roi_head:
+                    if isinstance(cfg.model.roi_head[head_name], list):
+                        for head in cfg.model.roi_head[head_name]:
+                            head.num_classes = num_classes
+                    else:
+                        cfg.model.roi_head[head_name].num_classes = num_classes
+        else:
+            # For other architectures (including SSD)
+            for head_name in head_names:
+                if head_name in cfg.model:
+                    cfg.model[head_name].num_classes = num_classes
+
+        # Eval datasets
+        if cfg.get("task", "detection") == "detection":
+            eval_types = ["val", "test"]
+            for eval_type in eval_types:
+                if cfg.data[eval_type]["type"] == "TaskAdaptEvalDataset":
+                    cfg.data[eval_type]["model_classes"] = model_classes
+                else:
+                    # Wrap original dataset config
+                    org_type = cfg.data[eval_type]["type"]
+                    cfg.data[eval_type]["type"] = "TaskAdaptEvalDataset"
+                    cfg.data[eval_type]["org_type"] = org_type
+                    cfg.data[eval_type]["model_classes"] = model_classes
+
+        self.org_model_classes = org_model_classes
+        self.model_classes = model_classes
+        self.data_classes = data_classes
+
+    def configure_task_data_pipeline(self, cfg):
+        # Trying to alter class indices of training data according to model class order
+        tr_data_cfg = self.get_data_cfg(cfg, "train")
+        class_adapt_cfg = dict(type="AdaptClassLabels", src_classes=self.data_classes, dst_classes=self.model_classes)
+        pipeline_cfg = tr_data_cfg.pipeline
+        for i, op in enumerate(pipeline_cfg):
+            if op["type"] == "LoadAnnotations":  # insert just after this op
+                op_next_ann = pipeline_cfg[i + 1] if i + 1 < len(pipeline_cfg) else {}
+                if op_next_ann.get("type", "") == class_adapt_cfg["type"]:
+                    op_next_ann.update(class_adapt_cfg)
+                else:
+                    pipeline_cfg.insert(i + 1, class_adapt_cfg)
+                break
+
+    def configure_anchor(self, cfg, proposal_ratio=None):
+        if cfg.model.type in ["SingleStageDetector", "CustomSingleStageDetector"]:
+            anchor_cfg = cfg.model.bbox_head.anchor_generator
+            if anchor_cfg.type == "SSDAnchorGeneratorClustered":
+                cfg.model.bbox_head.anchor_generator.pop("input_size", None)
+
+    def configure_bbox_head(self, cfg):
+        """Patch bbox head in detector for class incremental learning.
+        Most of patching are related with hyper-params in focal loss
         """
-        pass
+        if cfg.get("task", "detection") == "detection":
+            bbox_head = cfg.model.bbox_head
+        else:
+            bbox_head = cfg.model.roi_head.bbox_head
+
+        alpha, gamma = 0.25, 2.0
+        if bbox_head.type in ["SSDHead", "CustomSSDHead"]:
+            gamma = 1 if cfg["task_adapt"].get("efficient_mode", False) else 2
+            bbox_head.type = "CustomSSDHead"
+            bbox_head.loss_cls = ConfigDict(
+                type="FocalLoss",
+                loss_weight=1.0,
+                gamma=gamma,
+                reduction="none",
+            )
+        elif bbox_head.type in ["ATSSHead"]:
+            gamma = 3 if cfg["task_adapt"].get("efficient_mode", False) else 4.5
+            bbox_head.loss_cls.gamma = gamma
+        elif bbox_head.type in ["VFNetHead", "CustomVFNetHead"]:
+            alpha = 0.75
+            gamma = 1 if cfg["task_adapt"].get("efficient_mode", False) else 2
+        # TODO Move this part
+        # This is not related with patching bbox head
+        elif bbox_head.type in ["YOLOXHead", "CustomYOLOXHead"]:
+            if cfg.data.train.type == "MultiImageMixDataset":
+                self.add_yolox_hooks(cfg)
+
+        if cfg.get("ignore", False):
+            bbox_head.loss_cls = ConfigDict(
+                type="CrossSigmoidFocalLoss",
+                use_sigmoid=True,
+                num_classes=len(self.model_classes),
+                alpha=alpha,
+                gamma=gamma,
+            )
+
+    @staticmethod
+    def configure_ema(cfg):
+        """Patch ema settings."""
+        adaptive_ema = cfg.get("adaptive_ema", {})
+        if adaptive_ema:
+            update_or_add_custom_hook(
+                cfg,
+                ConfigDict(
+                    type="CustomModelEMAHook",
+                    priority="ABOVE_NORMAL",
+                    resume_from=cfg.get("resume_from"),
+                    **adaptive_ema,
+                ),
+            )
+        else:
+            update_or_add_custom_hook(
+                cfg,
+                ConfigDict(type="EMAHook", priority="ABOVE_NORMAL", resume_from=cfg.get("resume_from"), momentum=0.1),
+            )
+
+    @staticmethod
+    def add_yolox_hooks(cfg):
+        update_or_add_custom_hook(
+            cfg,
+            ConfigDict(
+                type="YOLOXModeSwitchHook",
+                num_last_epochs=15,
+                priority=48,
+            ),
+        )
+        # FIXME: is this hook deprecated?
+        #  update_or_add_custom_hook(
+        #      cfg,
+        #      ConfigDict(
+        #          type="SyncRandomSizeHook",
+        #          ratio_range=(10, 20),
+        #          img_scale=(640, 640),
+        #          interval=1,
+        #          priority=48,
+        #          device="cuda" if torch.cuda.is_available() else "cpu",
+        #      ),
+        #  )
+        update_or_add_custom_hook(
+            cfg,
+            ConfigDict(
+                type="SyncNormHook",
+                num_last_epochs=15,
+                interval=1,
+                priority=48,
+            ),
+        )

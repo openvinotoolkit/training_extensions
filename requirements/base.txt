@@ -4,7 +4,7 @@ attrs>=21.2.0
 natsort>=6.0.0
 nbmake
 networkx>=2.6,<=2.8.0
-numpy>=1.21.0,<=1.23.5  # np.bool was removed in 1.24.0 which was used in openvino runtime
+numpy>=1.21.0,<=1.23.4  # np.bool was removed in 1.24.0 which was used in openvino runtime
 omegaconf==2.1.*
 opencv-python==4.5.*
 prettytable
@@ -19,3 +19,4 @@ scikit-learn==0.24.*
 Shapely>=1.7.1,<=1.8.0
 hpopt==0.3.0
 imagesize==1.4.1
+datumaro==0.4.0.1

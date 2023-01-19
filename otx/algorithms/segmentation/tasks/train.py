@@ -21,9 +21,8 @@ import torch
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
-from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
-from otx.algorithms.common.utils.data import get_unlabeled_dataset
+from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -43,6 +42,10 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -52,6 +55,7 @@ logger = get_logger()
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Segmentation."""
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in SegmentationTrainTask."""
         logger.info(f"called save_model: {self._model_ckpt}")
@@ -59,11 +63,19 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
-        modelinfo = {"model": model_ckpt["state_dict"], "config": hyperparams_str, "labels": labels, "VERSION": 1}
+        modelinfo = {
+            "model": model_ckpt,
+            "config": hyperparams_str,
+            "labels": labels,
+            "VERSION": 1,
+        }
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self._task_environment.label_schema),
+        )
         output_model.precision = self._precision
 
     def cancel_training(self):
@@ -82,8 +94,12 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
             logger.info("but training was not started yet. reserved it to cancel")
             self.reserved_cancel = True
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
     ):
         """Train function in SegmentationTrainTask."""
         logger.info("train()")
@@ -127,7 +143,8 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         # Get training metrics group from learning curves
         training_metrics, best_score = self._generate_training_metrics_group(self._learning_curves)
         performance = Performance(
-            score=ScoreMetric(value=best_score, name=self.metric), dashboard_metrics=training_metrics
+            score=ScoreMetric(value=best_score, name=self.metric),
+            dashboard_metrics=training_metrics,
         )
 
         logger.info(f"Final model performance: {str(performance)}")
@@ -140,34 +157,22 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
         logger.info("init data cfg.")
-        if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
-            data_cfg = ConfigDict(data=ConfigDict(train=ConfigDict(otx_dataset=dataset.get_subset(Subset.TRAINING))))
-        else:
-            data_cfg = ConfigDict(
-                data=ConfigDict(
-                    train=ConfigDict(
-                        dataset=ConfigDict(
-                            otx_dataset=dataset.get_subset(Subset.TRAINING),
-                            labels=self._labels,
-                        )
-                    ),
-                    val=ConfigDict(
-                        otx_dataset=dataset.get_subset(Subset.VALIDATION),
-                        labels=self._labels,
-                    ),
-                )
-            )
+        data_cfg = ConfigDict(data=ConfigDict())
 
-            unlabeled_dataset = get_unlabeled_dataset(dataset)
-            if unlabeled_dataset:
-                data_cfg.data.unlabeled = ConfigDict(
-                    otx_dataset=unlabeled_dataset,
+        for cfg_key, subset in zip(
+            ["train", "val", "unlabeled"],
+            [Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED],
+        ):
+            subset = get_dataset(dataset, subset)
+            if subset:
+                data_cfg.data[cfg_key] = ConfigDict(
+                    otx_dataset=subset,
                     labels=self._labels,
                 )
 
-            # Temparory remedy for cfg.pretty_text error
-            for label in self._labels:
-                label.hotkey = "a"
+        # Temparory remedy for cfg.pretty_text error
+        for label in self._labels:
+            label.hotkey = "a"
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves):
@@ -182,7 +187,12 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         visualization_info_architecture = VisualizationInfo(
             name="Model architecture", visualisation_type=VisualizationType.TEXT
         )
-        output.append(MetricsGroup(metrics=[architecture], visualization_info=visualization_info_architecture))
+        output.append(
+            MetricsGroup(
+                metrics=[architecture],
+                visualization_info=visualization_info_architecture,
+            )
+        )
         # Learning curves
         best_score = -1
         for key, curve in learning_curves.items():

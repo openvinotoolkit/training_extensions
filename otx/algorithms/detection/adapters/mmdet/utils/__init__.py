@@ -3,6 +3,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from .builder import build_detector
 from .config_utils import (
     cluster_anchors,
     patch_config,
@@ -19,4 +20,5 @@ __all__ = [
     "patch_evaluation",
     "prepare_for_training",
     "set_hyperparams",
+    "build_detector",
 ]

@@ -18,7 +18,6 @@
 
 from typing import Any, Dict
 
-import cv2
 import numpy as np
 
 from otx.api.utils.argument_checks import check_input_parameters_type
@@ -26,7 +25,6 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 try:
     from openvino.model_zoo.model_api.models.classification import Classification
     from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
-    from openvino.model_zoo.model_api.models.utils import pad_image
 except ImportError:
     import warnings
 
@@ -89,20 +87,6 @@ class OTXClassification(Classification):
                     f"labels must match ({layer_shape[1]} != {len(self.labels)})"
                 )
         return layer_name
-
-    @check_input_parameters_type()
-    def preprocess(self, inputs: np.ndarray):
-        """Pre-process."""
-        meta = {"original_shape": inputs.shape}
-        resized_image = self.resize(inputs, (self.w, self.h))
-        resized_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2BGR)
-        meta.update({"resized_shape": resized_image.shape})
-        if self.resize_type == "fit_to_window":
-            resized_image = pad_image(resized_image, (self.w, self.h))
-        resized_image = self.input_transform(resized_image)
-        resized_image = self._change_layout(resized_image)
-        dict_inputs = {self.image_blob_name: resized_image}
-        return dict_inputs, meta
 
     @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):  # pylint: disable=unused-argument

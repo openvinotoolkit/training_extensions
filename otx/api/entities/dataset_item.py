@@ -142,7 +142,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             f"media={self.media}, "
             f"annotation_scene={self.annotation_scene}, "
             f"roi={self.roi}, "
-            f"subset={self.subset})"
+            f"subset={self.subset}), "
+            f"meta={self.get_metadata()}"
         )
 
     @property

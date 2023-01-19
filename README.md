@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/source/_images/logos/otx-logo-black.png" width="200px">
+<img src="docs/source/_static/logos/otx-logo-black.png" width="200px">
 
 # OpenVINO™ Training Extensions
 
@@ -12,8 +12,8 @@
 [![openvino](https://img.shields.io/badge/openvino-2021.4-purple)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/34245035749b4c4fa59a8dfe277133c2)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/34245035749b4c4fa59a8dfe277133c2)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Coverage)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/31d17b3adb0a46d888078c543e4ec4c5?branch=feature%2Fotx)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/31d17b3adb0a46d888078c543e4ec4c5?branch=feature%2Fotx)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Coverage)
 [![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml)
 
 ---
@@ -36,7 +36,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 - Integrated efficient hyper-parameter optimization
   - OTX has an integrated, efficient hyper-parameter optimization module. So, you don't need to worry about searching right hyper-parameters. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 - Support widely-used annotation formats
-  - OTX uses [datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by datumaro are also consumable by OTX without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via datumaro CLI and API.
+  - OTX uses [Datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by Datumaro are also consumable by OTX without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via Datumaro CLI and API.
 
 ---
 
