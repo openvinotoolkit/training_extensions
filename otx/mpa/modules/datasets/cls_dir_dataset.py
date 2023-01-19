@@ -33,15 +33,7 @@ class ClsDirDataset(BaseDataset):
         use_labels (bool): dataset with labels or unlabels
     """
 
-    def __init__(
-        self,
-        data_dir,
-        pipeline=[],
-        classes=[],
-        new_classes=[],
-        use_labels=True,
-        **kwargs,
-    ):
+    def __init__(self, data_dir, pipeline=[], classes=[], new_classes=[], use_labels=True, **kwargs):
         self.data_dir = data_dir
         self._samples_per_gpu = kwargs.pop("samples_per_gpu", 1)
         self._workers_per_gpu = kwargs.pop("workers_per_gpu", 1)
@@ -124,11 +116,7 @@ class ClsDirDataset(BaseDataset):
                 gt_label = np.array(self.class_to_idx[img_cls])
             else:
                 gt_label = np.array([-1])
-            info = {
-                "img_prefix": img_prefix,
-                "img_info": {"filename": img_path},
-                "gt_label": gt_label,
-            }
+            info = {"img_prefix": img_prefix, "img_info": {"filename": img_path}, "gt_label": gt_label}
             data_infos.append(info)
             if img_cls in self.new_classes:
                 self.img_indices["new"].append(i)
