@@ -163,7 +163,8 @@ class Builder:
                 workspace_path = f"./otx-workspace-{task_type}"
                 if model_type:
                     workspace_path += f"-{model_type}"
-            Path(workspace_path).mkdir(exist_ok=False)
+            workspace_path = workspace_path if isinstance(workspace_path, Path) else Path(workspace_path)
+            workspace_path.mkdir(exist_ok=False)
 
         # Load & Save Model Template
         otx_registry = OTXRegistry(str(otx_root)).filter(task_type=task_type)
