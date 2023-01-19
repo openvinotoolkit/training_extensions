@@ -260,11 +260,8 @@ class ClassificationInferenceTask(
                     item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
 
                 if self._hierarchical_info["num_multilabel_classes"]:
-                    logits_begin, logits_end = (
-                        self._hierarchical_info["num_single_label_classes"],
-                        -1,
-                    )
-                    head_logits = prediction_item[logits_begin:logits_end]
+                    logits_begin = self._hierarchical_info["num_single_label_classes"]
+                    head_logits = prediction_item[logits_begin :]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
                             label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
