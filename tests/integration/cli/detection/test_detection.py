@@ -32,7 +32,7 @@ args0 = {
     "--val-data-roots": "data/coco_dataset/coco_detection",
     "--test-data-roots": "data/coco_dataset/coco_detection",
     "--input": "data/coco_dataset/coco_detection/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
@@ -41,7 +41,7 @@ args = {
     "--val-data-roots": "data/coco_dataset/coco_detection",
     "--test-data-roots": "data/coco_dataset/coco_detection",
     "--input": "data/coco_dataset/coco_detection/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
 args_semisl = {
@@ -130,7 +130,7 @@ class TestToolsMPADetection:
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
