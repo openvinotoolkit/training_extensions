@@ -8,6 +8,8 @@ on:
 jobs:
   Build-Docs:
     runs-on: [self-hosted, linux, x64]
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
