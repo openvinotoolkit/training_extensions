@@ -1,7 +1,7 @@
 Object Detection model
 ======================
 
-This tutorial reveals end-to-end solution from installation to model export and optimization for object detection task on a certain example.
+This tutorial reveals end-to-end solution from installation to model export and optimization for object detection task on a specific example.
 On this page we show how to train, validate, export and optimize ATSS model on WGISD public dataset.
 
 .. note::
@@ -68,9 +68,9 @@ This dataset contains images of grapevines with the annotation for different var
 - ``SVB``	- Sauvignon Blanc
 - ``SYH``	- Syrah
 
-It's a great example to start with. The model achieves high accuracy righ from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
+It's a great example to start with. The model achieves high accuracy right from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
 
-.. image:: ../../../../utils/images/wgisd_dataset_sample.jpg
+.. image:: ../../../../utils/images/wgisd_gt_sample.jpg
   :width: 600
   :alt: this image uploaded from this `source <https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg>`_
 
@@ -116,7 +116,7 @@ Training
 
 .. note::
 
-  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/Main_algorithms/object_detection>`.
+  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection>`.
 
   To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
@@ -154,9 +154,9 @@ The following command line starts training of the medium object detection model 
                             --work-dir outputs/logs
                             --gpus 1
 
-To start multi-gpu training, list the indexes of gpus you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
+To start multi-gpu training, list the indexes of GPUs you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
 
-If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter:
+If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter.
 
 .. code-block::
 
@@ -166,13 +166,13 @@ If you created ``data.yaml`` file in previous step, you can simplify the trainin
                             --work-dir outputs/logs
                             --gpus 1
 
-Looks much simplier, isn't it?
+Looks much simpler, isn't it? You can also pass the ``data.yaml`` for the rest of the OTX CLI commands (eval, export, optimize) that require annotation paths.
 
-4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iteration. More about template-specific parameters is in quick start [#TODO link].
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations. More about template-specific parameters is in quick start [#TODO link].
 
-It can be done by manually updating parameters in ``template.yaml`` file or via command line. 
+It can be done by manually updating parameters in the ``template.yaml`` file or via command line. 
 
-For example, to decrease batsch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
+For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
 .. code-block::
 
@@ -252,9 +252,9 @@ We will get this validation output:
 
 4. ``Optional`` Additionally, we can tune evaluation parameters such as confidence threshold via the command line. Read more about template-specific parameters for validation in quick start [#TODO link].
 
-For example, if there are too many False-Positive predictions (there we have prediction, but don't have annotated object for it) can suppress its number by increasing the confidence threshold as it is shown below.
+For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it) can suppress its number by increasing the confidence threshold as it is shown below.
 
-Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. So, to set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
+Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
 
 .. code-block::
 
@@ -274,7 +274,7 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. 
-It allows to efficiently run it on Intel hardware, especially on CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model contains of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows to run the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. That's how we can export the trained model ``outputs/weights.pth`` from the previous section and save the exported model to the ``outputs/openvino/`` folder.
 
@@ -290,7 +290,7 @@ It allows to efficiently run it on Intel hardware, especially on CPU. Also, the 
   2023-01-10 06:23:41,630 | INFO : Exporting completed
 
 
-3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model, using ``otx eval`` and passing IR model path to ``--load-weights`` parameter.
+3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model, using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
 
 .. code-block::
 
@@ -314,9 +314,9 @@ Optimization
 
 1. We can further optimize the model with ``otx optimize``. It uses NNCF or POT depending on the model format.
 
-``NNCF`` optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
+``NNCF`` optimization is used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
 
-``POT`` optimization is used for models exported in the OpenVINO™ IR format. It decreases floating-point precision to integer precision of the exported model by performing the post-training optimization.
+``POT`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
 The function results with the following files, which could be used to run :doc:`otx demo <../demo>`:
 
@@ -328,7 +328,7 @@ The function results with the following files, which could be used to run :doc:`
 
 To learn more about optimization, refer to `NNCF repository <https://github.com/openvinotoolkit/nncf>`_.
 
-2. Command example for optimizing a PyTorch model (`.pth`) with OpenVINO NNCF. We can also simplify the commanline by adding ``--data data.yaml`` parameter instead of specifying training and validation paths there.
+2. Command example for optimizing a PyTorch model (`.pth`) with OpenVINO NNCF.
 
 .. code-block::
 
@@ -351,7 +351,7 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
   Performance(score: 0.5446735395189003, dashboard: (1 metric groups))
 
 
-3. Command example for optimizing OpenVINO model (.xml) with OpenVINO POT. We can also simplify the commanline by adding ``--data data.yaml`` parameter instead of specifying training and validation paths there.
+3.  Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
@@ -378,8 +378,8 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 The optimization time highly relies on the hardware characteristics, for example on 1 GeForce 3090 it took about 10 minutes.
 Please note, that POT will take some time without logging to optimize the model.
 
-4. Finally, we can also evaluate the optimized model passing it to ``otx eval`` function.
+4. Finally, we can also evaluate the optimized model by passing it to the ``otx eval`` function.
 
-Now we have fully trained, optimized and exported in efficient model representation ready-to use object detection model.
+Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.
 
-Following tutorials provides further steps how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
+The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
