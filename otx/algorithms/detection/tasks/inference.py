@@ -269,6 +269,30 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
+        if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            logger.info("Tiling Enabled")
+            tile_params = ConfigDict(
+                data=ConfigDict(
+                    train=ConfigDict(
+                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
+                    ),
+                    val=ConfigDict(
+                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
+                    ),
+                    test=ConfigDict(
+                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
+                    ),
+                )
+            )
+            configs.update(tile_params)
+            configs.update(dict(evaluation=dict(iou_thr=[0.5])))
+
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 

@@ -475,6 +475,13 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
+            tiling_parameters = model_data.get("config", None).get("tiling_parameters", None)
+            if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
+                logger.info("Load tiling parameters")
+                self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
+                self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
+                self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
+                self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
             return model_data
         return None
 

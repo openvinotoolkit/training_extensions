@@ -464,24 +464,22 @@ def format_list_to_str(value_lists: list):
     return f"[{str_value[:-2]}]"
 
 
-def adaptive_tile_params(dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg") -> Dict:
+def adaptive_tile_params(hyper_parameters, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"):
     """Config tile parameters.
 
     Adapt based on annotation statistics.
     i.e. tile size, tile overlap, ratio and max objects per sample
 
     Args:
+        hyper_parameters: hyper_parameters of the model
         dataset (DatasetEntity): training dataset
         object_tile_ratio (float, optional): The desired ratio of object area and tile area. Defaults to 0.01.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
                               `avg` mode tile size is computed by averaging all the object areas. Defaults to "avg".
 
-    Returns:
-        Dict: adaptive tile parameters
     """
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
 
-    tile_cfg = dict(tile_size=0, tile_overlap=0, tile_max_number=0)
     bboxes = np.zeros((0, 4), dtype=np.float32)
     labels = dataset.get_labels(include_empty=False)
     domain = labels[0].domain
@@ -502,9 +500,8 @@ def adaptive_tile_params(dataset: DatasetEntity, object_tile_ratio=0.01, rule="a
     max_area = np.max(areas)
 
     tile_size = int(math.sqrt(object_area / object_tile_ratio))
-    overlap_ratio = max_area / (tile_size**2) if max_area / (tile_size**2) < 1.0 else None
 
-    tile_cfg.update(dict(tile_size=tile_size, tile_max_number=max_object))
-    if overlap_ratio:
-        tile_cfg.update(dict(tile_overlap=overlap_ratio))
-    return tile_cfg
+    hyper_parameters.tiling_parameters.tile_size = tile_size
+    hyper_parameters.tiling_parameters.max_number = max_object
+    if max_area / (tile_size**2) < 1.0:
+        hyper_parameters.tiling_parameters.tile_overlap = max_area / (tile_size**2)
