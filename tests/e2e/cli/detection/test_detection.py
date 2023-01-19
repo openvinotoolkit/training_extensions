@@ -63,7 +63,7 @@ args_semisl = {
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
-        "1",
+        "2",
         "--learning_parameters.batch_size",
         "4",
         "--algo_backend.train_type",
@@ -75,7 +75,7 @@ args_semisl = {
 resume_params = [
     "params",
     "--learning_parameters.num_iters",
-    "2",
+    "8",
     "--learning_parameters.batch_size",
     "4",
 ]
@@ -83,14 +83,16 @@ resume_params = [
 otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
-default_template = parse_model_template(
-    os.path.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
-)
-default_templates = [default_template]
-default_templates_ids = [default_template.model_template_id]
-
-templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
-templates_ids = [template.model_template_id for template in templates]
+TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
+if TT_STABILITY_TESTS:
+    default_template = parse_model_template(
+        os.path.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
+    )
+    templates = [default_template] * 100
+    templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
+else:
+    templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
+    templates_ids = [template.model_template_id for template in templates]
 
 
 class TestToolsMPADetection:
@@ -98,9 +100,14 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args)
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
         otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
@@ -110,61 +117,73 @@ class TestToolsMPADetection:
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
         otx_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo(self, template, tmp_dir_path):
         otx_demo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
@@ -173,6 +192,7 @@ class TestToolsMPADetection:
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
@@ -181,6 +201,7 @@ class TestToolsMPADetection:
         nncf_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
@@ -189,6 +210,7 @@ class TestToolsMPADetection:
         nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
@@ -197,6 +219,7 @@ class TestToolsMPADetection:
         nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.001)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
@@ -205,22 +228,26 @@ class TestToolsMPADetection:
         nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
@@ -236,6 +263,7 @@ class TestToolsMPASemiSLDetection:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
