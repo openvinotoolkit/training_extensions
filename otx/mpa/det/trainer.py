@@ -56,7 +56,7 @@ class DetectionTrainer(DetectionStage):
         datasets = [build_dataset(cfg.data.train)]
 
         # FIXME: Currently detection do not support multi batch evaluation. This will be fixed
-        if "val" in cfg.data:
+        if 'val' in cfg.data:
             cfg.data.val_dataloader.samples_per_gpu = 1
 
         if hasattr(cfg, "hparams"):
