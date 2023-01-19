@@ -144,7 +144,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
     def unload(self):
         """Unload the task."""
-        self._delete_scratch_space()
+        if self._work_dir_is_temp:
+            self._delete_scratch_space()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):

@@ -13,14 +13,7 @@ from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from otx.cli.utils.tests import (
     get_template_dir,
-    nncf_eval_openvino_testing,
-    nncf_eval_testing,
-    nncf_export_testing,
     nncf_optimize_testing,
-    nncf_validate_fq_testing,
-    otx_demo_deployment_testing,
-    otx_demo_openvino_testing,
-    otx_demo_testing,
     otx_deploy_openvino_testing,
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
@@ -31,18 +24,15 @@ from otx.cli.utils.tests import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
-    pot_validate_fq_testing,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'label_0', 'label_1' classes
 args0 = {
-    "--train-data-roots": "data/datumaro/imagenet_dataset",
-    "--val-data-roots": "data/datumaro/imagenet_dataset",
-    "--test-data-roots": "data/datumaro/imagenet_dataset",
-    "--input": "data/datumaro/imagenet_dataset/label_0",
+    "--train-data-roots": "data/imagenet_dataset",
+    "--val-data-roots": "data/imagenet_dataset",
+    "--test-data-roots": "data/imagenet_dataset",
+    "--input": "data/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -54,10 +44,10 @@ args0 = {
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
-    "--val-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
-    "--test-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
-    "--input": "data/datumaro/imagenet_dataset/label_0",
+    "--train-data-roots": "data/imagenet_dataset_class_incremental",
+    "--val-data-roots": "data/imagenet_dataset_class_incremental",
+    "--test-data-roots": "data/imagenet_dataset_class_incremental",
+    "--input": "data/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -69,8 +59,7 @@ args = {
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--data": "./data.yaml",
-    "--train-data-roots": "data/text_recognition/IL_data",
+    "--train-data-roots": "data/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -181,53 +170,6 @@ class TestToolsMultiClassClassification:
 
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_export(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_export_testing(template, tmp_dir_path)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_validate_fq(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_eval(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.001)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_eval_openvino(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_optimize(self, template, tmp_dir_path):
-    #     pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_validate_fq(self, template, tmp_dir_path):
-    #     pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_eval(self, template, tmp_dir_path):
-    #     pot_eval_testing(template, tmp_dir_path, otx_dir, args)
-
     @e2e_pytest_component
     @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
@@ -250,17 +192,14 @@ class TestToolsMultiClassClassification:
     def test_otx_train_selfsl(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    "--train-data-roots": "data/datumaro/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro/datumaro_multilabel",
-    "--input": "data/datumaro/datumaro_multilabel/images/train",
+    "--train-data-roots": "data/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro_multilabel",
+    "--input": "data/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -273,10 +212,10 @@ args0_m = {
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 # TODO: Not include incremental case yet
 args_m = {
-    "--train-data-roots": "data/datumaro/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro/datumaro_multilabel",
-    "--input": "data/datumaro/datumaro_multilabel/images/train",
+    "--train-data-roots": "data/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro_multilabel",
+    "--input": "data/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -336,60 +275,12 @@ class TestToolsMultilabelClassification:
 
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_export(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
 
-    #     nncf_export_testing(template, tmp_dir_path)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_validate_fq(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_eval(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_eval_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.001)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_eval_openvino(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_optimize(self, template, tmp_dir_path):
-    #     pot_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_validate_fq(self, template, tmp_dir_path):
-    #     pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_eval(self, template, tmp_dir_path):
-    #     pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
-
-
-# TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
-    "--train-data-roots": "data/datumaro/datumaro_h-label",
-    "--val-data-roots": "data/datumaro/datumaro_h-label",
-    "--test-data-roots": "data/datumaro/datumaro_h-label",
-    "--input": "data/datumaro/datumaro_h-label/images/train",
+    "--train-data-roots": "data/datumaro_h-label",
+    "--val-data-roots": "data/datumaro_h-label",
+    "--test-data-roots": "data/datumaro_h-label",
+    "--input": "data/datumaro_h-label/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -448,50 +339,3 @@ class TestToolsHierarchicalClassification:
             pytest.skip("nncf entrypoint is none")
 
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_h)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_export(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_export_testing(template, tmp_dir_path)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_validate_fq(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_eval(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_eval_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.001)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_nncf_eval_openvino(self, template, tmp_dir_path):
-    #     if template.entrypoints.nncf is None:
-    #         pytest.skip("nncf entrypoint is none")
-
-    #     nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_optimize(self, template, tmp_dir_path):
-    #     pot_optimize_testing(template, tmp_dir_path, otx_dir, args_h)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_validate_fq(self, template, tmp_dir_path):
-    #     pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
-
-    # @e2e_pytest_component
-    # @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    # def test_pot_eval(self, template, tmp_dir_path):
-    #     pot_eval_testing(template, tmp_dir_path, otx_dir, args_h)

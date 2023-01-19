@@ -84,8 +84,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_ckpt = None
         self._resume = False
         self._anchors = {}  # type: Dict[str, int]
+        self._work_dir_is_temp = False
         if output_path is None:
             output_path = tempfile.mkdtemp(prefix="OTX-task-")
+            self._work_dir_is_temp = True
         self._output_path = output_path
         logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
@@ -173,10 +175,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Remove model checkpoints and mpa logs."""
         if os.path.exists(self._output_path):
             shutil.rmtree(self._output_path, ignore_errors=False)
-
-    def __del__(self):
-        """Del function for remove model checkpoints."""
-        self._delete_scratch_space()
 
     def _pre_task_run(self):
         pass
@@ -521,7 +519,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     def unload(self):
         """Unload the task."""
-        self._delete_scratch_space()
+        if self._work_dir_is_temp:
+            self._delete_scratch_space()
         if self._is_docker():
             logger.warning("Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
             import ctypes

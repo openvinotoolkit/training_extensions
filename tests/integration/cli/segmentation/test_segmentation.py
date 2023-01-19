@@ -36,10 +36,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # TODO: Currently, it is closed to sample test. need to change other sample
 args = {
-    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
-    "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
-    "--test-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
-    "--input": "data/datumaro/common_semantic_segmentation_dataset/train/images",
+    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "data/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "data/common_semantic_segmentation_dataset/val",
+    "--input": "data/common_semantic_segmentation_dataset/train/images",
     "train_params": [
         "params",
         "--learning_parameters.learning_rate_fixed_iters",
@@ -237,10 +237,10 @@ class TestToolsMPASegmentation:
 
 
 args_semisl = {
-    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
-    "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
-    "--test-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
-    "--unlabeled-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
+    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "data/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "data/common_semantic_segmentation_dataset/val",
+    "--unlabeled-data-roots": "data/common_semantic_segmentation_dataset/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -267,7 +267,7 @@ class TestToolsMPASemiSLSegmentation:
 
 
 args_selfsl = {
-    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
+    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
     "--input": "data/segmentation/custom/images/training",
     "train_params": [
         "params",
