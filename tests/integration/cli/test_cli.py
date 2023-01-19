@@ -9,6 +9,7 @@ import pytest
 
 from otx.cli.tools.build import SUPPORTED_TASKS
 from otx.cli.utils.tests import (
+    otx_build_auto_config,
     otx_build_backbone_testing,
     otx_build_task_testing,
     otx_find_testing,
@@ -42,3 +43,30 @@ class TestToolsOTXCLI:
     @pytest.mark.parametrize("build_backbone_args", build_backbone_args, ids=build_backbone_args_ids)
     def test_otx_backbone_build(self, tmp_dir_path, build_backbone_args):
         otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
+
+
+auto_config_args_with_autosplit = {"--train-data-roots": "data/imagenet_dataset"}
+
+auto_config_args_with_autosplit_task = {"--task": "classification", "--train-data-roots": "data/imagenet_dataset"}
+
+auto_config_args_without_autosplit = {
+    "--train-data-roots": "data/imagenet_dataset",
+    "--val-data-roots": "data/imagenet_dataset_class_incremental",
+}
+
+
+class TestToolsOTXAutoConfig:
+    @e2e_pytest_component
+    def test_otx_build_with_autosplit(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_with_autosplit)
+
+    @e2e_pytest_component
+    def test_otx_build_with_autosplit_task(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_with_autosplit_task)
+
+    @e2e_pytest_component
+    def test_otx_build_without_autosplit(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_without_autosplit)

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
-from typing import Dict, Optional
+from typing import Any, Dict
 
 import mmcv
 from datumaro.components.dataset import Dataset
@@ -62,8 +62,8 @@ class ConfigManager:
             task = "anomaly_classification"
         else:
             # pick task type
-            for task_key in self.task_data_dict:
-                if data_format in self.task_data_dict[task_key]:
+            for task_key, data_value in self.task_data_dict.items():
+                if data_format in data_value:
                     task = task_key
         return task
 
@@ -96,7 +96,7 @@ class ConfigManager:
 
         self.export_data_cfg(data_config, os.path.join(workspace_dir, "data.yaml"))
 
-    def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Optional[str]]]]:
+    def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
         # Create empty Data.yaml
         data_subset_format = {"ann-files": None, "data-roots": None}
@@ -104,7 +104,7 @@ class ConfigManager:
         data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
         return data_config
 
-    def export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Optional[str]]]], output_path: str):
+    def export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str):
         """Export the data configuration file to output_path."""
         mmcv.dump(data_cfg, output_path)
         print(f"[*] Saving data configuration file to: {output_path}")

@@ -79,8 +79,10 @@ def main():
         config_manager = ConfigManager()
         train_task_type = config_manager.get_task_type(train_data_format)
         print(f"[*] Train task type: {train_task_type}")
-        if args.task: 
-            assert args.task == train_task_type, f"Dataset format({train_data_format}) can't be used for {args.task} task."
+        if args.task:
+            assert (
+                args.task == train_task_type
+            ), f"Dataset format({train_data_format}) can't be used for {args.task} task."
 
         # Overwrite the args.task to train_task_type to select default template
         args.task = train_task_type if args.task is None else args.task
@@ -102,7 +104,9 @@ def main():
         else:
             # TODO: consider automatic validation import i.e. COCO
             # Currently, automatic import will be ignored
-            splitted_dataset = DatasetManager.auto_split(train_task_type, splitted_dataset["train"])
+            splitted_dataset = DatasetManager.auto_split(
+                task=train_task_type, dataset=splitted_dataset["train"], split_ratio=[("train", 0.8), ("val", 0.2)]
+            )
 
         # Will save the spliited dataset to workspace with .yaml file
         # For the classification task, imagenet_text format will be used to save the data

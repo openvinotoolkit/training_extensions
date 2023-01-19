@@ -3,7 +3,10 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
+# pylint: disable=invalid-name
 import os
+from typing import List, Tuple
 
 import datumaro
 from datumaro.components.dataset import Dataset, DatasetSubset
@@ -13,7 +16,10 @@ from datumaro.plugins.splitter import Split
 
 class DatasetManager:
     """The aim of DatasetManager is support datumaro functions at easy use.
+
     All kind of functions implemented in Datumaro are supported by this Manager.
+    Since DatasetManager just wraps Datumaro's function,
+    All methods are implemented as static method.
     """
 
     @staticmethod
@@ -22,6 +28,7 @@ class DatasetManager:
         for k, v in dataset.subsets().items():
             if "train" in k or "default" in k:
                 return v
+        raise ValueError(f"Can't find training data in {str(dataset)}")
 
     @staticmethod
     def get_val_dataset(dataset: Dataset) -> DatasetSubset:
@@ -29,6 +36,7 @@ class DatasetManager:
         for k, v in dataset.subsets().items():
             if "val" in k or "default" in k:
                 return v
+        raise ValueError(f"Can't find validation data in {str(dataset)}")
 
     @staticmethod
     def get_data_format(data_root: str) -> str:
@@ -73,14 +81,15 @@ class DatasetManager:
         return Dataset.import_from(data_root, format=data_format)
 
     @staticmethod
-    def auto_split(task: str, dataset: Dataset, default_split_ratio: list = [("train", 0.8), ("val", 0.2)]) -> dict:
+    def auto_split(task: str, dataset: Dataset, split_ratio: List[Tuple[str, float]]) -> dict:
         """Automatically split the dataset: train --> train/val."""
-        splitter = Split(dataset, task.lower(), default_split_ratio)
+        splitter = Split(dataset, task.lower(), split_ratio)
         return splitter.subsets()
 
     @staticmethod
     def is_cvat_format(path: str) -> bool:
         """Detect whether data path is CVAT format or not.
+
         Currently, we used multi-video CVAT format for Action tasks.
 
         This function can detect the multi-video CVAT format.
@@ -111,6 +120,7 @@ class DatasetManager:
     @staticmethod
     def is_mvtec_format(path: str) -> bool:
         """Detect whether data path is MVTec format or not.
+
         Check the first-level architecture folder, to know whether the dataset is MVTec or not.
 
         MVTec default structure like as below:

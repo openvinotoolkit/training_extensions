@@ -160,7 +160,10 @@ class Builder:
             if model_type:
                 workspace_path += f"-{model_type}"
         workspace_path = workspace_path if isinstance(workspace_path, Path) else Path(workspace_path)
-        workspace_path.mkdir(exist_ok=False)
+
+        # Check whether the workspace is existed or not
+        if workspace_path.exists() is False:
+            workspace_path.mkdir(exist_ok=False)
 
         # Load & Save Model Template
         otx_registry = OTXRegistry(str(otx_root)).filter(task_type=task_type)
@@ -208,7 +211,7 @@ class Builder:
         template_config.dump(str(workspace_path / "template.yaml"))
 
         # Create Data.yaml
-        if not ((workspace_path / "data.yaml").exists()):
+        if (workspace_path / "data.yaml").exists() is False:
             data_subset_format = {"ann-files": None, "data-roots": None}
             data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
             data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
