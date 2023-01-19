@@ -172,7 +172,7 @@ class TaskManager:
                 if not (osp.islink(weight_candidate) or osp.exists(osp.join(det, osp.basename(weight_candidate)))):
                     shutil.copy(weight_candidate, det)
         else:
-            raise NotImplementedError
+            return  # TODO need to implement after anomaly task supports resume 
 
     def get_latest_weight(self, workdir: str) -> Optional[str]:
         """Get latest model weight from all weights.
@@ -197,7 +197,7 @@ class TaskManager:
                         current_latest_epoch = epoch
                         latest_weight = weight_name
         else:
-            raise NotImplementedError
+            return None  # TODO need to implement after anomaly task supports resume
 
         return latest_weight
 
