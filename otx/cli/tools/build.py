@@ -18,7 +18,6 @@ and build models with new backbone replacements.
 # and limitations under the License.
 
 import argparse
-import os
 from pathlib import Path
 
 from otx.cli.builder import Builder
@@ -59,6 +58,11 @@ def main():
     builder = Builder()
 
     otx_root = get_otx_root_path()
+    if args.workspace_root is None:
+        args.workspace_root = f"./otx-workspace-{args.task}"
+        if args.model:
+            args.workspace_root += f"-{args.model}"
+    workspace_path = Path(args.workspace_root)
 
     # Auto configuration & Datumaro Helper
     # First, find the format of train dataset and import it by using DatasetManager
@@ -91,12 +95,10 @@ def main():
         args.task = train_task_type if args.task is None else args.task
 
         # Create workspace
-        if args.workspace_root is None:
-            args.workspace_root = f"./otx-workspace-{args.task}"
 
-        Path(args.workspace_root).mkdir(exist_ok=False)
+        workspace_path.mkdir(exist_ok=False)
+        print(f"[*] Create workspace to: {workspace_path}")
 
-        print(f"[*] Create workspace to: {args.workspace_root}")
         # If no validation dataset, auto_split will be triggered
         if args.val_data_roots is not None:
             val_data_format = DatasetManager.get_data_format(args.val_data_roots)
@@ -122,9 +124,9 @@ def main():
             task_type=args.task,
             model_type=args.model,
             train_type=args.train_type.lower(),
-            workspace_path=args.workspace_root,
+            workspace_path=workspace_path,
             otx_root=otx_root,
-            exist=is_autoconfig_enabled
+            exist=is_autoconfig_enabled,
         )
 
     # Build Backbone related
@@ -132,9 +134,7 @@ def main():
         missing_args = []
         if not args.backbone.endswith((".yml", ".yaml", ".json")):
             if args.save_backbone_to is None:
-                args.save_backbone_to = (
-                    os.path.join(args.workspace_root, "backbone.yaml") if args.workspace_root else "./backbone.yaml"
-                )
+                args.save_backbone_to = workspace_path / "backbone.yaml" if workspace_path else "./backbone.yaml"
             missing_args = builder.build_backbone_config(args.backbone, args.save_backbone_to)
             args.backbone = args.save_backbone_to
         if args.model:

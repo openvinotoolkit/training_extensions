@@ -140,11 +140,11 @@ class Builder:
     def build_task_config(
         self,
         task_type: str,
+        workspace_path: Path,
         model_type: str = None,
         train_type: str = "incremental",
-        workspace_path: Union[Path, str] = None,
         otx_root: Union[Path, str] = ".",
-        exist: bool = False
+        exist: bool = False,
     ):
         """Create OTX workspace with Template configs from task type.
 
@@ -159,11 +159,6 @@ class Builder:
         # Check whether the workspace is existed or not
         # FIXME: better variable name? is_autoconfig_enabled?
         if not exist:
-            if workspace_path is None:
-                workspace_path = f"./otx-workspace-{task_type}"
-                if model_type:
-                    workspace_path += f"-{model_type}"
-            workspace_path = workspace_path if isinstance(workspace_path, Path) else Path(workspace_path)
             workspace_path.mkdir(exist_ok=False)
 
         # Load & Save Model Template
