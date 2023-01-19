@@ -35,3 +35,6 @@ class CancelInterfaceHook(Hook):
     def before_run(self, runner):
         self.runner = runner
         self.on_init_callback(self)
+
+    def after_run(self, runner):
+        self.runner = None

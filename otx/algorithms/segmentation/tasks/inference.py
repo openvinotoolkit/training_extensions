@@ -22,12 +22,15 @@ from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     patch_data_pipeline,
-    remove_from_config,
+    patch_default_config,
+    patch_runner,
+    remove_from_configs_by_type,
 )
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
-from otx.algorithms.segmentation.adapters.mmseg.utils import (
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
+from otx.algorithms.segmentation.adapters.mmseg.utils.config_utils import (
     patch_datasets,
     patch_evaluation,
 )
@@ -88,7 +91,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
+
         super().__init__(SegmentationConfig, task_environment, **kwargs)
+        self._label_dictionary = dict(enumerate(self._labels, 1))
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -96,7 +101,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     ) -> DatasetEntity:
         """Main infer function of OTX Segmentation."""
         logger.info("infer()")
-        dump_features = True
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -109,8 +113,15 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         stage_module = "SegInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
-        results = self._run_task(stage_module, mode="train", dataset=dataset, dump_features=dump_features)
+
+        dump_features = True
+
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            dump_features=dump_features,
+        )
         logger.debug(f"result of run_task {stage_module} module = {results}")
         predictions = results["outputs"]
         prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
@@ -133,7 +144,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
     def unload(self):
         """Unload the task."""
-        self._delete_scratch_space()
+        if self._work_dir_is_temp:
+            self._delete_scratch_space()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -145,15 +157,19 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = "SegExporter"
-        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-        results = results.get("outputs")
-        logger.debug(f"results of run_task = {results}")
-        if results is None:
-            logger.error("error while exporting model result is None")
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            export=True,
+        )
+        outputs = results.get("outputs")
+        logger.debug(f"results of run_task = {outputs}")
+        if outputs is None:
+            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
             # output_model.model_status = ModelStatus.FAILED
         else:
-            bin_file = results.get("bin")
-            xml_file = results.get("xml")
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
             if xml_file is None or bin_file is None:
                 raise RuntimeError("invalid status of exporting. bin and xml should not be None")
             with open(bin_file, "rb") as f:
@@ -164,34 +180,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
-
-    def _init_recipe_hparam(self) -> dict:
-        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
-
-        if self._hyperparams.learning_parameters.enable_early_stopping:
-            early_stop = ConfigDict(
-                start=int(self._hyperparams.learning_parameters.early_stop_start),
-                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
-                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
-            )
-        else:
-            early_stop = False
-
-        return ConfigDict(
-            optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
-            lr_config=lr_config,
-            early_stop=early_stop,
-            data=ConfigDict(
-                samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
-                workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
-            ),
-            runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters)),
-        )
 
     def _init_recipe(self):
         logger.info("called _init_recipe()")
@@ -207,14 +195,21 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info(f"train type = {self._train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
+        options_for_patch_datasets = {"type": "MPASegDataset"}
+        patch_default_config(self._recipe_cfg)
+        patch_runner(self._recipe_cfg)
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-        patch_datasets(self._recipe_cfg)  # for OTX compatibility
+        patch_datasets(
+            self._recipe_cfg,
+            self._task_type.domain,
+            **options_for_patch_datasets,
+        )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         if self._recipe_cfg.get("evaluation", None):
             self.metric = self._recipe_cfg.evaluation.metric
 
         if not self.freeze:
-            remove_from_config(self._recipe_cfg, "params_config")
+            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
         logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):
@@ -232,10 +227,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    dataset=ConfigDict(
-                        otx_dataset=None,
-                        labels=self._labels,
-                    )
+                    otx_dataset=None,
+                    labels=self._labels,
                 ),
                 test=ConfigDict(
                     otx_dataset=dataset,
@@ -281,3 +274,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                         numpy=class_act_map,
                     )
                     dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
+
+    def _initialize_post_hook(self, options=None):
+        super()._initialize_post_hook(options)
+        options["model_builder"] = build_segmentor

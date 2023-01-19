@@ -202,8 +202,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     # pylint: disable=attribute-defined-outside-init
     def _init_task(self, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
-        export = kwargs.get("export", False)
-        self._initialize(export=export)
+        self._initialize(kwargs)
         logger.info(f"running task... kwargs = {kwargs}")
         if self._recipe_cfg is None:
             raise RuntimeError("'config' is not initialized yet. call prepare() method before calling this method")
@@ -305,7 +304,8 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     def unload(self):
         """Unload the task."""
-        self.finalize()
+        if self._work_dir_is_temp:
+            self._delete_scratch_space()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):

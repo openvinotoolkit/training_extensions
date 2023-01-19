@@ -17,6 +17,7 @@ from otx.cli.utils.tests import (
     nncf_eval_testing,
     nncf_export_testing,
     nncf_optimize_testing,
+    nncf_validate_fq_testing,
     otx_demo_deployment_testing,
     otx_demo_openvino_testing,
     otx_demo_testing,
@@ -32,15 +33,16 @@ from otx.cli.utils.tests import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    pot_validate_fq_testing,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'label_0', 'label_1' classes
 args0 = {
-    "--train-data-roots": "data/datumaro/imagenet_dataset",
-    "--val-data-roots": "data/datumaro/imagenet_dataset",
-    "--test-data-roots": "data/datumaro/imagenet_dataset",
-    "--input": "data/datumaro/imagenet_dataset/label_0",
+    "--train-data-roots": "data/imagenet_dataset",
+    "--val-data-roots": "data/imagenet_dataset",
+    "--test-data-roots": "data/imagenet_dataset",
+    "--input": "data/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -52,10 +54,10 @@ args0 = {
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
-    "--val-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
-    "--test-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
-    "--input": "data/datumaro/imagenet_dataset/label_0",
+    "--train-data-roots": "data/imagenet_dataset_class_incremental",
+    "--val-data-roots": "data/imagenet_dataset_class_incremental",
+    "--test-data-roots": "data/imagenet_dataset_class_incremental",
+    "--input": "data/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -210,6 +212,15 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -234,10 +245,17 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_validate_fq(self, template, tmp_dir_path):
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -265,10 +283,10 @@ class TestToolsMultiClassSemiSLClassification:
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    "--train-data-roots": "data/datumaro/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro/datumaro_multilabel",
-    "--input": "data/datumaro/datumaro_multilabel/images/train",
+    "--train-data-roots": "data/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro_multilabel",
+    "--input": "data/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -281,10 +299,10 @@ args0_m = {
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 # TODO: Not include incremental case yet
 args_m = {
-    "--train-data-roots": "data/datumaro/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro/datumaro_multilabel",
-    "--input": "data/datumaro/datumaro_multilabel/images/train",
+    "--train-data-roots": "data/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro_multilabel",
+    "--input": "data/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -400,6 +418,15 @@ class TestToolsMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -424,10 +451,17 @@ class TestToolsMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_validate_fq(self, template, tmp_dir_path):
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -437,12 +471,11 @@ class TestToolsMultilabelClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
 
 
-# TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
-    "--train-data-roots": "data/datumaro/datumaro_h-label",
-    "--val-data-roots": "data/datumaro/datumaro_h-label",
-    "--test-data-roots": "data/datumaro/datumaro_h-label",
-    "--input": "data/datumaro/datumaro_h-label/images/train",
+    "--train-data-roots": "data/datumaro_h-label",
+    "--val-data-roots": "data/datumaro_h-label",
+    "--test-data-roots": "data/datumaro_h-label",
+    "--input": "data/datumaro_h-label/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -567,6 +600,15 @@ class TestToolsHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_validate_fq(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -586,6 +628,13 @@ class TestToolsHierarchicalClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_validate_fq(self, template, tmp_dir_path):
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
+
+    @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -597,8 +646,7 @@ class TestToolsHierarchicalClassification:
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--data": "./data.yaml",
-    "--train-data-roots": "data/text_recognition/IL_data",
+    "--train-data-roots": "data/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -624,5 +672,5 @@ class TestToolsSelfSLClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval(self, template, tmp_dir_path):
+    def test_otx_selfsl_eval(self, template, tmp_dir_path):
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)

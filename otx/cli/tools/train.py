@@ -65,7 +65,8 @@ def parse_args():
     if not os.path.exists("./template.yaml"):
         parser.add_argument("template")
     parser.add_argument("--data", required=False, default="./data.yaml")
-    required = not os.path.exists("./data.yaml")
+    parsed, _ = parser.parse_known_args()
+    required = not os.path.exists(parsed.data)
 
     parser.add_argument(
         "--train-data-roots",
@@ -125,10 +126,22 @@ def parse_args():
               If there are more than one available GPU, then model is trained with multi GPUs.",
     )
     parser.add_argument(
-        "--multi-gpu-port",
-        default=25000,
+        "--rdzv-endpoint",
+        type=str,
+        default="localhost:0",
+        help="Rendezvous endpoint for multi-node training.",
+    )
+    parser.add_argument(
+        "--base-rank",
         type=int,
-        help="port for communication beteween multi GPU processes.",
+        default=0,
+        help="Base rank of the current node workers.",
+    )
+    parser.add_argument(
+        "--world-size",
+        type=int,
+        default=0,
+        help="Total number of workers in a worker group.",
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
@@ -213,7 +226,7 @@ def main():  # pylint: disable=too-many-branches
         task = task_class(task_environment=environment, output_path=args.work_dir)
 
     if args.gpus:
-        multigpu_manager = MultiGPUManager(main, args.gpus, str(args.multi_gpu_port))
+        multigpu_manager = MultiGPUManager(main, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
         if template.task_type in (TaskType.ACTION_CLASSIFICATION, TaskType.ACTION_DETECTION):
             print("Multi-GPU training for action tasks isn't supported yet. A single GPU will be used for a training.")
         elif (
@@ -245,6 +258,8 @@ def main():  # pylint: disable=too-many-branches
         task.evaluate(resultset)
         assert resultset.performance is not None
         print(resultset.performance)
+
+    task.unload()
 
     if args.gpus:
         multigpu_manager.finalize()

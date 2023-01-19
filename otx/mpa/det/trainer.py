@@ -10,7 +10,6 @@ from mmcv.utils import get_git_hash
 from mmdet import __version__
 from mmdet.apis import train_detector
 from mmdet.datasets import build_dataset
-from mmdet.models import build_detector
 from mmdet.utils import collect_env
 from torch import nn
 
@@ -19,10 +18,6 @@ from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
 from .stage import DetectionStage
-
-# TODO[JAEGUK]: Remove import detection_tasks
-# from detection_tasks.apis.detection.config_utils import cluster_anchors
-
 
 logger = get_logger()
 
@@ -42,13 +37,11 @@ class DetectionTrainer(DetectionStage):
         self._init_logger()
         mode = kwargs.get("mode", "train")
         if mode not in self.mode:
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, **kwargs)
         logger.info("train!")
-
-        # # Work directory
-        # mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
@@ -62,15 +55,9 @@ class DetectionTrainer(DetectionStage):
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
-        # FIXME Currently detection do not support multi batch evaluation. This will be fixed
-        # cfg.data.val.samples_per_gpu = cfg.data.get("samples_per_gpu", 1)
-        cfg.data.val.samples_per_gpu = 1
-
-        # FIXME: scale_factors is fixed at 1 even batch_size > 1 in simple_test_mask
-        # Need to investigate, possibly due to OpenVINO
-        if "roi_head" in model_cfg.model:
-            if "mask_head" in model_cfg.model.roi_head:
-                cfg.data.val.samples_per_gpu = 1
+        # FIXME: Currently detection do not support multi batch evaluation. This will be fixed
+        if 'val' in cfg.data:
+            cfg.data.val_dataloader.samples_per_gpu = 1
 
         if hasattr(cfg, "hparams"):
             if cfg.hparams.get("adaptive_anchor", False):
@@ -102,30 +89,40 @@ class DetectionTrainer(DetectionStage):
         meta["seed"] = cfg.seed
         meta["exp_name"] = cfg.work_dir
         if cfg.checkpoint_config is not None:
-            cfg.checkpoint_config.meta = dict(mmdet_version=__version__ + get_git_hash()[:7], CLASSES=target_classes)
+            cfg.checkpoint_config.meta = dict(
+                mmdet_version=__version__ + get_git_hash()[:7],
+                CLASSES=target_classes,
+            )
             if "proposal_ratio" in locals():
                 cfg.checkpoint_config.meta.update({"anchor_ratio": proposal_ratio})
 
-        # Save config
-        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
-        # logger.info(f'Config:\n{cfg.pretty_text}')
+        self.configure_samples_per_gpu(cfg, "train", self.distributed)
+        self.configure_fp16_optimizer(cfg, self.distributed)
 
-        model = build_detector(cfg.model)
+        # Model
+        model_builder = kwargs.get("model_builder", None)
+        model = self.build_model(cfg, model_builder)
+        model.train()
         model.CLASSES = target_classes
 
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
 
-        # Do clustering for SSD model
-        # TODO[JAEGUK]: Temporary disable cluster_anchors for SSD model
-        # if hasattr(cfg.model, 'bbox_head') and hasattr(cfg.model.bbox_head, 'anchor_generator'):
-        #     if getattr(cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
-        #         train_cfg = Stage.get_data_cfg(cfg, "train")
-        #         train_dataset = train_cfg.get('otx_dataset', None)
-        #         cfg, model = cluster_anchors(cfg, train_dataset, model)
+        self.configure_compat_cfg(cfg)
 
+        # Save config
+        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
+        # logger.info(f'Config:\n{cfg.pretty_text}')
+
+        validate = True if cfg.data.get("val", None) else False
         train_detector(
-            model, datasets, cfg, distributed=self.distributed, validate=True, timestamp=timestamp, meta=meta
+            model,
+            datasets,
+            cfg,
+            distributed=self.distributed,
+            validate=validate,
+            timestamp=timestamp,
+            meta=meta,
         )
 
         # Save outputs
@@ -133,7 +130,9 @@ class DetectionTrainer(DetectionStage):
         best_ckpt_path = glob.glob(osp.join(cfg.work_dir, "best_*.pth"))
         if len(best_ckpt_path) > 0:
             output_ckpt_path = best_ckpt_path[0]
-        return dict(final_ckpt=output_ckpt_path)
+        return dict(
+            final_ckpt=output_ckpt_path,
+        )
 
     def _modify_cfg_for_distributed(self, model, cfg):
         nn.SyncBatchNorm.convert_sync_batchnorm(model)
