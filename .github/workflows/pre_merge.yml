@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   Code-Quality-Checks:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, linux, x64, dev]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -27,9 +27,9 @@ jobs:
       - name: Code Quality Checks
         run: tox -re pre-commit
   Pre-Merge-Tests:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, linux, x64, dev]
     needs: Code-Quality-Checks
-    timeout-minutes: 600
+    timeout-minutes: 1440
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout repository
