@@ -19,6 +19,7 @@ and build models with new backbone replacements.
 
 import argparse
 import os
+from pathlib import Path
 
 from otx.cli.builder import Builder
 from otx.cli.utils.importing import get_otx_root_path
@@ -65,7 +66,9 @@ def main():
     # Third, check the whether val_data_roots is None or not None
     # If val_data_roots is None, auto_split() is trigerred.
     # Forth, save the dataset with it's configuraiton(.yaml) file
-    if args.train_data_roots:
+    is_autoconfig_enabled = args.train_data_roots
+    if is_autoconfig_enabled:
+        print("[*] Auto-configuration is enabled !!")
         train_data_format = DatasetManager.get_data_format(args.train_data_roots)
         print(f"[*] Train data format: {train_data_format}")
 
@@ -91,7 +94,7 @@ def main():
         if args.workspace_root is None:
             args.workspace_root = f"./otx-workspace-{args.task}"
 
-        os.makedirs(args.workspace_root, exist_ok=False)
+        Path(args.workspace_root).mkdir(exist_ok=False)
 
         print(f"[*] Create workspace to: {args.workspace_root}")
         # If no validation dataset, auto_split will be triggered
@@ -121,6 +124,7 @@ def main():
             train_type=args.train_type.lower(),
             workspace_path=args.workspace_root,
             otx_root=otx_root,
+            exist=is_autoconfig_enabled
         )
 
     # Build Backbone related
