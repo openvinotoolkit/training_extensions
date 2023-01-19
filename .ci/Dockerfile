@@ -18,18 +18,35 @@ ENV no_proxy=$NO_PROXY
 ENV DEBIAN_FRONTEND="noninteractive"
 
 # Update system and install dependencies
+# RUN apt-get update && apt-get install --no-install-recommends -y \
+#         software-properties-common=0.99.9.8 \
+#         wget=1.20.3-1ubuntu2 \
+#         ffmpeg=7:4.2.7-0ubuntu0.1 \
+#         libpython3.8=3.8.10-0ubuntu1\~20.04.6 \
+#         curl=7.68.0-1ubuntu2.15 \
+#         nodejs=10.19.0\~dfsg-3ubuntu1 \
+#         unzip=6.0-25ubuntu1.1 \
+#         npm=6.14.4+ds-1ubuntu2 \
+#         ruby-dev=1:2.7+1 \
+#         git=1:2.25.1-1ubuntu3.7 \
+#         cron=3.0pl1-136ubuntu1 \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
+
+# added ninja-build for using CppExtension in the torch
 RUN apt-get update && apt-get install --no-install-recommends -y \
-        software-properties-common=0.99.9.8 \
-        wget=1.20.3-1ubuntu2 \
-        ffmpeg=7:4.2.7-0ubuntu0.1 \
-        libpython3.8=3.8.10-0ubuntu1\~20.04.6 \
-        curl=7.68.0-1ubuntu2.15 \
-        nodejs=10.19.0\~dfsg-3ubuntu1 \
-        unzip=6.0-25ubuntu1.1 \
-        npm=6.14.4+ds-1ubuntu2 \
-        ruby-dev=1:2.7+1 \
-        git=1:2.25.1-1ubuntu3.7 \
-        cron=3.0pl1-136ubuntu1 \
+        software-properties-common \
+        wget \
+        ffmpeg \
+        libpython3.8 \
+        curl \
+        nodejs \
+        unzip \
+        npm \
+        ruby-dev \
+        git \
+        cron \
+        ninja-build \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -71,8 +88,9 @@ FROM python_base_cuda as otx_development_env
 #     -r /tmp/otx/requirements/openvino.txt && \
 #     mkdir actions-runner
 
-RUN pip install torch==1.8.2 torchvision==0.9.2 torchaudio==0.8.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cu111 \
-    && mkdir actions-runner
+# RUN pip install torch==1.8.2 torchvision==0.9.2 torchaudio==0.8.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cu111 \
+#     && mkdir actions-runner
+RUN mkdir actions-runner
 
 WORKDIR /home/validation/actions-runner
 

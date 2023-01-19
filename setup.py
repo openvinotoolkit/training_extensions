@@ -256,7 +256,8 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
                 if package and not package.startswith(("#", "-f")):
                     requirement = Requirement.parse(package)
                     if requirement.name in ("torch", "torchvision"):
-                        package = update_torch_requirement(requirement)
+                        # package = update_torch_requirement(requirement)
+                        pass
                     requirements.append(package)
 
     return requirements

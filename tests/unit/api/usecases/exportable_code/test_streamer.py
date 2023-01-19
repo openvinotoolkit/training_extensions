@@ -289,6 +289,7 @@ class TestStreamer:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.timeout(10)
     def test_threaded_streamer(self):
         """
         <b>Description:</b>
