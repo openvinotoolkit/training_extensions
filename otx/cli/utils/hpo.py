@@ -28,7 +28,6 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
-from otx.cli.datasets import get_dataset_class
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
@@ -668,9 +667,14 @@ class Trainer:
     def run(self):
         """Run each training of each trial with given hyper parameters."""
         hyper_parameters = self._prepare_hyper_parameter()
-        dataset = self._prepare_dataset()
+        dataset_adapter = self._prepare_dataset_adapter()
 
-        environment = self._prepare_environment(hyper_parameters, dataset)
+        dataset = dataset_adapter.get_otx_dataset()
+        dataset = HpoDataset(dataset, self._hp_config)
+
+        label_schema = dataset_adapter.get_label_schema()
+
+        environment = self._prepare_environment(hyper_parameters, label_schema)
         self._set_hyper_parameter(environment)
 
         need_to_save_initial_weight = False
@@ -696,22 +700,27 @@ class Trainer:
     def _prepare_hyper_parameter(self):
         return create(self._model_template.hyper_parameters.data)
 
-    def _prepare_dataset(self):
-        dataset_class = get_dataset_class(self._task.task_type)
-        dataset = dataset_class(**self._data_roots)
-        dataset = HpoDataset(dataset, self._hp_config)
+    def _prepare_dataset_adapter(self):
+        dataset_adapter = get_dataset_adapter(
+            self._task.task_type,
+            train_data_roots=self._data_roots["train_subset"]["data_root"],
+            val_data_roots=self._data_roots["val_subset"]["data_root"]
+            if "val_subset" in self._data_roots else None,
+            unlabeled_data_roots=self._data_roots["unlabeled_subset"]["data_root"]
+            if "unlabeled_subset" in self._data_roots else None,
+        )
 
-        return dataset
+        return dataset_adapter
 
     def _set_hyper_parameter(self, environment: TaskEnvironmentManager):
         environment.set_hyper_parameter_using_str_key(self._hp_config["configuration"])
         environment.set_epoch(self._epoch)
 
-    def _prepare_environment(self, hyper_parameters, dataset):
+    def _prepare_environment(self, hyper_parameters, label_schema):
         enviroment = TaskEnvironment(
             model=None,
             hyper_parameters=hyper_parameters,
-            label_schema=generate_label_schema(dataset, self._task.task_type),
+            label_schema=label_schema,
             model_template=self._model_template,
         )
 
