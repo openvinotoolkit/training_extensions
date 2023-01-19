@@ -54,7 +54,7 @@ fi
 pip install --upgrade 'pip>=22.0' wheel setuptools build || exit 1
 
 # Get CUDA version.
-CUDA_HOME_CANDIDATE=/usr/local/cuda-11.1
+CUDA_HOME_CANDIDATE=/usr/local/cuda
 if [ -z "${CUDA_HOME}" ] && [ -d ${CUDA_HOME_CANDIDATE} ]; then
   echo "Exporting CUDA_HOME as ${CUDA_HOME_CANDIDATE}"
   export CUDA_HOME=${CUDA_HOME_CANDIDATE}
