@@ -191,7 +191,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
-        template_work_dir = get_template_dir(template, tmp_dir_path)
 
 
 # Pre-train w/ 'car', 'tree' classes
