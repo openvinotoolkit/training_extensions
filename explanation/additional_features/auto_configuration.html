@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Add custom metrics &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>Auto-configuration &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -41,8 +41,8 @@
     <script src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Explanation" href="../../explanation/index.html" />
-    <link rel="prev" title="Add new models" href="add_new_models.html" />
+    <link rel="next" title="Reference" href="../../reference/index.html" />
+    <link rel="prev" title="Hyperparameters Oprimization" href="hpo.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -100,14 +100,9 @@
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
   <div class="bd-toc-item active">
     <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../how_to_install.html">
-   How to install
-  </a>
- </li>
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../how_to_use/index.html">
-   How to use
+  <a class="reference internal" href="../algorithms/index.html">
+   Algorithms
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
   <label for="toctree-checkbox-1">
@@ -115,61 +110,151 @@
    </i>
   </label>
   <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_use/create_dataset.html">
-     Create Dataset
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../algorithms/anomaly/index.html">
+     Anomaly Recognition
     </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/anomaly/anomaly_classification.html">
+       Anomaly Classificaiton
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/anomaly/anomaly_detection.html">
+       Anomaly Detection
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/anomaly/anomaly_segmentation.html">
+       Anomaly Segmentation
+      </a>
+     </li>
+    </ul>
    </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_use/train_a_model.html">
-     Train a model
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../algorithms/action/index.html">
+     Action Recognition
     </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/action/action_classification.html">
+       Action Classificaiton
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/action/action_detection.html">
+       Action Detection
+      </a>
+     </li>
+    </ul>
    </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_use/evaluate_a_model.html">
-     Evaluate a model
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../algorithms/classification/index.html">
+     Classification
     </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/classification/multi_class_classification.html">
+       Multi-class Classification
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/classification/multi_label_classification.html">
+       Multi-label Classification
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/classification/hierarhical_classification.html">
+       Hierarchical Classification
+      </a>
+     </li>
+    </ul>
    </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_use/export_a_model.html">
-     Export a model
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../algorithms/segmentation/index.html">
+     Segmentation
     </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/segmentation/semantic_segmentation.html">
+       Semantic Segmentation
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html">
+       Instance Segmentation
+      </a>
+     </li>
+    </ul>
    </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_use/infer_a_model.html">
-     Infer a model
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../algorithms/object_detection/index.html">
+     Object Detection
     </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_use/deploy_a_model.html">
-     Deploy a model
-    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/object_detection/object_detection.html">
+       Object Detection
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../algorithms/object_detection/rotated_object_detection.html">
+       Object Detection With Rotated Bounding Boxes
+      </a>
+     </li>
+    </ul>
    </li>
   </ul>
  </li>
  <li class="toctree-l1 current active has-children">
   <a class="reference internal" href="index.html">
-   How to customize
+   Additional Features
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+  <label for="toctree-checkbox-7">
    <i class="fas fa-chevron-down">
    </i>
   </label>
   <ul class="current">
    <li class="toctree-l2">
-    <a class="reference internal" href="add_custom_datasets.html">
-     Add custom datasets
+    <a class="reference internal" href="models_optimization.html">
+     Models Optimization
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="add_new_models.html">
-     Add new models
+    <a class="reference internal" href="hpo.html">
+     Hyperparameters Oprimization
     </a>
    </li>
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     Add custom metrics
+     Auto-configuration
     </a>
    </li>
   </ul>
@@ -210,10 +295,9 @@
               
               <div>
                 
-  <div class="section" id="add-custom-metrics">
-<h1>Add custom metrics<a class="headerlink" href="#add-custom-metrics" title="Permalink to this headline">¶</a></h1>
-<p>&lt;Guidelines for writing&gt;</p>
-<p>It describes how to add custom metrics for each task supported in OTX with jupyter notebooks.</p>
+  <div class="section" id="auto-configuration">
+<h1>Auto-configuration<a class="headerlink" href="#auto-configuration" title="Permalink to this headline">¶</a></h1>
+<p>Coming soon…</p>
 </div>
 
 
@@ -222,8 +306,8 @@
               
               <div class='prev-next-bottom'>
                 
-    <a class='left-prev' id="prev-link" href="add_new_models.html" title="previous page">Add new models</a>
-    <a class='right-next' id="next-link" href="../../explanation/index.html" title="next page">Explanation</a>
+    <a class='left-prev' id="prev-link" href="hpo.html" title="previous page">Hyperparameters Oprimization</a>
+    <a class='right-next' id="next-link" href="../../reference/index.html" title="next page">Reference</a>
 
               </div>
               

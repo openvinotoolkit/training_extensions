@@ -399,26 +399,26 @@ semi and self-supervised learning.</p>
 <h2>Organizational Structure<a class="headerlink" href="#organizational-structure" title="Permalink to this headline">¶</a></h2>
 <p>Algorithms have the following organizational structure:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;algorithm&gt;
-├── adapters
-│   └── &lt;library&gt;
-│       ├── config
-│       ├── data
-│       └── ...
-├── configs
-│   └── &lt;model_name&gt;
-│       ├── template.yaml
-│       ├── configuration.py
-│       ├── configuration.yaml
-│       ├── compression_config.json
-│       └── hpo_config.yaml
-├── tasks
-│   ├── train.py
-│   ├── inference.py
-│   ├── nncf.py
-│   └── openvino.py
-└── tools
-   ├── README.md
-   └── sample.py
+├──<span class="w"> </span>adapters
+│<span class="w">   </span>└──<span class="w"> </span>&lt;library&gt;
+│<span class="w">       </span>├──<span class="w"> </span>config
+│<span class="w">       </span>├──<span class="w"> </span>data
+│<span class="w">       </span>└──<span class="w"> </span>...
+├──<span class="w"> </span>configs
+│<span class="w">   </span>└──<span class="w"> </span>&lt;model_name&gt;
+│<span class="w">       </span>├──<span class="w"> </span>template.yaml
+│<span class="w">       </span>├──<span class="w"> </span>configuration.py
+│<span class="w">       </span>├──<span class="w"> </span>configuration.yaml
+│<span class="w">       </span>├──<span class="w"> </span>compression_config.json
+│<span class="w">       </span>└──<span class="w"> </span>hpo_config.yaml
+├──<span class="w"> </span>tasks
+│<span class="w">   </span>├──<span class="w"> </span>train.py
+│<span class="w">   </span>├──<span class="w"> </span>inference.py
+│<span class="w">   </span>├──<span class="w"> </span>nncf.py
+│<span class="w">   </span>└──<span class="w"> </span>openvino.py
+└──<span class="w"> </span>tools
+<span class="w">   </span>├──<span class="w"> </span>README.md
+<span class="w">   </span>└──<span class="w"> </span>sample.py
 </pre></div>
 </div>
 <p>where each algorithm has <code class="docutils literal notranslate"><span class="pre">adapters</span></code>, <code class="docutils literal notranslate"><span class="pre">configs</span></code>, <code class="docutils literal notranslate"><span class="pre">tasks</span></code> and <code class="docutils literal notranslate"><span class="pre">tools</span></code>.</p>
