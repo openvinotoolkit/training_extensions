@@ -57,8 +57,8 @@ class SegTrainer(SegStage):
         datasets = [build_dataset(cfg.data.train)]
 
         # FIXME: Currently segmentor does not support multi batch evaluation.
-        # For the Self-SL case, there is no val data. So, need to check the 
-        if 'val' in cfg.data:
+        # For the Self-SL case, there is no val data. So, need to check the
+        if "val" in cfg.data:
             cfg.data.val_dataloader.samples_per_gpu = 1
 
         # Dataset for HPO
