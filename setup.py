@@ -124,6 +124,7 @@ def update_version_with_cuda_suffix(name: str, version: str) -> str:
         "torch": {
             "1.8.0": {"10": "102", "11": "111"},
             "1.8.1": {"10": "102", "11": "111"},
+            "1.8.2": {"10": "102", "11": "111"},
             "1.9.0": {"10": "102", "11": "111"},
             "1.9.1": {"10": "102", "11": "111"},
             "1.10.0": {"10": "102", "11": "113"},
@@ -135,6 +136,7 @@ def update_version_with_cuda_suffix(name: str, version: str) -> str:
         "torchvision": {
             "0.9.0": {"10": "102", "11": "111"},
             "0.9.1": {"10": "102", "11": "111"},
+            "0.9.2": {"10": "102", "11": "111"},
             "0.10.0": {"10": "102", "11": "111"},
             "0.10.1": {"10": "102", "11": "111"},
             "0.11.0": {"10": "102", "11": "113"},
@@ -329,7 +331,8 @@ EXTRAS_REQUIRE = {
         ]
     ),
 }
-DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
+# DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
+DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/lts/1.8/torch_lts.html"]
 
 
 setup(
