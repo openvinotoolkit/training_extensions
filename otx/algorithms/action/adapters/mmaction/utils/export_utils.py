@@ -6,18 +6,11 @@ from subprocess import DEVNULL, CalledProcessError, run  # nosec
 
 import cv2
 import numpy as np
+import onnx
 import torch
 from mmaction.models import Recognizer3D
 
 from otx.algorithms.action.adapters.mmaction.models.detectors import AVAFastRCNN
-
-try:
-    import onnx
-    import onnxruntime as rt
-
-    rt.set_default_logger_severity(3)
-except ImportError as e:
-    raise ImportError(f"Please install onnx and onnxruntime first. {e}") from e
 
 try:
     from mmcv.onnx.symbolic import register_extra_symbolics
@@ -54,7 +47,7 @@ def preprocess(clip_len, width, height, interval=1, category=1):
     To get proper proposals from Faster-RCNN, the action detector needs real data
     """
     frames = []
-    frame_dir = f"data/custom_action_recognition/custom_dataset/rawframes/{category}/"
+    frame_dir = f"data/cvat_dataset/action_detection/train/{category}/images"
     mean = [123.675, 116.28, 103.53]
     std = [58.395, 57.12, 57.375]
     # TODO: allow only .jpg, .png exts
@@ -73,7 +66,7 @@ def preprocess(clip_len, width, height, interval=1, category=1):
     np_frames = np_frames[:, :, frame_inds, :, :]
     torch_input = torch.Tensor(np_frames)
     one_meta = {
-        "img_shape": (height, width),
+        "img_shape": torch.Tensor((height, width)),
         "ori_shape": (ori_h, ori_w),
         "pad_shape": (height, width),
         "filename": "demo_vid.png",
@@ -107,7 +100,6 @@ def pytorch2onnx(
     opset_version=11,
     show=False,
     output_file="tmp.onnx",
-    verify=False,
     softmax=False,
     is_localizer=False,
 ):
@@ -120,8 +112,6 @@ def pytorch2onnx(
         show (bool): Determines whether to print the onnx model architecture.
             Default: False.
         output_file (str): Output onnx model name. Default: 'tmp.onnx'.
-        verify (bool): Determines whether to verify the onnx model.
-            Default: False.
         softmax (bool): Determines whether to use softmax function.
         is_localizer(bool): Determines this model is localizer or not
     """
@@ -137,7 +127,7 @@ def pytorch2onnx(
         model.forward = partial(model.forward_infer, img_metas=meta)
         onnx_input = [input_tensor]
         input_names = ["data"]
-        output_names = ["det_bboxes", "det_labels", "feature_vector", "saliency_map"]
+        output_names = ["det_bboxes", "det_labels"]
     else:
         if hasattr(model, "forward_dummy"):
             model.forward = partial(model.forward_dummy, softmax=softmax)
@@ -165,29 +155,6 @@ def pytorch2onnx(
     )
 
     print(f"Successfully exported ONNX model: {output_file}")
-    if verify:
-        # FIXME Onnx model verification only support action classification model
-        # check by onnx
-        onnx_model = onnx.load(output_file)
-        onnx.checker.check_model(onnx_model)
-
-        # check the numerical value
-        # get pytorch output
-        pytorch_result = model(input_tensor)[0].detach().numpy()
-
-        # get onnx output
-        input_all = [node.name for node in onnx_model.graph.input]
-        input_initializer = [node.name for node in onnx_model.graph.initializer]
-        net_feed_input = list(set(input_all) - set(input_initializer))
-        assert len(net_feed_input) == 1
-        sess = rt.InferenceSession(output_file)
-        onnx_result = sess.run(None, {net_feed_input[0]: input_tensor.detach().numpy()})[0]
-        # only compare part of results
-        random_class = np.random.randint(pytorch_result.shape[1])
-        assert np.allclose(
-            pytorch_result[:, random_class], onnx_result[:, random_class]
-        ), "The outputs are different between Pytorch and ONNX"
-        print("The numerical values are same between Pytorch and ONNX")
 
 
 def _get_mo_cmd():

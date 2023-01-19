@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from functools import partial
-
 from mmcv import ConfigDict
 from mmcv.runner import load_checkpoint
 from mmdet.models import DETECTORS
@@ -80,7 +78,6 @@ class AVAFastRCNN(FastRCNN):
         """
         detector = ConfigDict(faster_rcnn)
         self.detector = build_detector(detector)
-        self.detector.forward = partial(self.detector.forward_test, postprocess=False)
         ckpt = load_checkpoint(self.detector, faster_rcnn_pretrained, map_location="cpu")
         self.detector.CLASSES = ckpt["meta"]["CLASSES"]
         if self.detector.CLASSES[0] != "person":
@@ -100,9 +97,9 @@ class AVAFastRCNN(FastRCNN):
         clip_len = imgs[0].shape[2]
         img = imgs[0][:, :, int(clip_len / 2), :, :]
         if is_in_onnx_export():
-            det_bboxes, det_labels = self.detector([img], img_metas)[0]
+            det_bboxes, det_labels = self.detector.onnx_export(img, img_metas[0])
+            prediction = [det_bboxes[0][det_labels[0] == 0]]
         else:
-            det_bboxes, det_labels = self.detector([img], img_metas)
-        prediction = [[det_bboxes[0][det_labels[0] == 0]]]
-        prediction = self.forward_test(imgs, img_metas, proposals=prediction)
+            prediction = self.detector.forwrad_test([img], img_metas)[0][:, :4]
+        prediction = self.forward_test(imgs, img_metas, proposals=[prediction])
         return prediction

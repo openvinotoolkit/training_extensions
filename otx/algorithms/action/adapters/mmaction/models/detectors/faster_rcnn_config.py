@@ -18,7 +18,6 @@
 
 faster_rcnn = dict(
     type="FasterRCNN",
-    pretrained="torchvision://resnet50",
     backbone=dict(
         type="ResNet",
         depth=50,
@@ -28,6 +27,7 @@ faster_rcnn = dict(
         norm_cfg=dict(type="BN", requires_grad=True),
         norm_eval=True,
         style="pytorch",
+        init_cfg=dict(type="Pretrained", checkpoint="torchvision://resnet50"),
     ),
     neck=dict(type="FPN", in_channels=[256, 512, 1024, 2048], out_channels=256, num_outs=5),
     rpn_head=dict(
@@ -77,9 +77,7 @@ faster_rcnn = dict(
             pos_weight=-1,
             debug=False,
         ),
-        rpn_proposal=dict(
-            nms_across_levels=False, nms_pre=2000, nms_post=1000, max_num=1000, nms_thr=0.7, min_bbox_size=0
-        ),
+        rpn_proposal=dict(nms_pre=2000, max_per_img=1000, nms=dict(type="nms", iou_threshold=0.7), min_bbox_size=0),
         rcnn=dict(
             assigner=dict(
                 type="MaxIoUAssigner",
@@ -95,7 +93,7 @@ faster_rcnn = dict(
         ),
     ),
     test_cfg=dict(
-        rpn=dict(nms_across_levels=False, nms_pre=1000, nms_post=1000, max_num=1000, nms_thr=0.7, min_bbox_size=0),
+        rpn=dict(nms_pre=1000, max_per_img=1000, nms=dict(type="nms", iou_threshold=0.7), min_bbox_size=0),
         rcnn=dict(score_thr=0.05, nms=dict(type="nms", iou_threshold=0.5), max_per_img=100)
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05)
