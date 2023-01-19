@@ -233,9 +233,9 @@ class ClassificationInferenceTask(
         """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
 
         dataset_size = len(dataset)
+        pos_thr = 0.5
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             item_labels = []
-            pos_thr = 0.5
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
                 logger.info("Nan in prediction_item.")
@@ -260,8 +260,7 @@ class ClassificationInferenceTask(
                     item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
 
                 if self._hierarchical_info["num_multilabel_classes"]:
-                    logits_begin = self._hierarchical_info["num_single_label_classes"]
-                    head_logits = prediction_item[logits_begin :]
+                    head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"] :]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
                             label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
@@ -288,9 +287,8 @@ class ClassificationInferenceTask(
 
             top_idxs = np.argpartition(prediction_item, -2)[-2:]
             top_probs = prediction_item[top_idxs]
-            active_score = top_probs[1] - top_probs[0]
             active_score_media = FloatMetadata(
-                name="active_score", value=active_score, float_type=FloatType.ACTIVE_SCORE
+                name="active_score", value=top_probs[1] - top_probs[0], float_type=FloatType.ACTIVE_SCORE
             )
             dataset_item.append_metadata_item(active_score_media, model=self._task_environment.model)
 
