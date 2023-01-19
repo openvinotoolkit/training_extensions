@@ -316,7 +316,9 @@ class TaskEnvironmentManager:
                 task = self.get_train_task()
                 model = self.get_new_model_entity()
                 task.save_model(model)
-                save_model_data(model, save_path)
+                dir_path = osp.dirname(save_path)
+                save_model_data(model, dir_path)
+                os.rename(osp.join(dir_path, "weights.pth"), save_path)
                 return True
         else:
             save_model_data(self._environment.model, save_path)
