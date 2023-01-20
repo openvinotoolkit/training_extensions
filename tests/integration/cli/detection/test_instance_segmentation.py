@@ -26,16 +26,6 @@ from otx.cli.utils.tests import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
-# Pre-train w/ 'car & tree' class
-args0 = {
-    "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--test-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--input": "data/coco_dataset/coco_instance_segmentation/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "2"],
-}
-
-# Class-Incremental learning w/ 'car', 'tree', 'bug' classes ## TODO: add class incr sample
 args = {
     "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
     "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
@@ -67,18 +57,18 @@ templates = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGM
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsMPAInstanceSegmentation:
+class TestInstanceSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args0)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
-        otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = copy.deepcopy(args0)
+        args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
         args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)

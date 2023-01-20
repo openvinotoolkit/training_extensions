@@ -27,21 +27,6 @@ from otx.cli.utils.tests import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
-# Pre-train w/ 'label_0', 'label_1' classes
-args0 = {
-    "--train-data-roots": "data/imagenet_dataset",
-    "--val-data-roots": "data/imagenet_dataset",
-    "--test-data-roots": "data/imagenet_dataset",
-    "--input": "data/imagenet_dataset/label_0",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "1",
-        "--learning_parameters.batch_size",
-        "4",
-    ],
-}
-
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
     "--train-data-roots": "data/imagenet_dataset_class_incremental",
@@ -99,7 +84,7 @@ templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFI
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsMultiClassClassification:
+class TestMultiClassClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_supcon(self, template, tmp_dir_path):
@@ -110,14 +95,14 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args0)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
-        otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = copy.deepcopy(args0)
+        args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
         args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
@@ -182,7 +167,7 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_semisl(self, template, tmp_dir_path):
-        args_semisl = copy.deepcopy(args0)
+        args_semisl = copy.deepcopy(args)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
         args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
@@ -193,23 +178,7 @@ class TestToolsMultiClassClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
 
 
-# Pre-train w/ 'car', 'tree' classes
-args0_m = {
-    "--train-data-roots": "data/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro_multilabel",
-    "--input": "data/datumaro_multilabel/images/train",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "1",
-        "--learning_parameters.batch_size",
-        "4",
-    ],
-}
-
-# Class-Incremental learning w/ 'car', 'tree', 'bug' classes
-# TODO: Not include incremental case yet
+# Multi-label training w/ 'car', 'tree', 'bug' classes
 args_m = {
     "--train-data-roots": "data/datumaro_multilabel",
     "--val-data-roots": "data/datumaro_multilabel",
@@ -225,11 +194,11 @@ args_m = {
 }
 
 
-class TestToolsMultilabelClassification:
+class TestMultilabelClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args0_m)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -290,7 +259,7 @@ args_h = {
 }
 
 
-class TestToolsHierarchicalClassification:
+class TestHierarchicalClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train(self, template, tmp_dir_path):

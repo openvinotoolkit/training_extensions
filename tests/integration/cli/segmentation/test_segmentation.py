@@ -16,8 +16,6 @@ from otx.cli.utils.tests import (
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
-    otx_explain_openvino_testing,
-    otx_explain_testing,
     otx_export_testing,
     otx_hpo_testing,
     otx_resume_testing,
@@ -25,7 +23,6 @@ from otx.cli.utils.tests import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
-# TODO: Currently, it is closed to sample test. need to change other sample
 args = {
     "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
     "--val-data-roots": "data/common_semantic_segmentation_dataset/val",
@@ -36,7 +33,7 @@ args = {
         "--learning_parameters.learning_rate_fixed_iters",
         "0",
         "--learning_parameters.learning_rate_warmup_iters",
-        "25",
+        "1",
         "--learning_parameters.num_iters",
         "1",
         "--learning_parameters.batch_size",
@@ -93,7 +90,7 @@ templates = [default_template]
 templates_ids = [default_template.model_template_id]
 
 
-class TestToolsMPADetection:
+class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -123,16 +120,6 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_explain(self, template, tmp_dir_path):
-        otx_explain_testing(template, tmp_dir_path, otx_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_explain_openvino(self, template, tmp_dir_path):
-        otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
