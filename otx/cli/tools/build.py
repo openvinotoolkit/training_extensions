@@ -18,6 +18,7 @@ and build models with new backbone replacements.
 # and limitations under the License.
 
 import argparse
+import os
 from pathlib import Path
 
 from otx.cli.builder import Builder
@@ -28,6 +29,13 @@ from otx.core.data.manager.dataset_manager import DatasetManager
 SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 
+def set_workspace(path, task, model):
+    """Set workspace path according to path, task, model arugments."""
+    if path is None:
+        path = f"./otx-workspace-{task}"
+        if model:
+            path += f"-{model}"
+    return path
 
 def parse_args():
     """Parses command line arguments."""
@@ -58,11 +66,6 @@ def main():
     builder = Builder()
 
     otx_root = get_otx_root_path()
-    if args.workspace_root is None:
-        args.workspace_root = f"./otx-workspace-{args.task}"
-        if args.model:
-            args.workspace_root += f"-{args.model}"
-    workspace_path = Path(args.workspace_root)
 
     # Auto configuration & Datumaro Helper
     # First, find the format of train dataset and import it by using DatasetManager
@@ -95,9 +98,9 @@ def main():
         args.task = train_task_type if args.task is None else args.task
 
         # Create workspace
-
-        workspace_path.mkdir(exist_ok=False)
-        print(f"[*] Create workspace to: {workspace_path}")
+        args.workspace_root = set_workspace(args.workspace_root, args.task, args.model) 
+        Path(args.workspace_root).mkdir(exist_ok=False)
+        print(f"[*] Create workspace to: {args.workspace_root}")
 
         # If no validation dataset, auto_split will be triggered
         if args.val_data_roots is not None:
@@ -118,13 +121,15 @@ def main():
         # Also, data.yaml will be saved
         config_manager.write_data_with_cfg(splitted_dataset, train_data_format, args.workspace_root)
 
+    args.workspace_root = set_workspace(args.workspace_root, args.task, args.model) 
+    
     # Build with task_type and create user workspace
     if args.task and args.task in SUPPORTED_TASKS:
         builder.build_task_config(
             task_type=args.task,
             model_type=args.model,
             train_type=args.train_type.lower(),
-            workspace_path=workspace_path,
+            workspace_path=args.workspace_root,
             otx_root=otx_root,
             exist=is_autoconfig_enabled,
         )
@@ -134,7 +139,7 @@ def main():
         missing_args = []
         if not args.backbone.endswith((".yml", ".yaml", ".json")):
             if args.save_backbone_to is None:
-                args.save_backbone_to = workspace_path / "backbone.yaml" if workspace_path else "./backbone.yaml"
+                args.save_backbone_to = os.path.join(args.workspace_root,"backbone.yaml") if args.workspace_root else "./backbone.yaml"
             missing_args = builder.build_backbone_config(args.backbone, args.save_backbone_to)
             args.backbone = args.save_backbone_to
         if args.model:

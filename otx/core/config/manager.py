@@ -29,16 +29,20 @@ class ConfigManager:
     """
 
     def __init__(self):
+        # Currently, Datumaro.auto_split() can support below 3 tasks 
+        # Classification
+        # Detection
+        # Segmentation
         self.task_data_dict = {
-            "ACTION_CLASSIFICATION": ["multi-cvat"],
-            "ACTION_DETECTION": ["multi-cvat"],
-            "ANOMALY_CLASSIFICATION": ["mvtec"],
-            "ANOMALY_DETECTION": ["mvtec"],
-            "ANOMALY_SEGMENTATION": ["mvtec"],
             "CLASSIFICATION": ["imagenet"],
             "DETECTION": ["coco", "voc", "yolo"],
-            "INSTANCE_SEGMENTATION": ["coco", "voc"],
             "SEGMENTATION": ["common_semantic_segmentation", "voc", "cityscapes", "ade20k2017", "ade20k2020"],
+            #"ACTION_CLASSIFICATION": ["multi-cvat"],
+            #"ACTION_DETECTION": ["multi-cvat"],
+            #"ANOMALY_CLASSIFICATION": ["mvtec"],
+            #"ANOMALY_DETECTION": ["mvtec"],
+            #"ANOMALY_SEGMENTATION": ["mvtec"],
+            #"INSTANCE_SEGMENTATION": ["coco", "voc"],
         }
 
     def get_task_type(self, data_format: str) -> str:
@@ -56,15 +60,10 @@ class ConfigManager:
         """
 
         task = ""
-        if data_format == "multi-cvat":
-            task = "action_classification"
-        elif data_format == "mvtec":
-            task = "anomaly_classification"
-        else:
-            # pick task type
-            for task_key, data_value in self.task_data_dict.items():
-                if data_format in data_value:
-                    task = task_key
+        # pick task type
+        for task_key, data_value in self.task_data_dict.items():
+            if data_format in data_value:
+                task = task_key
         return task
 
     def write_data_with_cfg(self, datasets: Dict[str, IDataset], data_format: str, workspace_dir: str):
