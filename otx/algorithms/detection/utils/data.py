@@ -27,6 +27,7 @@ from mmdet.datasets.api_wrappers.coco_api import COCO
 from otx.algorithms.detection.adapters.mmdet.data.dataset import (
     get_annotation_mmdet_format,
 )
+from otx.algorithms.detection.configs.base.configuration import DetectionConfig
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -464,14 +465,14 @@ def format_list_to_str(value_lists: list):
     return f"[{str_value[:-2]}]"
 
 
-def adaptive_tile_params(hyper_parameters, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"):
+def adaptive_tile_params(hyper_parameters: DetectionConfig, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"):
     """Config tile parameters.
 
     Adapt based on annotation statistics.
     i.e. tile size, tile overlap, ratio and max objects per sample
 
     Args:
-        hyper_parameters: hyper_parameters of the model
+        hyper_parameters (DetectionConfig): hyper_parameters of the model
         dataset (DatasetEntity): training dataset
         object_tile_ratio (float, optional): The desired ratio of object area and tile area. Defaults to 0.01.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
@@ -502,6 +503,6 @@ def adaptive_tile_params(hyper_parameters, dataset: DatasetEntity, object_tile_r
     tile_size = int(math.sqrt(object_area / object_tile_ratio))
 
     hyper_parameters.tiling_parameters.tile_size = tile_size
-    hyper_parameters.tiling_parameters.max_number = max_object
+    hyper_parameters.tiling_parameters.tile_max_number = max_object
     if max_area / (tile_size**2) < 1.0:
         hyper_parameters.tiling_parameters.tile_overlap = max_area / (tile_size**2)

@@ -21,6 +21,7 @@ class TensorEntity(IMetadata):
 
     def __init__(self, name: str, numpy: np.ndarray):
         self.name = name
+        # Copying Numpy array as it points to the same memory address
         self._numpy = np.copy(numpy)
 
     @property

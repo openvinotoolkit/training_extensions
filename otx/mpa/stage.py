@@ -297,7 +297,7 @@ class Stage(object):
         dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
         samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
 
-        if getattr(cfg.data[subset], "dataset", None):
+        if hasattr(cfg.data[subset], "dataset"):
             dataset_len = len(cfg.data[subset].dataset.otx_dataset)
         else:
             dataset_len = len(cfg.data[subset].otx_dataset)
