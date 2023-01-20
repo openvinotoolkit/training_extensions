@@ -35,6 +35,7 @@ def build_detector(
 
     model_cfg = deepcopy(config.model)
     model = origin_build_detector(model_cfg, train_cfg=train_cfg, test_cfg=test_cfg)
+    model.init_weights()
     model = model.to(device)
 
     checkpoint = checkpoint if checkpoint else config.pop("load_from", None)
