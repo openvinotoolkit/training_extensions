@@ -8,7 +8,11 @@ from typing import Optional, Union
 
 import torch
 from mmcv.runner import load_checkpoint
-from mmcv.utils import Config, ConfigDict
+from mmcv.utils import Config, ConfigDict, get_logger
+
+from otx.mpa.utils.logger import LEVEL
+
+logger = get_logger("mmdet")
 
 
 def build_detector(
@@ -35,6 +39,9 @@ def build_detector(
 
     model_cfg = deepcopy(config.model)
     model = origin_build_detector(model_cfg, train_cfg=train_cfg, test_cfg=test_cfg)
+    logger.setLevel("WARNING")
+    model.init_weights()
+    logger.setLevel(LEVEL)
     model = model.to(device)
 
     checkpoint = checkpoint if checkpoint else config.pop("load_from", None)
