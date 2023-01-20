@@ -243,8 +243,6 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _get_polygon_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
         """Get polygon entity."""
-        if annotation.label == 0:
-            return None
         return Annotation(
             Polygon(
                 points=[
