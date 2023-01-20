@@ -172,7 +172,7 @@ class TaskManager:
                 if not (osp.islink(weight_candidate) or osp.exists(osp.join(det, osp.basename(weight_candidate)))):
                     shutil.copy(weight_candidate, det)
         else:
-            return  # TODO need to implement after anomaly task supports resume 
+            return  # TODO need to implement after anomaly task supports resume
 
     def get_latest_weight(self, workdir: str) -> Optional[str]:
         """Get latest model weight from all weights.
@@ -449,8 +449,7 @@ class HpoRunner:
             # fix batch size to trainset size
             if min_val >= max_val:
                 logger.info(
-                    "Train set size is equal or lower than batch size range."
-                    "Batch size is fixed to train set size."
+                    "Train set size is equal or lower than batch size range." "Batch size is fixed to train set size."
                 )
                 del self._hpo_config["hp_space"][batch_size_name]
                 self._fixed_hp[batch_size_name] = self._train_dataset_size
@@ -579,6 +578,7 @@ def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roo
     best_config = hpo_runner.run_hpo(run_trial, data_roots)
     logger.info("completed hyper-parameter optimization")
 
+    breakpoint()
     env_manager = TaskEnvironmentManager(environment)
     env_manager.set_hyper_parameter_using_str_key(best_config["config"])
     best_hpo_weight = get_best_hpo_weight(hpo_save_path, best_config["id"])
@@ -617,11 +617,11 @@ def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> Optional[str]:
             best_score = score
             best_epochs = [eph]
         elif best_score == score:
-            best_epochs.append(score)
+            best_epochs.append(eph)
 
     best_weight = None
     for best_epoch in best_epochs:
-        best_weight_path = glob.glob(f"{hpo_dir}/weight/**/best*epoch*{best_epoch}*")
+        best_weight_path = glob.glob(f"{hpo_dir}/weight/**/*epoch*{best_epoch}*")
         if best_weight_path:
             best_weight = best_weight_path[0]
 
@@ -706,10 +706,10 @@ class Trainer:
         dataset_adapter = get_dataset_adapter(
             self._task.task_type,
             train_data_roots=self._data_roots["train_subset"]["data_root"],
-            val_data_roots=self._data_roots["val_subset"]["data_root"]
-            if "val_subset" in self._data_roots else None,
+            val_data_roots=self._data_roots["val_subset"]["data_root"] if "val_subset" in self._data_roots else None,
             unlabeled_data_roots=self._data_roots["unlabeled_subset"]["data_root"]
-            if "unlabeled_subset" in self._data_roots else None,
+            if "unlabeled_subset" in self._data_roots
+            else None,
         )
 
         return dataset_adapter
