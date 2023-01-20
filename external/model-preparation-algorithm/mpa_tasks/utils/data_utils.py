@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import fcntl
 import os
 import cv2
 from typing import Any, Dict
@@ -43,41 +42,42 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     def is_training_subset(subset):
         return subset.name in ["TRAINING", "VALIDATION"]
 
+    def is_cached_or_caching(filename, tmp_filename):
+        return os.path.exists(filename) or os.path.exists(tmp_filename)
+
     def load_image_from_cache(filename: str, to_float32=False):
-        with open(filename, "rb") as f:
-            fcntl.flock(f, fcntl.LOCK_SH)
-            try:
-                cached_img = cv2.imread(filename)
-                if to_float32:
-                    cached_img = cached_img.astype(np.float32)
-                return cached_img
-            except Exception as e:
-                logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
+        try:
+            cached_img = cv2.imread(filename)
+            if to_float32:
+                cached_img = cached_img.astype(np.float32)
+            return cached_img
+        except Exception as e:
+            logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
+            return None
     
-    def save_image_to_cache(img: np.array, filename: str):
-        with open(filename, "wb") as f:
-            fcntl.flock(f, fcntl.LOCK_EX)
-            try:
-                cv2.imwrite(filename, img=img)
-            except Exception as e:
-                logger.warning(f"Skip caching for {filename} \nError msg: {e}")
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
+    def save_image_to_cache(img: np.array, filename: str, tmp_filename: str):
+        try:
+            cv2.imwrite(tmp_filename, img=img)
+            os.replace(tmp_filename, filename)
+        except Exception as e:
+            logger.warning(f"Skip caching for {filename} \nError msg: {e}")
+            return None
 
     subset = results["dataset_item"].subset
     if is_training_subset(subset) and is_video_frame(results["dataset_item"].media):
         index = results["index"]
         filename = os.path.join(cache_dir, f"{subset}-{index:06d}.png")
+        tmp_filename = filename.replace(".png", "-tmp.png")
         if os.path.exists(filename):
-            return load_image_from_cache(filename, to_float32=to_float32)
+            loaded_img = load_image_from_cache(filename, to_float32=to_float32)
+            if loaded_img is not None:
+                return loaded_img
 
     img = results["dataset_item"].numpy  # this takes long for VideoFrame
     if to_float32:
         img = img.astype(np.float32)
 
-    if is_training_subset(subset) and is_video_frame(results["dataset_item"].media) and not os.path.exists(filename):
-        save_image_to_cache(img, filename)
+    if is_training_subset(subset) and is_video_frame(results["dataset_item"].media) and not is_cached_or_caching(filename, tmp_filename):
+        save_image_to_cache(img, filename, tmp_filename)
 
     return img
