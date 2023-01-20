@@ -449,7 +449,7 @@ class HpoRunner:
             # fix batch size to trainset size
             if min_val >= max_val:
                 logger.info(
-                    "Train set size is equal or lower than batch size range." "Batch size is fixed to train set size."
+                    "Train set size is equal or lower than batch size range. Batch size is fixed to train set size."
                 )
                 del self._hpo_config["hp_space"][batch_size_name]
                 self._fixed_hp[batch_size_name] = self._train_dataset_size
@@ -578,7 +578,6 @@ def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roo
     best_config = hpo_runner.run_hpo(run_trial, data_roots)
     logger.info("completed hyper-parameter optimization")
 
-    breakpoint()
     env_manager = TaskEnvironmentManager(environment)
     env_manager.set_hyper_parameter_using_str_key(best_config["config"])
     best_hpo_weight = get_best_hpo_weight(hpo_save_path, best_config["id"])
