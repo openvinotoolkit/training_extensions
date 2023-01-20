@@ -13,8 +13,10 @@ pymongo==3.12.0
 pyyaml
 # Torch version is set to 1.9.0 as mmdet
 # (https://github.com/openvinotoolkit/mmdetection/blob/ote/requirements/build.txt#L4) does not support higher version
-torch>=1.8.2, <=1.9.0
-torchvision>=0.9.2, <=0.10.1
+# torch>=1.8.2, <=1.9.0
+# torchvision>=0.9.2, <=0.10.1
+torch @ https://download.pytorch.org/whl/lts/1.8/cu111/torch-1.8.2%2Bcu111-cp38-cp38-linux_x86_64.whl
+torchvision @ https://download.pytorch.org/whl/lts/1.8/cu111/torchvision-0.9.2%2Bcu111-cp38-cp38-linux_x86_64.whl
 scikit-learn==0.24.*
 Shapely>=1.7.1,<=1.8.0
 hpopt==0.3.0
