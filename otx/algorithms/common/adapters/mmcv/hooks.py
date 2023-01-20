@@ -496,13 +496,13 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         check_time = self.after_each_n_epochs if self.by_epoch else self.after_each_n_iters
         return check_time(runner, self.interval) and (self.warmup_iters <= runner.iter)
 
-    def after_each_n_epochs(self, runner: BaseRunner, n_epochs: int) -> bool:
-        """Check whether current epoch is a next epoch after multiples of n epoch."""
-        return runner.epoch % n_epochs == 0 if n_epochs > 0 and runner.epoch != 0 else False
+    def after_each_n_epochs(self, runner: BaseRunner, interval: int) -> bool:
+        """Check whether current epoch is a next epoch after multiples of interval."""
+        return runner.epoch % interval == 0 if interval > 0 and runner.epoch != 0 else False
 
-    def after_each_n_iters(self, runner: BaseRunner, n_epochs: int) -> bool:
-        """Check whether current iter is a next iter after multiples of n iters."""
-        return runner.iter % n_epochs == 0 if n_epochs > 0 and runner.iter != 0 else False
+    def after_each_n_iters(self, runner: BaseRunner, interval: int) -> bool:
+        """Check whether current iter is a next iter after multiples of interval."""
+        return runner.iter % interval == 0 if interval > 0 and runner.iter != 0 else False
 
     @check_input_parameters_type()
     def get_lr(self, runner: BaseRunner, base_lr: float):
