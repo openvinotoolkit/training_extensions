@@ -250,5 +250,5 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                     for i in range(0, len(annotation.points), 2)
                 ]
             ),
-            labels=[ScoredLabel(label=self.label_entities[annotation.label - 1])],
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
