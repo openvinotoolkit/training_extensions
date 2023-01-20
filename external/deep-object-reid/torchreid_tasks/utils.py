@@ -557,8 +557,7 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
         predicted_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[j])))
 
     if multihead_class_info['num_multilabel_classes']:
-        logits_begin, logits_end = multihead_class_info['num_single_label_classes'], -1
-        head_logits = logits[logits_begin : logits_end]
+        head_logits = logits[multihead_class_info['num_single_label_classes']:]
         if activate:
             head_logits = sigmoid_numpy(head_logits)
 
