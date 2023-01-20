@@ -187,7 +187,8 @@ class ClassificationInferenceTask(
         """Unload function of OTX Classification Task."""
 
         logger.info("called unload()")
-        self.finalize()
+        if self._work_dir_is_temp:
+            self._delete_scratch_space()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -442,6 +443,12 @@ class ClassificationInferenceTask(
             )
         )
         return data_cfg
+
+    def _update_stage_module(self, stage_module):
+        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
+        if self._train_type in module_prefix and stage_module in ["ClsTrainer", "ClsInferrer"]:
+            stage_module = module_prefix[self._train_type] + stage_module
+        return stage_module
 
     def _initialize_post_hook(self, options=None):
         super()._initialize_post_hook(options)
