@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import mmcv
 from datumaro.components.dataset import Dataset
@@ -29,23 +29,33 @@ class ConfigManager:
     """
 
     def __init__(self):
-        # Currently, Datumaro.auto_split() can support below 3 tasks 
-        # Classification
-        # Detection
-        # Segmentation
+        # Currently, Datumaro.auto_split() can support below 3 tasks
+        # Classification, Detection, Segmentation
         self.task_data_dict = {
             "CLASSIFICATION": ["imagenet"],
             "DETECTION": ["coco", "voc", "yolo"],
             "SEGMENTATION": ["common_semantic_segmentation", "voc", "cityscapes", "ade20k2017", "ade20k2020"],
-            #"ACTION_CLASSIFICATION": ["multi-cvat"],
-            #"ACTION_DETECTION": ["multi-cvat"],
-            #"ANOMALY_CLASSIFICATION": ["mvtec"],
-            #"ANOMALY_DETECTION": ["mvtec"],
-            #"ANOMALY_SEGMENTATION": ["mvtec"],
-            #"INSTANCE_SEGMENTATION": ["coco", "voc"],
+            # "ACTION_CLASSIFICATION": ["multi-cvat"],
+            # "ACTION_DETECTION": ["multi-cvat"],
+            # "ANOMALY_CLASSIFICATION": ["mvtec"],
+            # "ANOMALY_DETECTION": ["mvtec"],
+            # "ANOMALY_SEGMENTATION": ["mvtec"],
+            # "INSTANCE_SEGMENTATION": ["coco", "voc"],
         }
+        self.data_format: str = ""
+        self.splitted_dataset: Dict[str, IDataset]
 
-    def get_task_type(self, data_format: str) -> str:
+    def auto_task_detection(self, train_data_roots: str) -> str:
+        """Detect task type automatically."""
+        data_format = self._get_data_format(train_data_roots)
+        return self._get_task_type(data_format)
+
+    def _get_data_format(self, data_root: str) -> str:
+        """Get dataset format."""
+        self.data_format = DatasetManager.get_data_format(data_root)
+        return self.data_format
+
+    def _get_task_type(self, data_format: str) -> str:
         """Detect task type.
 
         For some datasets (i.e. COCO, VOC, MVTec), can't be fully automated.
@@ -66,19 +76,36 @@ class ConfigManager:
                 task = task_key
         return task
 
-    def write_data_with_cfg(self, datasets: Dict[str, IDataset], data_format: str, workspace_dir: str):
+    def auto_split_data(self, train_data_root: str, train_task: str):
+        """Automatically Split train data --> train/val dataset."""
+        train_data_format = DatasetManager.get_data_format(train_data_root)
+        train_dataset = DatasetManager.import_dataset(data_root=train_data_root, data_format=train_data_format)
+        self.splitted_dataset = DatasetManager.auto_split(
+            task=train_task,
+            dataset=DatasetManager.get_train_dataset(train_dataset),
+            split_ratio=[("train", 0.8), ("val", 0.2)],
+        )
+        print("[*] Auto-split enabled.")
+
+    def write_data_with_cfg(
+        self,
+        workspace_dir: str,
+        train_data_roots: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+    ):
         """Save the splitted dataset and data.yaml to the workspace."""
-        default_data_folder_name = "dataset"
+        default_data_folder_name = "splitted_dataset"
 
         data_config = self._create_empty_data_cfg()
-        for phase, dataset in datasets.items():
-            dst_dir_path = os.path.join(
-                workspace_dir,
-                default_data_folder_name,
-                str(phase),
-            )
+        if train_data_roots:
+            data_config["data"]["train"]["data-roots"] = train_data_roots
+        if val_data_roots:
+            data_config["data"]["val"]["data-roots"] = val_data_roots
 
-            # Make data.yaml
+        # Consider splitted dataset, if exist
+        for phase, dataset in self.splitted_dataset.items():
+            dst_dir_path = os.path.join(workspace_dir, default_data_folder_name, phase)
+            # Classification
             data_config["data"][phase]["data-roots"] = os.path.abspath(dst_dir_path)
 
             # Convert Datumaro class: DatasetFilter(IDataset) --> Dataset
@@ -90,20 +117,21 @@ class ConfigManager:
             # It might needs quite large disk storage.
             print(f"[*] Saving {phase} dataset to: {dst_dir_path}")
             DatasetManager.export_dataset(
-                dataset=datum_dataset, output_dir=dst_dir_path, data_format=data_format, save_media=True
+                dataset=datum_dataset, output_dir=dst_dir_path, data_format=self.data_format, save_media=True
             )
 
-        self.export_data_cfg(data_config, os.path.join(workspace_dir, "data.yaml"))
+        self._export_data_cfg(data_config, os.path.join(workspace_dir, "data.yaml"))
 
-    def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    def _create_empty_data_cfg(
+        self,
+    ) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
-        # Create empty Data.yaml
-        data_subset_format = {"ann-files": None, "data-roots": None}
-        data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
-        data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
+        for subset in ["train", "val", "test", "unlabeled"]:
+            data_subset = {"ann-files": None, "data-roots": None}
+            data_config = {"data": {subset: data_subset}}
         return data_config
 
-    def export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str):
+    def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str):
         """Export the data configuration file to output_path."""
         mmcv.dump(data_cfg, output_path)
         print(f"[*] Saving data configuration file to: {output_path}")

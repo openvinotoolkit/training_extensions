@@ -140,7 +140,7 @@ class Builder:
     def build_task_config(
         self,
         task_type: str,
-        workspace_path: str,
+        workspace_root: str,
         model_type: str = None,
         train_type: str = "incremental",
         otx_root: Union[Path, str] = ".",
@@ -158,7 +158,7 @@ class Builder:
         # Create OTX-workspace
         # Check whether the workspace is existed or not
         # FIXME: better variable name? is_autoconfig_enabled?
-        workspace_path = Path(workspace_path)
+        workspace_path = Path(workspace_root)
         if not exist:
             workspace_path.mkdir(exist_ok=False)
 
