@@ -139,7 +139,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         if bool(self._hyperparams.tiling_parameters.enable_tiling) and bool(
             self._hyperparams.tiling_parameters.enable_adaptive_params
         ):
-            adaptive_tile_params(self._hyperparams, dataset)
+            adaptive_tile_params(self._hyperparams.tiling_parameters, dataset)
 
         results = self._run_task(
             "DetectionTrainer",

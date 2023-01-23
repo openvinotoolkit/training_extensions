@@ -465,14 +465,16 @@ def format_list_to_str(value_lists: list):
     return f"[{str_value[:-2]}]"
 
 
-def adaptive_tile_params(hyper_parameters: DetectionConfig, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"):
+def adaptive_tile_params(
+    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"
+):
     """Config tile parameters.
 
     Adapt based on annotation statistics.
     i.e. tile size, tile overlap, ratio and max objects per sample
 
     Args:
-        hyper_parameters (DetectionConfig): hyper_parameters of the model
+        tiling_parameters (BaseTilingParameters): tiling parameters of the model
         dataset (DatasetEntity): training dataset
         object_tile_ratio (float, optional): The desired ratio of object area and tile area. Defaults to 0.01.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
@@ -501,8 +503,22 @@ def adaptive_tile_params(hyper_parameters: DetectionConfig, dataset: DatasetEnti
     max_area = np.max(areas)
 
     tile_size = int(math.sqrt(object_area / object_tile_ratio))
+    tile_overlap = max_area / (tile_size**2)
 
-    hyper_parameters.tiling_parameters.tile_size = tile_size
-    hyper_parameters.tiling_parameters.tile_max_number = max_object
-    if max_area / (tile_size**2) < 1.0:
-        hyper_parameters.tiling_parameters.tile_overlap = max_area / (tile_size**2)
+    # validate parameters are in range
+    tile_size = max(
+        tiling_parameters.get_metadata("tile_size")["min_value"],
+        min(tiling_parameters.get_metadata("tile_size")["max_value"], tile_size),
+    )
+    tile_overlap = max(
+        tiling_parameters.get_metadata("tile_overlap")["min_value"],
+        min(tiling_parameters.get_metadata("tile_overlap")["max_value"], tile_overlap),
+    )
+    max_object = max(
+        tiling_parameters.get_metadata("tile_max_number")["min_value"],
+        min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_object),
+    )
+
+    tiling_parameters.tile_size = tile_size
+    tiling_parameters.tile_max_number = max_object
+    tiling_parameters.tile_overlap = tile_overlap
