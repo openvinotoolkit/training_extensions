@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 import io
-from typing import Any, DefaultDict, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import torch
@@ -130,7 +130,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: ignore
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
@@ -156,6 +155,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             return
         # update checkpoint to the newly trained model
         self._model_ckpt = model_ckpt
+        self._learning_curves = OTXLoggerHook.curves
 
         # get prediction on validation set
         self._is_training = False
