@@ -252,7 +252,7 @@ class MultiGPUManager:
             if not parent.is_running():
                 break
 
-        logger.warning("Parent processe is terminated abnormally. process exits.")
+        logger.warning("Parent process is terminated abnormally. Process exits.")
         cur_process.kill()
 
     def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
