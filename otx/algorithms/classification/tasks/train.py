@@ -7,7 +7,6 @@
 # pylint: disable=invalid-name
 
 import io
-from collections import defaultdict
 from typing import List, Optional
 
 import torch
@@ -114,7 +113,6 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         if train_parameters is not None:
             update_progress_callback = train_parameters.update_progress  # type: ignore
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = defaultdict(OTXLoggerHook.Curve)  # type: defaultdict
 
         stage_module = "ClsTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)
@@ -136,6 +134,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             return
         # update checkpoint to the newly trained model
         self._model_ckpt = model_ckpt
+        self._learning_curves = OTXLoggerHook.curves
 
         # compose performance statistics
         training_metrics, final_acc = self._generate_training_metrics_group(self._learning_curves)
