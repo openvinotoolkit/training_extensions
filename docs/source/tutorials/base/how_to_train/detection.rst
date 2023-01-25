@@ -384,3 +384,23 @@ Now we have fully trained, optimized and exported an efficient model representat
 
 Following tutorials provides further steps how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
 
+***************
+Troubleshooting
+***************
+
+1. If you have access to the Internet through the proxy server only, please use pip with proxy call as demonstrated by command below:
+
+.. code-block::
+
+    python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
+
+
+2. If you use Anaconda environment, you should consider that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8. 
+
+So please use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.
+
+3. If you have problems when you try to use ``pip install`` command, please update pip version by following command:
+
+.. code-block::
+    
+    python -m pip install --upgrade pip
