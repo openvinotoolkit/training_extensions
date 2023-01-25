@@ -73,7 +73,7 @@ def main():
             task_type = config_manager.auto_task_detection(args.train_data_roots)
             args.task = task_type
         if args.val_data_roots is None:
-            config_manager.auto_split_data(args.train_data_roots, task_type)
+            config_manager.auto_split_data(args.train_data_roots, args.task)
 
     # Build with task_type and create user workspace
     if args.workspace_root is None:

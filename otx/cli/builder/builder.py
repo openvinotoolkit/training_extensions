@@ -216,9 +216,6 @@ class Builder:
 
         print(f"[*] Load Model Template ID: {template.model_template_id}")
         print(f"[*] Load Model Name: {template.name}")
-        print("\n[*] Note! If you want to change configurations,")
-        print("please edit the files under the located below folder\n")
-        print(f"{workspace_path}\n")
 
     def build_backbone_config(self, backbone_type: str, output_path: Union[Path, str]):
         """Build Backbone configs from backbone type.

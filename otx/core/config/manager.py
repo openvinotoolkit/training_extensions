@@ -43,7 +43,7 @@ class ConfigManager:
             # "INSTANCE_SEGMENTATION": ["coco", "voc"],
         }
         self.data_format: str = ""
-        self.splitted_dataset: Dict[str, IDataset]
+        self.splitted_dataset: Dict[str, IDataset] = {}
 
     def auto_task_detection(self, train_data_roots: str) -> str:
         """Detect task type automatically."""
@@ -73,14 +73,14 @@ class ConfigManager:
             if data_format in data_value:
                 return task_key
         raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
-    
-    def auto_split_data(self, train_data_root: str, train_task: str):
+
+    def auto_split_data(self, data_root: str, task: str):
         """Automatically Split train data --> train/val dataset."""
-        train_data_format = DatasetManager.get_data_format(train_data_root)
-        train_dataset = DatasetManager.import_dataset(data_root=train_data_root, data_format=train_data_format)
+        self.data_format = DatasetManager.get_data_format(data_root)
+        dataset = DatasetManager.import_dataset(data_root=data_root, data_format=self.data_format)
         self.splitted_dataset = DatasetManager.auto_split(
-            task=train_task,
-            dataset=DatasetManager.get_train_dataset(train_dataset),
+            task=task,
+            dataset=DatasetManager.get_train_dataset(dataset),
             split_ratio=[("train", 0.8), ("val", 0.2)],
         )
         print("[*] Auto-split enabled.")
@@ -108,7 +108,6 @@ class ConfigManager:
 
             # Convert Datumaro class: DatasetFilter(IDataset) --> Dataset
             datum_dataset = Dataset.from_extractors(dataset)
-
             # Write the data
             # TODO: consider the way that reduces disk stroage
             # Currently, saving all images to the workspace.
@@ -124,9 +123,10 @@ class ConfigManager:
         self,
     ) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
+        data_config: Dict[str, Dict[str, Any]] = {"data": {}}
         for subset in ["train", "val", "test", "unlabeled"]:
             data_subset = {"ann-files": None, "data-roots": None}
-            data_config = {"data": {subset: data_subset}}
+            data_config["data"][subset] = data_subset
         return data_config
 
     def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str):
