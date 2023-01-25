@@ -288,7 +288,6 @@ class TestStreamer:
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
-    @pytest.mark.skip
     @pytest.mark.reqids(Requirements.REQ_1)
     def test_threaded_streamer(self):
         """
