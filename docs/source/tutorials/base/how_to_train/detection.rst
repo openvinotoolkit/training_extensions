@@ -116,7 +116,7 @@ Training
 
 .. note::
 
-  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection>`.
+  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection/object_detection>`.
 
   To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
@@ -145,13 +145,13 @@ The following command line starts training of the medium object detection model 
 
 .. code-block::
 
-  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json 
-                            --train-data-roots  data/wgisd/data
-                            --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                            --val-data-roots data/wgisd/data 
-                            --save-model-to outputs
-                            --work-dir outputs/logs
+  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                            --train-data-roots  data/wgisd/data \
+                            --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                            --val-data-roots data/wgisd/data \
+                            --save-model-to outputs \
+                            --work-dir outputs/logs \
                             --gpus 1
 
 To start multi-gpu training, list the indexes of GPUs you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
@@ -160,10 +160,10 @@ If you created ``data.yaml`` file in previous step, you can simplify the trainin
 
 .. code-block::
 
-  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml
-                            --save-model-to outputs
-                            --work-dir outputs/logs
+  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --data data.yaml \
+                            --save-model-to outputs \
+                            --work-dir outputs/logs \
                             --gpus 1
 
 Looks much simpler, isn't it? You can also pass the ``data.yaml`` for the rest of the OTX CLI commands (eval, export, optimize) that require annotation paths.
@@ -216,10 +216,10 @@ The default metric is F1 measure.
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                            --test-data-roots data/wgisd/data 
-                            --load-weights outputs/weights.pth
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                            --test-data-roots data/wgisd/data \
+                            --load-weights outputs/weights.pth \
                             --save-performance outputs/performance.json
   
 
@@ -228,9 +228,9 @@ Note,  with ``data.yaml``, it runs evaluation on test JSON annotation file (not 
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml 
-                            --load-weights outputs/weights.pth
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --data data.yaml \
+                            --load-weights outputs/weights.pth \
                             --save-performance outputs/performance.json
 
 We will get this validation output:
@@ -258,12 +258,12 @@ Please note, by default, the optimal confidence threshold is detected based on v
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml 
-                            --load-weights outputs/weights.pth
-                            params 
-                            --postprocessing.confidence_threshold 0.5
-                            --postprocessing.result_based_confidence_threshold false 
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --data data.yaml \
+                            --load-weights outputs/weights.pth \
+                            params \
+                            --postprocessing.confidence_threshold 0.5 \
+                            --postprocessing.result_based_confidence_threshold false
 
   ...
 
@@ -280,8 +280,8 @@ It allows to efficiently run it on Intel hardware, especially on CPU, using Open
 
 .. code-block::
 
-  (detection) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                              --load-weights outputs/weights.pth
+  (detection) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                              --load-weights outputs/weights.pth \
                               --save-model-to outputs/openvino/
 
   ...
@@ -294,11 +294,11 @@ It allows to efficiently run it on Intel hardware, especially on CPU, using Open
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                            --test-data-roots data/wgisd/data 
-                            --load-weights outputs/openvino/openvino.xml
-                            --save-performance outputs/openvino/performance.json
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                            --test-data-roots data/wgisd/data \
+                            --load-weights outputs/openvino/openvino.xml \
+                            --save-performance outputs/openvino/performance.json \
   
   ...
   2023-01-10 06:24:50,382 | INFO : Start OpenVINO inference
@@ -332,13 +332,13 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
 .. code-block::
 
-  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml 
-                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json 
-                                --train-data-roots  data/wgisd/data
-                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                                --val-data-roots data/wgisd/data 
-                                --load-weights outputs/weights.pth
-                                --save-model-to outputs/nncf
+  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                                --train-data-roots  data/wgisd/data \
+                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                                --val-data-roots data/wgisd/data \
+                                --load-weights outputs/weights.pth \
+                                --save-model-to outputs/nncf \
                                 --save-performance outputs/nncf/performance.json
 
   ...
@@ -355,12 +355,12 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
 .. code-block::
 
-  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml 
-                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json 
-                                --train-data-roots  data/wgisd/data
-                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                                --val-data-roots data/wgisd/data 
-                                --load-weights outputs/openvino/openvino.xml
+  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                                --train-data-roots  data/wgisd/data \
+                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                                --val-data-roots data/wgisd/data \
+                                --load-weights outputs/openvino/openvino.xml \
                                 --save-model-to outputs/pot
 
   ...

@@ -1,12 +1,12 @@
 How to deploy the model
 =======================
 
-This guide shows, how to deploy a model trained in previous stage. 
-It provides the exported model together with self-contained python package, a demo application to port and infer it outside of this repository.
+This guide shows, how to deploy a model trained in the previous stage. 
+As a result of this step, we'll get the exported model together with the self-contained python package, a demo application to port and infer it outside of this repository.
 
-To be specific, this tutorial uses as an example the object detection ATSS model trained and expoted in previuos step and located in ``outputs/openvino``. 
+To be specific, this tutorial uses as an example the object detection ATSS model trained and exported in the previuos step and located in ``outputs/openvino``. 
 
-1. Activate virtual environment created in previous step.
+1. Activate the virtual environment created in the previous step.
 
 .. code-block::
 
@@ -17,7 +17,7 @@ To be specific, this tutorial uses as an example the object detection ATSS model
 - model
 
   - ``model.xml`` and ``model.bin`` - model exported to the OpenVINO™ format
-  - ``config.json`` - file, containing post-processing info and meta information about labels in dataset
+  - ``config.json`` - file containing the post-processing info and meta information about labels in the dataset
 
 - python
 
@@ -25,10 +25,10 @@ To be specific, this tutorial uses as an example the object detection ATSS model
   - ``README.md``
   - ``LICENSE``
   - ``demo.py``- simple demo to visualize results of model inference
-  - ``requirements.txt`` - minimal packages required to run demo
+  - ``requirements.txt`` - minimal packages required to run the demo
 
 
-3. We can deploy exported to IR model, using the command below:
+3. We can deploy the model exported to IR, using the command below:
 
 .. code-block::
 
@@ -41,5 +41,6 @@ To be specific, this tutorial uses as an example the object detection ATSS model
     2023-01-20 09:30:41,737 | INFO : Deploying the model
     2023-01-20 09:30:41,753 | INFO : Deploying completed
 
+We also can deploy the quantized model, that was optimized with NNCF in the previous step, passing the path to this model to ``--load-weights`` parameter.
 
-After that, we can use the resulting ``openvino.zip`` archive to visualize the inference, please refer :doc:`demo`.
+After that, we can use the resulting ``openvino.zip`` archive to visualize the inference :doc:`demo`.
