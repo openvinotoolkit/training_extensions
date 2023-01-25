@@ -4,6 +4,8 @@ Multi-class Classification
 Multi-class Classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
 For the supervised training we use the following algorithms components:
 
+.. _mcl_cls_supervised_pipeline:
+
 - ``Augmentations``: Besides basic augmentations like random flip and random rotate, we use `Augmix <https://arxiv.org/abs/1912.02781>`_. This advanced type of augmentations helps to significantly expand the training distribution.
 
 - ``Optimizer``: `Sharpness Aware Minimization (SAM) <https://arxiv.org/abs/2209.06585>`_. Wrapper upon the `SGD <https://en.wikipedia.org/wiki/Stochastic_gradient_descent>`_ optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.
@@ -14,18 +16,6 @@ For the supervised training we use the following algorithms components:
 
 - Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
 To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
-
-In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
-
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
-+=======================+=================+===========+===========+===========+===========+
-| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 **************
 Dataset Format
@@ -57,6 +47,16 @@ This format has the following structure:
     └── val
         ...
 
+With dataset format you can simply run OTX training with one line:
+
+.. code-block::
+
+    $ otx {train, optimize} <model_template> --train-data-root <path_to_data_root>
+
+.. note::
+
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classificaiton models.
+
 ******
 Models
 ******
@@ -78,7 +78,7 @@ We support the following ready-to-use model templates:
 `EfficientNet-B0 <https://arxiv.org/abs/1905.11946>`_ consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.
 
 Besides this, we support public backbones from `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcls <https://github.com/open-mmlab/mmclassification>`_ and `OpenVino Model Zoo <https://github.com/openvinotoolkit/open_model_zoo>`_.
-Please, refer to the `tutorial <N/A>`_ how to customize models and run public backbones.
+Please, refer to the :doc:`tutorial <../../tutorials/advanced/backbones.rst>`_ how to customize models and run public backbones.
 
 To see which public backbones are available for the task, the following command can be executed:
 
@@ -86,6 +86,17 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
+In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
+
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
++=======================+=================+===========+===========+===========+===========+
+| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 ************************
 Semi-supervised Learning
