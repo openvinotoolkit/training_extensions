@@ -16,6 +16,7 @@ from inspect import isclass
 from math import floor
 from os import path as osp
 from typing import Any, Callable, Dict, List, Optional, Union
+from copy import deepcopy
 
 import torch
 import yaml
@@ -821,6 +822,12 @@ class HpoCallback(UpdateProgressCallback):
             logger.debug(f"In hpo callback : {score} / {progress} / {epoch}")
             if self._report_func(score=score, progress=epoch) == TrialStatus.STOP:
                 self._task.cancel_training()
+
+    def __deepcopy__(self, memo):
+        """Prevent repot_func from deepcopied."""
+        args = [self.metric, self._max_epoch, self._task]
+        copied_args = deepcopy(args, memo)
+        return self.__class__(self._report_func, *copied_args)
 
 
 class HpoDataset:
