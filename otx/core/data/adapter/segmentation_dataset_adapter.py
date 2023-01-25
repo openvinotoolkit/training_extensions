@@ -40,9 +40,8 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                             # TODO: consider case -> didn't include the background information
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
-                                shape = self._get_polygon_entity(d_polygon, image.width, image.height)
-                                if shape is not None:
-                                    shapes.append(shape)
+                                if d_polygon.label != 0:
+                                    shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
 
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
