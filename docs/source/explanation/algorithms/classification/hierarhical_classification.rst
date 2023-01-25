@@ -24,6 +24,7 @@ Hierarchical Classification
 **************
 Dataset Format
 **************
+.. _hierarchical_dataset:
 
 For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
 
