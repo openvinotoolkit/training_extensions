@@ -18,6 +18,7 @@ import json
 import os
 import shutil
 import sys
+from typing import Dict
 
 import pytest
 import yaml
@@ -731,15 +732,15 @@ def otx_build_backbone_testing(root, backbone_args):
     ), f"{model_config['model']['backbone']['type']} != {backbone}"
 
 
-def otx_build_auto_config(root, otx_dir, args):
+def otx_build_auto_config(otx_dir: str, args: Dict[str, str]):
     command_line = [
         "otx",
         "build",
     ]
 
-    for option in args:
+    for option, val in args.items():
         if option in ["--train-data-roots", "--val-data-roots"]:
-            command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
+            command_line.extend([option, f"{os.path.join(otx_dir, val)}"])
         elif option in ["--task"]:
             command_line.extend([option, args[option]])
     check_run(command_line)
