@@ -17,7 +17,7 @@
 import io
 import os
 from glob import glob
-from typing import Any, DefaultDict, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import torch
@@ -120,7 +120,6 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)
 
         self._is_training = True
         self._init_task()
@@ -203,6 +202,7 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
         # compose performance statistics
         performance = metric.get_performance()
         metric_name = self._recipe_cfg.evaluation.final_metric
+        self._learning_curves = OTXLoggerHook.curves
         performance.dashboard_metrics.extend(
             ActionTrainTask._generate_training_metrics(self._learning_curves, val_map, metric_name)
         )
