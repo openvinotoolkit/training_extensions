@@ -69,13 +69,11 @@ class ConfigManager:
         functions will be deleted.
         """
 
-        task = ""
-        # pick task type
         for task_key, data_value in self.task_data_dict.items():
             if data_format in data_value:
-                task = task_key
-        return task
-
+                return task_key
+        raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
+    
     def auto_split_data(self, train_data_root: str, train_task: str):
         """Automatically Split train data --> train/val dataset."""
         train_data_format = DatasetManager.get_data_format(train_data_root)

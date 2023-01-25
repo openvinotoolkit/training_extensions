@@ -28,12 +28,11 @@ SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGM
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 
 
-def set_workspace(path, task, model):
+def set_workspace(task, model):
     """Set workspace path according to path, task, model arugments."""
-    if path is None:
-        path = f"./otx-workspace-{task}"
-        if model:
-            path += f"-{model}"
+    path = f"./otx-workspace-{task}"
+    if model:
+        path += f"-{model}"
     return path
 
 
@@ -77,7 +76,8 @@ def main():
             config_manager.auto_split_data(args.train_data_roots, task_type)
 
     # Build with task_type and create user workspace
-    args.workspace_root = set_workspace(args.workspace_root, args.task, args.model)
+    if args.workspace_root is None:
+        args.workspace_root = set_workspace(args.task, args.model)
     if args.task and args.task in SUPPORTED_TASKS:
         builder.build_task_config(
             task_type=args.task,

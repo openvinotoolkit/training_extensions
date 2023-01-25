@@ -207,13 +207,6 @@ class Builder:
             data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
         template_config.dump(str(workspace_path / "template.yaml"))
 
-        # Create Data.yaml
-        if (workspace_path / "data.yaml").exists() is False:
-            data_subset_format = {"ann-files": None, "data-roots": None}
-            data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
-            data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
-            mmcv.dump(data_config, (workspace_path / "data.yaml"))
-
         # Copy compression_config.json
         if (model_dir / "compression_config.json").exists():
             shutil.copyfile(
