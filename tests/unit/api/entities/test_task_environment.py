@@ -25,7 +25,7 @@ from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.task_environment import TaskEnvironment
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
-from tests.unit.api.test_helpers import ConfigExample
+from tests.test_helpers import ConfigExample
 
 
 def __get_path_to_file(filename: str):

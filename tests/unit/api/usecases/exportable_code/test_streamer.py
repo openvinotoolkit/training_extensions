@@ -19,7 +19,7 @@ from otx.api.usecases.exportable_code.streamer import (
 )
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
-from tests.unit.api.test_helpers import (
+from tests.test_helpers import (
     generate_random_image_folder,
     generate_random_single_image,
     generate_random_single_video,
