@@ -48,7 +48,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
-        
+
         # Remove unused labels from label entities
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)

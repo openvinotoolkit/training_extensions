@@ -6,12 +6,13 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 from typing import List
+
 from datumaro.components.annotation import AnnotationType
 
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
+from otx.api.entities.model_template import TaskType
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
@@ -44,7 +45,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
 
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
-        
+
         # Remove unused labels from label entities
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)

@@ -255,7 +255,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def remove_unused_label_entities(self, used_labels: List):
         """Remove unused label from label entities.
-        
+
         Because label entities will be used to make Label Schema,
         If there is unused label in Label Schema, it will hurts the model performance.
         So, remove the unused label from label entities.
