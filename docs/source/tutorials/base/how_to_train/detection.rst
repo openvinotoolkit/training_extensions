@@ -6,9 +6,9 @@ On this page we show how to train, validate, export and optimize ATSS model on W
 
 .. note::
 
-  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+  To learn how to deploy the trained model, refer to :doc:`../deploy`.
 
-  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
+  To learn how to run the demo and visualize results, refer to :doc:`../demo`.
 
 The process has been tested on the following configuration.
 
@@ -274,7 +274,7 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. 
-It allows to run the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime. Also, the resulting IR model is required to run POT optimization in the section below. IR model contains of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. That's how we can export the trained model ``outputs/weights.pth`` from the previous section and save the exported model to the ``outputs/openvino/`` folder.
 
@@ -382,4 +382,5 @@ Please note, that POT will take some time without logging to optimize the model.
 
 Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.
 
-The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
+Following tutorials provides further steps how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
+
