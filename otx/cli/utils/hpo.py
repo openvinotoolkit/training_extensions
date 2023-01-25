@@ -44,11 +44,6 @@ except ImportError:
     hpopt = None
 
 
-logger.setLevel(logging.DEBUG)
-hpopt_logger = logging.getLogger("hpopt")
-hpopt_logger.setLevel(logging.DEBUG)
-
-
 def _check_hpo_enabled_task(task_type):
     return task_type in [
         TaskType.CLASSIFICATION,
