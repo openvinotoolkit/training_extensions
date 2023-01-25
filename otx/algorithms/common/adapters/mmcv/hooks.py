@@ -102,6 +102,8 @@ class OTXLoggerHook(LoggerHook):
                 points.append(f"({x},{y})")
             return "curve[" + ",".join(points) + "]"
 
+    curves = defaultdict(Curve)  # type: defaultdict
+
     @check_input_parameters_type()
     def __init__(
         self,
@@ -112,7 +114,8 @@ class OTXLoggerHook(LoggerHook):
         by_epoch: bool = True,
     ):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
-        self.curves = curves if curves is not None else defaultdict(self.Curve)
+        if curves is not None:
+            OTXLoggerHook.curves = curves
 
     @master_only
     @check_input_parameters_type()

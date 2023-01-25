@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 import io
-from typing import DefaultDict, List, Optional
+from typing import List, Optional
 
 import torch
 from mmcv.utils import ConfigDict
@@ -117,7 +117,6 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
@@ -139,6 +138,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
             return
         # update checkpoint to the newly trained model
         self._model_ckpt = model_ckpt
+        self._learning_curves = OTXLoggerHook.curves
 
         # Get training metrics group from learning curves
         training_metrics, best_score = self._generate_training_metrics_group(self._learning_curves)
