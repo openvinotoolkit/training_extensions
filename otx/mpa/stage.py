@@ -18,7 +18,11 @@ from mmcv.runner import CheckpointLoader, wrap_fp16_model
 from torch import distributed as dist
 from torch.utils.data import Dataset
 
-from otx.algorithms.common.adapters.mmcv.utils import build_dataloader, build_dataset
+from otx.algorithms.common.adapters.mmcv.utils import (
+    build_dataloader,
+    build_dataset,
+    get_data_cfg,
+)
 
 from .registry import STAGES
 from .utils.config_utils import MPAConfig, update_or_add_custom_hook
@@ -297,10 +301,8 @@ class Stage(object):
         dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
         samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
 
-        if hasattr(cfg.data[subset], "dataset"):
-            dataset_len = len(cfg.data[subset].dataset.otx_dataset)
-        else:
-            dataset_len = len(cfg.data[subset].otx_dataset)
+        data_cfg = get_data_cfg(cfg, subset)
+        dataset_len = len(data_cfg.otx_dataset)
 
         if distributed:
             dataset_len = dataset_len // dist.get_world_size()
