@@ -21,7 +21,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.api.test_helpers import generate_random_annotated_image
 
 
-def generate_fake_det_dataset(number_of_images=10, task_type=TaskType.DETECTION):
+def generate_fake_det_dataset(number_of_images=1, task_type=TaskType.DETECTION):
 
     labels_names = ("rectangle", "ellipse", "triangle")
     labels_schema = generate_label_schema(labels_names, task_type_to_label_domain(task_type))
@@ -95,29 +95,49 @@ class TestOTXDetDataset:
 
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        otx_dataset, labels = generate_fake_det_dataset()
-        pipeline = []
-        domain = Domain.DETECTION
-        test_mode = False
-        self.dataset = MPADetDataset(otx_dataset, labels, pipeline, domain, test_mode)
-        self.idx = random.randint(0, len(self.dataset))
+        self.otx_dataset, self.labels = generate_fake_det_dataset()
+        self.pipeline = []
+        self.domain = Domain.DETECTION
+
+    # def test_init_dataset(self) -> None:
+    # 이상한거 들어오면 오류나게
 
     @e2e_pytest_unit
     def test_prepare_train_img(self) -> None:
         """Create Classification custom workspace."""
-        img = self.dataset.prepare_train_img(self.idx)
+        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
+        breakpoint()
+        img = dataset.prepare_train_img(0)
         assert type(img) == dict
+
+    @e2e_pytest_unit
+    def test_pre_pipeline(self) -> None:
+        """Create Classification custom workspace."""
+        results = dict()
+        MPADetDataset.pre_pipeline(results)
+        assert "bbox_fields" in results
+        assert "mask_fields" in results
+        assert "seg_fields" in results
+
+    @e2e_pytest_unit
+    def test_prepare_train_img_out_of_index(self) -> None:
+        """Create Classification custom workspace."""
+        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
+        with pytest.raises(IndexError):
+            dataset.prepare_train_img(5000)
 
     @e2e_pytest_unit
     def test_prepare_test_img(self) -> None:
         """Create Classification custom workspace."""
-        img = self.dataset.prepare_test_img(self.idx)
+        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
+        img = dataset.prepare_test_img(0)
         assert type(img) == dict
 
     @e2e_pytest_unit
     def test_get_ann_info(self) -> None:
         """Create Classification custom workspace."""
-        ann_info = self.dataset.get_ann_info(self.idx)
+        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
+        ann_info = dataset.get_ann_info(0)
         assert type(ann_info) == dict
         assert "bboxes" in ann_info
         assert "labels" in ann_info
