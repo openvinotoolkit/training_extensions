@@ -140,10 +140,10 @@ class Builder:
     def build_task_config(
         self,
         task_type: str,
+        workspace_path: Path,
         model_type: str = None,
         train_type: str = "incremental",
-        workspace_path: Union[Path, str] = None,
-        otx_root: Union[Path, str] = ".",
+        otx_root: str = ".",
     ):
         """Create OTX workspace with Template configs from task type.
 
@@ -155,15 +155,11 @@ class Builder:
         """
 
         # Create OTX-workspace
-        if workspace_path is None:
-            workspace_path = f"./otx-workspace-{task_type}"
-            if model_type:
-                workspace_path += f"-{model_type}"
-        workspace_path = workspace_path if isinstance(workspace_path, Path) else Path(workspace_path)
+        # Check whether the workspace is existed or not
         workspace_path.mkdir(exist_ok=False)
 
         # Load & Save Model Template
-        otx_registry = OTXRegistry(str(otx_root)).filter(task_type=task_type)
+        otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
         if model_type:
             template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
             if len(template_lst) == 0:
@@ -207,12 +203,6 @@ class Builder:
             data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
         template_config.dump(str(workspace_path / "template.yaml"))
 
-        # Create Data.yaml
-        data_subset_format = {"ann-files": None, "data-roots": None}
-        data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
-        data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
-        mmcv.dump(data_config, str(workspace_path / "data.yaml"))
-
         # Copy compression_config.json
         if (model_dir / "compression_config.json").exists():
             shutil.copyfile(
@@ -220,11 +210,8 @@ class Builder:
                 str(train_type_dir / "compression_config.json"),
             )
 
-        print(f"[otx build] Create OTX workspace: {str(workspace_path.absolute())}")
-        print(f"\tTask Type: {template.task_type}")
-        print(f"\tLoad Model Template ID: {template.model_template_id}")
-        print(f"\tLoad Model Name: {template.name}")
-        print(f"\tYou need to edit that file: {str(workspace_path.absolute() / 'data.yaml')}")
+        print(f"[*] Load Model Template ID: {template.model_template_id}")
+        print(f"[*] Load Model Name: {template.name}")
 
     def build_backbone_config(self, backbone_type: str, output_path: Union[Path, str]):
         """Build Backbone configs from backbone type.
