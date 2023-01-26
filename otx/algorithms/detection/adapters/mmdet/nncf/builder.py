@@ -53,14 +53,18 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
         build_dataset,
     )
 
-    if cfg_options is not None:
-        config.merge_from_dict(cfg_options)
     if checkpoint is None:
         # load model in this function not in runner
         checkpoint = config.load_from
     assert checkpoint is not None
 
-    model = build_detector(config, train_cfg=train_cfg, test_cfg=test_cfg, from_scratch=True)
+    model = build_detector(
+        config,
+        train_cfg=train_cfg,
+        test_cfg=test_cfg,
+        cfg_options=cfg_options,
+        from_scratch=True,
+    )
     model = model.to(device)
 
     state_dict = CheckpointLoader.load_checkpoint(checkpoint, map_location=device)
