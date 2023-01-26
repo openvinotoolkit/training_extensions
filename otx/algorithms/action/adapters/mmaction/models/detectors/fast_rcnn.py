@@ -22,7 +22,10 @@ from mmdet.models.detectors import FastRCNN
 from torch import nn
 from torch.onnx import is_in_onnx_export
 
-from .faster_rcnn_config import faster_rcnn, faster_rcnn_pretrained
+from otx.algorithms.action.configs.detection.base.faster_rcnn_config import (
+    faster_rcnn,
+    faster_rcnn_pretrained,
+)
 
 
 class ONNXPool3D(nn.Module):
