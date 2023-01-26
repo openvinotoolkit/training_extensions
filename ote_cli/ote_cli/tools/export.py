@@ -99,6 +99,8 @@ def main():
     os.makedirs(args.save_model_to, exist_ok=True)
     save_model_data(exported_model, args.save_model_to)
 
+    return dict(retcode=0, template=template.name)
+
 
 if __name__ == "__main__":
     main()
