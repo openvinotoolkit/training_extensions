@@ -4,41 +4,45 @@
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
+ARG action_runner_url
+ARG ver_cuda="11.1.1"
 
-FROM nvidia/cuda:10.2-devel-ubuntu18.04 AS python_base_cuda
+FROM nvidia/cuda:${ver_cuda}-devel-ubuntu20.04 AS python_base_cuda
 LABEL maintainer="OpenVINO Training Extensions Development Team"
 
 # Setup proxies
-
 ENV http_proxy=$HTTP_PROXY
 ENV https_proxy=$HTTPS_PROXY
 ENV no_proxy=$NO_PROXY
 ENV DEBIAN_FRONTEND="noninteractive"
 
-# Update system and install dependencies
+# added ninja-build for using CppExtension in the torch
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    software-properties-common=0.96.24.32.18 \
-        wget=1.19.4-1ubuntu2.2 \
-        ffmpeg=7:3.4.11-0ubuntu0.1 \
-        libpython3.8=3.8.0-3ubuntu1\~18.04.2 \
-        curl=7.58.0-2ubuntu3.20 \
-        nodejs=8.10.0\~dfsg-2ubuntu0.4 \
-        unzip=6.0-21ubuntu1.1 \
-        npm=3.5.2-0ubuntu4 \
-        ruby-dev=1:2.5.1 \
+        software-properties-common \
+        wget \
+        ffmpeg \
+        libpython3.8 \
+        curl \
+        nodejs \
+        unzip \
+        npm \
+        ruby-dev \
+        git \
+        cron \
+        ninja-build \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install latest git for github actions
-RUN apt-get update && \
-    add-apt-repository ppa:git-core/ppa &&\
-    apt-get install --no-install-recommends -y git=1:2.37.3-0ppa1\~ubuntu18.04.1 &&\
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# set /tmp folder cleaning schedule at 7PM every day which is older than a day
+RUN echo "0 19 * * * find /tmp/* -mtime +1 -exec rm -rf {} \;" >> ./cron_clean_tmp.txt && \
+    crontab cron_clean_tmp.txt && \
+    # Create a non-root user
+    useradd -m validation
 
-# Create a non-root user
-RUN useradd -m validation
 USER validation
+
+WORKDIR /home/validation
 
 # Install Conda
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh --quiet && \
@@ -53,18 +57,12 @@ RUN conda install python=3.8
 
 FROM python_base_cuda as otx_development_env
 
-# Install all OTX requirements. Serves as a way to cache the requirements
-
-COPY ./requirements/anomaly.txt /tmp/otx/requirements/anomaly.txt
-COPY ./requirements/base.txt /tmp/otx/requirements/base.txt
-COPY ./requirements/dev.txt /tmp/otx/requirements/dev.txt
-COPY ./requirements/docs.txt /tmp/otx/requirements/docs.txt
-COPY ./requirements/openvino.txt /tmp/otx/requirements/openvino.txt
-
-RUN pip install --no-cache-dir -r /tmp/otx/requirements/anomaly.txt \
-    -r /tmp/otx/requirements/base.txt \
-    -r /tmp/otx/requirements/dev.txt \
-    -r /tmp/otx/requirements/docs.txt \
-    -r /tmp/otx/requirements/openvino.txt
+RUN mkdir actions-runner
+WORKDIR /home/validation/actions-runner
+ARG action_runner_url
+# download actions-runner and extract it
+RUN curl -o actions-runner-linux-x64.tar.gz -L ${action_runner_url} && \
+    tar xzf ./actions-runner-linux-x64.tar.gz && \
+    rm actions-runner-linux-x64.tar.gz
 
 WORKDIR /home/validation
