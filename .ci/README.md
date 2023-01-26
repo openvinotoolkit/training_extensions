@@ -46,7 +46,7 @@
    - `Enter the name of the runner group to add this runner to:`
      - Just press Enter key for default
    - `Enter the name of runner:`
-     - Input the runner name which would be used by Github. If you want to replace an exsiting runner to this one, input the same runner's name.
+     - Input the runner name which would be used by Github. If you want to replace an existing runner to this one, input the same runner's name.
    - [`Optional`] If you input the existing runner's name to replace in the step above, confirmation prompt will be shown.
      - Input 'y' for the replacing
      - `Enter name of work folder:`
