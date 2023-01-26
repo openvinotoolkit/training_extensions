@@ -1,0 +1,132 @@
+{
+  "annotation": {
+    "filename": "2.jpg",
+    "folder": "validation",
+    "imsize": [
+      5,
+      5,
+      3
+    ],
+    "source": {
+      "folder": "",
+      "filename": "",
+      "origin": ""
+    },
+    "scene": [
+      "outdoor",
+      "urban",
+      "street"
+    ],
+    "object": [
+      {
+        "id": 0,
+        "name": "car, auto, automobile, machine, motorcar",
+        "name_ndx": 401,
+        "hypernym": [
+          "car, auto, automobile, machine, motorcar",
+          "motor vehicle, automotive vehicle",
+          "self-propelled vehicle",
+          "wheeled vehicle",
+          "vehicle",
+          "conveyance, transport",
+          "instrumentality, instrumentation",
+          "artifact, artefact",
+          "whole, unit",
+          "object, physical object",
+          "physical entity",
+          "entity"
+        ],
+        "raw_name": "car",
+        "attributes": [],
+        "depth_ordering_rank": 2,
+        "occluded": [],
+        "crop": 0,
+        "parts": {
+          "hasparts": [],
+          "ispartof": [],
+          "part_level": 0
+        },
+        "instance_mask": "2/instance_000_ADE_val_2.png",
+        "polygon": {
+          "x": [],
+          "y": []
+        },
+        "saved_date": "1-Jan-1970 00:00:00"
+      },
+      {
+        "id": 1,
+        "name": "person, individual, someone, somebody, mortal, soul",
+        "name_ndx": 1831,
+        "hypernym": [
+          "person, individual, someone, somebody, mortal, soul",
+          "organism, being",
+          "living thing, animate thing",
+          "whole, unit",
+          "object, physical object",
+          "physical entity",
+          "entity"
+        ],
+        "raw_name": "person",
+        "attributes": ["walkin"],
+        "depth_ordering_rank": 1,
+        "occluded": "no",
+        "crop": 0,
+        "parts": {
+          "hasparts": [],
+          "ispartof": [],
+          "part_level": 0
+        },
+        "instance_mask": "2/instance_001_ADE_val_2.png",
+        "polygon": {
+          "x": [],
+          "y": []
+        },
+        "saved_date": "1-Jan-1970 00:00:00"
+      },
+      {
+        "id": 2,
+        "name": "door",
+        "name_ndx": 774,
+        "hypernym": ["door", "doors", "garage door"],
+        "raw_name": "door",
+        "attributes": [],
+        "depth_ordering_rank": 3,
+        "occluded": "yes",
+        "crop": 0,
+        "parts": {
+          "hasparts": [],
+          "ispartof": 0,
+          "part_level": 1
+        },
+        "instance_mask": "2/instance_002_ADE_val_2.png",
+        "polygon": {
+          "x": [],
+          "y": []
+        },
+        "saved_date": "1-Jan-1970 00:00:00"
+      },
+      {
+        "id": 3,
+        "name": "rim",
+        "name_ndx": 2122,
+        "hypernym": [],
+        "raw_name": "rim",
+        "attributes": [],
+        "depth_ordering_rank": 3,
+        "occluded": "no",
+        "crop": 0,
+        "parts": {
+          "hasparts": [],
+          "ispartof": 2,
+          "part_level": 2
+        },
+        "instance_mask": "2/instance_003_ADE_val_2.png",
+        "polygon": {
+          "x": [],
+          "y": []
+        },
+        "saved_date": "1-Jan-1970 00:00:00"
+      }
+    ]
+  }
+}
