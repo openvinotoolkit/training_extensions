@@ -23,21 +23,21 @@ CLASSIFCATION_TASK = {TaskType.CLASSIFICATION}
 DETECTION_TASK = {TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}
 SEGMENTATION_TASK = {TaskType.SEGMENTATION}
 ANOMALY_TASK = {TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION}
-MPA_TASK = CLASSIFCATION_TASK | DETECTION_TASK | SEGMENTATION_TASK
-ALL_TASK = MPA_TASK | ANOMALY_TASK
+MMCV_TASK = CLASSIFCATION_TASK | DETECTION_TASK | SEGMENTATION_TASK
+ALL_TASK = MMCV_TASK | ANOMALY_TASK
 OTX_ROOT_PATH = Path(otx.__file__).parent
 
 
 class TestTaskManager:
-    @pytest.mark.parametrize("task", MPA_TASK)
-    def test_is_mpa_framework_task(self, task: TaskType):
+    @pytest.mark.parametrize("task", MMCV_TASK)
+    def test_is_mmcv_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
-        assert task_manager.is_mpa_framework_task()
+        assert task_manager.is_mmcv_framework_task()
 
     @pytest.mark.parametrize("task", ANOMALY_TASK)
-    def test_is_not_mpa_framework_task(self, task: TaskType):
+    def test_is_not_mmcv_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
-        assert not task_manager.is_mpa_framework_task()
+        assert not task_manager.is_mmcv_framework_task()
 
     @pytest.mark.parametrize("task", CLASSIFCATION_TASK)
     def test_is_cls_framework_task(self, task: TaskType):
@@ -79,8 +79,8 @@ class TestTaskManager:
         task_manager = TaskManager(task)
         assert not task_manager.is_anomaly_framework_task()
 
-    @pytest.mark.parametrize("task", MPA_TASK)
-    def test_get_mpa_batch_size_name(self, task: TaskType):
+    @pytest.mark.parametrize("task", MMCV_TASK)
+    def test_get_mmcv_batch_size_name(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.get_batch_size_name() == "learning_parameters.batch_size"
 
@@ -89,8 +89,8 @@ class TestTaskManager:
         task_manager = TaskManager(task)
         assert task_manager.get_batch_size_name() == "learning_parameters.train_batch_size"
 
-    @pytest.mark.parametrize("task", MPA_TASK)
-    def test_get_mpa_epoch_name(self, task: TaskType):
+    @pytest.mark.parametrize("task", MMCV_TASK)
+    def test_get_mmcv_epoch_name(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.get_epoch_name() == "num_iters"
 
@@ -99,7 +99,7 @@ class TestTaskManager:
         task_manager = TaskManager(task)
         assert task_manager.get_epoch_name() == "max_epochs"
 
-    @pytest.mark.parametrize("task", MPA_TASK)
+    @pytest.mark.parametrize("task", MMCV_TASK)
     def test_copy_weight(self, task: TaskType):
         task_manager = TaskManager(task)
         fake_model_weight = Path("temp_epoch_3.pth")
@@ -111,7 +111,7 @@ class TestTaskManager:
 
             assert weight_in_det.exists()
 
-    @pytest.mark.parametrize("task", MPA_TASK)
+    @pytest.mark.parametrize("task", MMCV_TASK)
     def test_get_latest_weight(self, task: TaskType):
         task_manager = TaskManager(task)
 
@@ -168,7 +168,7 @@ def anomaly_task_env(anomaly_template_path) -> TaskEnvironment:
     return make_task_env(anomaly_template_path)
 
 @pytest.fixture
-def mpa_task_env(cls_task_env, det_task_env, seg_task_env) -> List[TaskEnvironment]:
+def mmcv_task_env(cls_task_env, det_task_env, seg_task_env) -> List[TaskEnvironment]:
     return [cls_task_env, det_task_env, seg_task_env]
 
 @pytest.fixture
@@ -260,8 +260,8 @@ class TestTaskEnvironmentManager:
 
         assert task_env.get_max_epoch() == max_epoch
 
-    def test_save_mpa_initial_weight(self, mpa_task_env):
-        for task_env in mpa_task_env:
+    def test_save_mmcv_initial_weight(self, mmcv_task_env):
+        for task_env in mmcv_task_env:
             task_env.model = None
             task_env = TaskEnvironmentManager(task_env)
             assert not task_env.save_initial_weight("fake_path")
@@ -304,8 +304,8 @@ class TestTaskEnvironmentManager:
 
             mock_class.assert_not_called()
 
-    def test_get_mpa_batch_size_name(self, mpa_task_env):
-        for task_env in mpa_task_env:
+    def test_get_mmcv_batch_size_name(self, mmcv_task_env):
+        for task_env in mmcv_task_env:
             task_env = TaskEnvironmentManager(task_env)
             assert task_env.get_batch_size_name() == "learning_parameters.batch_size"
 

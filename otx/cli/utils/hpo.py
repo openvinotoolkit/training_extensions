@@ -79,11 +79,11 @@ class TaskManager:
         """Task_type property."""
         return self._task_type
 
-    def is_mpa_framework_task(self) -> bool:
-        """Check task is run on MPA.
+    def is_mmcv_framework_task(self) -> bool:
+        """Check task is run on mmcv.
 
         Returns:
-            bool: whether task is run on MPA
+            bool: whether task is run on mmcv
         """
         return self.is_cls_framework_task() or self.is_det_framework_task() or self.is_seg_framework_task()
 
@@ -133,7 +133,7 @@ class TaskManager:
         Returns:
             str: batch size name
         """
-        if self.is_mpa_framework_task():
+        if self.is_mmcv_framework_task():
             batch_size_name = "learning_parameters.batch_size"
         elif self.is_anomaly_framework_task():
             batch_size_name = "learning_parameters.train_batch_size"
@@ -148,7 +148,7 @@ class TaskManager:
         Returns:
             str: epoch name
         """
-        if self.is_mpa_framework_task():
+        if self.is_mmcv_framework_task():
             epoch_name = "num_iters"
         elif self.is_anomaly_framework_task():
             epoch_name = "max_epochs"
@@ -166,7 +166,7 @@ class TaskManager:
         """
         src = Path(src)
         det = Path(det)
-        if self.is_mpa_framework_task():
+        if self.is_mmcv_framework_task():
             for weight_candidate in src.glob("**/*epoch*.pth"):
                 if not (weight_candidate.is_symlink() or (det / weight_candidate.name).exists()):
                     shutil.copy(weight_candidate, det)
@@ -184,7 +184,7 @@ class TaskManager:
         """
         latest_weight = None
         workdir = Path(workdir)
-        if self.is_mpa_framework_task():
+        if self.is_mmcv_framework_task():
             pattern = re.compile(r"(\d+)\.pth")
             current_latest_epoch = -1
             latest_weight = None
