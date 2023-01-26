@@ -203,6 +203,8 @@ def main():
     assert resultset.performance is not None
     print(resultset.performance)
 
+    return dict(retcode=0, template=template.name)
+
 
 if __name__ == "__main__":
     main()

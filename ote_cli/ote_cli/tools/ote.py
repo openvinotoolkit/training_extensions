@@ -19,6 +19,8 @@ OTE CLI entry point.
 import argparse
 import sys
 
+from ote_cli.utils import telemetry
+
 from .demo import main as ote_demo
 from .deploy import main as ote_deploy
 from .eval import main as ote_eval
@@ -26,7 +28,6 @@ from .export import main as ote_export
 from .find import main as ote_find
 from .optimize import main as ote_optimize
 from .train import main as ote_train
-from ote_cli.utils import telemetry
 
 __all__ = [
     "ote_demo",
@@ -66,23 +67,23 @@ def main():
     sys.argv[0] = f"ote {name}"
     del sys.argv[1]
 
-    tm = telemetry.init_telemetry_session()
+    tm_session = telemetry.init_telemetry_session()
     results = {}
     try:
-        retcode = globals()[f"ote_{name}"]()
-        if retcode is None:
-            retcode = 0
-    except Exception as e:
-        results['exception'] = type(e)
-        results['retcode'] = retcode
-        telemetry.send_cmd_results(tm, name, results)
+        results = globals()[f"ote_{name}"]()
+        if results is None:
+            results = dict(retcode=0)
+    except Exception as error:
+        results["retcode"] = -1
+        results["exception"] = repr(error)
+        telemetry.send_cmd_results(tm_session, name, results)
         raise
     else:
-        results['retcode'] = retcode
-        telemetry.send_cmd_results(tm, name, results)
-        return retcode
+        telemetry.send_cmd_results(tm_session, name, results)
     finally:
-        telemetry.close_telemetry_session(tm)
+        telemetry.close_telemetry_session(tm_session)
+
+    return results.get("retcode", 0)
 
 
 if __name__ == "__main__":

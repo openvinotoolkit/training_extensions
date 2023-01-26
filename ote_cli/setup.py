@@ -17,35 +17,45 @@ Setup configuration.
 # and limitations under the License.
 
 import os
-import re
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
 
 from setuptools import find_packages, setup
 
-def find_version():
-    project_dir = os.path.dirname(os.path.abspath(__file__))
 
-    file_path = os.path.join(project_dir, "ote_cli", "version.py")
+def load_module(name: str = "ote_cli/__init__.py"):
+    """Load Python Module.
 
-    version_text = None
-    with open(file_path, "r") as version_file:
-        lines = version_file.readlines()
-        for line in lines:
-            if "VERSION = " in line:
-                version_text = line
+    Args:
+        name (str, optional): Name of the module to load.
+            Defaults to "ote_cli/__init__.py".
+    """
+    location = str(Path(__file__).parent / name)
+    spec = spec_from_file_location(name=name, location=location)
+    module = module_from_spec(spec)  # type: ignore
+    spec.loader.exec_module(module)  # type: ignore
+    return module
 
-    if version_text is None:
-        raise RuntimeError(f"Failed to find version string 'VERSION = ' in '{file_path}'")
 
-    # PEP440:
-    # https://www.python.org/dev/peps/pep-0440/#appendix-b-parsing-version-strings-with-regular-expressions
-    pep_regex = r"([1-9]\d*!)?(0|[1-9]\d*)(\.(0|[1-9]\d*))*((a|b|rc)(0|[1-9]\d*))?(\.post(0|[1-9]\d*))?(\.dev(0|[1-9]\d*))?"
-    version_regex = r"VERSION\s*=\s*.(" + pep_regex + ")."
-    match = re.match(version_regex, version_text)
-    if not match:
-        raise RuntimeError(f"Failed to find version string in '{file_path}'")
+def get_ote_cli_version() -> str:
+    """Get version from `ote_cli.__init__`.
 
-    version = version_text[match.start(1) : match.end(1)]
-    return version
+    Version is stored in the main __init__ module in `ote_cli`.
+    The varible storing the version is `__version__`. This function
+    reads `__init__` file, checks `__version__ variable and return
+    the value assigned to it.
+
+    Example:
+        >>> # Assume that __version__ = "0.2.6"
+        >>> get_ote_cli_version()
+        "0.2.6"
+
+    Returns:
+        str: `ote_cli` version.
+    """
+    ote_cli = load_module(name="ote_cli/__init__.py")
+    return ote_cli.__version__
+
 
 with open(
     os.path.join(os.path.dirname(__file__), "requirements.txt"), encoding="UTF-8"
@@ -54,7 +64,7 @@ with open(
 
 setup(
     name="ote_cli",
-    version=find_version(),
+    version=get_ote_cli_version(),
     packages=find_packages(exclude=("tools",)),
     install_requires=requirements,
     entry_points={
