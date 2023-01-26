@@ -78,7 +78,7 @@ We support the following ready-to-use model templates:
 `EfficientNet-B0 <https://arxiv.org/abs/1905.11946>`_ consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.
 
 Besides this, we support public backbones from `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcls <https://github.com/open-mmlab/mmclassification>`_ and `OpenVino Model Zoo <https://github.com/openvinotoolkit/open_model_zoo>`_.
-Please, refer to the :doc:`tutorial <../../tutorials/advanced/backbones.rst>`_ how to customize models and run public backbones.
+Please, refer to the :doc:`tutorial <../../tutorials/advanced/backbones>` how to customize models and run public backbones.
 
 To see which public backbones are available for the task, the following command can be executed:
 
