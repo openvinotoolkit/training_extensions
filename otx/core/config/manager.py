@@ -94,7 +94,7 @@ class ConfigManager:
         val_data_roots: Optional[str] = None,
     ):
         """Save the splitted dataset and data.yaml to the workspace."""
-        
+
         data_config = self._create_empty_data_cfg()
         if train_data_roots:
             data_config["data"]["train"]["data-roots"] = train_data_roots
@@ -102,15 +102,15 @@ class ConfigManager:
             data_config["data"]["val"]["data-roots"] = val_data_roots
 
         default_data_folder_name = "splitted_dataset"
-        
+
         self._save_data(workspace_dir, default_data_folder_name, data_config)
 
         self._export_data_cfg(data_config, os.path.join(workspace_dir, "data.yaml"))
 
     def _save_data(
-        self, 
+        self,
         workspace_dir: str,
-        default_data_folder_name: str, 
+        default_data_folder_name: str,
         data_config: Dict[str, Dict[str, Dict[str, Any]]],
     ):
         """Save the data for the classification task.
@@ -132,7 +132,7 @@ class ConfigManager:
             DatasetManager.export_dataset(
                 dataset=datum_dataset, output_dir=dst_dir_path, data_format=self.data_format, save_media=True
             )
-        
+
     def _create_empty_data_cfg(
         self,
     ) -> Dict[str, Dict[str, Dict[str, Any]]]:

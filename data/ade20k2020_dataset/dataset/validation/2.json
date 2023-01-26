@@ -2,21 +2,13 @@
   "annotation": {
     "filename": "2.jpg",
     "folder": "validation",
-    "imsize": [
-      5,
-      5,
-      3
-    ],
+    "imsize": [5, 5, 3],
     "source": {
       "folder": "",
       "filename": "",
       "origin": ""
     },
-    "scene": [
-      "outdoor",
-      "urban",
-      "street"
-    ],
+    "scene": ["outdoor", "urban", "street"],
     "object": [
       {
         "id": 0,

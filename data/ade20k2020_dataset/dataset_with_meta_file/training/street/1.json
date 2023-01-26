@@ -2,21 +2,13 @@
   "annotation": {
     "filename": "1.jpg",
     "folder": "training/street",
-    "imsize": [
-      5,
-      5,
-      3
-    ],
+    "imsize": [5, 5, 3],
     "source": {
       "folder": "",
       "filename": "",
       "origin": ""
     },
-    "scene": [
-      "outdoor",
-      "urban",
-      "street"
-    ],
+    "scene": ["outdoor", "urban", "street"],
     "object": [
       {
         "id": 0,
@@ -105,6 +97,6 @@
         },
         "saved_date": "1-Jan-1970 00:00:00"
       }
-        ]
+    ]
   }
 }
