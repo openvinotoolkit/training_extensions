@@ -73,7 +73,7 @@ class DatasetManager:
     @staticmethod
     def export_dataset(dataset: Dataset, output_dir: str, data_format: str, save_media=True):
         """Export the Datumaro Dataset."""
-        return Dataset.export(dataset, output_dir, data_format, save_media=save_media)
+        return dataset.export(output_dir, data_format, save_media=save_media)
 
     @staticmethod
     def import_dataset(data_root: str, data_format: str) -> dict:
