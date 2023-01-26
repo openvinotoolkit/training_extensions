@@ -17,6 +17,7 @@ from math import floor
 from os import path as osp
 from typing import Any, Callable, Dict, List, Optional, Union
 from copy import deepcopy
+from pathlib import Path
 
 import torch
 import yaml
@@ -156,42 +157,45 @@ class TaskManager:
 
         return epoch_name
 
-    def copy_weight(self, src: str, det: str):
+    def copy_weight(self, src: Union[str, Path], det: Union[str, Path]):
         """Copy all model weights from work directory.
 
         Args:
-            src (str): path where model weights are saved
-            det (str): path to save model weights
+            src (Union[str, Path]): path where model weights are saved
+            det (Union[str, Path]): path to save model weights
         """
+        src = Path(src)
+        det = Path(det)
         if self.is_mpa_framework_task():
-            for weight_candidate in glob.iglob(osp.join(src, "**/*epoch*.pth"), recursive=True):
-                if not (osp.islink(weight_candidate) or osp.exists(osp.join(det, osp.basename(weight_candidate)))):
+            for weight_candidate in src.glob("**/*epoch*.pth"):
+                if not (weight_candidate.is_symlink() or (det / weight_candidate.name).exists()):
                     shutil.copy(weight_candidate, det)
         else:
             return  # TODO need to implement after anomaly task supports resume
 
-    def get_latest_weight(self, workdir: str) -> Optional[str]:
+    def get_latest_weight(self, workdir: Union[str, Path]) -> Optional[str]:
         """Get latest model weight from all weights.
 
         Args:
-            workdir (str): path where model weights are saved
+            workdir (Union[str, Path]): path where model weights are saved
 
         Returns:
             Optional[str]: latest model weight path. If not found, than return None value.
         """
         latest_weight = None
+        workdir = Path(workdir)
         if self.is_mpa_framework_task():
             pattern = re.compile(r"(\d+)\.pth")
             current_latest_epoch = -1
             latest_weight = None
 
-            for weight_name in glob.iglob(osp.join(workdir, "**/epoch_*.pth"), recursive=True):
-                ret = pattern.search(weight_name)
+            for weight_name in workdir.glob("**/epoch_*.pth"):
+                ret = pattern.search(str(weight_name))
                 if ret is not None:
                     epoch = int(ret.group(1))
                     if current_latest_epoch < epoch:
                         current_latest_epoch = epoch
-                        latest_weight = weight_name
+                        latest_weight = str(weight_name)
         else:
             return None  # TODO need to implement after anomaly task supports resume
 
@@ -255,12 +259,11 @@ class TaskEnvironmentManager:
             Dict[str, Any]: dictionary type hyper parameter of environment
         """
         learning_parameters = self._environment.get_hyper_parameters().learning_parameters  # type: ignore
-        learning_parameters = self.convert_parameter_group_to_dict(learning_parameters)
+        learning_parameters = self._convert_parameter_group_to_dict(learning_parameters)
         hyper_parameter = {f"learning_parameters.{key}": val for key, val in learning_parameters.items()}
         return hyper_parameter
 
-    @staticmethod
-    def convert_parameter_group_to_dict(parameter_group) -> Dict[str, Any]:
+    def _convert_parameter_group_to_dict(self, parameter_group) -> Dict[str, Any]:
         """Convert parameter group to dictionary.
 
         Args:
@@ -281,7 +284,7 @@ class TaskEnvironmentManager:
 
         ret = {}
         for key in total_arr:
-            val = TaskEnvironmentManager.convert_parameter_group_to_dict(getattr(parameter_group, key))
+            val = self._convert_parameter_group_to_dict(getattr(parameter_group, key))
             if not (isclass(val) or isinstance(val, Enum)):
                 ret[key] = val
 
@@ -297,27 +300,29 @@ class TaskEnvironmentManager:
             self._environment.get_hyper_parameters().learning_parameters, self.task.get_epoch_name()  # type: ignore
         )
 
-    def save_initial_weight(self, save_path: str) -> bool:
+    def save_initial_weight(self, save_path: Union[Path, str]) -> bool:
         """Save an initial model weight.
 
         Args:
-            save_path (str): path to save initial model weight
+            save_path (Union[str, Path]): path to save initial model weight
 
         Returns:
             bool: whether model weight is saved successfully
         """
+        save_path = Path(save_path)
+        dir_path = save_path.parent
         if self._environment.model is None:
             # if task isn't anomaly, then save model weight during first trial
             if self.task.is_anomaly_framework_task():
                 task = self.get_train_task()
                 model = self.get_new_model_entity()
                 task.save_model(model)
-                dir_path = osp.dirname(save_path)
-                save_model_data(model, dir_path)
-                os.rename(osp.join(dir_path, "weights.pth"), save_path)
+                save_model_data(model, str(dir_path))
+                (dir_path / "weights.pth").rename(save_path)
                 return True
         else:
-            save_model_data(self._environment.model, save_path)
+            save_model_data(self._environment.model, str(dir_path))
+            (dir_path / "weights.pth").rename(save_path)
             return True
         return False
 
