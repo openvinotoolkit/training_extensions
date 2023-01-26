@@ -13,10 +13,12 @@
 # and limitations under the License.
 
 import asyncio
+import glob
 import json
 import os
 import shutil
 import sys
+from typing import Dict
 
 import pytest
 import yaml
@@ -728,3 +730,24 @@ def otx_build_backbone_testing(root, backbone_args):
     assert (
         model_config["model"]["backbone"]["type"] == backbone
     ), f"{model_config['model']['backbone']['type']} != {backbone}"
+
+
+def otx_build_auto_config(otx_dir: str, args: Dict[str, str]):
+    command_line = [
+        "otx",
+        "build",
+    ]
+
+    for option, val in args.items():
+        if option in ["--train-data-roots", "--val-data-roots"]:
+            command_line.extend([option, f"{os.path.join(otx_dir, val)}"])
+        elif option in ["--task"]:
+            command_line.extend([option, args[option]])
+    check_run(command_line)
+
+    # Revmoe workspace made by this test
+    # However, if there is another workspaces, make errors
+    work_spaces = glob.glob(os.path.join(otx_dir, "otx-workspace-*"))
+    assert len(work_spaces) == 1, f"Found > 1 workspaces in your {otx_dir}."
+
+    shutil.rmtree(work_spaces[0])

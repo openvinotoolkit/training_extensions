@@ -8,7 +8,7 @@ General fixtures.
 
 import pytest
 
-from tests.unit.api.test_helpers import LabelSchemaExample
+from tests.test_helpers import LabelSchemaExample
 
 
 @pytest.fixture(scope="session")
