@@ -17,22 +17,25 @@
 import glob
 from functools import partial
 from subprocess import DEVNULL, CalledProcessError, run  # nosec
+from typing import List, Optional
 
 import cv2
 import numpy as np
 import onnx
 import torch
 from mmaction.models import Recognizer3D
-
-from otx.algorithms.action.adapters.mmaction.models.detectors import AVAFastRCNN
+from mmcv.runner import BaseModule
+from mmcv.utils import Config
 
 try:
     from mmcv.onnx.symbolic import register_extra_symbolics
 except ModuleNotFoundError as e:
     raise NotImplementedError("please update mmcv to version>=1.0.4") from e
 
+from otx.algorithms.action.adapters.mmaction.models.detectors import AVAFastRCNN
 
-def _convert_batchnorm(module):
+
+def _convert_sync_batch_to_normal_batch(module: BaseModule):
     """Convert the syncBNs into normal BN3ds."""
     module_output = module
     if isinstance(module, torch.nn.SyncBatchNorm):
@@ -49,13 +52,19 @@ def _convert_batchnorm(module):
         module_output.running_var = module.running_var
         module_output.num_batches_tracked = module.num_batches_tracked
     for name, child in module.named_children():
-        module_output.add_module(name, _convert_batchnorm(child))
+        module_output.add_module(name, _convert_sync_batch_to_normal_batch(child))
     del module
     return module_output
 
 
 # pylint: disable=too-many-locals
-def preprocess(clip_len, width, height, interval=1, category=1):
+def preprocess(
+    clip_len: int,
+    width: int,
+    height: int,
+    interval: int = 1,
+    category: int = 1,
+):
     """Pre-process for action deteciton structure.
 
     To get proper proposals from Faster-RCNN, the action detector needs real data
@@ -93,7 +102,7 @@ def preprocess(clip_len, width, height, interval=1, category=1):
     return torch_input, meta
 
 
-def get_frame_inds(np_frames, clip_len, interval):
+def get_frame_inds(np_frames: np.ndarray, clip_len: int, interval: int):
     """Get sampled index for given np_frames."""
     frame_len = np_frames.shape[2]
     ori_clip_len = clip_len * interval
@@ -109,19 +118,19 @@ def get_frame_inds(np_frames, clip_len, interval):
 
 # pylint: disable=too-many-arguments, too-many-locals, protected-access, no-member
 def pytorch2onnx(
-    model,
-    input_shape,
-    opset_version=11,
-    show=False,
-    output_file="tmp.onnx",
-    softmax=False,
-    is_localizer=False,
+    model: BaseModule,
+    input_shape: List[int],
+    opset_version: int = 11,
+    show: bool = False,
+    output_file: Optional[str] = "tmp.onnx",
+    softmax: bool = False,
+    is_localizer: bool = False,
 ):
     """Convert pytorch model to onnx model.
 
     Args:
-        model (:obj:`nn.Module`): The pytorch model to be exported.
-        input_shape (tuple[int]): The input tensor shape of the model.
+        model (BaseModule): The pytorch model to be exported.
+        input_shape (List[int]): The input tensor shape of the model.
         opset_version (int): Opset version of onnx used. Default: 11.
         show (bool): Determines whether to print the onnx model architecture.
             Default: False.
@@ -129,7 +138,7 @@ def pytorch2onnx(
         softmax (bool): Determines whether to use softmax function.
         is_localizer(bool): Determines this model is localizer or not
     """
-    model = _convert_batchnorm(model)
+    model = _convert_sync_batch_to_normal_batch(model)
     input_tensor = torch.randn(input_shape)
 
     # onnx.export does not support kwargs
@@ -183,27 +192,27 @@ def _get_mo_cmd():
 
 # pylint: disable=no-member
 def onnx2openvino(
-    cfg,
-    onnx_model_path,
-    output_dir_path,
-    layout,
-    input_shape=None,
-    input_format="bgr",
-    precision="FP32",
-    pruning_transformation=False,
+    cfg: Config,
+    onnx_model_path: Optional[str],
+    output_dir_path: Optional[str],
+    layout: str,
+    input_shape: Optional[List[int]] = None,
+    input_format: str = "bgr",
+    precision: str = "FP32",
+    pruning_transformation: bool = False,
 ):
     """Convert ONNX model into OpenVINO model."""
     cfg.model.pretrained = None
     cfg.data.test.test_mode = True
 
     onnx_model = onnx.load(onnx_model_path)
-    output_names = set(out.name for out in onnx_model.graph.output)
+    _output_names = set(out.name for out in onnx_model.graph.output)
     # Clear names of the nodes that produce network's output blobs.
     for node in onnx_model.graph.node:
-        if output_names.intersection(node.output):
+        if _output_names.intersection(node.output):
             node.ClearField("name")
     onnx.save(onnx_model, onnx_model_path)
-    output_names = ",".join(output_names)
+    output_names = ",".join(_output_names)
 
     mo_cmd = _get_mo_cmd()
 
@@ -241,7 +250,12 @@ def onnx2openvino(
     run(command_line, check=True)
 
 
-def export_model(model, config, onnx_model_path=None, output_dir_path=None):
+def export_model(
+    model: BaseModule,
+    config: Config,
+    onnx_model_path: Optional[str] = None,
+    output_dir_path: Optional[str] = None,
+):
     """Export PyTorch model into OpenVINO model."""
     if isinstance(model, Recognizer3D):
         input_shape = [1, 1, 3, 8, 224, 224]

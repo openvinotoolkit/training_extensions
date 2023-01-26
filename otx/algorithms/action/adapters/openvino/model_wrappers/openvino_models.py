@@ -39,7 +39,7 @@ except ImportError as e:
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
     """Softmax numpy."""
-    x = np.exp(x)
+    x = np.exp(x - np.max(x))
     x /= np.sum(x)
     return x
 
@@ -54,7 +54,7 @@ def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
 
 
 # pylint: disable=too-many-instance-attributes
-class OTXActionCls(Model):
+class OTXOVActionCls(Model):
     """OTX Action Classification model for openvino task."""
 
     __model__ = "ACTION_CLASSIFICATION"
@@ -122,7 +122,7 @@ class OTXActionCls(Model):
         return get_multiclass_predictions(logits)
 
 
-class OTXActionDet(OTXActionCls):
+class OTXOVActionDet(OTXOVActionCls):
     """OTX Action Detection model for openvino task."""
 
     __model__ = "ACTION_DETECTION"
@@ -132,7 +132,7 @@ class OTXActionDet(OTXActionCls):
 
         Calls the `Model` constructor first
         """
-        super(OTXActionCls, self).__init__(model_adapter, configuration, preload)
+        super(OTXOVActionCls, self).__init__(model_adapter, configuration, preload)
         self.image_blob_names = self._get_inputs()
         self.image_blob_name = self.image_blob_names[0]
         self.out_layer_names = self._get_outputs()

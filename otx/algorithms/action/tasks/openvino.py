@@ -31,8 +31,8 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 
 from otx.algorithms.action.adapters.openvino import (
-    ActionClsDataLoader,
-    get_dataloader,
+    ActionOVClsDataLoader,
+    get_ovdataloader,
     model_wrappers,
 )
 from otx.algorithms.action.configs.base import ActionConfig
@@ -208,11 +208,11 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         clip_len = self.inferencer.model.t
         width = self.inferencer.model.w
         height = self.inferencer.model.h
-        dataloader = get_dataloader(dataset, self.task_type, clip_len, width, height)
+        dataloader = get_ovdataloader(dataset, self.task_type, clip_len, width, height)
         dataset_size = len(dataloader)
         for i, data in enumerate(dataloader):
             prediction = self.inferencer.predict(data)
-            if isinstance(dataloader, ActionClsDataLoader):
+            if isinstance(dataloader, ActionOVClsDataLoader):
                 dataloader.add_prediction(dataset, data, prediction)
             else:
                 dataloader.add_prediction(data, prediction)
@@ -283,7 +283,7 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         clip_len = self.inferencer.model.t
         width = self.inferencer.model.w
         height = self.inferencer.model.h
-        data_loader = get_dataloader(dataset, self.task_type, clip_len, width, height)
+        data_loader = get_ovdataloader(dataset, self.task_type, clip_len, width, height)
         data_loader = DataLoaderWrapper(data_loader, self.inferencer)
 
         if self.model is None:

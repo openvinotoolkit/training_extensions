@@ -1,5 +1,4 @@
 """Adapt AVARoIHead in mmaction into OTX."""
-import torch
 from mmaction.core.bbox import bbox2result
 from mmaction.models.heads import AVARoIHead as MMAVARoIHead
 from mmdet.models import HEADS as MMDET_HEADS
@@ -11,6 +10,7 @@ from torch.onnx import is_in_onnx_export
 class AVARoIHead(MMAVARoIHead):
     """AVARoIHead for OTX."""
 
+    # TODO Remove this after changing from forward_test to onnx_export for onnx export
     def simple_test(self, x, proposal_list, img_metas, proposals=None, rescale=False, **kwargs):
         """This is temporary soluition, since otx.mmdet is differnt with latest mmdet."""
         assert self.with_bbox, "Bbox head must be implemented."
@@ -23,11 +23,8 @@ class AVARoIHead(MMAVARoIHead):
         assert x_shape[0] == 1, "only accept 1 sample at test mode"
         assert x_shape[0] == len(img_metas) == len(proposal_list)
 
-        with torch.no_grad():
-            det_bboxes, det_labels = self.simple_test_bboxes(
-                x, img_metas, proposal_list, self.test_cfg, rescale=rescale
-            )
-            if is_in_onnx_export():
-                return det_bboxes, det_labels
-            bbox_results = bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes, thr=self.test_cfg.action_thr)
-            return [bbox_results]
+        det_bboxes, det_labels = self.simple_test_bboxes(x, img_metas, proposal_list, self.test_cfg, rescale=rescale)
+        if is_in_onnx_export():
+            return det_bboxes, det_labels
+        bbox_results = bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes, thr=self.test_cfg.action_thr)
+        return [bbox_results]

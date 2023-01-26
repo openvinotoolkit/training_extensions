@@ -24,7 +24,7 @@ from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 
 
-def get_dataloader(dataset: DatasetEntity, task_type: str, clip_len: int, width: int, height: int) -> DataLoader:
+def get_ovdataloader(dataset: DatasetEntity, task_type: str, clip_len: int, width: int, height: int) -> DataLoader:
     """Find proper dataloader for dataset and task type.
 
     If dataset has only a single video, this returns DataLoader for online demo
@@ -32,11 +32,11 @@ def get_dataloader(dataset: DatasetEntity, task_type: str, clip_len: int, width:
     """
     if is_multi_video(dataset):
         if task_type == "ACTION_CLASSIFICATION":
-            return ActionClsDataLoader(dataset, clip_len, width, height)
+            return ActionOVClsDataLoader(dataset, clip_len, width, height)
         if task_type == "ACTION_DETECTION":
-            return ActionDetDataLoader(dataset, clip_len, width, height)
+            return ActionOVDetDataLoader(dataset, clip_len, width, height)
         raise NotImplementedError(f"{task_type} is not supported from action task")
-    return ActionDemoDataLoader
+    return ActionOVDemoDataLoader
 
 
 def is_multi_video(dataset: DatasetEntity) -> bool:
@@ -49,7 +49,7 @@ def is_multi_video(dataset: DatasetEntity) -> bool:
     return False
 
 
-class ActionDemoDataLoader(DataLoader):
+class ActionOVDemoDataLoader(DataLoader):
     """DataLoader for online demo purpose.
 
     Since it is for online demo purpose it selects background frames from neighbor of key frame
@@ -91,7 +91,7 @@ class ActionDemoDataLoader(DataLoader):
             dataset_item.append_annotations(prediction.annotations)
 
 
-class ActionClsDataLoader(DataLoader):
+class ActionOVClsDataLoader(DataLoader):
     """DataLoader for evaluation of action classification models.
 
     It iterates through clustered video, and it samples frames from given video
@@ -151,7 +151,7 @@ class ActionClsDataLoader(DataLoader):
                 dataset_item.append_labels(prediction.annotations[0].get_labels())
 
 
-class ActionDetDataLoader(DataLoader):
+class ActionOVDetDataLoader(DataLoader):
     """DataLoader for evaluation of spatio-temporal action detection models.
 
     It iterates through DatasetEntity, which only contains non-empty frame(frame with actor annotation)
