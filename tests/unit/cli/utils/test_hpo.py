@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
@@ -266,43 +266,43 @@ class TestTaskEnvironmentManager:
             task_env = TaskEnvironmentManager(task_env)
             assert not task_env.save_initial_weight("fake_path")
 
-    def test_save_anomaly_initial_weight(self, anomaly_task_env):
+    def test_save_anomaly_initial_weight(self, mocker, anomaly_task_env):
         def mock_save_model_data(model, save_path: str):
             (Path(save_path) / "weights.pth").write_text('fake')
         
-        with patch.object(TaskEnvironmentManager, "get_train_task"), \
-            patch("otx.cli.utils.hpo.save_model_data", mock_save_model_data), \
-            TemporaryDirectory() as tmp_dir:
-        
+        mocker.patch.object(TaskEnvironmentManager, "get_train_task")
+        mocker.patch("otx.cli.utils.hpo.save_model_data", mock_save_model_data)
+        with TemporaryDirectory() as tmp_dir:
             anomaly_task_env.model = None
             task_env = TaskEnvironmentManager(anomaly_task_env)
             save_path = Path(tmp_dir) / "init.pth"
             assert task_env.save_initial_weight(str(save_path))
             assert save_path.exists()
 
-    def test_loaded_inital_weight(self, all_task_env):
+    def test_loaded_inital_weight(self, mocker, all_task_env):
         def mock_save_model_data(model, save_path: str):
             (Path(save_path) / "weights.pth").write_text('fake')
         
-        with patch.object(TaskEnvironmentManager, "get_train_task"), \
-            patch("otx.cli.utils.hpo.save_model_data", mock_save_model_data), \
-            TemporaryDirectory() as tmp_dir:
+        mocker.patch.object(TaskEnvironmentManager, "get_train_task")
+        mocker.patch("otx.cli.utils.hpo.save_model_data", mock_save_model_data)
+        with TemporaryDirectory() as tmp_dir:
             for task_env in all_task_env:
-                task_env.model = MagicMock()
+                task_env.model = mocker.MagicMock()
                 task_env = TaskEnvironmentManager(task_env)
                 save_path = Path(tmp_dir) / "init.pth"
                 assert task_env.save_initial_weight(str(save_path))
                 assert save_path.exists()
 
-    def test_get_train_task(self, all_task_env):
-        for task_env in all_task_env:
-            mock_class = MagicMock()
-            with patch("otx.cli.utils.hpo.get_impl_class") as mock_func:
-                mock_func.return_vlaue = mock_class
-                task_env = TaskEnvironmentManager(task_env)
-                task_env.get_train_task()
+    def test_get_train_task(self, mocker, all_task_env):
+        mock_func = mocker.patch("otx.cli.utils.hpo.get_impl_class")
 
-                mock_class.assert_not_called()
+        for task_env in all_task_env:
+            mock_class = mocker.MagicMock()
+            mock_func.return_vlaue = mock_class
+            task_env = TaskEnvironmentManager(task_env)
+            task_env.get_train_task()
+
+            mock_class.assert_not_called()
 
     def test_get_mpa_batch_size_name(self, mpa_task_env):
         for task_env in mpa_task_env:
@@ -313,24 +313,26 @@ class TestTaskEnvironmentManager:
         task_env = TaskEnvironmentManager(anomaly_task_env)
         assert task_env.get_batch_size_name() == "learning_parameters.train_batch_size"
 
-    def test_load_model_weight(self, all_task_env):
-        for task_env in all_task_env:
-            with patch("otx.cli.utils.hpo.read_model") as mock_func:
-                mock_class = MagicMock()
-                mock_func.return_value = mock_class
-                task_manager = TaskEnvironmentManager(task_env)
-                task_manager.load_model_weight("fake", MagicMock())
-                assert task_env.model == mock_class
+    def test_load_model_weight(self, mocker, all_task_env):
+        mock_func = mocker.patch("otx.cli.utils.hpo.read_model")
 
-    def test_resume_model_weight(self, all_task_env):
         for task_env in all_task_env:
-            with patch("otx.cli.utils.hpo.read_model") as mock_func:
-                mock_class = MagicMock()
-                mock_func.return_value = mock_class
-                task_manager = TaskEnvironmentManager(task_env)
-                task_manager.load_model_weight("fake", MagicMock())
-                assert task_env.model == mock_class
-                assert mock_class.model_adapters["resume"]
+            mock_class = mocker.MagicMock()
+            mock_func.return_value = mock_class
+            task_manager = TaskEnvironmentManager(task_env)
+            task_manager.load_model_weight("fake", mocker.MagicMock())
+            assert task_env.model == mock_class
+
+    def test_resume_model_weight(self, mocker, all_task_env):
+        mock_func = mocker.patch("otx.cli.utils.hpo.read_model")
+
+        for task_env in all_task_env:
+            mock_class = mocker.MagicMock()
+            mock_func.return_value = mock_class
+            task_manager = TaskEnvironmentManager(task_env)
+            task_manager.load_model_weight("fake", mocker.MagicMock())
+            assert task_env.model == mock_class
+            assert mock_class.model_adapters["resume"]
 
     def test_get_new_model_entity(self, all_task_env):
         for task_env in all_task_env:
@@ -358,13 +360,13 @@ class HpoCallback:
 class HpoDataset:
     pass
 
-def test_check_hpopt_available():
-    with patch("otx.cli.utils.hpo.hpopt"):
-        assert check_hpopt_available()
+def test_check_hpopt_available(mocker):
+    mocker.patch("otx.cli.utils.hpo.hpopt")
+    assert check_hpopt_available()
 
-def test_check_hpopt_unavailable():
-    with patch("otx.cli.utils.hpo.hpopt", None):
-        assert not check_hpopt_available()
+def test_check_hpopt_unavailable(mocker):
+    mocker.patch("otx.cli.utils.hpo.hpopt", None)
+    assert not check_hpopt_available()
 
 def test_run_hpo():
     pass
