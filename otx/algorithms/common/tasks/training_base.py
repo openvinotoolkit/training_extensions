@@ -210,6 +210,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def data_pipeline_path(self):
         """Base Data Pipeline file path."""
         # TODO: Temporarily use data_pipeline.py next to model.py.may change later.
+        if self._hyperparams.tiling_parameters.enable_tiling:
+            return os.path.join(self._model_dir, "tile_pipeline.py")
         return os.path.join(self._model_dir, "data_pipeline.py")
 
     @property
@@ -478,6 +480,15 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
+            # Get config
+            if model_data.get("config"):
+                tiling_parameters = model_data.get("config").get("tiling_parameters")
+                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
+                    logger.info("Load tiling parameters")
+                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
+                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
+                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
+                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
             return model_data
         return None
 

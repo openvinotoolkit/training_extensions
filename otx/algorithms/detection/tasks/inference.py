@@ -19,6 +19,7 @@ from typing import Iterable, Optional, Tuple
 
 import cv2
 import numpy as np
+import pycocotools.mask as mask_util
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -270,6 +271,25 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
+        # Update tiling parameters if tiling is enabled
+        if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            logger.info("Tiling Enabled")
+            tiling_params = ConfigDict(
+                tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
+            )
+            configs.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        train=tiling_params,
+                        val=tiling_params,
+                        test=tiling_params,
+                    )
+                )
+            )
+            configs.update(dict(evaluation=dict(iou_thr=[0.5])))
+
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 
@@ -285,6 +305,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         logger.info(f"train type = {self._train_type}")
 
+        # Incremental Learning Recipe is the default for Detection
         if self._train_type in RECIPE_TRAIN_TYPE:
             recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
@@ -393,6 +414,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         shapes = []
         for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
             for mask, probability in zip(masks, boxes[:, 4]):
+                if isinstance(mask, dict):
+                    mask = mask_util.decode(mask)
                 mask = mask.astype(np.uint8)
                 probability = float(probability)
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
