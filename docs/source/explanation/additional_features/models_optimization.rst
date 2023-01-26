@@ -14,4 +14,4 @@ Models Optimization
 
 | NNCF tends to provide better quality in terms of preserving accuracy as it uses training compression approaches. `Here <https://github.com/openvinotoolkit/nncf#nncf-compressed-model-zoo>`_ can be found compression results achievable with the NNCF. Meanwhile, Post-training optimization is faster but can degrade accuracy more than the training-enabled approach.
 | The main recommendation is to start with post-training compression and use NNCF compression during training if you are not satisfied with the results.
-| Please, refer to our `dedicated tutorials <LINK>` on how to optimize your model using POT or NNCF.
+| Please, refer to our `dedicated tutorials <../../tutorials/base/how_to_train>` on how to optimize your model using POT or NNCF.

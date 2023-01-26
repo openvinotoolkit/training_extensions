@@ -24,6 +24,7 @@ Hierarchical Classification
 **************
 Dataset Format
 **************
+.. _hierarchical_dataset:
 
 For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
 
@@ -85,6 +86,10 @@ To use OTX with this format is required to pass annotations files paths and imag
 
     $ otx {train, optimize} <model_template> --train-ann-files /path/to/train_annotation_file.json --val-ann-files /path/to/val_annotation_file.json --train-data-roots /path/to/train/images_folder --val-data-roots /path/to/val/images_folder
     $ otx eval <model_template> --test-ann-files /path/to/test_annotation_file.json --test-data-roots /path/to/test/images_folder --load-weights path/to/weights
+
+.. note::
+
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classificaiton models.
 
 ******
 Models
