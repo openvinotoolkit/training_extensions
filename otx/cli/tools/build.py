@@ -19,6 +19,7 @@ and build models with new backbone replacements.
 
 import argparse
 import os
+from pathlib import Path
 
 from otx.cli.builder import Builder
 from otx.cli.utils.importing import get_otx_root_path
@@ -83,7 +84,7 @@ def main():
             task_type=args.task,
             model_type=args.model,
             train_type=args.train_type.lower(),
-            workspace_root=args.workspace_root,
+            workspace_path=Path(args.workspace_root),
             otx_root=otx_root,
         )
 
