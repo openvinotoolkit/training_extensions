@@ -551,6 +551,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 f"Done unloading. " f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory"
             )
 
+    def cleanup(self):
+        """Clean up work directory if user specified it."""
+        if self._work_dir_is_temp:
+            self._delete_scratch_space()
+
     class OnHookInitialized:
         """OnHookInitialized class."""
 

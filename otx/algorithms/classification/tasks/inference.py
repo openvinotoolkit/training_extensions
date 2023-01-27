@@ -191,10 +191,8 @@ class ClassificationInferenceTask(
 
     def unload(self):
         """Unload function of OTX Classification Task."""
-
         logger.info("called unload()")
-        if self._work_dir_is_temp:
-            self._delete_scratch_space()
+        self.cleanup()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
