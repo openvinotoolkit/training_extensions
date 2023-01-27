@@ -25,7 +25,7 @@ from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_paramet
 
 
 class UncopiableDefaultDict(defaultdict):
-    """Uncopiable defaultdict."""
+    """Defauldict type object to avoid deepcopy."""
 
     def __deepcopy__(self, memo):
         """Deepcopy."""
