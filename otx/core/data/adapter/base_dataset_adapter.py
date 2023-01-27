@@ -250,5 +250,20 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                     for i in range(0, len(annotation.points), 2)
                 ]
             ),
-            labels=[ScoredLabel(label=self.label_entities[annotation.label - 1])],
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
+
+    def remove_unused_label_entities(self, used_labels: List):
+        """Remove unused label from label entities.
+
+        Because label entities will be used to make Label Schema,
+        If there is unused label in Label Schema, it will hurts the model performance.
+        So, remove the unused label from label entities.
+
+        Args:
+            used_labels (List): list for index of used label
+        """
+        clean_label_entities = []
+        for used_label in used_labels:
+            clean_label_entities.append(self.label_entities[used_label])
+        self.label_entities = clean_label_entities

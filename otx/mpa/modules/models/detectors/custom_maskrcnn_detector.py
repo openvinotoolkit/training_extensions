@@ -90,8 +90,8 @@ if is_mmdeploy_enabled():
         assert self.with_bbox, "Bbox head must be implemented."
         x = self.extract_feat(img)
         feature_vector = FeatureVectorHook.func(x)
-        sailency_map = ActivationMapHook.func(x[-1])
+        saliency_map = ActivationMapHook.func(x[-1])
         if proposals is None:
             proposals, _ = self.rpn_head.simple_test_rpn(x, img_metas)
         out = self.roi_head.simple_test(x, proposals, img_metas, rescale=False)
-        return (*out, feature_vector, sailency_map)
+        return (*out, feature_vector, saliency_map)

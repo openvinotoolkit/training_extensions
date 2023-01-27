@@ -79,11 +79,11 @@ class Tiler:
                 features = copy.deepcopy(feats)
 
         if np.prod(detections.shape):
-            dets, keep = multiclass_nms(detections, max_num=self.max_number)
+            detections, keep = multiclass_nms(detections, max_num=self.max_number)
             if self.segm:
                 masks = [masks[keep_idx] for keep_idx in keep]
-                self.resize_masks(masks, dets, image.shape)
-                detections = *Tiler.detection2tuple(dets), masks
+                self.resize_masks(masks, detections, image.shape)
+                detections = *Tiler.detection2tuple(detections), masks
         return detections, features
 
     def resize_masks(self, masks: List, dets: np.ndarray, shape: List[int]):

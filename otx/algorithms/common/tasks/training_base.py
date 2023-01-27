@@ -128,12 +128,24 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(kwargs)
         stage_module = self._update_stage_module(stage_module)
+
+        if mode is not None:
+            self._mode = mode
+
+        # deepcopy all configs to make sure
+        # changes under MPA and below does not take an effect to OTX for clear distinction
+        model_cfg = deepcopy(self._model_cfg)
+        recipe_cfg = deepcopy(self._recipe_cfg)
+        data_cfg = deepcopy(self._data_cfg)
+        assert model_cfg is not None, "'model_cfg' is not initialized."
+        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
+
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
-        self._model_cfg["model_classes"] = model_classes
+        model_cfg["model_classes"] = model_classes
         if dataset is not None:
-            train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
+            train_data_cfg = Stage.get_data_cfg(data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
@@ -142,17 +154,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             "running task... kwargs = "
             + str({k: v if k != "model_builder" else object.__repr__(v) for k, v in kwargs.items()})
         )
-        if self._recipe_cfg is None:
-            raise RuntimeError("'recipe_cfg' is not initialized yet. call prepare() method before calling this method")
-
-        if mode is not None:
-            self._mode = mode
 
         common_cfg = ConfigDict(dict(output_path=self._output_path, resume=self._resume))
 
         # build workflow using recipe configuration
         workflow = build(
-            deepcopy(self._recipe_cfg),
+            recipe_cfg,
             self._mode,
             stage_type=stage_module,
             common_cfg=common_cfg,
@@ -160,8 +167,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # run workflow with task specific model config and data config
         output = workflow.run(
-            model_cfg=deepcopy(self._model_cfg),
-            data_cfg=self._data_cfg,
+            model_cfg=model_cfg,
+            data_cfg=data_cfg,
             ir_model_path=None,
             ir_weight_path=None,
             model_ckpt=self._model_ckpt,
@@ -203,6 +210,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def data_pipeline_path(self):
         """Base Data Pipeline file path."""
         # TODO: Temporarily use data_pipeline.py next to model.py.may change later.
+        if self._hyperparams.tiling_parameters.enable_tiling:
+            return os.path.join(self._model_dir, "tile_pipeline.py")
         return os.path.join(self._model_dir, "data_pipeline.py")
 
     @property
@@ -471,6 +480,15 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
+            # Get config
+            if model_data.get("config"):
+                tiling_parameters = model_data.get("config").get("tiling_parameters")
+                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
+                    logger.info("Load tiling parameters")
+                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
+                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
+                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
+                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
             return model_data
         return None
 
