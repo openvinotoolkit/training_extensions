@@ -259,7 +259,7 @@ def main():  # pylint: disable=too-many-branches
         assert resultset.performance is not None
         print(resultset.performance)
 
-    task.unload()
+    task.cleanup()
 
     if args.gpus:
         multigpu_manager.finalize()
