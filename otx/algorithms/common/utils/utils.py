@@ -28,7 +28,7 @@ class UncopiableDefaultDict(defaultdict):
     """Uncopiable defaultdict."""
 
     def __deepcopy__(self, memo):
-        """deepcopy."""
+        """Deepcopy."""
         return self
 
 

@@ -21,8 +21,6 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from otx.algorithms.common.utils import UncopiableDefaultDict
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -131,7 +129,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
