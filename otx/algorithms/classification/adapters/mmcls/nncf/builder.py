@@ -48,14 +48,12 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals
         build_dataset,
     )
 
-    if cfg_options is not None:
-        config.merge_from_dict(cfg_options)
     if checkpoint is None:
         # load model in this function not in runner
         checkpoint = config.load_from
     assert checkpoint is not None
 
-    model = build_classifier(config, from_scratch=True)
+    model = build_classifier(config, cfg_options=cfg_options, from_scratch=True)
     model = model.to(device)
 
     state_dict = CheckpointLoader.load_checkpoint(checkpoint, map_location=device)

@@ -34,8 +34,6 @@ def build_segmentor(
     # isort: on
     # fmt: on
 
-    model_cfg = deepcopy(config.model)
-
     if cfg_options is not None:
         config.merge_from_dict(cfg_options)
 

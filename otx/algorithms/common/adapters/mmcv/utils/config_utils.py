@@ -183,7 +183,7 @@ def patch_runner(config: Config):
 @check_input_parameters_type()
 def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
     """Align data_cfg with recipe_cfg."""
-    # we assumed config has 'otx_dataset' and 'label' key in it
+    # we assumed config has 'otx_dataset' and 'labels' key in it
     # by 'patch_datasets' function
 
     data_config = data_config.data

@@ -146,8 +146,8 @@ def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
         logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
 
     if multihead_class_info["num_multilabel_classes"]:
-        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], -1
-        logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
+        logits_begin = multihead_class_info["num_single_label_classes"]
+        logits[logits_begin:] = sigmoid_numpy(logits[logits_begin:])
 
     return logits
 
@@ -168,8 +168,8 @@ def get_hierarchical_predictions(
         predicted_labels.append((multihead_class_info["label_to_idx"][label_str], head_logits[j]))
 
     if multihead_class_info["num_multilabel_classes"]:
-        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], -1
-        head_logits = logits[logits_begin:logits_end]
+        logits_begin = multihead_class_info["num_single_label_classes"]
+        head_logits = logits[logits_begin:]
         if activate:
             head_logits = sigmoid_numpy(head_logits)
 
