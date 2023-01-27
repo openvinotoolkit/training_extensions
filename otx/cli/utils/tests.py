@@ -733,7 +733,7 @@ def otx_build_backbone_testing(root, backbone_args):
 
 
 def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
-    workspace_root = os.path.join(root, "otx-workspace-CLASSIFICATION")
+    workspace_root = os.path.join(root, "otx-workspace")
     command_line = [
         "otx",
         "build",
