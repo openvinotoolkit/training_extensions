@@ -59,14 +59,14 @@ class TestToolsOTXAutoConfig:
     @e2e_pytest_component
     def test_otx_build_with_autosplit(self, tmp_dir_path):
         otx_dir = os.getcwd()
-        otx_build_auto_config(otx_dir, auto_config_args_with_autosplit)
+        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_with_autosplit)
 
     @e2e_pytest_component
     def test_otx_build_with_autosplit_task(self, tmp_dir_path):
         otx_dir = os.getcwd()
-        otx_build_auto_config(otx_dir, auto_config_args_with_autosplit_task)
+        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_with_autosplit_task)
 
     @e2e_pytest_component
     def test_otx_build_without_autosplit(self, tmp_dir_path):
         otx_dir = os.getcwd()
-        otx_build_auto_config(otx_dir, auto_config_args_without_autosplit)
+        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_without_autosplit)

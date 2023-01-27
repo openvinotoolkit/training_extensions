@@ -36,10 +36,10 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     image = Image(file_path=datumaro_item.media.path)
                     shapes = []
                     for ann in datumaro_item.annotations:
-                        if self.task_type is TaskType.DETECTION and ann.type == AnnotationType.polygon:
+                        if str(self.task_type) is TaskType.INSTANCE_SEGMENTATION.name and ann.type == AnnotationType.polygon:
                             shapes.append(self._get_polygon_entity(ann, image.width, image.height))
                             used_labels.append(ann.label)
-                        if self.task_type is TaskType.INSTANCE_SEGMENTATION and ann.type == AnnotationType.bbox:
+                        if str(self.task_type) is TaskType.DETECTION.name and ann.type == AnnotationType.bbox:
                             shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
                             used_labels.append(ann.label)
 
