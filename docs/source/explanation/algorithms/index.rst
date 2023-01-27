@@ -3,6 +3,16 @@ Algorithms
 
 .. _algo_section_ref:
 
+OTX supports different training types to solve variety of the computer vision problems. This section provide some algorithms insights, what exactly we utilize providing end-to-end solution to solve real life computer vision problems.
+
+
+At this end we support:
+
+- **Supervised training**. Supervised learning for computer vision involves training a model on a labeled dataset of images. The model learns to associate specific features in the images with the corresponding labels. This is the most common approach for computer vision tasks such as object detection and image classification.
+- **Incremental learning**. OTX provide functionality to let the model to learn from new data as it becomes available and improve its performance over time, rather than having to retrain the entire model every time new data is added. OTX supports also class incremental approach. In this approach, the model is first trained on a set of classes, and then incrementally updated with new classes of data, while keeping the previously learned classes' knowledge. The class incremental approach is particularly useful in situations where the number of classes is not fixed and new classes may be added over time.
+- **Semi-supervised learning**.  This is a type of machine learning in which the model is trained on a dataset that contains a combination of labeled and unlabeled examples. The labeled examples are used to train the model, while the unlabeled examples are used to improve the model's performance by providing additional information about the underlying distribution of the data. This approach is often used when there is a limited amount of labeled data available, but a large amount of unlabeled data. This can make it more cost-effective and efficient to train models compared to traditional supervised learning, where the model is trained only on labeled data.
+- **Self-supervised learning**. This is a type of machine learning where the model is trained on a dataset that contains only unlabeled examples. The model is trained to learn useful representations of the data by solving a task that can be inferred from the input itself, without human-provided labels. The objective is to learn good representations of the input data that can then be used for downstream tasks such as classification, detection, generation or clustering.
+
 .. toctree::
    :maxdepth: 2
    :titlesonly:

@@ -115,12 +115,7 @@ In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%
 Semi-supervised Learning
 ************************
 
-Semi-supervised semantic segmentation is a variation of the semantic segmentation task, where only a subset of the data is labeled.
-The goal is to train a model to predict the class labels of the pixels in an image, using both **labeled and unlabeled** data.
-In this way, the model can make use of both labeled data to learn the class labels, and unlabeled data to learn the underlying structure of the image.
-This can be useful in situations where acquiring labeled data is expensive or time-consuming.
-
-To solve this problem for the semantic segmentation we use the `Mean Teacher algorithm <https://arxiv.org/abs/1703.01780>`_. The basic idea of this approach is to use two models during training: a "student" model, which is the main model being trained, and a "teacher" model, which acts as a guide for the student model.
+To solve Semi-supervised learning problem for the semantic segmentation we use the `Mean Teacher algorithm <https://arxiv.org/abs/1703.01780>`_. The basic idea of this approach is to use two models during training: a "student" model, which is the main model being trained, and a "teacher" model, which acts as a guide for the student model.
 The student model is updated based on the ground truth annotations (for the labeled data) and pseudo-labels (for the unlabeled data) which are the predictions of the teacher model.
 The teacher model is updated based on the moving average of the student model's parameters. So, we don't use backward loss propagation for the teacher model's parameters.
 After training, only the student model is used for prediction.
