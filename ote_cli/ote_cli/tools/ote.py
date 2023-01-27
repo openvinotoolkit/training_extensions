@@ -19,6 +19,8 @@ OTE CLI entry point.
 import argparse
 import sys
 
+from ote_cli.utils import telemetry
+
 from .demo import main as ote_demo
 from .deploy import main as ote_deploy
 from .eval import main as ote_eval
@@ -64,7 +66,24 @@ def main():
     name = parse_args().operation
     sys.argv[0] = f"ote {name}"
     del sys.argv[1]
-    globals()[f"ote_{name}"]()
+
+    tm_session = telemetry.init_telemetry_session()
+    results = {}
+    try:
+        results = globals()[f"ote_{name}"]()
+        if results is None:
+            results = dict(retcode=0)
+    except Exception as error:
+        results["retcode"] = -1
+        results["exception"] = repr(error)
+        telemetry.send_cmd_results(tm_session, name, results)
+        raise
+    else:
+        telemetry.send_cmd_results(tm_session, name, results)
+    finally:
+        telemetry.close_telemetry_session(tm_session)
+
+    return results.get("retcode", 0)
 
 
 if __name__ == "__main__":

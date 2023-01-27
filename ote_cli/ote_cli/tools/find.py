@@ -59,6 +59,8 @@ def main():
 
     print(registry)
 
+    return dict(retcode=0, task_type=args.task_type)
+
 
 if __name__ == "__main__":
     main()

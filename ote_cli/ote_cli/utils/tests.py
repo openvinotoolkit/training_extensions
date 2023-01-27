@@ -72,6 +72,7 @@ def collect_env_vars(work_dir):
 
 def check_run(cmd, **kwargs):
     result = subprocess.run(cmd, stderr=subprocess.PIPE, **kwargs)
+    print(f"***** result.returncode = {result.returncode} *****")
     assert result.returncode == 0, result.stderr.decode("utf=8")
 
 

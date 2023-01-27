@@ -85,6 +85,29 @@ Please read the [Contribution guide](CONTRIBUTING.md) before starting work on a 
 
 ---
 
+## Telemetry data collection note
+
+The [OpenVINO™ telemetry library](https://github.com/openvinotoolkit/telemetry/)
+is used to collect basic information about usage of this toolkit.
+
+The table below shows which event and data would be sent through telemetry data collection tool.
+|Event|Description|Data Format|
+|---|---|---|
+|version|Installed version|\<version-string\>|
+|success|Command that completed successfully|{'cmd': \<CLI-command-type\>, ['template': \<template-name\>], ['task_type': \<task-type-or-None\>]}|
+|failure|Command that completed with an error|{'cmd': \<CLI-command-type\>, ['template': \<template-name\>], ['task_type': \<task-type-or-None\>]}|
+|exception|Command that completed with unexpected exception|{'cmd': \<CLI-command-type\>, 'exception': \<exception-type-string\>}|
+
+### How to control telemetry data collection
+
+To enable the collection of telemetry data, the consent file must exist and contain "1", otherwise telemetry will be disabled. The consent file can be created/modified by an OpenVINO installer or manually and used by other OpenVINO™ tools.
+
+The location and name of the consent file:
+
+`$HOME/intel/openvino_telemetry`
+
+---
+
 ## Known limitations
 
 Training, export, and evaluation scripts for TensorFlow- and most PyTorch-based models from the [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch are, currently, not production-ready. They serve exploratory purposes and are not validated.
