@@ -685,14 +685,15 @@ class TwoCropTransformHook(Hook):
     def __init__(self, interval: int = 1, by_epoch: bool = False):
         assert interval > 0, f"interval (={interval}) must be positive value."
         if by_epoch:
-            raise NotImplementedError(f"by_epoch is not implemented.")
+            raise NotImplementedError("by_epoch is not implemented.")
 
         self.interval = interval
         self.cnt = 0
 
     @check_input_parameters_type()
     def _get_dataset(self, runner: BaseRunner):
-        if hasattr(runner.data_loader.dataset, 'dataset'):
+        """Get dataset to handle `is_both`."""
+        if hasattr(runner.data_loader.dataset, "dataset"):
             # for RepeatDataset
             dataset = runner.data_loader.dataset.dataset
         else:
@@ -700,21 +701,24 @@ class TwoCropTransformHook(Hook):
 
         return dataset
 
+    # pylint: disable=inconsistent-return-statements
     @check_input_parameters_type()
     def _find_two_crop_transform(self, transforms):
+        """Find TwoCropTransform among transforms."""
         for transform in transforms:
             if transform.__class__.__name__ == "TwoCropTransform":
                 return transform
 
     @check_input_parameters_type()
     def before_train_epoch(self, runner: BaseRunner):
+        """Called before_train_epoch in TwoCropTransformHook."""
         # Always keep `TwoCropTransform` enabled.
         if self.interval == 1:
             return
-            
+
         dataset = self._get_dataset(runner)
         two_crop_transform = self._find_two_crop_transform(dataset.pipeline.transforms)
-        if self.cnt == self.interval-1:
+        if self.cnt == self.interval - 1:
             # start using both pipelines
             two_crop_transform.is_both = True
         else:
@@ -722,16 +726,17 @@ class TwoCropTransformHook(Hook):
 
     @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
+        """Called after_train_iter in TwoCropTransformHook."""
         # Always keep `TwoCropTransform` enabled.
         if self.interval == 1:
             return
-            
-        if self.cnt < self.interval-1:
+
+        if self.cnt < self.interval - 1:
             # Instead of using `runner.every_n_iters` or `runner.every_n_inner_iters`,
             # this condition is used to compare `self.cnt` with `self.interval` throughout the entire epochs.
             self.cnt += 1
 
-        if self.cnt == self.interval-1:
+        if self.cnt == self.interval - 1:
             dataset = self._get_dataset(runner)
             two_crop_transform = self._find_two_crop_transform(dataset.pipeline.transforms)
             if not two_crop_transform.is_both:

@@ -16,7 +16,9 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../selfsl/model.py",]
+_base_ = [
+    "../selfsl/model.py",
+]
 
 model = dict(type="SupConDetConB")
 

@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 import numpy as np
 from mmcv.utils import build_from_cfg
 from mmseg.datasets.builder import PIPELINES
-from mmseg.datasets.pipelines import Compose, to_tensor
+from mmseg.datasets.pipelines import Compose
 from PIL import Image
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
@@ -131,11 +131,11 @@ class TwoCropTransform:
             results["img"] = np.stack((results1["img"], results2["img"]), axis=0)
             results["gt_semantic_seg"] = np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0)
             results["flip"] = [results1["flip"], results2["flip"]]
-        
+
         else:
             results = self.view0(results)
 
-        results['is_both'] = self.is_both
+        results["is_both"] = self.is_both
 
         return results
 

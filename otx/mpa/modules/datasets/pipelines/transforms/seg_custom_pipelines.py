@@ -80,7 +80,7 @@ class DefaultFormatBundle(object):
             img = results[target]
             if len(img.shape) < 3:
                 img = np.expand_dims(img, -1)
-                
+
             if len(img.shape) == 3:
                 img = np.ascontiguousarray(img.transpose(2, 0, 1)).astype(np.float32)
             elif len(img.shape) == 4:

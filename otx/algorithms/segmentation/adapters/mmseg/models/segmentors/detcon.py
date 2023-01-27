@@ -18,7 +18,6 @@ from mmcv.runner import load_checkpoint
 from mmseg.models.builder import (  # pylint: disable=no-name-in-module
     SEGMENTORS,
     build_backbone,
-    build_head,
     build_loss,
     build_neck,
 )
@@ -301,7 +300,9 @@ class DetConB(nn.Module):
         return proj, sampled_mask_ids
 
     # pylint: disable=too-many-locals
-    def forward_train(self, img: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, return_embedding: bool = False):
+    def forward_train(
+        self, img: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, return_embedding: bool = False
+    ):
         """Forward function for training.
 
         Args:
@@ -350,12 +351,10 @@ class DetConB(nn.Module):
 
         if return_embedding:
             return loss, embd1
-        else:
-            return loss
+        return loss
 
     def forward(self, img, img_metas, return_loss=True, **kwargs):
-        """Calls either :func:`forward_train` or :func:`forward_test` depending
-        on whether ``return_loss`` is ``True``.
+        """Calls either :func:`forward_train` or :func:`forward_test` depending on whether ``return_loss`` is ``True``.
 
         Note this setting will change the expected inputs. When
         ``return_loss=True``, img and img_meta are single-nested (i.e. Tensor
@@ -365,8 +364,7 @@ class DetConB(nn.Module):
         """
         if return_loss:
             return self.forward_train(img, img_metas, **kwargs)
-        else:
-            raise AttributeError("Self-SL doesn't support `forward_test` for evaluation.")
+        raise AttributeError("Self-SL doesn't support `forward_test` for evaluation.")
 
     def train_step(self, data_batch: Dict[str, Any], optimizer: Union[torch.optim.Optimizer, Dict], **kwargs):
         """The iteration step during training.
@@ -460,16 +458,18 @@ class DetConB(nn.Module):
         return output
 
 
+# pylint: disable=too-many-locals
 @SEGMENTORS.register_module()
 class SupConDetConB(ClassIncrEncoderDecoder):
-    """Apply DetConB as a contrastive part of `Supervised Contrastive Learning` (https://arxiv.org/abs/2004.11362)
+    """Apply DetConB as a contrastive part of `Supervised Contrastive Learning` (https://arxiv.org/abs/2004.11362).
 
     SupCon with DetConB uses ground truth masks instead of pseudo masks to organize features among the same classes.
-    
+
     Args:
         decode_head (dict, optional): Config dict for module of decode head. Default: None.
         train_cfg (dict, optional): Config dict for training. Default: None.
     """
+
     def __init__(
         self,
         backbone: Dict[str, Any],
@@ -489,13 +489,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):
         test_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
-        super().__init__(
-            backbone=backbone,
-            decode_head=decode_head,
-            train_cfg=train_cfg,
-            test_cfg=test_cfg,
-            **kwargs
-        )
+        super().__init__(backbone=backbone, decode_head=decode_head, train_cfg=train_cfg, test_cfg=test_cfg, **kwargs)
 
         self.detconb = DetConB(
             backbone=backbone,
@@ -517,13 +511,14 @@ class SupConDetConB(ClassIncrEncoderDecoder):
         # 1. use state_dict_hook : we can save memory as only saving backbone + decode_head.
         # 2. save all : we can use additional training with the whole weights (backbone + decode_head + detcon).
 
+    # pylint: disable=arguments-renamed
     def forward_train(
         self,
         img: torch.Tensor,
         img_metas: List[Dict],
         gt_semantic_seg: torch.Tensor,
         pixel_weights: Optional[torch.Tensor] = None,
-        **kwargs
+        **kwargs,
     ):
         """Forward function for training.
 
@@ -537,7 +532,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        losses = dict()
+        losses = {}
         if img.ndim == 4:
             # supervised learning with interval
             embd = self.detconb.online_backbone(img)
@@ -546,15 +541,14 @@ class SupConDetConB(ClassIncrEncoderDecoder):
             # supcon training
             mask = gt_semantic_seg[:, :, 0]
             loss_detcon, embd = self.detconb.forward_train(
-                img=img,
-                img_metas=img_metas,
-                gt_semantic_seg=gt_semantic_seg,
-                return_embedding=True
+                img=img, img_metas=img_metas, gt_semantic_seg=gt_semantic_seg, return_embedding=True
             )
             losses.update(dict(loss_detcon=loss_detcon["loss"]))
 
         # decode head
-        loss_decode, _ = self._decode_head_forward_train(embd, img_metas, gt_semantic_seg=mask)
+        loss_decode, _ = self._decode_head_forward_train(
+            embd, img_metas, gt_semantic_seg=mask, pixel_weights=pixel_weights
+        )
         losses.update(loss_decode)
 
         return losses
