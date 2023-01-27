@@ -27,7 +27,7 @@ from mmaction.utils import get_root_logger
 
 from otx.algorithms.action.adapters.mmaction.utils import prepare_for_training
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from otx.algorithms.common.utils import TrainingProgressCallback
+from otx.algorithms.common.utils import TrainingProgressCallback, UncopiableDefaultDict
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -120,6 +120,7 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
+        self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
 
         self._is_training = True
         self._init_task()
@@ -202,7 +203,6 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
         # compose performance statistics
         performance = metric.get_performance()
         metric_name = self._recipe_cfg.evaluation.final_metric
-        self._learning_curves = OTXLoggerHook.curves
         performance.dashboard_metrics.extend(
             ActionTrainTask._generate_training_metrics(self._learning_curves, val_map, metric_name)
         )
