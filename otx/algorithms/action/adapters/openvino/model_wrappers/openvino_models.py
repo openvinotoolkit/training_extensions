@@ -122,7 +122,7 @@ class OTXOVActionCls(Model):
         return get_multiclass_predictions(logits)
 
 
-class OTXOVActionDet(OTXOVActionCls):
+class OTXOVActionDet(Model):
     """OTX Action Detection model for openvino task."""
 
     __model__ = "ACTION_DETECTION"
@@ -132,7 +132,7 @@ class OTXOVActionDet(OTXOVActionCls):
 
         Calls the `Model` constructor first
         """
-        super(OTXOVActionCls, self).__init__(model_adapter, configuration, preload)
+        super().__init__(model_adapter, configuration, preload)
         self.image_blob_names = self._get_inputs()
         self.image_blob_name = self.image_blob_names[0]
         self.out_layer_names = self._get_outputs()
@@ -160,6 +160,20 @@ class OTXOVActionDet(OTXOVActionCls):
             elif "labels" in name:
                 out_names["labels"] = name
         return out_names
+
+    @check_input_parameters_type()
+    def preprocess(self, inputs: List[DatasetItemEntity]):
+        """Pre-process."""
+        meta = {"original_shape": inputs[0].media.numpy.shape}
+        frames = []
+        for item in inputs:
+            frame = item.media.numpy
+            frame = self.resize(frame, (self.w, self.h))
+            frames.append(frame)
+        np_frames = self.reshape(frames)
+        dict_inputs = {self.image_blob_name: np_frames}
+        meta.update({"resized_shape": np_frames[0].shape})
+        return dict_inputs, meta
 
     @staticmethod
     @check_input_parameters_type()
