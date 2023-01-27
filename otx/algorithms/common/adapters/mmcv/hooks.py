@@ -701,7 +701,7 @@ class TwoCropTransformHook(Hook):
         return dataset
 
     @check_input_parameters_type()
-    def _find_two_crop_transform(self, transforms: List[Any]):
+    def _find_two_crop_transform(self, transforms):
         for transform in transforms:
             if transform.__class__.__name__ == "TwoCropTransform":
                 return transform
