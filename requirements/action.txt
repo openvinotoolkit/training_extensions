@@ -1,4 +1,4 @@
-mmpycocotools
+# mmpycocotools
 mmcv-full==1.6.1
 mmaction2==0.24.1
 #otxdet==0.3.2
