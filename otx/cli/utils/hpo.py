@@ -7,14 +7,12 @@
 import glob
 import json
 import logging
-import os
 import re
 import shutil
 from enum import Enum
 from functools import partial
 from inspect import isclass
 from math import floor
-from os import path as osp
 from typing import Any, Callable, Dict, List, Optional, Union
 from copy import deepcopy
 from pathlib import Path
@@ -393,7 +391,7 @@ class HpoRunner:
         environment (TaskEnvironment): OTX environment
         train_dataset_size (int): train dataset size
         val_dataset_size (int): validation dataset size
-        hpo_workdir (str): work directory for HPO
+        hpo_workdir (Union[str, Path]): work directory for HPO
         hpo_time_ratio (int, optional): time ratio to use for HPO compared to training time. Defaults to 4.
     """
 
@@ -404,11 +402,18 @@ class HpoRunner:
         environment: TaskEnvironment,
         train_dataset_size: int,
         val_dataset_size: int,
-        hpo_workdir: str,
+        hpo_workdir: Union[str, Path],
         hpo_time_ratio: int = 4,
     ):
+        if train_dataset_size <= 0:
+            raise ValueError(f"train_dataset_size should be bigger than 0. Your value is {train_dataset_size}")
+        if val_dataset_size <= 0:
+            raise ValueError(f"val_dataset_size should be bigger than 0. Your value is {val_dataset_size}")
+        if hpo_time_ratio < 1:
+            raise ValueError(f"hpo_time_ratio shouldn't be smaller than 1. Your value is {hpo_time_ratio}")
+
         self._environment = TaskEnvironmentManager(environment)
-        self._hpo_workdir = hpo_workdir
+        self._hpo_workdir: Path = Path(hpo_workdir)
         self._hpo_time_ratio = hpo_time_ratio
         self._hpo_config: Dict = self._set_hpo_config()
         self._train_dataset_size = train_dataset_size
@@ -419,10 +424,7 @@ class HpoRunner:
         self._align_batch_size_search_space_to_dataset_size()
 
     def _set_hpo_config(self):
-        hpo_config_path = osp.join(
-            osp.dirname(self._environment.get_model_template_path()),
-            "hpo_config.yaml",
-        )
+        hpo_config_path = Path(self._environment.get_model_template_path()).parent / "hpo_config.yaml"
         with open(hpo_config_path, "r", encoding="utf-8") as f:
             hpopt_cfg = yaml.safe_load(f)
 
@@ -507,7 +509,7 @@ class HpoRunner:
     def _prepare_asha(self):
         args = {
             "search_space": self._hpo_config["hp_space"],
-            "save_path": self._hpo_workdir,
+            "save_path": str(self._hpo_workdir),
             "maximum_resource": self._hpo_config.get("maximum_resource"),
             "minimum_resource": self._hpo_config.get("minimum_resource"),
             "mode": self._hpo_config.get("mode", "max"),
@@ -542,7 +544,7 @@ class HpoRunner:
         return default_hyper_parameters
 
     def _get_initial_model_weight_path(self):
-        return osp.join(self._hpo_workdir, self._initial_weight_name)
+        return self._hpo_workdir / self._initial_weight_name
 
 
 def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, str]):
@@ -566,7 +568,7 @@ def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roo
         )
         return
 
-    hpo_save_path = os.path.abspath(os.path.join(os.path.dirname(args.save_model_to), "hpo"))
+    hpo_save_path = (Path(args.save_model_to).parent / "hpo").absolute()
     hpo_runner = HpoRunner(
         environment,
         len(dataset.get_subset(Subset.TRAINING)),
@@ -637,7 +639,7 @@ class Trainer:
         model_template: model template
         data_roots (Dict[str, str]): dataset path of each dataset type
         task_type (TaskType): OTX task type
-        hpo_workdir (str): work directory for HPO
+        hpo_workdir (Union[str, Path]): work directory for HPO
         initial_weight_name (str): initial model weight name for each trials to load
         metric (str): metric name
     """
@@ -651,7 +653,7 @@ class Trainer:
         model_template,
         data_roots: Dict[str, str],
         task_type: TaskType,
-        hpo_workdir: str,
+        hpo_workdir: Union[str, Path],
         initial_weight_name: str,
         metric: str,
     ):
@@ -660,7 +662,7 @@ class Trainer:
         self._model_template = model_template
         self._data_roots = data_roots
         self._task = TaskManager(task_type)
-        self._hpo_workdir = hpo_workdir
+        self._hpo_workdir: Path = Path(hpo_workdir)
         self._initial_weight_name = initial_weight_name
         self._metric = metric
         self._epoch = floor(self._hp_config["configuration"]["iterations"])
@@ -730,13 +732,13 @@ class Trainer:
 
     def _get_resume_weight_path(self):
         trial_work_dir = self._get_weight_dir_path()
-        if not osp.exists(trial_work_dir):
+        if not trial_work_dir.exists():
             return None
         return self._task.get_latest_weight(trial_work_dir)
 
     def _load_fixed_initial_weight(self):
         initial_weight_path = self._get_initial_weight_path()
-        if osp.exists(initial_weight_path):
+        if initial_weight_path.exists():
             return initial_weight_path
         return None
 
@@ -751,27 +753,27 @@ class Trainer:
                 "custom_hooks": [
                     dict(
                         type="SaveInitialWeightHook",
-                        save_path=osp.dirname(initial_weight_path),
-                        file_name=osp.basename(initial_weight_path),
+                        save_path=initial_weight_path.parent,
+                        file_name=initial_weight_path.name,
                     )
                 ]
             }
         )
 
-    def _prepare_score_report_callback(self, task):
+    def _prepare_score_report_callback(self, task) -> TrainParameters:
         return TrainParameters(False, HpoCallback(self._report_func, self._metric, self._epoch, task))
 
-    def _get_initial_weight_path(self):
-        return osp.join(self._hpo_workdir, self._initial_weight_name)
+    def _get_initial_weight_path(self) -> Path:
+        return self._hpo_workdir / self._initial_weight_name
 
     def _finalize_trial(self, task):
         weight_dir_path = self._get_weight_dir_path()
-        os.makedirs(weight_dir_path, exist_ok=True)
+        weight_dir_path.mkdir(parents=True, exist_ok=True)
         self._task.copy_weight(task.project_path, weight_dir_path)
         self._report_func(0, 0, done=True)
 
-    def _get_weight_dir_path(self):
-        return osp.join(self._hpo_workdir, "weight", self._hp_config["id"])
+    def _get_weight_dir_path(self) -> Path:
+        return self._hpo_workdir / "weight" / self._hp_config["id"]
 
 
 def run_trial(
@@ -780,7 +782,7 @@ def run_trial(
     model_template,
     data_roots: Dict[str, str],
     task_type: TaskType,
-    hpo_workdir: str,
+    hpo_workdir: Union[str, Path],
     initial_weight_name: str,
     metric: str,
 ):
@@ -792,7 +794,7 @@ def run_trial(
         model_template: model template
         data_roots (Dict[str, str]): dataset path of each dataset type
         task_type (TaskType): OTX task type
-        hpo_workdir (str): work directory for HPO
+        hpo_workdir (Union[str, Path]): work directory for HPO
         initial_weight_name (str): initial model weight name for each trials to load
         metric (str): metric name
     """
@@ -814,6 +816,9 @@ class HpoCallback(UpdateProgressCallback):
     """
 
     def __init__(self, report_func: Callable, metric: str, max_epoch: int, task):
+        if max_epoch <= 0:
+            raise ValueError(f"max_epoch should be bigger than 0. Current value is {max_epoch}.")
+
         super().__init__()
         self._report_func = report_func
         self.metric = metric

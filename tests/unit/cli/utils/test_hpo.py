@@ -2,8 +2,12 @@ from unittest.mock import MagicMock
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
+from copy import deepcopy
 
 import pytest
+import hpopt
+from hpopt.hyperband import HyperBand
+from hpopt.hpo_base import TrialStatus
 
 import otx
 from otx.api.configuration.helper import create as create_conf_hp
@@ -14,7 +18,11 @@ from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.hpo import (
     TaskManager,
     TaskEnvironmentManager,
-    check_hpopt_available
+    check_hpopt_available,
+    HpoRunner,
+    Trainer,
+    HpoCallback,
+    HpoDataset
 )
 
 from tempfile import TemporaryDirectory
@@ -349,15 +357,124 @@ class TestTaskEnvironmentManager:
 
 
 class TestHpoRunner:
-    pass
+    def test_init(self, all_task_env):
+        for task_env in all_task_env:
+            HpoRunner(task_env, 100, 10, "fake_path")
+
+    @pytest.mark.parametrize("train_dataset_size,val_dataset_size", [(0,10), (10, 0), (-1, -1)])
+    def test_init_wrong_dataset_size(self, cls_task_env, train_dataset_size, val_dataset_size):
+        with pytest.raises(ValueError):
+            HpoRunner(cls_task_env, train_dataset_size, val_dataset_size, "fake_path", 4)
+
+    @pytest.mark.parametrize("hpo_time_ratio", [-3, 0])
+    def test_init_wrong_dataset_size(self, cls_task_env, hpo_time_ratio):
+        with pytest.raises(ValueError):
+            HpoRunner(cls_task_env, 100, 10, "fake_path", hpo_time_ratio)
+
+    def test_run_hpo(self, mocker, cls_task_env):
+        hpo_runner = HpoRunner(cls_task_env, 100, 10, "fake_path")
+        mock_run_hpo_loop = mocker.patch("otx.cli.utils.hpo.run_hpo_loop")
+        mock_hb = mocker.patch("otx.cli.utils.hpo.HyperBand")
+
+        hpo_runner.run_hpo(mocker.MagicMock(), {"fake", "fake"})
+
+        mock_run_hpo_loop.assert_called()  # call hpo_loop to run HPO
+        mock_hb.assert_called()  # make hyperband
+
 
 class TestTrainer:
-    pass
+    def test_init(self, mocker, cls_template_path):
+        Trainer(
+            hp_config={"configuration" : {"iterations" : 10}},
+            report_func=mocker.stub(),
+            model_template=find_and_parse_model_template(cls_template_path),
+            data_roots={"fake" : "fake"},
+            task_type=TaskType.CLASSIFICATION,
+            hpo_workdir="fake",
+            initial_weight_name="fake",
+            metric="fake"
+        )
 
-class HpoCallback:
-    pass
+    def test_run(self, mocker, cls_template_path):
+        with TemporaryDirectory() as tmp_dir:
+            # prepare
+            trial_id = "1"
+            weight_format = "epoch_{}.pth"
+            hpo_workdir = Path(tmp_dir) / "hpo_dir"
+            fake_project_path = Path(tmp_dir) / "fake_proejct"
+            fake_project_path.mkdir(parents=True)
+            for i in range(1, 5):
+                (fake_project_path / weight_format.format(i)).write_text("fake")
 
-class HpoDataset:
+            mock_get_train_task = mocker.patch.object(TaskEnvironmentManager, "get_train_task")
+            mock_task = mocker.MagicMock()
+            mock_task.project_path = str(fake_project_path)
+            mock_get_train_task.return_value = mock_task
+
+            mock_report_func = mocker.MagicMock()
+
+            mocker.patch("otx.cli.utils.hpo.get_dataset_adapter")
+            mocker.patch("otx.cli.utils.hpo.HpoDataset")
+
+            # run
+            trainer = Trainer(
+                hp_config={"configuration" : {"iterations" : 10}, "id" : trial_id},
+                report_func=mock_report_func,
+                model_template=find_and_parse_model_template(cls_template_path),
+                data_roots=mocker.MagicMock(),
+                task_type=TaskType.CLASSIFICATION,
+                hpo_workdir=hpo_workdir,
+                initial_weight_name="fake",
+                metric="fake"
+            )
+            trainer.run()
+
+            # check
+            mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report 
+            assert hpo_workdir.exists()  # make a directory to copy weight
+            for i in range(1, 5):  # check model weights are copied
+                assert (hpo_workdir / "weight" / trial_id / weight_format.format(i)).exists()
+
+        mock_task.train.assert_called()  # check task.train() is called
+
+
+class TestHpoCallback:
+    def test_init(self, mocker):
+        HpoCallback(mocker.MagicMock(), "fake", 3, mocker.MagicMock())
+
+    @pytest.mark.parametrize("max_epoch", [-3, 0])
+    def test_init_wrong_max_epoch(self, mocker, max_epoch):
+        with pytest.raises(ValueError):
+            HpoCallback(mocker.MagicMock(), "fake", max_epoch, mocker.MagicMock())
+
+    def test_call(self, mocker):
+        mock_report_func = mocker.MagicMock()
+
+        hpo_call_back = HpoCallback(report_func=mock_report_func, metric="fake", max_epoch=50, task=mocker.MagicMock())
+        hpo_call_back(progress=20, score=100)
+
+        mock_report_func.assert_called_once_with(progress=10, score=100)
+
+    def test_call_and_get_stop_flag(self, mocker):
+        mock_report_func = mocker.MagicMock()
+        mock_report_func.return_value = TrialStatus.STOP
+        mock_task = mocker.MagicMock()
+
+        hpo_call_back = HpoCallback(report_func=mock_report_func, metric="fake", max_epoch=50, task=mock_task)
+        hpo_call_back(progress=20, score=100)
+
+        mock_task.cancel_training.assert_called_once_with()
+
+    def test_not_copy_report_func(self, mocker):
+        mock_report_func = mocker.MagicMock()
+
+        hpo_call_back = HpoCallback(report_func=mock_report_func, metric="fake", max_epoch=50, task=mocker.MagicMock())
+        new_hpo_call_back = deepcopy(hpo_call_back)
+        new_hpo_call_back(progress=20, score=100)
+
+        mock_report_func.assert_called_once()
+
+class TestHpoDataset:
     pass
 
 def test_check_hpopt_available(mocker):
