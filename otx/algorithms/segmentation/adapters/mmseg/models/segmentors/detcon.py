@@ -18,14 +18,16 @@ from mmcv.runner import load_checkpoint
 from mmseg.models.builder import (  # pylint: disable=no-name-in-module
     SEGMENTORS,
     build_backbone,
+    build_head,
     build_loss,
     build_neck,
-    build_head,
 )
-from mmseg.models import EncoderDecoder
 from mmseg.ops import resize
 from torch import nn
 
+from otx.mpa.modules.models.segmentors.class_incr_encoder_decoder import (
+    ClassIncrEncoderDecoder,
+)
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -459,7 +461,7 @@ class DetConB(nn.Module):
 
 
 @SEGMENTORS.register_module()
-class SupConDetConB(EncoderDecoder):
+class SupConDetConB(ClassIncrEncoderDecoder):
     """Apply DetConB as a contrastive part of `Supervised Contrastive Learning` (https://arxiv.org/abs/2004.11362)
 
     SupCon with DetConB uses ground truth masks instead of pseudo masks to organize features among the same classes.
@@ -492,6 +494,7 @@ class SupConDetConB(EncoderDecoder):
             decode_head=decode_head,
             train_cfg=train_cfg,
             test_cfg=test_cfg,
+            **kwargs
         )
 
         self.detconb = DetConB(
@@ -551,8 +554,7 @@ class SupConDetConB(EncoderDecoder):
             losses.update(dict(loss_detcon=loss_detcon["loss"]))
 
         # decode head
-        loss_decode, _ = self._decode_head_forward_train(
-            embd, img_metas, gt_semantic_seg=mask, pixel_weights=pixel_weights)
+        loss_decode, _ = self._decode_head_forward_train(embd, img_metas, gt_semantic_seg=mask)
         losses.update(loss_decode)
 
         return losses
