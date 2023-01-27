@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v0.5.0\]
+
+### Added
+
+- Model Preparation Algorithm (MPA)
+  - Add tiling in rotated detection (<https://github.com/openvinotoolkit/training_extensions/pull/1420>)
+  - Add Cythonize AugMixAugment (<https://github.com/openvinotoolkit/training_extensions/pull/1478/>)
+- Integrate ov-telemetr (<https://github.com/openvinotoolkit/training_extensions/pull/1568>)
+
+### Changed
+
+- Update OpenVINO to 2022.3 release (<https://github.com/openvinotoolkit/training_extensions/pull/1393>)
+
+### Fixed
+
+- h-label head output fix (<https://github.com/openvinotoolkit/training_extensions/pull/1458>)
+- Fixing deprecated np.bool issue from numpy==1.24.0 (<https://github.com/openvinotoolkit/training_extensions/pull/1455>)
+- Fixing tiling OpenVINO backward compatibility (<https://github.com/openvinotoolkit/training_extensions/pull/1516>)
+- Fixing indexing in hierarchical classification inference (<https://github.com/openvinotoolkit/training_extensions/pull/1551>)
+- Some minor issues
+
 ## \[v0.4.0\]
 
 ### Added
