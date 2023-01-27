@@ -13,7 +13,6 @@
 # and limitations under the License.
 
 import asyncio
-import glob
 import json
 import os
 import shutil
@@ -734,12 +733,7 @@ def otx_build_backbone_testing(root, backbone_args):
 
 def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
     workspace_root = os.path.join(root, "otx-workspace")
-    command_line = [
-        "otx",
-        "build",
-        "--workspace-root",
-        workspace_root
-    ]
+    command_line = ["otx", "build", "--workspace-root", workspace_root]
 
     for option, val in args.items():
         if option in ["--train-data-roots", "--val-data-roots"]:
