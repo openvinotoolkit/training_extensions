@@ -211,6 +211,13 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
                 "nncf_config": nncf_config,
             }
 
+            # AccuracyAwareRunner actively evaluates model
+            # unlike other runners counting on periodically evaluated score by 'EvalHook'.
+            # To configure 'interval' to 'max_epoch' makes sure 'EvalHook' not to evaluate
+            # during training.
+            max_epoch = nncf_config.accuracy_aware_training.params.maximal_total_epochs
+            self._recipe_cfg.evaluation.interval = max_epoch
+
     @staticmethod
     def model_builder(
         config,
