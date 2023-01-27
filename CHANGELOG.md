@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Model Preparation Algorithm (MPA)
   - Add tiling in rotated detection (<https://github.com/openvinotoolkit/training_extensions/pull/1420>)
   - Add Cythonize AugMixAugment (<https://github.com/openvinotoolkit/training_extensions/pull/1478/>)
-- Integrate ov-telemetr (<https://github.com/openvinotoolkit/training_extensions/pull/1568>)
+- Integrate ov-telemetry (<https://github.com/openvinotoolkit/training_extensions/pull/1568>)
 
 ### Changed
 
