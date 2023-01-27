@@ -3,8 +3,9 @@
 #
 
 import numpy as np
-from mmcv.runner import wrap_fp16_model
 from mmcv import ConfigDict
+from mmcv.runner import wrap_fp16_model
+
 from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
