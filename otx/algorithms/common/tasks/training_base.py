@@ -110,7 +110,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._data_cfg = None
         self._mode = None
         self._time_monitor = None  # type: Optional[TimeMonitorCallback]
-        self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
+        self._learning_curves = None
         self._is_training = False
         self._should_stop = False
         self.cancel_interface = None
