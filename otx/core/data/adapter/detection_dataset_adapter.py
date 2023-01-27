@@ -36,7 +36,10 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     image = Image(file_path=datumaro_item.media.path)
                     shapes = []
                     for ann in datumaro_item.annotations:
-                        if ann.type == AnnotationType.bbox:
+                        if self.task_type is TaskType.INSTANCE_SEGMENTATION and ann.type == AnnotationType.polygon:
+                            shapes.append(self._get_polygon_entity(ann, image.width, image.height))
+                            used_labels.append(ann.label)
+                        if self.task_type is TaskType.DETECTION and ann.type == AnnotationType.bbox:
                             shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
                             used_labels.append(ann.label)
                         elif ann.type == AnnotationType.polygon:
@@ -46,6 +49,5 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
 
-        # Remove unused labels from label entities
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)
