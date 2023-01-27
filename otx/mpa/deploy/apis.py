@@ -196,9 +196,6 @@ if is_mmdeploy_enabled():
                 {"shape": (128, 128, 3), "file_path": None},
             )
 
-            # patch test_pipeline in case of missing LoadImageFromOTXDataset
-            if cfg.data.test.pipeline[0].type != "LoadImageFromOTXDataset":
-                cfg.data.test.pipeline.insert(0, mmcv.ConfigDict(dict(type="LoadImageFromOTXDataset")))
 
             if input_data_cfg.get("file_path"):
                 import cv2
