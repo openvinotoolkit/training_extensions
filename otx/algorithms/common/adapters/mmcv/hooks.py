@@ -668,25 +668,30 @@ class ForceTrainModeHook(Hook):
         runner.model.train()
 
 
-class SwitchPipelineHook(Hook):
-    """Switch pipeline with every specific interval.
+@HOOKS.register_module()
+class TwoCropTransformHook(Hook):
+    """TwoCropTransformHook with every specific interval.
 
-    This hook enables to apply the second pipeline every specific interval.
-    This hook is related to `TwoCropTransform`.
+    This hook decides whether using single pipeline or two pipelines
+    implemented in `TwoCropTransform` for the current iteration.
 
     :param interval: If `interval` == 1, both pipelines is used.
         If `interval` > 1, the first pipeline is used and then
         both pipelines are used every `interval`, defaults to 1.
+    :param by_epoch: (TODO) Use `interval` by epoch, defaults to False.
     """
 
     @check_input_parameters_type()
-    def __init__(self, interval: int = 1):
-        assert interval > 0
+    def __init__(self, interval: int = 1, by_epoch: bool = False):
+        assert interval > 0, f"interval (={interval}) must be positive value."
+        if by_epoch:
+            raise NotImplementedError(f"by_epoch is not implemented.")
+
         self.interval = interval
         self.cnt = 0
 
     @check_input_parameters_type()
-    def get_dataset(self, runner: BaseRunner):
+    def _get_dataset(self, runner: BaseRunner):
         if hasattr(runner.data_loader.dataset, 'dataset'):
             # for RepeatDataset
             dataset = runner.data_loader.dataset.dataset
@@ -696,28 +701,29 @@ class SwitchPipelineHook(Hook):
         return dataset
 
     @check_input_parameters_type()
-    def decide_pipeline(self, transforms):
+    def _find_two_crop_transform(self, transforms: List[Any]):
         for transform in transforms:
             if transform.__class__.__name__ == "TwoCropTransform":
-                if self.cnt == self.interval-1:
-                    # start using both pipelines
-                    transform.is_both = True
-                else:
-                    transform.is_both = False
+                return transform
 
     @check_input_parameters_type()
     def before_train_epoch(self, runner: BaseRunner):
+        # Always keep `TwoCropTransform` enabled.
         if self.interval == 1:
-            # Always keep `TwoCropTransform` enabled.
             return
             
-        dataset = self.get_dataset(runner)
-        self.decide_pipeline(dataset.pipeline.transforms)
+        dataset = self._get_dataset(runner)
+        two_crop_transform = self._find_two_crop_transform(dataset.pipeline.transforms)
+        if self.cnt == self.interval-1:
+            # start using both pipelines
+            two_crop_transform.is_both = True
+        else:
+            two_crop_transform.is_both = False
 
     @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
+        # Always keep `TwoCropTransform` enabled.
         if self.interval == 1:
-            # Always keep `TwoCropTransform` enabled.
             return
             
         if self.cnt < self.interval-1:
@@ -726,14 +732,13 @@ class SwitchPipelineHook(Hook):
             self.cnt += 1
 
         if self.cnt == self.interval-1:
-            dataset = self.get_dataset(runner)
-            for transform in dataset.pipeline.transforms:
-                if transform.__class__.__name__ == "TwoCropTransform":
-                    if not transform.is_both:
-                        # If `self.cnt` == `self.interval`-1, there are two cases,
-                        # 1. `self.cnt` was updated in L704, so `is_both` must be on for the next iter.
-                        # 2. if the current iter was already conducted, `is_both` must be off.
-                        transform.is_both = True
-                    else:
-                        transform.is_both = False
-                        self.cnt = 0
+            dataset = self._get_dataset(runner)
+            two_crop_transform = self._find_two_crop_transform(dataset.pipeline.transforms)
+            if not two_crop_transform.is_both:
+                # If `self.cnt` == `self.interval`-1, there are two cases,
+                # 1. `self.cnt` was updated in L709, so `is_both` must be on for the next iter.
+                # 2. if the current iter was already conducted, `is_both` must be off.
+                two_crop_transform.is_both = True
+            else:
+                two_crop_transform.is_both = False
+                self.cnt = 0
