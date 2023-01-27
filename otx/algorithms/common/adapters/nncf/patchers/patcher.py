@@ -14,6 +14,7 @@ from typing import Callable
 
 class Patcher:
     """Simple monkey patch helper."""
+
     # TODO: move this class to OTX level
 
     def __init__(self):
