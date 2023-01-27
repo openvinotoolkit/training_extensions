@@ -88,7 +88,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
         # Hyperparameters.
-        self.project_path: str = output_path if output_path is not None else tempfile.mkdtemp(prefix="otx-anomalib")
+        self._work_dir_is_temp = False
+        if output_path is None:
+            output_path = tempfile.mkdtemp(prefix="otx-anomalib")
+            self._work_dir_is_temp = True
+        self.project_path: str = output_path
         self.config = self.get_config()
 
         # Set default model attributes.
@@ -337,8 +341,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def unload(self) -> None:
         """Unload the task."""
-        if os.path.exists(self.config.project.path):
-            shutil.rmtree(self.config.project.path, ignore_errors=False)
+        self.cleanup()
 
         if self._is_docker():
             logger.warning("Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
@@ -351,3 +354,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "Done unloading. Torch is still occupying %f bytes of GPU memory",
                 torch.cuda.memory_allocated(),
             )
+
+    def cleanup(self) -> None:
+        """Clean up work directory."""
+        if self._work_dir_is_temp and os.path.exists(self.config.project.path):
+            shutil.rmtree(self.config.project.path, ignore_errors=False)
