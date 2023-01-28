@@ -136,7 +136,6 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):  # pylint: disable=too-many-in
         """validation_fn.
 
         Return the target metric value on the validation dataset.
-        Evaluation is assumed to be already done at this point since EvalHook was called.
         This method is used in NNCF-based accuracy-aware training.
         """
 
