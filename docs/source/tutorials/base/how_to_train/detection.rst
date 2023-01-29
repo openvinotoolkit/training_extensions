@@ -252,7 +252,7 @@ We will get this validation output:
 
 4. ``Optional`` Additionally, we can tune evaluation parameters such as confidence threshold via the command line. Read more about template-specific parameters for validation in quick start [#TODO link].
 
-For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it) can suppress its number by increasing the confidence threshold as it is shown below.
+For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.
 
 Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
 
@@ -274,7 +274,8 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. 
-It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime. Also, the resulting IR model is required to run POT optimization in the section below. IR model contains of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
+Also, the resulting IR model is required to run POT optimization in the section below. IR model contains 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. That's how we can export the trained model ``outputs/weights.pth`` from the previous section and save the exported model to the ``outputs/openvino/`` folder.
 
