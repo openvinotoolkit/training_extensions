@@ -14,14 +14,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import tempfile
 from collections import OrderedDict
 from copy import copy
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import numpy as np
+from mmcv import Config
 from mmcv.utils import print_log
 from mmdet.core import PolygonMasks, eval_map, eval_recalls
-from mmdet.datasets.builder import DATASETS
+from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 
@@ -35,6 +37,8 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.api.utils.shape_factory import ShapeFactory
+
+from .tiling import Tile
 
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
@@ -353,3 +357,108 @@ class MPADetDataset(CustomDataset):
                 eval_results["mae"] = eval_results["MAE best score"]
                 eval_results["mae%"] = eval_results["Relative MAE best score"]
         return eval_results
+
+
+# pylint: disable=too-many-arguments
+@DATASETS.register_module()
+class ImageTilingDataset:
+    """A wrapper of tiling dataset.
+
+    Suitable for training small object dataset. This wrapper composed of `Tile`
+    that crops an image into tiles and merges tile-level predictions to
+    image-level prediction for evaluation.
+
+    Args:
+        dataset (Config): The dataset to be tiled.
+        pipeline (List): Sequence of transform object or
+            config dict to be composed.
+        tile_size (int): the length of side of each tile
+        min_area_ratio (float, optional): The minimum overlap area ratio
+            between a tiled image and its annotations. Ground-truth box is
+            discarded if the overlap area is less than this value.
+            Defaults to 0.8.
+        overlap_ratio (float, optional): ratio of each tile to overlap with
+            each of the tiles in its 4-neighborhood. Defaults to 0.2.
+        iou_threshold (float, optional): IoU threshold to be used to suppress
+            boxes in tiles' overlap areas. Defaults to 0.45.
+        max_per_img (int, optional): if there are more than max_per_img bboxes
+            after NMS, only top max_per_img will be kept. Defaults to 200.
+    """
+
+    def __init__(
+        self,
+        dataset: Config,
+        pipeline: List[dict],
+        tile_size: int,
+        min_area_ratio=0.8,
+        overlap_ratio=0.2,
+        iou_threshold=0.45,
+        max_per_img=200,
+        filter_empty_gt=True,
+        test_mode=False,
+    ):
+        self.dataset = build_dataset(dataset)
+        self.CLASSES = self.dataset.CLASSES
+        self.tmp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+
+        self.tile_dataset = Tile(
+            self.dataset,
+            pipeline,
+            tmp_dir=self.tmp_dir,
+            tile_size=tile_size,
+            overlap=overlap_ratio,
+            min_area_ratio=min_area_ratio,
+            iou_threshold=iou_threshold,
+            max_per_img=max_per_img,
+            filter_empty_gt=False if test_mode else filter_empty_gt,
+        )
+        self.flag = np.zeros(len(self), dtype=np.uint8)
+        self.pipeline = Compose(pipeline)
+        self.test_mode = test_mode
+        self.num_samples = len(self.dataset)  # number of original samples
+        self.merged_results: Union[List[Tuple[np.ndarray, list]], List[np.ndarray]] = []
+
+    def __len__(self) -> int:
+        """Get the length of the dataset."""
+        return len(self.tile_dataset)
+
+    def __getitem__(self, idx: int) -> Dict:
+        """Get training/test tile.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Training/test data (with annotation if `test_mode` is set
+            True).
+        """
+        return self.pipeline(self.tile_dataset[idx])
+
+    def evaluate(self, results, **kwargs) -> Dict[str, float]:
+        """Evaluation on Tile dataset.
+
+        Args:
+            results (list[list | tuple]): Testing results of the dataset.
+
+        Returns:
+            dict[str, float]: evaluation metric.
+        """
+        self.merged_results = self.tile_dataset.merge(results)
+        return self.dataset.evaluate(self.merged_results, **kwargs)
+
+    def merge(self, results) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
+        """Merge tile-level results to image-level results.
+
+        Args:
+            results: tile-level results.
+
+        Returns:
+            merged_results (list[list | tuple]): Merged results of the dataset.
+        """
+        self.merged_results = self.tile_dataset.merge(results)
+        return self.merged_results
+
+    def __del__(self):
+        """Delete the temporary directory when the object is deleted."""
+        if getattr(self, "tmp_dir", False):
+            self.tmp_dir.cleanup()

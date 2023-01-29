@@ -30,6 +30,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         self.label_entities = label_information["label_entities"]
 
         dataset_items: List[DatasetItemEntity] = []
+        used_labels: List[int] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -41,9 +42,12 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
                                 if d_polygon.label != 0:
+                                    d_polygon.label -= 1
                                     shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
+                                    used_labels.append(d_polygon.label)
 
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
 
+        self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)

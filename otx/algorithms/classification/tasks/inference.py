@@ -31,6 +31,7 @@ from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
+from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.model import (  # ModelStatus
     ModelEntity,
     ModelFormat,
@@ -96,11 +97,16 @@ class ClassificationInferenceTask(
         ) == len(
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
+        if self._multilabel:
+            logger.info("Classiification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            logger.info("Classiification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
+        else:
+            logger.info("Classiification mode: multiclass")
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
@@ -185,10 +191,8 @@ class ClassificationInferenceTask(
 
     def unload(self):
         """Unload function of OTX Classification Task."""
-
         logger.info("called unload()")
-        if self._work_dir_is_temp:
-            self._delete_scratch_space()
+        self.cleanup()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -227,9 +231,9 @@ class ClassificationInferenceTask(
         """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
 
         dataset_size = len(dataset)
+        pos_thr = 0.5
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             item_labels = []
-            pos_thr = 0.5
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
                 logger.info("Nan in prediction_item.")
@@ -254,11 +258,7 @@ class ClassificationInferenceTask(
                     item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
 
                 if self._hierarchical_info["num_multilabel_classes"]:
-                    logits_begin, logits_end = (
-                        self._hierarchical_info["num_single_label_classes"],
-                        -1,
-                    )
-                    head_logits = prediction_item[logits_begin:logits_end]
+                    head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"] :]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
                             label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
@@ -279,6 +279,16 @@ class ClassificationInferenceTask(
                 item_labels.append(cls_label)
 
             dataset_item.append_labels(item_labels)
+
+            probs = TensorEntity(name="probabilities", numpy=prediction_item.reshape(-1))
+            dataset_item.append_metadata_item(probs, model=self._task_environment.model)
+
+            top_idxs = np.argpartition(prediction_item, -2)[-2:]
+            top_probs = prediction_item[top_idxs]
+            active_score_media = FloatMetadata(
+                name="active_score", value=top_probs[1] - top_probs[0], float_type=FloatType.ACTIVE_SCORE
+            )
+            dataset_item.append_metadata_item(active_score_media, model=self._task_environment.model)
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
