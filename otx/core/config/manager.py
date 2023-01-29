@@ -43,6 +43,7 @@ class ConfigManager:
             # "INSTANCE_SEGMENTATION": ["coco", "voc"],
         }
         self.data_format: str = ""
+        self.task_type: str = ""
         self.splitted_dataset: Dict[str, IDataset] = {}
 
     def auto_task_detection(self, train_data_roots: str) -> str:
@@ -71,6 +72,7 @@ class ConfigManager:
 
         for task_key, data_value in self.task_data_dict.items():
             if data_format in data_value:
+                self.task_type = task_key
                 return task_key
         raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
@@ -92,7 +94,6 @@ class ConfigManager:
         val_data_roots: Optional[str] = None,
     ):
         """Save the splitted dataset and data.yaml to the workspace."""
-        default_data_folder_name = "splitted_dataset"
 
         data_config = self._create_empty_data_cfg()
         if train_data_roots:
@@ -100,24 +101,37 @@ class ConfigManager:
         if val_data_roots:
             data_config["data"]["val"]["data-roots"] = val_data_roots
 
-        # Consider splitted dataset, if exist
+        default_data_folder_name = "splitted_dataset"
+
+        self._save_data(workspace_dir, default_data_folder_name, data_config)
+
+        self._export_data_cfg(data_config, os.path.join(workspace_dir, "data.yaml"))
+
+    def _save_data(
+        self,
+        workspace_dir: str,
+        default_data_folder_name: str,
+        data_config: Dict[str, Dict[str, Dict[str, Any]]],
+    ):
+        """Save the data for the classification task.
+
+        Args:
+            workspace_dir (str): path of workspace
+            default_data_folder_name (str): the name of splitted dataset folder
+            data_config (dict): dictionary that has information about data path
+        """
         for phase, dataset in self.splitted_dataset.items():
             dst_dir_path = os.path.join(workspace_dir, default_data_folder_name, phase)
-            # Classification
             data_config["data"][phase]["data-roots"] = os.path.abspath(dst_dir_path)
-
             # Convert Datumaro class: DatasetFilter(IDataset) --> Dataset
             datum_dataset = Dataset.from_extractors(dataset)
             # Write the data
             # TODO: consider the way that reduces disk stroage
             # Currently, saving all images to the workspace.
             # It might needs quite large disk storage.
-            print(f"[*] Saving {phase} dataset to: {dst_dir_path}")
             DatasetManager.export_dataset(
                 dataset=datum_dataset, output_dir=dst_dir_path, data_format=self.data_format, save_media=True
             )
-
-        self._export_data_cfg(data_config, os.path.join(workspace_dir, "data.yaml"))
 
     def _create_empty_data_cfg(
         self,
