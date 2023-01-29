@@ -18,6 +18,8 @@
 
 import argparse
 import os
+from pathlib import Path
+from typing import Any, Dict
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -42,32 +44,29 @@ from otx.cli.utils.parser import (
 from otx.core.data.adapter import get_dataset_adapter
 
 
-def parse_args():
+def get_parser():
     """Parses command line arguments.
 
     It dynamically generates help for hyper-parameters which are specific to particular model template.
     """
-
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    if os.path.exists("./template.yaml"):
-        template_path = "./template.yaml"
-    else:
-        pre_parser.add_argument("template")
-        parsed, _ = pre_parser.parse_known_args()
-        template_path = parsed.template
-    # Load template.yaml file.
-    template = find_and_parse_model_template(template_path)
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
-
     parser = argparse.ArgumentParser()
-    if not os.path.exists("./template.yaml"):
-        parser.add_argument("template")
-    parser.add_argument("--data", required=False, default="./data.yaml")
+
+    parser.add_argument(
+        "--template",
+        required=False,
+        default="./template.yaml",
+        help="Template file."
+    )
+    parser.add_argument(
+        "--data",
+        required=False,
+        default="./data.yaml",
+        help="Template file."
+    )
+    
     parsed, _ = parser.parse_known_args()
     required = not os.path.exists(parsed.data)
-
+    
     parser.add_argument(
         "--train-data-roots",
         required=required,
@@ -144,15 +143,22 @@ def parse_args():
         help="Total number of workers in a worker group.",
     )
 
-    add_hyper_parameters_sub_parser(parser, hyper_parameters)
-
-    return parser.parse_args(), template, hyper_parameters
+    return parser
 
 
 def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
     # Dynamically create an argument parser based on override parameters.
-    args, template, hyper_parameters = parse_args()
+    parser = get_parser()
+    
+    # Load template.yaml file.
+    template = find_and_parse_model_template(template_path)
+    
+    # Get hyper parameters schema.
+    hyper_parameters = template.hyper_parameters.data
+    assert hyper_parameters
+
+    add_hyper_parameters_sub_parser(parser, hyper_parameters)
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
     # Override overridden parameters by user's values.
@@ -179,7 +185,7 @@ def main():  # pylint: disable=too-many-branches
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
             "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
-
+    
     # Datumaro
     dataset_adapter = get_dataset_adapter(
         template.task_type,
@@ -267,3 +273,70 @@ def main():  # pylint: disable=too-many-branches
 
 if __name__ == "__main__":
     main()
+
+
+def pre_build(parser):
+    build_args: Dict[str, str] = {
+        "task_type": "",
+        "model_type": "",
+        "train_type": "",
+        "workspace_path": "",
+        "otx_root": "",
+        "train_data_roots": "",
+        "val_data_roots": "",
+    }
+    
+    # Parsing the arugments 
+    parsed, _ = parser.parse_known_args()
+    
+    # Configuration manager 
+    config_manager = ConfigManager()
+    
+    # Check the data argument and data.yaml
+    data_config = configure_dataset(parsed)
+    build_args["train_data_roots"] = data_config["data"]["train"]["data-roots"]
+    build_args["val_data_roots"] = data_config["data"]["val"]["data-roots"]
+    if build_args["train_data_roots"]:
+        # Check whether template is given or not to decide the task_type.
+        task_type: str = ""
+        if not Path(parsed.template).exists():
+            task_type = config_manager.auto_task_detection(build_args["train_data_roots"])
+        else:
+            template = find_and_parse_model_template(parsed.template)
+            task_type = template.task_type.name
+            build_args["model_type"] = template.name
+        build_args["task_type"] = task_type
+         
+        # Check whether val_data_roots is given or not.
+        if build_args["val_data_roots"] is None:
+            config_manager.auto_split_data(build_args["train_data_roots"], task_type)
+    
+    assert (build_args["train_data_roots"]) or (build_args["train_data_roots"] and parsed.template), \
+        "Should input the (train_data_roots) or (train_data_roots, template)"
+     
+    if parsed.save_model_to is None:
+        parsed.save_model_to = "./models"
+    
+    build_args["workspace_path"] = set_workspace(
+        task=build_args["task_type"], 
+        model=build_args["model_type"],
+        root=parsed.save_model_to,
+    )
+    build_args["otx_root"] = get_otx_root_path()
+
+    builder = Builder()
+    if build_args["task_type"] and build_args["task_type"] in SUPPORTED_TASKS:
+        builder.build_task_config(
+            task_type=build_args["task_type"],
+            model_type=build_args["model_type"],
+            train_type=build_args["train_type"].lower(),
+            workspace_path=Path(build_args["workspace_path"]),
+            otx_root=build_args["otx_root"],
+        )
+    
+    config_manager.write_data_with_cfg(
+        workspace_dir=build_args["workspace_path"],
+        train_data_roots=build_args["train_data_roots"],
+        val_data_roots=build_args["val_data_roots"],
+    )
+    return build_args 

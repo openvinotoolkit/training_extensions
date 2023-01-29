@@ -144,6 +144,7 @@ class Builder:
         model_type: str = None,
         train_type: str = "incremental",
         otx_root: str = ".",
+        template: str = "",
     ):
         """Create OTX workspace with Template configs from task type.
 

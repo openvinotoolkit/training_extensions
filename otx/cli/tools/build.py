@@ -29,13 +29,12 @@ SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGM
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 
 
-def set_workspace(task, model):
-    """Set workspace path according to path, task, model arugments."""
-    path = f"./otx-workspace-{task}"
+def set_workspace(task: str, model: str, root: str ="", name: str ="otx-workspace"):
+    """Set workspace path according to arugments."""
+    path = f"{root}/{name}-{task}" if root != "" else f"./{name}-{task}"
     if model:
         path += f"-{model}"
     return path
-
 
 def parse_args():
     """Parses command line arguments."""
@@ -56,6 +55,62 @@ def parse_args():
 
     return parser.parse_args()
 
+def build(
+    builder: Builder,
+    train_data_roots: str = "",
+    val_data_roots: str = "",
+    task: str = "",
+    train_type: str = "",
+    workspace_root: str = "",
+    model: str = "",
+    backbone: str = "",
+    save_backbone_to: str = "",
+    otx_root: str = "",
+    template: str = "",
+):
+    # Auto-configuration
+    config_manager = ConfigManager()
+    if train_data_roots:
+        if task is None:
+            task_type = config_manager.auto_task_detection(train_data_roots)
+            task = task_type
+        if val_data_roots is None:
+            config_manager.auto_split_data(train_data_roots, task)
+
+    # Build with task_type and create user workspace
+    if workspace_root is None:
+        workspace_root = set_workspace(task, model)
+    if task and task in SUPPORTED_TASKS:
+        builder.build_task_config(
+            task_type=task,
+            model_type=model,
+            train_type=train_type.lower(),
+            workspace_path=Path(workspace_root),
+            otx_root=otx_root,
+            template=template
+        )
+
+    # Build Backbone related
+    if backbone:
+        missing_args = []
+        if not backbone.endswith((".yml", ".yaml", ".json")):
+            if save_backbone_to is None:
+                save_backbone_to = (
+                    os.path.join(workspace_root, "backbone.yaml") if workspace_root else "./backbone.yaml"
+                )
+            missing_args = builder.build_backbone_config(backbone, save_backbone_to)
+            backbone = save_backbone_to
+        if model:
+            if missing_args:
+                raise ValueError("The selected backbone has inputs that the user must enter.")
+            builder.merge_backbone(model, backbone)
+
+    config_manager.write_data_with_cfg(
+        workspace_dir=workspace_root,
+        train_data_roots=train_data_roots,
+        val_data_roots=val_data_roots,
+    )
+    
 
 def main():
     """Main function for model or backbone or task building."""
@@ -64,51 +119,20 @@ def main():
     args.task = args.task.upper() if args.task is not None else args.task
 
     builder = Builder()
-
     otx_root = get_otx_root_path()
 
-    # Auto-configuration
-    config_manager = ConfigManager()
-    if args.train_data_roots:
-        if args.task is None:
-            task_type = config_manager.auto_task_detection(args.train_data_roots)
-            args.task = task_type
-        if args.val_data_roots is None:
-            config_manager.auto_split_data(args.train_data_roots, args.task)
-
-    # Build with task_type and create user workspace
-    if args.workspace_root is None:
-        args.workspace_root = set_workspace(args.task, args.model)
-    if args.task and args.task in SUPPORTED_TASKS:
-        builder.build_task_config(
-            task_type=args.task,
-            model_type=args.model,
-            train_type=args.train_type.lower(),
-            workspace_path=Path(args.workspace_root),
-            otx_root=otx_root,
-        )
-
-    # Build Backbone related
-    if args.backbone:
-        missing_args = []
-        if not args.backbone.endswith((".yml", ".yaml", ".json")):
-            if args.save_backbone_to is None:
-                args.save_backbone_to = (
-                    os.path.join(args.workspace_root, "backbone.yaml") if args.workspace_root else "./backbone.yaml"
-                )
-            missing_args = builder.build_backbone_config(args.backbone, args.save_backbone_to)
-            args.backbone = args.save_backbone_to
-        if args.model:
-            if missing_args:
-                raise ValueError("The selected backbone has inputs that the user must enter.")
-            builder.merge_backbone(args.model, args.backbone)
-
-    config_manager.write_data_with_cfg(
-        workspace_dir=args.workspace_root,
+    build(
+        builder=builder,
         train_data_roots=args.train_data_roots,
         val_data_roots=args.val_data_roots,
+        task=args.task,
+        train_type=args.train_type,
+        workspace_root=args.workspace_root,
+        model=args.model,
+        backbone=args.backbone,
+        save_backbone_to=args.save_backbone_to,
+        otx_root=otx_root
     )
-
 
 if __name__ == "__main__":
     main()

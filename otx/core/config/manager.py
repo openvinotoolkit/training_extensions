@@ -85,7 +85,6 @@ class ConfigManager:
             dataset=DatasetManager.get_train_dataset(dataset),
             split_ratio=[("train", 0.8), ("val", 0.2)],
         )
-        print("[*] Auto-split enabled.")
 
     def write_data_with_cfg(
         self,
