@@ -167,8 +167,7 @@ class TaskManager:
             for weight_candidate in src.rglob("*epoch*.pth"):
                 if not (weight_candidate.is_symlink() or (det / weight_candidate.name).exists()):
                     shutil.copy(weight_candidate, det)
-        else:
-            return  # TODO need to implement after anomaly task supports resume
+        # TODO need to implement after anomaly task supports resume
 
     def get_latest_weight(self, workdir: Union[str, Path]) -> Optional[str]:
         """Get latest model weight from all weights.
@@ -193,8 +192,7 @@ class TaskManager:
                     if current_latest_epoch < epoch:
                         current_latest_epoch = epoch
                         latest_weight = str(weight_name)
-        else:
-            return None  # TODO need to implement after anomaly task supports resume
+        # TODO need to implement after anomaly task supports resume
 
         return latest_weight
 
@@ -424,7 +422,7 @@ class HpoRunner:
 
     def _set_hpo_config(self):
         hpo_config_path = Path(self._environment.get_model_template_path()).parent / "hpo_config.yaml"
-        with open(hpo_config_path, "r", encoding="utf-8") as f:
+        with hpo_config_path.open("r") as f:
             hpopt_cfg = yaml.safe_load(f)
 
         return hpopt_cfg
@@ -741,10 +739,6 @@ class Trainer:
         if initial_weight_path.exists():
             return initial_weight_path
         return None
-
-    def _prepare_task(self, environment):
-        task_class = get_impl_class(environment.model_template.entrypoints.base)
-        return task_class(task_environment=environment)
 
     def _add_initial_weight_saving_hook(self, task):
         initial_weight_path = self._get_initial_weight_path()

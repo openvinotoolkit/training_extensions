@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
 from copy import deepcopy
+import pickle
 
 import pytest
 from hpopt.hpo_base import TrialStatus
@@ -100,6 +101,17 @@ class TestTaskManager:
         task_manager = TaskManager(task)
         assert task_manager.get_batch_size_name() == "learning_parameters.train_batch_size"
 
+    def test_get_unknown_task_batch_size_name(self, mocker):
+        mock_func1 = mocker.patch.object(TaskManager, "is_mmcv_framework_task")
+        mock_func1.return_value = False
+        mock_func2 = mocker.patch.object(TaskManager, "is_anomaly_framework_task")
+        mock_func2.return_value = False
+
+        task_manager = TaskManager(mocker.MagicMock())
+
+        with pytest.raises(RuntimeError):
+            task_manager.get_batch_size_name()
+
     @pytest.mark.parametrize("task", MMCV_TASK)
     def test_get_mmcv_epoch_name(self, task: TaskType):
         task_manager = TaskManager(task)
@@ -109,6 +121,17 @@ class TestTaskManager:
     def test_get_anomaly_epoch_name(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.get_epoch_name() == "max_epochs"
+
+    def test_get_unknown_task_epoch_name(self, mocker):
+        mock_func1 = mocker.patch.object(TaskManager, "is_mmcv_framework_task")
+        mock_func1.return_value = False
+        mock_func2 = mocker.patch.object(TaskManager, "is_anomaly_framework_task")
+        mock_func2.return_value = False
+
+        task_manager = TaskManager(mocker.MagicMock())
+
+        with pytest.raises(RuntimeError):
+            task_manager.get_epoch_name()
 
     @pytest.mark.parametrize("task", MMCV_TASK)
     def test_copy_weight(self, task: TaskType):
@@ -187,6 +210,13 @@ def mock_environment():
     MockTaskEnv = MagicMock(spec=TaskEnvironment)
     return MockTaskEnv()
 
+@pytest.fixture(scope="module")
+def action_template_path() -> str:
+    return str(get_template_path("action"))
+
+@pytest.fixture(scope="module")
+def action_task_env(action_template_path) -> TaskEnvironment:
+    return make_task_env(action_template_path)
 
 class TestTaskEnvironmentManager:
     @pytest.fixture(autouse=True)
@@ -337,7 +367,7 @@ class TestTaskEnvironmentManager:
             mock_class = mocker.MagicMock()
             mock_func.return_value = mock_class
             task_manager = TaskEnvironmentManager(task_env)
-            task_manager.load_model_weight("fake", mocker.MagicMock())
+            task_manager.resume_model_weight("fake", mocker.MagicMock())
             assert task_env.model == mock_class
             assert mock_class.model_adapters["resume"]
 
@@ -366,13 +396,24 @@ class TestHpoRunner:
             HpoRunner(cls_task_env, train_dataset_size, val_dataset_size, "fake_path", 4)
 
     @pytest.mark.parametrize("hpo_time_ratio", [-3, 0])
-    def test_init_wrong_dataset_size(self, cls_task_env, hpo_time_ratio):
+    def test_init_wrong_hpo_time_ratio(self, cls_task_env, hpo_time_ratio):
         with pytest.raises(ValueError):
             HpoRunner(cls_task_env, 100, 10, "fake_path", hpo_time_ratio)
 
     def test_run_hpo(self, mocker, cls_task_env):
         cls_task_env.model = None
         hpo_runner = HpoRunner(cls_task_env, 100, 10, "fake_path")
+        mock_run_hpo_loop = mocker.patch("otx.cli.utils.hpo.run_hpo_loop")
+        mock_hb = mocker.patch("otx.cli.utils.hpo.HyperBand")
+
+        hpo_runner.run_hpo(mocker.MagicMock(), {"fake", "fake"})
+
+        mock_run_hpo_loop.assert_called()  # call hpo_loop to run HPO
+        mock_hb.assert_called()  # make hyperband
+
+    def test_run_hpo_w_dataset_smaller_than_batch(self, mocker, cls_task_env):
+        cls_task_env.model = None
+        hpo_runner = HpoRunner(cls_task_env, 2, 10, "fake_path")
         mock_run_hpo_loop = mocker.patch("otx.cli.utils.hpo.run_hpo_loop")
         mock_hb = mocker.patch("otx.cli.utils.hpo.HyperBand")
 
@@ -559,20 +600,10 @@ def test_run_hpo_hpopt_unavailable(mocker):
     run_hpo(mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
     mock_hpo_runner_instance.run_hpo.assert_not_called()
 
-@pytest.fixture(scope="module")
-def action_template_path() -> str:
-    return str(get_template_path("action"))
-
-@pytest.fixture(scope="module")
-def action_task_env(action_template_path) -> TaskEnvironment:
-    return make_task_env(action_template_path)
-
 def test_run_hpo_not_supported_task(mocker, action_task_env):
     mock_hpo_runner_instance = mocker.MagicMock()
     mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
     mock_hpo_runner_class.return_value = mock_hpo_runner_instance
-
-    mocker.patch("otx.cli.utils.hpo.hpopt", None)
 
     run_hpo(mocker.MagicMock(), action_task_env, mocker.MagicMock(), mocker.MagicMock())
     mock_hpo_runner_instance.run_hpo.assert_not_called()
