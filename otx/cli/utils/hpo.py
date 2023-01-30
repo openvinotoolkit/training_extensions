@@ -686,7 +686,7 @@ class Trainer:
         else:
             initial_weight = self._load_fixed_initial_weight()
             if initial_weight is not None:
-                environment.load_model_weight(initial_weight, dataset)
+                environment.load_model_weight(str(initial_weight), dataset)
             else:
                 need_to_save_initial_weight = True
 
