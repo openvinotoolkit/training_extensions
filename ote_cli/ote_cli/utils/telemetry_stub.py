@@ -1,31 +1,35 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+"""
+A stub classs of the OpenVINO telemetry which would be used when the telemetry
+module is not installed.
+"""
 
 
-class Telemetry(object):
+class Telemetry:
     """
     A stub for the Telemetry class, which is used when the Telemetry class
     is not available.
     """
 
     def __init__(self, *arg, **kwargs):
-        pass
+        """__init__"""
 
     def send_event(self, *arg, **kwargs):
-        pass
+        """send_event"""
 
     def send_error(self, *arg, **kwargs):
-        pass
+        """send_error"""
 
     def start_session(self, *arg, **kwargs):
-        pass
+        """start_session"""
 
     def end_session(self, *arg, **kwargs):
-        pass
+        """end_session"""
 
     def force_shutdown(self, *arg, **kwargs):
-        pass
+        """force_shutdown"""
 
     def send_stack_trace(self, *arg, **kwargs):
-        pass
+        """send_stack_trace"""
