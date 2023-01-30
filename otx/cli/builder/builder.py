@@ -273,7 +273,6 @@ class Builder:
 
         if "backbone" in backbone_config:
             backbone_config = backbone_config["backbone"]
-        backbone_pretrained = backbone_config.pop("pretrained", None)
 
         # Get Backbone configuration
         backend, backbone_class = Registry.split_scope_key(backbone_config["type"])
@@ -291,7 +290,6 @@ class Builder:
                 # Check out_indices vs num_stage
                 backbone_config["out_indices"] = model_in_indices
         backbone_config.pop("use_out_indices", None)
-        print(f"\tBackbone config: {backbone_config}")
 
         # Build Backbone
         backbone = build_from_cfg(backbone_config, otx_registry, None)
@@ -306,14 +304,12 @@ class Builder:
         update_channels(model_config, out_channels)
 
         # Update Model Configuration
+        if backend in ("torchvision"):
+            backbone_config["init_cfg"] = {"Pretrained": True}
+        print(f"\tBackbone config: {backbone_config}")
         model_config.model.backbone = backbone_config
         model_config.load_from = None
-        if backbone_pretrained:
-            model_config.model.pretrained = backbone_pretrained
-        elif backend in ("torchvision"):
-            model_config.model.pretrained = True
-        else:
-            model_config.model.pretrained = None
+
         if custom_imports:
             model_config["custom_imports"] = dict(imports=custom_imports, allow_failed_imports=False)
 
