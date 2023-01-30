@@ -18,7 +18,7 @@ from otx.api.entities.model_template import TaskType, task_type_to_label_domain
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.test_helpers import generate_random_annotated_image
+from tests.test_helpers import generate_random_annotated_image
 
 
 def generate_fake_det_dataset(number_of_images=1, task_type=TaskType.DETECTION):
@@ -106,7 +106,6 @@ class TestOTXDetDataset:
     def test_prepare_train_img(self) -> None:
         """Create Classification custom workspace."""
         dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
-        breakpoint()
         img = dataset.prepare_train_img(0)
         assert type(img) == dict
 
