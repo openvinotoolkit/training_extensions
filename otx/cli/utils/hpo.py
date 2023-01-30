@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import glob
 import json
 import logging
 import re
@@ -165,7 +164,7 @@ class TaskManager:
         src = Path(src)
         det = Path(det)
         if self.is_mmcv_framework_task():
-            for weight_candidate in src.glob("**/*epoch*.pth"):
+            for weight_candidate in src.rglob("*epoch*.pth"):
                 if not (weight_candidate.is_symlink() or (det / weight_candidate.name).exists()):
                     shutil.copy(weight_candidate, det)
         else:
@@ -187,7 +186,7 @@ class TaskManager:
             current_latest_epoch = -1
             latest_weight = None
 
-            for weight_name in workdir.glob("**/epoch_*.pth"):
+            for weight_name in workdir.rglob("epoch_*.pth"):
                 ret = pattern.search(str(weight_name))
                 if ret is not None:
                     epoch = int(ret.group(1))
@@ -591,22 +590,23 @@ def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roo
         env_manager.load_model_weight(best_hpo_weight, dataset)
 
 
-def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> Optional[str]:
+def get_best_hpo_weight(hpo_dir: Union[str, Path], trial_id: Union[str, Path]) -> Optional[str]:
     """Get best model weight path of the HPO trial.
 
     Args:
-        hpo_dir (str): HPO work directory path
-        trial_id (str): trial id
+        hpo_dir (Union[str, Path]): HPO work directory path
+        trial_id (Union[str, Path]): trial id
 
     Returns:
         Optional[str]: best HPO model weight
     """
-    trial_output_files = glob.glob(f"{hpo_dir}/**/{trial_id}.json")
+    hpo_dir = Path(hpo_dir)
+    trial_output_files = list(hpo_dir.rglob(f"{trial_id}.json"))
     if not trial_output_files:
         return None
     trial_output_file = trial_output_files[0]
 
-    with open(trial_output_file, "r", encoding="utf-8") as f:
+    with trial_output_file.open("r") as f:
         trial_output = json.load(f)
 
     best_epochs = []
@@ -623,9 +623,9 @@ def get_best_hpo_weight(hpo_dir: str, trial_id: str) -> Optional[str]:
 
     best_weight = None
     for best_epoch in best_epochs:
-        best_weight_path = glob.glob(f"{hpo_dir}/weight/**/*epoch*{best_epoch}*")
+        best_weight_path = list(hpo_dir.glob(f"weight/{trial_id}/*epoch*{best_epoch}*"))
         if best_weight_path:
-            best_weight = best_weight_path[0]
+            best_weight = str(best_weight_path[0])
 
     return best_weight
 

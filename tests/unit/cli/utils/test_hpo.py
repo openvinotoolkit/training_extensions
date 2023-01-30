@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -5,14 +6,13 @@ from typing import List
 from copy import deepcopy
 
 import pytest
-import hpopt
-from hpopt.hyperband import HyperBand
 from hpopt.hpo_base import TrialStatus
 
 import otx
 from otx.api.configuration.helper import create as create_conf_hp
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.model_template import TaskType
+from otx.api.entities.subset import Subset
 from otx.api.entities.model import ModelEntity
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.hpo import (
@@ -22,7 +22,10 @@ from otx.cli.utils.hpo import (
     HpoRunner,
     Trainer,
     HpoCallback,
-    HpoDataset
+    HpoDataset,
+    run_hpo,
+    get_best_hpo_weight,
+    run_trial
 )
 
 from tempfile import TemporaryDirectory
@@ -123,17 +126,13 @@ class TestTaskManager:
     def test_get_latest_weight(self, task: TaskType):
         task_manager = TaskManager(task)
 
-        with TemporaryDirectory() as src_dir, TemporaryDirectory() as det_dir:
+        with TemporaryDirectory() as work_dir:
             for i in range(1, 10):
-                (src_dir / Path(f"epoch_{i}.pth")).write_text("fake")
+                (work_dir / Path(f"epoch_{i}.pth")).write_text("fake")
 
-            latest_model_weight = Path("epoch_10.pth")
-            weight_in_src = src_dir / latest_model_weight
-            weight_in_det = det_dir / latest_model_weight
-            weight_in_src.write_text("fake")
-            task_manager.copy_weight(src_dir, det_dir)
-
-            assert weight_in_det.exists()
+            latest_model_weight = work_dir / Path("epoch_10.pth")
+            latest_model_weight.write_text("fake")
+            assert task_manager.get_latest_weight(work_dir) ==  str(latest_model_weight)
 
 def get_template_path(task_name: str) -> Path:
     task_config_dir = OTX_ROOT_PATH / "algorithms" / task_name / "configs"
@@ -372,6 +371,7 @@ class TestHpoRunner:
             HpoRunner(cls_task_env, 100, 10, "fake_path", hpo_time_ratio)
 
     def test_run_hpo(self, mocker, cls_task_env):
+        cls_task_env.model = None
         hpo_runner = HpoRunner(cls_task_env, 100, 10, "fake_path")
         mock_run_hpo_loop = mocker.patch("otx.cli.utils.hpo.run_hpo_loop")
         mock_hb = mocker.patch("otx.cli.utils.hpo.HyperBand")
@@ -475,7 +475,35 @@ class TestHpoCallback:
         mock_report_func.assert_called_once()
 
 class TestHpoDataset:
-    pass
+    def test_init(self, mocker):
+        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment" : {"subset_ratio" : 0.5}})
+        assert hpo_dataset.subset_ratio == 0.5
+    
+    @pytest.mark.parametrize("subset_ratio", [0.1, 0.5, 1])
+    def test_get_subset(self, mocker, subset_ratio):
+        mock_fullset = mocker.MagicMock()
+        mock_fullset.get_subset.return_value = [i for i in range(10)]
+        config = {"train_environment" : {"subset_ratio" : subset_ratio}}
+
+        hpo_dataset = HpoDataset(fullset=mock_fullset, config=config)
+        hpo_sub_dataset = hpo_dataset.get_subset(Subset.TRAINING)
+
+        num_hpo_sub_dataset = len(hpo_sub_dataset)
+        assert  num_hpo_sub_dataset == round(10 * subset_ratio)
+
+        for i in range(num_hpo_sub_dataset):
+            hpo_sub_dataset[i]
+
+    def test_len_before_get_subset(self, mocker):
+        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment" : {"subset_ratio" : 0.5}})
+        with pytest.raises(RuntimeError):
+            len(hpo_dataset)
+
+    def test_getitem_before_get_subset(self, mocker):
+        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment" : {"subset_ratio" : 0.5}})
+        with pytest.raises(RuntimeError):
+            hpo_dataset[0]
+
 
 def test_check_hpopt_available(mocker):
     mocker.patch("otx.cli.utils.hpo.hpopt")
@@ -485,11 +513,113 @@ def test_check_hpopt_unavailable(mocker):
     mocker.patch("otx.cli.utils.hpo.hpopt", None)
     assert not check_hpopt_available()
 
-def test_run_hpo():
-    pass
+def test_run_hpo(mocker, mock_environment):
+    with TemporaryDirectory() as tmp_dir:
+        # prepare
+        save_model_to_path = Path(tmp_dir) / "fake"
+
+        mock_get_best_hpo_weight = mocker.patch("otx.cli.utils.hpo.get_best_hpo_weight")
+        mock_get_best_hpo_weight.return_value = "mock_best_weight_path"
+
+        def mock_run_hpo(*args, **kwargs):
+            return {"config" : {"a.b" : 1, "c.d" : 2}, "id" : "1"}
+
+        mock_hpo_runner_instance = mocker.MagicMock()
+        mock_hpo_runner_instance.run_hpo.side_effect = mock_run_hpo
+        mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
+        mock_hpo_runner_class.return_value = mock_hpo_runner_instance
+
+        def mock_read_model(args1, path, arg2):
+            return path
+        mocker.patch("otx.cli.utils.hpo.read_model", mock_read_model)
+
+        mock_args = mocker.MagicMock()
+        mock_args.hpo_time_ratio = "4"
+        mock_args.save_model_to = save_model_to_path
+        
+        mock_environment.model_template.task_type = TaskType.CLASSIFICATION
+
+        # run
+        run_hpo(mock_args, mock_environment, mocker.MagicMock(), mocker.MagicMock())
+
+        # check
+        mock_hpo_runner_instance.run_hpo.assert_called()  # Check that HpoRunner.run_hpo is called
+        env_hp = mock_environment.get_hyper_parameters()  # Check that best HP is applied well.
+        assert env_hp.a.b == 1
+        assert env_hp.c.d == 2
+        assert mock_environment.model == "mock_best_weight_path"  # check that best model weight is used
+
+def test_run_hpo_hpopt_unavailable(mocker):
+    mock_hpo_runner_instance = mocker.MagicMock()
+    mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
+    mock_hpo_runner_class.return_value = mock_hpo_runner_instance
+
+    mocker.patch("otx.cli.utils.hpo.hpopt", None)
+
+    run_hpo(mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
+    mock_hpo_runner_instance.run_hpo.assert_not_called()
+
+@pytest.fixture(scope="module")
+def action_template_path() -> str:
+    return str(get_template_path("action"))
+
+@pytest.fixture(scope="module")
+def action_task_env(action_template_path) -> TaskEnvironment:
+    return make_task_env(action_template_path)
+
+def test_run_hpo_not_supported_task(mocker, action_task_env):
+    mock_hpo_runner_instance = mocker.MagicMock()
+    mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
+    mock_hpo_runner_class.return_value = mock_hpo_runner_instance
+
+    mocker.patch("otx.cli.utils.hpo.hpopt", None)
+
+    run_hpo(mocker.MagicMock(), action_task_env, mocker.MagicMock(), mocker.MagicMock())
+    mock_hpo_runner_instance.run_hpo.assert_not_called()
 
 def test_get_best_hpo_weight():
-    pass
+    with TemporaryDirectory() as tmp_dir:
+        # prepare
+        hpo_dir = Path(tmp_dir) / "hpo"
+        weight_path = hpo_dir / "weight"
+        weight_path.mkdir(parents=True)
 
-def test_run_trial():
-    pass
+        score = {"score" : {str(i) : i for i in range(1, 11)}}
+        bracket_0_dir = hpo_dir / "0"
+        bracket_0_dir.mkdir(parents=True)
+        for trial_num in range(2):
+            with (bracket_0_dir / f"{trial_num}.json").open("w") as f:
+                json.dump(score, f)
+            trial_weight_path = weight_path / str(trial_num)
+            trial_weight_path.mkdir(parents=True)
+            for i in range(1, 11):
+                (trial_weight_path / f"epoch_{i}.pth").write_text("fake")
+
+        assert get_best_hpo_weight(hpo_dir, "1") == str(weight_path / "1" / "epoch_10.pth")
+
+def test_get_best_hpo_weight_not_exist():
+    with TemporaryDirectory() as tmp_dir:
+        # prepare
+        hpo_dir = Path(tmp_dir) / "hpo"
+        weight_path = hpo_dir / "weight"
+        weight_path.mkdir(parents=True)
+
+        score = {"score" : {str(i) : i for i in range(1, 11)}}
+        bracket_0_dir = hpo_dir / "0"
+        bracket_0_dir.mkdir(parents=True)
+        for trial_num in range(1):
+            with (bracket_0_dir / f"{trial_num}.json").open("w") as f:
+                json.dump(score, f)
+            trial_weight_path = weight_path / str(trial_num)
+            trial_weight_path.mkdir(parents=True)
+            for i in range(1, 11):
+                (trial_weight_path / f"epoch_{i}.pth").write_text("fake")
+
+        assert get_best_hpo_weight(hpo_dir, "1") is None
+
+def test_run_trial(mocker):
+    mock_run = mocker.patch.object(Trainer, "run")
+    run_trial(mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(),
+        mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
+
+    mock_run.assert_called()
