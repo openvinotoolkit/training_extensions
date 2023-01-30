@@ -1,0 +1,45 @@
+{
+    "label_tree": {
+        "type": "tree",
+        "directed": true,
+        "nodes": [],
+        "edges": []
+    },
+    "label_groups": [
+        {
+            "_id": "63d7757065a098a4210ad0a2",
+            "name": "labels",
+            "label_ids": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+            ],
+            "relation_type": "EXCLUSIVE"
+        }
+    ],
+    "all_labels": {
+        "0": {
+            "_id": "0",
+            "name": "person",
+            "color": {
+                "red": 252,
+                "green": 229,
+                "blue": 22,
+                "alpha": 255
+            },
+            "hotkey": "a",
+            "domain": "DETECTION",
+            "creation_date": "2023-01-30T07:44:48.410000",
+            "is_empty": false,
+            "is_anomalous": false
+        }
+    }
+}

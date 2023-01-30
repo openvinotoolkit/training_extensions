@@ -37,6 +37,7 @@ from otx.cli.utils.importing import (
     get_module_args,
 )
 from otx.mpa.utils.config_utils import MPAConfig
+from otx.api.entities.model_template import ModelTemplate
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -144,7 +145,7 @@ class Builder:
         model_type: str = None,
         train_type: str = "incremental",
         otx_root: str = ".",
-        template: str = "",
+        template: ModelTemplate = None,
     ):
         """Create OTX workspace with Template configs from task type.
 
@@ -157,20 +158,21 @@ class Builder:
 
         # Create OTX-workspace
         # Check whether the workspace is existed or not
-        workspace_path.mkdir(exist_ok=False)
+        workspace_path.mkdir(parents=True, exist_ok=False)
 
         # Load & Save Model Template
-        otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
-        if model_type:
-            template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
-            if len(template_lst) == 0:
-                raise ValueError(
-                    f"[otx build] {model_type} is not a type supported by OTX {task_type}."
-                    f"\n[otx build] Please refer to 'otx find --template --task_type {task_type}'"
-                )
-            template = template_lst[0]
-        else:
-            template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
+        if not template:
+            otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
+            if model_type:
+                template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
+                if len(template_lst) == 0:
+                    raise ValueError(
+                        f"[otx build] {model_type} is not a type supported by OTX {task_type}."
+                        f"\n[otx build] Please refer to 'otx find --template --task_type {task_type}'"
+                    )
+                template = template_lst[0]
+            else:
+                template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
         template_dir = Path(template.model_template_path).parent
 
         # Copy task base configuration file

@@ -42,6 +42,9 @@ from otx.cli.utils.parser import (
     gen_params_dict_from_args,
 )
 from otx.core.data.adapter import get_dataset_adapter
+from otx.cli.builder import Builder
+from otx.cli.utils.importing import get_otx_root_path
+from otx.cli.tools.build import build
 
 
 def get_parser():
@@ -151,9 +154,34 @@ def main():  # pylint: disable=too-many-branches
     # Dynamically create an argument parser based on override parameters.
     parser = get_parser()
     
-    # Load template.yaml file.
-    template = find_and_parse_model_template(template_path)
+    args, _ = parser.parse_known_args()
+    if "save_model_to" not in args or not args.save_model_to:
+        args.save_model_to = "./models"
+    train_workspace_path = os.path.join(args.save_model_to, "workspace")
     
+    # Load template.yaml file.
+    template = find_and_parse_model_template(args.template) if Path(args.template).exists() else None
+    
+    # Build
+    builder = Builder()
+    build(
+        builder=builder,
+        train_data_roots=args.train_data_roots,
+        val_data_roots=args.val_data_roots,
+        workspace_root=train_workspace_path,
+        otx_root=get_otx_root_path(),
+        template=template
+    )
+    
+    # Update configurations made by builder 
+    if not template:
+        template = find_and_parse_model_template(
+            os.path.join(train_workspace_path, "template.yaml")
+        )
+    
+    if not Path(args.data).exists():
+        args.data = os.path.join(train_workspace_path, 'data.yaml')
+     
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
@@ -245,8 +273,6 @@ def main():  # pylint: disable=too-many-branches
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
-    if "save_model_to" not in args or not args.save_model_to:
-        args.save_model_to = "./models"
     save_model_data(output_model, args.save_model_to)
 
     if data_config["data"]["val"]["data-roots"]:

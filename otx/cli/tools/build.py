@@ -24,6 +24,7 @@ from pathlib import Path
 from otx.cli.builder import Builder
 from otx.cli.utils.importing import get_otx_root_path
 from otx.core.config.manager import ConfigManager
+from otx.api.entities.model_template import ModelTemplate
 
 SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
@@ -57,16 +58,16 @@ def parse_args():
 
 def build(
     builder: Builder,
-    train_data_roots: str = "",
-    val_data_roots: str = "",
-    task: str = "",
-    train_type: str = "",
-    workspace_root: str = "",
-    model: str = "",
-    backbone: str = "",
-    save_backbone_to: str = "",
-    otx_root: str = "",
-    template: str = "",
+    train_data_roots: str = None,
+    val_data_roots: str = None,
+    task: str = None,
+    train_type: str = "incremental",
+    workspace_root: str = None,
+    model: str = None,
+    backbone: str = None,
+    save_backbone_to: str = None,
+    otx_root: str = ".",
+    template: ModelTemplate = None,
 ):
     # Auto-configuration
     config_manager = ConfigManager()
@@ -80,6 +81,7 @@ def build(
     # Build with task_type and create user workspace
     if workspace_root is None:
         workspace_root = set_workspace(task, model)
+    
     if task and task in SUPPORTED_TASKS:
         builder.build_task_config(
             task_type=task,
