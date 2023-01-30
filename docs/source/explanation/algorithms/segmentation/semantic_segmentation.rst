@@ -68,7 +68,7 @@ For now, we also support a dataset in the custom format below, where image-annot
 
 .. note::
 
-    Please, note, that images should have `.jpg` extension and segmentation masks should be `.png`.
+    Please, note, that images should have ``.jpg`` extension and segmentation masks should be ``.png``.
 
 Since this format isn't handle by Datumaro we can start training by passing the training and validation data paths manually:
 
@@ -91,8 +91,6 @@ We support the following ready-to-use model templates:
 +==============================================================================================================================================================================================================================+========================+=====================+=================+
 | `Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml>`_                      | Lite-HRNet-s-mod2      | 1.82                | 3.5             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Semantic_Segmentation_Lite-HRNet-18_OCR <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18/template.yaml>`_                              | Lite-HRNet-18          | 3.45                | 4.5             |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 | `Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml>`_                    | Lite-HRNet-18-mod2     | 3.63                | 4.8             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 | `Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml>`_                      | Lite-HRNet-x-mod3      | 13.97               | 6.4             |
@@ -107,8 +105,6 @@ In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%
 | Model name            | ADE20k       | Cityscapes | Pascal-VOC 2012 |
 +=======================+==============+============+=================+
 | Lite-HRNet-s-mod2     | N/A          | N/A        | N/A             |
-+-----------------------+--------------+------------+-----------------+
-| Lite-HRNet-18         | N/A          | N/A        | N/A             |
 +-----------------------+--------------+------------+-----------------+
 | Lite-HRNet-18-mod2    | N/A          | N/A        | N/A             |
 +-----------------------+--------------+------------+-----------------+
@@ -138,11 +134,11 @@ For the `DIS5K <https://xuebinqin.github.io/dis/index.html>`_ we prepared random
 +=====================================+==============+============+=================+
 | Supervised Lite-HRNet-18-mod2 (1/8) | N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
-| Semi-SL Lite-HRNet-18 (1/8)         | N/A          | N/A        | N/A             |
+| Semi-SL Lite-HRNet-18-mod2 (1/8)         | N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
 | Supervised Lite-HRNet-18-mod2 (1/16)| N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
-| Semi-SL Lite-HRNet-18 (1/16)        | N/A          | N/A        | N/A             |
+| Semi-SL Lite-HRNet-18-mod2 (1/16)        | N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
 
 ************************
