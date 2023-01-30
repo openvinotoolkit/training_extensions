@@ -103,7 +103,7 @@ class OpenVINOClassificationInferencer(BaseInferencer):
         hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
         multihead_class_info = {}
         if hierarchical:
-            multihead_class_info = get_multihead_class_info(label_schema)
+            multihead_class_info = get_multihead_class_info(label_schema, with_empty=True)
 
         self.label_schema = label_schema
 

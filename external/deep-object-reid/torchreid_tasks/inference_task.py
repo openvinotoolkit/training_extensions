@@ -87,8 +87,10 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         self._multihead_class_info = {}
         self._hierarchical = False
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            self._labels = task_environment.get_labels(include_empty=True)
             self._hierarchical = True
-            self._multihead_class_info = get_multihead_class_info(task_environment.label_schema)
+            self._multihead_class_info = get_multihead_class_info(task_environment.label_schema,
+                                                                  with_empty=True)
 
         template_file_path = task_environment.model_template.model_template_path
 

@@ -256,8 +256,8 @@ def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool 
 
 
 @check_input_parameters_type()
-def get_multihead_class_info(label_schema: LabelSchemaEntity):
-    all_groups = label_schema.get_groups(include_empty=False)
+def get_multihead_class_info(label_schema: LabelSchemaEntity, with_empty=False):
+    all_groups = label_schema.get_groups(include_empty=with_empty)
     all_groups_str = []
     for g in all_groups:
         group_labels_str = [lbl.name for lbl in g.labels]
@@ -282,7 +282,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
     for j, g in enumerate(single_label_groups):
         class_to_idx[g[0]] = (len(exclusive_groups), j)
 
-    all_labels = label_schema.get_labels(include_empty=False)
+    all_labels = label_schema.get_labels(include_empty=with_empty)
     label_to_idx = {lbl.name: i for i, lbl in enumerate(all_labels)}
 
     mixed_cls_heads_info = {
