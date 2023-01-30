@@ -129,7 +129,7 @@ class ActionOVClsDataLoader(DataLoader):
         return dataset_items
 
     def get_indices(self, video_len: int):
-        """Sample frames from video length."""
+        """Sample frame indices from video length."""
         ori_clip_len = self.clip_len * self.interval
         if video_len > ori_clip_len - 1:
             start = (video_len - ori_clip_len + 1) / 2
@@ -143,7 +143,7 @@ class ActionOVClsDataLoader(DataLoader):
     def add_prediction(self, dataset: DatasetEntity, data: List[DatasetItemEntity], prediction: AnnotationSceneEntity):
         """Add prediction to dataset.
 
-        Add prdiction result to dataset_itme in dataset, which has same video id with video data
+        Add prediction result to dataset_item in dataset, which has same video id with video data.
         """
         video_id = data[0].get_metadata()[0].data.video_id
         for dataset_item in dataset:

@@ -56,7 +56,7 @@ class ONNXPool3D(nn.Module):
 class AVAFastRCNN(FastRCNN):
     """Implementation of `Fast R-CNN` for Action Detection.
 
-    Add forwrad_infer function for inference without pre-proposals
+    Add forward_infer function for inference without pre-proposals
     """
 
     # pylint: disable=too-many-arguments, too-many-locals
@@ -72,25 +72,27 @@ class AVAFastRCNN(FastRCNN):
         self.detector = None
 
     def add_detector(self):
-        """Add Human Detector for inference.
+        """Add Person Detector for inference.
 
-        Action classification backbone + Fast RCNN structure use pre-proposals instead outputs from human detector
-        This saves training and evaluation time. However this method don't support inference for the dataset
-        without pre-proposals. Therefore when the model infer to dataset without pre-proposal, human detector
-        should be added to action detector
+        Action classification backbone + Fast RCNN structure use pre-proposals instead outputs from person detector
+        This saves training and evaluation time. However, this method doesn't support inference for the dataset
+        without pre-proposals. Therefore, when the model infers to dataset without pre-proposal, person detector
+        should be added to action detector.
         """
         detector = ConfigDict(faster_rcnn)
         self.detector = build_detector(detector)
         ckpt = load_checkpoint(self.detector, faster_rcnn_pretrained, map_location="cpu")
         self.detector.CLASSES = ckpt["meta"]["CLASSES"]
         if self.detector.CLASSES[0] != "person":
-            raise Exception(f"Person detector should has person as the first category, but got {self.detector.CLASSES}")
+            raise Exception(
+                f"Person detector should have person as the first category, but got {self.detector.CLASSES}"
+            )
 
     def patch_pools(self):
         """Patch pooling functions for ONNX export.
 
         AVAFastRCNN's bbox head has pooling funcitons, which contain dynamic shaping.
-        This funciton change those pooling functions from dynamic shaping to static shaping.
+        This funciton changes those pooling functions from dynamic shaping to static shaping.
         """
         self.roi_head.bbox_head.temporal_pool = ONNXPool3D(self.roi_head.bbox_head.temporal_pool_type, "temporal")
         self.roi_head.bbox_head.spatial_pool = ONNXPool3D(self.roi_head.bbox_head.spatial_pool_type, "spatial")

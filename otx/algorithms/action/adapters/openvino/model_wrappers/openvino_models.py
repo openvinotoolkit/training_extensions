@@ -186,7 +186,7 @@ class OTXOVActionDet(Model):
     @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):
         """Post-process."""
-        # TODO Support multi class classification
+        # TODO Support multi label classification
         H, W, _ = meta["original_shape"]
         bboxes = outputs[self.out_layer_names["bboxes"]]
         labels = outputs[self.out_layer_names["labels"]]

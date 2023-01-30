@@ -65,7 +65,7 @@ def preprocess(
     interval: int = 1,
     category: int = 1,
 ):
-    """Pre-process for action deteciton structure.
+    """Pre-process for action detection structure.
 
     To get proper proposals from Faster-RCNN, the action detector needs real data
     """
@@ -136,7 +136,9 @@ def pytorch2onnx(
             Default: False.
         output_file (str): Output onnx model name. Default: 'tmp.onnx'.
         softmax (bool): Determines whether to use softmax function.
+            Default: False.
         is_localizer(bool): Determines this model is localizer or not
+            Default: False.
     """
     model = _convert_sync_batch_to_normal_batch(model)
     input_tensor = torch.randn(input_shape)
@@ -221,7 +223,7 @@ def onnx2openvino(
         if pipeline["type"] == "Normalize":
             normalize = pipeline
             break
-    assert normalize, "Could not find normalize parameters in datapipeline"
+    assert normalize, "Could not find normalize parameters in data pipeline"
 
     mean_values = normalize["mean"]
     scale_values = normalize["std"]

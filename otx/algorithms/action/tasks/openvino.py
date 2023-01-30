@@ -100,13 +100,17 @@ class ActionOpenVINOInferencer(BaseInferencer):
         device: str = "CPU",
         num_requests: int = 1,
     ):  # pylint: disable=unused-argument, too-many-arguments
-        """Inferencer implementation for OTXDetection using OpenVINO backend.
+        """Inferencer implementation for OTX Action Recognition using OpenVINO backend.
 
-        :param model: Path to model to load, `.xml`, `.bin` or `.onnx` file.
-        :param hparams: Hyper parameters that the model should use.
-        :param num_requests: Maximum number of requests that the inferencer can make.
-            Good value is the number of available cores. Defaults to 1.
-        :param device: Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
+        Args:
+            task_type (str): Type of action task. ["ACTION_CLASSIFICATION", "ACTION_DETECTION"]
+            hparams (ActionConfig): Hyperparameters for action task
+            label_schema (LabelSchemaEntity): Label schema for model file
+            model_file (Union[str, bytes]): XML file for model structure
+            weight_file (Union[str, bytes, None]): Model weights file
+                Default: None
+            device (str): Device for inference. Default: "CPU"
+            num_requests (int): Number of requests
         """
 
         self.task_type = task_type
