@@ -21,7 +21,7 @@ import os
 import shutil
 import tempfile
 from copy import deepcopy
-from typing import DefaultDict, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -33,6 +33,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
 )
 from otx.algorithms.common.configs import TrainType
+from otx.algorithms.common.utils import UncopiableDefaultDict
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -109,7 +110,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._data_cfg = None
         self._mode = None
         self._time_monitor = None  # type: Optional[TimeMonitorCallback]
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
+        self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._is_training = False
         self._should_stop = False
         self.cancel_interface = None

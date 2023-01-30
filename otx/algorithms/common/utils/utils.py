@@ -1,4 +1,4 @@
-"""Collections of Dataset utils for common OTX algorithms."""
+"""Collections of Utils for common OTX algorithms."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -16,11 +16,20 @@
 
 import importlib
 import inspect
+from collections import defaultdict
 from typing import Callable, Optional, Tuple
 
 import yaml
 
 from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
+
+
+class UncopiableDefaultDict(defaultdict):
+    """Defauldict type object to avoid deepcopy."""
+
+    def __deepcopy__(self, memo):
+        """Deepcopy."""
+        return self
 
 
 @check_input_parameters_type({"path": YamlFilePathCheck})

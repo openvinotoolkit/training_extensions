@@ -15,13 +15,12 @@
 # and limitations under the License.
 
 import io
-from typing import Any, DefaultDict, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -131,7 +130,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: ignore
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
