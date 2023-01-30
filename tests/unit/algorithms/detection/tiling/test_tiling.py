@@ -1,3 +1,4 @@
+import pytest
 import copy
 import unittest
 
@@ -18,6 +19,7 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 
+from otx.algorithms.detection.adapters.mmdet.data import ImageTilingDataset
 
 class TilingTest(unittest.TestCase):
     """Test the tiling functionality"""
@@ -87,13 +89,16 @@ class TilingTest(unittest.TestCase):
     def test_build_tiling_dataset(self):
         """Test that the tiling dataset is built correctly"""
         dataset_cfg = copy.deepcopy(self.dataset_cfg)
+        dataset_cfg["test_mode"] = True
         dataset = build_dataset(dataset_cfg)
 
         stride = (1 - self.tile_cfg["overlap_ratio"]) * self.tile_cfg["tile_size"]
 
-        # assert len(dataset) == ((self.height - self.tile_cfg["tile_size"]) // stride) * (
-        #     (self.width - self.tile_cfg["tile_size"]) // stride
-        # )
+        num_tile_rows = (((self.height - self.tile_cfg["tile_size"]) // stride) + 1)
+        num_tile_cols = (((self.width - self.tile_cfg["tile_size"]) // stride) + 1)
+
+        # +1 for the original image
+        self.assertEqual(len(dataset), (num_tile_rows * num_tile_cols) + 1, "Incorrect number of tiles")
 
     def test_build_tiling_dataloader(self):
         """Test that the tiling dataloader is built correctly"""
@@ -102,10 +107,11 @@ class TilingTest(unittest.TestCase):
         for _ in dataloader:
             pass
 
+    @pytest.mark.xfail(reason="CVS-83124")
     def test_inference_merge(self):
         """Test that the inference merge works correctly"""
         dataset_cfg = copy.deepcopy(self.dataset_cfg)
         dataset_cfg["test_mode"] = True
         dataset = build_dataset(dataset_cfg)
         # TODO: Implement inference merge check
-        # print(dataset.merge([[]]))
+        dataset.merge()
