@@ -89,6 +89,7 @@ def main():
             workspace_path=Path(args.workspace_root),
             otx_root=otx_root,
         )
+        update_data_cfg = True
 
     # Build Backbone related
     if args.backbone:
