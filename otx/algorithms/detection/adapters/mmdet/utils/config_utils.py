@@ -241,6 +241,10 @@ def patch_datasets(
             continue
         config.data[f"{subset}_dataloader"] = config.data.get(f"{subset}_dataloader", ConfigDict())
 
+        remove_from_config(config.data[subset], "ann_file")
+        remove_from_config(config.data[subset], "img_prefix")
+        remove_from_config(config.data[subset], "classes")  # Get from DatasetEntity
+
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
             cfg.domain = domain

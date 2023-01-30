@@ -17,14 +17,14 @@ from otx.api.usecases.exportable_code.streamer import (
     VideoStreamer,
     get_streamer,
 )
-from tests.unit.api.constants.components import OtxSdkComponent
-from tests.unit.api.constants.requirements import Requirements
-from tests.unit.api.test_helpers import (
+from tests.test_helpers import (
     generate_random_image_folder,
     generate_random_single_image,
     generate_random_single_video,
     generate_random_video_folder,
 )
+from tests.unit.api.constants.components import OtxSdkComponent
+from tests.unit.api.constants.requirements import Requirements
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -289,6 +289,7 @@ class TestStreamer:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.timeout(10)
     def test_threaded_streamer(self):
         """
         <b>Description:</b>

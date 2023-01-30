@@ -9,7 +9,6 @@ pip install wheel
 pip install ote_sdk/
 pip install ote_cli/
 pip install pre-commit
-pip install -r ote_sdk/ote_sdk/tests/requirements.txt
 echo ""
 echo ""
 echo ""

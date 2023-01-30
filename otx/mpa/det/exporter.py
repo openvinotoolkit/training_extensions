@@ -3,6 +3,7 @@
 #
 
 import numpy as np
+from mmcv import ConfigDict
 from mmcv.runner import wrap_fp16_model
 
 from otx.mpa.exporter_mixin import ExporterMixin
@@ -33,6 +34,10 @@ class DetectionExporter(ExporterMixin, DetectionStage):
                 assert isinstance(model, NNCFNetwork)
 
             return model
+
+        # patch test_pipeline in case of missing LoadImageFromOTXDataset
+        if self.cfg.data.test.pipeline[0].type != "LoadImageFromOTXDataset":
+            self.cfg.data.test.pipeline.insert(0, ConfigDict(dict(type="LoadImageFromOTXDataset")))
 
         kwargs["model_builder"] = model_builder_helper
 

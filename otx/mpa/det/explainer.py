@@ -12,7 +12,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader,
     build_dataset,
 )
-from otx.mpa.modules.datasets.det_tiling_dataset import ImageTilingDataset
+from otx.algorithms.detection.adapters.mmdet.data import ImageTilingDataset
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
     DetSaliencyMapHook,
