@@ -81,9 +81,7 @@ class CheckpointHookWithValResults(Hook):
             weight_name = f"best_epoch_{runner.epoch + 1}.pth"
         else:
             weight_name = f"best_iter_{runner.iter + 1}.pth"
-        runner.save_checkpoint(
-            self.out_dir, filename_tmpl=weight_name, save_optimizer=self.save_optimizer, **self.args
-        )
+        runner.save_checkpoint(self.out_dir, filename_tmpl=weight_name, save_optimizer=self.save_optimizer, **self.args)
 
         self._best_model_weight = Path(weight_name)
         if runner.meta is not None:
@@ -101,8 +99,10 @@ class CheckpointHookWithValResults(Hook):
             cur_step = runner.iter + 1
 
         runner.save_checkpoint(
-            self.out_dir, filename_tmpl=weight_name_format.format(cur_step),
-            save_optimizer=self.save_optimizer, **self.args
+            self.out_dir,
+            filename_tmpl=weight_name_format.format(cur_step),
+            save_optimizer=self.save_optimizer,
+            **self.args,
         )
 
         # remove other checkpoints

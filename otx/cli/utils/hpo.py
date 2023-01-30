@@ -8,13 +8,13 @@ import json
 import logging
 import re
 import shutil
+from copy import deepcopy
 from enum import Enum
 from functools import partial
 from inspect import isclass
 from math import floor
-from typing import Any, Callable, Dict, List, Optional, Union
-from copy import deepcopy
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 import yaml

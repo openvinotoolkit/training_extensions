@@ -1,35 +1,32 @@
 import json
-from unittest.mock import MagicMock
+from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List
-from copy import deepcopy
-import pickle
+from unittest.mock import MagicMock
 
 import pytest
 from hpopt.hpo_base import TrialStatus
 
 import otx
 from otx.api.configuration.helper import create as create_conf_hp
-from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
-from otx.api.entities.model import ModelEntity
+from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.hpo import (
-    TaskManager,
-    TaskEnvironmentManager,
-    check_hpopt_available,
-    HpoRunner,
-    Trainer,
     HpoCallback,
     HpoDataset,
-    run_hpo,
+    HpoRunner,
+    TaskEnvironmentManager,
+    TaskManager,
+    Trainer,
+    check_hpopt_available,
     get_best_hpo_weight,
-    run_trial
+    run_hpo,
+    run_trial,
 )
-
-from tempfile import TemporaryDirectory
 
 CLASSIFCATION_TASK = {TaskType.CLASSIFICATION}
 DETECTION_TASK = {TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}
@@ -67,7 +64,7 @@ class TestTaskManager:
         assert task_manager.is_det_framework_task()
 
     @pytest.mark.parametrize("task", ALL_TASK - DETECTION_TASK)
-    def test_is_det_framework_task(self, task: TaskType):
+    def test_is_not_det_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_det_framework_task()
 
@@ -77,7 +74,7 @@ class TestTaskManager:
         assert task_manager.is_seg_framework_task()
 
     @pytest.mark.parametrize("task", ALL_TASK - SEGMENTATION_TASK)
-    def test_is_seg_framework_task(self, task: TaskType):
+    def test_is_not_seg_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_seg_framework_task()
 
@@ -87,7 +84,7 @@ class TestTaskManager:
         assert task_manager.is_anomaly_framework_task()
 
     @pytest.mark.parametrize("task", ALL_TASK - ANOMALY_TASK)
-    def test_is_anomaly_framework_task(self, task: TaskType):
+    def test_is_not_anomaly_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_anomaly_framework_task()
 
@@ -155,68 +152,84 @@ class TestTaskManager:
 
             latest_model_weight = work_dir / Path("epoch_10.pth")
             latest_model_weight.write_text("fake")
-            assert task_manager.get_latest_weight(work_dir) ==  str(latest_model_weight)
+            assert task_manager.get_latest_weight(work_dir) == str(latest_model_weight)
+
 
 def get_template_path(task_name: str) -> Path:
     task_config_dir = OTX_ROOT_PATH / "algorithms" / task_name / "configs"
     return list(task_config_dir.glob("**/template.yaml"))[0]
 
+
 def make_task_env(template_path: str) -> TaskEnvironment:
     template = find_and_parse_model_template(template_path)
     return TaskEnvironment(template, None, create_conf_hp(template.hyper_parameters.data), MagicMock())
+
 
 @pytest.fixture(scope="module")
 def cls_template_path() -> str:
     return str(get_template_path("classification"))
 
+
 @pytest.fixture(scope="module")
 def det_template_path() -> str:
     return str(get_template_path("detection"))
+
 
 @pytest.fixture(scope="module")
 def seg_template_path() -> str:
     return str(get_template_path("segmentation"))
 
+
 @pytest.fixture(scope="module")
 def anomaly_template_path() -> str:
     return str(get_template_path("anomaly"))
+
 
 @pytest.fixture(scope="module")
 def cls_task_env(cls_template_path):
     return make_task_env(cls_template_path)
 
+
 @pytest.fixture(scope="module")
 def det_task_env(det_template_path) -> TaskEnvironment:
     return make_task_env(det_template_path)
+
 
 @pytest.fixture(scope="module")
 def seg_task_env(seg_template_path) -> TaskEnvironment:
     return make_task_env(seg_template_path)
 
+
 @pytest.fixture(scope="module")
 def anomaly_task_env(anomaly_template_path) -> TaskEnvironment:
     return make_task_env(anomaly_template_path)
+
 
 @pytest.fixture
 def mmcv_task_env(cls_task_env, det_task_env, seg_task_env) -> List[TaskEnvironment]:
     return [cls_task_env, det_task_env, seg_task_env]
 
+
 @pytest.fixture
 def all_task_env(cls_task_env, det_task_env, seg_task_env, anomaly_task_env) -> List[TaskEnvironment]:
     return [cls_task_env, det_task_env, seg_task_env, anomaly_task_env]
+
 
 @pytest.fixture
 def mock_environment():
     MockTaskEnv = MagicMock(spec=TaskEnvironment)
     return MockTaskEnv()
 
+
 @pytest.fixture(scope="module")
 def action_template_path() -> str:
     return str(get_template_path("action"))
 
+
 @pytest.fixture(scope="module")
 def action_task_env(action_template_path) -> TaskEnvironment:
     return make_task_env(action_template_path)
+
 
 class TestTaskEnvironmentManager:
     @pytest.fixture(autouse=True)
@@ -238,9 +251,8 @@ class TestTaskEnvironmentManager:
         assert task_env.get_task() == TaskType.SEGMENTATION
 
     def test_get_model_template(
-            self, cls_task_env, det_task_env, seg_task_env,
-            cls_template_path, det_template_path, seg_template_path
-        ):
+        self, cls_task_env, det_task_env, seg_task_env, cls_template_path, det_template_path, seg_template_path
+    ):
         task_env = TaskEnvironmentManager(cls_task_env)
         assert task_env.get_model_template() == find_and_parse_model_template(cls_template_path)
 
@@ -251,9 +263,8 @@ class TestTaskEnvironmentManager:
         assert task_env.get_model_template() == find_and_parse_model_template(seg_template_path)
 
     def test_get_model_template_path(
-            self, cls_task_env, det_task_env, seg_task_env,
-            cls_template_path, det_template_path, seg_template_path
-        ):
+        self, cls_task_env, det_task_env, seg_task_env, cls_template_path, det_template_path, seg_template_path
+    ):
         task_env = TaskEnvironmentManager(cls_task_env)
         assert task_env.get_model_template_path() == cls_template_path
 
@@ -265,7 +276,7 @@ class TestTaskEnvironmentManager:
 
     def test_set_hyper_parameter_using_str_key(self):
         task_env = TaskEnvironmentManager(self._mock_environment)
-        hyper_parameter = {"a.b.c.d" : 1, "e.f.g.h" : 2}
+        hyper_parameter = {"a.b.c.d": 1, "e.f.g.h": 2}
 
         task_env.set_hyper_parameter_using_str_key(hyper_parameter)
 
@@ -285,7 +296,7 @@ class TestTaskEnvironmentManager:
 
         assert dict_hp["learning_parameters.a"] == 1
         assert dict_hp["learning_parameters.b"] == 2
-        
+
     @pytest.mark.parametrize("task", ALL_TASK)
     def test_get_max_epoch(self, task):
         max_epoch = 10
@@ -305,8 +316,8 @@ class TestTaskEnvironmentManager:
 
     def test_save_anomaly_initial_weight(self, mocker, anomaly_task_env):
         def mock_save_model_data(model, save_path: str):
-            (Path(save_path) / "weights.pth").write_text('fake')
-        
+            (Path(save_path) / "weights.pth").write_text("fake")
+
         mocker.patch.object(TaskEnvironmentManager, "get_train_task")
         mocker.patch("otx.cli.utils.hpo.save_model_data", mock_save_model_data)
         with TemporaryDirectory() as tmp_dir:
@@ -318,8 +329,8 @@ class TestTaskEnvironmentManager:
 
     def test_loaded_inital_weight(self, mocker, all_task_env):
         def mock_save_model_data(model, save_path: str):
-            (Path(save_path) / "weights.pth").write_text('fake')
-        
+            (Path(save_path) / "weights.pth").write_text("fake")
+
         mocker.patch.object(TaskEnvironmentManager, "get_train_task")
         mocker.patch("otx.cli.utils.hpo.save_model_data", mock_save_model_data)
         with TemporaryDirectory() as tmp_dir:
@@ -390,7 +401,7 @@ class TestHpoRunner:
         for task_env in all_task_env:
             HpoRunner(task_env, 100, 10, "fake_path")
 
-    @pytest.mark.parametrize("train_dataset_size,val_dataset_size", [(0,10), (10, 0), (-1, -1)])
+    @pytest.mark.parametrize("train_dataset_size,val_dataset_size", [(0, 10), (10, 0), (-1, -1)])
     def test_init_wrong_dataset_size(self, cls_task_env, train_dataset_size, val_dataset_size):
         with pytest.raises(ValueError):
             HpoRunner(cls_task_env, train_dataset_size, val_dataset_size, "fake_path", 4)
@@ -426,14 +437,14 @@ class TestHpoRunner:
 class TestTrainer:
     def test_init(self, mocker, cls_template_path):
         Trainer(
-            hp_config={"configuration" : {"iterations" : 10}},
+            hp_config={"configuration": {"iterations": 10}},
             report_func=mocker.stub(),
             model_template=find_and_parse_model_template(cls_template_path),
-            data_roots={"fake" : "fake"},
+            data_roots={"fake": "fake"},
             task_type=TaskType.CLASSIFICATION,
             hpo_workdir="fake",
             initial_weight_name="fake",
-            metric="fake"
+            metric="fake",
         )
 
     def test_run(self, mocker, cls_template_path):
@@ -459,19 +470,19 @@ class TestTrainer:
 
             # run
             trainer = Trainer(
-                hp_config={"configuration" : {"iterations" : 10}, "id" : trial_id},
+                hp_config={"configuration": {"iterations": 10}, "id": trial_id},
                 report_func=mock_report_func,
                 model_template=find_and_parse_model_template(cls_template_path),
                 data_roots=mocker.MagicMock(),
                 task_type=TaskType.CLASSIFICATION,
                 hpo_workdir=hpo_workdir,
                 initial_weight_name="fake",
-                metric="fake"
+                metric="fake",
             )
             trainer.run()
 
             # check
-            mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report 
+            mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report
             assert hpo_workdir.exists()  # make a directory to copy weight
             for i in range(1, 5):  # check model weights are copied
                 assert (hpo_workdir / "weight" / trial_id / weight_format.format(i)).exists()
@@ -515,33 +526,34 @@ class TestHpoCallback:
 
         mock_report_func.assert_called_once()
 
+
 class TestHpoDataset:
     def test_init(self, mocker):
-        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment" : {"subset_ratio" : 0.5}})
+        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment": {"subset_ratio": 0.5}})
         assert hpo_dataset.subset_ratio == 0.5
-    
+
     @pytest.mark.parametrize("subset_ratio", [0.1, 0.5, 1])
     def test_get_subset(self, mocker, subset_ratio):
         mock_fullset = mocker.MagicMock()
         mock_fullset.get_subset.return_value = [i for i in range(10)]
-        config = {"train_environment" : {"subset_ratio" : subset_ratio}}
+        config = {"train_environment": {"subset_ratio": subset_ratio}}
 
         hpo_dataset = HpoDataset(fullset=mock_fullset, config=config)
         hpo_sub_dataset = hpo_dataset.get_subset(Subset.TRAINING)
 
         num_hpo_sub_dataset = len(hpo_sub_dataset)
-        assert  num_hpo_sub_dataset == round(10 * subset_ratio)
+        assert num_hpo_sub_dataset == round(10 * subset_ratio)
 
         for i in range(num_hpo_sub_dataset):
             hpo_sub_dataset[i]
 
     def test_len_before_get_subset(self, mocker):
-        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment" : {"subset_ratio" : 0.5}})
+        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment": {"subset_ratio": 0.5}})
         with pytest.raises(RuntimeError):
             len(hpo_dataset)
 
     def test_getitem_before_get_subset(self, mocker):
-        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment" : {"subset_ratio" : 0.5}})
+        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment": {"subset_ratio": 0.5}})
         with pytest.raises(RuntimeError):
             hpo_dataset[0]
 
@@ -550,9 +562,11 @@ def test_check_hpopt_available(mocker):
     mocker.patch("otx.cli.utils.hpo.hpopt")
     assert check_hpopt_available()
 
+
 def test_check_hpopt_unavailable(mocker):
     mocker.patch("otx.cli.utils.hpo.hpopt", None)
     assert not check_hpopt_available()
+
 
 def test_run_hpo(mocker, mock_environment):
     with TemporaryDirectory() as tmp_dir:
@@ -563,7 +577,7 @@ def test_run_hpo(mocker, mock_environment):
         mock_get_best_hpo_weight.return_value = "mock_best_weight_path"
 
         def mock_run_hpo(*args, **kwargs):
-            return {"config" : {"a.b" : 1, "c.d" : 2}, "id" : "1"}
+            return {"config": {"a.b": 1, "c.d": 2}, "id": "1"}
 
         mock_hpo_runner_instance = mocker.MagicMock()
         mock_hpo_runner_instance.run_hpo.side_effect = mock_run_hpo
@@ -572,12 +586,13 @@ def test_run_hpo(mocker, mock_environment):
 
         def mock_read_model(args1, path, arg2):
             return path
+
         mocker.patch("otx.cli.utils.hpo.read_model", mock_read_model)
 
         mock_args = mocker.MagicMock()
         mock_args.hpo_time_ratio = "4"
         mock_args.save_model_to = save_model_to_path
-        
+
         mock_environment.model_template.task_type = TaskType.CLASSIFICATION
 
         # run
@@ -590,6 +605,7 @@ def test_run_hpo(mocker, mock_environment):
         assert env_hp.c.d == 2
         assert mock_environment.model == "mock_best_weight_path"  # check that best model weight is used
 
+
 def test_run_hpo_hpopt_unavailable(mocker):
     mock_hpo_runner_instance = mocker.MagicMock()
     mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
@@ -600,6 +616,7 @@ def test_run_hpo_hpopt_unavailable(mocker):
     run_hpo(mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
     mock_hpo_runner_instance.run_hpo.assert_not_called()
 
+
 def test_run_hpo_not_supported_task(mocker, action_task_env):
     mock_hpo_runner_instance = mocker.MagicMock()
     mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
@@ -608,6 +625,7 @@ def test_run_hpo_not_supported_task(mocker, action_task_env):
     run_hpo(mocker.MagicMock(), action_task_env, mocker.MagicMock(), mocker.MagicMock())
     mock_hpo_runner_instance.run_hpo.assert_not_called()
 
+
 def test_get_best_hpo_weight():
     with TemporaryDirectory() as tmp_dir:
         # prepare
@@ -615,7 +633,7 @@ def test_get_best_hpo_weight():
         weight_path = hpo_dir / "weight"
         weight_path.mkdir(parents=True)
 
-        score = {"score" : {str(i) : i for i in range(1, 11)}}
+        score = {"score": {str(i): i for i in range(1, 11)}}
         bracket_0_dir = hpo_dir / "0"
         bracket_0_dir.mkdir(parents=True)
         for trial_num in range(2):
@@ -628,6 +646,7 @@ def test_get_best_hpo_weight():
 
         assert get_best_hpo_weight(hpo_dir, "1") == str(weight_path / "1" / "epoch_10.pth")
 
+
 def test_get_best_hpo_weight_not_exist():
     with TemporaryDirectory() as tmp_dir:
         # prepare
@@ -635,7 +654,7 @@ def test_get_best_hpo_weight_not_exist():
         weight_path = hpo_dir / "weight"
         weight_path.mkdir(parents=True)
 
-        score = {"score" : {str(i) : i for i in range(1, 11)}}
+        score = {"score": {str(i): i for i in range(1, 11)}}
         bracket_0_dir = hpo_dir / "0"
         bracket_0_dir.mkdir(parents=True)
         for trial_num in range(1):
@@ -648,9 +667,18 @@ def test_get_best_hpo_weight_not_exist():
 
         assert get_best_hpo_weight(hpo_dir, "1") is None
 
+
 def test_run_trial(mocker):
     mock_run = mocker.patch.object(Trainer, "run")
-    run_trial(mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(),
-        mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
+    run_trial(
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+        mocker.MagicMock(),
+    )
 
     mock_run.assert_called()
