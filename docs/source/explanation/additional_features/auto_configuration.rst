@@ -11,9 +11,21 @@ Basically, to start the training and obtain a good baseline with the best trade-
 
     $ otx train --train-data-root <path_to_data_root>
 
+.. note::
+
+    OTX supports also ``otx build`` mode with the auto-configuration feature. We can build OTX workspace with the following CLI command:
+
+    .. code-block::
+
+        $ otx build --train-data-root <path_to_data_root>
+
 Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OTX will handle it on its own.
 It will recognize the task by analizing the dataset and if there is no splits for the validation - Datumaro will do random auto-split, memorizing this split to further use it with ``otx eval`` and ``otx optimize``.
-Currently, Datumaro auto-split feature supports 3 tasks: **multi-class classification**, **detection** and **semantic segmentation**.
+
+.. note::
+
+    Currently, Datumaro auto-split feature supports 3 tasks: **multi-class classification**, **detection** and **semantic segmentation**.
+
 After dataset preparation the training will be started with the middle-sized template to achieve a competitive accuracy preserving fast inference.
 
 Supported dataset formats for each task:
@@ -30,7 +42,7 @@ Supported dataset formats for each task:
 
 .. note::
 
-    If we have a dataset format that occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type with an additional CLI option:
+    If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type with an additional CLI option. If not, OTX automatically chooses the task type that you might don't intend:
 
     .. code-block::
 

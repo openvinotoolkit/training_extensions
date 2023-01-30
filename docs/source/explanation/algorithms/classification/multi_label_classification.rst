@@ -73,7 +73,7 @@ Models
 ******
 We use the same models as for Multi-class classification. Please, refer: :ref:`Classificaiton Models <classificaiton_models>`.
 
-In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
+In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
 +-----------------------+-----------------+-----------+-----------+-----------+
 | Model name            | Pascal-VOC 2007 |    COCO   | NUS-WIDE  | Mean mAP  |

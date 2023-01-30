@@ -86,7 +86,7 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
-In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
+In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
 +-----------------------+-----------------+-----------+-----------+-----------+-----------+
 | Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |

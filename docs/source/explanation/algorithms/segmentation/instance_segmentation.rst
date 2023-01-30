@@ -62,7 +62,7 @@ We support the following ready-to-use model templates:
 
 ``MaskRCNN-ResNet50`` uses `ResNet-50 <https://arxiv.org/abs/1512.03385>`_ as the backbone network for the image features extraction. It has more parameters and FLOPs and needs more time to train, meanwhile providing superior performance in terms of accuracy. ``MaskRCNN-EfficientNetB2B`` uses `EfficientNet-B2 <https://arxiv.org/abs/1905.11946>`_ as the backbone network. It is a good trade-off between accuracy and speed. It is a better choice when training time and computational cost are in priority.
 
-In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
+In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
 +---------------------------+--------------+------------+-----------------+
 | Model name                | ADE20k       | Cityscapes | Pascal-VOC 2007 |
