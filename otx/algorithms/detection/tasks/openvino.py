@@ -372,7 +372,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             update_progress_callback = default_progress_callback
             add_saliency_map = True
 
-        tile_enabled = True if self.config and self.config["tiling_parameters"]["enable_tiling"]["value"] else False
+        tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
 
         if tile_enabled:
             tile_size = self.config["tiling_parameters"]["tile_size"]["value"]

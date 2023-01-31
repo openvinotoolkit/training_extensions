@@ -1,10 +1,7 @@
-import copy
 import unittest
-
 from typing import List
 
 import numpy as np
-import pytest
 import torch
 from mmcv import ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
@@ -12,20 +9,17 @@ from mmdet.datasets import build_dataloader, build_dataset
 from otx.algorithms.detection.adapters.mmdet.data import (  # noqa: F401
     ImageTilingDataset,
 )
-from otx.api.entities.annotation import (
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
+from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
-from tests.test_helpers import generate_random_annotated_image
 from otx.api.utils.shape_factory import ShapeFactory
+from tests.test_helpers import generate_random_annotated_image
 
 
 def create_otx_dataset(height: int, width: int, labels: List[str]):
-    """ Create a random OTX dataset
+    """Create a random OTX dataset
 
     Args:
         height (int): The height of the image
@@ -47,8 +41,9 @@ def create_otx_dataset(height: int, width: int, labels: List[str]):
 
 class TilingDetectionUnitTest(unittest.TestCase):
     """Test the tiling functionality"""
+
     def setUp(self) -> None:
-        """ Setup the test case """
+        """Setup the test case"""
         self.height = 1024
         self.width = 1024
         self.label_names = ["rectangle", "ellipse", "triangle"]
@@ -121,7 +116,7 @@ class TilingDetectionUnitTest(unittest.TestCase):
         )
 
     def test_tiling_train_dataloader(self):
-        """ Test that the training dataloader is built correctly for tiling """
+        """Test that the training dataloader is built correctly for tiling"""
 
         dataset = build_dataset(self.train_data_cfg)
         train_dataloader = build_dataloader(dataset, **self.dataloader_cfg)
@@ -131,7 +126,7 @@ class TilingDetectionUnitTest(unittest.TestCase):
             self.assertIsInstance(data["gt_labels"].data[0][0], torch.Tensor)
 
     def test_tiling_test_dataloader(self):
-        """ Test that the testing dataloader is built correctly for tiling """
+        """Test that the testing dataloader is built correctly for tiling"""
 
         dataset = build_dataset(self.test_data_cfg)
         stride = (1 - self.tile_cfg["overlap_ratio"]) * self.tile_cfg["tile_size"]
@@ -143,10 +138,9 @@ class TilingDetectionUnitTest(unittest.TestCase):
         test_dataloader = build_dataloader(dataset, **self.dataloader_cfg)
         for data in test_dataloader:
             self.assertIsInstance(data["img"][0], torch.Tensor)
-            self.assertNotIn('gt_bboxes', data)
-            self.assertNotIn('gt_labels', data)
+            self.assertNotIn("gt_bboxes", data)
+            self.assertNotIn("gt_labels", data)
 
-    # @pytest.xfail(reason="Inference merge not implemented yet")
     def test_inference_merge(self):
         """Test that the inference merge works correctly"""
         dataset = build_dataset(self.test_data_cfg)
@@ -160,7 +154,7 @@ class TilingDetectionUnitTest(unittest.TestCase):
 
         # generate tile predictions
         for i in range(len(dataset)):
-            img_width, img_height = self.tile_cfg['tile_size'], self.tile_cfg['tile_size']
+            img_width, img_height = self.tile_cfg["tile_size"], self.tile_cfg["tile_size"]
             if i == 0:
                 # first index belongs is the full image
                 img_width, img_height = self.width, self.height
