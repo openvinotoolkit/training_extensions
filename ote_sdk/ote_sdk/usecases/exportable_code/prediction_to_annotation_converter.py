@@ -243,7 +243,8 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
             label_schema.get_groups(False)
         ) == len(label_schema.get_labels(include_empty=False))
         self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
-
+        if self.hierarchical:
+            self.labels = label_schema.get_labels(include_empty=True)
         self.label_schema = label_schema
 
     def convert_to_annotation(
