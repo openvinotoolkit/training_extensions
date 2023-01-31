@@ -1,0 +1,59 @@
+name: Pre-Merge Checks
+
+on:
+  pull_request:
+    branches:
+      - feature/otx
+    workflow_dispatch: # run on request (no need for PR)
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+# This is what will cancel the workflow concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  Code-Quality-Checks:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: python -m pip install tox
+      - name: Code Quality Checks
+        run: tox -e pre-commit
+  Pre-Merge-Tests:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Code-Quality-Checks
+    timeout-minutes: 360
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install tox
+      - name: Pre-Merge Tests
+        run: tox -e pre-merge
+      - name: Upload coverage report
+        run: |
+          # If the workflow is triggered from PR then it gets the commit id from the PR.
+          # else it uses the commit id of the latest commit. This is because the commit
+          # of the checked-out branch/commit does not exist in the tree as it is grafted.
+          # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
+          # This means that upload will fail for PRs from forks.
+          if [ -n "${{ github.event.pull_request.head.sha }}" ]
+          then
+            COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          else
+            COMMIT_ID=${{ github.sha }}
+          fi
+          pip install codacy-coverage
+          python-codacy-coverage -r .tox/coverage.xml -c $COMMIT_ID

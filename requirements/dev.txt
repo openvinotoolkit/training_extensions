@@ -2,3 +2,4 @@
 # Development Requirements.                                                   #
 tox==3.25.1
 pre-commit==2.20.0
+pylint

@@ -1,0 +1,10 @@
+workflow_hooks:
+    - type: WFProfileHook
+      name: profile_hook
+
+stages:
+  - name: cls-explanation
+    type: ClsExplainer
+    task: classification
+    mode: explain
+    config: {{ fileDirname }}/stages/classification/class_explain.yaml

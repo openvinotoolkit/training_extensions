@@ -1,27 +1,42 @@
+<div align="center">
+
+<img src="docs/source/_static/logos/otx-logo-black.png" width="200px">
+
 # OpenVINO™ Training Extensions
+
+---
 
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
 [![mypy](https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat)]()
-[![openvino](https://img.shields.io/badge/openvino-2022.3-purple)]()
+[![openvino](https://img.shields.io/badge/openvino-2021.4-purple)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/31d17b3adb0a46d888078c543e4ec4c5?branch=feature%2Fotx)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/31d17b3adb0a46d888078c543e4ec4c5?branch=feature%2Fotx)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Coverage)
+[![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml)
+
+---
+
+</div>
 
 > **_DISCLAIMERS_**: Some features described below are under development (refer to [feature/otx branch](https://github.com/openvinotoolkit/training_extensions/tree/feature/otx)). You can find more detailed estimation from the [Roadmap](#roadmap) section below.
 
 ## Overview
 
-OpenVINO™ Training Extensions (OTE) is command-line interface (CLI) framework designed for low-code deep learning model training. OTE lets developers train/inference/optimize models with a diverse combination of model architectures and learning methods using the [OpenVINO™
-toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users can train a ResNet18-based SSD ([Single Shot Detection](https://arxiv.org/abs/1512.02325)) model in a semi-supervised manner without worrying about setting a configuration manually. `ote build` and `ote train` commands will automatically analyze users' dataset and do necessary tasks for training the model with best configuration. OTE provides the following features:
+OpenVINO™ Training Extensions (OTX) is command-line interface (CLI) framework designed for low-code deep learning model training. OTX lets developers train/inference/optimize models with a diverse combination of model architectures and learning methods using the [OpenVINO™
+toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users can train a ResNet18-based SSD ([Single Shot Detection](https://arxiv.org/abs/1512.02325)) model in a semi-supervised manner without worrying about setting a configuration manually. `otx build` and `otx train` commands will automatically analyze users' dataset and do necessary tasks for training the model with best configuration. OTX provides the following features:
 
 - Provide a set of pre-configured models for quick start
-  - `ote find` helps you quickly finds the best pre-configured models for common task types like classification, detection, segmentation, and anomaly analysis.
+  - `otx find` helps you quickly finds the best pre-configured models for common task types like classification, detection, segmentation, and anomaly analysis.
 - Configure and train a model from torchvision, [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo)
-  - `ote build` can help you configure your own model based on torchvision and OpenVINO Model Zoo models. You can replace backbones, necks and heads for your own preference (Currently only backbones are supported).
+  - `otx build` can help you configure your own model based on torchvision and OpenVINO Model Zoo models. You can replace backbones, necks and heads for your own preference (Currently only backbones are supported).
 - Provide several learning methods including supervised, semi-supervised, imbalanced-learn, class-incremental, self-supervised representation learning
-  - `ote build` helps you automatically identify the best learning methods for your data and model. All you need to do is to set your data in the supported format. If you don't specify a model, the framework will automatically sets the best model for you. For example, if your dataset has long-tailed and partially-annotated bounding box annotations, OTE auto-configurator will choose a semi-supervised imbalanced-learning method and an appropriate model with the best parameters.
+  - `otx build` helps you automatically identify the best learning methods for your data and model. All you need to do is to set your data in the supported format. If you don't specify a model, the framework will automatically sets the best model for you. For example, if your dataset has long-tailed and partially-annotated bounding box annotations, OTX auto-configurator will choose a semi-supervised imbalanced-learning method and an appropriate model with the best parameters.
 - Integrated efficient hyper-parameter optimization
-  - OTE has an integrated, efficient hyper-parameter optimization module. So, you don't need to worry about searching right hyper-parameters. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
+  - OTX has an integrated, efficient hyper-parameter optimization module. So, you don't need to worry about searching right hyper-parameters. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 - Support widely-used annotation formats
-  - OTE uses [datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by datumaro are also consumable by OTE without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via datumaro CLI and API.
+  - OTX uses [Datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by Datumaro are also consumable by OTX without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via Datumaro CLI and API.
 
 ---
 
@@ -48,9 +63,9 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 ## Repository
 
 - Components
-  - [OTE SDK](ote_sdk)
-  - [OTE CLI](ote_cli)
-  - [OTE Algorithms](external)
+  - [OTX API](otx/api)
+  - [OTX CLI](otx/cli)
+  - [OTX Algorithms](otx/algorithms)
 - Branches
   - [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
     - Mainly maintained branch for releasing new features in the future
@@ -59,13 +74,13 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 
 ---
 
-## Quick start guide
+# Quick start guide
 
 In order to get started with OpenVINO™ Training Extensions see [the quick-start guide](QUICK_START_GUIDE.md).
 
 ---
 
-## License
+# License
 
 Deep Learning Deployment Toolkit is licensed under [Apache License Version 2.0](LICENSE).
 By contributing to the project, you agree to the license and copyright terms therein
@@ -82,29 +97,6 @@ Please use [Issues](https://github.com/openvinotoolkit/training_extensions/issue
 ## Contributing
 
 Please read the [Contribution guide](CONTRIBUTING.md) before starting work on a pull request.
-
----
-
-## Telemetry data collection note
-
-The [OpenVINO™ telemetry library](https://github.com/openvinotoolkit/telemetry/)
-is used to collect basic information about usage of this toolkit.
-
-The table below shows which event and data would be sent through telemetry data collection tool.
-|Event|Description|Data Format|
-|---|---|---|
-|version|Installed version|\<version-string\>|
-|success|Command that completed successfully|{'cmd': \<CLI-command-type\>, ['template': \<template-name\>], ['task_type': \<task-type-or-None\>]}|
-|failure|Command that completed with an error|{'cmd': \<CLI-command-type\>, ['template': \<template-name\>], ['task_type': \<task-type-or-None\>]}|
-|exception|Command that completed with unexpected exception|{'cmd': \<CLI-command-type\>, 'exception': \<exception-type-string\>}|
-
-### How to control telemetry data collection
-
-To enable the collection of telemetry data, the consent file must exist and contain "1", otherwise telemetry will be disabled. The consent file can be created/modified by an OpenVINO installer or manually and used by other OpenVINO™ tools.
-
-The location and name of the consent file:
-
-`$HOME/intel/openvino_telemetry`
 
 ---
 

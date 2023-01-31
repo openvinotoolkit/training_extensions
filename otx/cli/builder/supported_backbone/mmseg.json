@@ -1,0 +1,144 @@
+{
+  "backbones": {
+    "mmseg.ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmseg.ResNetV1c": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmseg.ResNetV1d": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmseg.ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmseg.FastSCNN": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
+    },
+    "mmseg.ResNest": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152, 200]
+      },
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
+    },
+    "mmseg.MobileNetV2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmseg.CGNet": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
+    },
+    "mmseg.MobileNetV3": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
+    },
+    "mmseg.VisionTransformer": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
+    },
+    "mmseg.UNet": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Mask-RCNN"]
+    },
+    "mmseg.HRNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.LiteHRNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.DABNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.DDRNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.BiSeNetV2": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.ShelfNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.EfficientNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.CABiNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmseg.STDCNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    }
+  }
+}

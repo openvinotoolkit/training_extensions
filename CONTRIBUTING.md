@@ -18,9 +18,9 @@ If you observe any errors or incorrect work of any parts of this repository, you
 When creating a new bug report, make sure:
 
 1. You are on the last version of `develop` branch.
-2. You provide enough information (Python version, OS version, libraries and other environment info) for others to easily reproduce this bug\issue.
-3. You provide necessary and sufficient code snippet to reproduce the bug (if the bug cannot be reproduced in the already existing code).
-4. You describe expected and actual behavior.
+1. You provide enough information (Python version, OS version, libraries and other environment info) for others to easily reproduce this bug\issue.
+1. You provide necessary and sufficient code snippet to reproduce the bug (if the bug cannot be reproduced in the already existing code).
+1. You describe expected and actual behavior.
 
 ## Creating pull requests
 
@@ -31,15 +31,15 @@ If you have an idea how to enhance code of the existing models, you are welcome 
 If you want to add training code of your model to this repository, make sure:
 
 1. Your model code is licensed under permissive license (Apache-2.0, MIT, BSD, etc).
-2. Source framework of the model is PyTorch\*.
-3. You provide the code containing implementation of [OTE SDK Task interfaces](https://github.com/openvinotoolkit/training_extensions/tree/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces):
+1. Source framework of the model is PyTorch\*.
+1. You provide the code containing implementation of [OTE SDK Task interfaces](https://github.com/openvinotoolkit/training_extensions/tree/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces):
    1. [ITrainingTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/training_interface.py) - your model must be trainable on some datasets.
    1. [IInferenceTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/inference_interface.py) - your model must be inferable on some datasets.
    1. [IEvaluationTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/evaluate_interface.py) - it must be possible to evaluate some quality metric of you model.
    1. [IExportTask](https://github.com/openvinotoolkit/training_extensions/blob/develop/ote_sdk/ote_sdk/usecases/tasks/interfaces/export_interface.py) - your model must be exportable to the OpenVINO format.
-4. You provide a model `template.yaml` file, that describes your model and its configurable parameters. See an example [here](external/anomaly/configs/anomaly_classification/padim/template.yaml).
-5. You create a PR to the `develop` branch.
-6. You provide `requirements.txt` file and a bash `init_venv.sh` script for creating virtual environment.
+1. You provide a model `template.yaml` file, that describes your model and its configurable parameters. See an example [here](external/anomaly/configs/anomaly_classification/padim/template.yaml).
+1. You create a PR to the `develop` branch.
+1. You provide `requirements.txt` file and a bash `init_venv.sh` script for creating virtual environment.
 
 ## Legal Information
 
@@ -51,8 +51,6 @@ Copyright &copy; 2018-2021 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
-```
-http://www.apache.org/licenses/LICENSE-2.0
-```
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

@@ -1,0 +1,140 @@
+{
+  "backbones": {
+    "mmdet.RegNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "regnetx_400mf",
+          "regnetx_800mf",
+          "regnetx_1.6gf",
+          "regnetx_3.2gf",
+          "regnetx_4.0gf",
+          "regnetx_6.4gf",
+          "regnetx_8.0gf",
+          "regnetx_12gf"
+        ]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.ResNetV1d": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.SSDVGG": {
+      "required": ["input_size", "depth"],
+      "options": {
+        "input_size": [300, 512],
+        "depth": [11, 16, 19]
+      },
+      "available": ["Classification", "ATSS", "Segmentation"]
+    },
+    "mmdet.HRNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": []
+    },
+    "mmdet.Res2Net": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.DetectoRS_ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.DetectoRS_ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.Darknet": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
+    },
+    "mmdet.ResNeSt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152, 200]
+      },
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "mmdet.CSPDarknet": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
+    }
+  }
+}

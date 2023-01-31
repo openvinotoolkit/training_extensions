@@ -1,0 +1,28 @@
+workflow_hooks:
+    - type: WFProfileHook
+      name: profile_hook
+
+stages:
+  - name: cls-inc
+    type: ClsTrainer
+    task: classification
+    mode: train
+    config: {{ fileDirname }}/stages/classification/incremental.yaml
+    output:
+      - final_ckpt
+
+  - name: cls-inc-evaluation
+    type: ClsEvaluator
+    task: classification
+    mode: train
+    config: {{ fileDirname }}/stages/classification/incremental.yaml
+    input:
+      pretrained:
+        stage_name: cls-inc
+        output_key: final_ckpt
+
+  - name: cls-inc-evaluation
+    type: ClsEvaluator
+    task: classification
+    mode: eval
+    config: {{ fileDirname }}/stages/classification/incremental.yaml
