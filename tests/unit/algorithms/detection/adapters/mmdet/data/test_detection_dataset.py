@@ -2,9 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import random
-import warnings
-
+import numpy as np
 import pytest
 
 from otx.algorithms.detection.adapters.mmdet.data import MPADetDataset
@@ -15,103 +13,114 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain
 from otx.api.entities.model_template import TaskType, task_type_to_label_domain
-from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.test_helpers import generate_random_annotated_image
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
-def generate_fake_det_dataset(number_of_images=1, task_type=TaskType.DETECTION):
+def create_det_dataset(task_type, number_of_images=1):
+    classes = ("rectangle", "ellipse", "triangle")
+    label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
 
-    labels_names = ("rectangle", "ellipse", "triangle")
-    labels_schema = generate_label_schema(labels_names, task_type_to_label_domain(task_type))
-    labels_list = labels_schema.get_labels(False)
-
-    warnings.filterwarnings("ignore", message=".* coordinates .* are out of bounds.*")
     items = []
-    for i in range(0, number_of_images):
+    for _ in range(number_of_images):
         image_numpy, annos = generate_random_annotated_image(
             image_width=640,
             image_height=480,
-            labels=labels_list,
-            max_shapes=20,
-            min_size=50,
-            max_size=100,
-            random_seed=None,
+            labels=label_schema.get_labels(False),
         )
         # Convert shapes according to task
         for anno in annos:
-            if task_type == TaskType.INSTANCE_SEGMENTATION:
-                anno.shape = ShapeFactory.shape_as_polygon(anno.shape)
-            else:
+            if task_type == TaskType.DETECTION:
                 anno.shape = ShapeFactory.shape_as_rectangle(anno.shape)
-
+            elif task_type == TaskType.INSTANCE_SEGMENTATION:
+                anno.shape = ShapeFactory.shape_as_polygon(anno.shape)
         image = Image(data=image_numpy)
         annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=annos)
         items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene))
-    warnings.resetwarnings()
-
-    rng = random.Random()
-    rng.shuffle(items)
-    for i, _ in enumerate(items):
-        subset_region = i / number_of_images
-        if subset_region >= 0.8:
-            subset = Subset.TESTING
-        elif subset_region >= 0.6:
-            subset = Subset.VALIDATION
-        else:
-            subset = Subset.TRAINING
-        items[i].subset = subset
-
     dataset = DatasetEntity(items)
     return dataset, dataset.get_labels()
 
 
 class TestOTXDetDataset:
-    """Check Builder's function is working well.
-
-    1. Check "Builder.build_task_config" function that create otx-workspace is working well.
-    <Steps>
-        1. Create Classification custom workspace
-        2. Raising Error of building workspace with already created path
-        3. Update hparam.yaml with train_type="selfsl"
-        4. Raising ValueError with wrong train_type
-        5. Build workspace with model_type argments
-        6. Raise ValueError when build workspace with wrong model_type argments
-
-    2. Check "Builder.build_backbone_config" function that generate backbone configuration file is working well
-    <Steps>
-        1. Generate backbone config file (mmcls.MMOVBackbone)
-        2. Raise ValueError with wrong output_path
-
-    3. Check "Builder.merge_backbone" function that update model config with new backbone is working well
-    <Steps>
-        1. Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)
-        2. Raise ValueError with wrong model_config_path
-        3. Raise ValueError with wrong backbone_config_path
-        4. Update model config without backbone's out_indices
-        5. Update model config with backbone's pretrained path
-    """
+    """Test OTXDetDataset functionality"""
 
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.otx_dataset, self.labels = generate_fake_det_dataset()
+        self.dataset = dict()
+        for task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
+            self.dataset[task_type] = create_det_dataset(task_type=task_type)
         self.pipeline = []
-        self.domain = Domain.DETECTION
-
-    # def test_init_dataset(self) -> None:
-    # 이상한거 들어오면 오류나게
 
     @e2e_pytest_unit
-    def test_prepare_train_img(self) -> None:
-        """Create Classification custom workspace."""
-        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
+    @pytest.mark.parametrize("task_type", [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION])
+    def test_otx_detection_dataset_init_params_validation(self, task_type):
+        """Test OTXDetDataset initialization parameters validation"""
+        otx_dataset, labels = self.dataset[task_type]
+        correct_values_dict = {
+            "otx_dataset": otx_dataset,
+            "labels": labels,
+        }
+
+        unexpected_str = "unexpected string"
+        unexpected_values = [
+            # Unexpected string is specified as "otx_dataset" parameter
+            ("otx_dataset", unexpected_str),
+            # Unexpected string is specified as "labels" parameter
+            ("labels", unexpected_str),
+            # Unexpected string is specified as nested label
+            ("labels", [labels[0], unexpected_str]),
+        ]
+
+        check_value_error_exception_raised(
+            correct_parameters=correct_values_dict,
+            unexpected_values=unexpected_values,
+            class_or_function=MPADetDataset,
+        )
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "task_type, domain",
+        [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
+    )
+    def test_prepare_train_img(self, task_type, domain) -> None:
+        """Test prepare_train_img method"""
+        otx_dataset, labels = self.dataset[task_type]
+        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
         img = dataset.prepare_train_img(0)
-        assert type(img) == dict
+        assert isinstance(img, dict)
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "task_type, domain",
+        [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
+    )
+    def test_prepare_train_img_out_of_index(self, task_type, domain) -> None:
+        """Test prepare_train_img method for out of index"""
+        otx_dataset, labels = self.dataset[task_type]
+        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
+        out_of_range_index = len(otx_dataset) + 1
+        with pytest.raises(IndexError):
+            dataset.prepare_train_img(out_of_range_index)
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "task_type, domain",
+        [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
+    )
+    def test_prepare_test_img(self, task_type, domain) -> None:
+        """Test prepare_test_img method"""
+        otx_dataset, labels = self.dataset[task_type]
+        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
+        img = dataset.prepare_test_img(0)
+        assert isinstance(img, dict)
 
     @e2e_pytest_unit
     def test_pre_pipeline(self) -> None:
-        """Create Classification custom workspace."""
+        """Test pre_pipeline method"""
         results = dict()
         MPADetDataset.pre_pipeline(results)
         assert "bbox_fields" in results
@@ -119,32 +128,61 @@ class TestOTXDetDataset:
         assert "seg_fields" in results
 
     @e2e_pytest_unit
-    def test_prepare_train_img_out_of_index(self) -> None:
-        """Create Classification custom workspace."""
-        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
-        with pytest.raises(IndexError):
-            dataset.prepare_train_img(5000)
-
-    @e2e_pytest_unit
-    def test_prepare_test_img(self) -> None:
-        """Create Classification custom workspace."""
-        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
-        img = dataset.prepare_test_img(0)
-        assert type(img) == dict
-
-    @e2e_pytest_unit
-    def test_get_ann_info(self) -> None:
-        """Create Classification custom workspace."""
-        dataset = MPADetDataset(self.otx_dataset, self.labels, self.pipeline, self.domain)
+    @pytest.mark.parametrize(
+        "task_type, domain",
+        [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
+    )
+    def test_get_ann_info(self, task_type, domain) -> None:
+        """test get_ann_info method"""
+        otx_dataset, labels = self.dataset[task_type]
+        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
         ann_info = dataset.get_ann_info(0)
-        assert type(ann_info) == dict
+        assert isinstance(ann_info, dict)
         assert "bboxes" in ann_info
         assert "labels" in ann_info
 
-    # @e2e_pytest_unit
-    # def test_evaluate(self) -> None:
-    #     """Create Classification custom workspace."""
-    #     ann_info = self.dataset.evaluate(results)
-    #     assert type(ann_info) == dict
-    #     assert "bboxes" in ann_info
-    #     assert "labels" in ann_info
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "task_type, domain",
+        [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
+    )
+    @pytest.mark.parametrize("metric", ["mAP"])
+    @pytest.mark.parametrize("logger", ["silent", None])
+    def test_evaluate(self, task_type, domain, metric, logger) -> None:
+        """Test evaluate method for detection and instance segmentation"""
+        otx_dataset, labels = self.dataset[task_type]
+        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
+        if task_type == TaskType.DETECTION:
+            results = [[np.array([[0, 0, 32, 24, 0.55], [0, 0, 32, 24, 0.55]], dtype=np.float32)]]
+        elif task_type == TaskType.INSTANCE_SEGMENTATION:
+            results = [
+                (
+                    [np.array([[8, 5, 10, 20, 0.90]], dtype=np.float32)],
+                    [[{"size": [640, 480], "counts": "some counts"}]],
+                )
+            ]
+        eval_results = dataset.evaluate(results, metric, logger)
+        assert isinstance(eval_results, dict)
+        assert metric in eval_results
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "task_type, domain",
+        [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
+    )
+    @pytest.mark.parametrize("metric", ["accuracy-top-1", "mDice", 123456789])
+    def test_invalid_param_evaluate(self, task_type, domain, metric) -> None:
+        """Test evaluate method for detection and instance segmentation"""
+        otx_dataset, labels = self.dataset[task_type]
+        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
+        if task_type == TaskType.DETECTION:
+            results = [[np.array([[0, 0, 32, 24, 0.55], [0, 0, 32, 24, 0.55]], dtype=np.float32)]]
+        elif task_type == TaskType.INSTANCE_SEGMENTATION:
+            results = [
+                (
+                    [np.array([[8, 5, 10, 20, 0.90]], dtype=np.float32)],
+                    [[{"size": [640, 480], "counts": "some counts"}]],
+                )
+            ]
+        with pytest.raises(KeyError):
+            dataset.evaluate(results, metric=metric)

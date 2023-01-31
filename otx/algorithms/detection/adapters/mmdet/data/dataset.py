@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Sequence, Tuple, Union
 import numpy as np
 from mmcv import Config
 from mmcv.utils import print_log
-from mmdet.core import PolygonMasks, eval_map, eval_recalls
+from mmdet.core import PolygonMasks, eval_map
 from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
@@ -307,32 +307,6 @@ class MPADetDataset(CustomDataset):
                     mean_aps.append(mean_ap)
                     eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
                 eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
-            elif metric == "recall":
-                gt_bboxes = [ann["bboxes"] for ann in annotations]
-                recalls = eval_recalls(gt_bboxes, results, proposal_nums, iou_thr, logger=logger)
-                for i, num in enumerate(proposal_nums):
-                    for j, iou in enumerate(iou_thrs):
-                        eval_results[f"recall@{num}@{iou}"] = recalls[i, j]
-                if recalls.shape[1] > 1:
-                    ar = recalls.mean(axis=1)
-                    for i, num in enumerate(proposal_nums):
-                        eval_results[f"AR@{num}"] = ar[i]
-            elif metric == "mIoU":
-                assert isinstance(results[0], tuple), "Result format not supported"
-                mean_mious = []
-                for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
-                    print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-                    mean_iou, _ = eval_segm(
-                        results,
-                        annotations,
-                        iou_thr=iou_thr,
-                        dataset=self.CLASSES,
-                        logger=logger,
-                        metric=metric,
-                    )
-                    mean_mious.append(mean_iou)
-                    eval_results[f"mIoU{int(iou_thr * 100):02d}"] = round(mean_iou, 3)
-                eval_results["mIoU"] = sum(mean_mious) / len(mean_mious)
             elif metric == "mae":
                 mae = CustomMAE(
                     self.otx_dataset,
