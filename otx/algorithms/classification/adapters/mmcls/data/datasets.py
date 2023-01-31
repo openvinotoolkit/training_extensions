@@ -149,6 +149,8 @@ class MPAClsDataset(BaseDataset):
             self.class_acc = True
 
         eval_results = super().evaluate(results, metrics, metric_options, logger=logger)
+        for k in metric_options["topk"]:
+            eval_results[f"accuracy_top-{k}"] /= 100
 
         # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
         if self.class_acc:
