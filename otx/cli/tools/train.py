@@ -176,10 +176,14 @@ def main():  # pylint: disable=too-many-branches
             template=template
         )
     
-    # Update configurations made by builder 
-    template = find_and_parse_model_template(
-        os.path.join(train_workspace_path, "template.yaml")
-    )
+    # Update configurations made by builder
+    # When users input template argument, need to overwrite
+    if args.template != './template.yaml':
+        template = find_and_parse_model_template(args.template)
+    else:
+        template = find_and_parse_model_template(
+            os.path.join(train_workspace_path, "template.yaml")
+        )
     args.data = os.path.join(train_workspace_path, 'data.yaml')
     data_config = configure_dataset(args)
      

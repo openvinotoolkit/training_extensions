@@ -157,7 +157,6 @@ class Builder:
         """
 
         # Create OTX-workspace
-        # Check whether the workspace is existed or not
         workspace_path.mkdir(parents=True, exist_ok=False)
 
         # Load & Save Model Template
