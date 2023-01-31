@@ -158,9 +158,9 @@ def train(self, mode=True):
                 mmodule.eval()
 
 
-def init_weights(self, pretrained=True):
+def init_weights(self):
     """Init weights function for new model (copy from mmdet)."""
-    if pretrained and self.model_urls:
+    if self.init_cfg.get("Pretrained", False) and self.model_urls:
         state_dict = load_state_dict_from_url(self.model_urls)
         self.load_state_dict(state_dict)
 
@@ -184,6 +184,7 @@ def generate_torchvision_backbones():
                     verbose=False,
                     activation_cfg=None,
                     norm_cfg=None,
+                    init_cfg=None,
                     **kwargs,
                 ):
                     super().__init__()
@@ -202,6 +203,7 @@ def generate_torchvision_backbones():
                         TORCHVISION_MODEL_URLS[model_name] if model_name in TORCHVISION_MODEL_URLS else None
                     )
                     model.models_cache_root = models_cache_root
+                    model.init_cfg = init_cfg
                     model.init_weights = init_weights.__get__(model)
                     if hasattr(model, "features") and isinstance(model.features, nn.Sequential):
                         # Save original forward, just in case.

@@ -76,16 +76,21 @@ def main():
         if args.val_data_roots is None:
             config_manager.auto_split_data(args.train_data_roots, args.task)
 
-    # Build with task_type and create user workspace
-    if args.workspace_root is None:
-        args.workspace_root = set_workspace(args.task, args.model)
     if args.task and args.task in SUPPORTED_TASKS:
+        # Build with task_type and create user workspace
+        if args.workspace_root is None:
+            args.workspace_root = set_workspace(args.task, args.model)
         builder.build_task_config(
             task_type=args.task,
             model_type=args.model,
             train_type=args.train_type.lower(),
             workspace_path=Path(args.workspace_root),
             otx_root=otx_root,
+        )
+        config_manager.write_data_with_cfg(
+            workspace_dir=args.workspace_root,
+            train_data_roots=args.train_data_roots,
+            val_data_roots=args.val_data_roots,
         )
 
     # Build Backbone related
@@ -102,12 +107,6 @@ def main():
             if missing_args:
                 raise ValueError("The selected backbone has inputs that the user must enter.")
             builder.merge_backbone(args.model, args.backbone)
-
-    config_manager.write_data_with_cfg(
-        workspace_dir=args.workspace_root,
-        train_data_roots=args.train_data_roots,
-        val_data_roots=args.val_data_roots,
-    )
 
 
 if __name__ == "__main__":
