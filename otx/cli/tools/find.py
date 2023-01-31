@@ -70,7 +70,6 @@ def generate_backbone_rows(index: int, backbone_type: str, meta_data: dict):
     rows = []
     required_args = meta_data["required"] if meta_data["required"] else [""]
     required_options = meta_data["options"]
-    available = ", ".join(meta_data["available"]) if meta_data["available"] else ""
     use_backbone_type = False
     for arg in required_args:
         row = []
@@ -85,7 +84,6 @@ def generate_backbone_rows(index: int, backbone_type: str, meta_data: dict):
         row.append(arg)  # Required-Args
         option_str = ", ".join(options) if options else ""
         row.append(fill(option_str, width=max_row_width))  # Options
-        row.append(fill(available, width=max_row_width))  # Available
         rows.append(row)
     return rows
 
@@ -121,7 +119,7 @@ def main():
 
     if args.backbone:
         all_backbones = otx_registry.get_backbones(args.backbone)
-        backbone_table = PrettyTable(["Index", "Backbone Type", "Required-Args", "Options", "Available"])
+        backbone_table = PrettyTable(["Index", "Backbone Type", "Required-Args", "Options"])
         row_index = 1
         for _, backbone_meta in all_backbones.items():
             for backbone_type, meta_data in backbone_meta.items():

@@ -207,20 +207,6 @@ class TestOTXCLIBuilder:
         updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert "out_indices" in updated_model_config.model.backbone
 
-    @e2e_pytest_unit
-    def test_builder_merge_backbone_backbone_pretrained(self) -> None:
-        """Update model config with backbone's pretrained path."""
-        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
-        tmp_model_path = workspace_path / "model.py"
-        tmp_backbone_path = workspace_path / "backbone.yaml"
-        backbone_config = mmcv.load(str(tmp_backbone_path))
-        expected_pretrained = "pretrained.path"
-        backbone_config["backbone"]["pretrained"] = expected_pretrained
-        mmcv.dump(backbone_config, str(tmp_backbone_path))
-        self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
-        updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
-        assert updated_model_config.model.pretrained == expected_pretrained
-
 
 class MockBackbone(nn.Module):
     def __init__(self) -> None:

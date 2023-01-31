@@ -69,7 +69,6 @@ def build(
     otx_root: str = ".",
     template: ModelTemplate = None,
 ):
-    update_data_cfg = False
     
     # Auto-configuration
     config_manager = ConfigManager()
@@ -79,7 +78,6 @@ def build(
             task = task_type
         if val_data_roots is None:
             config_manager.auto_split_data(train_data_roots, task)
-        update_data_cfg = True
     
     if task and task in SUPPORTED_TASKS:
         # Build with task_type and create user workspace
@@ -92,6 +90,11 @@ def build(
             workspace_path=Path(workspace_root),
             otx_root=otx_root,
             template=template
+        )
+        config_manager.write_data_with_cfg(
+            workspace_dir=workspace_root,
+            train_data_roots=train_data_roots,
+            val_data_roots=val_data_roots,
         )
 
     # Build Backbone related
@@ -108,14 +111,6 @@ def build(
             if missing_args:
                 raise ValueError("The selected backbone has inputs that the user must enter.")
             builder.merge_backbone(model, backbone)
-    
-    if update_data_cfg:
-        config_manager.write_data_with_cfg(
-            workspace_dir=workspace_root,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-        )
-    
 
 def main():
     """Main function for model or backbone or task building."""
