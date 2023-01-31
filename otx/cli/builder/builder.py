@@ -29,7 +29,7 @@ import torch
 from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
-from otx.api.entities.model_template import TaskType
+from otx.api.entities.model_template import ModelTemplate, TaskType
 from otx.cli.registry import Registry as OTXRegistry
 from otx.cli.utils.importing import (
     get_backbone_list,
@@ -37,7 +37,6 @@ from otx.cli.utils.importing import (
     get_module_args,
 )
 from otx.mpa.utils.config_utils import MPAConfig
-from otx.api.entities.model_template import ModelTemplate
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -172,10 +171,12 @@ class Builder:
                 template = template_lst[0]
             else:
                 template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
-        template_dir = Path(template.model_template_path).parent
+
+        assert template is not None
+        template_dir: Path = Path(template.model_template_path).parent
 
         # Copy task base configuration file
-        task_configuration_path = template_dir / template.hyper_parameters.base_path
+        task_configuration_path = template_dir / str(template.hyper_parameters.base_path)
         shutil.copyfile(task_configuration_path, str(workspace_path / "configuration.yaml"))
         # Load Model Template
         template_config = MPAConfig.fromfile(template.model_template_path)

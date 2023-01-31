@@ -19,7 +19,6 @@
 import argparse
 import os
 from pathlib import Path
-from typing import Any, Dict
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -31,10 +30,12 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
+from otx.cli.builder import Builder
 from otx.cli.registry import find_and_parse_model_template
+from otx.cli.tools.build import build
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
-from otx.cli.utils.importing import get_impl_class
+from otx.cli.utils.importing import get_impl_class, get_otx_root_path
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
 from otx.cli.utils.parser import (
@@ -42,9 +43,6 @@ from otx.cli.utils.parser import (
     gen_params_dict_from_args,
 )
 from otx.core.data.adapter import get_dataset_adapter
-from otx.cli.builder import Builder
-from otx.cli.utils.importing import get_otx_root_path
-from otx.cli.tools.build import build
 
 
 def get_parser():
@@ -54,22 +52,12 @@ def get_parser():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument(
-        "--template",
-        required=False,
-        default="./template.yaml",
-        help="Template file."
-    )
-    parser.add_argument(
-        "--data",
-        required=False,
-        default="./data.yaml",
-        help="Template file."
-    )
-    
+    parser.add_argument("--template", required=False, default="./template.yaml", help="Template file.")
+    parser.add_argument("--data", required=False, default="./data.yaml", help="Template file.")
+
     parsed, _ = parser.parse_known_args()
     required = not os.path.exists(parsed.data)
-    
+
     parser.add_argument(
         "--train-data-roots",
         required=required,
@@ -103,7 +91,7 @@ def get_parser():
     parser.add_argument(
         "--save-model-to",
         required=False,
-        default='results',
+        default="results",
         help="Location where trained model will be stored.",
     )
     parser.add_argument(
@@ -150,21 +138,22 @@ def get_parser():
     return parser
 
 
-def main():  # pylint: disable=too-many-branches
+# pylint: disable=too-many-branches, too-many-statements
+def main():
     """Main function that is used for model training."""
     parser = get_parser()
-    
+
     args, _ = parser.parse_known_args()
     train_workspace_path = os.getcwd()
-    
+
     has_template_yaml = Path(args.template).exists()
     has_data_yaml = Path(args.data).exists()
     was_built_before = has_template_yaml and has_data_yaml
     if not was_built_before:
         # Prepare build
-        train_workspace_path = os.path.join(args.save_model_to) 
+        train_workspace_path = os.path.join(args.save_model_to)
         template = find_and_parse_model_template(args.template) if has_template_yaml else None
-    
+
         # Build
         builder = Builder()
         build(
@@ -173,20 +162,18 @@ def main():  # pylint: disable=too-many-branches
             val_data_roots=args.val_data_roots,
             workspace_root=train_workspace_path,
             otx_root=get_otx_root_path(),
-            template=template
+            template=template,
         )
-    
+
     # Update configurations made by builder
     # When users input template argument, need to overwrite
-    if args.template != './template.yaml':
+    if args.template != "./template.yaml":
         template = find_and_parse_model_template(args.template)
     else:
-        template = find_and_parse_model_template(
-            os.path.join(train_workspace_path, "template.yaml")
-        )
-    args.data = os.path.join(train_workspace_path, 'data.yaml')
+        template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
+    args.data = os.path.join(train_workspace_path, "data.yaml")
     data_config = configure_dataset(args)
-     
+
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
@@ -217,7 +204,7 @@ def main():  # pylint: disable=too-many-branches
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
             "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
-    
+
     # Datumaro
     dataset_adapter = get_dataset_adapter(
         template.task_type,
