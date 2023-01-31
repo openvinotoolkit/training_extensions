@@ -1,4 +1,4 @@
 openvino==2022.3.0
 openmodelzoo-modelapi==2022.3.0
-ote-sdk @ git+https://github.com/openvinotoolkit/training_extensions/@400e25edb894fd4665f9ca60cdb9abd6054b9571#egg=ote-sdk&subdirectory=ote_sdk
+ote-sdk @ git+https://github.com/openvinotoolkit/training_extensions/@5ad1b8ebab1d409b596aef236f1f9c63327b42d4#egg=ote-sdk&subdirectory=ote_sdk
 numpy<=1.23.5  # np.bool was removed in 1.24.0 which was used in openvino runtime
