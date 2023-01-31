@@ -118,17 +118,19 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
         if self._multilabel:
-            logger.info("Classiification mode: multilabel")
+            logger.info("Classification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
-            logger.info("Classiification mode: hierarchical")
+            logger.info("Classification mode: hierarchical")
+            single_label_groups = [g for g in task_environment.label_schema.get_groups(False) if len(g.labels) == 1]
+            include_empty = True if single_label_groups else False
             self._hierarchical = True
-            self._labels = task_environment.get_labels(include_empty=True)
+            self._labels = task_environment.get_labels(include_empty=include_empty)
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema,
-                                                            with_empty=True)
+                                                            with_empty=include_empty)
         else:
-            logger.info("Classiification mode: multiclass")
+            logger.info("Classification mode: multiclass")
 
     def infer(
         self,
