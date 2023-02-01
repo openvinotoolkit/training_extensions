@@ -18,6 +18,7 @@ import os
 import shutil
 import sys
 from typing import Dict
+from pathlib import Path
 
 import pytest
 import yaml
@@ -184,9 +185,13 @@ def otx_hpo_testing(template, root, otx_dir, args):
 
     command_line.extend(args["train_params"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
-    with open(f"{template_work_dir}/hpo/hpopt_status.json", "r") as f:
-        assert json.load(f).get("best_config_id", None) is not None
+    trials_json = list(Path(f"{template_work_dir}/hpo/").rglob("*.json"))
+    assert trials_json
+    for trial_json in trials_json:
+        with trial_json.open("r") as f:
+            trial_result = json.load(f)
+        assert trial_result.get("score")
+        
     assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/label_schema.json")
 
