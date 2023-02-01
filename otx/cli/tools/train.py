@@ -158,8 +158,13 @@ def main():
     if not use_workspace:
         # Prepare build
         train_workspace_path = args.save_model_to
-        template = find_and_parse_model_template(args.template) if Path(args.template).exists() else None
 
+        # If an user gives a weird path, then automatically selects default template by using build function.
+        if Path(args.template).exists():
+            template = find_and_parse_model_template(args.template)
+        else:
+            print(f"Can't find {args.template}, the default template will be used to train. ")
+            template = None
         # Build
         builder = Builder()
         build(
