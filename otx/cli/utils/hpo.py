@@ -853,13 +853,13 @@ class HpoDataset:
     def __len__(self) -> int:
         """Get length of subset."""
         if self.indices is None:
-            raise RuntimeError("This function shouldn't be called before get_subset() is called.")
+            return len(self.fullset)
         return len(self.indices)
 
     def __getitem__(self, indx) -> dict:
         """Get dataset at index."""
         if self.indices is None:
-            raise RuntimeError("This function shouldn't be called before get_subset() is called.")
+            return self.fullset[indx]
         return self.fullset[self.indices[indx]]
 
     def __getattr__(self, name):

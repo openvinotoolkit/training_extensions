@@ -547,15 +547,15 @@ class TestHpoDataset:
         for i in range(num_hpo_sub_dataset):
             hpo_sub_dataset[i]
 
-    def test_len_before_get_subset(self, mocker):
-        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment": {"subset_ratio": 0.5}})
-        with pytest.raises(RuntimeError):
-            len(hpo_dataset)
+    def test_len_before_get_subset(self):
+        hpo_dataset = HpoDataset(fullset=range(10), config={"train_environment": {"subset_ratio": 0.5}})
+        assert len(hpo_dataset) == 10
 
-    def test_getitem_before_get_subset(self, mocker):
-        hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment": {"subset_ratio": 0.5}})
-        with pytest.raises(RuntimeError):
-            hpo_dataset[0]
+    def test_getitem_before_get_subset(self):
+        hpo_dataset = HpoDataset(fullset=range(10), config={"train_environment": {"subset_ratio": 0.5}})
+
+        for _ in hpo_dataset:
+            pass
 
 
 def test_check_hpopt_available(mocker):
