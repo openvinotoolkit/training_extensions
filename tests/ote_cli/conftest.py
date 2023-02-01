@@ -36,12 +36,12 @@ def manage_tm_config_for_testing():
     isip_exist = os.path.exists(isip_path)
     otm_exist = os.path.exists(otm_path)
 
+    created_cfg_dir = False
     if not os.path.exists(cfg_dir):
         created_cfg_dir = True
         os.makedirs(cfg_dir)
 
     isip_backup = None
-    is_cfg_dir_existed = True
 
     if not isip_exist:
         with open(isip_path, "w") as f:
@@ -67,7 +67,7 @@ def manage_tm_config_for_testing():
         if isip_backup is not None:
             with open(isip_path, "w") as f:
                 f.write(isip_backup)
-    
+
     if not otm_exist:
         os.remove(otm_path)
     else:
