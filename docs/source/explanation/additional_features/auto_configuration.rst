@@ -24,23 +24,23 @@ It will recognize the task by analizing the dataset and if there is no splits fo
 
 .. note::
 
-    Currently, Datumaro auto-split feature supports 3 tasks: **multi-class classification**, **detection** and **semantic segmentation**.
+    Currently, Datumaro auto-split feature supports 3 formats: `Imagenet <https://www.image-net.org/>`_  (**multi-class classification**), `COCO <https://cocodataset.org/#format-data>`_ (**detection**) and `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_ (**semantic segmentation**).
 
 After dataset preparation the training will be started with the middle-sized template to achieve a competitive accuracy preserving fast inference.
 
-Supported dataset formats for each task:
-
-- classificaiton: `Imagenet <https://www.image-net.org/>`_, `COCO <https://cocodataset.org/#format-data>`_ (multi-label), :ref:`custom hierarchical <hierarchical_dataset>`
-- object detection: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_
-- semantic segmentation: `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_, `ADE20k <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_
-- action classification: `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
-- action : `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
-- anomaly classificaiton: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
-- anomaly detection: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
-- anomaly segmentation: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
-- instance segmentation: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
-
 .. note::
+
+    Supported dataset formats for each task:
+
+    - classificaiton: `Imagenet <https://www.image-net.org/>`_, `COCO <https://cocodataset.org/#format-data>`_ (multi-label), :ref:`custom hierarchical <hierarchical_dataset>`
+    - object detection: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_
+    - semantic segmentation: `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_, `ADE20k <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_
+    - action classification: `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
+    - action : `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
+    - anomaly classificaiton: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
+    - anomaly detection: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
+    - anomaly segmentation: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
+    - instance segmentation: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
 
     If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type with an additional CLI option. If not, OTX automatically chooses the task type that you might don't intend:
 
