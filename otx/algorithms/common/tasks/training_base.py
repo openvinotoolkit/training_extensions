@@ -368,7 +368,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
         )
 
-        if params.enable_early_stopping:
+        if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
             early_stop = ConfigDict(
                 start=int(params.early_stop_start),
                 patience=int(params.early_stop_patience),
