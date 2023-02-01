@@ -20,6 +20,7 @@ and build models with new backbone replacements.
 import argparse
 import os
 from pathlib import Path
+from typing import Optional
 
 from otx.api.entities.model_template import ModelTemplate
 from otx.cli.builder import Builder
@@ -31,7 +32,7 @@ SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 
 
 def set_workspace(task: str, model: str = None, root: str = None, name: str = "otx-workspace"):
-    """Set workspace path according to arugments."""
+    """Set workspace path according to arguments."""
     path = f"{root}/{name}-{task}" if root else f"./{name}-{task}"
     if model:
         path += f"-{model}"
@@ -61,16 +62,15 @@ def parse_args():
 # pylint: disable=too-many-arguments
 def build(
     builder: Builder,
-    train_data_roots: str = None,
-    val_data_roots: str = None,
-    task: str = None,
-    train_type: str = "incremental",
-    workspace_root: str = None,
-    model: str = None,
-    backbone: str = None,
-    save_backbone_to: str = None,
-    otx_root: str = ".",
-    template: ModelTemplate = None,
+    train_data_roots: Optional[str] = None,
+    val_data_roots: Optional[str] = None,
+    task: Optional[str] = None,
+    train_type: Optional[str] = "incremental",
+    workspace_root: Optional[str] = None,
+    model: Optional[str] = None,
+    backbone: Optional[str] = None,
+    save_backbone_to: Optional[str] = None,
+    template: Optional[ModelTemplate] = None,
 ):
     """Makes configuration files (data.yaml, template.yaml, ...) in workspace directory.
 
@@ -79,15 +79,15 @@ def build(
         train_data_roots (str, optional): The path of training dataset. Defaults to None.
         val_data_roots (str, optional): The path of validation dataset. Defaults to None.
         task (str, optional): The name of task (i.e. classification, detection, segmentation, ..). Defaults to None.
-        train_type (str, optional): The type of training (i.e. incremental, semi-sl, ..). Defaults to "incremental".
+        train_type (str, optional): The type of training (i.e. incremental, semisl, selfsl). Defaults to "incremental".
         workspace_root (str, optional): The path of workspace. Defaults to None.
         model (str, optional): The path for model.py. Defaults to None.
         backbone (str, optional): The name of backbone models (i.e. mmdet.ResNet). Defaults to None.
         save_backbone_to (str, optional): The path for saving model, it is used on train.py. Defaults to None.
-        otx_root (str, optional): The path for OTX root. Defaults to ".".
         template (ModelTemplate, optional): ModelTemplate class. Defaults to None.
 
     """
+    otx_root = get_otx_root_path()
 
     # Auto-configuration
     config_manager = ConfigManager()
@@ -98,15 +98,16 @@ def build(
         if val_data_roots is None:
             config_manager.auto_split_data(train_data_roots, task)
 
-    if task and task in SUPPORTED_TASKS:
+    if task is not None and task in SUPPORTED_TASKS:
         # Build with task_type and create user workspace
         if workspace_root is None:
-            assert task
             workspace_root = set_workspace(task, model)
+
+        train_type = train_type.lower() if train_type is not None else train_type
         builder.build_task_config(
             task_type=task,
             model_type=model,
-            train_type=train_type.lower(),
+            train_type=train_type,
             workspace_path=Path(workspace_root),
             otx_root=otx_root,
             template=template,
@@ -140,7 +141,6 @@ def main():
     args.task = args.task.upper() if args.task is not None else args.task
 
     builder = Builder()
-    otx_root = get_otx_root_path()
 
     build(
         builder=builder,
@@ -152,7 +152,6 @@ def main():
         model=args.model,
         backbone=args.backbone,
         save_backbone_to=args.save_backbone_to,
-        otx_root=otx_root,
     )
 
 

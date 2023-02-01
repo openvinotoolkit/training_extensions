@@ -35,7 +35,7 @@ from otx.cli.registry import find_and_parse_model_template
 from otx.cli.tools.build import build
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
-from otx.cli.utils.importing import get_impl_class, get_otx_root_path
+from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
 from otx.cli.utils.parser import (
@@ -146,13 +146,19 @@ def main():
     args, _ = parser.parse_known_args()
     train_workspace_path = os.getcwd()
 
-    has_template_yaml = Path(args.template).exists()
-    has_data_yaml = Path(args.data).exists()
-    was_built_before = has_template_yaml and has_data_yaml
-    if not was_built_before:
+    default_workspace_components = {"tempate_path": "./template.yaml", "data_path": "./data.yaml"}
+    has_template_yaml = Path(default_workspace_components["template_path"]).exists()
+    has_data_yaml = Path(default_workspace_components["data_path"]).exists()
+
+    # Possible scenario 1: otx build --> otx train
+    # Possible scenario 2: otx build --> otx train --template=${TEMPLATE}
+    # Possible scenario 3: otx train --train-data-roots=${PATH}
+    # So, we need to check whethere there is workspace or not
+    use_workspace = has_template_yaml and has_data_yaml
+    if not use_workspace:
         # Prepare build
-        train_workspace_path = os.path.join(args.save_model_to)
-        template = find_and_parse_model_template(args.template) if has_template_yaml else None
+        train_workspace_path = args.save_model_to
+        template = find_and_parse_model_template(args.template) if Path(args.template).exists() else None
 
         # Build
         builder = Builder()
@@ -161,22 +167,23 @@ def main():
             train_data_roots=args.train_data_roots,
             val_data_roots=args.val_data_roots,
             workspace_root=train_workspace_path,
-            otx_root=get_otx_root_path(),
             template=template,
         )
-
-    # Update configurations made by builder
-    # When users input template argument, need to overwrite
-    if args.template != "./template.yaml":
-        template = find_and_parse_model_template(args.template)
     else:
-        template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
+        # Update configurations made by builder
+        # When an user gives template argument, need to overwrite it.
+        if args.template != default_workspace_components["template_path"]:
+            template = find_and_parse_model_template(args.template)
+        else:
+            template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
+
     args.data = os.path.join(train_workspace_path, "data.yaml")
     data_config = configure_dataset(args)
 
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
+    if not hyper_parameters:
+        raise ValueError()
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
     # Get new values from user's input.

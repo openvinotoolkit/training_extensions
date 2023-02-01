@@ -22,7 +22,7 @@ and supports the replacement of the backbone of the model.
 import inspect
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 import mmcv
 import torch
@@ -141,10 +141,10 @@ class Builder:
         self,
         task_type: str,
         workspace_path: Path,
-        model_type: str = None,
-        train_type: str = "incremental",
-        otx_root: str = ".",
-        template: ModelTemplate = None,
+        model_type: Optional[str] = None,
+        train_type: Optional[str] = "incremental",
+        otx_root: Optional[str] = ".",
+        template: Optional[ModelTemplate] = None,
     ):
         """Create OTX workspace with Template configs from task type.
 
@@ -172,7 +172,9 @@ class Builder:
             else:
                 template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
 
-        assert template is not None
+        if template is None:
+            raise ValueError("Template can't be None")
+
         template_dir: Path = Path(template.model_template_path).parent
 
         # Copy task base configuration file
@@ -184,7 +186,7 @@ class Builder:
 
         # Configuration of Train Type value
         train_type_rel_path = ""
-        if train_type != "incremental":
+        if train_type is not None and train_type != "incremental":
             train_type_rel_path = train_type
         model_dir = template_dir.absolute() / train_type_rel_path
         if not model_dir.exists():
