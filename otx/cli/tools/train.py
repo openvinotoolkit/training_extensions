@@ -186,7 +186,7 @@ def main():  # pylint: disable=too-many-branches
         train_data_roots=data_roots["train_subset"]["data_root"],
         val_data_roots=data_roots["val_subset"]["data_root"] if data_config["data"]["val"]["data-roots"] else None,
         unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"]
-        if "unlabeled" in data_config and data_config["data"]["unlabeled"]["data-roots"]
+        if "unlabeled" in data_config["data"] and data_config["data"]["unlabeled"]["data-roots"]
         else None,
     )
     dataset = dataset_adapter.get_otx_dataset()
