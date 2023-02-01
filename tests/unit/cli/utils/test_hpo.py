@@ -155,8 +155,8 @@ class TestTaskManager:
             assert task_manager.get_latest_weight(work_dir) == str(latest_model_weight)
 
 
-def get_template_path(task_name: str) -> Path:
-    task_config_dir = OTX_ROOT_PATH / "algorithms" / task_name / "configs"
+def get_template_path(template_dir: str) -> Path:
+    task_config_dir = OTX_ROOT_PATH / "algorithms" / template_dir
     return list(task_config_dir.glob("**/template.yaml"))[0]
 
 
@@ -167,22 +167,22 @@ def make_task_env(template_path: str) -> TaskEnvironment:
 
 @pytest.fixture(scope="module")
 def cls_template_path() -> str:
-    return str(get_template_path("classification"))
+    return str(get_template_path("classification/configs"))
 
 
 @pytest.fixture(scope="module")
 def det_template_path() -> str:
-    return str(get_template_path("detection"))
+    return str(get_template_path("detection/configs/detection"))
 
 
 @pytest.fixture(scope="module")
 def seg_template_path() -> str:
-    return str(get_template_path("segmentation"))
+    return str(get_template_path("segmentation/configs"))
 
 
 @pytest.fixture(scope="module")
 def anomaly_template_path() -> str:
-    return str(get_template_path("anomaly"))
+    return str(get_template_path("anomaly/configs"))
 
 
 @pytest.fixture(scope="module")
