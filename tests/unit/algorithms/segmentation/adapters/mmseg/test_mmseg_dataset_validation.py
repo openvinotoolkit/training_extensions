@@ -61,9 +61,9 @@ class TestMPASegDataset():
 
     @e2e_pytest_unit
     def test_getitem_method(self) -> None:
-        data_item: dict = self.dataset.dataset(0)
-        assert 'dataset_item' in data_item
-        assert 'ann_info' in data_item
+        data_item: dict = self.dataset[0]
+        assert "dataset_item" in data_item
+        assert "ann_info" in data_item
     
     @e2e_pytest_unit
     def test_getting_annotation_info(self) -> None:
