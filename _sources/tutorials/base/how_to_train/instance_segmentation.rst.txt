@@ -1,2 +1,0 @@
-Instance Segmentation model
-================================
