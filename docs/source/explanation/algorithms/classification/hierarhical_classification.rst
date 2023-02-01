@@ -1,13 +1,18 @@
 Hierarchical Classification
 ===========================
 
-| Hierarchical Classification is an extension of the classification task where besides the set of categories to predict we have a hierarchical relationship between them. The goal of this task is to predict the hierarchical tree of the categories for the given image.
-| We solve this task by assigning a separate head for each label group on each hierarchical level. Specifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.
-| To create a non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.
-| In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for :doc:`multi_class_classification` task.
+Hierarchical Classification is an extension of the classification task where besides the set of categories to predict we have a hierarchical relationship between them.
+The goal of this task is to predict the hierarchical tree of the categories for the given image.
+
+We solve this task by assigning a separate head for each label group on each hierarchical level.
+Specifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.
+
+To create a non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.
+
+In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for :doc:`multi_class_classification` task.
 
 
-| Assume we have a label tree as below:
+Assume we have a label tree as below:
 
 .. _hierarchical_image_example:
 
@@ -15,18 +20,24 @@ Hierarchical Classification
   :width: 600
   :alt: image uploaded from this `source <https://towardsdatascience.com/https-medium-com-noa-weiss-the-hitchhikers-guide-to-hierarchical-classification-f8428ea1e076>`_
 
-| The goal of our algorithm is to return the right branch of this tree. For example: ``Persian -> Cats -> Pets``
-| At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.
-| Let's say we forward an image with the label tree pictured above. On the first level, our corresponding classifier returns 3 predictions.
-| We perform an *argmax* operation and obtain, for example, class ``Cats``. Then, we choose a classifier related to ``{Siamse, Persian, Sphynx}`` label group, obtain its predictions, and after performing the *argmax* operation we choose our last leaf label.
-| After that, we can easily reconstruct the final predicted tree branch: ``Persian -> Cats -> Pets``.
+The goal of our algorithm is to return the right branch of this tree. For example: ``Persian -> Cats -> Pets``
+
+At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.
+
+Let's say we forward an image with the label tree pictured above. On the first level, our corresponding classifier returns 3 predictions.
+
+We perform an *argmax* operation and obtain, for example, class ``Cats``. Then, we choose a classifier related to ``{Siamse, Persian, Sphynx}`` label group,
+obtain its predictions, and after performing the *argmax* operation we choose our last leaf label.
+
+After that, we can easily reconstruct the final predicted tree branch: ``Persian -> Cats -> Pets``.
 
 **************
 Dataset Format
 **************
 .. _hierarchical_dataset:
 
-For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
+For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_.
+An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
 
 Besides that we support the following custom dataset format:
 
@@ -48,8 +59,9 @@ Besides that we support the following custom dataset format:
         ├── train.json
         └── val.json
 
-| Where annotations ``*.json`` consists of two keys: **"images"** and **"hierarchy"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"hierarchy"** describes each label group presented in the label tree.
-| An example of annotations structure can be found `here <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/data/car_tree_bug/annotations/hierarchical_default.json>`_. For more intuition below is the hierarchical structure represented for the given above :ref:`image example <hierarchical_image_example>`:
+Where annotations ``*.json`` consists of two keys: **"images"** and **"hierarchy"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"hierarchy"** describes each label group presented in the label tree.
+
+An example of annotations structure can be found `here <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/data/car_tree_bug/annotations/hierarchical_default.json>`_. For more intuition below is the hierarchical structure represented for the given above :ref:`image example <hierarchical_image_example>`:
 
 ::
 

@@ -2,7 +2,7 @@ Auto-configuration
 ==================
 
 Auto-configuration for a deep learning framework means the automatic finding of the most appropriate settings for the training parameters, based on the dataset and the specific task at hand.
-Auto-configuration can help to save time, ease the process of interaction with OTX CLI and give a better baseline for the given dataset.
+Auto-configuration can help to save time, it eases the process of interaction with OTX CLI and gives a better baseline for the given dataset.
 
 At this end, we developed a simple auto-configuration functionality to ease the process of training and validation utilizing our framework.
 Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifiing anything else:
@@ -24,7 +24,7 @@ It will recognize the task by analizing the dataset and if there is no splits fo
 
 .. note::
 
-    Currently, Datumaro auto-split feature supports 3 formats: `Imagenet <https://www.image-net.org/>`_  (**multi-class classification**), `COCO <https://cocodataset.org/#format-data>`_ (**detection**) and `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_ (**semantic segmentation**).
+    Currently, Datumaro auto-split feature supports 3 formats: `Imagenet <https://www.image-net.org/>`_  (multi-class classification), `COCO <https://cocodataset.org/#format-data>`_ (detection) and `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_ (semantic segmentation).
 
 After dataset preparation the training will be started with the middle-sized template to achieve a competitive accuracy preserving fast inference.
 

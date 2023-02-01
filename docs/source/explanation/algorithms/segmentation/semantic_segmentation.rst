@@ -40,6 +40,14 @@ If you organized supported dataset format, starting training will be very simple
 
     $ otx {train, optimize} <model_template> --train-data-root <path_to_data_root>
 
+
+.. note::
+
+    OTX will recognize train and validation splits automatically. If you want to emphasize the validation dataset root path, you can simply add the ``--val-data-root <path_to_val_data_root>`` option.
+
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` how to train, validate and optimize semantic segmentation model for more details.
+
+
 For now, we also support a dataset in the custom format below, where image-annotation pairs have the same name:
 
 ::

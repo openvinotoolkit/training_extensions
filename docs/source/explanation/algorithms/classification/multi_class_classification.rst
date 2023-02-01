@@ -15,6 +15,8 @@ For the supervised training we use the following algorithms components:
 - ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. This is a balancing training method that helps us to solve the imbalanced data problem.
 
 - Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
+
+
 To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
 
 **************
