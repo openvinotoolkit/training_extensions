@@ -9,7 +9,7 @@
           "preset": "quantile"
         },
         "ignored": {
-          "scope": ["210", "224"]
+          "scope": ["/anomaly_map_generator/Mul", "/anomaly_map_generator/Sqrt"]
         },
         "shuffle_data": true
       }
