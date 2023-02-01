@@ -1,9 +1,14 @@
 Tutorials
 =========
 
-.. toctree::
-   :maxdepth: 2
+This section reveals how to use ``OTX CLI``, both base and advanced features.
 
-   how_to_install
-   how_to_use/index
-   how_to_customize/index
+It provides end-to-end solutions from installation to model deployment and demo visualization on specific example for each of the supported tasks.
+
+.. toctree::
+   :maxdepth: 3
+
+   base/index
+   advanced/index
+
+

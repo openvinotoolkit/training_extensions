@@ -35,8 +35,8 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.shape_factory import ShapeFactory
+from tests.test_helpers import generate_random_annotated_image
 from tests.test_suite.e2e_test_system import e2e_pytest_api
-from tests.unit.api.test_helpers import generate_random_annotated_image
 
 DEFAULT_DET_TEMPLATE_DIR = osp.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
 

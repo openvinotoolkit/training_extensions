@@ -24,6 +24,7 @@ import time
 from contextlib import closing
 from typing import Callable, List, Optional
 
+import psutil
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
@@ -237,7 +238,22 @@ class MultiGPUManager:
 
         MultiGPUManager.initialize_multigpu_train(rdzv_endpoint, rank, local_rank, gpu_ids, world_size)
 
+        threading.Thread(target=MultiGPUManager.check_parent_processes_alive, daemon=True).start()
+
         train_func()
+
+    @staticmethod
+    def check_parent_processes_alive():
+        """Check parent process is alive and if not, exit by itself."""
+        cur_process = psutil.Process()
+        parent = cur_process.parent()
+        while True:
+            time.sleep(1)
+            if not parent.is_running():
+                break
+
+        logger.warning("Parent process is terminated abnormally. Process exits.")
+        cur_process.kill()
 
     def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
         processes = []

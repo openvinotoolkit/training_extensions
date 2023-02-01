@@ -41,7 +41,6 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hid_channels = hid_channels
-        self.act = build_activation_layer(act_cfg)
         self.dropout = dropout
         self.normalized = normalized
         self.scale = scale
@@ -49,10 +48,14 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         if self.num_classes <= 0:
             raise ValueError(f"num_classes={num_classes} must be a positive integer")
 
-        self._init_layers()
+        self._init_layers(act_cfg)
 
-    def _init_layers(self):
-        modules = [nn.Linear(self.in_channels, self.hid_channels), nn.BatchNorm1d(self.hid_channels), self.act]
+    def _init_layers(self, act_cfg):
+        modules = [
+            nn.Linear(self.in_channels, self.hid_channels),
+            nn.BatchNorm1d(self.hid_channels),
+            build_activation_layer(act_cfg),
+        ]
         if self.dropout:
             modules.append(nn.Dropout(p=0.2))
         if self.normalized:
@@ -77,7 +80,12 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)
         # compute loss
-        loss = self.compute_loss(cls_score, _gt_label, valid_label_mask=valid_label_mask, avg_factor=num_samples)
+        loss = self.compute_loss(
+            cls_score,
+            _gt_label,
+            valid_label_mask=valid_label_mask,
+            avg_factor=num_samples,
+        )
         losses["loss"] = loss / self.scale
         return losses
 

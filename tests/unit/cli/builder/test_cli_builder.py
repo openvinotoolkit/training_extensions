@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from pathlib import Path
-from typing import Union
 
 import mmcv
 import pytest
@@ -48,7 +47,7 @@ class TestOTXCLIBuilder:
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self, tmp_dir_path: Union[Path, str]) -> None:
+    def setup(self, tmp_dir_path: str) -> None:
         self.otx_builder = Builder()
         self.otx_root = get_otx_root_path()
         self.tmp_dir_path = tmp_dir_path if isinstance(tmp_dir_path, Path) else Path(tmp_dir_path)
@@ -64,7 +63,6 @@ class TestOTXCLIBuilder:
         assert (workspace_path / "configuration.yaml").exists()
         assert (workspace_path / "template.yaml").exists()
         assert (workspace_path / "model.py").exists()
-        assert (workspace_path / "data.yaml").exists()
         assert (workspace_path / "data_pipeline.py").exists()
 
     @e2e_pytest_unit
@@ -90,7 +88,6 @@ class TestOTXCLIBuilder:
         assert workspace_path.exists()
         assert (workspace_path / "configuration.yaml").exists()
         assert (workspace_path / "template.yaml").exists()
-        assert (workspace_path / "data.yaml").exists()
         template = MPAConfig.fromfile(str(workspace_path / "template.yaml"))
         expected_template_train_type = {"default_value": "SELFSUPERVISED"}
         assert template.hyper_parameters.parameter_overrides.algo_backend.train_type == expected_template_train_type
@@ -209,20 +206,6 @@ class TestOTXCLIBuilder:
         self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
         updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
         assert "out_indices" in updated_model_config.model.backbone
-
-    @e2e_pytest_unit
-    def test_builder_merge_backbone_backbone_pretrained(self) -> None:
-        """Update model config with backbone's pretrained path."""
-        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
-        tmp_model_path = workspace_path / "model.py"
-        tmp_backbone_path = workspace_path / "backbone.yaml"
-        backbone_config = mmcv.load(str(tmp_backbone_path))
-        expected_pretrained = "pretrained.path"
-        backbone_config["backbone"]["pretrained"] = expected_pretrained
-        mmcv.dump(backbone_config, str(tmp_backbone_path))
-        self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
-        updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
-        assert updated_model_config.model.pretrained == expected_pretrained
 
 
 class MockBackbone(nn.Module):

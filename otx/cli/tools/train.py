@@ -174,7 +174,7 @@ def main():  # pylint: disable=too-many-branches
             "ann_file": data_config["data"]["val"]["ann-files"],
             "data_root": data_config["data"]["val"]["data-roots"],
         }
-    if data_config["data"]["unlabeled"]["data-roots"]:
+    if "unlabeled" in data_config["data"] and data_config["data"]["unlabeled"]["data-roots"]:
         data_roots["unlabeled_subset"] = {
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
             "file_list": data_config["data"]["unlabeled"]["file-list"],
@@ -186,7 +186,7 @@ def main():  # pylint: disable=too-many-branches
         train_data_roots=data_roots["train_subset"]["data_root"],
         val_data_roots=data_roots["val_subset"]["data_root"] if data_config["data"]["val"]["data-roots"] else None,
         unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"]
-        if data_config["data"]["unlabeled"]["data-roots"]
+        if "unlabeled" in data_config["data"] and data_config["data"]["unlabeled"]["data-roots"]
         else None,
     )
     dataset = dataset_adapter.get_otx_dataset()
@@ -259,7 +259,7 @@ def main():  # pylint: disable=too-many-branches
         assert resultset.performance is not None
         print(resultset.performance)
 
-    task.unload()
+    task.cleanup()
 
     if args.gpus:
         multigpu_manager.finalize()

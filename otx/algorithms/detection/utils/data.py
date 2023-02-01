@@ -27,6 +27,7 @@ from mmdet.datasets.api_wrappers.coco_api import COCO
 from otx.algorithms.detection.adapters.mmdet.data.dataset import (
     get_annotation_mmdet_format,
 )
+from otx.algorithms.detection.configs.base.configuration import DetectionConfig
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -464,24 +465,24 @@ def format_list_to_str(value_lists: list):
     return f"[{str_value[:-2]}]"
 
 
-def adaptive_tile_params(dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg") -> Dict:
+def adaptive_tile_params(
+    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"
+):
     """Config tile parameters.
 
     Adapt based on annotation statistics.
     i.e. tile size, tile overlap, ratio and max objects per sample
 
     Args:
+        tiling_parameters (BaseTilingParameters): tiling parameters of the model
         dataset (DatasetEntity): training dataset
         object_tile_ratio (float, optional): The desired ratio of object area and tile area. Defaults to 0.01.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
                               `avg` mode tile size is computed by averaging all the object areas. Defaults to "avg".
 
-    Returns:
-        Dict: adaptive tile parameters
     """
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
 
-    tile_cfg = dict(tile_size=0, tile_overlap=0, tile_max_number=0)
     bboxes = np.zeros((0, 4), dtype=np.float32)
     labels = dataset.get_labels(include_empty=False)
     domain = labels[0].domain
@@ -502,9 +503,22 @@ def adaptive_tile_params(dataset: DatasetEntity, object_tile_ratio=0.01, rule="a
     max_area = np.max(areas)
 
     tile_size = int(math.sqrt(object_area / object_tile_ratio))
-    overlap_ratio = max_area / (tile_size**2) if max_area / (tile_size**2) < 1.0 else None
+    tile_overlap = max_area / (tile_size**2)
 
-    tile_cfg.update(dict(tile_size=tile_size, tile_max_number=max_object))
-    if overlap_ratio:
-        tile_cfg.update(dict(tile_overlap=overlap_ratio))
-    return tile_cfg
+    # validate parameters are in range
+    tile_size = max(
+        tiling_parameters.get_metadata("tile_size")["min_value"],
+        min(tiling_parameters.get_metadata("tile_size")["max_value"], tile_size),
+    )
+    tile_overlap = max(
+        tiling_parameters.get_metadata("tile_overlap")["min_value"],
+        min(tiling_parameters.get_metadata("tile_overlap")["max_value"], tile_overlap),
+    )
+    max_object = max(
+        tiling_parameters.get_metadata("tile_max_number")["min_value"],
+        min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_object),
+    )
+
+    tiling_parameters.tile_size = tile_size
+    tiling_parameters.tile_max_number = max_object
+    tiling_parameters.tile_overlap = tile_overlap

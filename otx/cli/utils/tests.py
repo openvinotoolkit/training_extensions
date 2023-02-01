@@ -17,6 +17,7 @@ import json
 import os
 import shutil
 import sys
+from typing import Dict
 
 import pytest
 import yaml
@@ -728,3 +729,17 @@ def otx_build_backbone_testing(root, backbone_args):
     assert (
         model_config["model"]["backbone"]["type"] == backbone
     ), f"{model_config['model']['backbone']['type']} != {backbone}"
+
+
+def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
+    workspace_root = os.path.join(root, "otx-workspace")
+    command_line = ["otx", "build", "--workspace-root", workspace_root]
+
+    for option, val in args.items():
+        if option in ["--train-data-roots", "--val-data-roots"]:
+            command_line.extend([option, f"{os.path.join(otx_dir, val)}"])
+        elif option in ["--task"]:
+            command_line.extend([option, args[option]])
+    check_run(command_line)
+
+    shutil.rmtree(workspace_root)
