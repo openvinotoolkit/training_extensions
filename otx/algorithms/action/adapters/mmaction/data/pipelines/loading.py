@@ -30,10 +30,10 @@ class RawFrameDecode:
 
     def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Call function of RawFrameDecode."""
-        results = self.decode_from_list(results)
+        results = self._decode_from_list(results)
         return results
 
-    def decode_from_list(self, results: Dict[str, Any]):
+    def _decode_from_list(self, results: Dict[str, Any]):
         """Generate numpy array list from list of DatasetItemEntity."""
         imgs = []
         for index in results["frame_inds"]:
