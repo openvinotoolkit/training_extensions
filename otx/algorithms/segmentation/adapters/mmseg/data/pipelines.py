@@ -106,7 +106,7 @@ class LoadAnnotationFromOTXDataset:
 class TwoCropTransform:
     """TwoCropTransform to combine two pipelines.
 
-    Through `SwitchPipelineHook`, how frequently both pipelines (view0 + view1) is applied can be set.
+    Through `TwoCropTransformHook`, how frequently both pipelines (view0 + view1) is applied can be set.
 
     :param view0: Pipeline for online network.
     :param view1: Pipeline for target network.
