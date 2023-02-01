@@ -1,4 +1,6 @@
-# Copyright (C) 2021 Intel Corporation
+"""OpenVINO Adapters for Action Recognition."""
+
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
-from subprocess import run
+from .dataloader import ActionOVClsDataLoader, get_ovdataloader
+from .model_wrappers import OTXOVActionCls, OTXOVActionDet
 
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
-
-
-class TestCodeChecks:
-    @e2e_pytest_component
-    def test_code_checks(self):
-        wd = os.path.join(os.path.dirname(__file__), "..", "..", "..")
-        assert run(["./tests/run_code_checks.sh"], cwd=wd, check=True).returncode == 0
+__all__ = ["OTXOVActionCls", "OTXOVActionDet", "ActionOVClsDataLoader", "get_ovdataloader"]

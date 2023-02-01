@@ -1,4 +1,6 @@
-# Copyright (C) 2021 Intel Corporation
+"""Model wrappers."""
+
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from ote_sdk.test_suite.pytest_insertions import *  # noqa #pylint: disable=unused-import
+from .openvino_models import OTXOVActionCls, OTXOVActionDet
 
-pytest_plugins = get_pytest_plugins_from_ote()
-
-ote_conftest_insertion(default_repository_name="ote/training_extensions/")
-
-
-def pytest_addoption(parser):
-    ote_pytest_addoption_insertion(parser)
+__all__ = ["OTXOVActionCls", "OTXOVActionDet"]
