@@ -255,6 +255,8 @@ class DetConB(nn.Module):
         elif self.input_transform == "multiple_select":
             inputs = [inputs[i] for i in self.in_index]
         else:
+            if isinstance(self.in_index, (list, tuple)):
+                self.in_index = self.in_index[0]
             inputs = inputs[self.in_index]  # type: ignore
 
         return inputs
@@ -285,6 +287,7 @@ class DetConB(nn.Module):
         if isinstance(feats, (list, tuple)) and len(feats) > 1:
             feats = self.transform_inputs(feats)
 
+        # TODO (sungchul): consider self.input_transform == "multiple_select"
         sampled_masks, sampled_mask_ids = self.mask_pool(masks)
 
         b, c, h, w = feats.shape  # type: ignore
