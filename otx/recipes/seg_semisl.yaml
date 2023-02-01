@@ -1,0 +1,30 @@
+workflow_hooks:
+    - type: WFProfileHook
+      name: profile_hook
+
+stages:
+    - name: train
+      type: SegTrainer
+      task: segmentation
+      mode: train
+      config: {{ fileDirname }}/stages/segmentation/semisl.py
+      output:
+          - final_ckpt
+
+    - name: final-eval
+      type: SegEvaluator
+      task: segmentation
+      mode: train
+      config: {{ fileDirname }}/stages/segmentation/semisl.py
+      input:
+          pretrained:
+              stage_name: train
+              output_key: final_ckpt
+
+    - name: eval-only
+      type: SegEvaluator
+      task: segmentation
+      mode: eval
+      config: {{ fileDirname }}/stages/segmentation/semisl.py
+
+load_from: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth

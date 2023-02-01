@@ -1,0 +1,31 @@
+workflow_hooks:
+    - type: WFProfileHook
+      name: profile_hook
+
+stages:
+    - name: pre-training
+      mode: train
+      type: SelfSLTrainer
+      config: {{ fileDirname }}/stages/classification/selfsl.yaml
+      output:
+        - pretrained
+
+    - name: cls_from_byol
+      mode: train
+      type: ClsTrainer
+      config: {{ fileDirname }}/stages/classification/train.yaml
+      input:
+        pretrained:
+          stage_name: pre-training
+          output_key: pretrained
+      output:
+        - final_ckpt
+
+    - name: evaluation
+      type: ClsEvaluator
+      mode: train
+      config: {{ fileDirname }}/stages/classification/train.yaml
+      input:
+        pretrained:
+          stage_name: cls_from_byol
+          output_key: final_ckpt

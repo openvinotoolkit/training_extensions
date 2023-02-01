@@ -1,56 +1,45 @@
 default_language_version:
   python: python3.8
   node: 16.15.0
+  ruby: 2.7.2
 
 repos:
   - repo: https://github.com/PyCQA/isort
-    rev: "5.10.1"
+    rev: "5.12.0"
     hooks:
       - id: isort
-        alias: isort_ote_sdk
-        name: "isort (ote_sdk)"
-        files: '^ote_sdk/.*\.py'
-      - id: isort
-        alias: isort_rest
-        name: "isort (ote_cli|external)"
-        files: '^(ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
-        exclude: "tests/"
+        files: '^(otx|tests)/.*\.py'
+        exclude: "tests/ote_cli"
 
   - repo: https://github.com/psf/black
     rev: 22.6.0
     hooks:
       - id: black
-        name: "black (ote_sdk|ote_cli)"
-        args: [--line-length, "88"]
-        files: '^(ote_sdk|ote_cli)/.*\.py'
-      - id: black
-        name: "black (rest)"
         args: [--line-length, "120"]
-        files: '^(external/anomaly|external/model-preparation-algorithm)/.*\.py'
+        files: '^(otx|tests)/.*\.py'
+        exclude: "tests/ote_cli"
 
   - repo: https://github.com/PyCQA/flake8
     rev: "5.0.3"
     hooks:
       - id: flake8
         name: "flake8"
-        files: '^(ote_sdk|ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
+        files: '^(otx|tests)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
-        exclude: ".*/protobuf"
+        exclude: "^(.*/protobuf|tests/ote_cli)|otx/mpa|otx/recipes"
 
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
     hooks:
       - id: prettier
-        exclude: "external/deep-object-reid"
+        exclude: "external|otx/mpa|otx/recipes"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v0.971"
     hooks:
       - id: mypy
-        alias: mypy_ote_sdk
-        name: "mypy (ote_sdk)"
-        files: '^ote_sdk/.*\.py'
+        files: '^(otx)/.*\.py'
         additional_dependencies:
           [
             numpy==1.19.5,
@@ -62,29 +51,19 @@ repos:
             types_futures,
             types-python-dateutil,
           ]
-      - id: mypy
-        alias: mypy_ote_cli
-        name: "mypy (ote_cli)"
-        files: '^ote_cli/.*\.py'
-        additional_dependencies: [types-PyYAML]
-      - id: mypy
-        alias: mypy_anomaly
-        name: "mypy (anomaly)"
-        files: '^external/anomaly/.*\.py'
-        additional_dependencies: [attrs==21.2.*]
-        exclude: "^external/anomaly/tests"
+        exclude: "^otx/algorithms/anomaly/tests|otx/recipes|otx/mpa"
 
   - repo: https://github.com/PyCQA/pylint
     rev: "v2.14.5"
     hooks:
       - id: pylint
         name: "pylint"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+        files: '^(otx)/.*\.py'
+        exclude: "tests|otx/mpa|otx/recipes"
         entry: pylint
         language: system
         types: [python]
         args: ["--score=no"]
-        exclude: "tests"
 
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.1.1
@@ -95,5 +74,25 @@ repos:
         entry: pydocstyle
         language: python
         types: [python]
-        files: '^external/anomaly/.*\.py'
-        exclude: "external/anomaly/tests"
+        files: '^otx/.*\.py'
+        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests|otx/cli/utils/tests.py|otx/mpa|otx/recipes"
+
+    # Will use rst
+    # - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    #   rev: 2.1.6
+    #   hooks:
+    #     - id: markdownlint
+    #       # TODO: Check all files even tests after migration to otx is complete
+    #       exclude: "^(ote_sdk|tests|.github|external)"
+
+  - repo: https://github.com/AleksaC/hadolint-py
+    rev: v2.10.0
+    hooks:
+      - id: hadolint
+        name: Lint Dockerfiles
+        description: Runs hadolint to lint Dockerfiles
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.8.0.4
+    hooks:
+      - id: shellcheck # TODO remove this when all shell scripts have been removed from otx

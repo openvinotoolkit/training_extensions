@@ -2,30 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## \[v0.5.0\]
-
-> _**notes**_
-> OpenVINO Training Extension (OTE) which version is equal or older then v0.5.0 does not include the latest functional and security updates. OTE Version 1.0.0 is targeted to be released in February 2023 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
-
-### Added
-
-- Add tiling in rotated detection (<https://github.com/openvinotoolkit/training_extensions/pull/1420>)
-- Add Cythonize AugMixAugment (<https://github.com/openvinotoolkit/training_extensions/pull/1478/>)
-- Integrate ov-telemetry (<https://github.com/openvinotoolkit/training_extensions/pull/1568>)
-
-### Changed
-
-- Update OpenVINO to 2022.3 release & nncf to the pre-2.4 version (<https://github.com/openvinotoolkit/training_extensions/pull/1393>)
-
-### Fixed
-
-- Fixing h-label head output bug in OV inference (<https://github.com/openvinotoolkit/training_extensions/pull/1458>)
-- Fixing deprecated np.bool issue from numpy==1.24.0 (<https://github.com/openvinotoolkit/training_extensions/pull/1455>)
-- Fixing tiling OpenVINO backward compatibility (<https://github.com/openvinotoolkit/training_extensions/pull/1516>)
-- Fixing indexing in hierarchical classification inference (<https://github.com/openvinotoolkit/training_extensions/pull/1551>)
-- Copying feature vector to resolve duplication issue (<https://github.com/openvinotoolkit/training_extensions/pull/1511>)
-- Some minor issues
-
 ## \[v0.4.0\]
 
 ### Added
@@ -34,7 +10,6 @@ All notable changes to this project will be documented in this file.
   - Better saliency map support
     - Replace current saliency map generation with Recipro-CAM for cls (<https://github.com/openvinotoolkit/training_extensions/pull/1363>)
     - Class-wise saliency map generation for the detection task (<https://github.com/openvinotoolkit/training_extensions/pull/1402>)
-    - OTE Saliency Map Label (<https://github.com/openvinotoolkit/training_extensions/pull/1447>)
   - Improve object counting algorithm for high-res images via image tiling
     - Add Tiling Module (<https://github.com/openvinotoolkit/training_extensions/pull/1200>)
     - Fliter object less than 1 pixel (<https://github.com/openvinotoolkit/training_extensions/pull/1305>)
@@ -44,7 +19,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Hot-fix for Detection fix two stage error (<https://github.com/openvinotoolkit/training_extensions/pull/1433>)
-- Fixing ZeroDivisionError in iteration counter for detection-classification project trainings (<https://github.com/openvinotoolkit/training_extensions/pull/1449>)
 - Some minor issues
 
 ## \[v0.3.1\]

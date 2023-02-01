@@ -1,0 +1,20 @@
+workflow_hooks:
+    - type: WFProfileHook
+      name: profile_hook
+
+stages:
+  - name: semisl-fixmatch
+    type: ClsTrainer
+    mode: train
+    config: {{ fileDirname }}/stages/classification/semisl.yaml
+    output:
+      - final_ckpt
+
+  - name: evaluation
+    type: ClsEvaluator
+    mode: train
+    config: {{ fileDirname }}/stages/classification/semisl.yaml
+    input:
+      pretrained:
+        stage_name: semisl-fixmatch
+        output_key: final_ckpt

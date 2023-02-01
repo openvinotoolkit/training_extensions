@@ -1,0 +1,233 @@
+{
+  "backbones": {
+    "torchvision.alexnet": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.resnet18": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.resnet34": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.resnet50": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.resnet101": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.resnet152": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.resnext50_32x4d": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.resnext101_32x8d": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.wide_resnet50_2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.wide_resnet101_2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "Classification",
+        "ATSS",
+        "YOLOX",
+        "Segmentation",
+        "Mask-RCNN"
+      ]
+    },
+    "torchvision.vgg11": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.vgg11_bn": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.vgg13": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.vgg13_bn": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.vgg16": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.vgg16_bn": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.vgg19": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.vgg19_bn": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.squeezenet1_0": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.squeezenet1_1": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.densenet121": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.densenet161": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.densenet169": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.densenet201": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.mobilenet_v2": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.mobilenet_v3_large": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.mobilenet_v3_small": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.mnasnet0_5": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.mnasnet0_75": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.mnasnet1_0": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.mnasnet1_3": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.shufflenet_v2_x0_5": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.shufflenet_v2_x1_0": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.shufflenet_v2_x1_5": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    },
+    "torchvision.shufflenet_v2_x2_0": {
+      "required": [],
+      "options": {},
+      "available": ["Classification", "ATSS", "Segmentation", "Mask-RCNN"]
+    }
+  }
+}

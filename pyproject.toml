@@ -1,7 +1,15 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # SETUP CONFIGURATION.                                                        #
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+# FIXME: specified torch wheel to build torch cpp extension should be fixed in some
+# different way instead of using static link url
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "Cython~=0.29.32",
+    "numpy~=1.21.0",
+    "torch@https://download.pytorch.org/whl/lts/1.8/cu111/torch-1.8.2%2Bcu111-cp38-cp38-linux_x86_64.whl"
+]
 build-backend = "setuptools.build_meta"
 
 
@@ -19,6 +27,8 @@ python_version = 3.8
 ignore_missing_imports = true
 show_error_codes = true
 
+# TODO: Need to be edited
+follow_imports = "skip" 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # PYLINT CONFIGURATION                                                        #
@@ -47,6 +57,7 @@ disable = [
 [tool.pylint.typecheck]
 generated-members = ["numpy.*", "torch.*"]
 ignored-modules = [
+    "otx",
     "ote_sdk",
     "mmseg",
     "segmentation_tasks",
@@ -91,7 +102,7 @@ good-names = [
 ]
 
 [tool.pylint.imports]
-known-third-party = ["enchant", "ote_sdk"]
+known-third-party = ["enchant", "ote_sdk", "otx"]
 
 [tool.pylint.design]
 max-args = 7
@@ -111,4 +122,5 @@ ignore = [
     "D406", # Section name should end with a newline
     "D407", # Missing dashed underline after section
     "D413", # Missing blank line after last section
+    "D418", # Methods decorated with @overload shouldn't contain a docstring
 ]

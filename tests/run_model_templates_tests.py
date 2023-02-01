@@ -7,9 +7,7 @@ from ote_cli.utils.tests import collect_env_vars, check_run
 
 ALGO_ROOT_DIR = "external"
 ALGO_DIRS = [
-    os.path.join(ALGO_ROOT_DIR, d)
-    for d in os.listdir(ALGO_ROOT_DIR)
-    if os.path.isdir(os.path.join(ALGO_ROOT_DIR, d))
+    os.path.join(ALGO_ROOT_DIR, d) for d in os.listdir(ALGO_ROOT_DIR) if os.path.isdir(os.path.join(ALGO_ROOT_DIR, d))
 ]
 IMPORTANT_DIRS = [
     "data/",
@@ -58,9 +56,8 @@ def test(run_algo_tests):
     success = True
     command = ["pytest", os.path.join("tests", "ote_cli", "misc"), "-v"]
     try:
-        check_run(command, env=collect_env_vars(wd))
-        res = True
-    except:
+        res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+    except:  # noqa: E722
         res = False
     passed["misc"] = res
     success *= res
@@ -68,9 +65,8 @@ def test(run_algo_tests):
         if run_algo_tests[algo_dir]:
             command = ["pytest", os.path.join(algo_dir, "tests", "ote_cli"), "-v", "-rxXs", "--durations=10"]
             try:
-                check_run(command, env=collect_env_vars(wd))
-                res = True
-            except:
+                res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+            except:  # noqa: E722
                 res = False
             passed[algo_dir] = res
             success *= res

@@ -1,0 +1,40 @@
+workflow_hooks:
+    - type: WFProfileHook
+      name: profile_hook
+
+stages:
+  - name: pre-stage
+    type: ClsInferrer
+    task: classification
+    mode: train
+    config: {{ fileDirname }}/stages/classification/task_incr.yaml
+    output:
+      - pre_stage_res
+
+  - name: task-inc
+    type: ClsTrainer
+    task: classification
+    mode: train
+    config: {{ fileDirname }}/stages/classification/task_incr.yaml
+    input:
+      pre_stage_res:
+        stage_name: pre-stage
+        output_key: pre_stage_res  # stage_name: output_key
+    output:
+      - final_ckpt
+
+  - name: task-inc-evaluation
+    type: ClsEvaluator
+    task: classification
+    mode: train
+    config: {{ fileDirname }}/stages/classification/task_incr.yaml
+    input:
+      pretrained:
+        stage_name: task-inc
+        output_key: final_ckpt
+
+  - name: task-inc-evaluation
+    type: ClsEvaluator
+    task: classification
+    mode: eval
+    config: {{ fileDirname }}/stages/classification/task_incr.yaml
