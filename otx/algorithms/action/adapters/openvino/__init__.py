@@ -1,4 +1,4 @@
-"""Task Initialization of OTX Action Task."""
+"""OpenVINO Adapters for Action Recognition."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,12 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference import ActionInferenceTask
-from .openvino import ActionOpenVINOTask
-from .train import ActionTrainTask
+from .dataloader import ActionOVClsDataLoader, get_ovdataloader
+from .model_wrappers import OTXOVActionCls, OTXOVActionDet
 
-__all__ = [
-    "ActionInferenceTask",
-    "ActionOpenVINOTask",
-    "ActionTrainTask",
-]
+__all__ = ["OTXOVActionCls", "OTXOVActionDet", "ActionOVClsDataLoader", "get_ovdataloader"]

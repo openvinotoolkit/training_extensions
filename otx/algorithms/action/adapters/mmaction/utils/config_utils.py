@@ -58,7 +58,7 @@ def patch_cls_datasets(config: Config):
         cfg = config.data.get(subset, None)
         if not cfg:
             continue
-        cfg.type = "OTXRawframeDataset"
+        cfg.type = "OTXActionClsDataset"
         cfg.otx_dataset = None
         cfg.labels = None
 
