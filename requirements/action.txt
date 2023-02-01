@@ -3,4 +3,4 @@ mmcv-full==1.6.1
 mmaction2==0.24.1
 #otxdet==0.3.2
 mmdet==2.25.1
-numpy==1.21.0
+numpy==1.22.0
