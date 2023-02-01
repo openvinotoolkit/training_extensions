@@ -17,6 +17,7 @@
 import copy
 import io
 import os
+import warnings
 from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
@@ -28,7 +29,11 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
 
-from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
+from otx.algorithms.action.adapters.mmaction import (
+    export_model,
+    patch_config,
+    set_data_classes,
+)
 from otx.algorithms.action.configs.base import ActionConfig
 from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
@@ -36,12 +41,7 @@ from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelPrecision,
-)
+from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
@@ -316,32 +316,32 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+        self._init_task()
 
-        stage_module = "DetectionExporter"
-        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-        results = results.get("outputs")
-        logger.debug(f"results of run_task = {results}")
-        if results is None:
-            logger.error("error while exporting model, result is None")
-        else:
-            bin_file = results.get("bin")
-            xml_file = results.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
+        try:
+            from torch.jit._trace import TracerWarning
+
+            warnings.filterwarnings("ignore", category=TracerWarning)
+            export_model(
+                self._model,
+                self._recipe_cfg,
+                onnx_model_path=f"{self._output_path}/openvino.onnx",
+                output_dir_path=f"{self._output_path}",
+            )
+            bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
+            xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
+            with open(os.path.join(self._output_path, bin_file), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
+            with open(os.path.join(self._output_path, xml_file), "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
             output_model.set_data(
-                "confidence_threshold",
-                np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
+                "confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes()
             )
-            output_model.precision = [ModelPrecision.FP32]
+            output_model.precision = self._precision
             output_model.optimization_methods = self._optimization_methods
-            output_model.set_data(
-                "label_schema.json",
-                label_schema_to_bytes(self._task_environment.label_schema),
-            )
+        except Exception as ex:
+            raise RuntimeError("Optimization was unsuccessful.") from ex
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
 
     def _init_recipe_hparam(self) -> dict:
