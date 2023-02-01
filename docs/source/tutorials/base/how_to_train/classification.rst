@@ -17,6 +17,10 @@ The process has been tested on the following configuration.
 - Intel(R) Core(TM) i9-10980XE
 - CUDA Toolkit 11.4
 
+.. note::
+
+  While this tutorial shows how to work with :doc:`multi-class classification <../../../explanation/algorithms/classification/multi_class_classification>`, it is easy to extend it for the :doc:`multi-label <../../../explanation/algorithms/classification/multi_label_classification>` or :doc:`hierarchical <../../../explanation/algorithms/classification/multi_label_classification>` classification.
+  Substitute the dataset with a multi-label or hierarchical one. Everything else remains the same.
 
 
 *************************
