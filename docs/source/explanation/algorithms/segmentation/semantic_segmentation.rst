@@ -31,7 +31,9 @@ For the supervised training we use the following algorithms components:
 Dataset Format
 **************
 
-For the dataset handling inside OTX we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_. At this end we support `ADE20K <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_, `Pascal VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data formats.
+For the dataset handling inside OTX we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
+
+At this end we support `ADE20K <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`__, `Pascal VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data formats.
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
 
 .. code-block::
@@ -70,7 +72,7 @@ For now, we also support a dataset in the custom format below, where image-annot
 
     Please, note, that images should have ``.jpg`` extension and segmentation masks should be ``.png``.
 
-Since this format isn't handle by Datumaro we can start training by passing the training and validation data paths manually:
+Since this format isn't handled by Datumaro, we can start training by passing the training and validation data paths manually:
 
 .. code-block::
 
@@ -115,7 +117,7 @@ In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%
 Semi-supervised Learning
 ************************
 
-To solve Semi-supervised learning problem for the semantic segmentation we use the `Mean Teacher algorithm <https://arxiv.org/abs/1703.01780>`_. The basic idea of this approach is to use two models during training: a "student" model, which is the main model being trained, and a "teacher" model, which acts as a guide for the student model.
+To solve :ref:`Semi-supervised learning <semi_sl_explanation>` problem for the semantic segmentation we use the `Mean Teacher algorithm <https://arxiv.org/abs/1703.01780>`_. The basic idea of this approach is to use two models during training: a "student" model, which is the main model being trained, and a "teacher" model, which acts as a guide for the student model.
 The student model is updated based on the ground truth annotations (for the labeled data) and pseudo-labels (for the unlabeled data) which are the predictions of the teacher model.
 The teacher model is updated based on the moving average of the student model's parameters. So, we don't use backward loss propagation for the teacher model's parameters.
 After training, only the student model is used for prediction.
@@ -126,7 +128,7 @@ It helps with a better generalization and prevents unnecessary overfitting on th
 
 In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ with our middle template on some datasets is presented. For comparison, we present the supervised baseline trained on the labeled data only.
 The results were obtained on our templates without any changes. We use 512x512 image resolution, for other hyperparameters, please, refer to the `related template <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml>`_. We trained each model with single Nvidia GeForce RTX3090.
-For `Cityscapes <https://www.cityscapes-dataset.com/>`_ and `Pascal-VOC <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html>`_ we use splits with different ratios of labeled to unlabeled data like `here <https://github.com/charlesCXK/TorchSemiSeg>`_.
+For `Cityscapes <https://www.cityscapes-dataset.com/>`__ and `Pascal-VOC <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html>`_ we use splits with different ratios of labeled to unlabeled data like `here <https://github.com/charlesCXK/TorchSemiSeg>`_.
 For the `DIS5K <https://xuebinqin.github.io/dis/index.html>`_ we prepared random splits for the train data with different ratios of labeled to unlabeled images. We use the validation set for testing purposes.
 
 +-------------------------------------+--------------+------------+-----------------+
@@ -134,11 +136,11 @@ For the `DIS5K <https://xuebinqin.github.io/dis/index.html>`_ we prepared random
 +=====================================+==============+============+=================+
 | Supervised Lite-HRNet-18-mod2 (1/8) | N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
-| Semi-SL Lite-HRNet-18-mod2 (1/8)         | N/A          | N/A        | N/A             |
+| Semi-SL Lite-HRNet-18-mod2 (1/8)    | N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
 | Supervised Lite-HRNet-18-mod2 (1/16)| N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
-| Semi-SL Lite-HRNet-18-mod2 (1/16)        | N/A          | N/A        | N/A             |
+| Semi-SL Lite-HRNet-18-mod2 (1/16)   | N/A          | N/A        | N/A             |
 +-------------------------------------+--------------+------------+-----------------+
 
 ************************
