@@ -2,7 +2,8 @@ name: Build Docs
 
 on:
   push:
-    branches: [feature/otx]
+    branches:
+      - develop
   workflow_dispatch: # run on request (no need for PR)
 
 jobs:
