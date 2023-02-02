@@ -5,7 +5,7 @@ Auto-configuration for a deep learning framework means the automatic finding of 
 Auto-configuration can help to save time, it eases the process of interaction with OTX CLI and gives a better baseline for the given dataset.
 
 At this end, we developed a simple auto-configuration functionality to ease the process of training and validation utilizing our framework.
-Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifiing anything else:
+Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifying anything else:
 
 .. code-block::
 
@@ -20,13 +20,13 @@ Basically, to start the training and obtain a good baseline with the best trade-
         $ otx build --train-data-root <path_to_data_root>
 
 Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OTX will handle it on its own.
-It will recognize the task by analizing the dataset and if there is no splits for the validation - Datumaro will do random auto-split, memorizing this split to further use it with ``otx eval`` and ``otx optimize``.
+It will recognize the task by analyzing the dataset and if there is no splits for the validation - Datumaro will do a random auto-split, memorizing this split to further use it with ``otx eval`` and ``otx optimize``.
 
 .. note::
 
     Currently, Datumaro auto-split feature supports 3 formats: `Imagenet <https://www.image-net.org/>`_  (multi-class classification), `COCO <https://cocodataset.org/#format-data>`_ (detection) and `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_ (semantic segmentation).
 
-After dataset preparation the training will be started with the middle-sized template to achieve a competitive accuracy preserving fast inference.
+After dataset preparation, the training will be started with the middle-sized template to achieve competitive accuracy preserving fast inference.
 
 .. note::
 
