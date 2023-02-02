@@ -83,7 +83,7 @@ def preprocess(
         resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
         resized_frame = (resized_frame - mean) / std
         frames.append(resized_frame)
-    np_frames = np.expand_dims(frames, axis=(0))  # [1, T, H, W, C]
+    np_frames = np.expand_dims(frames, axis=0)  # [1, T, H, W, C]
     np_frames = np_frames.transpose(0, 4, 1, 2, 3)  # [1, C, T, H, W]
     frame_inds = get_frame_inds(np_frames, clip_len, interval)
     np_frames = np_frames[:, :, frame_inds, :, :]
