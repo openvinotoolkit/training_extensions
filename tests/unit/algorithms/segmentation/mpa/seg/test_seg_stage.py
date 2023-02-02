@@ -6,7 +6,7 @@ from otx.mpa import Stage
 from otx.mpa.seg.stage import SegStage
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.segmentation.prep import (
+from tests.unit.algorithms.segmentation.test_helpers import (
     DEFAULT_RECIPE_CONFIG_PATH,
     DEFAULT_SEG_TEMPLATE_DIR,
 )
