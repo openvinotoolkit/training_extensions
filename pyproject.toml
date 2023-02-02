@@ -28,7 +28,7 @@ ignore_missing_imports = true
 show_error_codes = true
 
 # TODO: Need to be edited
-follow_imports = "skip" 
+follow_imports = "skip"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # PYLINT CONFIGURATION                                                        #
