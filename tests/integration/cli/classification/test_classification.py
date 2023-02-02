@@ -47,7 +47,6 @@ args_semisl = {
     "--val-data-roots": "data/imagenet_dataset_class_incremental",
     "--test-data-roots": "data/imagenet_dataset_class_incremental",
     "--unlabeled-data-roots": "data/imagenet_dataset_class_incremental",
-
     "--input": "data/imagenet_dataset/label_0",
     "train_params": [
         "params",
@@ -116,4 +115,3 @@ class TestMultiClassClassificationCLI:
         args1 = copy.deepcopy(args_selfsl)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-

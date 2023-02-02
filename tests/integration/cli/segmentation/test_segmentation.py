@@ -91,7 +91,6 @@ templates_ids = [default_template.model_template_id]
 
 
 class TestSegmentationCLI:
-    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_semi(self, template, tmp_dir_path):
