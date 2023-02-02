@@ -175,15 +175,18 @@ class Builder:
         template_dir: Path = Path(template.model_template_path).parent
 
         # Copy task base configuration file
-        task_configuration_path = template_dir / str(template.hyper_parameters.base_path)
-        shutil.copyfile(task_configuration_path, str(workspace_path / "configuration.yaml"))
+        if template.hyper_parameters.base_path is not None:
+            task_configuration_path = template_dir / template.hyper_parameters.base_path
+            shutil.copyfile(task_configuration_path, str(workspace_path / "configuration.yaml"))
+        else:
+            raise ValueError("tempalte.hyper_parameters.base_path can't be None")
         # Load Model Template
         template_config = MPAConfig.fromfile(template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
 
         # Configuration of Train Type value
         train_type_rel_path = ""
-        if train_type is not None and train_type != "incremental":
+        if train_type != "incremental":
             train_type_rel_path = train_type
         model_dir = template_dir.absolute() / train_type_rel_path
         if not model_dir.exists():

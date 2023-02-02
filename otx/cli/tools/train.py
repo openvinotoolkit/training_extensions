@@ -174,13 +174,13 @@ def main():
             workspace_root=train_workspace_path,
             template=template,
         )
+
+    # Update configurations made by builder
+    # When an user gives template argument, need to overwrite it.
+    if args.template != default_workspace_components["template_path"]:
+        template = find_and_parse_model_template(args.template)
     else:
-        # Update configurations made by builder
-        # When an user gives template argument, need to overwrite it.
-        if args.template != default_workspace_components["template_path"]:
-            template = find_and_parse_model_template(args.template)
-        else:
-            template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
+        template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
 
     args.data = os.path.join(train_workspace_path, "data.yaml")
     data_config = configure_dataset(args)
