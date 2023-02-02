@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Evaluate a model &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>Convert a custom user dataset with Datumaro &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -41,8 +41,8 @@
     <script src="../../_static/copybutton.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Export a model" href="export_a_model.html" />
-    <link rel="prev" title="Train a model" href="train_a_model.html" />
+    <link rel="next" title="Explanation" href="../../explanation/index.html" />
+    <link rel="prev" title="Modify used backbones" href="backbones.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -100,76 +100,88 @@
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
   <div class="bd-toc-item active">
     <ul class="current nav bd-sidenav">
- <li class="toctree-l1">
-  <a class="reference internal" href="../how_to_install.html">
-   How to install
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../base/index.html">
+   Base tutorial
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../base/how_to_train/index.html">
+     How to train, validate, export and optimize the model
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../base/how_to_train/classification.html">
+       Classification  model
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../base/how_to_train/detection.html">
+       Object Detection model
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../base/how_to_train/instance_segmentation.html">
+       Instance Segmentation model
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../base/how_to_train/semantic_segmentation.html">
+       Semantic Segmentation model
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../base/how_to_train/anomaly_detection.html">
+       Anomaly Classification model
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../base/deploy.html">
+     How to deploy the model
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../base/demo.html">
+     How to run the demo with exportable code
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1 current active has-children">
   <a class="reference internal" href="index.html">
-   How to use
+   Advanced tutorial
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
    <i class="fas fa-chevron-down">
    </i>
   </label>
   <ul class="current">
    <li class="toctree-l2">
-    <a class="reference internal" href="create_dataset.html">
-     Create Dataset
+    <a class="reference internal" href="semi_sl.html">
+     Use Semi-Supervised Learning
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="train_a_model.html">
-     Train a model
+    <a class="reference internal" href="backbones.html">
+     Modify used backbones
     </a>
    </li>
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     Evaluate a model
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="export_a_model.html">
-     Export a model
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="infer_a_model.html">
-     Infer a model
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="deploy_a_model.html">
-     Deploy a model
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../how_to_customize/index.html">
-   How to customize
-  </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
-   <i class="fas fa-chevron-down">
-   </i>
-  </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_customize/add_custom_datasets.html">
-     Add custom datasets
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_customize/add_new_models.html">
-     Add new models
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../how_to_customize/add_custom_metrics.html">
-     Add custom metrics
+     Convert a custom user dataset with Datumaro
     </a>
    </li>
   </ul>
@@ -210,12 +222,10 @@
               
               <div>
                 
-  <div class="section" id="evaluate-a-model">
-<h1>Evaluate a model<a class="headerlink" href="#evaluate-a-model" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="convert-a-custom-user-dataset-with-datumaro">
+<h1>Convert a custom user dataset with Datumaro<a class="headerlink" href="#convert-a-custom-user-dataset-with-datumaro" title="Permalink to this headline">¶</a></h1>
 <p>&lt;Guidelines for writing&gt;</p>
-<p>It describes how to evaluate a model for each task supported in OTX with jupyter notebooks.</p>
-<p>It can contain 1) ‘evaluate’ command explaination 2) task types supported and evaluation metrics
-per task 3) usage and parameter explaination 4) examples with jupyter notebooks per task</p>
+<p>This tutorial illustrates how to build a user dataset for each task. The tutorial also demonstrates how to utilize <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>. in conjunction with OTX using a real-world example.</p>
 </div>
 
 
@@ -224,8 +234,8 @@ per task 3) usage and parameter explaination 4) examples with jupyter notebooks 
               
               <div class='prev-next-bottom'>
                 
-    <a class='left-prev' id="prev-link" href="train_a_model.html" title="previous page">Train a model</a>
-    <a class='right-next' id="next-link" href="export_a_model.html" title="next page">Export a model</a>
+    <a class='left-prev' id="prev-link" href="backbones.html" title="previous page">Modify used backbones</a>
+    <a class='right-next' id="next-link" href="../../explanation/index.html" title="next page">Explanation</a>
 
               </div>
               
