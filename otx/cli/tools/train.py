@@ -146,7 +146,7 @@ def main():
     args, _ = parser.parse_known_args()
     train_workspace_path = os.getcwd()
 
-    default_workspace_components = {"tempate_path": "./template.yaml", "data_path": "./data.yaml"}
+    default_workspace_components = {"template_path": "./template.yaml", "data_path": "./data.yaml"}
     has_template_yaml = Path(default_workspace_components["template_path"]).exists()
     has_data_yaml = Path(default_workspace_components["data_path"]).exists()
 

@@ -65,7 +65,7 @@ def build(
     train_data_roots: Optional[str] = None,
     val_data_roots: Optional[str] = None,
     task: Optional[str] = None,
-    train_type: Optional[str] = "incremental",
+    train_type: str = "incremental",
     workspace_root: Optional[str] = None,
     model: Optional[str] = None,
     backbone: Optional[str] = None,

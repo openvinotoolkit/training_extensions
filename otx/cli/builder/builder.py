@@ -142,7 +142,7 @@ class Builder:
         task_type: str,
         workspace_path: Path,
         model_type: Optional[str] = None,
-        train_type: Optional[str] = "incremental",
+        train_type: str = "incremental",
         otx_root: Optional[str] = ".",
         template: Optional[ModelTemplate] = None,
     ):
@@ -159,7 +159,7 @@ class Builder:
         workspace_path.mkdir(parents=True, exist_ok=False)
 
         # Load & Save Model Template
-        if not template:
+        if template is None:
             otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
             if model_type:
                 template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
@@ -171,9 +171,6 @@ class Builder:
                 template = template_lst[0]
             else:
                 template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
-
-        if template is None:
-            raise ValueError("Template can't be None")
 
         template_dir: Path = Path(template.model_template_path).parent
 
