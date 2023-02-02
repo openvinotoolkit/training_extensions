@@ -197,6 +197,13 @@ args_m = {
 class TestMultilabelClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_supcon(self, template, tmp_dir_path):
+        args1 = copy.deepcopy(args_m)
+        args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -260,6 +267,13 @@ args_h = {
 
 
 class TestHierarchicalClassificationCLI:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_supcon(self, template, tmp_dir_path):
+        args1 = copy.deepcopy(args_h)
+        args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
