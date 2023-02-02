@@ -39,7 +39,7 @@ def create_otx_dataset(height: int, width: int, labels: List[str]):
     return DatasetEntity([dataset_item]), labels
 
 
-class TilingDetectionUnitTest(unittest.TestCase):
+class TestTilingDetection(unittest.TestCase):
     """Test the tiling functionality"""
 
     def setUp(self) -> None:
