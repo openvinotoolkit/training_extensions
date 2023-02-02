@@ -94,7 +94,6 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 
 # Install OTX
 # * Prerequisite
-#   - numpy: mmpycocotool uses source distribution, setup.py imports numpy
 #   - torch: mmdet/seg are installed via source, setup.py imports torch
 #   - torchvision
 # shellcheck disable=SC2102
