@@ -52,6 +52,8 @@ disable = [
     "use-symbolic-message-instead",
     "import-outside-toplevel",
     "arguments-differ",
+    "use-dict-literal",
+    "broad-exception-raised",
 ]
 
 [tool.pylint.typecheck]
