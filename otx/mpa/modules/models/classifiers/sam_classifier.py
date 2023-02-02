@@ -2,38 +2,24 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import functools
 from collections import OrderedDict
+from functools import partial
 
-import torch
 from mmcls.models.builder import CLASSIFIERS
 from mmcls.models.classifiers.base import BaseClassifier
 from mmcls.models.classifiers.image import ImageClassifier
 
-from otx.mpa.modules.hooks.recording_forward_hooks import (
-    FeatureVectorHook,
-    ReciproCAMHook,
-)
+from otx.mpa.deploy.utils import is_mmdeploy_enabled
 from otx.mpa.modules.utils.task_adapt import map_class_names
 from otx.mpa.utils.logger import get_logger
+
+from .sam_classifier_mixin import SAMClassifierMixin
 
 logger = get_logger()
 
 
 @CLASSIFIERS.register_module()
-class SAMClassifier(BaseClassifier):
-    """SAM-enabled BaseClassifier"""
-
-    def train_step(self, data, optimizer):
-        # Saving current batch data to compute SAM gradient
-        # Rest of SAM logics are implented in SAMOptimizerHook
-        self.current_batch = data
-
-        return super().train_step(data, optimizer)
-
-
-@CLASSIFIERS.register_module()
-class SAMImageClassifier(ImageClassifier):
+class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
     """SAM-enabled ImageClassifier"""
 
     def __init__(self, task_adapt=None, **kwargs):
@@ -43,26 +29,18 @@ class SAMImageClassifier(ImageClassifier):
             self.hierarchical = kwargs.pop("hierarchical")
         super().__init__(**kwargs)
         self.is_export = False
-        self.featuremap = None
         # Hooks for redirect state_dict load/save
         self._register_state_dict_hook(self.state_dict_hook)
-        self._register_load_state_dict_pre_hook(functools.partial(self.load_state_dict_pre_hook, self))
+        self._register_load_state_dict_pre_hook(partial(self.load_state_dict_pre_hook, self))
         if task_adapt:
             self._register_load_state_dict_pre_hook(
-                functools.partial(
+                partial(
                     self.load_state_dict_mixing_hook,
                     self,  # model
                     task_adapt["dst_classes"],  # model_classes
                     task_adapt["src_classes"],  # chkpt_classes
                 )
             )
-
-    def train_step(self, data, optimizer):
-        # Saving current batch data to compute SAM gradient
-        # Rest of SAM logics are implented in SAMOptimizerHook
-        self.current_batch = data
-
-        return super().train_step(data, optimizer)
 
     def forward_train(self, img, gt_label, **kwargs):
         """Forward computation during training.
@@ -97,50 +75,61 @@ class SAMImageClassifier(ImageClassifier):
         return losses
 
     @staticmethod
-    def state_dict_hook(module, state_dict, *args, **kwargs):
+    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):
         """Redirect model as output state_dict for OTX model compatibility"""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
 
-        output = OrderedDict()
         if backbone_type == "OTXMobileNetV3":
-            for k, v in state_dict.items():
-                if k.startswith("backbone"):
-                    k = k.replace("backbone.", "", 1)
-                elif k.startswith("head"):
-                    k = k.replace("head.", "", 1)
-                    if "3" in k:  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
-                        k = k.replace("3", "4")
-                        if module.multilabel and not module.is_export:
-                            v = v.t()
-                output[k] = v
+            for k in list(state_dict.keys()):
+                v = state_dict.pop(k)
+                if not prefix or k.startswith(prefix):
+                    k = k.replace(prefix, "", 1)
+                    if k.startswith("backbone"):
+                        k = k.replace("backbone.", "", 1)
+                    elif k.startswith("head"):
+                        k = k.replace("head.", "", 1)
+                        if "3" in k:  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
+                            k = k.replace("3", "4")
+                            if module.multilabel and not module.is_export:
+                                v = v.t()
+                    k = prefix + k
+                state_dict[k] = v
 
         elif backbone_type == "OTXEfficientNet":
-            for k, v in state_dict.items():
-                if k.startswith("backbone"):
-                    k = k.replace("backbone.", "", 1)
-                elif k.startswith("head"):
-                    k = k.replace("head", "output", 1)
-                    if not module.hierarchical and not module.is_export:
-                        k = k.replace("fc", "asl")
-                        v = v.t()
-                output[k] = v
+            for k in list(state_dict.keys()):
+                v = state_dict.pop(k)
+                if not prefix or k.startswith(prefix):
+                    k = k.replace(prefix, "", 1)
+                    if k.startswith("backbone"):
+                        k = k.replace("backbone.", "", 1)
+                    elif k.startswith("head"):
+                        k = k.replace("head", "output", 1)
+                        if not module.hierarchical and not module.is_export:
+                            k = k.replace("fc", "asl")
+                            v = v.t()
+                    k = prefix + k
+                state_dict[k] = v
 
         elif backbone_type == "OTXEfficientNetV2":
-            for k, v in state_dict.items():
-                if k.startswith("backbone"):
-                    k = k.replace("backbone.", "", 1)
-                elif k == "head.fc.weight":
-                    k = k.replace("head.fc", "model.classifier")
-                    if not module.hierarchical and not module.is_export:
-                        v = v.t()
-                output[k] = v
+            for k in list(state_dict.keys()):
+                v = state_dict.pop(k)
+                if not prefix or k.startswith(prefix):
+                    k = k.replace(prefix, "", 1)
+                    if k.startswith("backbone"):
+                        k = k.replace("backbone.", "", 1)
+                    elif k == "head.fc.weight":
+                        k = k.replace("head.fc", "model.classifier")
+                        if not module.hierarchical and not module.is_export:
+                            v = v.t()
+                    k = prefix + k
+                state_dict[k] = v
 
-        return output
+        return state_dict
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):
+    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):
         """Redirect input state_dict to model for OTX model compatibility"""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
@@ -149,38 +138,49 @@ class SAMImageClassifier(ImageClassifier):
         if backbone_type == "OTXMobileNetV3":
             for k in list(state_dict.keys()):
                 v = state_dict.pop(k)
-                if k.startswith("classifier."):
-                    if "4" in k:
-                        k = "head." + k.replace("4", "3")
-                        if module.multilabel:
-                            v = v.t()
-                    else:
+                if not prefix or k.startswith(prefix):
+                    k = k.replace(prefix, "", 1)
+                    if k.startswith("classifier."):
+                        if "4" in k:
+                            k = "head." + k.replace("4", "3")
+                            if module.multilabel:
+                                v = v.t()
+                        else:
+                            k = "head." + k
+                    elif k.startswith("act"):
                         k = "head." + k
-                elif not k.startswith("backbone."):
-                    k = "backbone." + k
+                    elif not k.startswith("backbone."):
+                        k = "backbone." + k
+                    k = prefix + k
                 state_dict[k] = v
 
         elif backbone_type == "OTXEfficientNet":
             for k in list(state_dict.keys()):
                 v = state_dict.pop(k)
-                if k.startswith("features.") and "activ" not in k:
-                    k = "backbone." + k
-                elif k.startswith("output."):
-                    k = k.replace("output", "head")
-                    if not module.hierarchical:
-                        k = k.replace("asl", "fc")
-                        v = v.t()
+                if not prefix or k.startswith(prefix):
+                    k = k.replace(prefix, "", 1)
+                    if k.startswith("features.") and "activ" not in k:
+                        k = "backbone." + k
+                    elif k.startswith("output."):
+                        k = k.replace("output", "head")
+                        if not module.hierarchical:
+                            k = k.replace("asl", "fc")
+                            v = v.t()
+                    k = prefix + k
                 state_dict[k] = v
 
         elif backbone_type == "OTXEfficientNetV2":
             for k in list(state_dict.keys()):
                 v = state_dict.pop(k)
-                if k.startswith("model.classifier"):
-                    k = k.replace("model.classifier", "head.fc")
-                    if not module.hierarchical:
-                        v = v.t()
-                elif k.startswith("model"):
-                    k = "backbone." + k
+                if not prefix or k.startswith(prefix):
+                    k = k.replace(prefix, "", 1)
+                    if k.startswith("model.classifier"):
+                        k = k.replace("model.classifier", "head.fc")
+                        if not module.hierarchical:
+                            v = v.t()
+                    elif k.startswith("model"):
+                        k = "backbone." + k
+                    k = prefix + k
                 state_dict[k] = v
         else:
             logger.info("conversion is not required.")
@@ -261,23 +261,40 @@ class SAMImageClassifier(ImageClassifier):
         if isinstance(x, (tuple, list)):
             x = x[-1]
 
-        if torch.onnx.is_in_onnx_export():
-            self.featuremap = x
-
         if self.with_neck:
             x = self.neck(x)
 
         return x
 
-    def simple_test(self, img, img_metas):
-        """Test without augmentation.
-        Overriding for OpenVINO export with features
-        """
-        x = self.extract_feat(img)
-        logits = self.head.simple_test(x)
-        if self.featuremap is not None and torch.onnx.is_in_onnx_export():
-            saliency_map = ReciproCAMHook(self).func(self.featuremap)
-            feature_vector = FeatureVectorHook.func(self.featuremap)
-            return logits, feature_vector, saliency_map
-        else:
-            return logits
+
+if is_mmdeploy_enabled():
+    from mmdeploy.core import FUNCTION_REWRITER
+
+    from otx.mpa.modules.hooks.recording_forward_hooks import (
+        FeatureVectorHook,
+        ReciproCAMHook,
+    )
+
+    @FUNCTION_REWRITER.register_rewriter(
+        "otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.extract_feat"
+    )
+    def sam_image_classifier__extract_feat(ctx, self, img):
+        feat = self.backbone(img)
+        # For Global Backbones (det/seg/etc..),
+        # In case of tuple or list, only the feat of the last layer is used.
+        if isinstance(feat, (tuple, list)):
+            feat = feat[-1]
+        backbone_feat = feat
+        if self.with_neck:
+            feat = self.neck(feat)
+        return feat, backbone_feat
+
+    @FUNCTION_REWRITER.register_rewriter(
+        "otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.simple_test"
+    )
+    def sam_image_classifier__simple_test(ctx, self, img, img_metas):
+        feat, backbone_feat = self.extract_feat(img)
+        logit = self.head.simple_test(feat)
+        saliency_map = ReciproCAMHook(self).func(backbone_feat)
+        feature_vector = FeatureVectorHook.func(backbone_feat)
+        return logit, feature_vector, saliency_map

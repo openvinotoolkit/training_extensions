@@ -59,7 +59,7 @@ def otx_templates_root_dir_fx():
 
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
-    root = f"{root}/templates/"
+    root = osp.realpath(f"{root}/../../otx/algorithms/anomaly/configs")
     logger.debug(f"overloaded otx_templates_root_dir_fx: return {root}")
     return root
 
@@ -70,8 +70,8 @@ def otx_reference_root_dir_fx():
     import os.path as osp
 
     logger = logging.getLogger(__name__)
-    root = osp.dirname(osp.dirname(osp.realpath(__file__)))
-    root = f"{root}/tests/reference/"
+    root = osp.dirname(osp.realpath(__file__))
+    root = f"{root}/reference/"
     logger.debug(f"overloaded otx_reference_root_dir_fx: return {root}")
     return root
 

@@ -19,15 +19,26 @@ from typing import Iterable, Optional, Tuple
 
 import cv2
 import numpy as np
+import pycocotools.mask as mask_util
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.utils import patch_data_pipeline
+from otx.algorithms.common.adapters.mmcv.utils import (
+    get_configs_by_keys,
+    patch_data_pipeline,
+    patch_default_config,
+    patch_runner,
+)
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
+)
+from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
+from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    cluster_anchors,
+    should_cluster_anchors,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import config_to_bytes
@@ -152,8 +163,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         """
         stage_module = "DetectionInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
+
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+
         results = self._run_task(
             stage_module,
             mode="train",
@@ -211,7 +224,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def unload(self):
         """Unload the task."""
-        self._delete_scratch_space()
+        self.cleanup()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -224,14 +237,18 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = "DetectionExporter"
-        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-        results = results.get("outputs")
-        logger.debug(f"results of run_task = {results}")
-        if results is None:
-            logger.error("error while exporting model, result is None")
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            export=True,
+        )
+        outputs = results.get("outputs")
+        logger.debug(f"results of run_task = {outputs}")
+        if outputs is None:
+            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
         else:
-            bin_file = results.get("bin")
-            xml_file = results.get("xml")
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
             if xml_file is None or bin_file is None:
                 raise RuntimeError("invalid status of exporting. bin and xml should not be None")
             with open(bin_file, "rb") as f:
@@ -253,6 +270,25 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
+        # Update tiling parameters if tiling is enabled
+        if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            logger.info("Tiling Enabled")
+            tiling_params = ConfigDict(
+                tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
+            )
+            configs.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        train=tiling_params,
+                        val=tiling_params,
+                        test=tiling_params,
+                    )
+                )
+            )
+            configs.update(dict(evaluation=dict(iou_thr=[0.5])))
+
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 
@@ -268,6 +304,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         logger.info(f"train type = {self._train_type}")
 
+        # Incremental Learning Recipe is the default for Detection
         if self._train_type in RECIPE_TRAIN_TYPE:
             recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
@@ -276,8 +313,16 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info(f"train type = {self._train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
+
+        options_for_patch_datasets = {"type": "MPADetDataset"}
+        patch_default_config(self._recipe_cfg)
+        patch_runner(self._recipe_cfg)
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-        patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
+        patch_datasets(
+            self._recipe_cfg,
+            self._task_type.domain,
+            **options_for_patch_datasets,
+        )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
@@ -368,6 +413,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         shapes = []
         for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
             for mask, probability in zip(masks, boxes[:, 4]):
+                if isinstance(mask, dict):
+                    mask = mask_util.decode(mask)
                 mask = mask.astype(np.uint8)
                 probability = float(probability)
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -405,3 +452,20 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info("Updating anchors")
         origin["heights"] = new["heights"]
         origin["widths"] = new["widths"]
+
+    def _initialize_post_hook(self, options=None):
+        super()._initialize_post_hook(options)
+        options["model_builder"] = build_detector
+
+        # if self._anchors are set somewhere, anchors had already been clusted
+        # by this method or by loading trained model
+        if should_cluster_anchors(self._model_cfg) and len(self._anchors) == 0:
+            otx_dataset = get_configs_by_keys(self._data_cfg.data.train, "otx_dataset")
+            assert len(otx_dataset) == 1
+            otx_dataset = otx_dataset[0]
+            cluster_anchors(
+                self._model_cfg,
+                self._recipe_cfg,
+                otx_dataset,
+            )
+            self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)

@@ -40,9 +40,9 @@ from otx.api.entities.model_template import TargetDevice, parse_model_template
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.utils.time_utils import now
+from tests.test_helpers import generate_random_single_image
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
-from tests.unit.api.test_helpers import generate_random_single_image
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

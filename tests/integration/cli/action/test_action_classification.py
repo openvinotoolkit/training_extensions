@@ -9,17 +9,20 @@ import pytest
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import otx_eval_testing, otx_train_testing
+from otx.cli.utils.tests import (
+    otx_eval_openvino_testing,
+    otx_eval_testing,
+    otx_export_testing,
+    otx_train_testing,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
+# TODO: Need to change sample dataset
 args = {
-    "--train-ann-file": "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt",
-    "--train-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
-    "--val-ann-file": "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt",
-    "--val-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
-    "--test-ann-files": "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt",
-    "--test-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
+    "--train-data-roots": "data/cvat_dataset/action_classification/train",
+    "--val-data-roots": "data/cvat_dataset/action_classification/train",
+    "--test-data-roots": "data/cvat_dataset/action_classification/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
@@ -37,7 +40,7 @@ else:
     templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsMPADetection:
+class TestToolsOTXActionClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -48,3 +51,15 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export(self, template, tmp_dir_path):
+        otx_export_testing(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval_openvino(self, template, tmp_dir_path):
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)

@@ -20,12 +20,14 @@ and supports the replacement of the backbone of the model.
 # and limitations under the License.
 
 import inspect
-import os
 import shutil
+from pathlib import Path
+from typing import Any, Dict, Union
 
 import mmcv
 import torch
 from mmcv.utils import Registry, build_from_cfg
+from torch import nn
 
 from otx.api.entities.model_template import TaskType
 from otx.cli.registry import Registry as OTXRegistry
@@ -47,7 +49,7 @@ DEFAULT_MODEL_TEMPLATE_ID = {
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
 
-def get_backbone_out_channels(backbone):
+def get_backbone_out_channels(backbone: nn.Module):
     """Get output channels of backbone using fake data."""
     out_channels = []
     input_size = backbone.input_size if hasattr(backbone, "input_size") else 64
@@ -58,7 +60,7 @@ def get_backbone_out_channels(backbone):
     return out_channels
 
 
-def update_backbone_args(backbone_config, registry, backend):
+def update_backbone_args(backbone_config: dict, registry: Registry, backend: str):
     """Update Backbone required arguments.
 
     This function checks the init parameters of the corresponding backbone function (or class)
@@ -107,7 +109,7 @@ def update_backbone_args(backbone_config, registry, backend):
     return updated_missing_args
 
 
-def update_channels(model_config, out_channels):
+def update_channels(model_config: MPAConfig, out_channels: Any):
     """Update in_channel of head or neck."""
     if hasattr(model_config.model, "neck"):
         if model_config.model.neck.type == "GlobalAveragePooling":
@@ -138,10 +140,10 @@ class Builder:
     def build_task_config(
         self,
         task_type: str,
+        workspace_path: Path,
         model_type: str = None,
         train_type: str = "incremental",
-        workspace_path: str = None,
-        otx_root=".",
+        otx_root: str = ".",
     ):
         """Create OTX workspace with Template configs from task type.
 
@@ -149,15 +151,12 @@ class Builder:
         and create customizable templates to help users use all the features of OTX.
         task_type: The type of task want to get (str)
         model_type: Specifies the template of a model (str)
-        workspace_path: This is the folder path of the workspace want to create (os.path)
+        workspace_path: This is the folder path of the workspace want to create (Union[Path, str])
         """
 
         # Create OTX-workspace
-        if workspace_path is None:
-            workspace_path = f"./otx-workspace-{task_type}"
-            if model_type:
-                workspace_path += f"-{model_type}"
-        os.makedirs(workspace_path, exist_ok=False)
+        # Check whether the workspace is existed or not
+        workspace_path.mkdir(exist_ok=False)
 
         # Load & Save Model Template
         otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
@@ -171,11 +170,11 @@ class Builder:
             template = template_lst[0]
         else:
             template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
-        template_dir = os.path.dirname(template.model_template_path)
+        template_dir = Path(template.model_template_path).parent
 
         # Copy task base configuration file
-        task_configuration_path = os.path.join(template_dir, template.hyper_parameters.base_path)
-        shutil.copyfile(task_configuration_path, os.path.join(workspace_path, "configuration.yaml"))
+        task_configuration_path = template_dir / template.hyper_parameters.base_path
+        shutil.copyfile(task_configuration_path, str(workspace_path / "configuration.yaml"))
         # Load Model Template
         template_config = MPAConfig.fromfile(template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
@@ -184,96 +183,96 @@ class Builder:
         train_type_rel_path = ""
         if train_type != "incremental":
             train_type_rel_path = train_type
-        model_dir = os.path.join(os.path.abspath(template_dir), train_type_rel_path)
-        if not os.path.exists(model_dir):
+        model_dir = template_dir.absolute() / train_type_rel_path
+        if not model_dir.exists():
             raise ValueError(f"[otx build] {train_type} is not a type supported by OTX {task_type}")
-        train_type_dir = os.path.join(workspace_path, train_type_rel_path)
-        os.makedirs(train_type_dir, exist_ok=True)
+        train_type_dir = workspace_path / train_type_rel_path
+        train_type_dir.mkdir(exist_ok=True)
 
         # Update Hparams
-        if os.path.exists(os.path.join(model_dir, "hparam.yaml")):
-            template_config.merge_from_dict(MPAConfig.fromfile(os.path.join(model_dir, "hparam.yaml")))
+        if (model_dir / "hparam.yaml").exists():
+            template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
 
         # Load & Save Model config
-        model_config = MPAConfig.fromfile(os.path.join(model_dir, "model.py"))
-        model_config.dump(os.path.join(train_type_dir, "model.py"))
+        model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
+        model_config.dump(str(train_type_dir / "model.py"))
 
         # Copy Data pipeline config
-        if os.path.exists(os.path.join(model_dir, "data_pipeline.py")):
-            data_pipeline_config = MPAConfig.fromfile(os.path.join(model_dir, "data_pipeline.py"))
-            data_pipeline_config.dump(os.path.join(train_type_dir, "data_pipeline.py"))
-        template_config.dump(os.path.join(workspace_path, "template.yaml"))
-
-        # Create Data.yaml
-        data_subset_format = {"ann-files": None, "data-roots": None}
-        data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
-        data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
-        mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
+        if (model_dir / "data_pipeline.py").exists():
+            data_pipeline_config = MPAConfig.fromfile(str(model_dir / "data_pipeline.py"))
+            data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
+        template_config.dump(str(workspace_path / "template.yaml"))
 
         # Copy compression_config.json
-        if os.path.exists(os.path.join(model_dir, "compression_config.json")):
+        if (model_dir / "compression_config.json").exists():
             shutil.copyfile(
-                os.path.join(model_dir, "compression_config.json"),
-                os.path.join(train_type_dir, "compression_config.json"),
+                str(model_dir / "compression_config.json"),
+                str(train_type_dir / "compression_config.json"),
             )
 
-        print(f"[otx build] Create OTX workspace: {workspace_path}")
-        print(f"\tTask Type: {template.task_type}")
-        print(f"\tLoad Model Template ID: {template.model_template_id}")
-        print(f"\tLoad Model Name: {template.name}")
-        print(f"\tYou need to edit that file: {os.path.join(workspace_path, 'data.yaml')}")
+        print(f"[*] Load Model Template ID: {template.model_template_id}")
+        print(f"[*] Load Model Name: {template.name}")
 
-    def build_backbone_config(self, backbone_type, output_path):
+    def build_backbone_config(self, backbone_type: str, output_path: Union[Path, str]):
         """Build Backbone configs from backbone type.
 
         This is a function that makes the configuration
         of the usable backbone found by the user through otx find.
         backbone_type: The type of backbone want to get - {backend.backbone_type} (str)
-        output_path: new backbone configuration file output path (os.path)
+        output_path: new backbone configuration file output path (Union[Path, str])
         """
         print(f"[otx build] Backbone Config: {backbone_type}")
+        output_path = output_path if isinstance(output_path, Path) else Path(output_path)
 
         backend, backbone_class = Registry.split_scope_key(backbone_type)
-        backbone_config = dict(type=backbone_type)
+        backbone_config: Dict[str, Any] = dict(type=backbone_type)
         if backbone_class == "MMOVBackbone":
             backend = f"omz.{backend}"
             backbone_config["verify_shape"] = False
         backbone_registry, _ = get_backbone_registry(backend)
         missing_args = update_backbone_args(backbone_config, backbone_registry, backend)
-        if output_path.endswith((".yml", ".yaml", ".json")):
-            mmcv.dump({"backbone": backbone_config}, os.path.abspath(output_path))
-            print(f"[otx build] Save backbone configuration: {os.path.abspath(output_path)}")
+        if str(output_path).endswith((".yml", ".yaml", ".json")):
+            mmcv.dump({"backbone": backbone_config}, str(output_path.absolute()))
+            print(f"[otx build] Save backbone configuration: {str(output_path.absolute())}")
         else:
             raise ValueError("The backbone config support file format is as follows: (.yml, .yaml, .json)")
         return missing_args
 
-    def build_model_config(self, model_config_path, backbone_config_path, output_path=None):
+    def merge_backbone(
+        self,
+        model_config_path: Union[Path, str],
+        backbone_config_path: Union[Path, str],
+        output_path: Union[Path, str] = None,
+    ):
         """Build model & update backbone configs.
 
         This is a function that updates the existing model to be able to build
         through the backbone configuration file or backbone type.
-        model_config_path: model configuration file path (os.path)
-        backbone_config_path: backbone configuration file path (os.path)
-        output_path: new model.py output path (os.path)
+        model_config_path: model configuration file path (Union[Path, str])
+        backbone_config_path: backbone configuration file path (Union[Path, str])
+        output_path: new model.py output path (Union[Path, str])
         """
         print(f"[otx build] Update {model_config_path} with {backbone_config_path}")
+        model_config_path = model_config_path if isinstance(model_config_path, Path) else Path(model_config_path)
+        backbone_config_path = (
+            backbone_config_path if isinstance(backbone_config_path, Path) else Path(backbone_config_path)
+        )
 
         # Get Model config from model config file
-        if os.path.exists(model_config_path):
-            model_config = MPAConfig.fromfile(model_config_path)
+        if model_config_path.exists():
+            model_config = MPAConfig.fromfile(str(model_config_path))
             print(f"\tTarget Model: {model_config.model.type}")
         else:
             raise ValueError(f"[otx build] The model is not properly defined or not found: {model_config_path}")
 
         # Get Backbone config from config file
-        if os.path.exists(backbone_config_path):
-            backbone_config = mmcv.load(backbone_config_path)
+        if backbone_config_path.exists():
+            backbone_config = mmcv.load(str(backbone_config_path))
         else:
-            raise ValueError(f"[otx build] The backbone is not found: {backbone_config_path}")
+            raise ValueError(f"[otx build] The backbone is not found: {str(backbone_config_path)}")
 
         if "backbone" in backbone_config:
             backbone_config = backbone_config["backbone"]
-        backbone_pretrained = backbone_config.pop("pretrained", None)
 
         # Get Backbone configuration
         backend, backbone_class = Registry.split_scope_key(backbone_config["type"])
@@ -291,7 +290,6 @@ class Builder:
                 # Check out_indices vs num_stage
                 backbone_config["out_indices"] = model_in_indices
         backbone_config.pop("use_out_indices", None)
-        print(f"\tBackbone config: {backbone_config}")
 
         # Build Backbone
         backbone = build_from_cfg(backbone_config, otx_registry, None)
@@ -306,19 +304,17 @@ class Builder:
         update_channels(model_config, out_channels)
 
         # Update Model Configuration
+        if backend in ("torchvision"):
+            backbone_config["init_cfg"] = {"Pretrained": True}
+        print(f"\tBackbone config: {backbone_config}")
         model_config.model.backbone = backbone_config
         model_config.load_from = None
-        if backbone_pretrained:
-            model_config.model.pretrained = backbone_pretrained
-        elif backend in ("torchvision"):
-            model_config.model.pretrained = True
-        else:
-            model_config.model.pretrained = None
+
         if custom_imports:
             model_config["custom_imports"] = dict(imports=custom_imports, allow_failed_imports=False)
 
         # Dump or create model config file
         if output_path is None:
             output_path = model_config_path
-        model_config.dump(output_path)
-        print(f"[otx build] Save model configuration: {output_path}")
+        model_config.dump(str(output_path))
+        print(f"[otx build] Save model configuration: {str(output_path)}")

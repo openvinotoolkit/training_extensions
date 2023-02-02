@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmdet.models.detectors import BaseDetector
-
 from otx.mpa.modules.models.losses.l2sp_loss import L2SPLoss
 
 
-class L2SPDetectorMixin(BaseDetector):
+class L2SPDetectorMixin(object):
     """L2SP-enabled detector mix-in"""
 
     def __init__(self, l2sp_ckpt=None, l2sp_weight=None, **kwargs):

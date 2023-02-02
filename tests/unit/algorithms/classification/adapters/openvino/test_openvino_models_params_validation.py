@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import numpy as np
-import pytest
 
 from otx.algorithms.classification.adapters.openvino.model_wrappers import (
     OTXClassification,
@@ -19,23 +18,6 @@ class MockClassification(OTXClassification):
 
 
 class TestOTXClassificationParamsValidation:
-    @e2e_pytest_unit
-    def test_ote_classification_preprocess_params_validation(self):
-        """
-        <b>Description:</b>
-        Check OTXClassification object "preprocess" method input parameters validation
-
-        <b>Input data:</b>
-        OTXClassification object. "image" non-ndarray object
-
-        <b>Expected results:</b>
-        Test passes if ValueError exception is raised when unexpected type object is specified as
-        input parameter for "preprocess" method
-        """
-        classification = MockClassification()
-        with pytest.raises(ValueError):
-            classification.preprocess(image="unexpected string")  # type: ignore
-
     @e2e_pytest_unit
     def test_ote_classification_postprocess_params_validation(self):
         """

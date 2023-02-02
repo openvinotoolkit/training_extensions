@@ -246,17 +246,16 @@ class MPASegDataset(OTXSegDataset):
             otx_dataset = dataset.otx_dataset
             pipeline = dataset.pipeline
             classes = dataset.labels
-            if test_mode is False:
-                new_classes = dataset.new_classes
-                self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)
+            new_classes = dataset.new_classes
         else:
             otx_dataset = kwargs["otx_dataset"]
             pipeline = kwargs["pipeline"]
             classes = kwargs["labels"]
+            new_classes = kwargs.get("new_classes", [])
 
-        for action in pipeline:
-            if "domain" in action:
-                action.pop("domain")
+        if test_mode is False:
+            self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)
+
         if classes:
             classes = [c.name for c in classes]
             classes = ["background"] + classes

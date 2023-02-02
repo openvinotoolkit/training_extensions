@@ -77,6 +77,7 @@ class CrossDatasetDetectorHead(BaseDenseHead):
         anchors_list = images_to_levels(all_anchors, num_level_anchors)
         labels_list = images_to_levels(all_labels, num_level_anchors)
         valid_label_mask = self.get_valid_label_mask(img_metas=img_metas, all_labels=all_labels)
+        valid_label_mask = [i.to(anchor_list[0].device) for i in valid_label_mask]
         if len(valid_label_mask) > 0:
             valid_label_mask = images_to_levels(valid_label_mask, num_level_anchors)
 
@@ -137,6 +138,7 @@ class CrossDatasetDetectorHead(BaseDenseHead):
 
         # split to per img, per level
         valid_label_mask = self.get_valid_label_mask(img_metas=img_metas, all_labels=labels_list)
+        valid_label_mask = [i.to(points[0].device) for i in valid_label_mask]
         labels_list = [labels.split(num_points, 0) for labels in labels_list]
         bbox_targets_list = [bbox_targets.split(num_points, 0) for bbox_targets in bbox_targets_list]
 
@@ -232,6 +234,5 @@ class CrossDatasetDetectorHead(BaseDenseHead):
                 if use_bg:
                     mask[self.num_classes] = 0
             mask = mask.repeat(len(all_labels[i]), 1)
-            mask = mask.cuda() if torch.cuda.is_available() else mask
             valid_label_mask.append(mask)
         return valid_label_mask

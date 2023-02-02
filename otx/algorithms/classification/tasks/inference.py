@@ -10,11 +10,20 @@ from typing import Optional
 import numpy as np
 from mmcv.utils import ConfigDict
 
+from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
+from otx.algorithms.classification.adapters.mmcls.utils.config_utils import (
+    patch_datasets,
+    patch_evaluation,
+)
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
-from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys, patch_data_pipeline
+from otx.algorithms.common.adapters.mmcv.utils import (
+    patch_data_pipeline,
+    patch_default_config,
+    patch_runner,
+)
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
@@ -22,7 +31,7 @@ from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
-from otx.api.entities.label import Domain
+from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.model import (  # ModelStatus
     ModelEntity,
     ModelFormat,
@@ -47,7 +56,6 @@ from otx.api.utils.argument_checks import (
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.mpa import MPAConstants
-from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import MPAConfig
 from otx.mpa.utils.logger import get_logger
 
@@ -89,11 +97,16 @@ class ClassificationInferenceTask(
         ) == len(
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
+        if self._multilabel:
+            logger.info("Classiification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            logger.info("Classiification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
+        else:
+            logger.info("Classiification mode: multiclass")
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
@@ -113,6 +126,7 @@ class ClassificationInferenceTask(
 
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+
         results = self._run_task(
             stage_module,
             mode="eval",
@@ -177,9 +191,8 @@ class ClassificationInferenceTask(
 
     def unload(self):
         """Unload function of OTX Classification Task."""
-
         logger.info("called unload()")
-        self.finalize()
+        self.cleanup()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -192,15 +205,14 @@ class ClassificationInferenceTask(
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = "ClsExporter"
-        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-        logger.debug(f"results of run_task = {results}")
-        results = results.get("outputs")
-        logger.debug(f"results of run_task = {results}")
-        if results is None:
-            logger.error("Error while exporting model. Result is NoneType.")
+        results = self._run_task(stage_module, mode="train", export=True)
+        outputs = results.get("outputs")
+        logger.debug(f"results of run_task = {outputs}")
+        if outputs is None:
+            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
         else:
-            bin_file = results.get("bin")
-            xml_file = results.get("xml")
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
             if xml_file is None or bin_file is None:
                 raise RuntimeError("invalid status of exporting. bin and xml should not be None")
             with open(bin_file, "rb") as f:
@@ -219,9 +231,9 @@ class ClassificationInferenceTask(
         """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
 
         dataset_size = len(dataset)
+        pos_thr = 0.5
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             item_labels = []
-            pos_thr = 0.5
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
                 logger.info("Nan in prediction_item.")
@@ -246,11 +258,7 @@ class ClassificationInferenceTask(
                     item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
 
                 if self._hierarchical_info["num_multilabel_classes"]:
-                    logits_begin, logits_end = (
-                        self._hierarchical_info["num_single_label_classes"],
-                        -1,
-                    )
-                    head_logits = prediction_item[logits_begin:logits_end]
+                    head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"] :]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
                             label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
@@ -271,6 +279,16 @@ class ClassificationInferenceTask(
                 item_labels.append(cls_label)
 
             dataset_item.append_labels(item_labels)
+
+            probs = TensorEntity(name="probabilities", numpy=prediction_item.reshape(-1))
+            dataset_item.append_metadata_item(probs, model=self._task_environment.model)
+
+            top_idxs = np.argpartition(prediction_item, -2)[-2:]
+            top_probs = prediction_item[top_idxs]
+            active_score_media = FloatMetadata(
+                name="active_score", value=top_probs[1] - top_probs[0], float_type=FloatType.ACTIVE_SCORE
+            )
+            dataset_item.append_metadata_item(active_score_media, model=self._task_environment.model)
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
@@ -300,36 +318,37 @@ class ClassificationInferenceTask(
             update_progress_callback(int(i / dataset_size * 100))
 
     def _init_recipe_hparam(self) -> dict:
-        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
+        params = self._hyperparams.learning_parameters
+        warmup_iters = int(params.learning_rate_warmup_iters)
         if self._multilabel:
             # hack to use 1cycle policy
-            lr_config = ConfigDict(max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
+            lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
         else:
             lr_config = (
                 ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
             )
 
-        if self._hyperparams.learning_parameters.enable_early_stopping:
+        if params.enable_early_stopping:
             early_stop = ConfigDict(
-                start=int(self._hyperparams.learning_parameters.early_stop_start),
-                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
-                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
+                start=int(params.early_stop_start),
+                patience=int(params.early_stop_patience),
+                iteration_patience=int(params.early_stop_iteration_patience),
             )
         else:
             early_stop = False
 
-        if self._recipe_cfg.runner.get("type") == "IterBasedRunner":  # type: ignore
-            runner = ConfigDict(max_iters=int(self._hyperparams.learning_parameters.num_iters))
+        if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
+            runner = ConfigDict(max_iters=int(params.num_iters))
         else:
-            runner = ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters))
+            runner = ConfigDict(max_epochs=int(params.num_iters))
 
         config = ConfigDict(
-            optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
+            optimizer=ConfigDict(lr=params.learning_rate),
             lr_config=lr_config,
             early_stop=early_stop,
             data=ConfigDict(
-                samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
-                workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
+                samples_per_gpu=int(params.batch_size),
+                workers_per_gpu=int(params.num_workers),
             ),
             runner=runner,
         )
@@ -337,9 +356,9 @@ class ClassificationInferenceTask(
         if self._train_type.value == "SEMISUPERVISED":
             unlabeled_config = ConfigDict(
                 data=ConfigDict(
-                    unlabeled=ConfigDict(
-                        samples_per_gpu=int(self._hyperparams.learning_parameters.unlabeled_batch_size),
-                        workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
+                    unlabeled_dataloader=ConfigDict(
+                        samples_per_gpu=int(params.unlabeled_batch_size),
+                        workers_per_gpu=int(params.num_workers),
                     )
                 )
             )
@@ -379,9 +398,27 @@ class ClassificationInferenceTask(
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = self._train_type.name
+
+        options_for_patch_datasets = {"type": "MPAClsDataset", "empty_label": self._empty_label}
+        options_for_patch_evaluation = {"task": "normal"}
+        if self._multilabel:
+            options_for_patch_datasets["type"] = "MPAMultilabelClsDataset"
+            options_for_patch_evaluation["task"] = "multilabel"
+        elif self._hierarchical:
+            options_for_patch_datasets["type"] = "MPAHierarchicalClsDataset"
+            options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
+            options_for_patch_evaluation["task"] = "hierarchical"
+        elif self._selfsl:
+            options_for_patch_datasets["type"] = "SelfSLDataset"
+        patch_default_config(self._recipe_cfg)
+        patch_runner(self._recipe_cfg)
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-        self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
-        self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
+        patch_datasets(
+            self._recipe_cfg,
+            self._task_type.domain,
+            **options_for_patch_datasets,
+        )  # for OTX compatibility
+        patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
     # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
@@ -417,75 +454,12 @@ class ClassificationInferenceTask(
         )
         return data_cfg
 
-    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):  # noqa: C901
-        def patch_color_conversion(pipeline):
-            # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
-            for pipeline_step in pipeline:
-                if pipeline_step.type == "Normalize":
-                    to_rgb = False
-                    if "to_rgb" in pipeline_step:
-                        to_rgb = pipeline_step.to_rgb
-                    to_rgb = not bool(to_rgb)
-                    pipeline_step.to_rgb = to_rgb
-                elif pipeline_step.type == "MultiScaleFlipAug":
-                    patch_color_conversion(pipeline_step.transforms)
+    def _update_stage_module(self, stage_module):
+        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
+        if self._train_type in module_prefix and stage_module in ["ClsTrainer", "ClsInferrer"]:
+            stage_module = module_prefix[self._train_type] + stage_module
+        return stage_module
 
-        assert "data" in config
-        for subset in ("train", "val", "test", "unlabeled"):
-            cfg = config.data.get(subset, None)
-            if not cfg:
-                continue
-            if cfg.type == "RepeatDataset":
-                cfg = cfg.dataset
-
-            else:
-                if self._multilabel:
-                    cfg.type = "MPAMultilabelClsDataset"
-                elif self._hierarchical:
-                    cfg.type = "MPAHierarchicalClsDataset"
-                    cfg.hierarchical_info = self._hierarchical_info
-                    if subset == "train":
-                        cfg.drop_last = True  # For stable hierarchical information indexing
-                elif self._selfsl:
-                    cfg.type = "SelfSLDataset"
-                else:
-                    cfg.type = "MPAClsDataset"
-
-            # In train dataset, when sample size is smaller than batch size
-            if subset == "train" and self._data_cfg:
-                train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
-                if len(train_data_cfg.get("otx_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
-                    cfg.drop_last = False
-
-            cfg.domain = domain
-            cfg.otx_dataset = None
-            cfg.labels = None
-            cfg.empty_label = self._empty_label
-            for pipeline_step in cfg.pipeline:
-                if self._selfsl:
-                    # TODO : refactoring
-                    # SelfSLDataset has pipelines={"view0": [...], "view1": [...]}.
-                    # To access `Normalize`, patch_color_conversion must be applied to both view0 and view1.
-                    for pipeline_view in cfg.pipeline[pipeline_step]:
-                        if subset == "train" and pipeline_view.type == "Collect":
-                            pipeline_view = get_meta_keys(pipeline_view)
-                    patch_color_conversion(cfg.pipeline[pipeline_step])
-                else:
-                    if subset == "train" and pipeline_step.type == "Collect":
-                        pipeline_step = get_meta_keys(pipeline_step)
-
-            if not self._selfsl:
-                patch_color_conversion(cfg.pipeline)
-
-    def _patch_evaluation(self, config: MPAConfig):
-        cfg = config.get("evaluation", None)
-        if cfg:
-            if self._multilabel:
-                cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
-                config.early_stop_metric = "mAP"
-            elif self._hierarchical:
-                cfg.metric = ["MHAcc", "avgClsAcc", "mAP"]
-                config.early_stop_metric = "MHAcc"
-            else:
-                cfg.metric = ["accuracy", "class_accuracy"]
-                config.early_stop_metric = "accuracy"
+    def _initialize_post_hook(self, options=None):
+        super()._initialize_post_hook(options)
+        options["model_builder"] = build_classifier

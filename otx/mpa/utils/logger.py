@@ -2,14 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import functools
 import logging
 import os
 import sys
+from typing import Callable
 
-from mmcv.runner.dist_utils import master_only
-
-# import torch.distributed as dist
-
+import torch.distributed as dist
 
 # __all__ = ['config_logger', 'get_log_dir', 'get_logger']
 __all__ = ["config_logger", "get_log_dir"]
@@ -18,6 +17,8 @@ _LOGGING_FORMAT = "%(asctime)s | %(levelname)s : %(message)s"
 _LOG_DIR = None
 _FILE_HANDLER = None
 _CUSTOM_LOG_LEVEL = 31
+
+LEVEL = logging.INFO
 
 logging.addLevelName(_CUSTOM_LOG_LEVEL, "LOG")
 
@@ -32,7 +33,7 @@ def _get_logger():
 
     logger.print = print
 
-    logger.setLevel(logging.INFO)
+    logger.setLevel(LEVEL)
     console = logging.StreamHandler(sys.stdout)
     console.setFormatter(logging.Formatter(_LOGGING_FORMAT))
 
@@ -101,11 +102,22 @@ class _DummyLogger(logging.Logger):
         pass
 
 
-# apply decorator @master_only to the lower severity logging functions
-# TODO: need to check whether it works as expected
+def local_master_only(func: Callable) -> Callable:
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        local_rank = 0
+        if dist.is_available() and dist.is_initialized():
+            local_rank = int(os.environ["LOCAL_RANK"])
+        if local_rank == 0:
+            return func(*args, **kwargs)
+
+    return wrapper
+
+
+# apply decorator @local_master_only to the lower severity logging functions
 _logging_methods = ["print", "debug", "info", "warning"]
 for fn in _logging_methods:
-    master_only(getattr(_logger, fn))
+    setattr(_logger, fn, local_master_only(getattr(_logger, fn)))
 
 
 def get_logger():

@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import asyncio
 import json
 import os
 import shutil
-import subprocess  # nosec
+import sys
+from typing import Dict
 
 import pytest
+import yaml
 
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
+from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
 from otx.mpa.utils.config_utils import MPAConfig
 
 
@@ -48,12 +52,96 @@ def get_template_dir(template, root) -> str:
     return template_work_dir
 
 
+def runner(
+    cmd,
+    stdout_stream=sys.stdout.buffer,
+    stderr_stream=sys.stderr.buffer,
+    **kwargs,
+):
+    async def stream_handler(in_stream, out_stream):
+        output = bytearray()
+        # buffer line
+        line = bytearray()
+        while True:
+            c = await in_stream.read(1)
+            if not c:
+                break
+            line.extend(c)
+            if c == b"\n":
+                out_stream.write(line)
+                output.extend(line)
+                line = bytearray()
+        return output
+
+    async def run_and_capture(cmd):
+        environ = os.environ.copy()
+        environ["PYTHONUNBUFFERED"] = "1"
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            env=environ,
+            **kwargs,
+        )
+
+        try:
+            stdout, stderr = await asyncio.gather(
+                stream_handler(process.stdout, stdout_stream),
+                stream_handler(process.stderr, stderr_stream),
+            )
+        except Exception:
+            process.kill()
+            raise
+        finally:
+            rc = await process.wait()
+        return rc, stdout, stderr
+
+    rc, stdout, stderr = asyncio.run(run_and_capture(cmd))
+
+    return rc, stdout, stderr
+
+
 def check_run(cmd, **kwargs):
-    result = subprocess.run(cmd, stderr=subprocess.PIPE, **kwargs)
-    assert result.returncode == 0, result.stderr.decode("utf=8")
+    rc, _, stderr = runner(cmd, **kwargs)
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+    if rc != 0:
+        stderr = stderr.decode("utf-8").splitlines()
+        i = 0
+        for i, line in enumerate(stderr):
+            if line.startswith("Traceback"):
+                break
+        stderr = "\n".join(stderr[i:])
+    assert rc == 0, stderr
 
 
 def otx_train_testing(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    command_line = ["otx", "train", template.model_template_path]
+    for arg in [
+        "--train-ann_file",
+        "--train-data-roots",
+        "--val-ann-file",
+        "--val-data-roots",
+        "--unlabeled-data-roots",
+        "--unlabeled-file-list",
+    ]:
+        arg_value = args.get(arg, None)
+        if arg_value:
+            command_line.extend([arg, os.path.join(otx_dir, arg_value)])
+    command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
+    if "--gpus" in args:
+        command_line.extend(["--gpus", args["--gpus"]])
+        if "--multi-gpu-port" in args:
+            command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
+    command_line.extend(args["train_params"])
+    check_run(command_line)
+    assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
+    assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
+
+
+def otx_resume_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -68,44 +156,32 @@ def otx_train_testing(template, root, otx_dir, args):
         "--val-data-roots",
         "--unlabeled-data-roots",
         "--unlabeled-file-list",
-        "--load-weights",
+        "--resume-from",
     ]:
         if option in args:
             command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
 
-    command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
-    if "--gpus" in args:
-        command_line.extend(["--gpus", args["--gpus"]])
-        if "--multi-gpu-port" in args:
-            command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
+    command_line.extend(["--save-model-to", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
-    assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
+    assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth")
+    assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/label_schema.json")
 
 
 def otx_hpo_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):
         shutil.rmtree(f"{template_work_dir}/hpo")
-    command_line = [
-        "otx",
-        "train",
-        template.model_template_path,
-        "--train-ann-file",
-        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
-        "--train-data-roots",
-        f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-ann-file",
-        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
-        "--val-data-roots",
-        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
-        "--save-model-to",
-        f"{template_work_dir}/hpo_trained_{template.model_template_id}",
-        "--enable-hpo",
-        "--hpo-time-ratio",
-        "1",
-    ]
+
+    command_line = ["otx", "train", template.model_template_path]
+
+    for arg in ["--train-data-roots", "--val-data-roots"]:
+        arg_value = args.get(arg, None)
+        if arg_value:
+            command_line.extend([arg, os.path.join(otx_dir, arg_value)])
+    command_line.extend(["--save-model-to", f"{template_work_dir}/hpo_trained_{template.model_template_id}"])
+    command_line.extend(["--enable-hpo", "--hpo-time-ratio", "1"])
+
     command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
@@ -134,12 +210,11 @@ def otx_export_testing(template, root):
 
 def otx_eval_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+
     command_line = [
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -147,6 +222,7 @@ def otx_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(args.get("eval_params", []))
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
@@ -157,8 +233,6 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -274,8 +348,6 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -319,12 +391,8 @@ def pot_optimize_testing(template, root, otx_dir, args):
         "otx",
         "optimize",
         template.model_template_path,
-        "--train-ann-file",
-        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
         f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-ann-file",
-        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
@@ -338,14 +406,31 @@ def pot_optimize_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
 
 
+def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name):
+    num_fq = get_number_of_fakequantizers_in_xml(xml_path)
+    assert os.path.exists(path_to_ref_data), f"Reference file does not exist: {path_to_ref_data} [num_fq = {num_fq}]"
+
+    with open(path_to_ref_data, encoding="utf-8") as stream:
+        ref_data = yaml.safe_load(stream)
+    ref_num_fq = ref_data.get(test_name, {}).get(compression_type, {}).get("number_of_fakequantizers", -1)
+    assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
+
+
+def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    template_work_dir = get_template_dir(template, root)
+    xml_path = f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
+    path_to_ref_data = os.path.join(
+        otx_dir, "tests", "regression", task_type, "reference", template.model_template_id, "compressed_model.yml"
+    )
+    _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
+
+
 def pot_eval_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -363,12 +448,8 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         "otx",
         "optimize",
         template.model_template_path,
-        "--train-ann-file",
-        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
         f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-ann-file",
-        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
@@ -406,14 +487,22 @@ def nncf_export_testing(template, root):
     assert compressed_bin_size < original_bin_size, f"{compressed_bin_size=}, {original_bin_size=}"
 
 
+def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    template_work_dir = get_template_dir(template, root)
+    xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
+    path_to_ref_data = os.path.join(
+        otx_dir, "tests", "regression", task_type, "reference", template.model_template_id, "compressed_model.yml"
+    )
+
+    _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf", test_name)
+
+
 def nncf_eval_testing(template, root, otx_dir, args, threshold):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -441,8 +530,6 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
         "otx",
         "eval",
         template.model_template_path,
-        "--test-ann-file",
-        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
@@ -642,3 +729,17 @@ def otx_build_backbone_testing(root, backbone_args):
     assert (
         model_config["model"]["backbone"]["type"] == backbone
     ), f"{model_config['model']['backbone']['type']} != {backbone}"
+
+
+def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
+    workspace_root = os.path.join(root, "otx-workspace")
+    command_line = ["otx", "build", "--workspace-root", workspace_root]
+
+    for option, val in args.items():
+        if option in ["--train-data-roots", "--val-data-roots"]:
+            command_line.extend([option, f"{os.path.join(otx_dir, val)}"])
+        elif option in ["--task"]:
+            command_line.extend([option, args[option]])
+    check_run(command_line)
+
+    shutil.rmtree(workspace_root)
