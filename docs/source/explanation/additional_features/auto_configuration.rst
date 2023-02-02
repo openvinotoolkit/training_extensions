@@ -42,8 +42,10 @@ After dataset preparation, the training will be started with the middle-sized te
     - anomaly segmentation: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
     - instance segmentation: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
 
-    If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type with an additional CLI option. If not, OTX automatically chooses the task type that you might don't intend:
+    If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type and use `otx build` first with an additional CLI option. If not, OTX automatically chooses the task type that you might don't intend:
 
     .. code-block::
 
-        $ otx train --train-data-root <path_to_data_root> --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
+        $ otx build --train-data-root <path_to_data_root> --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
+
+    It will create a task-specific environment with configured template and auto dataset split if supported.
