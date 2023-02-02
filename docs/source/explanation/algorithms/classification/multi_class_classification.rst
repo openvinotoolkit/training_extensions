@@ -1,7 +1,7 @@
 Multi-class Classification
 ==========================
 
-Multi-class Classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
+Multi-class classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
 For the supervised training we use the following algorithms components:
 
 .. _mcl_cls_supervised_pipeline:
@@ -12,9 +12,9 @@ For the supervised training we use the following algorithms components:
 
 - ``Learning rate schedule``: `Cosine Annealing <https://arxiv.org/abs/1608.03983v5>`_. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.
 
-- ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples
+- ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
 
-- Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
+- Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting. Besides this we use `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11>`_ to create an efficient batch that allow reducing the iteration size by estimating the trials that all samples in the tail class are selected more than once with probability 0.999.
 
 
 To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
