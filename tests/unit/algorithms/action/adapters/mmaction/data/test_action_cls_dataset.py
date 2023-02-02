@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Any, Dict, List
-
 import pytest
 
 from otx.algorithms.action.adapters.mmaction.data.cls_dataset import OTXActionClsDataset
@@ -13,30 +11,13 @@ from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecod
 from otx.algorithms.action.configs.classification.x3d.data_pipeline import (
     train_pipeline,
 )
-from otx.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
-from otx.api.entities.dataset_item import DatasetItemEntity
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.id import ID
-from otx.api.entities.image import Image
-from otx.api.entities.label import Domain, LabelEntity
-from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.label import Domain
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-
-
-class MockPipeline:
-    """Mock class for data pipeline.
-
-    It returns its inputs.
-    """
-
-    def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
-        return results
+from tests.unit.algorithms.action.test_helpers import (
+    MockPipeline,
+    generate_action_cls_otx_dataset,
+    generate_labels,
+)
 
 
 class TestOTXActionClsDataset:
@@ -56,24 +37,8 @@ class TestOTXActionClsDataset:
     def setup(self) -> None:
         self.video_len = 3
         self.frame_len = 3
-        self.labels = [
-            LabelEntity(name="1", domain=Domain.ACTION_CLASSIFICATION, id=ID(1)),
-            LabelEntity(name="2", domain=Domain.ACTION_CLASSIFICATION, id=ID(2)),
-            LabelEntity(name="3", domain=Domain.ACTION_CLASSIFICATION, id=ID(3)),
-        ]
-        items: List[DatasetItemEntity] = []
-        for video_id in range(self.video_len):
-            for frame_idx in range(self.frame_len):
-                item = DatasetItemEntity(
-                    media=Image(f"{video_id}_{frame_idx}.png"),
-                    annotation_scene=AnnotationSceneEntity(
-                        annotations=[Annotation(Rectangle.generate_full_box(), [ScoredLabel(self.labels[video_id])])],
-                        kind=AnnotationSceneKind.ANNOTATION,
-                    ),
-                    metadata=[MetadataItemEntity(data=VideoMetadata(video_id, frame_idx, is_empty_frame=False))],
-                )
-                items.append(item)
-        self.otx_dataset = DatasetEntity(items=items)
+        self.labels = generate_labels(3, Domain.ACTION_CLASSIFICATION)
+        self.otx_dataset = generate_action_cls_otx_dataset(self.video_len, self.frame_len, self.labels)
         self.pipeline = train_pipeline
 
     @e2e_pytest_unit
