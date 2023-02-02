@@ -54,12 +54,14 @@ class TestOpenVINOSegmentationInferencer:
 
         self.fake_input = np.full((5, 1), 0.1)
 
+    @e2e_pytest_unit
     def test_pre_process(self):
         self.seg_ov_inferencer.model.preprocess.return_value = {"foo": "bar"}
         returned_value = self.seg_ov_inferencer.pre_process(self.fake_input)
 
         assert returned_value == {"foo": "bar"}
 
+    @e2e_pytest_unit
     def test_post_process(self):
         fake_prediction = {"pred": self.fake_input}
         fake_metadata = {"soft_prediction": self.fake_input, "feature_vector": None}
@@ -69,6 +71,7 @@ class TestOpenVINOSegmentationInferencer:
         assert len(returned_value) == 3
         assert np.array_equal(returned_value[2], self.fake_input)
 
+    @e2e_pytest_unit
     def test_predict(self, mocker):
         fake_output = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=[])
         mock_pre_process = mocker.patch.object(OpenVINOSegmentationInferencer, "pre_process", return_value=("", ""))
@@ -83,6 +86,7 @@ class TestOpenVINOSegmentationInferencer:
         mock_post_process.assert_called_once()
         assert returned_value == fake_output
 
+    @e2e_pytest_unit
     def test_forward(self):
         fake_output = {"pred": np.full((5, 1), 0.9)}
         self.seg_ov_inferencer.model.infer_sync.return_value = fake_output
