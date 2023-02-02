@@ -31,7 +31,7 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.segmentation.prep import (
+from tests.unit.algorithms.segmentation.test_helpers import (
     DEFAULT_SEG_TEMPLATE_DIR,
     create_model,
     generate_otx_dataset,

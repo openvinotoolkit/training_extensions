@@ -12,7 +12,7 @@ from otx.api.configuration.helper import create
 from otx.api.entities.metrics import NullPerformance
 from otx.api.entities.model_template import parse_model_template
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.segmentation.prep import (
+from tests.unit.algorithms.segmentation.test_helpers import (
     DEFAULT_SEG_TEMPLATE_DIR,
     create_model,
     generate_otx_dataset,
