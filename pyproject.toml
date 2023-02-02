@@ -1,8 +1,15 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # SETUP CONFIGURATION.                                                        #
 [build-system]
-# FIXME: torch version hard-coded to build torch cpp extension
-requires = ["setuptools>=42", "wheel", "Cython~=0.29.32", "numpy~=1.21.0", "torch==1.8.1"]
+# FIXME: specified torch wheel to build torch cpp extension should be fixed in some
+# different way instead of using static link url
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "Cython~=0.29.32",
+    "numpy~=1.21.0",
+    "torch@https://download.pytorch.org/whl/lts/1.8/cu111/torch-1.8.2%2Bcu111-cp38-cp38-linux_x86_64.whl"
+]
 build-backend = "setuptools.build_meta"
 
 
@@ -21,7 +28,7 @@ ignore_missing_imports = true
 show_error_codes = true
 
 # TODO: Need to be edited
-follow_imports = "skip" 
+follow_imports = "skip"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # PYLINT CONFIGURATION                                                        #
@@ -45,6 +52,8 @@ disable = [
     "use-symbolic-message-instead",
     "import-outside-toplevel",
     "arguments-differ",
+    "use-dict-literal",
+    "broad-exception-raised",
 ]
 
 [tool.pylint.typecheck]

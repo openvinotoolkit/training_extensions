@@ -17,7 +17,7 @@
 import io
 import os
 from glob import glob
-from typing import Any, DefaultDict, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import torch
@@ -26,7 +26,6 @@ from mmaction.datasets import build_dataset
 from mmaction.utils import get_root_logger
 
 from otx.algorithms.action.adapters.mmaction.utils import prepare_for_training
-from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -120,7 +119,6 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)
 
         self._is_training = True
         self._init_task()

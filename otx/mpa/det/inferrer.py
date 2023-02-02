@@ -6,6 +6,7 @@ from contextlib import nullcontext
 
 import torch
 from mmcv.utils import Config, ConfigDict
+from mmdet.apis import single_gpu_test
 from mmdet.datasets import build_dataloader as mmdet_build_dataloader
 from mmdet.datasets import build_dataset as mmdet_build_dataset
 from mmdet.datasets import replace_ImageToTensor
@@ -16,7 +17,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader,
     build_dataset,
 )
-from otx.mpa.modules.datasets.det_tiling_dataset import ImageTilingDataset
+from otx.algorithms.detection.adapters.mmdet.data import ImageTilingDataset
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
     DetSaliencyMapHook,
@@ -181,10 +182,7 @@ class DetectionInferrer(DetectionStage):
         eval_predictions = []
         with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
             with saliency_hook:
-                for data in test_dataloader:
-                    with torch.no_grad():
-                        result = model(return_loss=False, rescale=True, **data)
-                    eval_predictions.extend(result)
+                eval_predictions = single_gpu_test(model, test_dataloader)
                 feature_vectors = feature_vector_hook.records if dump_features else [None] * len(self.dataset)
                 saliency_maps = saliency_hook.records if dump_saliency_map else [None] * len(self.dataset)
 

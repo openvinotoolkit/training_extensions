@@ -4,7 +4,7 @@
 #
 import abc
 from enum import Enum, auto
-from typing import Optional
+from typing import Any, Optional
 
 from otx.api.entities.model import ModelEntity
 
@@ -59,6 +59,37 @@ class FloatMetadata(IMetadata):
         return self.name == other.name and self.value == other.value and self.float_type == other.float_type
 
 
+class VideoMetadata(IMetadata):
+    """This class represents metadata of video.
+
+    Args:
+        video_id (str): id(name) for video.
+        frame_idx (int): Index for frame.
+        is_empty_frame(bool): whether this is empty frame(for action detection)
+    """
+
+    def __init__(self, video_id: str, frame_idx: int, is_empty_frame: bool):
+        self.video_id = video_id
+        self.frame_idx = frame_idx
+        self.is_empty_frame = is_empty_frame
+        self.metadata = {"video_id": video_id, "frame_idx": frame_idx, "is_empty_frame": is_empty_frame}
+
+    def __repr__(self):
+        """Prints the video_id, frame_id and type of the MetadataItemEntity."""
+        out_string = "VideoMetadata"
+        out_string += f"({self.metadata})"
+        return out_string
+
+    def __eq__(self, other):
+        """Checks if two VideoMetadata have the same name, value and type."""
+        return self.metadata == other.metadata
+
+    def update(self, key: str, value: Any):
+        """Update metadata infomation."""
+        setattr(self, key, value)
+        self.metadata[key] = value
+
+
 class MetadataItemEntity:
     """This class is a wrapper class which connects the metadata value to model, which was used to generate it.
 
@@ -69,7 +100,7 @@ class MetadataItemEntity:
 
     def __init__(
         self,
-        data: IMetadata,
+        data: Any,
         model: Optional[ModelEntity] = None,
     ):
         self.data = data

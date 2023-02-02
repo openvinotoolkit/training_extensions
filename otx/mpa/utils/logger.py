@@ -18,6 +18,8 @@ _LOG_DIR = None
 _FILE_HANDLER = None
 _CUSTOM_LOG_LEVEL = 31
 
+LEVEL = logging.INFO
+
 logging.addLevelName(_CUSTOM_LOG_LEVEL, "LOG")
 
 
@@ -31,7 +33,7 @@ def _get_logger():
 
     logger.print = print
 
-    logger.setLevel(logging.INFO)
+    logger.setLevel(LEVEL)
     console = logging.StreamHandler(sys.stdout)
     console.setFormatter(logging.Formatter(_LOGGING_FORMAT))
 

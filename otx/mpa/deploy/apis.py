@@ -195,6 +195,7 @@ if is_mmdeploy_enabled():
                 "input_data",
                 {"shape": (128, 128, 3), "file_path": None},
             )
+
             if input_data_cfg.get("file_path"):
                 import cv2
 
