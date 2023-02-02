@@ -735,11 +735,24 @@ def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
     workspace_root = os.path.join(root, "otx-workspace")
     command_line = ["otx", "build", "--workspace-root", workspace_root]
 
-    for option, val in args.items():
+    for option, value in args.items():
         if option in ["--train-data-roots", "--val-data-roots"]:
-            command_line.extend([option, f"{os.path.join(otx_dir, val)}"])
+            command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
         elif option in ["--task"]:
             command_line.extend([option, args[option]])
     check_run(command_line)
-
     shutil.rmtree(workspace_root)
+
+def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
+    result_dir = os.path.join(root, "results")
+    command_line = ["otx", "train", "--save-model-to", result_dir]
+
+    for option, value in args.items():
+        if option in ["--train-data-roots", "--val-data-roots"]:
+            command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
+        elif option is "--template":
+            command_line.extend([option, args[option]])
+    command_line.extend(args["train_params"])
+    check_run(command_line)
+    shutil.rmtree(result_dir)
+    
