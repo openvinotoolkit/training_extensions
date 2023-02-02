@@ -104,7 +104,7 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 #   - torch: mmdet/seg are installed via source, setup.py imports torch
 #   - torchvision
 # shellcheck disable=SC2102
-pip install -e ../../[full] || exit 1
+pip install -e ../../[mpa] || exit 1
 
 deactivate
 
