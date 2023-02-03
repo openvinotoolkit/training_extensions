@@ -16,6 +16,7 @@ from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_helpers import generate_random_annotated_image
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 def create_otx_dataset(height: int, width: int, labels: List[str]):
@@ -115,6 +116,7 @@ class TestTilingDetection(unittest.TestCase):
             )
         )
 
+    @e2e_pytest_unit
     def test_tiling_train_dataloader(self):
         """Test that the training dataloader is built correctly for tiling"""
 
@@ -125,6 +127,7 @@ class TestTilingDetection(unittest.TestCase):
             self.assertIsInstance(data["gt_bboxes"].data[0][0], torch.Tensor)
             self.assertIsInstance(data["gt_labels"].data[0][0], torch.Tensor)
 
+    @e2e_pytest_unit
     def test_tiling_test_dataloader(self):
         """Test that the testing dataloader is built correctly for tiling"""
 
@@ -141,6 +144,7 @@ class TestTilingDetection(unittest.TestCase):
             self.assertNotIn("gt_bboxes", data)
             self.assertNotIn("gt_labels", data)
 
+    @e2e_pytest_unit
     def test_inference_merge(self):
         """Test that the inference merge works correctly"""
         dataset = build_dataset(self.test_data_cfg)
