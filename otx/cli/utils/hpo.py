@@ -125,7 +125,7 @@ class TaskManager:
         ]
 
     def get_batch_size_name(self) -> str:
-        """Give an proper batch size name depending on frameowrk.
+        """Give an proper batch size name depending on framework.
 
         Returns:
             str: batch size name
@@ -140,7 +140,7 @@ class TaskManager:
         return batch_size_name
 
     def get_epoch_name(self) -> str:
-        """Give an proper epoch name depending on frameowrk.
+        """Give an proper epoch name depending on framework.
 
         Returns:
             str: epoch name
