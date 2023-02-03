@@ -168,25 +168,22 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
             logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
             return None
 
-    def save_image_to_cache(img: np.array, filename: str) -> None:
+    def save_image_to_cache(img: np.array, filename: str):
         tmp_filename = filename.replace(".png", "-tmp.png")
         if os.path.exists(filename) or os.path.exists(tmp_filename):  # if image is cached or caching
-            return None
+            return
         try:
             cv2.imwrite(tmp_filename, img=img)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Skip caching for {filename} \nError msg: {e}")
-            return None
+            return
 
         if os.path.exists(tmp_filename) and not os.path.exists(filename):
             try:
                 os.replace(tmp_filename, filename)
-                return None
             except Exception as e:  # pylint: disable=broad-except
                 os.remove(tmp_filename)
                 logger.warning(f"Failed to rename {tmp_filename} -> {filename} \nError msg: {e}")
-                return None
-        return None
 
     subset = results["dataset_item"].subset
     media = results["dataset_item"].media
