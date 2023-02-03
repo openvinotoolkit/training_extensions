@@ -201,7 +201,7 @@ def seg_template_path() -> str:
 
 @pytest.fixture(scope="module")
 def anomaly_template_path() -> str:
-    return str(get_template_path("anomaly/configs"))
+    return str(OTX_ROOT_PATH / "algorithms/anomaly/configs/classification/stfpm/template.yaml")
 
 
 @pytest.fixture(scope="module")
