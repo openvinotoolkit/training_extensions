@@ -174,11 +174,19 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
             return None
         try:
             cv2.imwrite(tmp_filename, img=img)
-            os.replace(tmp_filename, filename)
-            return None
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Skip caching for {filename} \nError msg: {e}")
             return None
+
+        if os.path.exists(tmp_filename) and not os.path.exists(filename):
+            try:
+                os.replace(tmp_filename, filename)
+                return None
+            except Exception as e:  # pylint: disable=broad-except
+                os.remove(tmp_filename)
+                logger.warning(f"Failed to rename {tmp_filename} -> {filename} \nError msg: {e}")
+                return None
+        return None
 
     subset = results["dataset_item"].subset
     media = results["dataset_item"].media
