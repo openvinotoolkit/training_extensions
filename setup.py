@@ -115,31 +115,8 @@ def get_extensions():
 
         return cythonize(ext_modules, annotate=True)
 
-    def _torch_modules():
-        ext_modules = []
-
-        # prevent ninja from using too many resources
-        os.environ.setdefault("MAX_JOBS", "4")
-        extra_compile_args = {"cxx": []}
-
-        # otx.mpa.modules._mpl
-        op_files = glob("./otx/mpa/csrc/mpl/*.cpp")
-        include_path = os.path.abspath("./otx/mpa/csrc/mpl")
-        ext_ops = CppExtension(
-            name="otx.mpa.modules._mpl",
-            sources=op_files,
-            include_dirs=[include_path],
-            define_macros=[],
-            extra_compile_args=extra_compile_args,
-        )
-        ext_modules.append(ext_ops)
-        return ext_modules
-
     extensions = []
-
-    extensions.extend(_torch_modules())
     extensions.extend(_cython_modules())
-
     return extensions
 
 
