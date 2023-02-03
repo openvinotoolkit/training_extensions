@@ -57,7 +57,7 @@ def get_gpu_ids(gpus: str) -> List[int]:
     gpu_ids = []
     for gpu_id in gpus.split(","):
         if not gpu_id.isnumeric():
-            raise RuntimeError("--gpus argument should be numbers separated by ','.")
+            raise ValueError("--gpus argument should be numbers separated by ','.")
         gpu_ids.append(int(gpu_id))
 
     wrong_gpus = []
