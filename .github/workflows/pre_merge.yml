@@ -1,15 +1,16 @@
 name: Pre-Merge Checks
 
 on:
-  pull_request:
+  push:
     branches:
       - develop
-    workflow_dispatch: # run on request (no need for PR)
+  pull_request:
     types:
       - opened
       - reopened
       - synchronize
       - ready_for_review
+  workflow_dispatch: # run on request (no need for PR)
 
 # This is what will cancel the workflow concurrency
 concurrency:
