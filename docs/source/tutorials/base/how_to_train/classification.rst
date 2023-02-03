@@ -39,7 +39,7 @@ Dataset preparation
 
   cd data
   wget http://download.tensorflow.org/example_images/flower_photos.tgz
-  tar -xzvf archive.tar.gz
+  tar -xzvf flower_photos.tgz
   cd ..
 
 
@@ -58,28 +58,6 @@ This dataset contains images of 5 different flower categories and is stored in t
     ├── sunflowers
     ├── tulips
 
-
-2.  Next, we need to create train/validation sets.
-We prepared a dedicated script that splits the dataset into 80% for training and 20% for validation. To prepare the dataset run the following command:
-
-.. code-block::
-
-  (otx) ...$ python docs\utils\prepare_classification_dataset.py --data-root data/flower_photos
-
-3.  ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with data roots info and pass it as a ``--data`` parameter to ``otx`` command lines.
-The content of the ``data.yaml`` for a dataset should have absolute paths and will be similar to that:
-
-  .. code-block::
-
-    {'data':
-      {'train':
-        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/train'},
-      'val':
-        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/val'},
-      'test':
-        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/val'}
-      }
-    }
 
 *********
 Training
@@ -106,42 +84,73 @@ The list of supported templates for classification is available with the command
   | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
   +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
 
-2. ``otx train`` trains a specific model template
+To have a specific example in this tutorial, all commands will be run on the MobileNet-V3-large-1x model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
+
+2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance
+Let's prepare an OTX classification workspase running the following command:
+
+.. code-block::
+
+  (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
+
+  [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
+  [*] Load Model Name: MobileNet-V3-large-1x
+  [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x/data.yaml
+
+  (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
+
+It will create otx-workspace-CLASSIFICATION with MobileNet-V3-large-1x template and splitted dataset
+
+3.  ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with data roots info and pass it as a ``--data`` parameter to ``otx`` command lines.
+The content of the ``data.yaml`` for a dataset should have absolute paths and will be similar to that:
+
+  .. code-block::
+
+    {'data':
+      {'train':
+        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/train'},
+      'val':
+        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/val'},
+      'test':
+        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/val'}
+      }
+    }
+
+`otx build` has already provided us with this file stored in otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x folder.
+
+2. ``otx train`` trains a specified model template
 on a dataset and results in two files:
 
 - ``weights.pth`` - a model snapshot
 - ``label_schema.json`` - a label schema used in training, created from a dataset
 
-These are needed as inputs for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
+These artifacts are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
 
 
-3. To have a specific example in this tutorial, all commands will be run on the MobileNet-V3-large-1x model.
-It's a light model, that achieves competitive accuracy while keeping the inference fast.
-
-The following command line starts training the classification model on the first GPU on our dataset:
+3. The following command line starts training the classification model on the first GPU on our dataset:
 
 .. code-block::
 
-  (otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                            --train-data-roots data/flower_photos/train \
-                            --val-data-roots data/flower_photos/val \
-                            --save-model-to model_outputs \
-                            --work-dir outputs/logs \
-                            --gpus 1
+  (otx) ...$ otx train --template template.yaml \
+                       --train-data-roots splitted_dataset/train \
+                       --val-data-roots splitted_dataset/train \
+                       --save-model-to model_outputs \
+                       --work-dir outputs/logs \
+                       --gpus 1
 
 To start multi-gpu training, list the indexes of GPUs you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
 
-If you created ``data.yaml`` file in the previous step, you can simplify the training by passing it in ``--data`` parameter.
+If you created the ``data.yaml`` file in the previous step, you can simplify the training by passing it in the ``--data`` parameter.
 
 .. code-block::
 
-  (otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                            --data data.yaml \
-                            --save-model-to outputs \
-                            --work-dir outputs/logs \
-                            --gpus 1
+  (otx) ...$ otx train --template template.yaml \
+                       --data data.yaml \
+                       --save-model-to outputs \
+                       --work-dir outputs/logs \
+                       --gpus 1
 
-You can also pass the ``data.yaml`` for the rest of the OTX CLI commands (eval, export, optimize) that require annotation paths.
+You can also pass the ``data.yaml`` to the rest of the OTX CLI commands (eval, export, optimize, etc.) that require annotation paths.
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
 More about template-specific parameters is in :doc:`quick start <../../../get_started/index>`.
@@ -155,7 +164,7 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100 an
   params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false
 
 
-5. The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``model_outputs`` folder,
+5. The resulting training artifacts ``weights.pth`` and ``label_schema.json`` are located in ``model_outputs`` folder,
 while training logs and tf_logs for `Tensorboard` visualization can be found in the ``outputs/logs`` dir.
 
 .. code-block::
@@ -188,23 +197,14 @@ and save performance results in ``outputs/performance`` folder:
 
 .. code-block::
 
-  (otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                            --train-data-roots data/flower_photos/train \
-                            --val-data-roots data/flower_photos/val \
-                            --save-model-to model_outputs \
-                            --work-dir outputs/logs \
-                            --gpus 1
-
-
-If you created ``data.yaml`` file in the previous step, you can simplify the training by passing it in ``--data`` parameter.
-Note,  with ``data.yaml``, it runs evaluation on the test data root, not on the validation.
-
-.. code-block::
-
-  (otx) ...$ otx eval otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
+  (otx) ...$ otx eval --template template.yaml \
                             --test-data-roots data/flower_photos/val \
                             --load-weights model_outputs/weights.pth \
                             --save-performance outputs/performance.json
+
+.. note::
+
+  if you use the ``data.yaml`` file, it runs evaluation on the test data root, not on the validation.
 
 We will get a similar to this validation output:
 
@@ -238,9 +238,9 @@ and save the exported model to the ``outputs/openvino`` folder.
 
 .. code-block::
 
-  (otx) ...$ otx export otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                              --load-weights model_outputs/weights.pth \
-                              --save-model-to outputs/openvino
+  (otx) ...$ otx export --template template.yaml \
+                        --load-weights model_outputs/weights.pth \
+                        --save-model-to outputs/openvino
 
   ...
 
@@ -253,10 +253,10 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
 .. code-block::
 
-  (otx) ...$ otx eval otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                            --test-data-roots data/flower_photos/val \
-                            --load-weights outputs/openvino/openvino.xml \
-                            --save-performance outputs/openvino/performance.json
+  (otx) ...$ otx eval --template template.yaml \
+                      --test-data-roots data/flower_photos/val \
+                      --load-weights outputs/openvino/openvino.xml \
+                      --save-performance outputs/openvino/performance.json
 
   ...
 
@@ -274,7 +274,7 @@ It uses NNCF or POT depending on the model format.
 
 ``POT`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
-The function results in the following files, which could be used to run :doc:`otx demo <../demo>`:
+This tool produces the following files, which could be used to run :doc:`otx demo <../demo>`:
 
 - ``weights.pth``
 - ``label_schema.json``
@@ -288,12 +288,12 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
 
 .. code-block::
 
-  (otx) ...$ otx optimize otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                            --train-data-roots data/flower_photos/train \
-                            --val-data-roots data/flower_photos/val \
-                            --save-model-to model_outputs/nncf \
-                            --load-weights model_outputs/weights.pth \
-                            --save-performance outputs/nncf_performance.json
+  (otx) ...$ otx optimize --template template.yaml \
+                          --train-data-roots splitted_dataset/train \
+                          --val-data-roots splitted_dataset/val \
+                          --save-model-to model_outputs/nncf \
+                          --load-weights model_outputs/weights.pth \
+                          --save-performance outputs/nncf_performance.json
 
   ...
 
@@ -310,11 +310,11 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
-  (otx) ...$ otx optimize otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                                --train-data-roots data/flower_photos/train \
-                                --val-data-roots data/flower_photos/val \
-                                --load-weights outputs/openvino/openvino.xml \
-                                --save-model-to outputs/pot
+  (otx) ...$ otx optimize --template template.yaml \
+                          --train-data-roots splitted_dataset/train \
+                          --val-data-roots splitted_dataset/val \
+                          --load-weights outputs/openvino/openvino.xml \
+                          --save-model-to outputs/pot
 
   ...
 
