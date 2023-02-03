@@ -119,14 +119,20 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
             head_gt = gt_label[:, self.hierarchical_info["num_multiclass_heads"] :]
             head_logits = cls_score[:, self.hierarchical_info["num_single_label_classes"] :]
             valid_batch_mask = head_gt >= 0
-            head_gt = head_gt[valid_batch_mask, ]
-            head_logits = head_logits[valid_batch_mask, ]
+            head_gt = head_gt[
+                valid_batch_mask,
+            ]
+            head_logits = head_logits[
+                valid_batch_mask,
+            ]
 
             # multilabel_loss is assumed to perform no batch averaging
             valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)[
                 :, self.hierarchical_info["num_single_label_classes"] :
             ]
-            valid_label_mask = valid_label_mask[valid_batch_mask, ].to(x.device)
+            valid_label_mask = valid_label_mask[
+                valid_batch_mask,
+            ].to(x.device)
             multilabel_loss = self.loss(head_logits, head_gt, multilabel=True, valid_label_mask=valid_label_mask)
             losses["loss"] += multilabel_loss.mean()
         return losses

@@ -199,7 +199,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                     if otx_lbl not in ignored_labels:
                         onehot_indices[self.label_names.index(otx_lbl.name)] = 1
                     else:
-                        # during trainign we filter ignored classes out,
+                        # during training we filter ignored classes out,
                         # during validation mmcv's mAP also filters -1 labels
                         onehot_indices[self.label_names.index(otx_lbl.name)] = -1
 
