@@ -42,15 +42,15 @@ def patch_config(config: Config, data_pipeline_path: str, work_dir: str, task_ty
     config.work_dir = work_dir
     patch_data_pipeline(config, data_pipeline_path)
     if task_type == TaskType.ACTION_CLASSIFICATION:
-        patch_cls_datasets(config)
+        _patch_cls_datasets(config)
     elif task_type == TaskType.ACTION_DETECTION:
-        patch_det_dataset(config)
+        _patch_det_dataset(config)
     else:
         raise NotImplementedError(f"{task_type} is not supported in action task")
 
 
 @check_input_parameters_type()
-def patch_cls_datasets(config: Config):
+def _patch_cls_datasets(config: Config):
     """Patch cls dataset config suitable to mmaction."""
 
     assert "data" in config
@@ -64,7 +64,7 @@ def patch_cls_datasets(config: Config):
 
 
 @check_input_parameters_type()
-def patch_det_dataset(config: Config):
+def _patch_det_dataset(config: Config):
     """Patch det dataset config suitable to mmaction."""
     assert "data" in config
     for subset in ("train", "val", "test", "unlabeled"):
