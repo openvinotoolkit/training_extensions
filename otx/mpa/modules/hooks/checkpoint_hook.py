@@ -62,12 +62,20 @@ class CheckpointHookWithValResults(Hook):
 
         if self.sync_buffer:
             allreduce_params(runner.model.buffers())
+        save_ema_model = hasattr(runner, "save_ema_model") and runner.save_ema_model
+        if save_ema_model:
+            backup_model = runner.model
+            runner.model = runner.ema_model
         if getattr(runner, "save_ckpt", False):
             runner.logger.info(f"Saving best checkpoint at {runner.epoch + 1} epochs")
             self._save_best_checkpoint(runner)
             runner.save_ckpt = False
 
         self._save_latest_checkpoint(runner)
+
+        if save_ema_model:
+            runner.model = backup_model
+            runner.save_ema_model = False
 
     @master_only
     def _save_best_checkpoint(self, runner):
