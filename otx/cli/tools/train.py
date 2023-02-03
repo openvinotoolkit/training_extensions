@@ -162,9 +162,12 @@ def main():
         # If an user gives a weird path, then automatically selects default template by using build function.
         if Path(args.template).exists():
             template = find_and_parse_model_template(args.template)
+        # In this case, we can assume two scenarios
         else:
             print(f"Can't find {args.template}, the default template will be used to train. ")
             template = None
+            args.template = default_workspace_components["template_path"]
+            
         # Build
         builder = Builder()
         build(
