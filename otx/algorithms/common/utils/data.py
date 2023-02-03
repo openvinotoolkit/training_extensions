@@ -155,7 +155,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
         np.ndarray: The loaded image.
     """
 
-    def is_training_video_frame(subset, media):
+    def is_training_video_frame(subset, media) -> bool:
         return subset.name in ["TRAINING", "VALIDATION"] and "VideoFrame" in repr(media)
 
     def load_image_from_cache(filename: str, to_float32=False) -> Union[np.ndarray, None]:
