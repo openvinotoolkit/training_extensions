@@ -167,7 +167,7 @@ def main():
             print(f"Can't find {args.template}, the default template will be used to train. ")
             template = None
             args.template = default_workspace_components["template_path"]
-            
+
         # Build
         builder = Builder()
         build(
