@@ -25,7 +25,7 @@ Hierarchical Classification
 Dataset Format
 **************
 
-For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
+For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro/datumaro_h-label>`_.
 
 Besides that we support the following custom dataset format:
 
@@ -48,7 +48,7 @@ Besides that we support the following custom dataset format:
         └── val.json
 
 | Where annotations ``*.json`` consists of two keys: **"images"** and **"hierarchy"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"hierarchy"** describes each label group presented in the label tree.
-| An example of annotations structure can be found `here <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/data/car_tree_bug/annotations/hierarchical_default.json>`_. For more intuition below is the hierarchical structure represented for the given above :ref:`image example <hierarchical_image_example>`:
+| An example of annotations structure can be found `here <https://github.com/openvinotoolkit/training_extensions/blob/develop/data/car_tree_bug/annotations/hierarchical_default.json>`_. For more intuition below is the hierarchical structure represented for the given above :ref:`image example <hierarchical_image_example>`:
 
 ::
 

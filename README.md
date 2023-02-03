@@ -2,7 +2,7 @@
 
 <img src="docs/source/_static/logos/otx-logo-black.png" width="200px">
 
-# OpenVINO™ Training Extensions
+# OpenVINO™ Training eXtensions
 
 ---
 
@@ -20,11 +20,11 @@
 
 </div>
 
-> **_DISCLAIMERS_**: Some features described below are under development (refer to [feature/otx branch](https://github.com/openvinotoolkit/training_extensions/tree/feature/otx)). You can find more detailed estimation from the [Roadmap](#roadmap) section below.
+> **_DISCLAIMERS_**: Some features described below are under development. You can find more detailed estimation from the [Roadmap](#roadmap) section below.
 
 ## Overview
 
-OpenVINO™ Training Extensions (OTX) is command-line interface (CLI) framework designed for low-code deep learning model training. OTX lets developers train/inference/optimize models with a diverse combination of model architectures and learning methods using the [OpenVINO™
+OpenVINO™ Training eXtensions (OTX) is command-line interface (CLI) framework designed for low-code deep learning model training. OTX lets developers train/inference/optimize models with a diverse combination of model architectures and learning methods using the [OpenVINO™
 toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users can train a ResNet18-based SSD ([Single Shot Detection](https://arxiv.org/abs/1512.02325)) model in a semi-supervised manner without worrying about setting a configuration manually. `otx build` and `otx train` commands will automatically analyze users' dataset and do necessary tasks for training the model with best configuration. OTX provides the following features:
 
 - Provide a set of pre-configured models for quick start
@@ -45,7 +45,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 ### v1.0.0 (1Q23)
 
 - Installation through PyPI
-  - Package will be renamed as OTX (OpenVINO Training eXtension)
+  - Package will be renamed as OTX (OpenVINO Training eXtensions)
 - CLI update
   - Update `find` command to find configurations of tasks/algorithms
   - Introduce `build` command to customize task or model configurations
@@ -76,7 +76,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 
 # Quick start guide
 
-In order to get started with OpenVINO™ Training Extensions see [the quick-start guide](QUICK_START_GUIDE.md).
+In order to get started with OpenVINO™ Training eXtensions see [the quick-start guide](QUICK_START_GUIDE.md).
 
 ---
 
