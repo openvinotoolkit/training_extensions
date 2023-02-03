@@ -179,7 +179,7 @@ class OTXOVActionDet(Model):
     @check_input_parameters_type()
     def reshape(inputs: List[np.ndarray]) -> np.ndarray:
         """Reshape(expand, transpose, permute) the input np.ndarray."""
-        np_inputs = np.expand_dims(inputs, axis=(0))  # [1, T, H, W, C]
+        np_inputs = np.expand_dims(inputs, axis=0)  # [1, T, H, W, C]
         np_inputs = np_inputs.transpose(0, -1, 1, 2, 3)  # [1, C, T, H, W]
         return np_inputs
 
