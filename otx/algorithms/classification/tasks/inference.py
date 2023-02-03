@@ -105,7 +105,7 @@ class ClassificationInferenceTask(
             logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
-        else:
+        if not self._multilabel and not self._hierarchical:
             logger.info("Classification mode: multiclass")
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
