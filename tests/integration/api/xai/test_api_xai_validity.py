@@ -9,9 +9,9 @@ import pytest
 import torch
 from mmcls.models import build_classifier
 from mmdet.models import build_detector
-from mpa.det.stage import DetectionStage  # noqa
-from mpa.modules.hooks.recording_forward_hooks import DetSaliencyMapHook, ReciproCAMHook
-from mpa.utils.config_utils import MPAConfig
+from otx.mpa.det.stage import DetectionStage  # noqa
+from otx.mpa.modules.hooks.recording_forward_hooks import DetSaliencyMapHook, ReciproCAMHook
+from otx.mpa.utils.config_utils import MPAConfig
 
 from otx.algorithms.classification.tasks import ClassificationInferenceTask  # noqa
 from otx.cli.registry import Registry
