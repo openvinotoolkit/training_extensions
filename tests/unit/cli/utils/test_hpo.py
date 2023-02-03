@@ -651,14 +651,14 @@ def test_run_hpo(mocker, mock_environment):
         mock_environment.model_template.task_type = TaskType.CLASSIFICATION
 
         # run
-        run_hpo(mock_args, mock_environment, mocker.MagicMock(), mocker.MagicMock())
+        environment = run_hpo(mock_args, mock_environment, mocker.MagicMock(), mocker.MagicMock())
 
         # check
         mock_hpo_runner_instance.run_hpo.assert_called()  # Check that HpoRunner.run_hpo is called
-        env_hp = mock_environment.get_hyper_parameters()  # Check that best HP is applied well.
+        env_hp = environment.get_hyper_parameters()  # Check that best HP is applied well.
         assert env_hp.a.b == 1
         assert env_hp.c.d == 2
-        assert mock_environment.model == "mock_best_weight_path"  # check that best model weight is used
+        assert environment.model == "mock_best_weight_path"  # check that best model weight is used
 
 
 @e2e_pytest_unit
