@@ -143,7 +143,7 @@ class MultiGPUManager:
             bool:
                 whether multi GPU training is available.
         """
-        return torch.cuda.device_count() >= len(self._gpu_ids)
+        return len(self._gpu_ids) > 1
 
     def setup_multi_gpu_train(
         self,
