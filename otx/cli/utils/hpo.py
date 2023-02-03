@@ -849,7 +849,7 @@ class HpoDataset:
     Args:
         fullset: full dataset
         config (Optional[Dict[str, Any]], optional): hyper parameter trial config
-        indices (Optional[List[int]]): datatset index. Defaults to None.
+        indices (Optional[List[int]]): dataset index. Defaults to None.
     """
 
     def __init__(self, fullset, config: Optional[Dict[str, Any]] = None, indices: Optional[List[int]] = None):
@@ -878,7 +878,7 @@ class HpoDataset:
         return getattr(self.fullset, name)
 
     def get_subset(self, subset: Subset):
-        """Get subset according to subset_ratio if trainin dataset is requeseted.
+        """Get subset according to subset_ratio if training dataset is requested.
 
         Args:
             subset (Subset): which subset to get
