@@ -218,7 +218,7 @@ def main():  # pylint: disable=too-many-branches
         )
 
     if args.enable_hpo:
-        run_hpo(args, environment, dataset, data_roots)
+        environment = run_hpo(args, environment, dataset, data_roots)
 
     task = task_class(task_environment=environment, output_path=args.work_dir)
 

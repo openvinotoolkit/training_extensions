@@ -56,7 +56,7 @@ def _check_hpo_enabled_task(task_type):
     ]
 
 
-def check_hpopt_available() -> bool:
+def is_hpopt_available() -> bool:
     """Check whether hpopt is avaiable."""
     return hpopt is not None
 
@@ -207,6 +207,11 @@ class TaskEnvironmentManager:
     def __init__(self, environment: TaskEnvironment):
         self._environment = environment
         self.task = TaskManager(environment.model_template.task_type)
+
+    @property
+    def environment(self):
+        """Environment property."""
+        return self._environment
 
     def get_task(self) -> TaskType:
         """Get task type of environment.
@@ -544,7 +549,9 @@ class HpoRunner:
         return self._hpo_workdir / self._initial_weight_name
 
 
-def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, str]):
+def run_hpo(
+    args, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, str]
+) -> Optional[TaskEnvironment]:
     """Run HPO and load optimized hyper parameter and best HPO model weight.
 
     Args:
@@ -553,9 +560,9 @@ def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roo
         dataset (DatasetEntity): dataset to use for training
         data_roots (Dict[str, str]): dataset path of each dataset type
     """
-    if not check_hpopt_available():
+    if not is_hpopt_available():
         logger.warning("hpopt isn't available. hpo is skipped.")
-        return
+        return None
 
     task_type = environment.model_template.task_type
     if not _check_hpo_enabled_task(task_type):
@@ -563,7 +570,7 @@ def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roo
             "Currently supported task types are classification, detection, segmentation and anomaly"
             f"{task_type} is not supported yet."
         )
-        return
+        return None
 
     hpo_save_path = (Path(args.save_model_to).parent / "hpo").absolute()
     hpo_runner = HpoRunner(
@@ -586,6 +593,8 @@ def run_hpo(args, environment: TaskEnvironment, dataset: DatasetEntity, data_roo
     else:
         logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
         env_manager.load_model_weight(best_hpo_weight, dataset)
+
+    return env_manager.environment
 
 
 def get_best_hpo_weight(hpo_dir: Union[str, Path], trial_id: Union[str, Path]) -> Optional[str]:

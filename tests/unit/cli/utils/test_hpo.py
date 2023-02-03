@@ -22,11 +22,12 @@ from otx.cli.utils.hpo import (
     TaskEnvironmentManager,
     TaskManager,
     Trainer,
-    check_hpopt_available,
     get_best_hpo_weight,
+    is_hpopt_available,
     run_hpo,
     run_trial,
 )
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 CLASSIFCATION_TASK = {TaskType.CLASSIFICATION}
 DETECTION_TASK = {TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}
@@ -38,66 +39,79 @@ OTX_ROOT_PATH = Path(otx.__file__).parent
 
 
 class TestTaskManager:
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", MMCV_TASK)
     def test_is_mmcv_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.is_mmcv_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ANOMALY_TASK)
     def test_is_not_mmcv_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_mmcv_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", CLASSIFCATION_TASK)
     def test_is_cls_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.is_cls_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ALL_TASK - CLASSIFCATION_TASK)
     def test_is_not_cls_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_cls_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", DETECTION_TASK)
     def test_is_det_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.is_det_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ALL_TASK - DETECTION_TASK)
     def test_is_not_det_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_det_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", SEGMENTATION_TASK)
     def test_is_seg_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.is_seg_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ALL_TASK - SEGMENTATION_TASK)
     def test_is_not_seg_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_seg_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ANOMALY_TASK)
     def test_is_anomaly_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.is_anomaly_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ALL_TASK - ANOMALY_TASK)
     def test_is_not_anomaly_framework_task(self, task: TaskType):
         task_manager = TaskManager(task)
         assert not task_manager.is_anomaly_framework_task()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", MMCV_TASK)
     def test_get_mmcv_batch_size_name(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.get_batch_size_name() == "learning_parameters.batch_size"
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ANOMALY_TASK)
     def test_get_anomaly_batch_size_name(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.get_batch_size_name() == "learning_parameters.train_batch_size"
 
+    @e2e_pytest_unit
     def test_get_unknown_task_batch_size_name(self, mocker):
         mock_func1 = mocker.patch.object(TaskManager, "is_mmcv_framework_task")
         mock_func1.return_value = False
@@ -109,16 +123,19 @@ class TestTaskManager:
         with pytest.raises(RuntimeError):
             task_manager.get_batch_size_name()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", MMCV_TASK)
     def test_get_mmcv_epoch_name(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.get_epoch_name() == "num_iters"
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ANOMALY_TASK)
     def test_get_anomaly_epoch_name(self, task: TaskType):
         task_manager = TaskManager(task)
         assert task_manager.get_epoch_name() == "max_epochs"
 
+    @e2e_pytest_unit
     def test_get_unknown_task_epoch_name(self, mocker):
         mock_func1 = mocker.patch.object(TaskManager, "is_mmcv_framework_task")
         mock_func1.return_value = False
@@ -130,6 +147,7 @@ class TestTaskManager:
         with pytest.raises(RuntimeError):
             task_manager.get_epoch_name()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", MMCV_TASK)
     def test_copy_weight(self, task: TaskType):
         task_manager = TaskManager(task)
@@ -142,6 +160,7 @@ class TestTaskManager:
 
             assert weight_in_det.exists()
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", MMCV_TASK)
     def test_get_latest_weight(self, task: TaskType):
         task_manager = TaskManager(task)
@@ -236,10 +255,12 @@ class TestTaskEnvironmentManager:
     def _make_mock_task_env(self, mock_environment):
         self._mock_environment = mock_environment
 
+    @e2e_pytest_unit
     def test_init(self, all_task_env):
         for task_env in all_task_env:
             TaskEnvironmentManager(task_env)
 
+    @e2e_pytest_unit
     def test_get_task(self, cls_task_env, det_task_env, seg_task_env):
         task_env = TaskEnvironmentManager(cls_task_env)
         assert task_env.get_task() == TaskType.CLASSIFICATION
@@ -250,6 +271,7 @@ class TestTaskEnvironmentManager:
         task_env = TaskEnvironmentManager(seg_task_env)
         assert task_env.get_task() == TaskType.SEGMENTATION
 
+    @e2e_pytest_unit
     def test_get_model_template(
         self, cls_task_env, det_task_env, seg_task_env, cls_template_path, det_template_path, seg_template_path
     ):
@@ -262,6 +284,7 @@ class TestTaskEnvironmentManager:
         task_env = TaskEnvironmentManager(seg_task_env)
         assert task_env.get_model_template() == find_and_parse_model_template(seg_template_path)
 
+    @e2e_pytest_unit
     def test_get_model_template_path(
         self, cls_task_env, det_task_env, seg_task_env, cls_template_path, det_template_path, seg_template_path
     ):
@@ -274,6 +297,7 @@ class TestTaskEnvironmentManager:
         task_env = TaskEnvironmentManager(seg_task_env)
         assert task_env.get_model_template_path() == seg_template_path
 
+    @e2e_pytest_unit
     def test_set_hyper_parameter_using_str_key(self):
         task_env = TaskEnvironmentManager(self._mock_environment)
         hyper_parameter = {"a.b.c.d": 1, "e.f.g.h": 2}
@@ -285,6 +309,7 @@ class TestTaskEnvironmentManager:
         assert env_hp.a.b.c.d == hyper_parameter["a.b.c.d"]
         assert env_hp.e.f.g.h == hyper_parameter["e.f.g.h"]
 
+    @e2e_pytest_unit
     def test_get_dict_type_hyper_parameter(self):
         learning_parameters = self._mock_environment.get_hyper_parameters().learning_parameters
         learning_parameters.parameters = ["a", "b"]
@@ -297,6 +322,7 @@ class TestTaskEnvironmentManager:
         assert dict_hp["learning_parameters.a"] == 1
         assert dict_hp["learning_parameters.b"] == 2
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("task", ALL_TASK)
     def test_get_max_epoch(self, task):
         max_epoch = 10
@@ -308,12 +334,14 @@ class TestTaskEnvironmentManager:
 
         assert task_env.get_max_epoch() == max_epoch
 
+    @e2e_pytest_unit
     def test_save_mmcv_initial_weight(self, mmcv_task_env):
         for task_env in mmcv_task_env:
             task_env.model = None
             task_env = TaskEnvironmentManager(task_env)
             assert not task_env.save_initial_weight("fake_path")
 
+    @e2e_pytest_unit
     def test_save_anomaly_initial_weight(self, mocker, anomaly_task_env):
         def mock_save_model_data(model, save_path: str):
             (Path(save_path) / "weights.pth").write_text("fake")
@@ -327,6 +355,7 @@ class TestTaskEnvironmentManager:
             assert task_env.save_initial_weight(str(save_path))
             assert save_path.exists()
 
+    @e2e_pytest_unit
     def test_loaded_inital_weight(self, mocker, all_task_env):
         def mock_save_model_data(model, save_path: str):
             (Path(save_path) / "weights.pth").write_text("fake")
@@ -341,6 +370,7 @@ class TestTaskEnvironmentManager:
                 assert task_env.save_initial_weight(str(save_path))
                 assert save_path.exists()
 
+    @e2e_pytest_unit
     def test_get_train_task(self, mocker, all_task_env):
         mock_func = mocker.patch("otx.cli.utils.hpo.get_impl_class")
 
@@ -352,15 +382,18 @@ class TestTaskEnvironmentManager:
 
             mock_class.assert_not_called()
 
+    @e2e_pytest_unit
     def test_get_mmcv_batch_size_name(self, mmcv_task_env):
         for task_env in mmcv_task_env:
             task_env = TaskEnvironmentManager(task_env)
             assert task_env.get_batch_size_name() == "learning_parameters.batch_size"
 
+    @e2e_pytest_unit
     def test_get_anomaly_batch_size_name(self, anomaly_task_env):
         task_env = TaskEnvironmentManager(anomaly_task_env)
         assert task_env.get_batch_size_name() == "learning_parameters.train_batch_size"
 
+    @e2e_pytest_unit
     def test_load_model_weight(self, mocker, all_task_env):
         mock_func = mocker.patch("otx.cli.utils.hpo.read_model")
 
@@ -371,6 +404,7 @@ class TestTaskEnvironmentManager:
             task_manager.load_model_weight("fake", mocker.MagicMock())
             assert task_env.model == mock_class
 
+    @e2e_pytest_unit
     def test_resume_model_weight(self, mocker, all_task_env):
         mock_func = mocker.patch("otx.cli.utils.hpo.read_model")
 
@@ -382,12 +416,14 @@ class TestTaskEnvironmentManager:
             assert task_env.model == mock_class
             assert mock_class.model_adapters["resume"]
 
+    @e2e_pytest_unit
     def test_get_new_model_entity(self, all_task_env):
         for task_env in all_task_env:
             task_manager = TaskEnvironmentManager(task_env)
             model_entity = task_manager.get_new_model_entity()
             assert isinstance(model_entity, ModelEntity)
 
+    @e2e_pytest_unit
     def test_set_epoch(self, all_task_env):
         epoch = 123
         for task_env in all_task_env:
@@ -397,20 +433,24 @@ class TestTaskEnvironmentManager:
 
 
 class TestHpoRunner:
+    @e2e_pytest_unit
     def test_init(self, all_task_env):
         for task_env in all_task_env:
             HpoRunner(task_env, 100, 10, "fake_path")
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("train_dataset_size,val_dataset_size", [(0, 10), (10, 0), (-1, -1)])
     def test_init_wrong_dataset_size(self, cls_task_env, train_dataset_size, val_dataset_size):
         with pytest.raises(ValueError):
             HpoRunner(cls_task_env, train_dataset_size, val_dataset_size, "fake_path", 4)
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("hpo_time_ratio", [-3, 0])
     def test_init_wrong_hpo_time_ratio(self, cls_task_env, hpo_time_ratio):
         with pytest.raises(ValueError):
             HpoRunner(cls_task_env, 100, 10, "fake_path", hpo_time_ratio)
 
+    @e2e_pytest_unit
     def test_run_hpo(self, mocker, cls_task_env):
         cls_task_env.model = None
         hpo_runner = HpoRunner(cls_task_env, 100, 10, "fake_path")
@@ -422,6 +462,7 @@ class TestHpoRunner:
         mock_run_hpo_loop.assert_called()  # call hpo_loop to run HPO
         mock_hb.assert_called()  # make hyperband
 
+    @e2e_pytest_unit
     def test_run_hpo_w_dataset_smaller_than_batch(self, mocker, cls_task_env):
         cls_task_env.model = None
         hpo_runner = HpoRunner(cls_task_env, 2, 10, "fake_path")
@@ -435,6 +476,7 @@ class TestHpoRunner:
 
 
 class TestTrainer:
+    @e2e_pytest_unit
     def test_init(self, mocker, cls_template_path):
         Trainer(
             hp_config={"configuration": {"iterations": 10}},
@@ -447,6 +489,7 @@ class TestTrainer:
             metric="fake",
         )
 
+    @e2e_pytest_unit
     def test_run(self, mocker, cls_template_path):
         with TemporaryDirectory() as tmp_dir:
             # prepare
@@ -491,14 +534,17 @@ class TestTrainer:
 
 
 class TestHpoCallback:
+    @e2e_pytest_unit
     def test_init(self, mocker):
         HpoCallback(mocker.MagicMock(), "fake", 3, mocker.MagicMock())
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("max_epoch", [-3, 0])
     def test_init_wrong_max_epoch(self, mocker, max_epoch):
         with pytest.raises(ValueError):
             HpoCallback(mocker.MagicMock(), "fake", max_epoch, mocker.MagicMock())
 
+    @e2e_pytest_unit
     def test_call(self, mocker):
         mock_report_func = mocker.MagicMock()
 
@@ -507,6 +553,7 @@ class TestHpoCallback:
 
         mock_report_func.assert_called_once_with(progress=10, score=100)
 
+    @e2e_pytest_unit
     def test_call_and_get_stop_flag(self, mocker):
         mock_report_func = mocker.MagicMock()
         mock_report_func.return_value = TrialStatus.STOP
@@ -517,6 +564,7 @@ class TestHpoCallback:
 
         mock_task.cancel_training.assert_called_once_with()
 
+    @e2e_pytest_unit
     def test_not_copy_report_func(self, mocker):
         mock_report_func = mocker.MagicMock()
 
@@ -528,10 +576,12 @@ class TestHpoCallback:
 
 
 class TestHpoDataset:
+    @e2e_pytest_unit
     def test_init(self, mocker):
         hpo_dataset = HpoDataset(fullset=mocker.MagicMock(), config={"train_environment": {"subset_ratio": 0.5}})
         assert hpo_dataset.subset_ratio == 0.5
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("subset_ratio", [0.1, 0.5, 1])
     def test_get_subset(self, mocker, subset_ratio):
         mock_fullset = mocker.MagicMock()
@@ -547,10 +597,12 @@ class TestHpoDataset:
         for i in range(num_hpo_sub_dataset):
             hpo_sub_dataset[i]
 
+    @e2e_pytest_unit
     def test_len_before_get_subset(self):
         hpo_dataset = HpoDataset(fullset=range(10), config={"train_environment": {"subset_ratio": 0.5}})
         assert len(hpo_dataset) == 10
 
+    @e2e_pytest_unit
     def test_getitem_before_get_subset(self):
         hpo_dataset = HpoDataset(fullset=range(10), config={"train_environment": {"subset_ratio": 0.5}})
 
@@ -558,16 +610,19 @@ class TestHpoDataset:
             pass
 
 
-def test_check_hpopt_available(mocker):
+@e2e_pytest_unit
+def test_is_hpopt_available(mocker):
     mocker.patch("otx.cli.utils.hpo.hpopt")
-    assert check_hpopt_available()
+    assert is_hpopt_available()
 
 
+@e2e_pytest_unit
 def test_check_hpopt_unavailable(mocker):
     mocker.patch("otx.cli.utils.hpo.hpopt", None)
-    assert not check_hpopt_available()
+    assert not is_hpopt_available()
 
 
+@e2e_pytest_unit
 def test_run_hpo(mocker, mock_environment):
     with TemporaryDirectory() as tmp_dir:
         # prepare
@@ -606,6 +661,7 @@ def test_run_hpo(mocker, mock_environment):
         assert mock_environment.model == "mock_best_weight_path"  # check that best model weight is used
 
 
+@e2e_pytest_unit
 def test_run_hpo_hpopt_unavailable(mocker):
     mock_hpo_runner_instance = mocker.MagicMock()
     mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
@@ -617,6 +673,7 @@ def test_run_hpo_hpopt_unavailable(mocker):
     mock_hpo_runner_instance.run_hpo.assert_not_called()
 
 
+@e2e_pytest_unit
 def test_run_hpo_not_supported_task(mocker, action_task_env):
     mock_hpo_runner_instance = mocker.MagicMock()
     mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
@@ -626,6 +683,7 @@ def test_run_hpo_not_supported_task(mocker, action_task_env):
     mock_hpo_runner_instance.run_hpo.assert_not_called()
 
 
+@e2e_pytest_unit
 def test_get_best_hpo_weight():
     with TemporaryDirectory() as tmp_dir:
         # prepare
@@ -647,6 +705,7 @@ def test_get_best_hpo_weight():
         assert get_best_hpo_weight(hpo_dir, "1") == str(weight_path / "1" / "epoch_10.pth")
 
 
+@e2e_pytest_unit
 def test_get_best_hpo_weight_not_exist():
     with TemporaryDirectory() as tmp_dir:
         # prepare
@@ -668,6 +727,7 @@ def test_get_best_hpo_weight_not_exist():
         assert get_best_hpo_weight(hpo_dir, "1") is None
 
 
+@e2e_pytest_unit
 def test_run_trial(mocker):
     mock_run = mocker.patch.object(Trainer, "run")
     run_trial(
