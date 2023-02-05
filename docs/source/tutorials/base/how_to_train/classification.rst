@@ -1,10 +1,11 @@
 Classification  model
 ================================
 
-This tutorial reveals end-to-end solution from installation to model export and optimization for classification task on a specific dataset.
-On this page, we show how to train, validate, export and optimize :ref:`MobileNet-V3-large-1x <classificaiton_models>` model on the `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ from TensorFlow.
+This live example shows how to easily train, validate, optimize and export classification model on the `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ from TensorFlow.
 
 .. note::
+
+  To learn more in depth how to manage training process of the model, refer to :doc:`../object_detection`.
 
   To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
@@ -15,11 +16,11 @@ The process has been tested on the following configuration.
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
 - Intel(R) Core(TM) i9-10980XE
-- CUDA Toolkit 11.4
+- CUDA Toolkit 11.1
 
 .. note::
 
-  While this tutorial shows how to work with :doc:`multi-class classification <../../../explanation/algorithms/classification/multi_class_classification>`, it is easy to extend it for the :doc:`multi-label <../../../explanation/algorithms/classification/multi_label_classification>` or :doc:`hierarchical <../../../explanation/algorithms/classification/multi_label_classification>` classification.
+  While this example shows how to work with :doc:`multi-class classification <../../../explanation/algorithms/classification/multi_class_classification>`, it is easy to extend it for the :doc:`multi-label <../../../explanation/algorithms/classification/multi_label_classification>` or :doc:`hierarchical <../../../explanation/algorithms/classification/multi_label_classification>` classification.
   Substitute the dataset with a multi-label or hierarchical one. Everything else remains the same.
 
 
@@ -84,7 +85,7 @@ The list of supported templates for classification is available with the command
   | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
   +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
 
-To have a specific example in this tutorial, all commands will be run on the MobileNet-V3-large-1x model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
+To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classificaiton_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
 2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance
 Let's prepare an OTX classification workspase running the following command:
@@ -99,82 +100,15 @@ Let's prepare an OTX classification workspase running the following command:
 
   (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
 
-It will create otx-workspace-CLASSIFICATION with MobileNet-V3-large-1x template and splitted dataset
+It will create otx-workspace-CLASSIFICATION with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset
 
-3.  ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with data roots info and pass it as a ``--data`` parameter to ``otx`` command lines.
-The content of the ``data.yaml`` for a dataset should have absolute paths and will be similar to that:
-
-  .. code-block::
-
-    {'data':
-      {'train':
-        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/train'},
-      'val':
-        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/val'},
-      'test':
-        {'data-roots': '/home/<username>/training_extensions/data/flower_photos/val'}
-      }
-    }
-
-`otx build` has already provided us with this file stored in otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x folder.
-
-2. ``otx train`` trains a specified model template
-on a dataset and results in two files:
-
-- ``weights.pth`` - a model snapshot
-- ``label_schema.json`` - a label schema used in training, created from a dataset
-
-These artifacts are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
-
-
-3. The following command line starts training the classification model on the first GPU on our dataset:
+2. To start training we need to call ``otx train`` command in our worspace:
 
 .. code-block::
 
-  (otx) ...$ otx train --template template.yaml \
-                       --train-data-roots splitted_dataset/train \
-                       --val-data-roots splitted_dataset/train \
-                       --save-model-to model_outputs \
-                       --work-dir outputs/logs \
-                       --gpus 1
+  (otx) ...$ otx train
 
-To start multi-gpu training, list the indexes of GPUs you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
-
-If you created the ``data.yaml`` file in the previous step, you can simplify the training by passing it in the ``--data`` parameter.
-
-.. code-block::
-
-  (otx) ...$ otx train --template template.yaml \
-                       --data data.yaml \
-                       --save-model-to outputs \
-                       --work-dir outputs/logs \
-                       --gpus 1
-
-You can also pass the ``data.yaml`` to the rest of the OTX CLI commands (eval, export, optimize, etc.) that require annotation paths.
-
-4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
-More about template-specific parameters is in :doc:`quick start <../../../get_started/index>`.
-
-It can be done by manually updating parameters in the ``template.yaml`` file or via the command line.
-
-For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
-
-.. code-block::
-
-  params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false
-
-
-5. The resulting training artifacts ``weights.pth`` and ``label_schema.json`` are located in ``model_outputs`` folder,
-while training logs and tf_logs for `Tensorboard` visualization can be found in the ``outputs/logs`` dir.
-
-.. code-block::
-
-  2023-02-02 02:56:51,220 | INFO :
-  Early Stopping at :31 with best accuracy: 0.9540983581542969
-  2023-02-02 02:56:51,220 | INFO : Epoch(val) [32][44]    accuracy_top-1: 0.9464, accuracy_top-5: 1.0000, daisy accuracy: 0.9684, dandelion accuracy: 0.9732, roses accuracy: 0.8562, sunflowers accuracy: 0.9540, tulips accuracy: 0.9648, mean accuracy: 0.9433, accuracy: 0.9464, current_iters: 1408
-  2023-02-02 02:56:52,314 | INFO : run task done.
-  2023-02-02 02:56:52,406 | INFO : called save_model
-  2023-02-02 02:56:52,580 | INFO : Final model performance: Performance(score: 0.9540983581542969, dashboard: (18 metric groups))
+That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
 
 The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 8 minutes.
 
@@ -193,18 +127,13 @@ Please note, ``label_schema.json`` file contains meta-information about the data
 otx eval will output a top-1 accuracy score for multi-class classification
 
 2. The command below will run validation on our dataset
-and save performance results in ``outputs/performance`` folder:
+and save performance results in ``performance.json`` file:
 
 .. code-block::
 
-  (otx) ...$ otx eval --template template.yaml \
-                            --test-data-roots data/flower_photos/val \
-                            --load-weights model_outputs/weights.pth \
-                            --save-performance outputs/performance.json
-
-.. note::
-
-  if you use the ``data.yaml`` file, it runs evaluation on the test data root, not on the validation.
+  (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
+                      --load-weights results/weights.pth \
+                      --save-performance performance.json
 
 We will get a similar to this validation output:
 
@@ -212,35 +141,26 @@ We will get a similar to this validation output:
 
   ...
 
-  2023-02-02 03:14:54,488 | INFO : run task done.
-  2023-02-02 03:15:03,729 | INFO : called evaluate()
-  2023-02-02 03:15:03,745 | INFO : Accuracy after evaluation: 0.9540983606557377
-  2023-02-02 03:15:03,745 | INFO : Evaluation completed
-  Performance(score: 0.9540983606557377, dashboard: (3 metric groups))
-
-3. The output of ``./outputs/performance.json`` consists
-of a dict with the target metric name and its value.
-
-.. code-block::
-
-  ...
-  {"Accuracy": 0.9540983606557377}
+  2023-02-03 23:43:29,514 | INFO : run task done.
+  2023-02-03 23:43:35,859 | INFO : called evaluate()
+  2023-02-03 23:43:35,870 | INFO : Accuracy after evaluation: 0.9659400544959128
+  2023-02-03 23:43:35,871 | INFO : Evaluation completed
+  Performance(score: 0.9659400544959128, dashboard: (3 metric groups))
 
 *********
 Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
-2. We can run the below command line to export the trained model ``model_outputs/weights.pth`` from the previous section
-and save the exported model to the ``outputs/openvino`` folder.
+2. We can run the below command line to export the trained model
+and save the exported model to the ``openvino_model`` folder.
 
 .. code-block::
 
-  (otx) ...$ otx export --template template.yaml \
-                        --load-weights model_outputs/weights.pth \
-                        --save-model-to outputs/openvino
+  (otx) ...$ otx export --load-weights results/weights.pth \
+                        --save-model-to openvino_model
 
   ...
 
@@ -253,14 +173,13 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
 .. code-block::
 
-  (otx) ...$ otx eval --template template.yaml \
-                      --test-data-roots data/flower_photos/val \
-                      --load-weights outputs/openvino/openvino.xml \
-                      --save-performance outputs/openvino/performance.json
+  (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
+                      --load-weights openvino_model/openvino.xml \
+                      --save-performance openvino_model/performance.json
 
   ...
 
-  Performance(score: 0.9540983606557377, dashboard: (3 metric groups))
+  Performance(score: 0.9659400544959128, dashboard: (3 metric groups))
 
 
 *************
@@ -270,17 +189,6 @@ Optimization
 1. We can further optimize the model with ``otx optimize``.
 It uses NNCF or POT depending on the model format.
 
-``NNCF`` optimization is used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
-
-``POT`` optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.
-
-This tool produces the following files, which could be used to run :doc:`otx demo <../demo>`:
-
-- ``weights.pth``
-- ``label_schema.json``
-- ``openvino.bin``
-- ``openvino.xml``
-
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
 
 2. Command example for optimizing
@@ -288,20 +196,16 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --template template.yaml \
-                          --train-data-roots splitted_dataset/train \
-                          --val-data-roots splitted_dataset/val \
-                          --save-model-to model_outputs/nncf \
-                          --load-weights model_outputs/weights.pth \
-                          --save-performance outputs/nncf_performance.json
+  (otx) ...$ otx optimize --load-weights results/weights.pth --save-model-to nncf_model
 
   ...
 
-  2023-02-02 03:41:27,059 | INFO : run task done.
-  2023-02-02 03:41:34,925 | INFO : called evaluate()
-  2023-02-02 03:41:34,942 | INFO : Accuracy after evaluation: 0.9475409836065574
-  2023-02-02 03:41:34,942 | INFO : Evaluation completed
-  Performance(score: 0.9475409836065574, dashboard: (3 metric groups))
+  INFO:nncf:Loaded 983/983 parameters
+  2023-02-04 00:06:11,725 | INFO : run task done.
+  2023-02-04 00:06:16,924 | INFO : called evaluate()
+  2023-02-04 00:06:16,935 | INFO : Accuracy after evaluation: 0.9591280653950953
+  2023-02-04 00:06:16,936 | INFO : Evaluation completed
+  Performance(score: 0.9591280653950953, dashboard: (3 metric groups))
 
 The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
 
@@ -310,11 +214,8 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --template template.yaml \
-                          --train-data-roots splitted_dataset/train \
-                          --val-data-roots splitted_dataset/val \
-                          --load-weights outputs/openvino/openvino.xml \
-                          --save-model-to outputs/pot
+  (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
+                          --save-model-to pot_model
 
   ...
 
@@ -322,10 +223,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
-4. Finally, we can also evaluate the optimized
-model by passing it to the ``otx eval`` function.
-
-Now we have fully trained, optimized and exported an efficient model representation ready-to-use classification model.
+4. Now we have fully trained, optimized and exported an efficient model representation ready-to-use classification model.
 
 The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
 The examples are provided with an object detection model, but it is easy to apply them for classification by substituting the object detection model with classification one.
