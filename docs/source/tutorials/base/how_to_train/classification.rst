@@ -5,7 +5,7 @@ This live example shows how to easily train, validate, optimize and export class
 
 .. note::
 
-  To learn more in depth how to manage training process of the model, refer to :doc:`../object_detection`.
+  To learn more in depth how to manage training process of the model, refer to :doc:`./detection`.
 
   To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
@@ -90,6 +90,10 @@ To have a specific example in this tutorial, all commands will be run on the :re
 2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance
 Let's prepare an OTX classification workspase running the following command:
 
+.. note::
+
+  Currently, OTX supports auto-split only for multi-class classificaiton. For the multi-label and hierarchical tasks we need to prepare data splits in advance.
+
 .. code-block::
 
   (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
@@ -100,7 +104,7 @@ Let's prepare an OTX classification workspase running the following command:
 
   (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
 
-It will create otx-workspace-CLASSIFICATION with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset
+It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset
 
 2. To start training we need to call ``otx train`` command in our worspace:
 
@@ -223,7 +227,8 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
-4. Now we have fully trained, optimized and exported an efficient model representation ready-to-use classification model.
+4. Now we have fully trained, optimized and exported an
+efficient model representation ready-to-use classification model.
 
 The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
 The examples are provided with an object detection model, but it is easy to apply them for classification by substituting the object detection model with classification one.
