@@ -24,7 +24,6 @@ from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.segmentation.test_helpers import (
     DEFAULT_SEG_TEMPLATE_DIR,
-    create_model,
     generate_otx_dataset,
     init_environment,
 )
@@ -32,13 +31,13 @@ from tests.unit.algorithms.segmentation.test_helpers import (
 
 class TestOTXSegTaskInference:
     @pytest.fixture(autouse=True)
-    def setup(self) -> None:
+    def setup(self, otx_model, tmp_dir_path) -> None:
         model_template = parse_model_template(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         task_env = init_environment(hyper_parameters, model_template)
-        self.seg_train_task = SegmentationInferenceTask(task_env)
-        self.model = create_model()
-        self.output_path = self.seg_train_task._output_path
+        self.output_path = str(tmp_dir_path)
+        self.seg_train_task = SegmentationInferenceTask(task_env, output_path=self.output_path)
+        self.model = otx_model
 
     @e2e_pytest_unit
     def test_infer(self, mocker):

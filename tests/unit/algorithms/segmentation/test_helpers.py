@@ -3,7 +3,6 @@ import warnings
 
 import numpy as np
 
-from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -15,7 +14,6 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
@@ -23,19 +21,12 @@ from otx.api.entities.task_environment import TaskEnvironment
 from tests.test_helpers import generate_random_annotated_image
 
 DEFAULT_SEG_TEMPLATE_DIR = os.path.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
+DEFAULT_RECIPE_CONFIG_PATH = "otx/recipes/stages/segmentation/incremental.py"
 
 labels_names = ("rectangle", "ellipse", "triangle")
 
 
-def create_model():
-    model_configuration = ModelConfiguration(
-        configurable_parameters=ConfigurableParameters(header="header", description="description"),
-        label_schema=LabelSchemaEntity(),
-    )
-    return ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
-
-
-def generate_otx_label_schema():
+def generate_otx_label_schema(labels_names=labels_names):
     label_domain = Domain.SEGMENTATION
     rgb = [int(i) for i in np.random.randint(0, 256, 3)]
     colors = [Color(*rgb) for _ in range(len(labels_names))]

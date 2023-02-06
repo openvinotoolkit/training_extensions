@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import copy
 import os
 
 import numpy as np
@@ -33,7 +34,6 @@ from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.segmentation.test_helpers import (
     DEFAULT_SEG_TEMPLATE_DIR,
-    create_model,
     generate_otx_dataset,
     generate_otx_label_schema,
     init_environment,
@@ -97,7 +97,7 @@ class TestOpenVINOSegmentationInferencer:
 
 class TestOpenVINOSegmentationTask:
     @pytest.fixture(autouse=True)
-    def setup(self, mocker) -> None:
+    def setup(self, mocker, otx_model) -> None:
         model_template = parse_model_template(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         label_schema = generate_otx_label_schema()
@@ -107,6 +107,7 @@ class TestOpenVINOSegmentationTask:
         mocker.patch.object(Model, "create_model")
         seg_ov_inferencer = OpenVINOSegmentationInferencer(seg_params, label_schema, "")
 
+        task_env.model = otx_model
         mocker.patch.object(OpenVINOSegmentationTask, "load_inferencer", return_value=seg_ov_inferencer)
         self.seg_ov_task = OpenVINOSegmentationTask(task_env)
 
@@ -150,9 +151,8 @@ class TestOpenVINOSegmentationTask:
         assert result_set.performance.score.value == 0.1
 
     @e2e_pytest_unit
-    def test_deploy(self):
-        output_model = create_model()
-        self.seg_ov_task.model = create_model()
+    def test_deploy(self, otx_model):
+        output_model = copy.deepcopy(otx_model)
         self.seg_ov_task.model.set_data("openvino.bin", b"foo")
         self.seg_ov_task.model.set_data("openvino.xml", b"bar")
         self.seg_ov_task.deploy(output_model)
@@ -160,7 +160,7 @@ class TestOpenVINOSegmentationTask:
         assert output_model.exportable_code is not None
 
     @e2e_pytest_unit
-    def test_optimize(self, mocker):
+    def test_optimize(self, mocker, otx_model):
         def patch_save_model(model, dir_path, model_name):
             with open(f"{dir_path}/{model_name}.xml", "wb") as f:
                 f.write(b"foo")
@@ -168,8 +168,7 @@ class TestOpenVINOSegmentationTask:
                 f.write(b"bar")
 
         dataset = generate_otx_dataset()
-        output_model = create_model()
-        self.seg_ov_task.model = create_model()
+        output_model = copy.deepcopy(otx_model)
         self.seg_ov_task.model.set_data("openvino.bin", b"foo")
         self.seg_ov_task.model.set_data("openvino.xml", b"bar")
         mocker.patch("otx.algorithms.segmentation.tasks.openvino.load_model", autospec=True)
