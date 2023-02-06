@@ -1,20 +1,21 @@
-import pytest
 import os
 import socket
 from contextlib import closing
 from copy import deepcopy
 
+import pytest
 import torch
 
 from otx.cli.utils import multi_gpu
 from otx.cli.utils.multi_gpu import (
+    MultiGPUManager,
     _get_free_port,
     get_gpu_ids,
     set_arguments_to_argv,
-    MultiGPUManager,
 )
 
 NUM_AVAILABLE_GPU = torch.cuda.device_count()
+
 
 def test_get_free_port():
     free_port = _get_free_port()
@@ -22,19 +23,22 @@ def test_get_free_port():
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         sock.bind(("", free_port))
 
+
 def test_get_gpu_ids():
     gpus = []
     for i in range(0, NUM_AVAILABLE_GPU, 2):
         gpus.append(i)
 
     expected_result = deepcopy(gpus)
-    gpus.append(NUM_AVAILABLE_GPU+2)
+    gpus.append(NUM_AVAILABLE_GPU + 2)
 
     assert get_gpu_ids(",".join([str(val) for val in gpus])) == expected_result
+
 
 def test_get_gpu_ids_with_wrong_args():
     with pytest.raises(ValueError):
         get_gpu_ids("abcd")
+
 
 @pytest.fixture
 def mock_argv_without_params(mocker):
@@ -42,10 +46,12 @@ def mock_argv_without_params(mocker):
     mock_sys.argv = ["--a_key", "a_val", "--b_key"]
     return mock_sys.argv
 
+
 @pytest.fixture
 def mock_argv_with_params(mock_argv_without_params):
     mock_argv_without_params.extend(["params", "--c_key", "c_val", "--d_key"])
     return mock_argv_without_params
+
 
 def test_set_arguments_to_argv_key_exist(mock_argv_without_params):
     """Test a case where key already exists and value exists."""
@@ -54,12 +60,14 @@ def test_set_arguments_to_argv_key_exist(mock_argv_without_params):
 
     assert mock_argv_without_params[1] == other_val
 
+
 def test_set_arguments_to_argv_key_exist_none_val(mock_argv_without_params):
     """Test a case where key already exists in argv and value doesn't exists."""
     expected_result = deepcopy(mock_argv_without_params)
     set_arguments_to_argv("--a_key")
 
     assert mock_argv_without_params == expected_result
+
 
 def test_set_arguments_to_argv_key(mock_argv_with_params):
     """Test a case where key to set doesn't exists in argv and order of key is before params and vlaue exists."""
@@ -69,7 +77,7 @@ def test_set_arguments_to_argv_key(mock_argv_with_params):
     new_key_idx = mock_argv_with_params.index("--other_key")
 
     assert new_key_idx < param_idx
-    assert mock_argv_with_params[new_key_idx+1] == "other_val"
+    assert mock_argv_with_params[new_key_idx + 1] == "other_val"
 
 
 def test_set_arguments_to_argv_key_none_val(mock_argv_with_params):
@@ -82,6 +90,7 @@ def test_set_arguments_to_argv_key_none_val(mock_argv_with_params):
     assert new_key_idx < param_idx
     assert "--other_key" in mock_argv_with_params
 
+
 def test_set_arguments_to_argv_key_after_param(mock_argv_with_params):
     """Test a case where key to set doesn't exists in argv and order of key is after params and vlaue exists."""
     set_arguments_to_argv("--other_key", "other_val", True)
@@ -90,7 +99,8 @@ def test_set_arguments_to_argv_key_after_param(mock_argv_with_params):
     new_key_idx = mock_argv_with_params.index("--other_key")
 
     assert new_key_idx > param_idx
-    assert mock_argv_with_params[new_key_idx+1] == "other_val"
+    assert mock_argv_with_params[new_key_idx + 1] == "other_val"
+
 
 def test_set_arguments_to_argv_key_after_param_non_val(mock_argv_with_params):
     """Test a case where key to set doesn't exists in argv and order of key is after params and vlaue doesn't exist."""
@@ -128,7 +138,7 @@ class TestMultiGPUManager:
         wrong_process.is_alive.return_value = False
         wrong_process.exit_code = 1
         process_arr = []
-        for _ in range(self.num_gpu-2):
+        for _ in range(self.num_gpu - 2):
             process_arr.append(deepcopy(normal_process))
         process_arr.append(wrong_process)
 
@@ -140,15 +150,15 @@ class TestMultiGPUManager:
     @pytest.mark.parametrize("num_gpu", [4, 10])
     def test_is_available(self, mocker, num_gpu):
         multigpu_manager = MultiGPUManager(
-            mocker.MagicMock(), ",".join([str(i) for i in range(num_gpu)]), "localhost:0")
+            mocker.MagicMock(), ",".join([str(i) for i in range(num_gpu)]), "localhost:0"
+        )
 
         assert multigpu_manager.is_available()
 
     def test_is_unavailable(self, mocker):
         mock_torch = mocker.patch.object(multi_gpu, "torch")
         mock_torch.cuda.device_count.return_value = 0
-        multigpu_manager = MultiGPUManager(
-            mocker.MagicMock(), ",".join([str(i) for i in range(4)]), "localhost:0")
+        multigpu_manager = MultiGPUManager(mocker.MagicMock(), ",".join([str(i) for i in range(4)]), "localhost:0")
 
         assert not multigpu_manager.is_available()
 
@@ -169,14 +179,14 @@ class TestMultiGPUManager:
         assert self.mock_process.call_count == self.num_gpu - 1
         assert self.mock_process.return_value.start.call_count == self.num_gpu - 1
         assert self.mock_process.call_args.kwargs["target"] == MultiGPUManager.run_child_process
-        assert self.mock_process.call_args.kwargs["args"][0] == self.mock_train_func # train_func
-        assert self.mock_process.call_args.kwargs["args"][1] == fake_output_path # output_path
-        assert self.mock_process.call_args.kwargs["args"][-1] == self.num_gpu # num_gpu
+        assert self.mock_process.call_args.kwargs["args"][0] == self.mock_train_func  # train_func
+        assert self.mock_process.call_args.kwargs["args"][1] == fake_output_path  # output_path
+        assert self.mock_process.call_args.kwargs["args"][-1] == self.num_gpu  # num_gpu
 
         # check initialize multigpu trian
         mock_initialize_multigpu_train.assert_called_once()
-        assert mock_initialize_multigpu_train.call_args.args[-1] == self.num_gpu # world_size
-        assert mock_initialize_multigpu_train.call_args.args[-2] == list(range(self.num_gpu)) # gpu_ids
+        assert mock_initialize_multigpu_train.call_args.args[-1] == self.num_gpu  # world_size
+        assert mock_initialize_multigpu_train.call_args.args[-2] == list(range(self.num_gpu))  # gpu_ids
 
         # check that making a thread to check child process is alive
         self.mock_thread.assert_called_once_with(target=self.multigpu_manager._check_child_processes_alive, daemon=True)
@@ -208,7 +218,7 @@ class TestMultiGPUManager:
         self.multigpu_manager._check_child_processes_alive()
 
         # check
-        for p in process_arr[:self.num_gpu-2]:
+        for p in process_arr[: self.num_gpu - 2]:
             p.kill.assert_called_once()
         mock_kill.assert_called_once_with(os.getpid(), self.mock_singal.SIGKILL)
 
@@ -223,7 +233,7 @@ class TestMultiGPUManager:
         self.multigpu_manager._terminate_signal_handler(2, mocker.MagicMock())
 
         # check
-        for p in process_arr[:self.num_gpu-2]:
+        for p in process_arr[: self.num_gpu - 2]:
             p.kill.assert_called_once()
         mock_exit.assert_called_once()
 
@@ -244,7 +254,7 @@ class TestMultiGPUManager:
             self.multigpu_manager._terminate_signal_handler(2, mocker.MagicMock())
 
         # check
-        for p in process_arr[:self.num_gpu-2]:
+        for p in process_arr[: self.num_gpu - 2]:
             p.kill.assert_not_called()
 
     def test_finalize(self, mocker, process_arr):
@@ -283,7 +293,7 @@ class TestMultiGPUManager:
             rdzv_endpoint="localhost:1234",
             rank=0,
             local_rank=0,
-            gpu_ids=[0,1],
+            gpu_ids=[0, 1],
             world_size=2,
         )
 
@@ -315,17 +325,17 @@ class TestMultiGPUManager:
             rdzv_endpoint=rdzv_endpoint,
             rank=0,
             local_rank=0,
-            gpu_ids=[0,1],
+            gpu_ids=[0, 1],
             world_size=4,
         )
 
         # check
-        assert mock_set_start_method.call_args.kwargs["method"] == None
+        assert mock_set_start_method.call_args.kwargs["method"] is None
         assert "--gpus" not in mock_sys.argv
         assert "--work-dir" in mock_sys.argv
-        assert mock_sys.argv[mock_sys.argv.index("--work-dir")+1] == output_path
+        assert mock_sys.argv[mock_sys.argv.index("--work-dir") + 1] == output_path
         assert "--rdzv-endpoint" in mock_sys.argv
-        assert mock_sys.argv[mock_sys.argv.index("--rdzv-endpoint")+1] == rdzv_endpoint
+        assert mock_sys.argv[mock_sys.argv.index("--rdzv-endpoint") + 1] == rdzv_endpoint
         mock_initialize_multigpu_train.assert_called_once()
         mock_threading.Thread.assert_called_once_with(target=MultiGPUManager.check_parent_processes_alive, daemon=True)
         mock_threading.Thread.call_args.return_value.start.assert_called_once
