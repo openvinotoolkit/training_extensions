@@ -124,7 +124,7 @@ class TestActionTaskAPI:
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
 
         # Test stopping after some time
@@ -160,7 +160,7 @@ class TestActionTaskAPI:
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
         output_model = ModelEntity(
             dataset,
@@ -205,7 +205,7 @@ class TestActionTaskAPI:
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
             dataset,
