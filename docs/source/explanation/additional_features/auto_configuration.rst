@@ -48,4 +48,10 @@ After dataset preparation, the training will be started with the middle-sized te
 
         $ otx build --train-data-root <path_to_data_root> --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
 
-    It will create a task-specific environment with configured template and auto dataset split if supported.
+    It will create a task-specific workspace folder with configured template and auto dataset split if supported.
+
+    Move to this folder and simply run without any options to start training:
+
+    .. code-block::
+
+        $ otx train

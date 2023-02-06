@@ -1,7 +1,7 @@
 Hierarchical Classification
 ===========================
 
-Hierarchical Classification is an extension of the classification task where besides the set of categories to predict we have a hierarchical relationship between them.
+Hierarchical classification is an extension of the classification task where besides the set of categories to predict we have a hierarchical relationship between them.
 The goal of this task is to predict the hierarchical tree of the categories for the given image.
 
 We solve this task by assigning a separate head for each label group on each hierarchical level.
@@ -37,67 +37,14 @@ Dataset Format
 .. _hierarchical_dataset:
 
 For hierarchical image classification, we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_.
-An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
+An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_h-label>`_.
 
-Besides that we support the following custom dataset format:
-
-::
-
-    data
-    ├── images
-        ├── train
-            ├── 0.png
-            ├── 1.png
-            ...
-            └── N.png
-        ├── val
-            ├── 0.png
-            ├── 1.png
-            ...
-            └── N.png
-    └── annotations
-        ├── train.json
-        └── val.json
-
-Where annotations ``*.json`` consists of two keys: **"images"** and **"hierarchy"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"hierarchy"** describes each label group presented in the label tree.
-
-An example of annotations structure can be found `here <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/data/car_tree_bug/annotations/hierarchical_default.json>`_. For more intuition below is the hierarchical structure represented for the given above :ref:`image example <hierarchical_image_example>`:
-
-::
-
-  "hierarchy": [
-    {
-      "parent": "self",
-      "group": "Pets",
-      "labels": ["Dogs", "Cats", "Unicorns"],
-      "task_type": "single-label"
-    },
-    {
-      "parent": "Pets",
-      "group": "Cats",
-      "labels": ["Siamse, Persian, Sphynx"],
-      "task_type": "single-label"
-    },
-    {
-      "parent": "Pets",
-      "group": "Dogs",
-      "labels": ["Poodle, French Bulldog, Dalmatian, Labrador"],
-      "task_type": "single-label"
-    },
-    {
-      "parent": "Pets",
-      "group": "Unicorns",
-      "labels": ["Pegasus, Rainbow Unicorn, Narwhal"],
-      "task_type": "single-label"
-    }
-  ]
-
-To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to the CLI command:
+To use OTX with this format is required to pass images dataset root paths directly to the CLI command:
 
 .. code-block::
 
-    $ otx {train, optimize} <model_template> --train-ann-files /path/to/train_annotation_file.json --val-ann-files /path/to/val_annotation_file.json --train-data-roots /path/to/train/images_folder --val-data-roots /path/to/val/images_folder
-    $ otx eval <model_template> --test-ann-files /path/to/test_annotation_file.json --test-data-roots /path/to/test/images_folder --load-weights path/to/weights
+    $ otx {train, optimize} --template <model_template> --train-data-root <path_to_train_data_root> --val-data-root <path_to_val_data_root>
+    $ otx eval --template <model_template> --test-data-roots <path_to_test_data_root> --load-weights <path_to_model_weights>
 
 .. note::
 

@@ -42,11 +42,9 @@ If you have your dataset in those formats, then you can simply run OTX using one
 
 .. code-block::
 
-    $ otx {train, optimize} <model_template> --train-data-root <path_to_data_root>
+    $ otx train --template <model_template> --train-data-root <path_to_data_root> --val-data-root <path_to_data_root>
 
 .. note::
-
-    OTX will recognize train and validation splits automatically. If you want to emphasize the validation dataset root path, you can simply add the ``--val-data-root <path_to_val_data_root>`` option.
 
     Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/instance_segmentation>` how to train, validate and optimize instance segmentation model for more details.
 

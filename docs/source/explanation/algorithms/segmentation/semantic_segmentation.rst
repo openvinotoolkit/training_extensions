@@ -38,57 +38,11 @@ If you organized supported dataset format, starting training will be very simple
 
 .. code-block::
 
-    $ otx {train, optimize} <model_template> --train-data-root <path_to_data_root>
-
-
-.. note::
-
-    OTX will recognize train and validation splits automatically. If you want to emphasize the validation dataset root path, you can simply add the ``--val-data-root <path_to_val_data_root>`` option.
-
-    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` how to train, validate and optimize semantic segmentation model for more details.
-
-
-For now, we also support a dataset in the custom format below, where image-annotation pairs have the same name:
-
-::
-
-    data
-        ├── images
-            ├── train
-                ├── 0.jpg
-                ├── 1.jpg
-                ...
-                └── N.jpg
-            ├── val
-                ├── 0.jpg
-                ├── 1.jpg
-                ...
-                └── N.jpg
-        └── annotations
-            ├── train
-                ├── 0.png
-                ├── 1.png
-                ...
-                └── N.png
-            ├── val
-                ├── 0.png
-                ├── 1.png
-                ...
-                └── N.png
+    $ otx train --template <model_template> --train-data-root <path_to_data_root> --val-data-root <path_to_data_root>
 
 .. note::
 
-    Please, note, that images should have ``.jpg`` extension and segmentation masks should be ``.png``.
-
-Since this format isn't handled by Datumaro, we can start training by passing the training and validation data paths manually:
-
-.. code-block::
-
-    $ otx {train, optimize} <model_template> --train-data-root <path_to_train_images_folder> --val-data-root <path_to_val_images_folder> --train-ann-files <path_to_train_segmentation_masks_folder> --val-ann-files <path_to_val_segmentation_masks_folder>
-
-.. note::
-
-    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` for more information on how to train, validate and optimize the semantic segmentation model.
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` for more information on how to train, validate and optimize semantic segmentation model for more details.
 
 ******
 Models

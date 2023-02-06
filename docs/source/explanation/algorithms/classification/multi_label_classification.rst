@@ -24,48 +24,10 @@ Dataset Format
 **************
 
 As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: `COCO <https://cocodataset.org/#format-data>`_.
-Specifically, these formats will be converted in our internal representation via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
-
-We also support our custom and simple dataset format for multi-label classification. It has the following structure:
-
-::
-
-    data
-    ├── images
-        ├── train
-            ├── 0.png
-            ├── 1.png
-            ...
-            └── N.png
-        ├── val
-            ├── 0.png
-            ├── 1.png
-            ...
-            └── N.png
-    └── annotations
-        ├── train.json
-        └── val.json
-
-Where ``*.json`` annotations have two keys: **"images"** and **"classes"**. Key **"images"** includes lists of unique images with lists of classes presented on this image. Key **"classes"** consists of a list with all classes in the dataset.
-Below is a simple example of 2 classes presented:
-
-::
-
-    {"images": [
-        ["0.png", ["class_0"]],
-        ["Slide19.PNG", ["class_0"]],
-        ["Slide16.PNG", ["class_0", "class_1"]]
-    ],
-    "classes": ["class_0", "class_1"]}
-
-To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to the CLI command:
-
-.. code-block::
-
-    $ otx {train, optimize} <model_template> --train-ann-files /path/to/train_annotation_file.json --val-ann-files /path/to/val_annotation_file.json --train-data-roots /path/to/train/images_folder --val-data-roots /path/to/val/images_folder
-    $ otx eval <model_template> --test-ann-files /path/to/test_annotation_file.json --test-data-roots /path/to/test/images_folder --load-weights path/to/weights
+Specifically, these formats will be converted in our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel>`_ via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
 
 .. note::
+    Names of the annotations files and overall dataset structure should be the same as the original `COCO <https://cocodataset.org/#format-data>`_.
 
     Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classificaiton models.
 

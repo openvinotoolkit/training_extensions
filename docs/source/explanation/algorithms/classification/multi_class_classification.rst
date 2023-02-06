@@ -49,12 +49,6 @@ This format has the following structure:
     └── val
         ...
 
-With dataset format you can simply run OTX training with one line:
-
-.. code-block::
-
-    $ otx {train, optimize} <model_template> --train-data-root <path_to_data_root>
-
 .. note::
 
     Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classificaiton models.
