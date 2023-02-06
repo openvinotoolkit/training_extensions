@@ -71,7 +71,7 @@ def generate_action_cls_otx_dataset(video_len: int, frame_len: int, labels: List
     return dataset
 
 
-def generate_action_det_otx_dataset(video_len: int, frame_len: int, labels: List[DatasetItemEntity]) -> DatasetEntity:
+def generate_action_det_otx_dataset(video_len: int, frame_len: int, labels: List[LabelEntity]) -> DatasetEntity:
     """Generate otx_dataset for action detection task."""
 
     items: List[DatasetItemEntity] = []
