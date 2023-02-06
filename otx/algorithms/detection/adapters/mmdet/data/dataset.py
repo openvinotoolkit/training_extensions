@@ -307,7 +307,7 @@ class MPADetDataset(CustomDataset):
                     mean_aps.append(mean_ap)
                     eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
                 eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
-            elif metric == "recall":
+            elif metric == "recall":  # TODO: [Jihwan, Eugene] is it supported in OTX?
                 gt_bboxes = [ann["bboxes"] for ann in annotations]
                 recalls = eval_recalls(gt_bboxes, results, proposal_nums, iou_thr, logger=logger)
                 for i, num in enumerate(proposal_nums):
@@ -317,7 +317,7 @@ class MPADetDataset(CustomDataset):
                     ar = recalls.mean(axis=1)
                     for i, num in enumerate(proposal_nums):
                         eval_results[f"AR@{num}"] = ar[i]
-            elif metric == "mIoU":
+            elif metric == "mIoU":  # TODO: [Jihwan, Eugene] is it supported in OTX?
                 assert isinstance(results[0], tuple), "Result format not supported"
                 mean_mious = []
                 for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
@@ -333,7 +333,7 @@ class MPADetDataset(CustomDataset):
                     mean_mious.append(mean_iou)
                     eval_results[f"mIoU{int(iou_thr * 100):02d}"] = round(mean_iou, 3)
                 eval_results["mIoU"] = sum(mean_mious) / len(mean_mious)
-            elif metric == "mae":
+            elif metric == "mae":  # TODO: [Eugene] please add unit test for mae
                 mae = CustomMAE(
                     self.otx_dataset,
                     results,
