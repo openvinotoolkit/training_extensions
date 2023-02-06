@@ -15,7 +15,7 @@ torch>=1.8.2  # To be removed (as prerequisite)
 torchvision>=0.9.2  # To be removed (as prerequisite)
 scikit-learn==0.24.*
 Shapely>=1.7.1,<=1.8.0
-hpopt==0.3.0
+hpopt @ git+https://github.com/openvinotoolkit/hyper_parameter_optimization@new_hpo
 imagesize==1.4.1
 datumaro==0.4.0.1
 psutil
