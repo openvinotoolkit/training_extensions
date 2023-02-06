@@ -83,7 +83,7 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
 
         # Infer torch model
         task = ClassificationInferenceTask(task_environment=task_environment)
-        predicted_dataset = task.infer(dataset.with_empty_annotations(), InferenceParameters)
+        predicted_dataset = task.infer(dataset.with_empty_annotations(), InferenceParameters())
 
         # Check saliency maps torch task
         task_labels = output_model.configuration.get_label_schema().get_labels(include_empty=False)
