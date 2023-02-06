@@ -65,17 +65,6 @@ class DetectionTrainer(DetectionStage):
                 proposal_ratio = extract_anchor_ratio(datasets[0], num_ratios)
                 self.configure_anchor(cfg, proposal_ratio)
 
-        # Dataset for HPO
-        hp_config = kwargs.get("hp_config", None)
-        if hp_config is not None:
-            import hpopt
-
-            if isinstance(datasets[0], list):
-                for idx, ds in enumerate(datasets[0]):
-                    datasets[0][idx] = hpopt.createHpoDataset(ds, hp_config)
-            else:
-                datasets[0] = hpopt.createHpoDataset(datasets[0], hp_config)
-
         # Target classes
         if "task_adapt" in cfg:
             target_classes = cfg.task_adapt.get("final", [])
