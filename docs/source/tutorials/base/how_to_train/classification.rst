@@ -219,7 +219,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
   ...
 
-  Performance(score: 0.9453551912568307, dashboard: (3 metric groups))
+  Performance(score: 0.9577656675749319, dashboard: (3 metric groups))
 
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
