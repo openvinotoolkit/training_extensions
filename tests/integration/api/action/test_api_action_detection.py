@@ -66,7 +66,7 @@ class TestActionTaskAPI:
         )
         dataset = dataset_adapter.get_otx_dataset()
         label_schema = dataset_adapter.get_label_schema()
-        
+
         environment = TaskEnvironment(
             model=None,
             hyper_parameters=params,
