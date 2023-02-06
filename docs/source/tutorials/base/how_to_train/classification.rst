@@ -108,7 +108,7 @@ It will create otx-workspace-CLASSIFICATION with all necessery configs for Mobil
 
   (otx) ...$ otx train
 
-That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
+That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
 The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 8 minutes.
 
