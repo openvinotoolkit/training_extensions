@@ -74,6 +74,7 @@ class AdaptiveTrainSchedulingHook(Hook):
             self._original_interval = None
 
         if self.enable_adaptive_interval_hook and not self._initialized:
+            self.max_interval = min(self.max_interval, runner.max_epochs - runner.epoch)
             iter_per_epoch = len(runner.data_loader)
             adaptive_interval = self.get_adaptive_interval(iter_per_epoch)
             for hook in runner.hooks:
