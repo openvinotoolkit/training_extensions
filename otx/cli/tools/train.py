@@ -218,12 +218,9 @@ def main():  # pylint: disable=too-many-branches
         )
 
     if args.enable_hpo:
-        task = run_hpo(args, environment, dataset, template.task_type)
-        if task is None:
-            print("cannot run HPO for this task. will train a model without HPO.")
-            task = task_class(task_environment=environment, output_path=args.work_dir)
-    else:
-        task = task_class(task_environment=environment, output_path=args.work_dir)
+        environment = run_hpo(args, environment, dataset, data_roots)
+
+    task = task_class(task_environment=environment, output_path=args.work_dir)
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(main, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)

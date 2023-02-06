@@ -210,7 +210,7 @@ class TestClassificationTaskAPI(ClassificationTaskAPIBase):
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
         output_model = ModelEntity(
             dataset,
@@ -240,7 +240,7 @@ class TestClassificationTaskAPI(ClassificationTaskAPIBase):
         def progress_callback(progress: int):
             inference_progress_curve.append(progress)
 
-        inference_parameters = InferenceParameters
+        inference_parameters = InferenceParameters()
         inference_parameters.update_progress = progress_callback
         task.infer(dataset.with_empty_annotations(), inference_parameters)
 
@@ -268,7 +268,7 @@ class TestClassificationTaskAPI(ClassificationTaskAPIBase):
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
             dataset,
