@@ -35,12 +35,12 @@ class ConfigManager:
             "CLASSIFICATION": ["imagenet"],
             "DETECTION": ["coco", "voc", "yolo"],
             "SEGMENTATION": ["common_semantic_segmentation", "voc", "cityscapes", "ade20k2017", "ade20k2020"],
-            # "ACTION_CLASSIFICATION": ["multi-cvat"],
-            # "ACTION_DETECTION": ["multi-cvat"],
-            # "ANOMALY_CLASSIFICATION": ["mvtec"],
-            # "ANOMALY_DETECTION": ["mvtec"],
-            # "ANOMALY_SEGMENTATION": ["mvtec"],
-            # "INSTANCE_SEGMENTATION": ["coco", "voc"],
+            "ACTION_CLASSIFICATION": ["multi-cvat"],
+            "ACTION_DETECTION": ["multi-cvat"],
+            "ANOMALY_CLASSIFICATION": ["mvtec"],
+            "ANOMALY_DETECTION": ["mvtec"],
+            "ANOMALY_SEGMENTATION": ["mvtec"],
+            "INSTANCE_SEGMENTATION": ["coco", "voc"],
         }
         self.data_format: str = ""
         self.task_type: str = ""
@@ -54,6 +54,7 @@ class ConfigManager:
     def _get_data_format(self, data_root: str) -> str:
         """Get dataset format."""
         self.data_format = DatasetManager.get_data_format(data_root)
+        print(f"[*] Detected dataset format: {self.data_format}")
         return self.data_format
 
     def _get_task_type(self, data_format: str) -> str:
@@ -73,6 +74,7 @@ class ConfigManager:
         for task_key, data_value in self.task_data_dict.items():
             if data_format in data_value:
                 self.task_type = task_key
+                print(f"[*] Detected task type: {self.task_type}")
                 return task_key
         raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
@@ -91,6 +93,7 @@ class ConfigManager:
         workspace_dir: str,
         train_data_roots: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
     ):
         """Save the splitted dataset and data.yaml to the workspace."""
 
@@ -99,7 +102,9 @@ class ConfigManager:
             data_config["data"]["train"]["data-roots"] = train_data_roots
         if val_data_roots:
             data_config["data"]["val"]["data-roots"] = val_data_roots
-
+        if test_data_roots:
+            data_config["data"]["test"]["data-roots"] = test_data_roots
+        
         default_data_folder_name = "splitted_dataset"
 
         self._save_data(workspace_dir, default_data_folder_name, data_config)
@@ -137,9 +142,10 @@ class ConfigManager:
     ) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
         data_config: Dict[str, Dict[str, Any]] = {"data": {}}
-        for subset in ["train", "val", "test", "unlabeled"]:
+        for subset in ["train", "val", "test"]:
             data_subset = {"ann-files": None, "data-roots": None}
             data_config["data"][subset] = data_subset
+        data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
         return data_config
 
     def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str):

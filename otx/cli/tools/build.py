@@ -44,6 +44,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--train-data-roots", help="data root for training data", type=str, default=None)
     parser.add_argument("--val-data-roots", help="data root for validation data", type=str, default=None)
+    parser.add_argument("--test-data-roots", help="data root for test data", type=str, default=None)
     parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
     parser.add_argument(
         "--train-type",
@@ -64,6 +65,7 @@ def build(
     builder: Builder,
     train_data_roots: Optional[str] = None,
     val_data_roots: Optional[str] = None,
+    test_data_roots: Optional[str] = None,
     task: Optional[str] = None,
     train_type: str = "incremental",
     workspace_root: Optional[str] = None,
@@ -116,6 +118,7 @@ def build(
             workspace_dir=workspace_root,
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
+            test_data_roots=test_data_roots
         )
 
     # Build Backbone related
@@ -146,6 +149,7 @@ def main():
         builder=builder,
         train_data_roots=args.train_data_roots,
         val_data_roots=args.val_data_roots,
+        test_data_roots=args.test_data_roots,
         task=args.task,
         train_type=args.train_type,
         workspace_root=args.workspace_root,

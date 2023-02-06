@@ -118,7 +118,7 @@ def check_run(cmd, **kwargs):
 
 def otx_train_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
-    command_line = ["otx", "train", template.model_template_path]
+    command_line = ["otx", "train", "--template", template.model_template_path]
     for arg in [
         "--train-ann_file",
         "--train-data-roots",
@@ -146,6 +146,7 @@ def otx_resume_testing(template, root, otx_dir, args):
     command_line = [
         "otx",
         "train",
+        "--template",
         template.model_template_path,
     ]
     for option in [
@@ -173,7 +174,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
     if os.path.exists(f"{template_work_dir}/hpo"):
         shutil.rmtree(f"{template_work_dir}/hpo")
 
-    command_line = ["otx", "train", template.model_template_path]
+    command_line = ["otx", "train", "--template", template.model_template_path]
 
     for arg in ["--train-data-roots", "--val-data-roots"]:
         arg_value = args.get(arg, None)

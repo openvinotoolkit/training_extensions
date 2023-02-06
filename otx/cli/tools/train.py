@@ -18,6 +18,7 @@
 
 import argparse
 import os
+import time
 from pathlib import Path
 
 from otx.api.configuration.helper import create
@@ -145,38 +146,46 @@ def main():
 
     args, _ = parser.parse_known_args()
     train_workspace_path = os.getcwd()
+    default_workspace_components = {
+        "template_path": "./template.yaml", 
+        "data_path": "./data.yaml",
+        "save_model_to": "results"
+    }
+    # If user gives a default value for args.save_model_to, 
+    # Add timestamp to avoid the duplication
+    if args.save_model_to == default_workspace_components["save_model_to"]:
+        args.save_model_to = args.save_model_to + time.strftime("_%Y%m%d_%H%M")
 
-    default_workspace_components = {"template_path": "./template.yaml", "data_path": "./data.yaml"}
     has_template_yaml = Path(default_workspace_components["template_path"]).exists()
     has_data_yaml = Path(default_workspace_components["data_path"]).exists()
 
-    # Possible scenario 1: otx build --> otx train
-    # Possible scenario 2: otx build --> otx train --template=${TEMPLATE}
-    # Possible scenario 3: otx train --train-data-roots=${PATH}
-    # So, we need to check whethere there is workspace or not
-    use_workspace = has_template_yaml and has_data_yaml
-    if not use_workspace:
-        # Prepare build
-        train_workspace_path = args.save_model_to
+    # Currently, Anomaly tasks can't be supported by build, auto-config
+    if "anomaly" not in args.template:
+        use_workspace = has_template_yaml and has_data_yaml
+        if not use_workspace:
+            # Prepare build
+            train_workspace_path = args.save_model_to
 
-        # If an user gives a weird path, then automatically selects default template by using build function.
-        if Path(args.template).exists():
-            template = find_and_parse_model_template(args.template)
-        # In this case, we can assume two scenarios
-        else:
-            print(f"Can't find {args.template}, the default template will be used to train. ")
-            template = None
-            args.template = default_workspace_components["template_path"]
+            # If an user gives a weird path, then automatically selects default template by using build function.
+            if Path(args.template).exists():
+                template = find_and_parse_model_template(args.template)
+            # In this case, we can assume two scenarios
+            # 1. users gives an unexisted file (file invalid)
+            # 2. user doesn't give a template arugment
+            else:
+                print(f"Can't find {args.template}, the default template will be used to train. ")
+                template = None
+                args.template = default_workspace_components["template_path"]
 
-        # Build
-        builder = Builder()
-        build(
-            builder=builder,
-            train_data_roots=args.train_data_roots,
-            val_data_roots=args.val_data_roots,
-            workspace_root=train_workspace_path,
-            template=template,
-        )
+            # Build
+            builder = Builder()
+            build(
+                builder=builder,
+                train_data_roots=args.train_data_roots,
+                val_data_roots=args.val_data_roots,
+                workspace_root=train_workspace_path,
+                template=template,
+            )
 
     # Update configurations made by builder
     # When an user gives template argument, need to overwrite it.

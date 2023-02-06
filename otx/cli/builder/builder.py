@@ -156,7 +156,7 @@ class Builder:
         """
 
         # Create OTX-workspace
-        workspace_path.mkdir(parents=True, exist_ok=False)
+        workspace_path.mkdir(parents=True, exist_ok=True)
 
         # Load & Save Model Template
         if template is None:
