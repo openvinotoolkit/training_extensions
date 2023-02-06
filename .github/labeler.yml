@@ -9,8 +9,8 @@ ALGO:
 TEST:
   - "tests/**/*"
 DOC:
-  - "doc/**/*"
-  - "./**/*.md"
+  - "docs/**/*"
+  - "**/*.md"
   - "LICENSE"
   - "third-party-programs.txt"
 BUILD:
