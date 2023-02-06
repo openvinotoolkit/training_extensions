@@ -33,22 +33,12 @@ class TrainingProgressCallback(TimeMonitorCallback):
     def on_epoch_end(self, epoch, logs=None):
         """Callback function on epoch ended."""
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
+        progress = ((epoch + 1) / self.total_epochs) * 100
         self._calculate_average_epoch()
         score = None
         if hasattr(self.update_progress_callback, "metric") and isinstance(logs, dict):
             score = logs.get(self.update_progress_callback.metric, None)
-            score = float(score) if score is not None else None
-            if score is not None:
-                iter_num = logs.get("current_iters", None)
-                if iter_num is not None:
-                    print(f"score = {score} at epoch {epoch} / {int(iter_num)}")
-                    # as a trick, score (at least if it's accuracy not the loss) and iteration number
-                    # could be assembled just using summation and then disassembeled.
-                    if score < 1.0:
-                        score = score + int(iter_num)
-                    else:
-                        score = -(score + int(iter_num))
-        self.update_progress_callback(self.get_progress(), score=score)
+        self.update_progress_callback(progress, score=score)
 
 
 class InferenceProgressCallback(TimeMonitorCallback):
