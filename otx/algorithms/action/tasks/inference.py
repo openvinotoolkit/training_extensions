@@ -71,7 +71,6 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
-        self.task_environment = task_environment
         super().__init__(ActionConfig, task_environment, **kwargs)
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
@@ -207,7 +206,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         if self._recipe_cfg is None:
             raise RuntimeError("'config' is not initialized yet. call prepare() method before calling this method")
 
-        self._model = self._load_model(self.task_environment.model)
+        self._model = self._load_model(self._task_environment.model)
 
     def _load_model(self, model: ModelEntity):
         if self._recipe_cfg is None:
