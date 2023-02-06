@@ -214,6 +214,10 @@ class Builder:
                 str(model_dir / "compression_config.json"),
                 str(train_type_dir / "compression_config.json"),
             )
+        # Copy deployment.py
+        if (template_dir / "deployment.py").exists():
+            deployment_config = MPAConfig.fromfile(str(template_dir / "deployment.py"))
+            deployment_config.dump(str(workspace_path / "deployment.py"))
 
         print(f"[*] Current Train Type: {train_type}")
         print(f"[*] Load Model Template ID: {template.model_template_id}")

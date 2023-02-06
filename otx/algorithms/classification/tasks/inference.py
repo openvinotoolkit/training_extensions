@@ -98,15 +98,15 @@ class ClassificationInferenceTask(
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
         if self._multilabel:
-            logger.info("Classiification mode: multilabel")
+            logger.info("Classification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
-            logger.info("Classiification mode: hierarchical")
+            logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
-        else:
-            logger.info("Classiification mode: multiclass")
+        if not self._multilabel and not self._hierarchical:
+            logger.info("Classification mode: multiclass")
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
