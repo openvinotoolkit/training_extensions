@@ -3,7 +3,8 @@
 #
 
 # Copyright (c) Open-MMLab. All rights reserved.
-import os
+from pathlib import Path
+from typing import Optional
 
 from mmcv.runner.dist_utils import allreduce_params, master_only
 from mmcv.runner.hooks.hook import HOOKS, Hook
@@ -49,35 +50,80 @@ class CheckpointHookWithValResults(Hook):
         self.max_keep_ckpts = max_keep_ckpts
         self.args = kwargs
         self.sync_buffer = sync_buffer
+        self._best_model_weight: Optional[Path] = None
+
+    def before_run(self, runner):
+        if not self.out_dir:
+            self.out_dir = runner.work_dir
 
     def after_train_epoch(self, runner):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
-        if hasattr(runner, "save_ckpt") and runner.save_ckpt:
-            if hasattr(runner, "save_ema_model") and runner.save_ema_model:
-                backup_model = runner.model
-                runner.model = runner.ema_model
-            runner.logger.info(f"Saving checkpoint at {runner.epoch + 1} epochs")
-            if self.sync_buffer:
-                allreduce_params(runner.model.buffers())
-            self._save_checkpoint(runner)
-            if hasattr(runner, "save_ema_model") and runner.save_ema_model:
-                runner.model = backup_model
-                runner.save_ema_model = False
+
+        if self.sync_buffer:
+            allreduce_params(runner.model.buffers())
+        save_ema_model = hasattr(runner, "save_ema_model") and runner.save_ema_model
+        if save_ema_model:
+            backup_model = runner.model
+            runner.model = runner.ema_model
+        if getattr(runner, "save_ckpt", False):
+            runner.logger.info(f"Saving best checkpoint at {runner.epoch + 1} epochs")
+            self._save_best_checkpoint(runner)
             runner.save_ckpt = False
 
+        self._save_latest_checkpoint(runner)
+
+        if save_ema_model:
+            runner.model = backup_model
+            runner.save_ema_model = False
+
     @master_only
-    def _save_checkpoint(self, runner):
+    def _save_best_checkpoint(self, runner):
         """Save the current checkpoint and delete unwanted checkpoint."""
-        if not self.out_dir:
-            self.out_dir = runner.work_dir
-        runner.save_checkpoint(
-            self.out_dir, filename_tmpl="best_model.pth", save_optimizer=self.save_optimizer, **self.args
-        )
+        if self._best_model_weight is not None:  # remove previous best model weight
+            prev_model_weight = self.out_dir / self._best_model_weight
+            if prev_model_weight.exists():
+                prev_model_weight.unlink()
+
+        if self.by_epoch:
+            weight_name = f"best_epoch_{runner.epoch + 1}.pth"
+        else:
+            weight_name = f"best_iter_{runner.iter + 1}.pth"
+        runner.save_checkpoint(self.out_dir, filename_tmpl=weight_name, save_optimizer=self.save_optimizer, **self.args)
+
+        self._best_model_weight = Path(weight_name)
         if runner.meta is not None:
-            cur_ckpt_filename = "best_model.pth"
             runner.meta.setdefault("hook_msgs", dict())
-            runner.meta["hook_msgs"]["last_ckpt"] = os.path.join(self.out_dir, cur_ckpt_filename)
+            runner.meta["hook_msgs"]["best_ckpt"] = str(self.out_dir / self._best_model_weight)
+
+    @master_only
+    def _save_latest_checkpoint(self, runner):
+        """Save the current checkpoint and delete unwanted checkpoint."""
+        if self.by_epoch:
+            weight_name_format = "epoch_{}.pth"
+            cur_step = runner.epoch + 1
+        else:
+            weight_name_format = "iter_{}.pth"
+            cur_step = runner.iter + 1
+
+        runner.save_checkpoint(
+            self.out_dir,
+            filename_tmpl=weight_name_format.format(cur_step),
+            save_optimizer=self.save_optimizer,
+            **self.args,
+        )
+
+        # remove other checkpoints
+        if self.max_keep_ckpts > 0:
+            for _step in range(cur_step - self.max_keep_ckpts * self.interval, 0, -self.interval):
+                ckpt_path = self.out_dir / Path(weight_name_format.format(_step))
+                if ckpt_path.exists():
+                    ckpt_path.unlink()
+
+        if runner.meta is not None:
+            cur_ckpt_filename = Path(self.args.get("filename_tmpl", weight_name_format.format(cur_step)))
+            runner.meta.setdefault("hook_msgs", dict())
+            runner.meta["hook_msgs"]["last_ckpt"] = str(self.out_dir / cur_ckpt_filename)
 
     def after_train_iter(self, runner):
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
