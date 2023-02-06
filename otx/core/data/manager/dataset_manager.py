@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import datumaro
 from datumaro.components.dataset import Dataset, DatasetSubset
@@ -23,20 +23,20 @@ class DatasetManager:
     """
 
     @staticmethod
-    def get_train_dataset(dataset: Dataset) -> DatasetSubset:
+    def get_train_dataset(dataset: Dataset) -> Union[DatasetSubset, None]:
         """Returns train dataset."""
         for k, v in dataset.subsets().items():
             if "train" in k or "default" in k:
                 return v
-        raise ValueError(f"Can't find training data in {str(dataset)}")
+        return None
 
     @staticmethod
-    def get_val_dataset(dataset: Dataset) -> DatasetSubset:
+    def get_val_dataset(dataset: Dataset) -> Union[DatasetSubset, None]:
         """Returns validation dataset."""
         for k, v in dataset.subsets().items():
             if "val" in k or "default" in k:
                 return v
-        raise ValueError(f"Can't find validation data in {str(dataset)}")
+        return None
 
     @staticmethod
     def get_data_format(data_root: str) -> str:

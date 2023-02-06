@@ -45,6 +45,19 @@ from otx.cli.utils.parser import (
 )
 from otx.core.data.adapter import get_dataset_adapter
 
+default_workspace_components = {
+    "template_path": "./template.yaml",
+    "data_path": "./data.yaml",
+    "save_model_to": "results",
+    "train_type": "incremental",
+}
+
+algo_backend_to_train_type = {
+    "incremental": "incremental",
+    "semisupervised": "semisl",
+    "selfsupervised": "selfsl",
+}
+
 
 def get_parser():
     """Parses command line arguments.
@@ -145,13 +158,9 @@ def main():
     parser = get_parser()
 
     args, _ = parser.parse_known_args()
+
     train_workspace_path = os.getcwd()
-    default_workspace_components = {
-        "template_path": "./template.yaml", 
-        "data_path": "./data.yaml",
-        "save_model_to": "results"
-    }
-    # If user gives a default value for args.save_model_to, 
+    # If user gives a default value for args.save_model_to,
     # Add timestamp to avoid the duplication
     if args.save_model_to == default_workspace_components["save_model_to"]:
         args.save_model_to = args.save_model_to + time.strftime("_%Y%m%d_%H%M")
@@ -159,56 +168,76 @@ def main():
     has_template_yaml = Path(default_workspace_components["template_path"]).exists()
     has_data_yaml = Path(default_workspace_components["data_path"]).exists()
 
-    # Currently, Anomaly tasks can't be supported by build, auto-config
-    if "anomaly" not in args.template:
-        use_workspace = has_template_yaml and has_data_yaml
-        if not use_workspace:
-            # Prepare build
-            train_workspace_path = args.save_model_to
+    is_anomaly_task = "anomaly" in args.template
+    use_workspace = has_template_yaml and has_data_yaml
 
-            # If an user gives a weird path, then automatically selects default template by using build function.
+    hyper_parameters = None
+
+    # Currently, Anomaly tasks can't be supported by build, auto-config
+    # Train without the workspace
+    if use_workspace is False and is_anomaly_task is False:
+        # Prepare build
+        train_workspace_path = args.save_model_to
+        train_type = "incremental"
+
+        use_default_template = args.template == default_workspace_components["template_path"]
+        if use_default_template is not True:
             if Path(args.template).exists():
                 template = find_and_parse_model_template(args.template)
-            # In this case, we can assume two scenarios
-            # 1. users gives an unexisted file (file invalid)
-            # 2. user doesn't give a template arugment
+                # To parse the train_type, Need to check the subparser's value
+                hyper_parameters = template.hyper_parameters.data
+                add_hyper_parameters_sub_parser(parser, hyper_parameters)
+                updated_hyper_parameters = gen_params_dict_from_args(parser.parse_args())
+                if "algo_backend" in updated_hyper_parameters:
+                    algo_backend_type = str(updated_hyper_parameters["algo_backend"]["train_type"]["value"])
+                    train_type = algo_backend_to_train_type[algo_backend_type.lower()]
             else:
-                print(f"Can't find {args.template}, the default template will be used to train. ")
-                template = None
-                args.template = default_workspace_components["template_path"]
+                raise ValueError(f"{args.template} is not existed.")
+        else:
+            print("The default template will be used to train. ")
+            template = None
 
-            # Build
-            builder = Builder()
-            build(
-                builder=builder,
-                train_data_roots=args.train_data_roots,
-                val_data_roots=args.val_data_roots,
-                workspace_root=train_workspace_path,
-                template=template,
-            )
+        # Build
+        builder = Builder()
+        build(
+            builder=builder,
+            train_data_roots=args.train_data_roots,
+            val_data_roots=args.val_data_roots,
+            workspace_root=train_workspace_path,
+            template=template,
+            train_type=train_type,
+        )
 
-    # Update configurations made by builder
-    # When an user gives template argument, need to overwrite it.
-    if args.template != default_workspace_components["template_path"]:
-        template = find_and_parse_model_template(args.template)
+        if use_default_template:
+            template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
+            hyper_parameters = template.hyper_parameters.data
+            add_hyper_parameters_sub_parser(parser, hyper_parameters)
+            # Get new values from user's input.
+            updated_hyper_parameters = gen_params_dict_from_args(parser.parse_args())
+
+    # If there is pre-existed workspace, OTX will use it.
     else:
-        template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
+        # If user gives an teamplate argument, OTX will use the user's input for template.
+        if args.template != default_workspace_components["template_path"]:
+            template = find_and_parse_model_template(args.template)
+        # If not, OTX will consume the template made by build()
+        else:
+            template = find_and_parse_model_template(os.path.join(train_workspace_path, "template.yaml"))
+
+        hyper_parameters = template.hyper_parameters.data
+        add_hyper_parameters_sub_parser(parser, hyper_parameters)
+        # Get new values from user's input.
+        updated_hyper_parameters = gen_params_dict_from_args(parser.parse_args())
+
+    if hyper_parameters is None:
+        raise ValueError(f"Hyper parameters can't be None. {hyper_parameters}")
+
+    # Override overridden parameters by user's values.
+    override_parameters(updated_hyper_parameters, hyper_parameters)
+    hyper_parameters = create(hyper_parameters)
 
     args.data = os.path.join(train_workspace_path, "data.yaml")
     data_config = configure_dataset(args)
-
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    if not hyper_parameters:
-        raise ValueError()
-
-    add_hyper_parameters_sub_parser(parser, hyper_parameters)
-    # Get new values from user's input.
-    updated_hyper_parameters = gen_params_dict_from_args(args)
-    # Override overridden parameters by user's values.
-    override_parameters(updated_hyper_parameters, hyper_parameters)
-
-    hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.base)
@@ -265,10 +294,8 @@ def main():
             configuration=environment.get_model_configuration(),
             model_adapters=model_adapters,
         )
-
     if args.enable_hpo:
         environment = run_hpo(args, environment, dataset, data_roots)
-
     task = task_class(task_environment=environment, output_path=args.work_dir)
 
     if args.gpus:

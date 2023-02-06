@@ -12,6 +12,14 @@ from datumaro.components.dataset_base import IDataset
 
 from otx.core.data.manager.dataset_manager import DatasetManager
 
+# TODO: Will be changed according to Datumaro's version
+AUTOSPLIT_SUPPORTED_FORMAT = [
+    "imagenet",
+    "coco",
+    "cityscapes",
+    "voc",
+]
+
 
 class ConfigManager:
     """Auto configuration manager that could set the proper configuration.
@@ -32,7 +40,7 @@ class ConfigManager:
         # Currently, Datumaro.auto_split() can support below 3 tasks
         # Classification, Detection, Segmentation
         self.task_data_dict = {
-            "CLASSIFICATION": ["imagenet"],
+            "CLASSIFICATION": ["imagenet", "datumaro"],
             "DETECTION": ["coco", "voc", "yolo"],
             "SEGMENTATION": ["common_semantic_segmentation", "voc", "cityscapes", "ade20k2017", "ade20k2020"],
             "ACTION_CLASSIFICATION": ["multi-cvat"],
@@ -82,11 +90,21 @@ class ConfigManager:
         """Automatically Split train data --> train/val dataset."""
         self.data_format = DatasetManager.get_data_format(data_root)
         dataset = DatasetManager.import_dataset(data_root=data_root, data_format=self.data_format)
-        self.splitted_dataset = DatasetManager.auto_split(
-            task=task,
-            dataset=DatasetManager.get_train_dataset(dataset),
-            split_ratio=[("train", 0.8), ("val", 0.2)],
-        )
+
+        train_dataset = DatasetManager.get_train_dataset(dataset)
+        val_dataset = DatasetManager.get_val_dataset(dataset)
+        if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
+            if val_dataset is None:
+                self.splitted_dataset = DatasetManager.auto_split(
+                    task=task,
+                    dataset=train_dataset,
+                    split_ratio=[("train", 0.8), ("val", 0.2)],
+                )
+            else:
+                print(f"[*] Found validation data in your dataset in {data_root}. It'll be used as validation data.")
+                self.splitted_dataset = {"train": train_dataset, "val": val_dataset}
+        else:
+            print(f"[*] Current auto-split can't support the {self.data_format} format.")
 
     def write_data_with_cfg(
         self,
@@ -104,7 +122,7 @@ class ConfigManager:
             data_config["data"]["val"]["data-roots"] = val_data_roots
         if test_data_roots:
             data_config["data"]["test"]["data-roots"] = test_data_roots
-        
+
         default_data_folder_name = "splitted_dataset"
 
         self._save_data(workspace_dir, default_data_folder_name, data_config)
@@ -128,7 +146,10 @@ class ConfigManager:
             dst_dir_path = os.path.join(workspace_dir, default_data_folder_name, phase)
             data_config["data"][phase]["data-roots"] = os.path.abspath(dst_dir_path)
             # Convert Datumaro class: DatasetFilter(IDataset) --> Dataset
-            datum_dataset = Dataset.from_extractors(dataset)
+            if isinstance(dataset, Dataset):
+                datum_dataset = dataset
+            else:
+                datum_dataset = Dataset.from_extractors(dataset)
             # Write the data
             # TODO: consider the way that reduces disk stroage
             # Currently, saving all images to the workspace.

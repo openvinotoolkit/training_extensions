@@ -565,6 +565,7 @@ def run_hpo(
         return None
 
     task_type = environment.model_template.task_type
+
     if not _check_hpo_enabled_task(task_type):
         logger.warning(
             "Currently supported task types are classification, detection, segmentation and anomaly"

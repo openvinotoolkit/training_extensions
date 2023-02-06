@@ -80,6 +80,7 @@ def build(
         builder (Builder): Builder class
         train_data_roots (str, optional): The path of training dataset. Defaults to None.
         val_data_roots (str, optional): The path of validation dataset. Defaults to None.
+        test_data_roots (str, optional): The path of test dataset. Defaults to None.
         task (str, optional): The name of task (i.e. classification, detection, segmentation, ..). Defaults to None.
         train_type (str, optional): The type of training (i.e. incremental, semisl, selfsl). Defaults to "incremental".
         workspace_root (str, optional): The path of workspace. Defaults to None.
@@ -97,7 +98,8 @@ def build(
         if task is None:
             task_type = config_manager.auto_task_detection(train_data_roots)
             task = task_type
-        if val_data_roots is None:
+        # For the selfsl, semisl tasks, auto_split is not supported
+        if val_data_roots is None and train_type == "incremental":
             config_manager.auto_split_data(train_data_roots, task)
 
     if task is not None and task in SUPPORTED_TASKS:
@@ -118,7 +120,7 @@ def build(
             workspace_dir=workspace_root,
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots
+            test_data_roots=test_data_roots,
         )
 
     # Build Backbone related

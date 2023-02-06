@@ -215,6 +215,7 @@ class Builder:
                 str(train_type_dir / "compression_config.json"),
             )
 
+        print(f"[*] Current Train Type: {train_type}")
         print(f"[*] Load Model Template ID: {template.model_template_id}")
         print(f"[*] Load Model Name: {template.name}")
 
