@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import os
 from typing import Any, Dict, List
 
 import numpy as np
@@ -16,8 +17,16 @@ from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.model_template import TaskType, task_type_to_label_domain
+from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_helpers import generate_random_annotated_image
+
+DEFAULT_DET_TEMPLATE_DIR = os.path.join("otx/algorithms/detection/configs/detection", "mobilenetv2_atss")
+DEFAULT_ISEG_TEMPLATE_DIR = os.path.join(
+    "otx/algorithms/detection/configs/instance_segmentation", "efficientnetb2b_maskrcnn"
+)
+DEFAULT_DET_RECIPE_CONFIG_PATH = "otx/recipes/stages/detection/incremental.py"
+DEFAULT_ISEG_RECIPE_CONFIG_PATH = "otx/recipes/stages/instance-segmentation/incremental.py"
 
 
 class MockImage(Image):
@@ -38,6 +47,18 @@ class MockPipeline:
 
     def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
         return results
+
+
+def init_environment(params, model_template, task_type=TaskType.DETECTION):
+    classes = ("rectangle", "ellipse", "triangle")
+    label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
+    environment = TaskEnvironment(
+        model=None,
+        hyper_parameters=params,
+        label_schema=label_schema,
+        model_template=model_template,
+    )
+    return environment
 
 
 def generate_det_dataset(task_type, number_of_images=1):

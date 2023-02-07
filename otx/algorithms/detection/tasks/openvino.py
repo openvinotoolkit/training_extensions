@@ -91,7 +91,8 @@ logger = get_logger()
 class BaseInferencerWithConverter(BaseInferencer):
     """BaseInferencerWithConverter class in OpenVINO task."""
 
-    @check_input_parameters_type()
+    # TODO [Jihwan]: Resolve type issue by Magicmock <-> Model
+    # @check_input_parameters_type()
     def __init__(
         self,
         configuration: dict,
@@ -138,6 +139,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
+    # TODO [Eugene]: implement unittest for tiling predict
     @check_input_parameters_type()
     def predict_tile(
         self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
