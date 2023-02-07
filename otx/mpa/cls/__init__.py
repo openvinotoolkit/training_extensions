@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import otx.mpa.modules.datasets.cls_csv_dataset
-import otx.mpa.modules.datasets.cls_csv_incr_dataset
 import otx.mpa.modules.datasets.cls_dir_dataset
-import otx.mpa.modules.datasets.multi_cls_dataset
 import otx.mpa.modules.datasets.pipelines.transforms.augmix
 import otx.mpa.modules.datasets.pipelines.transforms.ote_transforms
 import otx.mpa.modules.datasets.pipelines.transforms.random_augment
