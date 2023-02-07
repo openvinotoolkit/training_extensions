@@ -15,52 +15,45 @@
 # and limitations under the License.
 
 import argparse
-import os
 import time
 from collections import deque
+from pathlib import Path
 
 import cv2
 import numpy as np
 
-from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.image import Image
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.cli.manager import ConfigManager
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.tools.utils.demo.images_capture import open_images_capture
 from otx.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
-from otx.cli.utils.config import override_parameters
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
-from otx.cli.utils.parser import (
-    add_hyper_parameters_sub_parser,
-    gen_params_dict_from_args,
-)
+from otx.cli.utils.parser import add_hyper_parameters_sub_parser
 
 ESC_BUTTON = 27
 
 
-def parse_args():
+def get_args():
     """Parses command line arguments."""
-
+    # TODO: Declaring pre_parser to get the template
     pre_parser = argparse.ArgumentParser(add_help=False)
-    if os.path.exists("./template.yaml"):
-        template_path = "./template.yaml"
-    else:
-        pre_parser.add_argument("template")
-        parsed, _ = pre_parser.parse_known_args()
-        template_path = parsed.template
-    # Load template.yaml file.
-    template = find_and_parse_model_template(template_path)
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
-
+    pre_parser.add_argument("template", nargs="?", default=None)
+    parsed, _ = pre_parser.parse_known_args()
+    template = parsed.template
+    hyper_parameters = {}
     parser = argparse.ArgumentParser()
-    if not os.path.exists("./template.yaml"):
+    if template and Path(template).is_file():
+        template_config = find_and_parse_model_template(template)
+        hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template")
+    else:
+        parser.add_argument("--template", required=False)
+
     parser.add_argument(
         "-i",
         "--input",
@@ -93,7 +86,7 @@ def parse_args():
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
-    return parser.parse_args(), template, hyper_parameters
+    return parser.parse_args()
 
 
 def get_predictions(task, frame):
@@ -122,15 +115,17 @@ def main():
     """Main function that is used for model demonstration."""
 
     # Dynamically create an argument parser based on override parameters.
-    args, template, hyper_parameters = parse_args()
-    # Get new values from user's input.
-    updated_hyper_parameters = gen_params_dict_from_args(args)
-    # Override overridden parameters by user's values.
-    override_parameters(updated_hyper_parameters, hyper_parameters)
+    args = get_args()
 
-    hyper_parameters = create(hyper_parameters)
+    config_manager = ConfigManager(args, mode="eval")
+    # Auto-Configuration for model template
+    config_manager.configure_template()
+
+    # Update Hyper Parameter Configs
+    hyper_parameters = config_manager.get_hyparams_config()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
+    template = config_manager.template
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
     elif args.load_weights.endswith(".pth"):

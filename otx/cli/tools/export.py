@@ -15,33 +15,38 @@
 # and limitations under the License.
 
 import argparse
-import os
+from pathlib import Path
 
 from otx.api.configuration.helper import create
 from otx.api.entities.model import ModelEntity, ModelOptimizationType
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.cli.registry import find_and_parse_model_template
+from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.nncf import is_checkpoint_nncf
 
 
-def parse_args():
+def get_args():
     """Parses command line arguments."""
-
+    # TODO: Declaring pre_parser to get the template
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument("template", nargs="?", default=None)
+    parsed, _ = pre_parser.parse_known_args()
+    template = parsed.template
     parser = argparse.ArgumentParser()
-    if not os.path.exists("./template.yaml"):
+    if template and Path(template).is_file():
         parser.add_argument("template")
+    else:
+        parser.add_argument("--template", required=False)
+
     parser.add_argument(
         "--load-weights",
-        required=True,
         help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
         "--save-model-to",
-        required=True,
         help="Location where exported model will be stored.",
     )
 
@@ -50,17 +55,17 @@ def parse_args():
 
 def main():
     """Main function that is used for model exporting."""
-
-    args = parse_args()
+    args = get_args()
+    config_manager = ConfigManager(args, mode="eval")
+    # Auto-Configuration for model template
+    config_manager.configure_template()
 
     # Load template.yaml file.
-    if os.path.exists("./template.yaml"):
-        template_path = "./template.yaml"
-    else:
-        template_path = args.template
-    template = find_and_parse_model_template(template_path)
+    template = config_manager.template
 
     # Get class for Task.
+    if not args.load_weights and config_manager.check_workspace():
+        args.load_weights = str(config_manager.workspace_root / "models/weights.pth")
     is_nncf = is_checkpoint_nncf(args.load_weights)
     task_class = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
 
@@ -90,7 +95,9 @@ def main():
 
     task.export(ExportType.OPENVINO, exported_model)
 
-    os.makedirs(args.save_model_to, exist_ok=True)
+    if "save_model_to" not in args or not args.save_model_to:
+        args.save_model_to = str(config_manager.workspace_root / "model-exported")
+    Path(args.save_model_to).mkdir(exist_ok=True)
     save_model_data(exported_model, args.save_model_to)
 
 

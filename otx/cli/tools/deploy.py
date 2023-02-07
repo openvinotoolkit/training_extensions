@@ -16,23 +16,31 @@
 
 import argparse
 import os
+from pathlib import Path
 
 from otx.api.configuration.helper import create
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.cli.registry import find_and_parse_model_template
+from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
 
 
-def parse_args():
+def get_args():
     """Parses command line arguments."""
+    # TODO: Declaring pre_parser to get the template
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument("template", nargs="?", default=None)
+    parsed, _ = pre_parser.parse_known_args()
+    template = parsed.template
     parser = argparse.ArgumentParser()
-    if not os.path.exists("./template.yaml"):
+    if template and Path(template).is_file():
         parser.add_argument("template")
+    else:
+        parser.add_argument("--template", required=False)
+
     parser.add_argument(
         "--load-weights",
-        required=True,
         help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
@@ -47,18 +55,23 @@ def main():
     """Main function that is used for model evaluation."""
 
     # Parses input arguments.
-    args = parse_args()
-    if os.path.exists("./template.yaml"):
-        template_path = "./template.yaml"
-    else:
-        template_path = args.template
+    args = get_args()
+    config_manager = ConfigManager(args, mode="deploy")
+    # Auto-Configuration for model template
+    config_manager.configure_template()
 
     # Reads model template file.
-    template = find_and_parse_model_template(template_path)
+    template = config_manager.template
 
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
+
+    if not args.load_weights and config_manager.check_workspace():
+        exported_weight_path = config_manager.workspace_root / "models-exported/openvino.xml"
+        if not exported_weight_path.exists():
+            raise RuntimeError("OpenVINO-exported models are supported.")
+        args.load_weights = str(exported_weight_path)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     if not args.load_weights.endswith(".bin") and not args.load_weights.endswith(".xml"):
@@ -78,9 +91,11 @@ def main():
 
     deployed_model = ModelEntity(None, environment.get_model_configuration())
 
+    if "save_model_to" not in args or not args.save_model_to:
+        args.save_model_to = str(config_manager.workspace_root / "model-deployed")
     os.makedirs(args.save_model_to, exist_ok=True)
     task.deploy(deployed_model)
-    with open(os.path.join(args.save_model_to, "openvino.zip"), "wb") as write_file:
+    with open(str(Path(args.save_model_to) / "openvino.zip"), "wb") as write_file:
         write_file.write(deployed_model.exportable_code)
 
 

@@ -17,9 +17,8 @@
 # pylint: disable=too-many-locals
 
 import argparse
-import os
+from pathlib import Path
 
-from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
@@ -29,83 +28,62 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
+from otx.cli.manager import ConfigManager
 from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
-from otx.cli.utils.parser import (
-    add_hyper_parameters_sub_parser,
-    gen_params_dict_from_args,
-)
+from otx.cli.utils.parser import add_hyper_parameters_sub_parser
 from otx.core.data.adapter import get_dataset_adapter
 
 
-def parse_args():
-    """Parses command line arguments.
-
-    It dynamically generates help for hyper-parameters which are specific to particular model template.
-    """
-
+def get_args():
+    """Parses command line arguments."""
+    # TODO: Declaring pre_parser to get the template
     pre_parser = argparse.ArgumentParser(add_help=False)
-    if os.path.exists("./template.yaml"):
-        template_path = "./template.yaml"
-    else:
-        pre_parser.add_argument("template")
-        parsed, _ = pre_parser.parse_known_args()
-        template_path = parsed.template
-    # Load template.yaml file.
-    template = find_and_parse_model_template(template_path)
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
-
+    pre_parser.add_argument("template", nargs="?", default=None)
+    parsed, params = pre_parser.parse_known_args()
+    template = parsed.template
+    hyper_parameters = {}
     parser = argparse.ArgumentParser()
-    if not os.path.exists("./template.yaml"):
+    if template and Path(template).is_file():
+        template_config = find_and_parse_model_template(template)
+        hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template")
-    parser.add_argument("--data", required=False, default="./data.yaml")
-    parsed, _ = parser.parse_known_args()
-    required = not os.path.exists(parsed.data)
+    else:
+        parser.add_argument("--template", required=False)
 
     parser.add_argument(
         "--train-data-roots",
-        required=required,
         help="Comma-separated paths to training data folders.",
     )
     parser.add_argument(
         "--val-data-roots",
-        required=False,
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
         "--unlabeled-data-roots",
-        required=False,
         help="Comma-separated paths to unlabeled data folders",
     )
     parser.add_argument(
         "--unlabeled-file-list",
-        required=False,
         help="Comma-separated paths to unlabeled file list",
     )
     parser.add_argument(
         "--load-weights",
-        required=False,
         help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
         "--resume-from",
-        required=False,
         help="Resume training from previously saved checkpoint",
     )
     parser.add_argument(
         "--save-model-to",
-        required=False,
         help="Location where trained model will be stored.",
     )
     parser.add_argument(
         "--work-dir",
-        required=False,
         help="Location where the intermediate output of the training will be stored.",
     )
     parser.add_argument(
@@ -145,52 +123,42 @@ def parse_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
-
-    return parser.parse_args(), template, hyper_parameters
+    # TODO: Temporary solution for cases where there is no template input
+    if not hyper_parameters and "params" in params:
+        params = params[params.index("params") :]
+        for param in params:
+            if param.startswith("--"):
+                parser.add_argument(
+                    f"{param}",
+                    dest=f"params.{param[2:]}",
+                )
+    return parser.parse_args()
 
 
 def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
-    # Dynamically create an argument parser based on override parameters.
-    args, template, hyper_parameters = parse_args()
-    # Get new values from user's input.
-    updated_hyper_parameters = gen_params_dict_from_args(args)
-    # Override overridden parameters by user's values.
-    override_parameters(updated_hyper_parameters, hyper_parameters)
+    args = get_args()
 
-    hyper_parameters = create(hyper_parameters)
+    config_manager = ConfigManager(args, mode="train")
+    # Auto-Configuration for model template
+    config_manager.configure_template()
+
+    # Creates a workspace if it doesn't exist.
+    if not config_manager.check_workspace():
+        config_manager.build_workspace()
+
+    # Auto-Configuration for Dataset configuration
+    config_manager.configure_data_config()
+    dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
+    dataset_adapter = get_dataset_adapter(**dataset_config)
+    dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
+    template = config_manager.template
     task_class = get_impl_class(template.entrypoints.base)
-    data_config = configure_dataset(args)
 
-    data_roots = dict(
-        train_subset={
-            "data_root": data_config["data"]["train"]["data-roots"],
-        },
-    )
-    if data_config["data"]["val"]["data-roots"]:
-        data_roots["val_subset"] = {
-            "ann_file": data_config["data"]["val"]["ann-files"],
-            "data_root": data_config["data"]["val"]["data-roots"],
-        }
-    if "unlabeled" in data_config["data"] and data_config["data"]["unlabeled"]["data-roots"]:
-        data_roots["unlabeled_subset"] = {
-            "data_root": data_config["data"]["unlabeled"]["data-roots"],
-            "file_list": data_config["data"]["unlabeled"]["file-list"],
-        }
-
-    # Datumaro
-    dataset_adapter = get_dataset_adapter(
-        template.task_type,
-        train_data_roots=data_roots["train_subset"]["data_root"],
-        val_data_roots=data_roots["val_subset"]["data_root"] if data_config["data"]["val"]["data-roots"] else None,
-        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"]
-        if "unlabeled" in data_config["data"] and data_config["data"]["unlabeled"]["data-roots"]
-        else None,
-    )
-    dataset = dataset_adapter.get_otx_dataset()
-    label_schema = dataset_adapter.get_label_schema()
+    # Update Hyper Parameter Configs
+    hyper_parameters = config_manager.get_hyparams_config()
 
     environment = TaskEnvironment(
         model=None,
@@ -206,7 +174,7 @@ def main():  # pylint: disable=too-many-branches
             "resume": bool(args.resume_from),
         }
 
-        if os.path.exists(os.path.join(os.path.dirname(ckpt_path), "label_schema.json")):
+        if (Path(ckpt_path).parent / "label_schema.json").exists():
             model_adapters.update(
                 {"label_schema.json": ModelAdapter(label_schema_to_bytes(read_label_schema(ckpt_path)))}
             )
@@ -218,7 +186,7 @@ def main():  # pylint: disable=too-many-branches
         )
 
     if args.enable_hpo:
-        environment = run_hpo(args, environment, dataset, data_roots)
+        environment = run_hpo(args, environment, dataset, config_manager.data_config)
 
     task = task_class(task_environment=environment, output_path=args.work_dir)
 
@@ -236,11 +204,13 @@ def main():  # pylint: disable=too-many-branches
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
+    # TODO: Need to align output results
     if "save_model_to" not in args or not args.save_model_to:
-        args.save_model_to = "./models"
+        args.save_model_to = str(config_manager.workspace_root / "models")
     save_model_data(output_model, args.save_model_to)
+    print(f"[*] Save Model to: {args.save_model_to}")
 
-    if data_config["data"]["val"]["data-roots"]:
+    if config_manager.data_config["val_subset"]["data_root"]:
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
         predicted_validation_dataset = task.infer(
             validation_dataset.with_empty_annotations(),

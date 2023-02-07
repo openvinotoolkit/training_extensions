@@ -1,0 +1,395 @@
+"""Configuration Manager ."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+import os
+import shutil
+from pathlib import Path
+from typing import Any, Dict, List
+
+import mmcv
+from datumaro.components.dataset import Dataset
+from datumaro.components.dataset_base import IDataset
+
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.api.configuration.helper import create
+from otx.api.entities.model_template import ModelTemplate, parse_model_template
+from otx.cli.registry import Registry as OTXRegistry
+from otx.cli.utils.config import configure_dataset, override_parameters
+from otx.cli.utils.importing import get_otx_root_path
+from otx.cli.utils.parser import gen_params_dict_from_args
+from otx.core.data.manager.dataset_manager import DatasetManager
+from otx.mpa.utils.config_utils import MPAConfig
+
+DEFAULT_MODEL_TEMPLATE_ID = {
+    "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
+    "DETECTION": "Custom_Object_Detection_Gen3_ATSS",
+    "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
+    "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
+}
+
+AUTOSPLIT_SUPPORTED_FORMAT = [
+    "imagenet",
+    "coco",
+    "cityscapes",
+    "voc",
+]
+
+TASK_TYPE_TO_SUPPORTED_FORMAT = {
+    "CLASSIFICATION": ["imagenet", "datumaro"],
+    "DETECTION": ["coco", "voc", "yolo"],
+    "SEGMENTATION": ["common_semantic_segmentation", "voc", "cityscapes", "ade20k2017", "ade20k2020"],
+    "ACTION_CLASSIFICATION": ["multi-cvat"],
+    "ACTION_DETECTION": ["multi-cvat"],
+    "ANOMALY_CLASSIFICATION": ["mvtec"],
+    "ANOMALY_DETECTION": ["mvtec"],
+    "ANOMALY_SEGMENTATION": ["mvtec"],
+    "INSTANCE_SEGMENTATION": ["coco", "voc"],
+}
+
+TASK_TYPE_TO_SUB_DIR_NAME = {
+    "INCREMENTAL": "",
+    "SEMISUPERVISED": "semisl",
+    "SELFSUPERVISED": "selfsl",
+}
+
+
+def set_workspace(task: str, model: str = None, root: str = None, name: str = "otx-workspace"):
+    """Set workspace path according to arguments."""
+    path = f"{root}/{name}-{task}" if root else f"./{name}-{task}"
+    if model:
+        path += f"-{model}"
+    return path
+
+
+class ConfigManager:  # pylint: disable=too-many-instance-attributes
+    """Auto configuration manager that could set the proper configuration.
+
+    Currently, it only supports the small amount of functions.
+    * Data format detection
+    * Task type detection
+    * Write the data to the workspace
+    * Write the data configuration to the workspace
+
+    However, it will supports lots of things in the near future.
+    * Automatic train type detection (Supervised, Self, Semi)
+    * Automatic resource allocation (num_workers, HPO)
+
+    """
+
+    def __init__(self, args, mode="train"):
+        # Currently, Datumaro.auto_split() can support below 3 tasks
+        # Classification, Detection, Segmentation
+        self.otx_root = get_otx_root_path()
+        self.workspace_root = Path(".")
+        self.mode = mode
+
+        self.args = args
+        self.template = args.template
+        self.task_type: str = ""
+        self.train_type: str = ""
+        self.model: str = ""
+
+        self.dataset_manager = DatasetManager()
+        self.data_format: str = ""
+        self.data_config: Dict[str, dict] = {}
+
+    def check_workspace(self) -> bool:
+        """Check that the class's workspace_root is an actual workspace folder.
+
+        Returns:
+            bool: true for workspace else false
+        """
+        default_workspace_components = {
+            "template_path": self.workspace_root / "template.yaml",
+            "data_path": self.workspace_root / "data.yaml",
+        }
+        has_template_yaml = default_workspace_components["template_path"].exists()
+        has_data_yaml = default_workspace_components["data_path"].exists()
+        return has_template_yaml and has_data_yaml
+
+    def configure_template(self) -> None:
+        """Update the template appropriate for the situation."""
+        if self.check_workspace():
+            # Workspace -> template O
+            self.template = parse_model_template(self.workspace_root / "template.yaml")
+        elif self.template and Path(self.template).exists():
+            # No workspace -> template O
+            self.template = parse_model_template(self.template)
+        else:
+            task_type = self.task_type
+            if not task_type:
+                task_type = self.auto_task_detection(self.args.train_data_roots)
+            self.template = self._get_template(task_type)
+        self.task_type = self.template.task_type
+        self.model = self.template.name
+        self.train_type = self._get_train_type()
+
+    def configure_data_config(self) -> None:
+        """Configure data_config according to the situation and create data.yaml."""
+        data_yaml_path = self.workspace_root / "data.yaml"
+        if self.mode in ("train", "build"):
+            if self.args.train_data_roots and not self.args.val_data_roots:
+                splitted_dataset = self.auto_split_data(self.args.train_data_roots, self.task_type)
+                default_data_folder_name = "splitted_dataset"
+                data_yaml = self._get_arg_data_yaml()
+                self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
+            else:
+                data_yaml = configure_dataset(self.args, data_yaml_path=data_yaml_path)
+
+        elif self.mode in ("eval", "deploy"):
+            data_yaml = configure_dataset(self.args, data_yaml_path=data_yaml_path)
+        self._export_data_cfg(data_yaml, str(data_yaml_path))
+        self._update_data_config(data_yaml)
+
+    def _get_train_type(self) -> str:
+        """Check and return the train_type received as input args."""
+        args_hyper_parameters = gen_params_dict_from_args(self.args)
+        algo_backend = args_hyper_parameters.get("algo_backend", False)
+        if algo_backend:
+            train_type = algo_backend.get("train_type", {"value": "INCREMENTAL"})
+            return train_type.get("value", "INCREMENTAL")
+        return "INCREMENTAL"
+
+    def auto_task_detection(self, data_roots: str) -> str:
+        """Detect task type automatically."""
+        self.data_format = self.dataset_manager.get_data_format(data_roots)
+        print(f"[*] Detected dataset format: {self.data_format}")
+        return self._get_task_type_from_data_format(self.data_format)
+
+    def _get_task_type_from_data_format(self, data_format: str) -> str:
+        """Detect task type.
+
+        For some datasets (i.e. COCO, VOC, MVTec), can't be fully automated.
+        Because those datasets have several format at the same time.
+        (i.e. for the COCO case, object detection and instance segmentation annotations coexist)
+        In this case, the task_type will be selected to default value.
+
+        For action tasks, currently action_classification is default.
+
+        If Datumaro supports the Kinetics, AVA datasets, MVTec, _is_cvat_format(), _is_mvtec_format()
+        functions will be deleted.
+        """
+
+        for task_key, data_value in TASK_TYPE_TO_SUPPORTED_FORMAT.items():
+            if data_format in data_value:
+                self.task_type = task_key
+                print(f"[*] Detected task type: {self.task_type}")
+                return task_key
+        raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
+
+    def auto_split_data(self, data_roots: str, task: str):
+        """Automatically Split train data --> train/val dataset."""
+        self.data_format = self.dataset_manager.get_data_format(data_roots)
+        dataset = self.dataset_manager.import_dataset(data_root=data_roots, data_format=self.data_format)
+        train_dataset = self.dataset_manager.get_train_dataset(dataset)
+        val_dataset = self.dataset_manager.get_val_dataset(dataset)
+        splitted_dataset = None
+        if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
+            if val_dataset is None:
+                splitted_dataset = self.dataset_manager.auto_split(
+                    task=task,
+                    dataset=train_dataset,
+                    split_ratio=[("train", 0.8), ("val", 0.2)],
+                )
+            else:
+                print(f"[*] Found validation data in your dataset in {data_roots}. It'll be used as validation data.")
+                splitted_dataset = {"train": train_dataset, "val": val_dataset}
+        else:
+            print(f"[*] Current auto-split can't support the {self.data_format} format.")
+        return splitted_dataset
+
+    def _get_arg_data_yaml(self):
+        # TODO: This should modify data yaml format to data_config format.
+        """Save the splitted dataset and data.yaml to the workspace."""
+        data_yaml = self._create_empty_data_cfg()
+        if self.mode == "train":
+            if self.args.train_data_roots:
+                data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
+            if self.args.val_data_roots:
+                data_yaml["data"]["val"]["data-roots"] = self.args.val_data_roots
+        elif self.mode == "test":
+            if self.args.test_data_roots:
+                data_yaml["data"]["test"]["data-roots"] = self.args.test_data_roots
+        return data_yaml
+
+    def _save_data(
+        self,
+        splitted_dataset: Dict[str, IDataset],
+        default_data_folder_name: str,
+        data_config: Dict[str, Dict[str, Dict[str, Any]]],
+    ) -> None:
+        """Save the data for the classification task.
+
+        Args:
+            splitted_dataset (dict): A dictionary containing split datasets
+            default_data_folder_name (str): the name of splitted dataset folder
+            data_config (dict): dictionary that has information about data path
+        """
+        for phase, dataset in splitted_dataset.items():
+            dst_dir_path = os.path.join(self.workspace_root, default_data_folder_name, phase)
+            data_config["data"][phase]["data-roots"] = os.path.abspath(dst_dir_path)
+            # Convert Datumaro class: DatasetFilter(IDataset) --> Dataset
+            if isinstance(dataset, Dataset):
+                datum_dataset = dataset
+            else:
+                datum_dataset = Dataset.from_extractors(dataset)
+            # Write the data
+            # TODO: consider the way that reduces disk stroage
+            # Currently, saving all images to the workspace.
+            # It might needs quite large disk storage.
+            self.dataset_manager.export_dataset(
+                dataset=datum_dataset, output_dir=dst_dir_path, data_format=self.data_format, save_media=True
+            )
+
+    def _create_empty_data_cfg(
+        self,
+    ) -> Dict[str, Dict[str, Dict[str, Any]]]:
+        """Create default dictionary to represent the dataset."""
+        data_config: Dict[str, Dict[str, Any]] = {"data": {}}
+        for subset in ["train", "val", "test"]:
+            data_subset = {"ann-files": None, "data-roots": None}
+            data_config["data"][subset] = data_subset
+        data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
+        return data_config
+
+    def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str):
+        """Export the data configuration file to output_path."""
+        mmcv.dump(data_cfg, output_path)
+        print(f"[*] Saving data configuration file to: {output_path}")
+
+    def get_hyparams_config(self) -> ConfigurableParameters:
+        """Separates the input params received from args and updates them.."""
+        hyper_parameters = self.template.hyper_parameters.data
+        updated_hyper_parameters = gen_params_dict_from_args(self.args)
+        override_parameters(updated_hyper_parameters, hyper_parameters)
+        return create(hyper_parameters)
+
+    def get_dataset_config(self, subsets: List[str]) -> dict:
+        """Returns dataset_config in a format suitable for each subset.
+
+        Args:
+            subsets (list, str): Defaults to ["train", "val", "unlabeled"].
+
+        Returns:
+            dict: dataset_config
+        """
+        dataset_config = {"task_type": self.task_type}
+        for subset in subsets:
+            dataset_config.update(
+                {
+                    f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]
+                    if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]
+                    else None,
+                }
+            )
+        return dataset_config
+
+    def _update_data_config(self, data_yaml: dict) -> None:
+        # TODO: This also requires uniformity in the format.
+        """Convert the data yaml format to the data_config format consumed by the task.
+
+        Args:
+            data_yaml (dict): data.yaml format
+        """
+        if data_yaml["data"]["train"]["data-roots"]:
+            self.data_config["train_subset"] = {"data_root": data_yaml["data"]["train"]["data-roots"]}
+        if data_yaml["data"]["val"]["data-roots"]:
+            self.data_config["val_subset"] = {"data_root": data_yaml["data"]["val"]["data-roots"]}
+        if data_yaml["data"]["test"]["data-roots"]:
+            self.data_config["test_subset"] = {"data_root": data_yaml["data"]["test"]["data-roots"]}
+        if "unlabeled" in data_yaml["data"] and data_yaml["data"]["unlabeled"]["data-roots"]:
+            self.data_config["unlabeled_subset"] = {
+                "data_root": data_yaml["data"]["unlabeled"]["data-roots"],
+                "file_list": data_yaml["data"]["unlabeled"]["file-list"],
+            }
+
+    def _get_template(self, task_type: str, model: str = None) -> ModelTemplate:
+        """Returns the appropriate template for each situation.
+
+        Args:
+            task_type (str): The task_type registered in the registry. Used for filtering.
+            model (str, optional): The task_type registered in the registry. Used for filtering. Defaults to None.
+
+        Returns:
+            ModelTemplate: Selected model template.
+        """
+        otx_registry = OTXRegistry(self.otx_root).filter(task_type=task_type)
+        if model:
+            template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model.lower()]
+            if len(template_lst) == 0:
+                raise ValueError(
+                    f"[*] {model} is not a type supported by OTX {task_type}."
+                    f"\n[*] Please refer to 'otx find --template --task_type {task_type}'"
+                )
+            template = template_lst[0]
+        else:
+            template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
+        return template
+
+    def build_workspace(
+        self,
+        new_workspace_path: str = None,
+    ):
+        """Create OTX workspace with Template configs from task type.
+
+        This function provides a user-friendly OTX workspace and provides more intuitive
+        and create customizable templates to help users use all the features of OTX.
+        task_type: The type of task want to get (str)
+        model_type: Specifies the template of a model (str)
+        workspace_path: This is the folder path of the workspace want to create (Union[Path, str])
+        """
+
+        # Create OTX-workspace
+        # Check whether the workspace is existed or not
+        if new_workspace_path:
+            self.workspace_root = Path(new_workspace_path)
+        elif not self.check_workspace():
+            self.workspace_root = Path(set_workspace(task=self.task_type, model=self.model))
+        self.workspace_root.mkdir(exist_ok=True)
+
+        template_dir = Path(self.template.model_template_path).parent
+
+        # Copy task base configuration file
+        task_configuration_path = template_dir / self.template.hyper_parameters.base_path
+        shutil.copyfile(task_configuration_path, str(self.workspace_root / "configuration.yaml"))
+        # Load Model Template
+        template_config = MPAConfig.fromfile(self.template.model_template_path)
+        template_config.hyper_parameters.base_path = "./configuration.yaml"
+
+        # Configuration of Train Type value
+        train_type_rel_path = TASK_TYPE_TO_SUB_DIR_NAME[self.train_type]
+        model_dir = template_dir.absolute() / train_type_rel_path
+        if not model_dir.exists():
+            raise ValueError(f"[*] {self.train_type} is not a type supported by OTX {self.task_type}")
+        train_type_dir = self.workspace_root / train_type_rel_path
+        train_type_dir.mkdir(exist_ok=True)
+
+        # Update Hparams
+        if (model_dir / "hparam.yaml").exists():
+            template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
+
+        # Load & Save Model config
+        model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
+        model_config.dump(str(train_type_dir / "model.py"))
+
+        # Copy Data pipeline config
+        if (model_dir / "data_pipeline.py").exists():
+            data_pipeline_config = MPAConfig.fromfile(str(model_dir / "data_pipeline.py"))
+            data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
+        template_config.dump(str(self.workspace_root / "template.yaml"))
+
+        # Copy compression_config.json
+        if (model_dir / "compression_config.json").exists():
+            shutil.copyfile(
+                str(model_dir / "compression_config.json"),
+                str(train_type_dir / "compression_config.json"),
+            )
+        # Copy deployment.py
+        if (template_dir / "deployment.py").exists():
+            deployment_config = MPAConfig.fromfile(str(template_dir / "deployment.py"))
+            deployment_config.dump(str(self.workspace_root / "deployment.py"))
+
+        print(f"[*] Load Model Template ID: {self.template.model_template_id}")
+        print(f"[*] Load Model Name: {self.template.name}")

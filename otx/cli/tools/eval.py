@@ -16,58 +16,45 @@
 
 import argparse
 import json
-import os
+from pathlib import Path
 
-from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.cli.manager import ConfigManager
 from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model
 from otx.cli.utils.nncf import is_checkpoint_nncf
-from otx.cli.utils.parser import (
-    add_hyper_parameters_sub_parser,
-    gen_params_dict_from_args,
-)
+from otx.cli.utils.parser import add_hyper_parameters_sub_parser
 from otx.core.data.adapter import get_dataset_adapter
 
 # pylint: disable=too-many-locals
 
 
-def parse_args():
+def get_args():
     """Parses command line arguments."""
-
+    # TODO: Declaring pre_parser to get the template
     pre_parser = argparse.ArgumentParser(add_help=False)
-    if os.path.exists("./template.yaml"):
-        template_path = "./template.yaml"
-    else:
-        pre_parser.add_argument("template")
-        parsed, _ = pre_parser.parse_known_args()
-        template_path = parsed.template
-    # Load template.yaml file.
-    template = find_and_parse_model_template(template_path)
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
-
+    pre_parser.add_argument("template", nargs="?", default=None)
+    parsed, _ = pre_parser.parse_known_args()
+    template = parsed.template
+    hyper_parameters = {}
     parser = argparse.ArgumentParser()
-    if not os.path.exists("./template.yaml"):
+    if template and Path(template).is_file():
+        template_config = find_and_parse_model_template(template)
+        hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template")
-    parser.add_argument("--data", required=False, default="./data.yaml")
-    parsed, _ = parser.parse_known_args()
-    required = not os.path.exists(parsed.data)
+    else:
+        parser.add_argument("--template", required=False)
 
     parser.add_argument(
         "--test-data-roots",
-        required=required,
         help="Comma-separated paths to test data folders.",
     )
     parser.add_argument(
         "--load-weights",
-        required=True,
         help="Load model weights from previously saved checkpoint."
         "It could be a trained/optimized model (POT only) or exported model.",
     )
@@ -78,7 +65,7 @@ def parse_args():
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
-    return parser.parse_args(), template, hyper_parameters
+    return parser.parse_args()
 
 
 def check_label_schemas(label_schema_a, label_schema_b):
@@ -98,15 +85,20 @@ def main():
     """Main function that is used for model evaluation."""
 
     # Dynamically create an argument parser based on override parameters.
-    args, template, hyper_parameters = parse_args()
-    # Get new values from user's input.
-    updated_hyper_parameters = gen_params_dict_from_args(args)
-    # Override overridden parameters by user's values.
-    override_parameters(updated_hyper_parameters, hyper_parameters)
+    args = get_args()
 
-    hyper_parameters = create(hyper_parameters)
+    config_manager = ConfigManager(args, mode="eval")
+    # Auto-Configuration for model template
+    config_manager.configure_template()
+
+    if not args.load_weights and config_manager.check_workspace():
+        args.load_weights = str(config_manager.workspace_root / "models/weights.pth")
+
+    # Update Hyper Parameter Configs
+    hyper_parameters = config_manager.get_hyparams_config()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
+    template = config_manager.template
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
     elif args.load_weights.endswith(".pth"):
@@ -117,18 +109,11 @@ def main():
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
-    data_config = configure_dataset(args)
-
-    data_roots = dict(
-        test_subset={
-            "data_root": data_config["data"]["test"]["data-roots"],
-        }
-    )
-
-    dataset_adapter = get_dataset_adapter(template.task_type, test_data_roots=data_roots["test_subset"]["data_root"])
-
-    dataset = dataset_adapter.get_otx_dataset()
-    label_schema = dataset_adapter.get_label_schema()
+    # Auto-Configuration for Dataset configuration
+    config_manager.configure_data_config()
+    dataset_config = config_manager.get_dataset_config(subsets=["test"])
+    dataset_adapter = get_dataset_adapter(**dataset_config)
+    dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
     environment = TaskEnvironment(
         model=None,
@@ -157,7 +142,7 @@ def main():
     print(resultset.performance)
 
     if not args.save_performance:
-        args.save_performance = os.path.join(os.path.dirname(args.load_weights), "performance.json")
+        args.save_performance = str(Path(args.load_weights).parent / "performance.json")
     with open(args.save_performance, "w", encoding="UTF-8") as write_file:
         json.dump(
             {resultset.performance.score.name: resultset.performance.score.value},
