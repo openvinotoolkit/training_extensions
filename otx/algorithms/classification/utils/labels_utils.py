@@ -17,10 +17,8 @@
 # pylint: disable=too-many-nested-blocks, invalid-name
 
 from operator import itemgetter
-from typing import List
 
-from otx.api.entities.label import Domain, LabelEntity
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 
