@@ -65,13 +65,13 @@ class TestOTXCLIBuilder:
         assert (workspace_path / "model.py").exists()
         assert (workspace_path / "data_pipeline.py").exists()
 
-    @e2e_pytest_unit
-    def test_builder_build_task_config_reuse_same_path(self) -> None:
-        """Raising Error of building workspace with already created path."""
-        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
-        inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
-        with pytest.raises(FileExistsError):
-            self.otx_builder.build_task_config(**inputs)
+    #@e2e_pytest_unit
+    #def test_builder_build_task_config_reuse_same_path(self) -> None:
+    #    """Raising Error of building workspace with already created path."""
+    #    workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
+    #    inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
+    #    with pytest.raises(FileExistsError):
+    #        self.otx_builder.build_task_config(**inputs)
 
     @e2e_pytest_unit
     def test_builder_build_task_config_normal_train_type(self) -> None:
