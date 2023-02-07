@@ -13,10 +13,12 @@ from otx.cli.utils.multi_gpu import (
     get_gpu_ids,
     set_arguments_to_argv,
 )
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 NUM_AVAILABLE_GPU = torch.cuda.device_count()
 
 
+@e2e_pytest_unit
 def test_get_free_port():
     free_port = _get_free_port()
 
@@ -24,6 +26,7 @@ def test_get_free_port():
         sock.bind(("", free_port))
 
 
+@e2e_pytest_unit
 def test_get_gpu_ids():
     gpus = []
     for i in range(0, NUM_AVAILABLE_GPU, 2):
@@ -35,6 +38,7 @@ def test_get_gpu_ids():
     assert get_gpu_ids(",".join([str(val) for val in gpus])) == expected_result
 
 
+@e2e_pytest_unit
 def test_get_gpu_ids_with_wrong_args():
     with pytest.raises(ValueError):
         get_gpu_ids("abcd")
@@ -53,6 +57,7 @@ def mock_argv_with_params(mock_argv_without_params):
     return mock_argv_without_params
 
 
+@e2e_pytest_unit
 def test_set_arguments_to_argv_key_exist(mock_argv_without_params):
     """Test a case where key already exists and value exists."""
     other_val = "other_val"
@@ -61,6 +66,7 @@ def test_set_arguments_to_argv_key_exist(mock_argv_without_params):
     assert mock_argv_without_params[1] == other_val
 
 
+@e2e_pytest_unit
 def test_set_arguments_to_argv_key_exist_none_val(mock_argv_without_params):
     """Test a case where key already exists in argv and value doesn't exists."""
     expected_result = deepcopy(mock_argv_without_params)
@@ -69,6 +75,7 @@ def test_set_arguments_to_argv_key_exist_none_val(mock_argv_without_params):
     assert mock_argv_without_params == expected_result
 
 
+@e2e_pytest_unit
 def test_set_arguments_to_argv_key(mock_argv_with_params):
     """Test a case where key to set doesn't exists in argv and order of key is before params and vlaue exists."""
     set_arguments_to_argv("--other_key", "other_val")
@@ -80,6 +87,7 @@ def test_set_arguments_to_argv_key(mock_argv_with_params):
     assert mock_argv_with_params[new_key_idx + 1] == "other_val"
 
 
+@e2e_pytest_unit
 def test_set_arguments_to_argv_key_none_val(mock_argv_with_params):
     """Test a case where key to set doesn't exists in argv and order of key is before params and vlaue doesn't exist."""
     set_arguments_to_argv("--other_key")
@@ -91,6 +99,7 @@ def test_set_arguments_to_argv_key_none_val(mock_argv_with_params):
     assert "--other_key" in mock_argv_with_params
 
 
+@e2e_pytest_unit
 def test_set_arguments_to_argv_key_after_param(mock_argv_with_params):
     """Test a case where key to set doesn't exists in argv and order of key is after params and vlaue exists."""
     set_arguments_to_argv("--other_key", "other_val", True)
@@ -102,6 +111,7 @@ def test_set_arguments_to_argv_key_after_param(mock_argv_with_params):
     assert mock_argv_with_params[new_key_idx + 1] == "other_val"
 
 
+@e2e_pytest_unit
 def test_set_arguments_to_argv_key_after_param_non_val(mock_argv_with_params):
     """Test a case where key to set doesn't exists in argv and order of key is after params and vlaue doesn't exist."""
     set_arguments_to_argv("--other_key", after_params=True)
@@ -144,9 +154,11 @@ class TestMultiGPUManager:
 
         return process_arr
 
+    @e2e_pytest_unit
     def test_init(self, mocker):
         MultiGPUManager(mocker.MagicMock(), "0,1", "localhost:0")
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("num_gpu", [4, 10])
     def test_is_available(self, mocker, num_gpu):
         multigpu_manager = MultiGPUManager(
@@ -155,6 +167,7 @@ class TestMultiGPUManager:
 
         assert multigpu_manager.is_available()
 
+    @e2e_pytest_unit
     def test_is_unavailable(self, mocker):
         mock_torch = mocker.patch.object(multi_gpu, "torch")
         mock_torch.cuda.device_count.return_value = 0
@@ -162,6 +175,7 @@ class TestMultiGPUManager:
 
         assert not multigpu_manager.is_available()
 
+    @e2e_pytest_unit
     def test_setup_multi_gpu_train(self, mocker):
         # prepare
         mock_initialize_multigpu_train = mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
@@ -206,6 +220,7 @@ class TestMultiGPUManager:
         assert "--learning_parameters.batch_size" in mock_sys.argv
         assert mock_sys.argv[mock_sys.argv.index("--learning_parameters.batch_size") + 1] == "8"
 
+    @e2e_pytest_unit
     def test_check_child_processes_alive(self, mocker, process_arr):
         # prepare
         mock_kill = mocker.patch.object(multi_gpu.os, "kill")
@@ -222,6 +237,7 @@ class TestMultiGPUManager:
             p.kill.assert_called_once()
         mock_kill.assert_called_once_with(os.getpid(), self.mock_singal.SIGKILL)
 
+    @e2e_pytest_unit
     def test_terminate_signal_handler(self, mocker, process_arr):
         # prepare
         mock_exit = mocker.patch.object(multi_gpu.sys, "exit")
@@ -237,6 +253,7 @@ class TestMultiGPUManager:
             p.kill.assert_called_once()
         mock_exit.assert_called_once()
 
+    @e2e_pytest_unit
     def test_terminate_signal_handler_not_main_thread(self, mocker, process_arr):
         # prepare
         def raise_error(*args, **kwargs):
@@ -257,6 +274,7 @@ class TestMultiGPUManager:
         for p in process_arr[: self.num_gpu - 2]:
             p.kill.assert_not_called()
 
+    @e2e_pytest_unit
     def test_finalize(self, mocker, process_arr):
         # prepare
         mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
@@ -270,6 +288,7 @@ class TestMultiGPUManager:
         for p in process_arr:
             p.join.assert_called_once()
 
+    @e2e_pytest_unit
     def test_finalize_before_spawn(self, mocker, process_arr):
         # prepare
         mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
@@ -279,6 +298,7 @@ class TestMultiGPUManager:
         self.multigpu_manager.setup_multi_gpu_train("fake")
         self.multigpu_manager.finalize()
 
+    @e2e_pytest_unit
     def test_initialize_multigpu_train(self, mocker):
         # prepare
         mock_os = mocker.patch.object(multi_gpu, "os")
@@ -307,6 +327,7 @@ class TestMultiGPUManager:
         mock_set_device.assert_called_once()
         mock_init_process_group.assert_called_once()
 
+    @e2e_pytest_unit
     def test_run_child_process(self, mocker):
         # prepare
         mock_set_start_method = mocker.patch.object(multi_gpu.mp, "set_start_method")
@@ -341,6 +362,7 @@ class TestMultiGPUManager:
         mock_threading.Thread.call_args.return_value.start.assert_called_once
         mock_train_func.assert_called_once()
 
+    @e2e_pytest_unit
     def test_check_parent_processes_alive(self, mocker):
         # prepare
         mocker.patch.object(multi_gpu, "time")
