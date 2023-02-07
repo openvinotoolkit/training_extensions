@@ -328,7 +328,7 @@ class ClassificationInferenceTask(
                 ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
             )
 
-        if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):  # type: ignore
+        if params.enable_early_stopping is not None and self._recipe_cfg.get("evaluation", None) is not None:
             early_stop = ConfigDict(
                 start=int(params.early_stop_start),
                 patience=int(params.early_stop_patience),
