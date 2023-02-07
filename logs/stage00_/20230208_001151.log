@@ -1,0 +1,38 @@
+2023-02-08 00:11:51,417 | INFO : configured logger at /home/sungmanc/scripts/otx/training_extensions/logs/stage00_ with named 20230208_001151.log
+2023-02-08 00:11:51,417 | INFO : configure!: training=False
+2023-02-08 00:11:51,418 | INFO : configure_data()
+2023-02-08 00:11:51,418 | INFO : task config!!!!: training=False
+2023-02-08 00:11:51,564 | INFO : infer!
+2023-02-08 00:11:51,582 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:51,582 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:51,582 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:51,586 | INFO : configure!: training=False
+2023-02-08 00:11:51,587 | INFO : configure_data()
+2023-02-08 00:11:51,587 | INFO : task config!!!!: training=False
+2023-02-08 00:11:51,668 | INFO : Inferring on input source: data.test
+2023-02-08 00:11:53,803 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,803 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,803 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:53,808 | INFO : configure!: training=True
+2023-02-08 00:11:53,825 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,825 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,825 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:53,843 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,843 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,843 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:53,862 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,862 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,862 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:53,866 | INFO : task config!!!!: training=True
+2023-02-08 00:11:53,881 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,881 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,881 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:53,899 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,899 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,899 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:53,917 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,917 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,918 | INFO : CUDA_VISIBLE_DEVICES = None
+2023-02-08 00:11:53,935 | INFO : Training seed was set to 42 w/ deterministic=False.
+2023-02-08 00:11:53,935 | INFO : work dir = /home/sungmanc/scripts/otx/training_extensions/logs/stage00_
+2023-02-08 00:11:53,935 | INFO : CUDA_VISIBLE_DEVICES = None
