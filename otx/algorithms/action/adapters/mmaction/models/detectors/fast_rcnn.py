@@ -20,7 +20,6 @@ from mmdet.models import DETECTORS
 from mmdet.models.builder import build_detector
 from mmdet.models.detectors import FastRCNN
 from torch import nn
-from torch.onnx import is_in_onnx_export
 
 from otx.algorithms.action.configs.detection.base.faster_rcnn_config import (
     faster_rcnn,
@@ -94,17 +93,14 @@ class AVAFastRCNN(FastRCNN):
         AVAFastRCNN's bbox head has pooling funcitons, which contain dynamic shaping.
         This funciton changes those pooling functions from dynamic shaping to static shaping.
         """
-        self.roi_head.bbox_head.temporal_pool = ONNXPool3D(self.roi_head.bbox_head.temporal_pool_type, "temporal")
-        self.roi_head.bbox_head.spatial_pool = ONNXPool3D(self.roi_head.bbox_head.spatial_pool_type, "spatial")
+        self.roi_head.bbox_head.temporal_pool = ONNXPool3D("temporal", self.roi_head.bbox_head.temporal_pool_type)
+        self.roi_head.bbox_head.spatial_pool = ONNXPool3D("spatial", self.roi_head.bbox_head.spatial_pool_type)
 
     def forward_infer(self, imgs, img_metas):
         """Forward function for inference without pre-proposal."""
         clip_len = imgs[0].shape[2]
         img = imgs[0][:, :, int(clip_len / 2), :, :]
-        if is_in_onnx_export():
-            det_bboxes, det_labels = self.detector.onnx_export(img, img_metas[0])
-            prediction = [det_bboxes[0][det_labels[0] == 0]]
-        else:
-            prediction = self.detector.forwrad_test([img], img_metas)[0][:, :4]
+        det_bboxes, det_labels = self.detector.onnx_export(img, img_metas[0])
+        prediction = [det_bboxes[0][det_labels[0] == 0]]
         prediction = self.forward_test(imgs, img_metas, proposals=[prediction])
         return prediction

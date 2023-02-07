@@ -1,0 +1,20 @@
+name: Weekly Test
+
+on:
+  workflow_dispatch: # run on request (no need for PR)
+  schedule:
+    # every 4AM on Sunday
+    - cron: "0 4 * * 0"
+
+jobs:
+  Daily-Tests:
+    runs-on: [self-hosted, linux, x64, dev]
+    timeout-minutes: 1440
+    if: github.ref == 'ref/heads/develop'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install tox
+      - name: Pre-Merge Tests
+        run: tox -e pre-merge -- tests/regression
