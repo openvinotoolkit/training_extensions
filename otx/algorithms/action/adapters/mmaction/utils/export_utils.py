@@ -70,7 +70,7 @@ def preprocess(
     To get proper proposals from Faster-RCNN, the action detector needs real data
     """
     frames = []
-    frame_dir = f"data/cvat_dataset/action_detection/train/{category}/images"
+    frame_dir = f"tests/assets/cvat_dataset/action_detection/train/{category}/images"
     mean = [123.675, 116.28, 103.53]
     std = [58.395, 57.12, 57.375]
     # TODO: allow only .jpg, .png exts

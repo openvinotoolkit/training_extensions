@@ -45,13 +45,13 @@ class TestToolsOTXCLI:
         otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
 
 
-auto_config_args_with_autosplit = {"--train-data-roots": "data/imagenet_dataset"}
+auto_config_args_with_autosplit = {"--train-data-roots": "tests/assets/imagenet_dataset"}
 
-auto_config_args_with_autosplit_task = {"--task": "classification", "--train-data-roots": "data/imagenet_dataset"}
+auto_config_args_with_autosplit_task = {"--task": "classification", "--train-data-roots": "tests/assets/imagenet_dataset"}
 
 auto_config_args_without_autosplit = {
-    "--train-data-roots": "data/imagenet_dataset",
-    "--val-data-roots": "data/imagenet_dataset_class_incremental",
+    "--train-data-roots": "tests/assets/imagenet_dataset",
+    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
 }
 
 

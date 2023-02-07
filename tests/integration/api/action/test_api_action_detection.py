@@ -48,10 +48,8 @@ class TestActionTaskAPI:
     Collection of tests for OTX API and OTX Model Templates
     """
 
-    train_ann_files = "data/custom_action_recognition/custom_dataset/val.csv"
-    train_data_roots = "data/custom_action_recognition/custom_dataset/rawframes"
-    val_ann_files = "data/custom_action_recognition/custom_dataset/val.csv"
-    val_data_roots = "data/custom_action_recognition/custom_dataset/rawframes"
+    train_ann_files = "tests/assets/cvat_dataset/action_detection/train"
+    val_ann_files = "tests/assets/cvat_dataset/action_detection/train"
 
     @e2e_pytest_api
     def test_reading_action_model_template(self):

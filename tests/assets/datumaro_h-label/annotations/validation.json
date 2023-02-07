@@ -1,0 +1,157 @@
+{
+  "info": {},
+  "categories": {
+    "label": {
+      "labels": [
+        {
+          "name": "right",
+          "parent": "triangle",
+          "attributes": []
+        },
+        {
+          "name": "multi a",
+          "parent": "triangle",
+          "attributes": []
+        },
+        {
+          "name": "multi b",
+          "parent": "triangle",
+          "attributes": []
+        },
+        {
+          "name": "equilateral",
+          "parent": "triangle",
+          "attributes": []
+        },
+        {
+          "name": "square",
+          "parent": "rectangle",
+          "attributes": []
+        },
+        {
+          "name": "triangle",
+          "parent": "",
+          "attributes": []
+        },
+        {
+          "name": "non_square",
+          "parent": "rectangle",
+          "attributes": []
+        },
+        {
+          "name": "rectangle",
+          "parent": "",
+          "attributes": []
+        }
+      ],
+      "label_groups": [
+        {
+          "name": "shape",
+          "group_type": "exclusive",
+          "labels": ["rectangle", "triangle"]
+        },
+        {
+          "name": "rectangle default",
+          "group_type": "exclusive",
+          "labels": ["non_square", "square"]
+        },
+        {
+          "name": "triangle default",
+          "group_type": "exclusive",
+          "labels": ["equilateral", "right"]
+        },
+        {
+          "name": "shape___multiple example___multi a",
+          "group_type": "exclusive",
+          "labels": ["multi a"]
+        },
+        {
+          "name": "shape___multiple example___multi b",
+          "group_type": "exclusive",
+          "labels": ["multi b"]
+        }
+      ],
+      "attributes": []
+    },
+    "mask": {
+      "colormap": [
+        {
+          "label_id": 0,
+          "r": 129,
+          "g": 64,
+          "b": 123
+        },
+        {
+          "label_id": 1,
+          "r": 91,
+          "g": 105,
+          "b": 255
+        },
+        {
+          "label_id": 2,
+          "r": 91,
+          "g": 105,
+          "b": 255
+        },
+        {
+          "label_id": 3,
+          "r": 255,
+          "g": 86,
+          "b": 98
+        },
+        {
+          "label_id": 4,
+          "r": 204,
+          "g": 148,
+          "b": 218
+        },
+        {
+          "label_id": 5,
+          "r": 0,
+          "g": 251,
+          "b": 87
+        },
+        {
+          "label_id": 6,
+          "r": 84,
+          "g": 143,
+          "b": 173
+        },
+        {
+          "label_id": 7,
+          "r": 0,
+          "g": 38,
+          "b": 2
+        }
+      ]
+    }
+  },
+  "items": [
+    {
+      "id": "d",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 5
+        },
+        {
+          "id": 0,
+          "type": "label",
+          "attributes": {},
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "d.jpg",
+        "size": [10, 5]
+      },
+      "media": {
+        "path": ""
+      }
+    }
+  ]
+}
