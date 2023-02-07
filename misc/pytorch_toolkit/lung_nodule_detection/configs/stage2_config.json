@@ -1,0 +1,22 @@
+{"train":{
+    "savepath": "temp_data/stage2/",
+    "imgpath": "downloads/test_data/stage2/",
+    "jsonpath": "downloads/test_data/patch_data_split.json",
+    "lrate": 1e-4,
+    "epochs": 5,
+    "network": "lenet"
+},
+"inference":{
+    "modelpath":"downloads/model_weights/stage2/",
+    "imgpath":"downloads/test_data/stage2/",
+    "jsonpath": "downloads/test_data/patch_data_split.json",
+    "network": "lenet"
+},
+"export":{
+    "checkpoint": "downloads/model_weights/stage2/lenet_best.pt",
+    "input_shape":[1, 1, 64, 64],
+    "model_name_onnx": "lenet_best.onnx",
+    "model_name":"lenet_best",
+    "network": "lenet"
+}
+}
