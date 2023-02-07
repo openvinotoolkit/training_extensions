@@ -25,24 +25,6 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 @check_input_parameters_type()
-def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool = False):
-    """Generate label schema."""
-    assert len(not_empty_labels) > 1
-
-    label_schema = LabelSchemaEntity()
-    if multilabel:
-        emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
-        empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
-        for label in not_empty_labels:
-            label_schema.add_group(LabelGroup(name=label.name, labels=[label], group_type=LabelGroupType.EXCLUSIVE))
-        label_schema.add_group(empty_group)
-    else:
-        main_group = LabelGroup(name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE)
-        label_schema.add_group(main_group)
-    return label_schema
-
-
-@check_input_parameters_type()
 def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disable=too-many-locals
     """Get multihead info by label schema."""
     all_groups = label_schema.get_groups(include_empty=False)
