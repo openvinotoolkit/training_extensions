@@ -126,13 +126,11 @@ class TestToolsAnomalyDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.xfail(reason="CVS-83124")
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        # TODO(AlexanderDokuchaev): return threshold=0.0001 after fix loading NNCF model
-        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.3)
+        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0001)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
