@@ -3,14 +3,14 @@ name: Daily Test
 on:
   workflow_dispatch: # run on request (no need for PR)
   schedule:
-    # every 4AM from Tue to Sat
-    - cron: "0 4 * * 2-6"
+    # every UTC 7PM from Tue to Sat
+    - cron: "0 19 * * 2-6"
 
 jobs:
   Daily-Tests:
     runs-on: [self-hosted, linux, x64, dev]
     timeout-minutes: 600
-    if: github.ref == 'ref/heads/develop'
+    if: github.ref == 'refs/heads/develop'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
