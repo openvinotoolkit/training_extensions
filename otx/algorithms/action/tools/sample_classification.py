@@ -56,7 +56,7 @@ def load_test_dataset(model_template):
     )
     dataset = dataset_adapter.get_otx_dataset()
     labels_schema = dataset_adapter.get_label_schema()
-    
+
     return dataset, labels_schema
 
 

@@ -114,11 +114,17 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
             "ann_file": "tests/assets/anomaly/classification/train.json",
             "data_root": "tests/assets/anomaly/shapes",
         }
-    >>> val_subset = {"ann_file": "tests/assets/anomaly/classification/val.json", "data_root": "tests/assets/anomaly/shapes"}
+    >>> val_subset = {
+            "ann_file": "tests/assets/anomaly/classification/val.json",
+            "data_root": "tests/assets/anomaly/shapes"
+        }
     >>> training_dataset = AnomalyClassificationDataset(
             train_subset=train_subset, val_subset=val_subset
         )
-    >>> test_subset = {"ann_file": "tests/assets/anomaly/classification/test.json", "data_root": "tests/assets/anomaly/shapes"}
+    >>> test_subset = {
+            "ann_file": "tests/assets/anomaly/classification/test.json",
+            "data_root": "tests/assets/anomaly/shapes"
+        }
     >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
     """
 
@@ -165,11 +171,17 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
                 "ann_file": "tests/assets/anomaly/segmentation/train.json",
                 "data_root": "tests/assets/anomaly/shapes",
             }
-        >>> val_subset = {"ann_file": "tests/assets/anomaly/segmentation/val.json", "data_root": "tests/assets/anomaly/shapes"}
+        >>> val_subset = {
+                "ann_file": "tests/assets/anomaly/segmentation/val.json",
+                "data_root": "tests/assets/anomaly/shapes"
+            }
         >>> training_dataset = AnomalySegmentationDataset(
                 train_subset=train_subset, val_subset=val_subset
             )
-        >>> test_subset = {"ann_file": "tests/assets/anomaly/segmentation/test.json", "data_root": "tests/assets/anomaly/shapes"}
+        >>> test_subset = {
+                "ann_file": "tests/assets/anomaly/segmentation/test.json",
+                "data_root": "tests/assets/anomaly/shapes"
+            }
         >>> testing_dataset = AnomalySegmentationDataset(test_subset=test_subset)
 
     """
@@ -239,11 +251,17 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
                 "ann_file": "tests/assets/anomaly/detection/train.json",
                 "data_root": "tests/assets/anomaly/shapes",
             }
-        >>> val_subset = {"ann_file": "tests/assets/anomaly/detection/val.json", "data_root": "tests/assets/anomaly/shapes"}
+        >>> val_subset = {
+                "ann_file": "tests/assets/anomaly/detection/val.json",
+                "data_root": "tests/assets/anomaly/shapes"
+            }
         >>> training_dataset = AnomalyDetectionDataset(
                 train_subset=train_subset, val_subset=val_subset
             )
-        >>> test_subset = {"ann_file": "tests/assets/anomaly/detection/test.json", "data_root": "tests/assets/anomaly/shapes"}
+        >>> test_subset = {
+                "ann_file": "tests/assets/anomaly/detection/test.json",
+                "data_root": "tests/assets/anomaly/shapes"
+            }
         >>> testing_dataset = AnomalyDetectionDataset(test_subset=test_subset)
 
     """
