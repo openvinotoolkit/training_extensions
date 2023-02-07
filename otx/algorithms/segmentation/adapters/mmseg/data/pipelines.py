@@ -108,8 +108,9 @@ class TwoCropTransform:
 
     Through `TwoCropTransformHook`, how frequently both pipelines (view0 + view1) is applied can be set.
 
-    :param view0: Pipeline for online network.
-    :param view1: Pipeline for target network.
+    Args:
+        view0 (list): Pipeline for online network.
+        view1 (list): Pipeline for target network.
     """
 
     def __init__(self, view0: List, view1: List):
@@ -121,7 +122,12 @@ class TwoCropTransform:
     def __call__(self, results: Dict[str, Any]):
         """Callback function of TwoCropTransform.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes stuffs for training.
+                  They have different shape or attribute depending on `self.is_both`.
         """
         if self.is_both:
             results1 = self.view0(deepcopy(results))
@@ -151,7 +157,11 @@ class RandomResizedCrop(T.RandomResizedCrop):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of RandomResizedCrop.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img and related information.
         """
         img = results["img"]
         i, j, height, width = self.get_params(img, self.scale, self.ratio)
@@ -178,7 +188,8 @@ class RandomColorJitter(T.ColorJitter):
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
 
-    :param p: Probability for transformation.
+    Args:
+        p (float): Probability for transformation. Defaults to 0.8.
     """
 
     def __init__(self, p: float = 0.8, **kwargs):
@@ -189,7 +200,11 @@ class RandomColorJitter(T.ColorJitter):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of ColorJitter.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         if np.random.random() < self.p:
             results["img"] = self.forward(results["img"])
@@ -207,7 +222,11 @@ class RandomGrayscale(T.RandomGrayscale):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of RandomGrayscale.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         results["img"] = self.forward(results["img"])
         return results
@@ -220,7 +239,8 @@ class RandomGaussianBlur(T.GaussianBlur):
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
 
-    :param p: Probability for transformation.
+    Args:
+        p (float): Probability for transformation. Defaults to 0.1.
     """
 
     def __init__(self, p: float = 0.1, **kwargs):
@@ -231,7 +251,11 @@ class RandomGaussianBlur(T.GaussianBlur):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of GaussianBlur.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         if np.random.random() < self.p:
             results["img"] = self.forward(results["img"])
@@ -242,8 +266,9 @@ class RandomGaussianBlur(T.GaussianBlur):
 class RandomSolarization:
     """Random Solarization augmentation.
 
-    :param threshold: Threshold for solarization, defaults to 128.
-    :param p: Probability for transformation.
+    Args:
+        threshold (int): Threshold for solarization. Defaults to 128.
+        p (float): Probability for transformation. Defaults to 0.2.
     """
 
     def __init__(self, threshold: int = 128, p: float = 0.2):
@@ -254,7 +279,11 @@ class RandomSolarization:
     def __call__(self, results: Dict[str, Any]):
         """Callback function of Solarization.
 
-        :param results: inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         if np.random.random() < self.p:
             img = results["img"]
@@ -272,7 +301,8 @@ class RandomSolarization:
 class NDArrayToPILImage:
     """Convert image from numpy to PIL.
 
-    :param keys: Keys to be transformed.
+    Args:
+        keys (list): Keys to be transformed.
     """
 
     def __init__(self, keys: List[str]):
@@ -281,7 +311,11 @@ class NDArrayToPILImage:
     def __call__(self, results: Dict[str, Any]):
         """Callback function of NDArrayToPILImage.
 
-        :param results: inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         for key in self.keys:
             img = results[key]
@@ -299,7 +333,8 @@ class NDArrayToPILImage:
 class PILImageToNDArray:
     """Convert image from PIL to numpy.
 
-    :param keys: Keys to be transformed.
+    Args:
+        keys (list): Keys to be transformed.
     """
 
     def __init__(self, keys: List[str]):
@@ -308,7 +343,11 @@ class PILImageToNDArray:
     def __call__(self, results: Dict[str, Any]):
         """Callback function of PILImageToNDArray.
 
-        :param results: inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         for key in self.keys:
             img = results[key]

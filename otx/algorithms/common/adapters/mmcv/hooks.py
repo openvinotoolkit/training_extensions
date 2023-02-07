@@ -675,10 +675,11 @@ class TwoCropTransformHook(Hook):
     This hook decides whether using single pipeline or two pipelines
     implemented in `TwoCropTransform` for the current iteration.
 
-    :param interval: If `interval` == 1, both pipelines is used.
-        If `interval` > 1, the first pipeline is used and then
-        both pipelines are used every `interval`, defaults to 1.
-    :param by_epoch: (TODO) Use `interval` by epoch, defaults to False.
+    Args:
+        interval (int): If `interval` == 1, both pipelines is used.
+            If `interval` > 1, the first pipeline is used and then
+            both pipelines are used every `interval`. Defaults to 1.
+        by_epoch (bool): (TODO) Use `interval` by epoch. Defaults to False.
     """
 
     @check_input_parameters_type()
