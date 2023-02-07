@@ -23,4 +23,4 @@ from otx.mpa.seg.incremental import IncrSegInferrer, IncrSegTrainer
 from otx.mpa.seg.semisl import SemiSLSegInferrer, SemiSLSegTrainer
 
 # flake8: noqa
-from . import evaluator, exporter, inferrer, stage, trainer
+from . import exporter, inferrer, stage, trainer

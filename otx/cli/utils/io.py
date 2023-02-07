@@ -238,9 +238,8 @@ def generate_label_schema(dataset: DatasetEntity, task_type: TaskType) -> LabelS
                     for stask in subtask:  # if has several subtasks
                         add_subtask_labels(dataset, stask)
 
+            label_schema.add_group(empty_group)  # empty group is always added in geti
             for info in hierarchy_info:
-                if info["task_type"] == "multi-label" and emptylabel not in label_schema.get_labels(include_empty=True):
-                    label_schema.add_group(empty_group)
                 add_subtask_labels(dataset, info)
         else:
             main_group = LabelGroup(

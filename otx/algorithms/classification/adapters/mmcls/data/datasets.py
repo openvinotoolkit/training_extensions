@@ -191,21 +191,18 @@ class MPAMultilabelClsDataset(MPAClsDataset):
         """Load annotations."""
         include_empty = self.empty_label in self.labels
         for i, _ in enumerate(self.otx_dataset):
-            class_indices = []
             item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
             ignored_labels = self.otx_dataset[i].ignored_labels
+            onehot_indices = np.zeros(len(self.labels))
             if item_labels:
                 for otx_lbl in item_labels:
                     if otx_lbl not in ignored_labels:
-                        class_indices.append(self.label_names.index(otx_lbl.name))
+                        onehot_indices[self.label_names.index(otx_lbl.name)] = 1
                     else:
-                        class_indices.append(-1)
-            else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
-                class_indices.append(-1)
-            onehot_indices = np.zeros(len(self.labels))
-            for idx in class_indices:
-                if idx != -1:  # TODO: handling ignored label?
-                    onehot_indices[idx] = 1
+                        # during training we filter ignored classes out,
+                        # during validation mmcv's mAP also filters -1 labels
+                        onehot_indices[self.label_names.index(otx_lbl.name)] = -1
+
             self.gt_labels.append(onehot_indices)
         self.gt_labels = np.array(self.gt_labels)
 
