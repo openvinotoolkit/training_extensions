@@ -12,7 +12,7 @@ For the supervised training we use the following algorithms components:
 
 - ``Learning rate schedule``: `Cosine Annealing <https://arxiv.org/abs/1608.03983v5>`_. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.
 
-- ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
+- ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model. However, for the class-incremental scenario we use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
 
 - Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting. Besides this we use `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11>`_ to create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.
 
