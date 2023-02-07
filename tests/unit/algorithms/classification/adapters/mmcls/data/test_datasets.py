@@ -19,19 +19,24 @@ from tests.unit.api.parameters_validation.validation_helper import (
 )
 
 
+def create_cls_dataset():
+    image = Image(data=np.random.randint(low=0, high=255, size=(8, 8, 3)))
+    annotation = Annotation(
+        shape=Rectangle.generate_full_box(),
+        labels=[ScoredLabel(LabelEntity(name="test_selfsl_dataset", domain=Domain.CLASSIFICATION))]
+    )
+    annotation_scene = AnnotationSceneEntity(annotations=[annotation], kind=AnnotationSceneKind.ANNOTATION)
+    dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene)
+    
+    dataset = DatasetEntity(items=[dataset_item])
+    return dataset, dataset.get_labels()
+
+
 class TestSelfSLDataset:
 
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        image = Image(data=np.random.randint(low=0, high=255, size=(8, 8, 3)))
-        annotation = Annotation(
-            shape=Rectangle.generate_full_box(),
-            labels=[ScoredLabel(LabelEntity(name="test_selfsl_dataset", domain=Domain.CLASSIFICATION))]
-        )
-        annotation_scene = AnnotationSceneEntity(annotations=[annotation], kind=AnnotationSceneKind.ANNOTATION)
-        dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene)
-
-        self.otx_dataset = DatasetEntity(items=[dataset_item])
+        self.otx_dataset, _ = create_cls_dataset()
         self.pipeline = {
             "view0": [dict(type="ImageToTensor", keys=["img"])],
             "view1": [dict(type="ImageToTensor", keys=["img"])]
