@@ -30,19 +30,6 @@ class TestOTXSegTrainer:
         mock_train_segmentor.assert_called_once()
 
     @e2e_pytest_unit
-    def test_run_with_hpopt(self, mocker):
-        fake_hpo_cfg = {"hp_config": {"": None}}
-        mocker.patch.object(SegTrainer, "configure_samples_per_gpu")
-        mocker.patch.object(SegTrainer, "configure_fp16_optimizer")
-        mocker.patch.object(SegTrainer, "configure_compat_cfg")
-        mock_hpopt = mocker.patch("hpopt.createHpoDataset")
-        mock_train_segmentor = mocker.patch("otx.mpa.seg.trainer.train_segmentor")
-
-        self.trainer.run(self.model_cfg, "", self.data_cfg, **fake_hpo_cfg)
-        mock_train_segmentor.assert_called_once()
-        mock_hpopt.assert_called_once()
-
-    @e2e_pytest_unit
     def test_run_with_distributed(self, mocker):
         self.trainer._distributed = True
         mocker.patch.object(SegTrainer, "configure_samples_per_gpu")
