@@ -33,7 +33,7 @@ def det_eval(predictions, result_type, labels, video_infos, exclude_file, verbos
     assert result_type in ["mAP"]
 
     start = time.time()
-    categories, class_whitelist = read_labelmap(labels)
+    categories, class_whitelist = _read_labelmap(labels)
     if custom_classes is not None:
         custom_classes = custom_classes[1:]
         assert set(custom_classes).issubset(set(class_whitelist))
@@ -41,7 +41,7 @@ def det_eval(predictions, result_type, labels, video_infos, exclude_file, verbos
         categories = [cat for cat in categories if cat["id"] in custom_classes]
 
     # loading gt, do not need gt score
-    gt_boxes, gt_labels = load_gt(video_infos)
+    gt_boxes, gt_labels = _load_gt(video_infos)
     if verbose:
         print_time("Reading detection results", start)
 
@@ -99,7 +99,7 @@ def det_eval(predictions, result_type, labels, video_infos, exclude_file, verbos
     return {display_name: value for display_name, value in metrics.items() if "ByCategory" not in display_name}
 
 
-def read_labelmap(labels):
+def _read_labelmap(labels):
     """Generate label map from LabelEntity."""
     labelmap = []
     class_ids = set()
@@ -109,7 +109,7 @@ def read_labelmap(labels):
     return labelmap, class_ids
 
 
-def load_gt(video_infos):
+def _load_gt(video_infos):
     """Generate ground truth information from video_infos."""
     boxes = defaultdict(list)
     labels = defaultdict(list)

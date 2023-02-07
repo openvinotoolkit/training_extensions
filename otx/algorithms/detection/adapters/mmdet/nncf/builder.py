@@ -199,8 +199,11 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
             compression_ctrl=compression_ctrl,
         )
     )
+    # TODO: move this to OTX task when MPA is absorbed into OTX
     remove_from_configs_by_type(custom_hooks, "CancelInterfaceHook")
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
+    remove_from_configs_by_type(custom_hooks, "LazyEarlyStoppingHook")
+    remove_from_configs_by_type(custom_hooks, "EarlyStoppingHook")
     remove_from_configs_by_type(custom_hooks, "EMAHook")
     remove_from_configs_by_type(custom_hooks, "CustomModelEMAHook")
 
