@@ -130,8 +130,7 @@ class SegStage(Stage):
         if cfg.get("ignore", False):
             cfg_loss_decode = ConfigDict(
                 type="CrossEntropyLossWithIgnore",
-                reduction="mean",
-                sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
+                use_sigmoid=False,
                 loss_weight=1.0,
             )
 
