@@ -80,7 +80,7 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals, too-many-statements
+# pylint: disable=too-many-locals, too-many-statements, unused-argument
 class OpenVINOSegmentationInferencer(BaseInferencer):
     """Inferencer implementation for Segmentation using OpenVINO backend."""
 
@@ -310,9 +310,9 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
             bin_path = os.path.join(tempdir, "model.bin")
-            with open(xml_path, "wb", encoding="UTF-8") as f:
+            with open(xml_path, "wb") as f:
                 f.write(self.model.get_data("openvino.xml"))
-            with open(bin_path, "wb", encoding="UTF-8") as f:
+            with open(bin_path, "wb") as f:
                 f.write(self.model.get_data("openvino.bin"))
 
             model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
@@ -352,9 +352,9 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb", encoding="UTF-8") as f:
+            with open(os.path.join(tempdir, "model.xml"), "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
-            with open(os.path.join(tempdir, "model.bin"), "rb", encoding="UTF-8") as f:
+            with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
