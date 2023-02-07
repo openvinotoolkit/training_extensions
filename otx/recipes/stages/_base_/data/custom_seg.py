@@ -1,7 +1,7 @@
 _base_ = ["./data_seg.py"]
 
 __dataset_type = "CustomDataset"
-__data_root = "data/common_semantic_segmentation_dataset"
+__data_root = "tests/assets/common_semantic_segmentation_dataset"
 
 data = dict(
     train=dict(
