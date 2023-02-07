@@ -17,7 +17,7 @@ Current version of OTE was tested under following environments
    ```bash
    $ git clone https://github.com/openvinotoolkit/training_extensions.git
    $ cd training_extensions
-   $ git checkout develop
+   $ git checkout releases/v0.5.0
    $ git submodule update --init --recursive
    ```
 
