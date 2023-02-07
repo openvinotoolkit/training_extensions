@@ -20,7 +20,7 @@ Basically, to start the training and obtain a good baseline with the best trade-
         $ otx build --train-data-root <path_to_data_root>
 
 Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OTX will handle it on its own.
-It will recognize the task by analyzing the dataset and if there is no splits for the validation - Datumaro will do a random auto-split, memorizing this split to further use it with ``otx eval`` and ``otx optimize``.
+It will recognize the task by analyzing the dataset and if there is no splits for the validation - Datumaro will do a random auto-split, saving this split to the workspace. It could be used with ``otx optimize`` or ``otx train``.
 
 .. note::
 
