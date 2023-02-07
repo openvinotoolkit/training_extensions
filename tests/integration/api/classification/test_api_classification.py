@@ -116,7 +116,8 @@ class ClassificationTaskAPIBase:
         hyper_parameters.learning_parameters.num_iters = num_iters
         return hyper_parameters, model_template
 
-    def init_environment(self, params, model_template, multilabel, hierarchical, number_of_images=10):
+    @staticmethod
+    def init_environment(params, model_template, multilabel, hierarchical, number_of_images=10):
         resolution = (224, 224)
         if hierarchical:
             colors = [(0, 255, 0), (0, 0, 255), (255, 0, 0), (0, 0, 0), (230, 230, 250)]
@@ -168,7 +169,7 @@ class ClassificationTaskAPIBase:
             items[i].subset = subset
 
         dataset = DatasetEntity(items)
-        labels_schema = self.generate_label_schema(
+        labels_schema = ClassificationTaskAPIBase.generate_label_schema(
             dataset.get_labels(), multilabel=multilabel, hierarchical=hierarchical
         )
         environment = TaskEnvironment(
