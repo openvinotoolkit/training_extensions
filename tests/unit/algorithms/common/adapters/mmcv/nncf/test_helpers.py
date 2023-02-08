@@ -6,6 +6,7 @@ from functools import partial
 
 import numpy as np
 import torch
+from torch.optim import SGD
 from mmcls.core import EvalHook
 from mmcls.datasets import build_dataloader
 from mmcls.datasets.pipelines import Compose
@@ -294,6 +295,7 @@ def create_nncf_runner(work_dir):
         logger=get_logger("mmcv"),
         work_dir=work_dir,
         nncf_config=mock_config["nncf_config"],
+        optimizer=SGD(model.parameters(), lr=0.01),
     )
     runner.register_hook(
         EvalHook(

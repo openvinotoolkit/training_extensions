@@ -31,15 +31,27 @@ class TestNNCFMetaState:
     def test_repr(self):
         state = NNCFMetaState(None, None, None)
         assert repr(state) == "NNCFMetaState()"
+        assert state.state_to_build is None
+        assert state.data_to_build is None
+        assert state.compression_ctrl is None
 
         state = NNCFMetaState({"dummy": torch.tensor(1)})
         assert repr(state) == "NNCFMetaState(state_to_build='<data>')"
+        assert state.state_to_build == {"dummy": torch.tensor(1)}
+        assert state.data_to_build is None
+        assert state.compression_ctrl is None
 
         state = NNCFMetaState(None, np.array(1))
         assert repr(state) == "NNCFMetaState(data_to_build='<data>')"
+        assert state.state_to_build is None
+        assert state.data_to_build == np.array(1)
+        assert state.compression_ctrl is None
 
         state = NNCFMetaState(None, None, {"dummy": "dummy"})
         assert repr(state) == "NNCFMetaState(compression_ctrl='<data>')"
+        assert state.state_to_build is None
+        assert state.data_to_build is None
+        assert state.compression_ctrl == {"dummy": "dummy"}
 
 
 @e2e_pytest_unit
