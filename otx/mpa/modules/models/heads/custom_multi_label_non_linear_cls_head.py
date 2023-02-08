@@ -103,10 +103,10 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         ].view(cls_score.shape[0], -1)
         if img_metas:
             valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)
+            valid_label_mask = valid_label_mask.to(x.device)
             valid_label_mask = valid_label_mask[
                 valid_batch_mask,
             ].view(valid_label_mask.shape[0], -1)
-            valid_label_mask = valid_label_mask.to(x.device)
             losses = self.loss(cls_score, gt_label, valid_label_mask=valid_label_mask)
         else:
             losses = self.loss(cls_score, gt_label)
