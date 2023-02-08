@@ -37,20 +37,27 @@ class TestOTXClassificationInferenceTask:
     @pytest.fixture(autouse=True)
     def setup(self, otx_classification_model, tmp_dir_path) -> None:
         self.dataset_len = 5
-        hyper_parameters, model_template = ClassificationTaskAPIBase.setup_configurable_parameters(
+        self.hyper_parameters, self.model_template = ClassificationTaskAPIBase.setup_configurable_parameters(
             DEFAULT_CLS_TEMPLATE_DIR
         )
         task_environment, self.dataset = ClassificationTaskAPIBase.init_environment(
-            hyper_parameters, model_template, False, False, self.dataset_len
+            self.hyper_parameters, self.model_template, False, False, self.dataset_len
         )
 
         self.output_path = str(tmp_dir_path)
         self.cls_inference_task = ClassificationInferenceTask(task_environment, output_path=self.output_path)
         self.model = otx_classification_model
 
+    @pytest.mark.parametrize("multilabel, hierarchical",
+        [(False, False), (True, False), (False, True)])
     @e2e_pytest_unit
-    def test_infer(self, mocker):
-        items_num = len(self.dataset)
+    def test_infer(self, mocker, multilabel, hierarchical):
+        task_environment, dataset = ClassificationTaskAPIBase.init_environment(
+            self.hyper_parameters, self.model_template, multilabel, hierarchical, self.dataset_len
+        )
+        custom_cls_inference_task = ClassificationInferenceTask(task_environment, output_path=self.output_path)
+
+        items_num = len(dataset)
         fake_output = {
             "outputs": {
                 "eval_predictions": np.zeros((items_num, 5)),
