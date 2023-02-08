@@ -74,6 +74,11 @@ def get_args():
         "--save-performance",
         help="Path to a json file where computed performance will be stored.",
     )
+    parser.add_argument(
+        "--work-dir",
+        help="Location where the intermediate output of the task will be stored.",
+        default=None,
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
@@ -86,7 +91,7 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args = get_args()
 
-    config_manager = ConfigManager(args, mode="train")
+    config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="train")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -112,7 +117,7 @@ def main():
     # FIXME: Anomaly currently does not support workspace
     is_anomaly_task = "anomaly" in args.template if args.template else False
     update_data_yaml = not is_anomaly_task
-    config_manager.configure_data_config(update_data_yaml)
+    config_manager.configure_data_config(update_data_yaml=update_data_yaml)
     dataset_config = config_manager.get_dataset_config(subsets=["train", "val"])
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()

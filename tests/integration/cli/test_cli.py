@@ -39,18 +39,6 @@ class TestToolsOTXCLI:
         otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
 
 
-auto_config_args_with_autosplit = {"--train-data-roots": "tests/assets/imagenet_dataset"}
-
-auto_config_args_with_autosplit_task = {
-    "--task": "classification",
-    "--train-data-roots": "tests/assets/imagenet_dataset",
-}
-
-auto_config_args_without_autosplit = {
-    "--train-data-roots": "tests/assets/imagenet_dataset",
-    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-}
-
 build_auto_config_args = {
     "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
     "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/imagenet_dataset"},
@@ -92,5 +80,6 @@ class TestToolsOTXTrainAutoConfig:
     @pytest.mark.parametrize("case", train_auto_config_args.keys())
     def test_otx_train(self, case, tmp_dir_path):
         otx_dir = os.getcwd()
+        tmp_dir_path = tmp_dir_path / case
         train_auto_config_args[case]["train_params"] = train_params
         otx_train_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=train_auto_config_args[case])

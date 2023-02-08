@@ -62,6 +62,11 @@ def get_args():
         "--save-performance",
         help="Path to a json file where computed performance will be stored.",
     )
+    parser.add_argument(
+        "--work-dir",
+        help="Location where the intermediate output of the task will be stored.",
+        default=None,
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
@@ -87,7 +92,7 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args = get_args()
 
-    config_manager = ConfigManager(args, mode="eval")
+    config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="eval")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
