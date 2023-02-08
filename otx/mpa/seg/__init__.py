@@ -12,7 +12,6 @@ import otx.mpa.modules.models.scalar_schedulers.constant
 import otx.mpa.modules.models.scalar_schedulers.poly
 import otx.mpa.modules.models.scalar_schedulers.step
 import otx.mpa.modules.models.segmentors
-import otx.mpa.modules.samplers.max_pooling_pixel_sampler
 from otx.mpa.seg.incremental import IncrSegInferrer, IncrSegTrainer
 from otx.mpa.seg.semisl import SemiSLSegInferrer, SemiSLSegTrainer
 
