@@ -52,10 +52,10 @@ auto_config_args_without_autosplit = {
 }
 
 build_auto_config_args = {
-    "classification": {"--train-data-roots": "data/imagenet_dataset"},
-    "classification_with_task": {"--task": "classification", "--train-data-roots": "data/imagenet_dataset"},
-    "detection": {"--train-data-roots": "data/coco_dataset/coco_detection"},
-    "detection_with_task": {"--task": "detection", "--train-data-roots": "data/coco_dataset/coco_detection"},
+    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
+    "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/imagenet_dataset"},
+    "detection": {"--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
+    "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
 }
 
 
@@ -68,15 +68,15 @@ class TestToolsOTXBuildAutoConfig:
 
 
 train_auto_config_args = {
-    "classification": {"--train-data-roots": "data/imagenet_dataset"},
+    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
     "classification_with_template": {
         "template": "otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
-        "--train-data-roots": "data/imagenet_dataset",
+        "--train-data-roots": "tests/assets/imagenet_dataset",
     },
-    "detection": {"--train-data-roots": "data/coco_dataset/coco_detection"},
+    "detection": {"--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
     "detection_with_template": {
         "template": "otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml",
-        "--train-data-roots": "data/coco_dataset/coco_detection",
+        "--train-data-roots": "tests/assets/coco_dataset/coco_detection",
     },
 }
 

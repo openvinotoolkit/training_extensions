@@ -290,7 +290,7 @@ class TestStreamer:
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
     @pytest.mark.timeout(10)
-    @pytest.mark.xfail(reason="CVS-102619")
+    @pytest.mark.skip(reason="CVS-102619")
     def test_threaded_streamer(self):
         """
         <b>Description:</b>
