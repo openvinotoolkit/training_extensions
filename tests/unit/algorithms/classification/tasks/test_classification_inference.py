@@ -69,13 +69,35 @@ class TestOTXClassificationInferenceTask:
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
         inf_params = InferenceParameters()
         inf_params.is_evaluation = True
-        updated_dataset = self.cls_inference_task.infer(self.dataset.with_empty_annotations(), inf_params)
+        updated_dataset = self.cls_inference_task.infer(dataset.with_empty_annotations(), inf_params)
 
         mock_run_task.assert_called_once()
         for updated in updated_dataset:
             assert len(updated.annotation_scene.get_labels()) == 1
             for lbl in updated.annotation_scene.get_labels():
                 assert lbl.domain == Domain.CLASSIFICATION
+
+    @e2e_pytest_unit
+    def test_explain(self, mocker):
+        items_num = len(self.dataset)
+        fake_output = {
+            "outputs": {
+                "eval_predictions": np.zeros((items_num, 5)),
+                "feature_vectors": np.zeros((items_num, 5)),
+                "saliency_maps": np.zeros((items_num, 5, 5)).astype(np.uint8),
+            }
+        }
+
+        mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
+        updated_dataset = self.cls_inference_task.explain(self.dataset.with_empty_annotations())
+        mock_run_task.assert_called_once()
+
+        for item in updated_dataset:
+            data_list = item.get_metadata()
+            for data in data_list:
+                assert data.data.type == "saliency_map"
+                assert data.data.numpy is not None
+
 
     @e2e_pytest_unit
     def test_evaluate(self, mocker):
