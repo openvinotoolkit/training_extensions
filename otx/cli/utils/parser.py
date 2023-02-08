@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import argparse
+from typing import Dict, Optional
 
 
 def gen_param_help(hyper_parameters):
@@ -52,21 +53,26 @@ def gen_param_help(hyper_parameters):
     return _gen_param_help("", hyper_parameters)
 
 
-def gen_params_dict_from_args(args):
+def gen_params_dict_from_args(args, type_hint: Optional[dict] = None):
     """Generates hyper parameters dict from parsed command line arguments."""
 
-    params_dict = {}
+    params_dict: Dict[str, dict] = {}
     for param_name in dir(args):
         if param_name.startswith("params."):
+            value_type = None
             cur_dict = params_dict
             split_param_name = param_name.split(".")[1:]
+            if type_hint:
+                origin_key = ".".join(split_param_name)
+                value_type = type_hint[origin_key].get("type", None)
             for i, k in enumerate(split_param_name):
                 if k not in cur_dict:
                     cur_dict[k] = {}
                 if i < len(split_param_name) - 1:
                     cur_dict = cur_dict[k]
                 else:
-                    cur_dict[k] = {"value": getattr(args, param_name)}
+                    value = getattr(args, param_name)
+                    cur_dict[k] = {"value": value_type(value) if value_type else value}
 
     return params_dict
 
@@ -78,7 +84,7 @@ class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
         return action.dest.split(".")[-1].upper()
 
 
-def add_hyper_parameters_sub_parser(parser, config, modes=None):
+def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parser=False):
     """Adds hyper parameters sub parser."""
 
     default_modes = ("TRAINING", "INFERENCE")
@@ -118,3 +124,5 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None):
             dest=f"params.{k}",
             type=param_type,
         )
+    if return_sub_parser:
+        return parser_a

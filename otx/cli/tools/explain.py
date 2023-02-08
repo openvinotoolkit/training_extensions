@@ -70,13 +70,11 @@ def get_args():
     parser.add_argument(
         "--explain-algorithm",
         default="ClassWiseSaliencyMap",
-        help=(
-            f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}.",
-            "For Openvino task, default method will be selected.",
-        ),
+        help=f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}."
+        "For Openvino task, default method will be selected.",
     )
     parser.add_argument(
-        "-w",
+        # "-w",
         "--overlay-weight",
         type=float,
         default=0.5,
@@ -127,7 +125,7 @@ def main():
             Currently only support {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
     if not Path(args.save_explanation_to).exists():
-        Path(args.save_explanation_to).mkdir()
+        Path(args.save_explanation_to).mkdir(parents=True)
 
     image_files = get_image_files(args.explain_data_roots)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)

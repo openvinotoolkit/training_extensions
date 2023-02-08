@@ -85,6 +85,7 @@ def get_args():
     parser.add_argument(
         "--work-dir",
         help="Location where the intermediate output of the training will be stored.",
+        default=None,
     )
     parser.add_argument(
         "--enable-hpo",
@@ -122,13 +123,13 @@ def get_args():
         help="Total number of workers in a worker group.",
     )
 
-    add_hyper_parameters_sub_parser(parser, hyper_parameters)
+    sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
     if not hyper_parameters and "params" in params:
         params = params[params.index("params") :]
         for param in params:
             if param.startswith("--"):
-                parser.add_argument(
+                sub_parser.add_argument(
                     f"{param}",
                     dest=f"params.{param[2:]}",
                 )
@@ -139,16 +140,19 @@ def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
     args = get_args()
 
-    config_manager = ConfigManager(args, mode="train")
+    config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="train")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
     # Creates a workspace if it doesn't exist.
-    if not config_manager.check_workspace():
-        config_manager.build_workspace()
+    # FIXME: Anomaly currently does not support workspace and auto-config.
+    is_anomaly_task = "anomaly" in args.template if args.template else False
+    if not config_manager.check_workspace() and is_anomaly_task is False:
+        config_manager.build_workspace(new_workspace_path=args.work_dir)
 
     # Auto-Configuration for Dataset configuration
-    config_manager.configure_data_config()
+    update_data_yaml = not is_anomaly_task
+    config_manager.configure_data_config(update_data_yaml=update_data_yaml)
     dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
@@ -185,6 +189,9 @@ def main():  # pylint: disable=too-many-branches
             model_adapters=model_adapters,
         )
 
+    # FIXME: Need to align output results & Current HPO use save_model_to.parent
+    if "save_model_to" not in args or not args.save_model_to:
+        args.save_model_to = str(config_manager.workspace_root / "models")
     if args.enable_hpo:
         environment = run_hpo(args, environment, dataset, config_manager.data_config)
 
@@ -204,9 +211,6 @@ def main():  # pylint: disable=too-many-branches
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
-    # TODO: Need to align output results
-    if "save_model_to" not in args or not args.save_model_to:
-        args.save_model_to = str(config_manager.workspace_root / "models")
     save_model_data(output_model, args.save_model_to)
     print(f"[*] Save Model to: {args.save_model_to}")
 

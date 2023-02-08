@@ -132,6 +132,7 @@ def otx_train_testing(template, root, otx_dir, args):
         if arg_value:
             command_line.extend([arg, os.path.join(otx_dir, arg_value)])
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
@@ -150,7 +151,6 @@ def otx_resume_testing(template, root, otx_dir, args):
         template.model_template_path,
     ]
     for option in [
-        "--data",
         "--train-ann-file",
         "--train-data-roots",
         "--val-ann-file",
@@ -163,6 +163,7 @@ def otx_resume_testing(template, root, otx_dir, args):
             command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
 
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth")
@@ -181,6 +182,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
         if arg_value:
             command_line.extend([arg, os.path.join(otx_dir, arg_value)])
     command_line.extend(["--save-model-to", f"{template_work_dir}/hpo_trained_{template.model_template_id}"])
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(["--enable-hpo", "--hpo-time-ratio", "1"])
 
     command_line.extend(args["train_params"])
@@ -685,6 +687,16 @@ def otx_build_backbone_testing(root, backbone_args):
     """
     task, backbone = backbone_args
     task_workspace = os.path.join(root, f"otx-workspace-{task}")
+    command_line = [
+        "otx",
+        "build",
+        "--task",
+        f"{task}",
+        "--workspace-root",
+        task_workspace,
+    ]
+    check_run(command_line)
+    assert os.path.exists(task_workspace)
     # Build Backbone.yaml from backbone type
     command_line = [
         "otx",
@@ -742,11 +754,26 @@ def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
     workspace_root = os.path.join(root, "otx-workspace")
     command_line = ["otx", "build", "--workspace-root", workspace_root]
 
-    for option, val in args.items():
+    for option, value in args.items():
         if option in ["--train-data-roots", "--val-data-roots"]:
-            command_line.extend([option, f"{os.path.join(otx_dir, val)}"])
+            command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
         elif option in ["--task"]:
             command_line.extend([option, args[option]])
     check_run(command_line)
 
     shutil.rmtree(workspace_root)
+
+
+def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
+    result_dir = os.path.join(root, "results")
+    command_line = ["otx", "train"]
+
+    for option, value in args.items():
+        if option == "template":
+            command_line.extend([args[option]])
+        elif option in ["--train-data-roots", "--val-data-roots"]:
+            command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
+    command_line.extend(["--save-model-to", result_dir])
+    command_line.extend(args["train_params"])
+    check_run(command_line)
+    shutil.rmtree(result_dir)

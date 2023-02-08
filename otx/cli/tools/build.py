@@ -43,7 +43,7 @@ def get_args():
     parsed, _ = pre_parser.parse_known_args()
     template = parsed.template
     parser = argparse.ArgumentParser()
-    if template and Path(template).is_file():
+    if template and template.endswith("yaml") and Path(template).is_file():
         parser.add_argument("template")
     else:
         parser.add_argument("--template", required=False)
@@ -86,6 +86,8 @@ def main():
     config_manager = ConfigManager(args, mode="build")
     config_manager.task_type = args.task.upper() if args.task else ""
     config_manager.train_type = args.train_type if args.train_type else ""
+    if args.workspace_root:
+        config_manager.workspace_root = Path(args.workspace_root)
 
     # Auto-Configuration for model template
     config_manager.configure_template()
