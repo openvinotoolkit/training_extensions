@@ -99,6 +99,15 @@ class MockDataModule(LightningDataModule):
         self.dataset = MockDataset(task_type)
         self.labels = [self.dataset.abnormal_label, self.dataset.normal_label]
 
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(self.dataset)
+
+    def test_dataloader(self) -> DataLoader:
+        return DataLoader(self.dataset)
+
+    def val_dataloader(self) -> DataLoader:
+        return DataLoader(self.dataset)
+
     def predict_dataloader(self) -> DataLoader:
         return DataLoader(self.dataset, shuffle=False)
 

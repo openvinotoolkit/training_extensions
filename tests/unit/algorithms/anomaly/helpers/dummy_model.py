@@ -18,6 +18,18 @@ class DummyModel(pl.LightningModule):
         self.image_threshold = AdaptiveThreshold()
         self.normalization_metrics = MinMax()
 
+    def training_step(self, *args, **kwargs):
+        pass
+
+    def test_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0):
+        return self.predict_step(batch, batch_idx, dataloader_idx)
+
+    def validation_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0):
+        return self.predict_step(batch, batch_idx, dataloader_idx)
+
+    def configure_optimizers(self):
+        return None
+
     def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> Any:
         # Just return everything as anomalous
         batch["anomaly_maps"] = batch["pred_masks"] = torch.ones(batch["image"].shape[0], 1, *batch["image"].shape[2:])
