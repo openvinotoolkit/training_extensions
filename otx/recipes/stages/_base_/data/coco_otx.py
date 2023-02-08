@@ -1,4 +1,4 @@
-_base_ = ["./data.py", "./pipelines/coco_ote_pipeline.py"]
+_base_ = ["./data.py", "./pipelines/coco_otx_pipeline.py"]
 
 __dataset_type = "CocoDataset"
 __data_root = "data/coco/"
