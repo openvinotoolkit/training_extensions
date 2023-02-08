@@ -40,8 +40,8 @@ def parse_args():
     return parser.parse_args()
 
 
-TRAIN_DATA_ROOTS = "data/cvat_dataset/action_detection/train"
-VAL_DATA_ROOTS = "data/cvat_dataset/action_detection/train"
+TRAIN_DATA_ROOTS = "tests/assets/cvat_dataset/action_detection/train"
+VAL_DATA_ROOTS = "tests/assets/cvat_dataset/action_detection/train"
 
 
 def load_test_dataset(model_template):
@@ -60,7 +60,7 @@ def load_test_dataset(model_template):
 def main(args):
     """Main function of Detection Sample."""
     logger.info("Fine tuning sample dataset")
-    logger.info("Sample dataset can be found at data/custom_action_recognition/custom_dataset")
+    logger.info("Sample dataset can be found at tests/assets/cvat_dataset/action_classification/train")
 
     logger.info("Load model template")
     model_template = parse_model_template(args.template_file_path)
