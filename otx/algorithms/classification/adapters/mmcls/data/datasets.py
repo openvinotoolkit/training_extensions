@@ -421,7 +421,9 @@ class SelfSLDataset(Dataset):
     CLASSES = None
 
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
-    def __init__(self, otx_dataset: DatasetEntity = None, pipeline: Dict[str, Any] = None, **kwargs):  # pylint: disable=unused-argument
+    def __init__(
+        self, otx_dataset: DatasetEntity, pipeline: Dict[str, Any], **kwargs
+    ):  # pylint: disable=unused-argument
         super().__init__()
         self.otx_dataset = otx_dataset
 

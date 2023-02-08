@@ -20,7 +20,7 @@ def inputs_np():
     return {
         "img": np.random.randint(0, 10, (16, 16, 3), dtype=np.uint8),
         "gt_semantic_seg": np.random.rand(16, 16),
-        "flip": True
+        "flip": True,
     }
 
 
@@ -30,16 +30,14 @@ def inputs_PIL():
         "img": Image.fromarray(np.random.randint(0, 10, (16, 16, 3), dtype=np.uint8)),
         "gt_semantic_seg": np.random.randint(0, 5, (16, 16), dtype=np.uint8),
         "seg_fields": ["gt_semantic_seg"],
-        "ori_shape": (16, 16, 3)
+        "ori_shape": (16, 16, 3),
     }
 
 
 @e2e_pytest_unit
 def test_two_crop_transform(mocker, inputs_np) -> None:
     """Test TwoCropTransform."""
-    mocker.patch(
-        "otx.algorithms.segmentation.adapters.mmseg.data.pipelines.build_from_cfg",
-        return_value=lambda x: x)
+    mocker.patch("otx.algorithms.segmentation.adapters.mmseg.data.pipelines.build_from_cfg", return_value=lambda x: x)
 
     two_crop_transform = TwoCropTransform(view0=[], view1=[])
 
@@ -69,7 +67,7 @@ def test_random_resized_crop(inputs_PIL) -> None:
 @e2e_pytest_unit
 def test_random_color_jitter(inputs_PIL) -> None:
     """Test RandomColorJitter."""
-    random_color_jitter = RandomColorJitter(p=1.)
+    random_color_jitter = RandomColorJitter(p=1.0)
 
     results = random_color_jitter(inputs_PIL)
 
@@ -91,7 +89,7 @@ def test_random_grayscale(inputs_PIL) -> None:
 @e2e_pytest_unit
 def test_random_gaussian_blur(inputs_PIL) -> None:
     """Test RandomGaussianBlur."""
-    random_gaussian_blur = RandomGaussianBlur(p=1., kernel_size=3)
+    random_gaussian_blur = RandomGaussianBlur(p=1.0, kernel_size=3)
 
     results = random_gaussian_blur(inputs_PIL)
 
@@ -102,7 +100,7 @@ def test_random_gaussian_blur(inputs_PIL) -> None:
 @e2e_pytest_unit
 def test_random_solarization(inputs_np) -> None:
     """Test RandomSolarization."""
-    random_solarization = RandomSolarization(p=1.)
+    random_solarization = RandomSolarization(p=1.0)
 
     results = random_solarization(inputs_np)
 
@@ -115,7 +113,7 @@ def test_random_solarization(inputs_np) -> None:
 def test_nd_array_to_pil_image(inputs_np) -> None:
     """Test NDArrayToPILImage."""
     nd_array_to_pil_image = NDArrayToPILImage(keys=["img"])
-    
+
     results = nd_array_to_pil_image(inputs_np)
 
     assert "img" in results

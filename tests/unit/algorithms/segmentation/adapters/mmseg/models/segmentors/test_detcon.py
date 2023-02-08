@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from copy import deepcopy
-from typing import List, Union
 from functools import reduce
+from typing import List, Union
 
 import pytest
 import torch
@@ -17,10 +17,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 class TestMaskPooling:
-
     @e2e_pytest_unit
-    @pytest.mark.parametrize("masks", [torch.Tensor([[[[0, 1], [1, 2]]]]).to(torch.int64),
-                                       torch.Tensor([[[0, 1], [1, 2]]]).to(torch.int64)])
+    @pytest.mark.parametrize(
+        "masks", [torch.Tensor([[[[0, 1], [1, 2]]]]).to(torch.int64), torch.Tensor([[[0, 1], [1, 2]]]).to(torch.int64)]
+    )
     @pytest.mark.parametrize("num_classes", [256, 3])
     def test_pool_masks(self, masks, num_classes):
         """Test pool_masks function."""
@@ -56,32 +56,27 @@ class TestMaskPooling:
 
 
 class TestDetConB:
-    """Test DetConB"""
-    
+    """Test DetConB."""
+
     @pytest.fixture(autouse=True)
     def setup(self, monkeypatch, mocker) -> None:
         class MockBackbone(nn.Module):
             def __init__(self):
                 super().__init__()
-                self.pipeline1 = nn.Sequential(
-                    nn.Conv2d(3, 1, (1, 1), bias=False),
-                    nn.Conv2d(1, 1, (1, 1), bias=False))
+                self.pipeline1 = nn.Sequential(nn.Conv2d(3, 1, (1, 1), bias=False), nn.Conv2d(1, 1, (1, 1), bias=False))
                 self.pipeline2 = nn.Sequential(
-                    nn.Conv2d(3, 1, (1, 1), stride=2, bias=False),
-                    nn.Conv2d(1, 1, (1, 1), bias=False))
+                    nn.Conv2d(3, 1, (1, 1), stride=2, bias=False), nn.Conv2d(1, 1, (1, 1), bias=False)
+                )
 
             def init_weights(self, init_linear=None):
                 pass
-            
+
             def forward(self, x):
                 return [self.pipeline1(x), self.pipeline2(x)]
 
         class MockNeck(nn.Sequential):
             def __init__(self):
-                super().__init__(
-                    nn.Linear(2, 2, bias=False),
-                    nn.Linear(2, 2, bias=False)
-                )
+                super().__init__(nn.Linear(2, 2, bias=False), nn.Linear(2, 2, bias=False))
 
             def init_weights(self, init_linear=None):
                 pass
@@ -93,56 +88,82 @@ class TestDetConB:
             return MockNeck()
 
         monkeypatch.setattr(
-            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_backbone",
-            build_mock_backbone
+            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_backbone", build_mock_backbone
         )
         monkeypatch.setattr(
-            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_neck",
-            build_mock_neck
+            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_neck", build_mock_neck
         )
-        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_loss", return_value=lambda *args, **kwargs: dict(loss=1.))
-        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB._register_state_dict_hook")
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_loss",
+            return_value=lambda *args, **kwargs: dict(loss=1.0),
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB._register_state_dict_hook"
+        )
         mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB.state_dict_hook")
         mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.load_checkpoint")
 
         self.detconb = DetConB(backbone={}, neck={}, head={}, downsample=1, loss_cfg=dict(type="DetConLoss"))
-    
+
     @e2e_pytest_unit
     def test_init_weights(self) -> None:
         """Test init_weights function."""
-        for param_ol, param_tgt in zip(self.detconb.online_backbone.parameters(), self.detconb.target_backbone.parameters()):
+        for param_ol, param_tgt in zip(
+            self.detconb.online_backbone.parameters(), self.detconb.target_backbone.parameters()
+        ):
             assert torch.all(param_ol == param_tgt)
-            assert param_ol.requires_grad == True
-            assert param_tgt.requires_grad == False
+            assert param_ol.requires_grad
+            assert not param_tgt.requires_grad
 
-        for param_ol, param_tgt in zip(self.detconb.online_projector.parameters(), self.detconb.target_projector.parameters()):
+        for param_ol, param_tgt in zip(
+            self.detconb.online_projector.parameters(), self.detconb.target_projector.parameters()
+        ):
             assert torch.all(param_ol == param_tgt)
-            assert param_ol.requires_grad == True
-            assert param_tgt.requires_grad == False
+            assert param_ol.requires_grad
+            assert not param_tgt.requires_grad
 
     @e2e_pytest_unit
     def test_momentum_update(self) -> None:
         """Test _momentum_update function."""
         original_params = {"backbone": [], "projector": []}
         for param_tgt in self.detconb.target_backbone.parameters():
-            param_tgt.data *= 2.
+            param_tgt.data *= 2.0
             original_params["backbone"].append(deepcopy(param_tgt))
 
         for param_tgt in self.detconb.target_projector.parameters():
-            param_tgt.data *= 2.
+            param_tgt.data *= 2.0
             original_params["projector"].append(deepcopy(param_tgt))
 
         self.detconb._momentum_update()
 
-        for param_ol, param_tgt, orig_tgt in zip(self.detconb.online_backbone.parameters(), self.detconb.target_backbone.parameters(), original_params["backbone"]):
-            assert torch.all(param_tgt.data == orig_tgt * self.detconb.momentum + param_ol.data * (1.0 - self.detconb.momentum))
+        for param_ol, param_tgt, orig_tgt in zip(
+            self.detconb.online_backbone.parameters(),
+            self.detconb.target_backbone.parameters(),
+            original_params["backbone"],
+        ):
+            assert torch.all(
+                param_tgt.data == orig_tgt * self.detconb.momentum + param_ol.data * (1.0 - self.detconb.momentum)
+            )
 
-        for param_ol, param_tgt, orig_tgt in zip(self.detconb.online_projector.parameters(), self.detconb.target_projector.parameters(), original_params["projector"]):
-            assert torch.all(param_tgt.data == orig_tgt * self.detconb.momentum + param_ol.data * (1.0 - self.detconb.momentum))
+        for param_ol, param_tgt, orig_tgt in zip(
+            self.detconb.online_projector.parameters(),
+            self.detconb.target_projector.parameters(),
+            original_params["projector"],
+        ):
+            assert torch.all(
+                param_tgt.data == orig_tgt * self.detconb.momentum + param_ol.data * (1.0 - self.detconb.momentum)
+            )
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("input_transform", ["resize_concat", "multiple_select", "etc"])
-    @pytest.mark.parametrize("inputs,in_index", [([torch.ones(1, 1, 4, 4), torch.ones(1, 1, 2, 2)], [0, 1]), ([torch.ones(1, 1, 4, 4), torch.ones(1, 1, 2, 2)], [0]), ([torch.ones(1, 1, 4, 4)], [0])])
+    @pytest.mark.parametrize(
+        "inputs,in_index",
+        [
+            ([torch.ones(1, 1, 4, 4), torch.ones(1, 1, 2, 2)], [0, 1]),
+            ([torch.ones(1, 1, 4, 4), torch.ones(1, 1, 2, 2)], [0]),
+            ([torch.ones(1, 1, 4, 4)], [0]),
+        ],
+    )
     def test_transform_inputs(self, inputs: List, in_index: Union[List, int], input_transform: str) -> None:
         """Test transform_inputs function."""
         setattr(self.detconb, "in_index", in_index)
@@ -181,8 +202,8 @@ class TestDetConB:
         gt_semantic_seg = torch.randint(0, 3, (1, 2, 4, 4), dtype=torch.int64)
 
         outputs = self.detconb.train_step(
-            data_batch=dict(img=img, img_metas={}, gt_semantic_seg=gt_semantic_seg),
-            optimizer=None)
+            data_batch=dict(img=img, img_metas={}, gt_semantic_seg=gt_semantic_seg), optimizer=None
+        )
 
         assert "loss" in outputs
         assert "log_vars" in outputs

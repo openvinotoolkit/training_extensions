@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pytest
 import torch
@@ -18,22 +18,17 @@ class TestBYOL:
         class MockBackbone(nn.Module):
             def __init__(self):
                 super().__init__()
-                self.pipeline = nn.Sequential(
-                    nn.Conv2d(3, 1, (1, 1), bias=False),
-                    nn.Conv2d(1, 1, (1, 1), bias=False))
+                self.pipeline = nn.Sequential(nn.Conv2d(3, 1, (1, 1), bias=False), nn.Conv2d(1, 1, (1, 1), bias=False))
 
             def init_weights(self, pretrained=None):
                 pass
-            
+
             def forward(self, x):
                 return self.pipeline(x)
 
         class MockNeck(nn.Sequential):
             def __init__(self):
-                super().__init__(
-                    nn.Linear(2, 2, bias=False),
-                    nn.Linear(2, 2, bias=False)
-                )
+                super().__init__(nn.Linear(2, 2, bias=False), nn.Linear(2, 2, bias=False))
 
             def init_weights(self, init_linear=None):
                 pass
@@ -58,16 +53,14 @@ class TestBYOL:
             return MockHead()
 
         monkeypatch.setattr(
-            "otx.algorithms.classification.adapters.mmcls.models.classifiers.byol.build_backbone",
-            build_mock_backbone
+            "otx.algorithms.classification.adapters.mmcls.models.classifiers.byol.build_backbone", build_mock_backbone
         )
         monkeypatch.setattr(
-            "otx.algorithms.classification.adapters.mmcls.models.classifiers.byol.build_neck",
-            build_mock_neck
+            "otx.algorithms.classification.adapters.mmcls.models.classifiers.byol.build_neck", build_mock_neck
         )
         monkeypatch.setattr(
-            "otx.algorithms.classification.adapters.mmcls.models.classifiers.byol.build_head",
-            build_mock_head)
+            "otx.algorithms.classification.adapters.mmcls.models.classifiers.byol.build_head", build_mock_head
+        )
 
         self.byol = BYOL(backbone={}, neck={}, head={})
 
@@ -76,33 +69,45 @@ class TestBYOL:
         """Test init_weights function."""
         for param_ol, param_tgt in zip(self.byol.online_backbone.parameters(), self.byol.target_backbone.parameters()):
             assert torch.all(param_ol == param_tgt)
-            assert param_ol.requires_grad == True
-            assert param_tgt.requires_grad == False
+            assert param_ol.requires_grad
+            assert not param_tgt.requires_grad
 
-        for param_ol, param_tgt in zip(self.byol.online_projector.parameters(), self.byol.target_projector.parameters()):
+        for param_ol, param_tgt in zip(
+            self.byol.online_projector.parameters(), self.byol.target_projector.parameters()
+        ):
             assert torch.all(param_ol == param_tgt)
-            assert param_ol.requires_grad == True
-            assert param_tgt.requires_grad == False
+            assert param_ol.requires_grad
+            assert not param_tgt.requires_grad
 
     @e2e_pytest_unit
     def test_momentum_update(self) -> None:
         """Test _momentum_update function."""
         original_params = {"backbone": [], "projector": []}
         for param_tgt in self.byol.target_backbone.parameters():
-            param_tgt.data *= 2.
+            param_tgt.data *= 2.0
             original_params["backbone"].append(deepcopy(param_tgt))
 
         for param_tgt in self.byol.target_projector.parameters():
-            param_tgt.data *= 2.
+            param_tgt.data *= 2.0
             original_params["projector"].append(deepcopy(param_tgt))
 
         self.byol.momentum_update()
 
-        for param_ol, param_tgt, orig_tgt in zip(self.byol.online_backbone.parameters(), self.byol.target_backbone.parameters(), original_params["backbone"]):
-            assert torch.all(param_tgt.data == orig_tgt * self.byol.momentum + param_ol.data * (1.0 - self.byol.momentum))
+        for param_ol, param_tgt, orig_tgt in zip(
+            self.byol.online_backbone.parameters(), self.byol.target_backbone.parameters(), original_params["backbone"]
+        ):
+            assert torch.all(
+                param_tgt.data == orig_tgt * self.byol.momentum + param_ol.data * (1.0 - self.byol.momentum)
+            )
 
-        for param_ol, param_tgt, orig_tgt in zip(self.byol.online_projector.parameters(), self.byol.target_projector.parameters(), original_params["projector"]):
-            assert torch.all(param_tgt.data == orig_tgt * self.byol.momentum + param_ol.data * (1.0 - self.byol.momentum))
+        for param_ol, param_tgt, orig_tgt in zip(
+            self.byol.online_projector.parameters(),
+            self.byol.target_projector.parameters(),
+            original_params["projector"],
+        ):
+            assert torch.all(
+                param_tgt.data == orig_tgt * self.byol.momentum + param_ol.data * (1.0 - self.byol.momentum)
+            )
 
     @e2e_pytest_unit
     def test_train_step(self) -> None:
@@ -122,12 +127,11 @@ class TestBYOL:
         [
             ({"online_backbone.layer": 1}, "", {"layer": 1}),
             ({"backbone.layer": 1}, "", {"backbone.layer": 1}),
-            ({"backbone.layer": 1}, "backbone.", {"backbone.layer": 1})
-        ]
+            ({"backbone.layer": 1}, "backbone.", {"backbone.layer": 1}),
+        ],
     )
     def test_state_dict_hook(self, orig_state_dict: Dict[str, Any], prefix: str, expected: Dict[str, Any]) -> None:
         """Test state_dict_hook function."""
-        new_state_dict = BYOL.state_dict_hook(
-            module=self.byol, state_dict=orig_state_dict, prefix=prefix)
-        
+        new_state_dict = BYOL.state_dict_hook(module=self.byol, state_dict=orig_state_dict, prefix=prefix)
+
         assert new_state_dict == expected

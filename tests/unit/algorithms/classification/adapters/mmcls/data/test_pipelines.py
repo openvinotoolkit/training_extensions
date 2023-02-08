@@ -11,15 +11,13 @@ from otx.algorithms.classification.adapters.mmcls.data.pipelines import (
     RandomAppliedTrans,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
 from .test_datasets import create_cls_dataset
 
 
 @pytest.fixture(scope="module")
 def inputs_np():
-    return {
-        "img": np.random.randint(0, 10, (16, 16, 3), dtype=np.uint8),
-        "img_fields": ["img"]
-    }
+    return {"img": np.random.randint(0, 10, (16, 16, 3), dtype=np.uint8), "img_fields": ["img"]}
 
 
 @pytest.fixture(scope="module")
@@ -44,7 +42,7 @@ def test_load_image_from_otx_dataset_call(to_float32):
     )
 
     results = load_image_from_otx_dataset(results)
-    
+
     assert "filename" in results
     assert "ori_filename" in results
     assert "img" in results
@@ -59,9 +57,7 @@ def test_load_image_from_otx_dataset_call(to_float32):
 @e2e_pytest_unit
 def test_random_applied_transforms(mocker, inputs_np):
     """Test RandomAppliedTrans."""
-    mocker.patch(
-        "otx.algorithms.classification.adapters.mmcls.data.pipelines.build_from_cfg",
-        return_value=lambda x: x)
+    mocker.patch("otx.algorithms.classification.adapters.mmcls.data.pipelines.build_from_cfg", return_value=lambda x: x)
 
     random_applied_transforms = RandomAppliedTrans(transforms=[dict()])
 
@@ -110,9 +106,7 @@ def test_pil_image_to_nd_array(inputs_PIL) -> None:
 @e2e_pytest_unit
 def test_post_aug(mocker, inputs_np):
     """Test PostAug."""
-    mocker.patch(
-        "otx.algorithms.classification.adapters.mmcls.data.pipelines.Compose",
-        return_value=lambda x: x)
+    mocker.patch("otx.algorithms.classification.adapters.mmcls.data.pipelines.Compose", return_value=lambda x: x)
 
     post_aug = PostAug(keys=dict(orig=lambda x: x))
 

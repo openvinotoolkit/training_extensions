@@ -154,7 +154,7 @@ class DetConB(nn.Module):
         num_samples: int = 16,
         downsample: int = 32,
         input_transform: str = "resize_concat",
-        in_index: List[int] = [0],
+        in_index: Union[List[int], int] = [0],
         align_corners: bool = False,
         loss_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
@@ -245,14 +245,14 @@ class DetConB(nn.Module):
             Tensor: The transformed inputs.
         """
         # TODO (sungchul): consider tensor component, too
-        if self.input_transform == "resize_concat":
+        if self.input_transform == "resize_concat" and isinstance(self.in_index, (list, tuple)):
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
                 resize(input=x, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
                 for x in inputs
             ]
             inputs = torch.cat(upsampled_inputs, dim=1)
-        elif self.input_transform == "multiple_select":
+        elif self.input_transform == "multiple_select" and isinstance(self.in_index, (list, tuple)):
             inputs = [inputs[i] for i in self.in_index]
         else:
             if isinstance(self.in_index, (list, tuple)):
