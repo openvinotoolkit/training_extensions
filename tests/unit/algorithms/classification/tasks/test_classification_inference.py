@@ -5,24 +5,23 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.classification.tasks import ClassificationInferenceTask
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.inference_parameters import InferenceParameters
+from otx.algorithms.common.tasks import BaseTask
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
-from otx.api.entities.model import ModelConfiguration, ModelEntity
-from otx.api.entities.label_schema import LabelSchemaEntity
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import Domain
-from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
+from otx.api.entities.model import ModelConfiguration, ModelEntity
+from otx.api.entities.resultset import ResultSetEntity
+from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.integration.api.classification.test_api_classification import (
     DEFAULT_CLS_TEMPLATE_DIR,
     ClassificationTaskAPIBase,
 )
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 @pytest.fixture
@@ -52,8 +51,13 @@ class TestOTXClassificationInferenceTask:
     @e2e_pytest_unit
     def test_infer(self, mocker):
         items_num = len(self.dataset)
-        fake_output = {"outputs": {"eval_predictions": np.zeros((items_num, 5)), "feature_vectors": np.zeros((items_num, 5)),
-                       "saliency_maps": np.zeros((items_num, 5, 5)).astype(np.uint8)}}
+        fake_output = {
+            "outputs": {
+                "eval_predictions": np.zeros((items_num, 5)),
+                "feature_vectors": np.zeros((items_num, 5)),
+                "saliency_maps": np.zeros((items_num, 5, 5)).astype(np.uint8),
+            }
+        }
 
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
         inf_params = InferenceParameters()

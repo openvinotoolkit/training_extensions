@@ -9,7 +9,7 @@ from otx.algorithms.classification.adapters.mmcls.data import (
     MPAClsDataset,
     MPAHierarchicalClsDataset,
     MPAMultilabelClsDataset,
-    SelfSLDataset
+    SelfSLDataset,
 )
 from otx.algorithms.classification.utils import get_multihead_class_info
 from tests.integration.api.classification.test_api_classification import (
@@ -98,10 +98,7 @@ class TestOTXClsDataset:
         self.task_environment, self.dataset = ClassificationTaskAPIBase.init_environment(
             self.hyper_parameters, self.model_template, False, False, self.dataset_len
         )
-        pipeline_cfg = [
-            dict(type='ToNumpy'),
-            dict(type='Collect', keys=['img'])
-        ]
+        pipeline_cfg = [dict(type="ToNumpy"), dict(type="Collect", keys=["img"])]
 
         dataset = SelfSLDataset(self.dataset, {"view0": pipeline_cfg, "view1": pipeline_cfg})
         for d in dataset:
