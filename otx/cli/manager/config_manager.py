@@ -382,6 +382,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if (model_dir / "data_pipeline.py").exists():
             data_pipeline_config = MPAConfig.fromfile(str(model_dir / "data_pipeline.py"))
             data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
+        # TODO: Align Data pipeline for tiling
+        if (template_dir / "tile_pipeline.py").exists():
+            tile_pipeline_config = MPAConfig.fromfile(str(template_dir / "tile_pipeline.py"))
+            tile_pipeline_config.dump(str(train_type_dir / "tile_pipeline.py"))
         template_config.dump(str(self.workspace_root / "template.yaml"))
 
         # Copy compression_config.json
