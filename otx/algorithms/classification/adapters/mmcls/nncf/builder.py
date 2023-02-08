@@ -15,7 +15,6 @@ from mmcv.utils import Config, ConfigDict
 from otx.algorithms.classification.adapters.mmcls.utils import build_classifier
 from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_keys,
     get_configs_by_pairs,
     remove_from_configs_by_type,
 )
@@ -25,7 +24,7 @@ from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 logger = get_root_logger()
 
 
-def build_nncf_classifier(  # pylint: disable=too-many-locals
+def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statements
     config: Config,
     checkpoint: Optional[str] = None,
     device: Union[str, torch.device] = "cpu",

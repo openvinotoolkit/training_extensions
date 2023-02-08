@@ -29,9 +29,7 @@ from tests.unit.algorithms.common.adapters.mmcv.nncf.test_helpers import (
 
 @e2e_pytest_unit
 def test_get_fake_input():
-    pipeline = Compose(
-        [{"type": "Resize", "size": (50, 50)}, {"type": "Collect", "keys": ["img"]}]
-    )
+    pipeline = Compose([{"type": "Resize", "size": (50, 50)}, {"type": "Collect", "keys": ["img"]}])
 
     output = get_fake_input(pipeline)
     assert torch.equal(output["img"][0], torch.zeros((1, 50, 50, 3), dtype=torch.uint8))
@@ -151,9 +149,7 @@ def test_wrap_nncf_model():
         init_state_dict = {
             "meta": {
                 "nncf_enable_compression": True,
-                "nncf_meta": NNCFMetaState(
-                    compression_ctrl=ctrl.get_compression_state()
-                ),
+                "nncf_meta": NNCFMetaState(compression_ctrl=ctrl.get_compression_state()),
             },
             "state_dict": model.state_dict(),
         }

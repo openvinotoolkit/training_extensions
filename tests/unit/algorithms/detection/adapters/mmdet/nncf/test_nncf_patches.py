@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
-
 from mmdet.models.detectors.base import BaseDetector
 
-import otx.algorithms.detection.adapters.mmdet.nncf.patches
+import otx.algorithms.detection.adapters.mmdet.nncf.patches  # noqa: F401
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 @e2e_pytest_unit

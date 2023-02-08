@@ -16,7 +16,6 @@ from mmseg.utils import get_root_logger  # type: ignore
 
 from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_keys,
     get_configs_by_pairs,
     remove_from_configs_by_type,
 )
@@ -27,7 +26,7 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import build_segmentor
 logger = get_root_logger()
 
 
-def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals
+def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-many-statements
     config: Config,
     train_cfg: Optional[Union[Config, ConfigDict]] = None,
     test_cfg: Optional[Union[Config, ConfigDict]] = None,

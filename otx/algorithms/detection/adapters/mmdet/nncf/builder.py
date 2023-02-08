@@ -14,7 +14,6 @@ from mmdet.utils import get_root_logger
 
 from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_keys,
     get_configs_by_pairs,
     remove_from_configs_by_type,
 )

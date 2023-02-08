@@ -76,9 +76,7 @@ def test_compose_nncf_config():
                 "compression": [
                     {
                         "algorithm": "filter_pruning",
-                        "ignored_scopes": [
-                            "{re}SingleStageDetector/SSDHead\\[bbox_head\\].*"
-                        ],
+                        "ignored_scopes": ["{re}SingleStageDetector/SSDHead\\[bbox_head\\].*"],
                         "params": {
                             "schedule": "baseline",
                             "pruning_flops_target": 0.1,
@@ -100,9 +98,9 @@ def test_compose_nncf_config():
     }
 
     assert nncf_config["base"] == compose_nncf_config(nncf_config, [])
-    assert merge_dicts_and_lists_b_into_a(
-        nncf_config["base"], nncf_config["nncf_quantization"]
-    ) == compose_nncf_config(nncf_config, ["nncf_quantization"])
+    assert merge_dicts_and_lists_b_into_a(nncf_config["base"], nncf_config["nncf_quantization"]) == compose_nncf_config(
+        nncf_config, ["nncf_quantization"]
+    )
     assert merge_dicts_and_lists_b_into_a(
         nncf_config["base"], nncf_config["nncf_quantization_pruning"]
     ) == compose_nncf_config(nncf_config, ["nncf_quantization_pruning"])

@@ -75,9 +75,7 @@ class TestCustomstepLrUpdaterHook:
             )
             runner.data_loader = range(10)
 
-            hook = CustomstepLrUpdaterHook(
-                1, fixed="constant", fixed_iters=5, fixed_ratio=0.2
-            )
+            hook = CustomstepLrUpdaterHook(1, fixed="constant", fixed_iters=5, fixed_ratio=0.2)
             hook.base_lr = [1.0]
             hook.before_train_iter(runner)
             lrs = []
@@ -85,9 +83,7 @@ class TestCustomstepLrUpdaterHook:
                 lrs.extend(hook.get_fixed_lr(i, [1.0]))
             assert len(set(lrs)) == 1
 
-            hook = CustomstepLrUpdaterHook(
-                1, fixed="linear", fixed_iters=5, fixed_ratio=0.2
-            )
+            hook = CustomstepLrUpdaterHook(1, fixed="linear", fixed_iters=5, fixed_ratio=0.2)
             hook.base_lr = [1.0]
             hook.before_train_iter(runner)
             lrs = []
@@ -95,9 +91,7 @@ class TestCustomstepLrUpdaterHook:
                 lrs.extend(hook.get_fixed_lr(i, [1.0]))
             assert sorted(lrs) == lrs
 
-            hook = CustomstepLrUpdaterHook(
-                1, fixed="cos", fixed_iters=5, fixed_ratio=0.2
-            )
+            hook = CustomstepLrUpdaterHook(1, fixed="cos", fixed_iters=5, fixed_ratio=0.2)
             hook.base_lr = [1.0]
             hook.before_train_iter(runner)
             lrs = []
@@ -120,9 +114,7 @@ class TestCustomstepLrUpdaterHook:
             )
             runner.data_loader = range(10)
 
-            hook = CustomstepLrUpdaterHook(
-                1, warmup="constant", warmup_iters=5, warmup_ratio=0.2
-            )
+            hook = CustomstepLrUpdaterHook(1, warmup="constant", warmup_iters=5, warmup_ratio=0.2)
             hook.base_lr = [1.0]
             hook.before_train_iter(runner)
             lrs = []
@@ -130,9 +122,7 @@ class TestCustomstepLrUpdaterHook:
                 lrs.extend(hook.get_warmup_lr(i, [1.0]))
             assert len(set(lrs)) == 1
 
-            hook = CustomstepLrUpdaterHook(
-                1, warmup="linear", warmup_iters=5, warmup_ratio=0.2
-            )
+            hook = CustomstepLrUpdaterHook(1, warmup="linear", warmup_iters=5, warmup_ratio=0.2)
             hook.base_lr = [1.0]
             hook.before_train_iter(runner)
             lrs = []

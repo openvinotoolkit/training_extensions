@@ -10,9 +10,8 @@ from mmcls.core import EvalHook
 from mmcls.datasets import build_dataloader
 from mmcls.datasets.pipelines import Compose
 from mmcv.utils import Config, ConfigDict, get_logger
-from otx.algorithms.common.adapters.mmcv.utils import build_data_parallel
 
-import otx.algorithms.common.adapters.mmcv.nncf.patches
+import otx.algorithms.common.adapters.mmcv.nncf.patches  # noqa: F401
 from otx.algorithms.common.adapters.mmcv.nncf.hooks import CompressionHook
 from otx.algorithms.common.adapters.mmcv.nncf.runners import AccuracyAwareRunner
 from otx.algorithms.common.adapters.mmcv.nncf.utils import (
@@ -20,6 +19,7 @@ from otx.algorithms.common.adapters.mmcv.nncf.utils import (
     model_eval,
     wrap_nncf_model,
 )
+from otx.algorithms.common.adapters.mmcv.utils import build_data_parallel
 from otx.algorithms.common.adapters.nncf.patches import nncf_trace_context
 
 
@@ -162,9 +162,7 @@ def create_config(lib="mmcls"):
                 "type": "MockModel",
             },
             "nncf_config": {
-                "input_info": {
-                    "sample_size": (1, 3, 128, 128)
-                },
+                "input_info": {"sample_size": (1, 3, 128, 128)},
                 "target_metric_name": "accuracy",
                 "compression": [
                     {
@@ -176,16 +174,12 @@ def create_config(lib="mmcls"):
                         },
                     }
                 ],
-                "accuracy_aware_training": {
-                    "params": {"maximal_total_epochs": 5, "mode": "early_exit"}
-                },
+                "accuracy_aware_training": {"params": {"maximal_total_epochs": 5, "mode": "early_exit"}},
             },
             "runner": {
                 "type": "AccuracyAwareRunner",
                 "nncf_config": {
-                    "input_info": {
-                        "sample_size": (1, 3, 128, 128)
-                    },
+                    "input_info": {"sample_size": (1, 3, 128, 128)},
                     "target_metric_name": "accuracy",
                     "compression": [
                         {
@@ -193,15 +187,11 @@ def create_config(lib="mmcls"):
                             "preset": "mixed",
                             "initializer": {
                                 "range": {"num_init_samples": 10},
-                                "batchnorm_adaptation": {
-                                    "num_bn_adaptation_samples": 10
-                                },
+                                "batchnorm_adaptation": {"num_bn_adaptation_samples": 10},
                             },
                         }
                     ],
-                    "accuracy_aware_training": {
-                        "params": {"maximal_total_epochs": 5, "mode": "early_exit"}
-                    },
+                    "accuracy_aware_training": {"params": {"maximal_total_epochs": 5, "mode": "early_exit"}},
                 },
             },
         }

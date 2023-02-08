@@ -9,10 +9,8 @@ import numpy as np
 import torch
 from nncf.torch.nncf_network import NNCFNetwork
 
-from otx.algorithms.detection.adapters.mmdet.nncf.builder import (
-    build_nncf_detector,
-)
 from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+from otx.algorithms.detection.adapters.mmdet.nncf.builder import build_nncf_detector
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.common.adapters.mmcv.nncf.test_helpers import (
     create_config,

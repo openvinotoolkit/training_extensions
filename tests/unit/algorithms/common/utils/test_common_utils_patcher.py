@@ -217,9 +217,7 @@ class TestPatcher:
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 1
             assert ctr == 1
-            patcher.unpatch(
-                "tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function"
-            )
+            patcher.unpatch("tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function")
             assert len(patcher._patched) == 0
 
             patcher.patch(
@@ -255,7 +253,5 @@ class TestPatcher:
     @e2e_pytest_unit
     def test_import_obj(self):
         patcher = Patcher()
-        assert (Patcher, "patch") == patcher.import_obj(
-            "otx.algorithms.common.utils.patcher.Patcher.patch"
-        )
+        assert (Patcher, "patch") == patcher.import_obj("otx.algorithms.common.utils.patcher.Patcher.patch")
         assert (Patcher, "patch") == patcher.import_obj(Patcher.patch)
