@@ -281,6 +281,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 if k in metrics:
                     eval_results[k] = v
 
+        eval_results["accuracy"] = eval_results["accuracy-mlc"]
         return eval_results
 
 
