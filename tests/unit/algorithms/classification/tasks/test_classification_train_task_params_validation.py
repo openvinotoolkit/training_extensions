@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from otx.algorithms.classification.tasks import ClassificationTrainTask
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
