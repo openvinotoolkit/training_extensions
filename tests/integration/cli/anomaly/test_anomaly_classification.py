@@ -31,10 +31,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "data/anomaly/shapes/train",
-    "--val-data-roots": "data/anomaly/shapes/test",
-    "--test-data-roots": "data/anomaly/shapes/test",
-    "--input": "data/anomaly/shapes/test/hexagon",
+    "--train-data-roots": "tests/assets/anomaly/shapes/train",
+    "--val-data-roots": "tests/assets/anomaly/shapes/test",
+    "--test-data-roots": "tests/assets/anomaly/shapes/test",
+    "--input": "tests/assets/anomaly/shapes/test/hexagon",
     "train_params": [],
 }
 

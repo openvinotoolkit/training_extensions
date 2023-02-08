@@ -24,10 +24,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
-    "--val-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--test-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--input": "data/common_semantic_segmentation_dataset/train/images",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--input": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "train_params": [
         "params",
         "--learning_parameters.learning_rate_fixed_iters",
@@ -42,10 +42,10 @@ args = {
 }
 
 args_semisl = {
-    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
-    "--val-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--test-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--unlabeled-data-roots": "data/common_semantic_segmentation_dataset/train",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--unlabeled-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -58,8 +58,8 @@ args_semisl = {
 }
 
 args_selfsl = {
-    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
-    "--input": "data/segmentation/custom/images/training",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--input": "tests/assets/segmentation/custom/images/training",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
