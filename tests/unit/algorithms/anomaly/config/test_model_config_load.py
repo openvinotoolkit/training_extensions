@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.configs.base.draem import DraemAnomalyBaseConfig
 from otx.algorithms.anomaly.configs.base.padim import PadimAnomalyBaseConfig
 from otx.algorithms.anomaly.configs.base.stfpm import STFPMAnomalyBaseConfig
@@ -34,3 +35,6 @@ def test_model_template_loading(model_name, configurable_parameters):
     configurable_parameters_loaded = create(hyper_parameters)
 
     assert configurable_parameters_yaml == configurable_parameters_loaded
+
+    # Confirm that we can create an anomalib config from the loaded yaml
+    get_anomalib_config(model_name, configurable_parameters_yaml)
