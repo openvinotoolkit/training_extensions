@@ -27,10 +27,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--test-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--input": "data/coco_dataset/coco_instance_segmentation/images/train",
+    "--train-data-roots": "tests/assets/coco_dataset/coco_instance_segmentation",
+    "--val-data-roots": "tests/assets/coco_dataset/coco_instance_segmentation",
+    "--test-data-roots": "tests/assets/coco_dataset/coco_instance_segmentation",
+    "--input": "tests/assets/coco_dataset/coco_instance_segmentation/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "2"],
 }
 
@@ -129,6 +129,8 @@ class TestInstanceSegmentationCLI:
         tmp_dir_path = tmp_dir_path / "ins_seg"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
+        if template.model_template_id == "Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B":
+            pytest.xfail(reason="CVS-103301")
 
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 

@@ -29,10 +29,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "data/imagenet_dataset_class_incremental",
-    "--val-data-roots": "data/imagenet_dataset_class_incremental",
-    "--test-data-roots": "data/imagenet_dataset_class_incremental",
-    "--input": "data/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--test-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--input": "tests/assets/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -44,7 +44,7 @@ args = {
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--train-data-roots": "data/imagenet_dataset",
+    "--train-data-roots": "tests/assets/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -195,10 +195,10 @@ class TestMultiClassClassificationCLI:
 
 # Multi-label training w/ 'car', 'tree', 'bug' classes
 args_m = {
-    "--train-data-roots": "data/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro_multilabel",
-    "--input": "data/datumaro_multilabel/images/train",
+    "--train-data-roots": "tests/assets/datumaro_multilabel",
+    "--val-data-roots": "tests/assets/datumaro_multilabel",
+    "--test-data-roots": "tests/assets/datumaro_multilabel",
+    "--input": "tests/assets/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -269,10 +269,10 @@ class TestMultilabelClassificationCLI:
 
 
 args_h = {
-    "--train-data-roots": "data/datumaro_h-label",
-    "--val-data-roots": "data/datumaro_h-label",
-    "--test-data-roots": "data/datumaro_h-label",
-    "--input": "data/datumaro_h-label/images/train",
+    "--train-data-roots": "tests/assets/datumaro_h-label",
+    "--val-data-roots": "tests/assets/datumaro_h-label",
+    "--test-data-roots": "tests/assets/datumaro_h-label",
+    "--input": "tests/assets/datumaro_h-label/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
