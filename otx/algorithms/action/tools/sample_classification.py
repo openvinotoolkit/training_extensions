@@ -55,9 +55,8 @@ def load_test_dataset(model_template):
         val_data_roots=VAL_DATA_ROOTS,
     )
     dataset = dataset_adapter.get_otx_dataset()
-    labels_schema = dataset_adapter.get_label_schema()
-
-    return dataset, labels_schema
+    label_schema = dataset_adapter.get_label_schema()
+    return dataset, label_schema
 
 
 # pylint: disable=too-many-locals, too-many-statements

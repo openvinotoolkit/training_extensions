@@ -118,6 +118,8 @@ class TestInstanceSegmentationCLI:
     def test_nncf_optimize(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
+        if template.model_template_id == "Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B":
+            pytest.xfail(reason="CVS-103301")
 
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 

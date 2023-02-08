@@ -33,7 +33,7 @@ class MockRecognizer3D(Recognizer3D, BaseModule):
     def __init__(self) -> None:
         super(BaseModule, self).__init__()
 
-    def forward_dummy(self, inputs: Any, softmax: Any) -> str:
+    def forward_dummy(self, inputs: Any) -> str:
         return "Forward function is replaced!"
 
     @staticmethod
