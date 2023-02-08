@@ -3,9 +3,27 @@ from pathlib import Path
 import pytest
 
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from otx.algorithms.anomaly.configs.base.draem import DraemAnomalyBaseConfig
-from otx.algorithms.anomaly.configs.base.padim import PadimAnomalyBaseConfig
-from otx.algorithms.anomaly.configs.base.stfpm import STFPMAnomalyBaseConfig
+from otx.algorithms.anomaly.configs.classification.draem import (
+    DraemAnomalyClassificationConfig,
+)
+from otx.algorithms.anomaly.configs.classification.padim import (
+    PadimAnomalyClassificationConfig,
+)
+from otx.algorithms.anomaly.configs.classification.stfpm import (
+    STFPMAnomalyClassificationConfig,
+)
+from otx.algorithms.anomaly.configs.detection.draem import DraemAnomalyDetectionConfig
+from otx.algorithms.anomaly.configs.detection.padim import PadimAnomalyDetectionConfig
+from otx.algorithms.anomaly.configs.detection.stfpm import STFPMAnomalyDetectionConfig
+from otx.algorithms.anomaly.configs.segmentation.draem import (
+    DraemAnomalySegmentationConfig,
+)
+from otx.algorithms.anomaly.configs.segmentation.padim import (
+    PadimAnomalySegmentationConfig,
+)
+from otx.algorithms.anomaly.configs.segmentation.stfpm import (
+    STFPMAnomalySegmentationConfig,
+)
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import convert, create
 from otx.api.entities.model_template import ModelTemplate, parse_model_template
@@ -13,7 +31,17 @@ from otx.api.entities.model_template import ModelTemplate, parse_model_template
 
 @pytest.mark.parametrize(
     ["model_name", "configurable_parameters"],
-    [("padim", PadimAnomalyBaseConfig), ("stfpm", STFPMAnomalyBaseConfig), ("draem", DraemAnomalyBaseConfig)],
+    [
+        ("padim", PadimAnomalyClassificationConfig),
+        ("padim", PadimAnomalyDetectionConfig),
+        ("padim", PadimAnomalySegmentationConfig),
+        ("stfpm", STFPMAnomalyClassificationConfig),
+        ("stfpm", STFPMAnomalyDetectionConfig),
+        ("stfpm", STFPMAnomalySegmentationConfig),
+        ("draem", DraemAnomalyClassificationConfig),
+        ("draem", DraemAnomalyDetectionConfig),
+        ("draem", DraemAnomalySegmentationConfig),
+    ],
 )
 def test_model_template_loading(model_name, configurable_parameters):
     # Create from class
