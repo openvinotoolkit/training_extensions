@@ -40,8 +40,8 @@ def parse_args():
     return parser.parse_args()
 
 
-TRAIN_DATA_ROOTS = "tests/assets/cvat_dataset/action_classification/train"
-VAL_DATA_ROOTS = "tests/assets/cvat_dataset/action_classification/train"
+TRAIN_DATA_ROOTS = "tests/assets/cvat_dataset/action_detection/train"
+VAL_DATA_ROOTS = "tests/assets/cvat_dataset/action_detection/train"
 
 
 def load_test_dataset(model_template):
