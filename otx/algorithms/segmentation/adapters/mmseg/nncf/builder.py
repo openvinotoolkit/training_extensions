@@ -43,7 +43,7 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals
     from mmseg.datasets import build_dataset as mmseg_build_dataset
     from mmseg.datasets.pipelines import Compose
 
-    from otx.algorithms.common.adapters.mmcv.nncf import (
+    from otx.algorithms.common.adapters.mmcv.nncf.utils import (
         get_fake_input,
         model_eval,
         wrap_nncf_model,

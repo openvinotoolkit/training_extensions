@@ -38,7 +38,7 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals
     from mmcls.datasets import build_dataset as mmcls_build_dataset
     from mmcls.datasets.pipelines import Compose
 
-    from otx.algorithms.common.adapters.mmcv.nncf import (
+    from otx.algorithms.common.adapters.mmcv.nncf.utils import (
         get_fake_input,
         model_eval,
         wrap_nncf_model,

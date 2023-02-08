@@ -43,7 +43,7 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
     from mmdet.datasets.pipelines import Compose
     from nncf.torch.dynamic_graph.io_handling import nncf_model_input
 
-    from otx.algorithms.common.adapters.mmcv.nncf import (
+    from otx.algorithms.common.adapters.mmcv.nncf.utils import (
         get_fake_input,
         model_eval,
         wrap_nncf_model,

@@ -19,7 +19,7 @@ from mmdet.models.roi_heads.bbox_heads.bbox_head import BBoxHead
 from mmdet.models.roi_heads.bbox_heads.sabl_head import SABLHead
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
-from otx.algorithms.common.adapters.nncf.patchers import (
+from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
     nncf_trace_wrapper,
     no_nncf_trace_wrapper,
