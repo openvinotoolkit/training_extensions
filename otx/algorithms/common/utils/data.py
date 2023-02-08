@@ -22,6 +22,7 @@ from typing import Any, Dict, Optional, Union
 
 import cv2
 import numpy as np
+from mmcv.utils import get_logger
 
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -33,9 +34,8 @@ from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(name="otx.algorithm.common.utils.data")
 
 
 @check_input_parameters_type({"file_list_path": DirectoryPathCheck})
