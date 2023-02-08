@@ -65,10 +65,12 @@ ADAPTERS = {
 
 def get_dataset_adapter(
     task_type: TaskType,
-    train_data_roots: str = None,
-    val_data_roots: str = None,
-    test_data_roots: str = None,
+    data_root: str = None,
+    train_ann_file: str = None,
+    val_ann_file: str = None,
+    test_ann_file: str = None,
     unlabeled_data_roots: str = None,
+    is_train_phase: bool = False
 ):
     """Returns a dataset class by task type.
 
@@ -86,8 +88,10 @@ def get_dataset_adapter(
 
     return getattr(module, ADAPTERS[task_type]["class"])(
         task_type=task_type,
-        train_data_roots=train_data_roots,
-        val_data_roots=val_data_roots,
-        test_data_roots=test_data_roots,
+        data_root=data_root,
+        train_ann_file=train_ann_file,
+        val_ann_file=val_ann_file,
+        test_ann_file=test_ann_file,
         unlabeled_data_roots=unlabeled_data_roots,
+        is_train_phase=is_train_phase
     )

@@ -61,9 +61,14 @@ def parse_args():
     required = not os.path.exists(parsed.data)
 
     parser.add_argument(
-        "--test-data-roots",
+        "--data-root",
         required=required,
-        help="Comma-separated paths to test data folders.",
+        help="Comma-separated paths to test annotation file.",
+    )
+    parser.add_argument(
+        "--test-ann-file",
+        required=False,
+        help="Comma-separated paths to test annotation file.",
     )
     parser.add_argument(
         "--load-weights",
@@ -119,13 +124,10 @@ def main():
 
     data_config = configure_dataset(args)
 
-    data_roots = dict(
-        test_subset={
-            "data_root": data_config["data"]["test"]["data-roots"],
-        }
-    )
-
-    dataset_adapter = get_dataset_adapter(template.task_type, test_data_roots=data_roots["test_subset"]["data_root"])
+    dataset_adapter = get_dataset_adapter(
+        template.task_type,
+        data_root=data_config["data-root"],
+        test_ann_file=data_config["test"])
 
     dataset = dataset_adapter.get_otx_dataset()
     label_schema = dataset_adapter.get_label_schema()
