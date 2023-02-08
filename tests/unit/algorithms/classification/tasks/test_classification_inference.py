@@ -48,8 +48,7 @@ class TestOTXClassificationInferenceTask:
         self.cls_inference_task = ClassificationInferenceTask(task_environment, output_path=self.output_path)
         self.model = otx_classification_model
 
-    @pytest.mark.parametrize("multilabel, hierarchical",
-        [(False, False), (True, False), (False, True)])
+    @pytest.mark.parametrize("multilabel, hierarchical", [(False, False), (True, False), (False, True)])
     @e2e_pytest_unit
     def test_infer(self, mocker, multilabel, hierarchical):
         task_environment, dataset = ClassificationTaskAPIBase.init_environment(
@@ -69,11 +68,12 @@ class TestOTXClassificationInferenceTask:
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
         inf_params = InferenceParameters()
         inf_params.is_evaluation = True
-        updated_dataset = self.cls_inference_task.infer(dataset.with_empty_annotations(), inf_params)
+        updated_dataset = custom_cls_inference_task.infer(dataset.with_empty_annotations(), inf_params)
 
         mock_run_task.assert_called_once()
         for updated in updated_dataset:
-            assert len(updated.annotation_scene.get_labels()) == 1
+            if not multilabel and not hierarchical:
+                assert len(updated.annotation_scene.get_labels()) == 1
             for lbl in updated.annotation_scene.get_labels():
                 assert lbl.domain == Domain.CLASSIFICATION
 
@@ -97,7 +97,6 @@ class TestOTXClassificationInferenceTask:
             for data in data_list:
                 assert data.data.type == "saliency_map"
                 assert data.data.numpy is not None
-
 
     @e2e_pytest_unit
     def test_evaluate(self, mocker):
