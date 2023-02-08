@@ -3,7 +3,6 @@ import os
 
 import numpy as np
 import pytest
-# from openvino.model_zoo.model_api.models import Model
 
 import otx.algorithms.classification.tasks.openvino
 from otx.algorithms.classification.configs.base import ClassificationConfig
@@ -24,7 +23,7 @@ from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from openvino.model_zoo.model_api.models import Model
-from otx.api.entities.shapes.polygon import Point, Polygon
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
@@ -112,18 +111,30 @@ class TestOpenVINOClassificationTask:
     def setup(self, mocker, otx_model) -> None:
         model_template = parse_model_template(DEFAULT_CLS_TEMPLATE)
         hyper_parameters = create(model_template.hyper_parameters.data)
-        hyper_parameters.learning_parameters.num_iters = 10
         cls_params = ClassificationConfig(header=hyper_parameters.header)
-        self.task_env, self.dataset, label_schema = init_environment(params=hyper_parameters, model_template=model_template)
+        self.task_env, self.dataset, self.label_schema = init_environment(params=hyper_parameters, model_template=model_template)
         mocker.patch("otx.algorithms.classification.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
-        cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, label_schema, "")
+        cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, self.label_schema, "")
         self.task_env.model = otx_model
         mocker.patch.object(ClassificationOpenVINOTask, "load_inferencer", return_value=cls_ov_inferencer)
         self.cls_ov_task = ClassificationOpenVINOTask(self.task_env)
 
     @e2e_pytest_unit
     def test_infer(self, mocker):
+        labels = self.label_schema.get_labels(include_empty=True)
+        fake_annotation = [
+            Annotation(
+                Rectangle.generate_full_box(),
+                id=0,
+                labels=[ScoredLabel(LabelEntity(name="fake", domain="CLASSIFICATION"), probability=1.0)],
+            )
+        ]
+        fake_ann_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=fake_annotation)
+        fake_input = mocker.MagicMock()
+        mock_predict = mocker.patch.object(
+            ClassificationOpenVINOInferencer, "predict", return_value=(fake_ann_scene, np.array([0, 1]), fake_input, fake_input, fake_input)
+        )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
         updated_dataset = self.cls_ov_task.infer(self.dataset)
 
@@ -133,15 +144,19 @@ class TestOpenVINOClassificationTask:
 
     @e2e_pytest_unit
     def test_evaluate(self, mocker):
-        val_dataset = self.dataset.get_subset(Subset.VALIDATION)
-        print(val_dataset)
-        result_dataset = self.cls_ov_task.infer(self.dataset.with_empty_annotations())
-        result_set = ResultSetEntity(model=model,
-                                     ground_truth_dataset=val_dataset,
-                                     prediction_dataset=result_dataset)
+        result_set = ResultSetEntity(
+            model=None,
+            ground_truth_dataset=DatasetEntity(),
+            prediction_dataset=DatasetEntity(),
+        )
+        fake_metrics = mocker.patch("otx.api.usecases.evaluation.accuracy.Accuracy", autospec=True)
+        fake_metrics.get_performance.return_value = Performance(
+            score=ScoreMetric(name="fake", value=0.1), dashboard_metrics="Accuracy"
+        )
+        mocker.patch.object(MetricsHelper, "compute_accuracy", return_value=fake_metrics)
         self.cls_ov_task.evaluate(result_set)
-        assert result_set.performance is not None
-        assert 0 < result_set.performance.score.value <= 1.
+
+        assert result_set.performance.score.value == 0.1
 
     @e2e_pytest_unit
     def test_deploy(self, otx_model):
