@@ -317,80 +317,32 @@
                 
   <div class="section" id="hierarchical-classification">
 <h1>Hierarchical Classification<a class="headerlink" href="#hierarchical-classification" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line">Hierarchical Classification is an extension of the classification task where besides the set of categories to predict we have a hierarchical relationship between them. The goal of this task is to predict the hierarchical tree of the categories for the given image.</div>
-<div class="line">We solve this task by assigning a separate head for each label group on each hierarchical level. Specifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.</div>
-<div class="line">To create a non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.</div>
-<div class="line">In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for <a class="reference internal" href="multi_class_classification.html"><span class="doc">Multi-class Classification</span></a> task.</div>
-</div>
-<div class="line-block">
-<div class="line">Assume we have a label tree as below:</div>
-</div>
+<p>Hierarchical classification is an extension of the classification task where besides the set of categories to predict we have a hierarchical relationship between them.
+The goal of this task is to predict the hierarchical tree of the categories for the given image.</p>
+<p>We solve this task by assigning a separate head for each label group on each hierarchical level.
+Specifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.</p>
+<p>To create a non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.</p>
+<p>In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for <a class="reference internal" href="multi_class_classification.html"><span class="doc">Multi-class Classification</span></a> task.</p>
+<p>Assume we have a label tree as below:</p>
 <a class="reference internal image-reference" href="../../../_images/label_tree.png" id="hierarchical-image-example"><img alt="image uploaded from this `source &lt;https://towardsdatascience.com/https-medium-com-noa-weiss-the-hitchhikers-guide-to-hierarchical-classification-f8428ea1e076&gt;`_" id="hierarchical-image-example" src="../../../_images/label_tree.png" style="width: 600px;" /></a>
-<div class="line-block">
-<div class="line">The goal of our algorithm is to return the right branch of this tree. For example: <code class="docutils literal notranslate"><span class="pre">Persian</span> <span class="pre">-&gt;</span> <span class="pre">Cats</span> <span class="pre">-&gt;</span> <span class="pre">Pets</span></code></div>
-<div class="line">At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.</div>
-<div class="line">Let’s say we forward an image with the label tree pictured above. On the first level, our corresponding classifier returns 3 predictions.</div>
-<div class="line">We perform an <em>argmax</em> operation and obtain, for example, class <code class="docutils literal notranslate"><span class="pre">Cats</span></code>. Then, we choose a classifier related to <code class="docutils literal notranslate"><span class="pre">{Siamse,</span> <span class="pre">Persian,</span> <span class="pre">Sphynx}</span></code> label group, obtain its predictions, and after performing the <em>argmax</em> operation we choose our last leaf label.</div>
-<div class="line">After that, we can easily reconstruct the final predicted tree branch: <code class="docutils literal notranslate"><span class="pre">Persian</span> <span class="pre">-&gt;</span> <span class="pre">Cats</span> <span class="pre">-&gt;</span> <span class="pre">Pets</span></code>.</div>
-</div>
+<p>The goal of our algorithm is to return the right branch of this tree. For example: <code class="docutils literal notranslate"><span class="pre">Persian</span> <span class="pre">-&gt;</span> <span class="pre">Cats</span> <span class="pre">-&gt;</span> <span class="pre">Pets</span></code></p>
+<p>At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.</p>
+<p>Let’s say we forward an image with the label tree pictured above. On the first level, our corresponding classifier returns 3 predictions.</p>
+<p>We perform an <em>argmax</em> operation and obtain, for example, class <code class="docutils literal notranslate"><span class="pre">Cats</span></code>. Then, we choose a classifier related to <code class="docutils literal notranslate"><span class="pre">{Siamse,</span> <span class="pre">Persian,</span> <span class="pre">Sphynx}</span></code> label group,
+obtain its predictions, and after performing the <em>argmax</em> operation we choose our last leaf label.</p>
+<p>After that, we can easily reconstruct the final predicted tree branch: <code class="docutils literal notranslate"><span class="pre">Persian</span> <span class="pre">-&gt;</span> <span class="pre">Cats</span> <span class="pre">-&gt;</span> <span class="pre">Pets</span></code>.</p>
 <div class="section" id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
-<p>For hierarchical image classification, we created our custom dataset format that is supported by <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>. An example of the annotations format and dataset structure can be found in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label">sample</a>.</p>
-<p>Besides that we support the following custom dataset format:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
-├── images
-    ├── train
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-    ├── val
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-└── annotations
-    ├── train.json
-    └── val.json
+<p id="hierarchical-dataset">For hierarchical image classification, we created our custom dataset format that is supported by <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>.
+An example of the annotations format and dataset structure can be found in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_h-label">sample</a>.</p>
+<p>To use OTX with this format is required to pass images dataset root paths directly to the CLI command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx {train, optimize} --template &lt;model_template&gt; --train-data-root &lt;path_to_train_data_root&gt; --val-data-root &lt;path_to_val_data_root&gt;
+$ otx eval --template &lt;model_template&gt; --test-data-roots &lt;path_to_test_data_root&gt; --load-weights &lt;path_to_model_weights&gt;
 </pre></div>
 </div>
-<div class="line-block">
-<div class="line">Where annotations <code class="docutils literal notranslate"><span class="pre">*.json</span></code> consists of two keys: <strong>“images”</strong> and <strong>“hierarchy”</strong>. Key <strong>“images”</strong> includes lists of unique images with lists of classes presented on this image. Key <strong>“hierarchy”</strong> describes each label group presented in the label tree.</div>
-<div class="line">An example of annotations structure can be found <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/data/car_tree_bug/annotations/hierarchical_default.json">here</a>. For more intuition below is the hierarchical structure represented for the given above <a class="reference internal" href="#hierarchical-image-example"><span class="std std-ref">image example</span></a>:</div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;hierarchy&quot;</span><span class="p">:</span> <span class="p">[</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;self&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Pets&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Dogs&quot;</span><span class="p">,</span> <span class="s2">&quot;Cats&quot;</span><span class="p">,</span> <span class="s2">&quot;Unicorns&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="s2">&quot;single-label&quot;</span>
-  <span class="p">},</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;Pets&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Cats&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Siamse, Persian, Sphynx&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="s2">&quot;single-label&quot;</span>
-  <span class="p">},</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;Pets&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Dogs&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Poodle, French Bulldog, Dalmatian, Labrador&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="s2">&quot;single-label&quot;</span>
-  <span class="p">},</span>
-  <span class="p">{</span>
-    <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;Pets&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;Unicorns&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Pegasus, Rainbow Unicorn, Narwhal&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="s2">&quot;single-label&quot;</span>
-  <span class="p">}</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p>To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to the CLI command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx {train, optimize} &lt;model_template&gt; --train-ann-files /path/to/train_annotation_file.json --val-ann-files /path/to/val_annotation_file.json --train-data-roots /path/to/train/images_folder --val-data-roots /path/to/val/images_folder
-$ otx eval &lt;model_template&gt; --test-ann-files /path/to/test_annotation_file.json --test-data-roots /path/to/test/images_folder --load-weights path/to/weights
-</pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classificaiton models.</p>
 </div>
 </div>
 <div class="section" id="models">

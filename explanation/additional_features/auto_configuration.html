@@ -297,7 +297,51 @@
                 
   <div class="section" id="auto-configuration">
 <h1>Auto-configuration<a class="headerlink" href="#auto-configuration" title="Permalink to this headline">¶</a></h1>
-<p>Coming soon…</p>
+<p>Auto-configuration for a deep learning framework means the automatic finding of the most appropriate settings for the training parameters, based on the dataset and the specific task at hand.
+Auto-configuration can help to save time, it eases the process of interaction with OTX CLI and gives a better baseline for the given dataset.</p>
+<p>At this end, we developed a simple auto-configuration functionality to ease the process of training and validation utilizing our framework.
+Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifying anything else:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train --train-data-root &lt;path_to_data_root&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>OTX supports also <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> mode with the auto-configuration feature. We can build OTX workspace with the following CLI command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx build --train-data-root &lt;path_to_data_root&gt;
+</pre></div>
+</div>
+</div>
+<p>Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OTX will handle it on its own.
+It will recognize the task by analyzing the dataset and if there is no splits for the validation - Datumaro will do a random auto-split, saving this split to the workspace. It could be used with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> or <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, Datumaro auto-split feature supports 3 formats: <a class="reference external" href="https://www.image-net.org/">Imagenet</a>  (multi-class classification), <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a> (detection) and <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/">Cityscapes</a> (semantic segmentation).</p>
+</div>
+<p>After dataset preparation, the training will be started with the middle-sized template to achieve competitive accuracy preserving fast inference.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Supported dataset formats for each task:</p>
+<ul class="simple">
+<li><p>classificaiton: <a class="reference external" href="https://www.image-net.org/">Imagenet</a>, <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a> (multi-label), <a class="reference internal" href="../algorithms/classification/hierarhical_classification.html#hierarchical-dataset"><span class="std std-ref">custom hierarchical</span></a></p></li>
+<li><p>object detection: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/">Pascal-VOC</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/">YOLO</a></p></li>
+<li><p>semantic segmentation: <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/">Common Semantic Segmentation</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/">Pascal-VOC</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/">Cityscapes</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/">ADE20k</a></p></li>
+<li><p>action classification: <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">CVAT</a></p></li>
+<li><p>action : <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">CVAT</a></p></li>
+<li><p>anomaly classificaiton: <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad">MVTec</a></p></li>
+<li><p>anomaly detection: <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad">MVTec</a></p></li>
+<li><p>anomaly segmentation: <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad">MVTec</a></p></li>
+<li><p>instance segmentation: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/">Pascal-VOC</a></p></li>
+</ul>
+<p>If we have a dataset format occluded with other tasks, for example <code class="docutils literal notranslate"><span class="pre">COCO</span></code> format, we should directly emphasize the task type and use <cite>otx build</cite> first with an additional CLI option. If not, OTX automatically chooses the task type that you might don’t intend:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx build --train-data-root &lt;path_to_data_root&gt; --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
+</pre></div>
+</div>
+<p>It will create a task-specific workspace folder with configured template and auto dataset split if supported.</p>
+<p>Move to this folder and simply run without any options to start training:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train
+</pre></div>
+</div>
+</div>
 </div>
 
 

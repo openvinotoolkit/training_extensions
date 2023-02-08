@@ -328,11 +328,9 @@
                 
   <div class="section" id="multi-label-classification">
 <h1>Multi-label Classification<a class="headerlink" href="#multi-label-classification" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line">Multi-label classification is a generalization of multiclass classification. The main goal of the task is to predict a set of labels per image. Each image may belong to more than one class and may belong to none of them at all.</div>
-<div class="line">We solve this problem by optimizing small binary classification sub-tasks aimed to predict whether or not the specific category from the corpus is presented on the given image.</div>
-</div>
-<p>For supervised learning we use the following algorithms components:</p>
+<p>Multi-label classification is a generalization of multiclass classification. The main goal of the task is to predict a set of labels per image. Each image may belong to more than one class and may belong to none of them at all.</p>
+<p>We solve this problem by optimizing small binary classification sub-tasks aimed to predict whether or not the specific category from the corpus is presented on the given image.</p>
+<p id="ml-cls-supervised-pipeline">For supervised learning we use the following algorithms components:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: Besides basic augmentations like random flip and random rotate, we use <a class="reference external" href="https://arxiv.org/abs/1912.02781">Augmix</a>. This advanced type of augmentation helps to significantly expand the training distribution.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: <a class="reference external" href="https://arxiv.org/abs/2209.06585">Sharpness Aware Minimization (SAM)</a>. Wrapper upon the <a class="reference external" href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD</a> optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.</p></li>
@@ -340,7 +338,20 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use <strong>Asymmetric Angular Margin Loss</strong>. We can formulate this loss as follows: <span class="math notranslate nohighlight">\(L_j (cos\Theta_j,y) = \frac{k}{s}y p_-^{\gamma^-}\log{p_+} + \frac{1-k}{s}(1-y)p_+^{\gamma^+}\log{p_-}\)</span>, where <span class="math notranslate nohighlight">\(s\)</span> is a scale parameter, <span class="math notranslate nohighlight">\(m\)</span> is an angular margin, <span class="math notranslate nohighlight">\(k\)</span> is negative-positive weighting coefficient, <span class="math notranslate nohighlight">\(\gamma^+\)</span> and <span class="math notranslate nohighlight">\(\gamma^-\)</span> are weighting parameters. For further information about loss function, ablation studies, and experiments, please refer to our dedicated <a class="reference external" href="https://arxiv.org/abs/2209.06585">paper</a>.</p></li>
 <li><p>Additionally, we use the <a class="reference external" href="https://arxiv.org/abs/1812.01187">No Bias Decay (NBD)</a> technique, <strong>Exponential Moving Average (EMA)</strong> for the model’s weights and adaptive <strong>early stopping</strong> to add adaptability and prevent overfitting.</p></li>
 </ul>
-<p>In the table below the <a class="reference external" href="https://en.wikipedia.org/w/index.php?title=Information_retrieval&amp;oldid=793358396#Average_precision">mAP</a> metrics on some academic datasets are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.</p>
+<div class="section" id="dataset-format">
+<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
+<p>As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>.
+Specifically, these formats will be converted in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel">internal representation</a> via the <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a> dataset handler.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Names of the annotations files and overall dataset structure should be the same as the original <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>.</p>
+<p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classificaiton models.</p>
+</div>
+</div>
+<div class="section" id="models">
+<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<p>We use the same models as for Multi-class classification. Please, refer: <a class="reference internal" href="multi_class_classification.html#classificaiton-models"><span class="std std-ref">Classificaiton Models</span></a>.</p>
+<p>In the table below the <a class="reference external" href="https://en.wikipedia.org/w/index.php?title=Information_retrieval&amp;oldid=793358396#Average_precision">mAP</a> metrics on some academic datasets using our <a class="reference internal" href="#ml-cls-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.</p>
 <table class="table">
 <colgroup>
 <col style="width: 32%" />
@@ -378,47 +389,6 @@
 </tr>
 </tbody>
 </table>
-<div class="section" id="dataset-format">
-<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
-<p>As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a> and <a class="reference external" href="http://host.robots.ox.ac.uk/pascal/VOC/">VOC</a>.
-Specifically, these formats will be converted in our internal representation via the <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a> dataset handler.</p>
-<p>We also support our custom and simple dataset format for multi-label classification. It has the following structure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
-├── images
-    ├── train
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-    ├── val
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-└── annotations
-    ├── train.json
-    └── val.json
-</pre></div>
-</div>
-<p>Where <code class="docutils literal notranslate"><span class="pre">*.json</span></code> annotations have two keys: <strong>“images”</strong> and <strong>“classes”</strong>. Key <strong>“images”</strong> includes lists of unique images with lists of classes presented on this image. Key <strong>“classes”</strong> consists of a list with all classes in the dataset.
-Below is a simple example of 2 classes presented:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">[</span><span class="s2">&quot;0.png&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;class_0&quot;</span><span class="p">]],</span>
-    <span class="p">[</span><span class="s2">&quot;Slide19.PNG&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;class_0&quot;</span><span class="p">]],</span>
-    <span class="p">[</span><span class="s2">&quot;Slide16.PNG&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;class_0&quot;</span><span class="p">,</span> <span class="s2">&quot;class_1&quot;</span><span class="p">]]</span>
-<span class="p">],</span>
-<span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;class_0&quot;</span><span class="p">,</span> <span class="s2">&quot;class_1&quot;</span><span class="p">]}</span>
-</pre></div>
-</div>
-<p>To use OTX with this format is required to pass annotations files paths and images dataset root paths directly to the CLI command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx {train, optimize} &lt;model_template&gt; --train-ann-files /path/to/train_annotation_file.json --val-ann-files /path/to/val_annotation_file.json --train-data-roots /path/to/train/images_folder --val-data-roots /path/to/val/images_folder
-$ otx eval &lt;model_template&gt; --test-ann-files /path/to/test_annotation_file.json --test-data-roots /path/to/test/images_folder --load-weights path/to/weights
-</pre></div>
-</div>
-</div>
-<div class="section" id="models">
-<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
-<p>We use the same models as for Multi-class classification. Please, refer: <a class="reference internal" href="multi_class_classification.html#classificaiton-models"><span class="std std-ref">Classificaiton Models</span></a>.</p>
 </div>
 <div class="section" id="semi-supervised-learning">
 <h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this headline">¶</a></h2>

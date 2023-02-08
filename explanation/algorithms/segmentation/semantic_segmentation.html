@@ -327,17 +327,121 @@
                 
   <div class="section" id="semantic-segmentation">
 <h1>Semantic Segmentation<a class="headerlink" href="#semantic-segmentation" title="Permalink to this headline">¶</a></h1>
+<p>Semantic segmentation is a computer vision task in which an algorithm assigns a label or class to each pixel in an image.
+For example, semantic segmentation can be used to identify the boundaries of different objects in an image, such as cars, buildings, and trees.
+The output of semantic segmentation is typically an image where each pixel is colored with a different color or label depending on its class.</p>
+<a class="reference internal image-reference" href="../../../_images/semantic_seg_example.png" id="semantic-segmentation-image-example"><img alt="image uploaded from this `source &lt;https://arxiv.org/abs/1912.03183&gt;`_" id="semantic-segmentation-image-example" src="../../../_images/semantic_seg_example.png" style="width: 600px;" /></a>
+<p>We solve this task by utilizing <a class="reference external" href="https://arxiv.org/pdf/1411.4038.pdf">FCN Head</a> with implementation from <a class="reference external" href="https://mmsegmentation.readthedocs.io/en/latest/_modules/mmseg/models/decode_heads/fcn_head.html">MMSegmentation</a> on the multi-level image features obtained by the feature extractor backbone (<a class="reference external" href="https://arxiv.org/abs/2104.06403">Lite-HRNet</a>).
+For the supervised training we use the following algorithms components:</p>
+<ul class="simple" id="semantic-segmentation-supervised-pipeline">
+<li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: Besides basic augmentations like random flip, random rotate and random crop, we use mixing images technique with different <a class="reference external" href="https://mmsegmentation.readthedocs.io/en/latest/api.html#mmseg.datasets.pipelines.PhotoMetricDistortion">photometric distortions</a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: We use <a class="reference external" href="https://arxiv.org/abs/1412.6980">Adam</a> optimizer with weight decay set to zero and gradient clipping with maximum quadratic norm equals to 40.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: For scheduling training process we use <strong>ReduceLROnPlataeu</strong> with linear learning rate warmup for 100 iterations. This method monitors a target metric (in our case we use metric on the validation set) and if no improvement is seen for a ‘patience’ number of epochs, the learning rate is reduced.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use standart <a class="reference external" href="https://en.wikipedia.org/wiki/Cross_entropy">Cross Entropy Loss</a>  to train a model.</p></li>
+<li><p>Additionally, we use the <strong>early stopping</strong> to add adaptability to the training pipeline and prevent overfitting.</p></li>
+</ul>
 <div class="section" id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
-<p>To be added soon</p>
+<p>For the dataset handling inside OTX we use <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Dataset Management Framework (Datumaro)</a>.</p>
+<p>At this end we support <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/">ADE20K</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/">Cityscapes</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/">Pascal VOC</a> and <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/">Common Semantic Segmentation</a> data formats.
+If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train --template &lt;model_template&gt; --train-data-root &lt;path_to_data_root&gt; --val-data-root &lt;path_to_data_root&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/semantic_segmentation.html"><span class="doc">dedicated tutorial</span></a> for more information on how to train, validate and optimize semantic segmentation model for more details.</p>
+</div>
 </div>
 <div class="section" id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
-<p>To be added soon</p>
+<p>We support the following ready-to-use model templates:</p>
+<p>All of these models are members of the same <a class="reference external" href="https://arxiv.org/abs/2104.06403">Lite-HRNet</a> backbones family. They differ in the trade-off between accuracy and inference/training speed. <code class="docutils literal notranslate"><span class="pre">Lite-HRNet-x-mod3</span></code> is the template with heavy-size architecture for accurate predictions but it requires long training.
+Whereas the <code class="docutils literal notranslate"><span class="pre">Lite-HRNet-s-mod2</span></code> is the lightweight architecture for fast inference and training. It is the best choice for the scenario of a limited amount of data. The <code class="docutils literal notranslate"><span class="pre">Lite-HRNet-18-mod2</span></code> model is the middle-sized architecture for the balance between fast inference and training time.</p>
+<p>In the table below the <a class="reference external" href="https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient">Dice score</a> on some academic datasets using our <a class="reference internal" href="#semantic-segmentation-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. The results were obtained on our templates without any changes. We use 512x512 image crop resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.</p>
+<table class="table">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 21%" />
+<col style="width: 18%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model name</p></th>
+<th class="head"><p>ADE20k</p></th>
+<th class="head"><p>Cityscapes</p></th>
+<th class="head"><p>Pascal-VOC 2012</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Lite-HRNet-s-mod2</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lite-HRNet-18-mod2</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+<tr class="row-even"><td><p>Lite-HRNet-x-mod3</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="semi-supervised-learning">
 <h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this headline">¶</a></h2>
-<p>To be added soon</p>
+<p>To solve <a class="reference internal" href="../index.html#semi-sl-explanation"><span class="std std-ref">Semi-supervised learning</span></a> problem for the semantic segmentation we use the <a class="reference external" href="https://arxiv.org/abs/1703.01780">Mean Teacher algorithm</a>. The basic idea of this approach is to use two models during training: a “student” model, which is the main model being trained, and a “teacher” model, which acts as a guide for the student model.
+The student model is updated based on the ground truth annotations (for the labeled data) and pseudo-labels (for the unlabeled data) which are the predictions of the teacher model.
+The teacher model is updated based on the moving average of the student model’s parameters. So, we don’t use backward loss propagation for the teacher model’s parameters.
+After training, only the student model is used for prediction.</p>
+<p>We utilize the same core algorithm’s parameters as for the <a class="reference internal" href="#semantic-segmentation-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a>. The main difference is to use of different augmentation pipelines for the labeled and unlabeled data.
+We use only basic augmentations (random flip, random rotate, random crop) for the labeled data and stronger for the unlabeled (color distortion).
+It helps with a better generalization and prevents unnecessary overfitting on the pseudo-labels generated by the teacher model.</p>
+<p>In the table below the <a class="reference external" href="https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient">Dice score</a> with our middle template on some datasets is presented. For comparison, we present the supervised baseline trained on the labeled data only.
+The results were obtained on our templates without any changes. We use 512x512 image resolution, for other hyperparameters, please, refer to the <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml">related template</a>. We trained each model with single Nvidia GeForce RTX3090.
+For <a class="reference external" href="https://www.cityscapes-dataset.com/">Cityscapes</a> and <a class="reference external" href="http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html">Pascal-VOC</a> we use splits with different ratios of labeled to unlabeled data like <a class="reference external" href="https://github.com/charlesCXK/TorchSemiSeg">here</a>.
+For the <a class="reference external" href="https://xuebinqin.github.io/dis/index.html">DIS5K</a> we prepared random splits for the train data with different ratios of labeled to unlabeled images. We use the validation set for testing purposes.</p>
+<table class="table">
+<colgroup>
+<col style="width: 46%" />
+<col style="width: 18%" />
+<col style="width: 15%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model name</p></th>
+<th class="head"><p>DIS5K</p></th>
+<th class="head"><p>Cityscapes</p></th>
+<th class="head"><p>Pascal-VOC</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Supervised Lite-HRNet-18-mod2 (1/8)</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+<tr class="row-odd"><td><p>Semi-SL Lite-HRNet-18-mod2 (1/8)</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+<tr class="row-even"><td><p>Supervised Lite-HRNet-18-mod2 (1/16)</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+<tr class="row-odd"><td><p>Semi-SL Lite-HRNet-18-mod2 (1/16)</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="self-supervised-learning">
 <h2>Self-supervised Learning<a class="headerlink" href="#self-supervised-learning" title="Permalink to this headline">¶</a></h2>

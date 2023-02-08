@@ -327,17 +327,59 @@
                 
   <div class="section" id="multi-class-classification">
 <h1>Multi-class Classification<a class="headerlink" href="#multi-class-classification" title="Permalink to this headline">¶</a></h1>
-<p>Multi-class Classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
+<p>Multi-class classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
 For the supervised training we use the following algorithms components:</p>
-<ul class="simple">
+<ul class="simple" id="mcl-cls-supervised-pipeline">
 <li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: Besides basic augmentations like random flip and random rotate, we use <a class="reference external" href="https://arxiv.org/abs/1912.02781">Augmix</a>. This advanced type of augmentations helps to significantly expand the training distribution.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: <a class="reference external" href="https://arxiv.org/abs/2209.06585">Sharpness Aware Minimization (SAM)</a>. Wrapper upon the <a class="reference external" href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD</a> optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: <a class="reference external" href="https://arxiv.org/abs/1608.03983v5">Cosine Annealing</a>. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: <a class="reference external" href="https://arxiv.org/abs/2110.02444">Influence-Balanced Loss</a>. This is a balancing training method that helps us to solve the imbalanced data problem.</p></li>
-<li><p>Additionally, we use <a class="reference external" href="https://arxiv.org/abs/1812.01187">No Bias Decay (NBD)</a> technique and <strong>early stopping</strong> to add adaptability to the training pipeline and prevent overfitting.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use standart <a class="reference external" href="https://en.wikipedia.org/wiki/Cross_entropy">Cross Entropy Loss</a>  to train a model. However, for the class-incremental scenario we use <a class="reference external" href="https://arxiv.org/abs/2110.02444">Influence-Balanced Loss</a>. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.</p></li>
+<li><p>Additionally, we use <a class="reference external" href="https://arxiv.org/abs/1812.01187">No Bias Decay (NBD)</a> technique and <strong>early stopping</strong> to add adaptability to the training pipeline and prevent overfitting. Besides this we use <a class="reference external" href="https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11">Balanced Sampler</a> to create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.</p></li>
 </ul>
 <p>To further enhance the performance of the algorithm in case when we have a small number of data we use <a class="reference external" href="https://arxiv.org/abs/2004.11362">Supervised Contrastive Learning</a>. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with <a class="reference external" href="https://arxiv.org/abs/2103.03230">Barlow Twins loss</a>.</p>
-<p>In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.</p>
+<div class="section" id="dataset-format">
+<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
+<p>We support a commonly used format for multi-class image classification task: <a class="reference external" href="https://www.image-net.org/">imagenet</a> class folder format.
+This format has the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
+├── train
+    ├── class 0
+        ├── 0.png
+        ├── 1.png
+        ...
+        └── N.png
+    ├── class 1
+        ├── 0.png
+        ├── 1.png
+        ...
+        └── N.png
+    ...
+    └── class N
+        ├── 0.png
+        ├── 1.png
+        ...
+        └── N.png
+└── val
+    ...
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classificaiton models.</p>
+</div>
+</div>
+<div class="section" id="models">
+<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
+<p id="classificaiton-models">We support the following ready-to-use model templates:</p>
+<p><a class="reference external" href="https://arxiv.org/abs/2104.00298">EfficientNet-V2-S</a> has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. <a class="reference external" href="https://arxiv.org/abs/1905.02244">MobileNet-V3-large-1x</a> is the best choice when training time and computational cost are in priority, nevertheless, this template provides competitive accuracy as well.
+<a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B0</a> consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.</p>
+<p>Besides this, we support public backbones from <a class="reference external" href="https://pytorch.org/vision/stable/index.html">torchvision</a>, <a class="reference external" href="https://github.com/osmr/imgclsmob">pytorchcv</a>, <a class="reference external" href="https://github.com/open-mmlab/mmclassification">mmcls</a> and <a class="reference external" href="https://github.com/openvinotoolkit/open_model_zoo">OpenVino Model Zoo</a>.
+Please, refer to the <a class="reference internal" href="../../../tutorials/advanced/backbones.html"><span class="doc">tutorial</span></a> how to customize models and run public backbones.</p>
+<p>To see which public backbones are available for the task, the following command can be executed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
+</pre></div>
+</div>
+<p>In the table below the top-1 accuracy on some academic datasets using our <a class="reference internal" href="#mcl-cls-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.</p>
 <table class="table">
 <colgroup>
 <col style="width: 27%" />
@@ -380,76 +422,6 @@ For the supervised training we use the following algorithms components:</p>
 </tr>
 </tbody>
 </table>
-<div class="section" id="dataset-format">
-<h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
-<p>We support a commonly used format for multi-class image classification task: <a class="reference external" href="https://www.image-net.org/">imagenet</a> class folder format.
-This format has the following structure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
-├── train
-    ├── class 0
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-    ├── class 1
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-    ...
-    └── class N
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-└── val
-    ...
-</pre></div>
-</div>
-</div>
-<div class="section" id="models">
-<h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
-<p id="classificaiton-models">We support the following ready-to-use model templates:</p>
-<table class="table">
-<colgroup>
-<col style="width: 78%" />
-<col style="width: 8%" />
-<col style="width: 7%" />
-<col style="width: 6%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Template ID</p></th>
-<th class="head"><p>Name</p></th>
-<th class="head"><p>Complexity (GFLOPs)</p></th>
-<th class="head"><p>Model size (MB)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml">Custom_Image_Classification_MobileNet-V3-large-1x</a></p></td>
-<td><p>MobileNet-V3-large-1x</p></td>
-<td><p>0.44</p></td>
-<td><p>4.29</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml">Custom_Image_Classification_EfficinetNet-B0</a></p></td>
-<td><p>EfficientNet-B0</p></td>
-<td><p>0.81</p></td>
-<td><p>4.09</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml">Custom_Image_Classification_EfficientNet-V2-S</a></p></td>
-<td><p>EfficientNet-V2-S</p></td>
-<td><p>5.76</p></td>
-<td><p>20.23</p></td>
-</tr>
-</tbody>
-</table>
-<p><a class="reference external" href="https://arxiv.org/abs/2104.00298">EfficientNet-V2-S</a> has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. <a class="reference external" href="https://arxiv.org/abs/1905.02244">MobileNet-V3-large-1x</a> is the best choice when training time and computational cost are in priority, nevertheless, this template provides competitive accuracy as well.
-<a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B0</a> consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.</p>
-<p>Besides this, we support public backbones from <a class="reference external" href="https://pytorch.org/vision/stable/index.html">torchvision</a>, <a class="reference external" href="https://github.com/osmr/imgclsmob">pytorchcv</a>, <a class="reference external" href="https://github.com/open-mmlab/mmclassification">mmcls</a> and <a class="reference external" href="https://github.com/openvinotoolkit/open_model_zoo">OpenVino Model Zoo</a>.
-Please, refer to the <a class="reference external" href="N/A">tutorial</a> how to customize models and run public backbones.</p>
-<p>To see which public backbones are available for the task, the following command can be executed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
-</pre></div>
-</div>
 </div>
 <div class="section" id="semi-supervised-learning">
 <h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this headline">¶</a></h2>
