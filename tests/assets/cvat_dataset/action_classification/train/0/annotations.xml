@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>1</id>
+      <name>v1</name>
+      <size>10</size>
+      <mode>interpolation</mode>
+      <overlap>2</overlap>
+      <bugtracker></bugtracker>
+      <created></created>
+      <updated></updated>
+      <start_frame>0</start_frame>
+      <stop_frame>9</stop_frame>
+      <frame_filter>1</frame_filter>
+      <z_order>True</z_order>
+      <labels>
+        <label>
+          <name>0</name>
+          <attributes></attributes>
+        </label>
+      </labels>
+      <segments></segments>
+      <original_size>
+        <width>256</width>
+        <height>192</height>
+      </original_size>
+    </task>
+  </meta>
+  <image id="0" name="00020.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="1" name="00021.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="2" name="00022.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="3" name="00023.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="4" name="00024.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="5" name="00025.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="6" name="00026.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="7" name="00027.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="8" name="00028.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+  <image id="9" name="00029.jpg" width="256" height="192">
+    <tag label="0" source="manual"></tag>
+  </image>
+</annotations>
