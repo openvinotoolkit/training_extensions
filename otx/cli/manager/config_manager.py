@@ -131,7 +131,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         data_yaml_path = self.workspace_root / "data.yaml"
         data_yaml = configure_dataset(self.args, data_yaml_path=data_yaml_path)
         if self.mode in ("train", "build"):
-            if data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]:
+            use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
+            # FIXME: Hardcoded for Self-Supervised Learning
+            if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
                 splitted_dataset = self.auto_split_data(data_yaml["data"]["train"]["data-roots"], self.task_type)
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
@@ -240,9 +242,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 dataset=datum_dataset, output_dir=dst_dir_path, data_format=self.data_format, save_media=True
             )
 
-    def _create_empty_data_cfg(
-        self,
-    ) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
         data_config: Dict[str, Dict[str, Any]] = {"data": {}}
         for subset in ["train", "val", "test"]:
@@ -251,7 +251,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
         return data_config
 
-    def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str):
+    def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str) -> None:
         """Export the data configuration file to output_path."""
         mmcv.dump(data_cfg, output_path)
         print(f"[*] Saving data configuration file to: {output_path}")
@@ -289,11 +289,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if data_yaml["data"]["train"]["data-roots"]:
             self.data_config["train_subset"] = {"data_root": data_yaml["data"]["train"]["data-roots"]}
         if data_yaml["data"]["val"]["data-roots"]:
-            # FIXME: Hardcoded for Self-Supervised Learning
-            if self.mode == "train" and str(self.train_type).upper() == "SELFSUPERVISED":
-                self.data_config["val_subset"] = {"data_root": None}
-            else:
-                self.data_config["val_subset"] = {"data_root": data_yaml["data"]["val"]["data-roots"]}
+            self.data_config["val_subset"] = {"data_root": data_yaml["data"]["val"]["data-roots"]}
         if data_yaml["data"]["test"]["data-roots"]:
             self.data_config["test_subset"] = {"data_root": data_yaml["data"]["test"]["data-roots"]}
         if "unlabeled" in data_yaml["data"] and data_yaml["data"]["unlabeled"]["data-roots"]:
@@ -301,6 +297,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 "data_root": data_yaml["data"]["unlabeled"]["data-roots"],
                 "file_list": data_yaml["data"]["unlabeled"]["file-list"],
             }
+        # FIXME: Hardcoded for Self-Supervised Learning
+        if self.mode == "train" and str(self.train_type).upper() == "SELFSUPERVISED":
+            self.data_config["val_subset"] = {"data_root": None}
 
     def _get_template(self, task_type: str, model: str = None) -> ModelTemplate:
         """Returns the appropriate template for each situation.
@@ -325,10 +324,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
         return template
 
-    def build_workspace(
-        self,
-        new_workspace_path: str = None,
-    ):
+    def build_workspace(self, new_workspace_path: str = None) -> None:
         """Create OTX workspace with Template configs from task type.
 
         This function provides a user-friendly OTX workspace and provides more intuitive
@@ -378,14 +374,17 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
         model_config.dump(str(train_type_dir / "model.py"))
 
-        # Copy Data pipeline config
-        if (model_dir / "data_pipeline.py").exists():
-            data_pipeline_config = MPAConfig.fromfile(str(model_dir / "data_pipeline.py"))
-            data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
-        # TODO: Align Data pipeline for tiling
-        if (template_dir / "tile_pipeline.py").exists():
-            tile_pipeline_config = MPAConfig.fromfile(str(template_dir / "tile_pipeline.py"))
-            tile_pipeline_config.dump(str(train_type_dir / "tile_pipeline.py"))
+        # Copy config files
+        config_files = [
+            (model_dir, "data_pipeline.py", train_type_dir),
+            (template_dir, "tile_pipeline.py", self.workspace_root),
+            (template_dir, "deployment.py", self.workspace_root),
+            (template_dir, "hpo_config.yaml", self.workspace_root),
+            (template_dir, "model_hierarchical.py", self.workspace_root),
+            (template_dir, "model_multilabel.py", self.workspace_root),
+        ]
+        for target_dir, file_name, dest_dir in config_files:
+            self._copy_config_files(target_dir, file_name, dest_dir)
         template_config.dump(str(self.workspace_root / "template.yaml"))
 
         # Copy compression_config.json
@@ -394,16 +393,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 str(model_dir / "compression_config.json"),
                 str(train_type_dir / "compression_config.json"),
             )
-        # Copy deployment.py
-        if (template_dir / "deployment.py").exists():
-            deployment_config = MPAConfig.fromfile(str(template_dir / "deployment.py"))
-            deployment_config.dump(str(self.workspace_root / "deployment.py"))
-
-        # Copy hpo_configs.yaml
-        if (template_dir / "hpo_config.yaml").exists():
-            deployment_config = MPAConfig.fromfile(str(template_dir / "hpo_config.yaml"))
-            deployment_config.dump(str(self.workspace_root / "hpo_config.yaml"))
 
         self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
         print(f"[*] Load Model Template ID: {self.template.model_template_id}")
         print(f"[*] Load Model Name: {self.template.name}")
+
+    def _copy_config_files(self, target_dir: Path, file_name: str, dest_dir: Path) -> None:
+        """Copy Configuration files for workspace."""
+        if (target_dir / file_name).exists():
+            config = MPAConfig.fromfile(str(target_dir / file_name))
+            config.dump(str(dest_dir / file_name))
