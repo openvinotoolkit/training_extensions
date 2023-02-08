@@ -35,7 +35,7 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 
-logger = get_logger(name="otx")
+logger = get_logger(name="otx.algorithm.common.utils.data")
 
 
 @check_input_parameters_type({"file_list_path": DirectoryPathCheck})
