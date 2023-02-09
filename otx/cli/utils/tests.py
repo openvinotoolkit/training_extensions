@@ -769,8 +769,6 @@ def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
             command_line.extend([option, args[option]])
     check_run(command_line)
 
-    shutil.rmtree(workspace_root)
-
 
 def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
     work_dir = os.path.join(root, "otx-workspace")
@@ -785,4 +783,3 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
     command_line.extend(["--work-dir", f"{work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
-    shutil.rmtree(work_dir)

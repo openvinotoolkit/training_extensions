@@ -14,10 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
 import time
 from collections import deque
-from pathlib import Path
 
 import cv2
 import numpy as np
@@ -28,31 +26,21 @@ from otx.api.entities.image import Image
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
-from otx.cli.registry import find_and_parse_model_template
 from otx.cli.tools.utils.demo.images_capture import open_images_capture
 from otx.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
-from otx.cli.utils.parser import add_hyper_parameters_sub_parser
+from otx.cli.utils.parser import (
+    add_hyper_parameters_sub_parser,
+    get_parser_and_hprams_data,
+)
 
 ESC_BUTTON = 27
 
 
 def get_args():
     """Parses command line arguments."""
-    # TODO: Declaring pre_parser to get the template
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template", nargs="?", default=None)
-    parsed, _ = pre_parser.parse_known_args()
-    template = parsed.template
-    hyper_parameters = {}
-    parser = argparse.ArgumentParser()
-    if template and template.endswith("yaml") and Path(template).is_file():
-        template_config = find_and_parse_model_template(template)
-        hyper_parameters = template_config.hyper_parameters.data
-        parser.add_argument("template")
-    else:
-        parser.add_argument("--template", required=False)
+    parser, hyper_parameters, _ = get_parser_and_hprams_data()
 
     parser.add_argument(
         "-i",

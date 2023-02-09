@@ -16,7 +16,6 @@
 
 # pylint: disable=too-many-locals
 
-import argparse
 from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -29,30 +28,20 @@ from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.manager import ConfigManager
-from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
-from otx.cli.utils.parser import add_hyper_parameters_sub_parser
+from otx.cli.utils.parser import (
+    add_hyper_parameters_sub_parser,
+    get_parser_and_hprams_data,
+)
 from otx.core.data.adapter import get_dataset_adapter
 
 
 def get_args():
     """Parses command line arguments."""
-    # TODO: Declaring pre_parser to get the template
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template", nargs="?", default=None)
-    parsed, params = pre_parser.parse_known_args()
-    template = parsed.template
-    hyper_parameters = {}
-    parser = argparse.ArgumentParser()
-    if template and template.endswith("yaml") and Path(template).is_file():
-        template_config = find_and_parse_model_template(template)
-        hyper_parameters = template_config.hyper_parameters.data
-        parser.add_argument("template")
-    else:
-        parser.add_argument("--template", required=False)
+    parser, hyper_parameters, params = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--train-data-roots",

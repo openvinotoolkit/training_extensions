@@ -314,7 +314,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         otx_registry = OTXRegistry(self.otx_root).filter(task_type=task_type)
         if model:
             template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model.lower()]
-            if len(template_lst) == 0:
+            if not template_lst:
                 raise ValueError(
                     f"[*] {model} is not a type supported by OTX {task_type}."
                     f"\n[*] Please refer to 'otx find --template --task_type {task_type}'"
@@ -329,9 +329,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         This function provides a user-friendly OTX workspace and provides more intuitive
         and create customizable templates to help users use all the features of OTX.
-        task_type: The type of task want to get (str)
-        model_type: Specifies the template of a model (str)
-        workspace_path: This is the folder path of the workspace want to create (Union[Path, str])
         """
 
         # Create OTX-workspace

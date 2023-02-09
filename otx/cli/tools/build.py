@@ -17,11 +17,11 @@ and build models with new backbone replacements.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
 from pathlib import Path
 
 from otx.cli.builder import Builder
 from otx.cli.manager import ConfigManager
+from otx.cli.utils.parser import get_parser_and_hprams_data
 
 SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
@@ -37,16 +37,7 @@ def set_workspace(task, model):
 
 def get_args():
     """Parses command line arguments."""
-    # TODO: Declaring pre_parser to get the template
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template", nargs="?", default=None)
-    parsed, _ = pre_parser.parse_known_args()
-    template = parsed.template
-    parser = argparse.ArgumentParser()
-    if template and template.endswith("yaml") and Path(template).is_file():
-        parser.add_argument("template")
-    else:
-        parser.add_argument("--template", required=False)
+    parser, _, _ = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--train-data-roots",

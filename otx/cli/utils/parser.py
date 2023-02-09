@@ -15,7 +15,10 @@
 # and limitations under the License.
 
 import argparse
+from pathlib import Path
 from typing import Dict, Optional
+
+from otx.cli.registry import find_and_parse_model_template
 
 
 def gen_param_help(hyper_parameters):
@@ -126,3 +129,25 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parse
         )
     if return_sub_parser:
         return parser_a
+
+
+def get_parser_and_hprams_data():
+    """A function to distinguish between when there is template input and when there is no template input.
+
+    Inspect the template using pre_parser to get the template's hyper_parameters information.
+    Finally, it returns the parser used in the actual main.
+    """
+    # TODO: Declaring pre_parser to get the template
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument("template", nargs="?", default=None)
+    parsed, params = pre_parser.parse_known_args()
+    template = parsed.template
+    hyper_parameters = {}
+    parser = argparse.ArgumentParser()
+    if template and template.endswith("yaml") and Path(template).is_file():
+        template_config = find_and_parse_model_template(template)
+        hyper_parameters = template_config.hyper_parameters.data
+        parser.add_argument("template")
+    else:
+        parser.add_argument("--template", required=False)
+    return parser, hyper_parameters, params

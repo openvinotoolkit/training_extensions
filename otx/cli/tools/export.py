@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
 from pathlib import Path
 
 from otx.api.configuration.helper import create
@@ -26,20 +25,12 @@ from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.nncf import is_checkpoint_nncf
+from otx.cli.utils.parser import get_parser_and_hprams_data
 
 
 def get_args():
     """Parses command line arguments."""
-    # TODO: Declaring pre_parser to get the template
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template", nargs="?", default=None)
-    parsed, _ = pre_parser.parse_known_args()
-    template = parsed.template
-    parser = argparse.ArgumentParser()
-    if template and template.endswith("yaml") and Path(template).is_file():
-        parser.add_argument("template")
-    else:
-        parser.add_argument("--template", required=False)
+    parser, _, _ = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--load-weights",
@@ -97,7 +88,7 @@ def main():
 
     if "save_model_to" not in args or not args.save_model_to:
         args.save_model_to = str(config_manager.workspace_root / "model-exported")
-    Path(args.save_model_to).mkdir(exist_ok=True)
+    Path(args.save_model_to).mkdir(exist_ok=True, parents=True)
     save_model_data(exported_model, args.save_model_to)
 
 

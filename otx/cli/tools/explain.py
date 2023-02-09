@@ -14,13 +14,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
 from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
-from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import (
     get_explain_dataset_from_filelist,
@@ -30,7 +28,10 @@ from otx.cli.utils.io import (
     save_saliency_output,
 )
 from otx.cli.utils.nncf import is_checkpoint_nncf
-from otx.cli.utils.parser import add_hyper_parameters_sub_parser
+from otx.cli.utils.parser import (
+    add_hyper_parameters_sub_parser,
+    get_parser_and_hprams_data,
+)
 
 ESC_BUTTON = 27
 SUPPORTED_EXPLAIN_ALGORITHMS = ["activationmap", "eigencam", "classwisesaliencymap"]
@@ -38,19 +39,7 @@ SUPPORTED_EXPLAIN_ALGORITHMS = ["activationmap", "eigencam", "classwisesaliencym
 
 def get_args():
     """Parses command line arguments."""
-    # TODO: Declaring pre_parser to get the template
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template", nargs="?", default=None)
-    parsed, _ = pre_parser.parse_known_args()
-    template = parsed.template
-    hyper_parameters = {}
-    parser = argparse.ArgumentParser()
-    if template and template.endswith("yaml") and Path(template).is_file():
-        template_config = find_and_parse_model_template(template)
-        hyper_parameters = template_config.hyper_parameters.data
-        parser.add_argument("template")
-    else:
-        parser.add_argument("--template", required=False)
+    parser, hyper_parameters, _ = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--explain-data-roots",

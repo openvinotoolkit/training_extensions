@@ -92,5 +92,6 @@ class TestToolsOTXTrainAutoConfig:
     @pytest.mark.parametrize("case", train_auto_config_args.keys())
     def test_otx_train(self, case, tmp_dir_path):
         otx_dir = os.getcwd()
+        tmp_dir_path = tmp_dir_path / case
         train_auto_config_args[case]["train_params"] = train_params
         otx_train_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=train_auto_config_args[case])

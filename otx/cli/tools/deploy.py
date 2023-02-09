@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
 import os
 from pathlib import Path
 
@@ -24,20 +23,12 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
+from otx.cli.utils.parser import get_parser_and_hprams_data
 
 
 def get_args():
     """Parses command line arguments."""
-    # TODO: Declaring pre_parser to get the template
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template", nargs="?", default=None)
-    parsed, _ = pre_parser.parse_known_args()
-    template = parsed.template
-    parser = argparse.ArgumentParser()
-    if template and template.endswith("yaml") and Path(template).is_file():
-        parser.add_argument("template")
-    else:
-        parser.add_argument("--template", required=False)
+    parser, _, _ = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--load-weights",
@@ -95,7 +86,7 @@ def main():
         args.save_model_to = str(config_manager.workspace_root / "model-deployed")
     os.makedirs(args.save_model_to, exist_ok=True)
     task.deploy(deployed_model)
-    with open(str(Path(args.save_model_to) / "openvino.zip"), "wb") as write_file:
+    with open(Path(args.save_model_to) / "openvino.zip", "wb") as write_file:
         write_file.write(deployed_model.exportable_code)
 
 
