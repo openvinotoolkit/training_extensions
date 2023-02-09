@@ -47,7 +47,7 @@ class AnomalyInferenceCallback(Callback):
         self.task_type = task_type
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
-    def on_predict_epoch_end(self, _trainer: pl.Trainer, pl_module: AnomalyModule, outputs: List[Any]):
+    def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: List[Any]):
         """Call when the predict epoch ends."""
         # TODO; refactor Ignore too many locals
         # pylint: disable=too-many-locals

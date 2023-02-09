@@ -104,7 +104,7 @@ class OTXAnomalyDataset(Dataset):
             height, width = self.config.dataset.image_size
             boxes = []
             for annotation in dataset_item.get_annotations():
-                if not Rectangle.is_full_box(annotation.shape):  # ignore full image labels
+                if isinstance(annotation.shape, Rectangle) and not Rectangle.is_full_box(annotation.shape):
                     boxes.append(
                         Tensor(
                             [
