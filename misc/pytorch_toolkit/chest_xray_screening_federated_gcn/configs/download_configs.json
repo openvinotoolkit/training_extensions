@@ -1,0 +1,16 @@
+{
+    "data":{
+        "dest_path_data": "dataset/data/data.zip",
+        "url_data":"",
+        "url_split": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi34/phase1/phase1.zip",
+        "dest_path_split": "dataset/split.zip"
+    },
+    "fl_with_gnn":{
+        "url_model": "http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi34/cbis_a1_b1.zip",
+        "dest_path_model": "model_weights/with_gnn/checkpoint.zip"
+    },
+    "fl_without_gnn":{
+        "url_model": "http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi34/cbis_a1_b1.zip",
+        "dest_path_model": "model_weights/without_gnn/checkpoint.zip"
+    }
+}
