@@ -138,7 +138,7 @@ class AnomalyInferenceCallback(Callback):
                 probability = score.item()
                 annotations.append(Annotation(shape=shape, labels=[ScoredLabel(label=label, probability=probability)]))
             # get label
-            label = self.normal_label if len(annotations) == 0 else self.anomalous_label
+            label = self.anomalous_label if annotations else self.normal_label
             probability = pred_score if label.is_anomalous else 1 - pred_score
             # update dataset item
             dataset_item.append_annotations(annotations)

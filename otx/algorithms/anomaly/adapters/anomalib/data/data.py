@@ -115,7 +115,7 @@ class OTXAnomalyDataset(Dataset):
                             ]
                         )
                     )
-                if len(boxes) > 0:
+                if boxes:
                     item["boxes"] = torch.stack(boxes)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
