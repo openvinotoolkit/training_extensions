@@ -66,19 +66,21 @@ def create_model(lib="mmcls"):
 
 
 def create_config():
-    config = Config({
-        "model": {
-            "type": "MockModel",
-        },
-        "data": {
-            "test": {
-                "pipeline": [
-                    {"type": "LoadImageFromFile"},
-                    {"type": "Normalize", "mean": [0, 0, 0], "std": [1, 1, 1]},
-                    {"type": "ImageToTensor", "keys": ["img"]},
-                ]
-            }
+    config = Config(
+        {
+            "model": {
+                "type": "MockModel",
+            },
+            "data": {
+                "test": {
+                    "pipeline": [
+                        {"type": "LoadImageFromFile"},
+                        {"type": "Normalize", "mean": [0, 0, 0], "std": [1, 1, 1]},
+                        {"type": "ImageToTensor", "keys": ["img"]},
+                    ]
+                }
+            },
         }
-    })
+    )
 
     return config

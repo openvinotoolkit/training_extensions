@@ -12,7 +12,6 @@ from otx.mpa.utils.logger import get_logger
 
 from .stage import DetectionStage
 
-
 logger = get_logger()
 
 

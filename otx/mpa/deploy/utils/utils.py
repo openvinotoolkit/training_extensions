@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
-import numpy as np
-
 from collections.abc import MutableMapping
+
+import numpy as np
+import torch
 
 
 def sync_batchnorm_2_batchnorm(module, dim=2):

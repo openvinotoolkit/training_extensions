@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import pytest
-import torch
 import numpy as np
-from otx.mpa.deploy.utils.utils import sync_batchnorm_2_batchnorm, numpy_2_list
+import torch
 
+from otx.mpa.deploy.utils.utils import numpy_2_list, sync_batchnorm_2_batchnorm
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
 
 def create_model():
     class MockModel(torch.nn.Module):
@@ -15,14 +15,19 @@ def create_model():
             super().__init__()
             self.conv1 = torch.nn.Conv2d(3, 3, 3)
             self.norm = torch.nn.BatchNorm2d(3)
-            self.dict_norm = torch.nn.ModuleDict({
-                "0": torch.nn.BatchNorm2d(2),
-            })
-            self.list_norm = torch.nn.ModuleList([
-                torch.nn.BatchNorm2d(2),
-            ])
+            self.dict_norm = torch.nn.ModuleDict(
+                {
+                    "0": torch.nn.BatchNorm2d(2),
+                }
+            )
+            self.list_norm = torch.nn.ModuleList(
+                [
+                    torch.nn.BatchNorm2d(2),
+                ]
+            )
 
     return MockModel()
+
 
 @e2e_pytest_unit
 def test_convert_batchnorm():

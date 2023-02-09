@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
 import os
 import tempfile
 
+import numpy as np
 import torch
-from mmcv.utils import ConfigDict, Config
+from mmcv.utils import Config
 
 from otx.mpa.deploy.apis import NaiveExporter
 from otx.mpa.deploy.utils import is_mmdeploy_enabled
@@ -40,6 +40,7 @@ class TestNaiveExporter:
         from otx.algorithms.classification.adapters.mmcls.utils.builder import (
             build_classifier,
         )
+
         config = create_config()
         create_model("mmcls")
 
@@ -61,25 +62,29 @@ if is_mmdeploy_enabled():
         @e2e_pytest_unit
         def test_sub_component(self):
             config = create_config()
-            deploy_config = Config({
-                "ir_config": {
-                    "type": "onnx",
-                    "input_names": ["input"],
-                    "output_names": ["output"],
-                },
-                "codebase_config": {
-                    "type": "mmcls",
-                    "task": "Classification",
-                },
-                "backend_config": {
-                    "type": "openvino",
-                    "model_inputs": [{
-                        "opt_shapes": {
-                            "input": [1, 3, 50, 50],
-                        }
-                    }],
-                },
-            })
+            deploy_config = Config(
+                {
+                    "ir_config": {
+                        "type": "onnx",
+                        "input_names": ["input"],
+                        "output_names": ["output"],
+                    },
+                    "codebase_config": {
+                        "type": "mmcls",
+                        "task": "Classification",
+                    },
+                    "backend_config": {
+                        "type": "openvino",
+                        "model_inputs": [
+                            {
+                                "opt_shapes": {
+                                    "input": [1, 3, 50, 50],
+                                }
+                            }
+                        ],
+                    },
+                }
+            )
             create_model("mmcls")
 
             with tempfile.TemporaryDirectory() as tempdir:
@@ -106,25 +111,29 @@ if is_mmdeploy_enabled():
             )
 
             config = create_config()
-            deploy_config = Config({
-                "ir_config": {
-                    "type": "onnx",
-                    "input_names": ["input"],
-                    "output_names": ["output"],
-                },
-                "codebase_config": {
-                    "type": "mmcls",
-                    "task": "Classification",
-                },
-                "backend_config": {
-                    "type": "openvino",
-                    "model_inputs": [{
-                        "opt_shapes": {
-                            "input": [1, 3, 50, 50],
-                        }
-                    }],
-                },
-            })
+            deploy_config = Config(
+                {
+                    "ir_config": {
+                        "type": "onnx",
+                        "input_names": ["input"],
+                        "output_names": ["output"],
+                    },
+                    "codebase_config": {
+                        "type": "mmcls",
+                        "task": "Classification",
+                    },
+                    "backend_config": {
+                        "type": "openvino",
+                        "model_inputs": [
+                            {
+                                "opt_shapes": {
+                                    "input": [1, 3, 50, 50],
+                                }
+                            }
+                        ],
+                    },
+                }
+            )
             create_model("mmcls")
 
             with tempfile.TemporaryDirectory() as tempdir:

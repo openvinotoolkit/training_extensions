@@ -3,7 +3,7 @@
 #
 
 from .mmdeploy import is_mmdeploy_enabled, mmdeploy_init_model_helper
-from .utils import sync_batchnorm_2_batchnorm, numpy_2_list
+from .utils import numpy_2_list, sync_batchnorm_2_batchnorm
 
 __all__ = [
     "is_mmdeploy_enabled",

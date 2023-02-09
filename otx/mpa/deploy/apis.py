@@ -14,11 +14,7 @@ import numpy as np
 import torch
 from mmcv.parallel import collate, scatter
 
-from .utils import (
-    is_mmdeploy_enabled,
-    mmdeploy_init_model_helper,
-    numpy_2_list,
-)
+from .utils import is_mmdeploy_enabled, mmdeploy_init_model_helper, numpy_2_list
 
 
 class NaiveExporter:
@@ -148,9 +144,7 @@ class NaiveExporter:
         }
         mo_args.update(openvino_options)
 
-        ret, msg = mo_wrapper.generate_ir(
-            output_dir, output_dir, silent=False, **mo_args
-        )
+        ret, msg = mo_wrapper.generate_ir(output_dir, output_dir, silent=False, **mo_args)
         if ret != 0:
             raise ValueError(msg)
         return (
@@ -195,9 +189,7 @@ if is_mmdeploy_enabled():
             task_processor = build_task_processor(cfg, deploy_cfg, "cpu")
 
             def helper(*args, **kwargs):
-                return mmdeploy_init_model_helper(
-                    *args, **kwargs, model_builder=model_builder
-                )
+                return mmdeploy_init_model_helper(*args, **kwargs, model_builder=model_builder)
 
             task_processor.__class__.init_pytorch_model = helper
 
@@ -267,26 +259,17 @@ if is_mmdeploy_enabled():
                 mo_options.args += f'--model_name "{model_name}" '
 
             try:
-                openvino_api.from_onnx(
-                    onnx_path, output_dir, input_info, output_names, mo_options
-                )
+                openvino_api.from_onnx(onnx_path, output_dir, input_info, output_names, mo_options)
             except CalledProcessError as e:
                 # NOTE: mo returns non zero return code (245) even though it successfully generate IR
                 cur_time = time.time()
                 time_threshold = 5
                 if (
                     e.returncode == 245
-                    and {model_name + ".bin", model_name + ".xml"}
-                    - set(os.listdir(output_dir))
+                    and {model_name + ".bin", model_name + ".xml"} - set(os.listdir(output_dir))
                     and (
-                        os.path.getmtime(os.path.join(output_dir, model_name + ".bin"))
-                        - cur_time
-                        < time_threshold
-                        and os.path.getmtime(
-                            os.path.join(output_dir, model_name + ".xml")
-                        )
-                        - cur_time
-                        < time_threshold
+                        os.path.getmtime(os.path.join(output_dir, model_name + ".bin")) - cur_time < time_threshold
+                        and os.path.getmtime(os.path.join(output_dir, model_name + ".xml")) - cur_time < time_threshold
                     )
                 ):
                     raise e

@@ -12,7 +12,6 @@ from otx.mpa.utils.logger import get_logger
 
 from .stage import ClsStage
 
-
 logger = get_logger()
 
 
