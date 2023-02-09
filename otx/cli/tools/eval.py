@@ -164,6 +164,8 @@ def main():
             write_file,
         )
 
+    return dict(retcode=0, template=template.name)
+
 
 if __name__ == "__main__":
     main()

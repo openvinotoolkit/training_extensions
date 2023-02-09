@@ -4,9 +4,12 @@
 #
 
 import os
+import sys
+from unittest.mock import patch
 
 import pytest
 
+from otx.cli.tools import cli
 from otx.cli.tools.build import SUPPORTED_TASKS
 from otx.cli.utils.tests import (
     otx_build_auto_config,
@@ -73,3 +76,65 @@ class TestToolsOTXAutoConfig:
     def test_otx_build_without_autosplit(self, tmp_dir_path):
         otx_dir = os.getcwd()
         otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_without_autosplit)
+
+
+class TestTelemetryIntegration:
+    _CMDS = ["demo", "build", "deploy", "eval", "explain", "export", "find", "optimize", "train"]
+
+    @e2e_pytest_component
+    @patch("otx.cli.utils.telemetry.init_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.close_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_version", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_cmd_results", return_value=None)
+    def test_tm_integration_exit_0(
+        self,
+        mock_send_cmd,
+        mock_send_version,
+        mock_close_tm,
+        mock_init_tm,
+    ):
+        backup_argv = sys.argv
+        for cmd in self._CMDS:
+            sys.argv = ["otx", cmd]
+            with patch(f"otx.cli.tools.cli.otx_{cmd}", return_value=None) as mock_cmd:
+                ret = cli.main()
+
+            assert ret == 0
+            mock_cmd.assert_called_once()
+            mock_init_tm.assert_called_once()
+            mock_close_tm.assert_called_once()
+            mock_send_cmd.assert_called_once_with(None, cmd, {"retcode": 0})
+            # reset mock state
+            mock_init_tm.reset_mock()
+            mock_close_tm.reset_mock()
+            mock_send_cmd.reset_mock()
+        sys.argv = backup_argv
+
+    @e2e_pytest_component
+    @patch("otx.cli.utils.telemetry.init_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.close_telemetry_session", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_version", return_value=None)
+    @patch("otx.cli.utils.telemetry.send_cmd_results", return_value=None)
+    def test_tm_integration_exit_exception(
+        self,
+        mock_send_cmd,
+        mock_send_version,
+        mock_close_tm,
+        mock_init_tm,
+    ):
+        backup_argv = sys.argv
+        for cmd in self._CMDS:
+            with patch(f"otx.cli.tools.cli.otx_{cmd}", side_effect=Exception()):
+                sys.argv = ["otx", cmd]
+                with pytest.raises(Exception) as e:
+                    cli.main()
+
+            assert e.type == Exception, f"{e}"
+            mock_init_tm.assert_called_once()
+            mock_close_tm.assert_called_once()
+            mock_send_cmd.assert_called_once_with(None, cmd, {"retcode": -1, "exception": repr(Exception())})
+            # reset mock state
+            mock_init_tm.reset_mock()
+            mock_close_tm.reset_mock()
+            mock_send_cmd.reset_mock()
+        sys.argv = backup_argv
