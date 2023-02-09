@@ -38,28 +38,28 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'person' class ##TODO: Currently, it is closed to sample test. need to change other sample
 args0 = {
-    "--train-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--val-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--test-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--input": "tests/assets/coco_dataset/coco_detection/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
 args = {
-    "--train-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--val-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--test-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--input": "tests/assets/coco_dataset/coco_detection/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
 args_semisl = {
-    "--train-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--val-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--test-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--unlabeled-data-roots": "tests/assets/coco_dataset/coco_detection",
-    "--input": "tests/assets/coco_dataset/coco_detection/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--unlabeled-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
