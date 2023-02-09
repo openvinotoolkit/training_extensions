@@ -7,7 +7,6 @@
 from copy import deepcopy
 from typing import List, Optional
 
-import numpy as np
 import pytest
 
 from otx.algorithms.action.adapters.openvino.dataloader import (
@@ -25,7 +24,6 @@ from otx.api.entities.annotation import (
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
-from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.api.entities.scored_label import ScoredLabel
@@ -58,14 +56,6 @@ class MockDatasetItemEntity(DatasetItemEntity):
 
     def get_metadata(self) -> List[MetadataItemEntity]:
         return self.__metadata
-
-
-class MockImage(Image):
-    """Mock class for Image entity."""
-
-    def __init__(self):
-        self.__data = np.ndarray((256, 256))
-        super().__init__(self.__data)
 
 
 @e2e_pytest_unit
