@@ -1,0 +1,34 @@
+{
+    "label_tree": {
+        "type": "tree",
+        "directed": true,
+        "nodes": [],
+        "edges": []
+    },
+    "label_groups": [
+        {
+            "_id": "62a2f191f43e3aeab21323f7",
+            "name": "from_label_list",
+            "label_ids": [
+                "0"
+            ],
+            "relation_type": "EXCLUSIVE"
+        }
+    ],
+    "all_labels": {
+        "0": {
+            "_id": "0",
+            "name": "object",
+            "color": {
+                "red": 90,
+                "green": 230,
+                "blue": 65,
+                "alpha": 255
+            },
+            "hotkey": "",
+            "domain": "DETECTION",
+            "creation_date": "2022-06-10T07:24:01.218000",
+            "is_empty": false
+        }
+    }
+}

@@ -1,0 +1,75 @@
+{
+    "search_algorithm": "asha",
+    "search_space": {
+        "learning_parameters.learning_rate": {
+            "type": "quniform",
+            "range": [
+                0.001,
+                0.1,
+                0.001,
+                2
+            ]
+        },
+        "learning_parameters.batch_size": {
+            "type": "qloguniform",
+            "range": [
+                4,
+                8,
+                2,
+                2
+            ]
+        }
+    },
+    "metric": "mAP",
+    "subset_ratio": 1.0,
+    "image_resize": [
+        0,
+        0
+    ],
+    "full_dataset_size": 240,
+    "reduction_factor": 2,
+    "config_list": [
+        {
+            "trial_id": 0,
+            "config": {
+                "learning_parameters.learning_rate": 0.008,
+                "learning_parameters.batch_size": 8
+            },
+            "status": 2,
+            "score": 0.15,
+            "bracket": 0
+        },
+        {
+            "trial_id": 1,
+            "config": {
+                "learning_parameters.batch_size": 6,
+                "learning_parameters.learning_rate": 0.092
+            },
+            "status": 2,
+            "score": 0.005,
+            "bracket": 0
+        },
+        {
+            "trial_id": 2,
+            "config": {
+                "learning_parameters.batch_size": 4,
+                "learning_parameters.learning_rate": 0.056
+            },
+            "status": 2,
+            "score": 0.004,
+            "bracket": 0
+        },
+        {
+            "trial_id": 3,
+            "config": {
+                "learning_parameters.batch_size": 6,
+                "learning_parameters.learning_rate": 0.04
+            },
+            "status": 2,
+            "score": 0.01,
+            "bracket": 0
+        }
+    ],
+    "num_gen_config": 4,
+    "best_config_id": 0
+}
