@@ -13,7 +13,10 @@ from bson import ObjectId
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch.utils.data import DataLoader
 
-from otx.algorithms.anomaly.adapters.anomalib.data.data import OTXAnomalyDataset
+from otx.algorithms.anomaly.adapters.anomalib.data.data import (
+    OTXAnomalyDataModule,
+    OTXAnomalyDataset,
+)
 from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
     AnomalyClassificationDataset,
     AnomalyDetectionDataset,
@@ -33,9 +36,16 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.subset import Subset
 
 
-def get_shapes_dataset(task_type: TaskType) -> DatasetEntity:
+def get_shapes_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEntity:
+    """Get shapes dataset.
+
+    Args:
+        task_type (TaskType): Task type.
+        one_each (bool): Gets one each of each class. Defaults to False.
+    """
     dataset: DatasetEntity
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
         train_subset, test_subset, val_subset = _get_annotations("classification")
@@ -48,6 +58,23 @@ def get_shapes_dataset(task_type: TaskType) -> DatasetEntity:
         dataset = AnomalyDetectionDataset(train_subset, val_subset, test_subset)
     else:
         raise ValueError(f"{task_type} not supported.")
+
+    if one_each:
+        train_subset = []
+        test_subset = []
+        val_subset = []
+        for item in dataset._items:
+            if item.subset == Subset.TRAINING and len(train_subset) < 1:
+                train_subset.append(item)
+            elif item.subset == Subset.TESTING and item.annotation_scene.annotations[0].get_labels()[0].name not in [
+                a.annotation_scene.annotations[0].get_labels()[0].name for a in test_subset
+            ]:
+                test_subset.append(item)
+            elif item.subset == Subset.VALIDATION and item.annotation_scene.annotations[0].get_labels()[0].name not in [
+                a.annotation_scene.annotations[0].get_labels()[0].name for a in val_subset
+            ]:
+                val_subset.append(item)
+        dataset._items = train_subset + test_subset + val_subset
     return dataset
 
 
@@ -100,16 +127,16 @@ class MockDataModule(LightningDataModule):
         self.labels = [self.dataset.abnormal_label, self.dataset.normal_label]
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset)
+        return DataLoader(self.dataset, pin_memory=True)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset)
+        return DataLoader(self.dataset, pin_memory=True)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset)
+        return DataLoader(self.dataset, pin_memory=True)
 
     def predict_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset, shuffle=False)
+        return DataLoader(self.dataset, shuffle=False, pin_memory=True)
 
 
 class ShapesDataset(OTXAnomalyDataset):
@@ -125,9 +152,8 @@ class ShapesDataset(OTXAnomalyDataset):
         )
 
 
-class ShapesDataModule(LightningDataModule):
+class ShapesDataModule(OTXAnomalyDataModule):
     def __init__(self, task_type: TaskType):
-        super().__init__()
         self.dataset = ShapesDataset(get_shapes_dataset(task_type), task_type)
         self.labels = self.dataset.dataset.get_labels()
 

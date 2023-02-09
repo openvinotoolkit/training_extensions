@@ -1,4 +1,6 @@
-from pathlib import Path
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 
 import pytest
 
@@ -26,7 +28,7 @@ from otx.algorithms.anomaly.configs.segmentation.stfpm import (
 )
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import convert, create
-from otx.api.entities.model_template import ModelTemplate, parse_model_template
+from tests.unit.algorithms.anomaly.helpers.utils import get_model_template
 
 
 @pytest.mark.parametrize(
@@ -52,13 +54,7 @@ def test_model_template_loading(model_name, configurable_parameters):
     # Check if it can be created from yaml
     configurable_parameters_yaml: ConfigurableParameters = create(configurable_parameters_yaml_str)
 
-    template_file_root = Path("otx", "algorithms", "anomaly", "configs", "classification", model_name)
-    template_file_path = (
-        template_file_root / "template.yaml"
-        if (template_file_root / "template.yaml").exists()
-        else template_file_root / "template_experimental.yaml"
-    )
-    model_template: ModelTemplate = parse_model_template(str(template_file_path))
+    model_template = get_model_template(model_name)
     hyper_parameters: dict = model_template.hyper_parameters.data
     configurable_parameters_loaded = create(hyper_parameters)
 
