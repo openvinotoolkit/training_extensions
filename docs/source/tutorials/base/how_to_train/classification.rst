@@ -5,7 +5,7 @@ This live example shows how to easily train, validate, optimize and export class
 
 .. note::
 
-  To learn more in depth how to manage training process of the model, refer to :doc:`./detection`.
+  To learn deeper how to manage training process of the model, refer to :doc:`./detection`.
 
   To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
