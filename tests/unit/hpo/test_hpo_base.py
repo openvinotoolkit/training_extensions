@@ -49,7 +49,7 @@ class TestTrial:
         del good_trial_args["train_environment"]
         trial = Trial(**good_trial_args)
         train_config = trial.get_train_configuration()
-        assert train_config["train_environment"] == None
+        assert train_config["train_environment"] is None
 
     @pytest.mark.parametrize("score", [-10, 12.5])
     def test_register_score(self, trial, score):
@@ -80,15 +80,15 @@ class TestTrial:
         assert expected_score == trial.get_best_score(mode, resource_limit)
 
     def test_get_best_score_empty_score(self, trial):
-        assert trial.get_best_score() == None
+        assert trial.get_best_score() is None
 
     def test_get_best_score_no_trial_to_meet_condition(self, trial):
         scores = [val for val in range(100)]
         register_scores_to_trial(trial, scores)
-        assert trial.get_best_score(resource_limit=0.5) == None
+        assert trial.get_best_score(resource_limit=0.5) is None
 
     def test_get_best_score_with_empty_scores(self, trial):
-        assert trial.get_best_score() == None
+        assert trial.get_best_score() is None
 
     def test_get_best_score_with_wrong_mode_value(self, trial):
         register_scores_to_trial(trial)

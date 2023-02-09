@@ -227,7 +227,7 @@ class TestRung:
 
     def test_get_best_trial_with_no_trial(self, rung):
         best_trial = rung.get_best_trial()
-        assert best_trial == None
+        assert best_trial is None
 
     def test_get_best_trial_wrong_mode_val(self, rung):
         with pytest.raises(ValueError):
@@ -236,10 +236,10 @@ class TestRung:
     def test_need_more_trials(self, rung, good_trial_args):
         for _ in range(rung.num_required_trial):
             trial = AshaTrial(**good_trial_args)
-            assert rung.need_more_trials() == True
+            assert rung.need_more_trials()
             rung.add_new_trial(trial)
 
-        assert rung.need_more_trials() == False
+        assert not rung.need_more_trials()
 
     def test_get_num_trials(self, rung, good_trial_args):
         for idx in range(rung.num_required_trial):
@@ -252,23 +252,23 @@ class TestRung:
             trial = AshaTrial(**good_trial_args)
             rung.add_new_trial(trial)
             if i != rung.num_required_trial:
-                assert rung.need_more_trials() == True
+                assert rung.need_more_trials()
             else:
-                assert rung.need_more_trials() == False
+                assert not rung.need_more_trials()
 
     def test_is_done(self, rung, good_trial_args):
         for i in range(rung.num_required_trial - 1):
             trial = AshaTrial(**good_trial_args)
             register_scores_to_trial(trial, [val for val in range(rung.resource)])
             rung.add_new_trial(trial)
-            assert rung.is_done() == False
+            assert not rung.is_done()
 
         trial = AshaTrial(**good_trial_args)
         register_scores_to_trial(trial, [val for val in range(rung.resource - 1)])
         rung.add_new_trial(trial)
-        assert rung.is_done() == False
+        assert not rung.is_done()
         trial.register_score(100, rung.resource + 1)
-        assert rung.is_done() == True
+        assert rung.is_done()
 
     def test_get_trial_to_promote_not_asha(self, rung, good_trial_args):
         maximum_score = 9999999
@@ -318,7 +318,7 @@ class TestRung:
             trial.status = TrialStatus.RUNNING
 
         promoted_trial = rung.get_trial_to_promote()
-        assert promoted_trial == None
+        assert promoted_trial is None
 
         trial.status = TrialStatus.STOP
         promoted_trial = rung.get_trial_to_promote()
@@ -334,13 +334,13 @@ class TestRung:
 
         # running trial isn't provided
         new_trial = rung.get_next_trial()
-        assert new_trial == None
+        assert new_trial is None
 
         # finished trial isn't provided
         register_scores_to_trial(trial, [i for i in range(trial.iteration)])
         trial.status = TrialStatus.STOP
         new_trial = rung.get_next_trial()
-        assert new_trial == None
+        assert new_trial is None
 
     def test_get_next_trial_stopped_in_progress(self, rung, trial):
         rung.add_new_trial(trial)
@@ -453,7 +453,7 @@ class TestBracket:
     def test_get_next_trial(self, bracket):
         while not bracket.is_done():
             trial = bracket.get_next_trial()
-            assert trial != None
+            assert trial is not None
 
             trial.status = TrialStatus.RUNNING
             trial.register_score(0, trial.iteration)
@@ -475,7 +475,7 @@ class TestBracket:
             trial.register_score(0, trial.iteration)
 
         trial = bracket.get_next_trial()
-        assert trial == None
+        assert trial is None
 
     def test_is_done(self, bracket):
         while True:
@@ -485,7 +485,7 @@ class TestBracket:
 
             trial.register_score(score=0, resource=trial.iteration)
 
-        assert bracket.is_done() == True
+        assert bracket.is_done()
 
     @pytest.mark.parametrize("num", [1, 5, 15])
     def test_num_trial_is_not_enough(self, good_bracket_args, num):
@@ -495,7 +495,7 @@ class TestBracket:
         ]
 
         with pytest.raises(ValueError):
-            bracket = Bracket(**wrong_bracket_args)
+            Bracket(**wrong_bracket_args)
 
     def test_get_best_trial(self, bracket):
         expected_score = 999999
@@ -517,7 +517,7 @@ class TestBracket:
         assert trial.id == expected_trial_id
 
     def test_get_best_trial_given_absent_trial(self, bracket):
-        bracket.get_best_trial() == None
+        assert bracket.get_best_trial() is None
 
     def test_get_best_trial_with_one_unfinished_trial(self, bracket):
         trial = bracket.get_next_trial()
@@ -552,7 +552,7 @@ class TestBracket:
         for rung_status in result["rung_status"]:
             assert rung_status["num_trial"] == rung_status["num_required_trial"]
         for i in range(trial_num):
-            assert osp.exists(osp.join(tmp_path, f"{i}.json")) == True
+            assert osp.exists(osp.join(tmp_path, f"{i}.json"))
 
     def test_print_result(self, bracket):
         while True:
@@ -596,15 +596,15 @@ class TestHyperBand:
 
     def test_init_maximum_is_same_with_minimum(self, good_hyperband_args):
         good_hyperband_args["maximum_resource"] = good_hyperband_args["minimum_resource"]
-        hyper_band = HyperBand(**good_hyperband_args)
+        HyperBand(**good_hyperband_args)
 
     def test_init_no_minimum_resource(self, good_hyperband_args):
         del good_hyperband_args["minimum_resource"]
-        hyper_band = HyperBand(**good_hyperband_args)
+        HyperBand(**good_hyperband_args)
 
     def test_init_no_maximum_resource(self, good_hyperband_args):
         del good_hyperband_args["maximum_resource"]
-        hyper_band = HyperBand(**good_hyperband_args)
+        HyperBand(**good_hyperband_args)
 
     @pytest.mark.parametrize("num", [1, 10])
     def test_make_new_hyper_parameter_configs(self, good_hyperband_args, num):
@@ -637,7 +637,7 @@ class TestHyperBand:
                 break
             trial.status = TrialStatus.RUNNING
 
-        assert hyper_band.is_done() == False
+        assert not hyper_band.is_done()
 
     def test_report_score(self, hyper_band):
         trial = hyper_band.get_next_sample()
@@ -671,7 +671,7 @@ class TestHyperBand:
 
     def test_get_best_config_before_train(self, hyper_band):
         best_config = hyper_band.get_best_config()
-        assert best_config == None
+        assert best_config is None
 
     def test_train_option_exists(self, hyper_band):
         trial = hyper_band.get_next_sample()
@@ -709,7 +709,7 @@ class TestHyperBand:
         i = 0
         while i < num_prior_param:
             trial = hyper_band.get_next_sample()
-            if trial == None:
+            if trial is None:
                 break
 
             if not trial.score:
@@ -796,7 +796,6 @@ class TestHyperBand:
             if trial is None:
                 break
 
-            resource = ceil(trial.iteration - trial.get_progress())
             hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=False)
             hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=True)
 

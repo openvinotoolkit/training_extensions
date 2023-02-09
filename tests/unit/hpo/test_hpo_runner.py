@@ -35,7 +35,7 @@ class TestCPUResourceManager:
             assert cpu_resource_manager.reserve_resource(i) == {}
 
         for i in range(10):
-            assert cpu_resource_manager.reserve_resource(i) == None
+            assert cpu_resource_manager.reserve_resource(i) is None
 
     def test_reserve_resource_reserved_already(self, cpu_resource_manager):
         cpu_resource_manager.reserve_resource(0)
@@ -53,10 +53,10 @@ class TestCPUResourceManager:
         num_parallel_trial = cpu_resource_manager._num_parallel_trial
 
         for i in range(num_parallel_trial):
-            assert cpu_resource_manager.have_available_resource() == True
+            assert cpu_resource_manager.have_available_resource()
             cpu_resource_manager.reserve_resource(i)
 
-        assert cpu_resource_manager.have_available_resource() == False
+        assert not cpu_resource_manager.have_available_resource()
 
 
 class TestGPUResourceManager:
@@ -90,7 +90,7 @@ class TestGPUResourceManager:
             assert len(env["CUDA_VISIBLE_DEVICES"].split(",")) == num_gpu_for_single_trial
 
         for i in range(max_parallel, max_parallel + 10):
-            assert gpu_resource_manager.reserve_resource(i) == None
+            assert gpu_resource_manager.reserve_resource(i) is None
 
     def test_reserve_resource_reserved_already(self, gpu_resource_manager):
         gpu_resource_manager.reserve_resource(0)
@@ -115,11 +115,11 @@ class TestGPUResourceManager:
         num_gpus = len(gpu_resource_manager._available_gpu)
 
         for i in range(max_parallel):
-            assert gpu_resource_manager.have_available_resource() == True
+            assert gpu_resource_manager.have_available_resource()
             gpu_resource_manager.reserve_resource(i)
 
         for i in range(max_parallel, max_parallel + 10):
-            assert gpu_resource_manager.have_available_resource() == False
+            assert not gpu_resource_manager.have_available_resource()
 
 
 def test_get_resource_manager_cpu():

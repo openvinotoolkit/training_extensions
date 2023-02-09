@@ -152,7 +152,7 @@ class TestSingleSearchSpace:
     def test_init_with_good_input(self, type):
         args = MAKE_GOOD_ARGS[type]()
         for arg in args:
-            search_space_class = SingleSearchSpace(**arg)
+            SingleSearchSpace(**arg)
 
     @pytest.mark.parametrize("type", NOT_CATEGORICAL_TYPE)
     def test_init_wrong_minmax_arg(self, type):
@@ -163,7 +163,7 @@ class TestSingleSearchSpace:
                 errors = wrong_arg["error"]
                 del wrong_arg["error"]
                 with pytest.raises(errors):
-                    search_space_class = SingleSearchSpace(**wrong_arg)
+                    SingleSearchSpace(**wrong_arg)
 
     @pytest.mark.parametrize("type", USE_QUANTIZED_STEP_TYPE)
     def test_init_wrong_step_arg(self, type):
@@ -175,7 +175,7 @@ class TestSingleSearchSpace:
                 errors = wrong_arg["error"]
                 del wrong_arg["error"]
                 with pytest.raises(errors):
-                    search_space_class = SingleSearchSpace(**wrong_arg)
+                    SingleSearchSpace(**wrong_arg)
 
     @pytest.mark.parametrize("type", USE_LOG_SCALE_TYPE)
     def test_init_wrong_log_base_arg(self, type):
@@ -187,7 +187,7 @@ class TestSingleSearchSpace:
                 errors = wrong_arg["error"]
                 del wrong_arg["error"]
                 with pytest.raises(errors):
-                    search_space_class = SingleSearchSpace(**wrong_arg)
+                    SingleSearchSpace(**wrong_arg)
 
     def test_init_wrong_choice_list_arg(self):
         args = MAKE_GOOD_ARGS["choice"]()
@@ -198,7 +198,7 @@ class TestSingleSearchSpace:
                 errors = wrong_arg["error"]
                 del wrong_arg["error"]
                 with pytest.raises(errors):
-                    search_space_class = SingleSearchSpace(**wrong_arg)
+                    SingleSearchSpace(**wrong_arg)
 
     def test_init_with_wrong_type(self):
         for type in ALL_TYPE:
@@ -209,7 +209,7 @@ class TestSingleSearchSpace:
                     errors = wrong_arg["error"]
                     del wrong_arg["error"]
                     with pytest.raises(errors):
-                        search_space_class = SingleSearchSpace(**wrong_arg)
+                        SingleSearchSpace(**wrong_arg)
 
     def test_set_value_normally(self):
         args = []
@@ -308,9 +308,9 @@ class TestSingleSearchSpace:
         for arg in args:
             sss = SingleSearchSpace(**arg)
             if type in NOT_CATEGORICAL_TYPE:
-                assert sss.is_categorical() == False
+                assert not sss.is_categorical()
             else:
-                assert sss.is_categorical() == True
+                assert sss.is_categorical()
 
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_use_quantized_step(self, type):
@@ -318,9 +318,9 @@ class TestSingleSearchSpace:
         for arg in args:
             sss = SingleSearchSpace(**arg)
             if type in USE_QUANTIZED_STEP_TYPE:
-                assert sss.use_quantized_step() == True
+                assert sss.use_quantized_step()
             else:
-                assert sss.use_quantized_step() == False
+                assert not sss.use_quantized_step()
 
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_use_log_scale(self, type):
@@ -328,9 +328,9 @@ class TestSingleSearchSpace:
         for arg in args:
             sss = SingleSearchSpace(**arg)
             if type in USE_LOG_SCALE_TYPE:
-                assert sss.use_log_scale() == True
+                assert sss.use_log_scale()
             else:
-                assert sss.use_log_scale() == False
+                assert not sss.use_log_scale()
 
     @pytest.mark.parametrize("type", ALL_TYPE)
     def test_lower_space_upper_space(self, type):
@@ -465,18 +465,18 @@ class TestSearchSpace:
             num_to_delete = 1
         search_space[f"{type}_search_space"]["range"] = search_space[f"{type}_search_space"]["range"][:-num_to_delete]
         with pytest.raises(ValueError):
-            ss = SearchSpace(search_space)
+            SearchSpace(search_space)
 
     def test_init_both_format_exists(self):
         search_space = self.get_search_space_depending_on_type(ALL_TYPE)
         range_format = self.get_search_space_depending_on_type(ALL_TYPE, True)
         for key, val in search_space.items():
             val.update(range_format[key])
-        ss = SearchSpace(search_space)
+        SearchSpace(search_space)
 
     def test_get_item_available(self, search_space_with_all_types):
         for type in ALL_TYPE:
-            val = search_space_with_all_types[f"{type}_search_space"]
+            search_space_with_all_types[f"{type}_search_space"]
 
     def test_iteratble(self, search_space_with_all_types):
         for val in search_space_with_all_types:
@@ -523,7 +523,7 @@ class TestSearchSpace:
     def test_get_real_config_with_wrong_name_config(self, search_space_with_all_types, wrong_name):
         config = {wrong_name: 3.2}
         with pytest.raises(KeyError):
-            real_space = search_space_with_all_types.get_real_config(config)
+            search_space_with_all_types.get_real_config(config)
 
     def test_get_space_config_with_proper_argument(self, search_space_with_all_types):
         # search space configuration
@@ -544,7 +544,7 @@ class TestSearchSpace:
     def test_get_space_config_with_wrong_name_config(self, search_space_with_all_types, wrong_name):
         config = {wrong_name: 3.2}
         with pytest.raises(KeyError):
-            real_space = search_space_with_all_types.get_space_config(config)
+            search_space_with_all_types.get_space_config(config)
 
     def test_get_bayeopt_search_space(self, search_space_with_all_types):
         bayes_opt_format = search_space_with_all_types.get_bayeopt_search_space()
@@ -558,9 +558,9 @@ class TestSearchSpace:
         config = {}
         for key in search_space_with_all_types:
             config[key] = 0.5
-        real_space = search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)
+        search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)
 
     @pytest.mark.parametrize("config", ["wrong_value", [1, 3, 4], (1, 2)])
     def test_convert_from_zero_one_scale_to_real_space_with_bad_arg_type(self, search_space_with_all_types, config):
         with pytest.raises(AttributeError):
-            real_space = search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)
+             search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)
