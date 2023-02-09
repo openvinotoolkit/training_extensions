@@ -47,7 +47,6 @@ class TestOTXClassification:
         fake_metadata = {'original_shape': (254, 320, 3), 'resized_shape': (224, 224, 3)}
         prediction = self.cls_ov_model.postprocess(fake_model_out, fake_metadata)
         if self.cls_ov_model.hierarchical:
-            print(prediction)
             assert len(prediction) == 3
         else:
             assert prediction[0][0] == 1
