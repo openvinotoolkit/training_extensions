@@ -29,6 +29,7 @@ import otx.algorithms.common.adapters.mmcv.nncf.patches  # noqa: F401  # pylint:
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_keys,
     remove_from_config,
+    remove_from_configs_by_type,
 )
 from otx.algorithms.common.adapters.nncf import (
     check_nncf_is_enabled,
@@ -210,6 +211,15 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
                 "type": "AccuracyAwareRunner",
                 "nncf_config": nncf_config,
             }
+
+            # AccuracyAwareRunner needs to evaluate a model when it needs
+            # unlike other runners counting on periodically evaluated score by 'EvalHook'.
+            # To configure 'interval' to 'max_epoch' makes sure 'EvalHook' not to evaluate
+            # during training.
+            max_epoch = nncf_config.accuracy_aware_training.params.maximal_total_epochs
+            self._recipe_cfg.evaluation.interval = max_epoch
+            # Disable 'AdaptiveTrainSchedulingHook' as training is managed by AccuracyAwareRunner
+            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "AdaptiveTrainSchedulingHook")
 
     @staticmethod
     def model_builder(

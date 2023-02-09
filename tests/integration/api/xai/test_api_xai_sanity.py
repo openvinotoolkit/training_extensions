@@ -73,7 +73,7 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
 
         # Train and save a model
         task = ClassificationTrainTask(task_environment=task_environment)
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         output_model = ModelEntity(
             dataset,
             task_environment.get_model_configuration(),
@@ -120,7 +120,7 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
             dataset,
             detection_environment.get_model_configuration(),
         )
-        train_task.train(dataset, trained_model, TrainParameters)
+        train_task.train(dataset, trained_model, TrainParameters())
         save_model_data(trained_model, save_model_to)
 
         # Infer torch model

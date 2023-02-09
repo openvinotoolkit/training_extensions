@@ -7,8 +7,7 @@ requires = [
     "setuptools>=42",
     "wheel",
     "Cython~=0.29.32",
-    "numpy~=1.21.0",
-    "torch@https://download.pytorch.org/whl/lts/1.8/cu111/torch-1.8.2%2Bcu111-cp38-cp38-linux_x86_64.whl"
+    "numpy~=1.21.0"
 ]
 build-backend = "setuptools.build_meta"
 

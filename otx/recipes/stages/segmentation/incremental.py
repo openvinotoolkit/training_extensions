@@ -1,4 +1,4 @@
-_base_ = ["./train.py", "../_base_/models/segmentors/seg_class_incr.py", "../_base_/data/voc_cls_incr.py"]
+_base_ = ["./train.py", "../_base_/models/segmentors/seg_class_incr.py", "../_base_/data/custom_seg.py"]
 
 optimizer = dict(_delete_=True, type="Adam", lr=1e-3, eps=1e-08, weight_decay=0.0)
 
