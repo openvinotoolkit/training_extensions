@@ -64,7 +64,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 - Branches
   - [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
     - Mainly maintained branch for releasing new features in the future
-  - [misc\*](https://github.com/openvinotoolkit/training_extensions/tree/misc)
+  - [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc)
     - Previously developed models can be found on this branch
 
 ---
@@ -97,6 +97,6 @@ Please read the [Contribution guide](CONTRIBUTING.md) before starting work on a 
 
 ## Known limitations
 
-*[misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch. These scripts are not ready for production. They are exploratory and have not been validated.
+[misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch contains training, evaluation, and export scripts for models based on TensorFlow and PyTorch. These scripts are not ready for production. They are exploratory and have not been validated.
 
 ---
