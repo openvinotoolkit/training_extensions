@@ -45,7 +45,7 @@ def get_args():
     template = parsed.template
     hyper_parameters = {}
     parser = argparse.ArgumentParser()
-    if template and Path(template).is_file():
+    if template and template.endswith("yaml") and Path(template).is_file():
         template_config = find_and_parse_model_template(template)
         hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template")
