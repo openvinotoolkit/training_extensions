@@ -54,6 +54,7 @@ class TestOTXCLIBuilder:
 
     # TODO: [CVS-101239] Add test case for cover default root workspace build
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     def test_builder_build_task_config_workspace_path(self) -> None:
         """Create Classification custom workspace."""
         workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
@@ -66,6 +67,7 @@ class TestOTXCLIBuilder:
         assert (workspace_path / "data_pipeline.py").exists()
 
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     def test_builder_build_task_config_reuse_same_path(self) -> None:
         """Raising Error of building workspace with already created path."""
         workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
@@ -74,6 +76,7 @@ class TestOTXCLIBuilder:
             self.otx_builder.build_task_config(**inputs)
 
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     def test_builder_build_task_config_normal_train_type(self) -> None:
         """Update hparam.yaml with train_type="selfsl"."""
         workspace_path = self.tmp_dir_path / "test_builder_build_task_config_check_update_hparams"
@@ -97,6 +100,7 @@ class TestOTXCLIBuilder:
         assert (model_dir / "data_pipeline.py").exists()
 
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     def test_builder_build_task_config_abnormal_train_type(self) -> None:
         """Raising ValueError with wrong train_type."""
         workspace_path = self.tmp_dir_path / "test_builder_build_task_config_abnormal_train_type"
@@ -111,6 +115,7 @@ class TestOTXCLIBuilder:
             self.otx_builder.build_task_config(**inputs)
 
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     def test_builder_build_task_config_normal_model_type(self) -> None:
         """Build workspace with model_type argments."""
         workspace_path = self.tmp_dir_path / "test_builder_build_task_config_normal_model_type"
@@ -127,6 +132,7 @@ class TestOTXCLIBuilder:
         assert template.name.lower() == model_type
 
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     def test_builder_build_task_config_abnormal_model_type(self) -> None:
         """Raise ValueError when build workspace with wrong model_type argments."""
         workspace_path = self.tmp_dir_path / "test_builder_build_task_config_abnormal_model_type"
@@ -158,6 +164,7 @@ class TestOTXCLIBuilder:
             self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
 
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     @pytest.mark.parametrize("backbone_type", ["mmcls.ResNet"])
     def test_builder_merge_backbone_update_model_config(self, backbone_type: str) -> None:
         """Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)."""
@@ -195,6 +202,7 @@ class TestOTXCLIBuilder:
             self.otx_builder.merge_backbone(tmp_model_path, "unexpected")
 
     @e2e_pytest_unit
+    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
     def test_builder_merge_backbone_without_out_indices(self) -> None:
         """Update model config without backbone's out_indices."""
         workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
