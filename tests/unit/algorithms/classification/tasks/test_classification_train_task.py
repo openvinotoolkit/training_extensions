@@ -48,21 +48,19 @@ class TestOTXClsTaskTrain:
 
     @e2e_pytest_unit
     def test_train(self, mocker):
-        def progress_callback(progress: float, score = None):
-            training_progress_curve.append(progress)
-
         from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-        training_progress_curve = []
-
-        train_parameters = TrainParameters()
-        train_parameters.update_progress = progress_callback
-
-        self.cls_train_task.train(self.dataset, self.model, train_parameters)
+        # generate some dummy learning curves
+        mock_lcurve_val = OTXLoggerHook.Curve()
+        mock_lcurve_val.x = [0, 1]
+        mock_lcurve_val.y = [0.1, 0.2]
+        # patch training process
+        mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value={"final_ckpt": ""})
+        self.cls_train_task._learning_curves = {f"val/accuracy_top-1": mock_lcurve_val}
+        mocker.patch.object(ClassificationTrainTask, "save_model")
+        self.cls_train_task.train(self.dataset, self.model)
 
         assert self.model.performance != NullPerformance()
-        assert 0. < self.model.performance.score.value <= 1.
-        assert len(training_progress_curve) > 0
-        assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
+        assert self.model.performance.score.value == .2
 
     @e2e_pytest_unit
     def test_cancel_training(self):

@@ -92,7 +92,7 @@ def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False
             label_schema.add_group(main_group)
         return label_schema
 
-def generate_cls_dataset(hierarchical=False):
+def generate_cls_dataset(hierarchical=False, number_of_images=10):
         resolution = (224, 224)
         if hierarchical:
             colors = [(0, 255, 0), (0, 0, 255), (255, 0, 0), (0, 0, 0), (230, 230, 250)]
@@ -144,8 +144,9 @@ def generate_cls_dataset(hierarchical=False):
             items[i].subset = subset
 
         dataset = DatasetEntity(items)
+        return dataset
 
-def init_environment(params, model_template, multilabel=False, hierarchical=False, number_of_images=10):
+def init_environment(params, model_template, multilabel=False, hierarchical=False):
         dataset = generate_cls_dataset(hierarchical)
         labels_schema = generate_label_schema(
             dataset.get_labels(), multilabel=multilabel, hierarchical=hierarchical
