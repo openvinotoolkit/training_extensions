@@ -14,6 +14,7 @@ import pytest
 from otx.hpo import hyperband
 from otx.hpo.hpo_base import TrialStatus
 from otx.hpo.hyperband import AshaTrial, Bracket, HyperBand, Rung
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 
 @pytest.fixture
@@ -92,11 +93,13 @@ def hyper_band(good_hyperband_args):
     return HyperBand(**good_hyperband_args)
 
 
+@e2e_pytest_component
 @pytest.mark.parametrize("reduction_factor", [4, 100, 4000])
 def test_check_reduction_factor_value(reduction_factor):
     hyperband._check_reduction_factor_value(reduction_factor)
 
 
+@e2e_pytest_component
 @pytest.mark.parametrize("reduction_factor", [-10, 1])
 def test_check_reduction_factor_lesser_value(reduction_factor):
     with pytest.raises(ValueError):
@@ -104,24 +107,29 @@ def test_check_reduction_factor_lesser_value(reduction_factor):
 
 
 class TestAshaTrial:
+    @e2e_pytest_component
     @pytest.mark.parametrize("rung_val", [0, 10])
     def teste_set_rung(self, trial, rung_val):
         trial.rung = rung_val
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("rung_val", [-10, -3])
     def test_set_negative_rung(self, trial, rung_val):
         with pytest.raises(ValueError):
             trial.rung = rung_val
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("bracket_val", [0, 10])
     def teste_set_bracket(self, trial, bracket_val):
         trial.bracket = bracket_val
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("bracket_val", [-10, -3])
     def test_set_negative_bracket(self, trial, bracket_val):
         with pytest.raises(ValueError):
             trial.bracket = bracket_val
 
+    @e2e_pytest_component
     def test_save_results(self, trial, tmp_path):
         rung_idx = 3
         trial.rung = rung_idx
@@ -141,9 +149,11 @@ class TestAshaTrial:
 
 
 class TestRung:
+    @e2e_pytest_component
     def test_init(self, good_rung_args):
         Rung(**good_rung_args)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("resource", [-10, 0])
     def test_init_resource_nenative(self, good_rung_args, resource):
         wrong_trial_args = good_rung_args
@@ -151,6 +161,7 @@ class TestRung:
         with pytest.raises(ValueError):
             Rung(**wrong_trial_args)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num_required_trial", [-10, 0])
     def test_init_num_required_trial(self, good_rung_args, num_required_trial):
         wrong_trial_args = good_rung_args
@@ -158,6 +169,7 @@ class TestRung:
         with pytest.raises(ValueError):
             Rung(**wrong_trial_args)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("reduction_factor", [-10, 0, 1])
     def test_init_wrong_reduction_factor(self, good_rung_args, reduction_factor):
         wrong_trial_args = good_rung_args
@@ -165,6 +177,7 @@ class TestRung:
         with pytest.raises(ValueError):
             Rung(**wrong_trial_args)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("rung_idx", [-10, -3])
     def test_init_wrong_rung_idx(self, good_rung_args, rung_idx):
         wrong_trial_args = good_rung_args
@@ -172,6 +185,7 @@ class TestRung:
         with pytest.raises(ValueError):
             Rung(**wrong_trial_args)
 
+    @e2e_pytest_component
     def test_add_new_trial(self, rung, good_trial_args):
         for _ in range(rung.num_required_trial):
             trial = AshaTrial(**good_trial_args)
@@ -180,12 +194,14 @@ class TestRung:
             assert trial.iteration == rung.resource
             assert trial.status == TrialStatus.READY
 
+    @e2e_pytest_component
     def test_add_too_many_trials(self, rung, good_trial_args):
         with pytest.raises(RuntimeError):
             for _ in range(rung.num_required_trial + 1):
                 trial = AshaTrial(**good_trial_args)
                 rung.add_new_trial(trial)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("mode", ["max", "min"])
     def test_get_best_trial(self, rung, good_trial_args, mode):
         for score in range(rung.num_required_trial):
@@ -200,6 +216,7 @@ class TestRung:
         else:
             assert best_trial.get_best_score(mode) == 0
 
+    @e2e_pytest_component
     def test_get_best_trial_with_not_started_trial(self, rung, good_trial_args):
         for score in range(rung.num_required_trial - 1):
             trial = AshaTrial(**good_trial_args)
@@ -212,6 +229,7 @@ class TestRung:
 
         assert best_trial.get_best_score() == rung.num_required_trial - 2
 
+    @e2e_pytest_component
     def test_get_best_trial_when_best_trial_is_undone(self, rung, good_trial_args):
         for _ in range(rung.num_required_trial - 1):
             trial = AshaTrial(**good_trial_args)
@@ -225,14 +243,17 @@ class TestRung:
 
         assert best_trial.get_best_score() == 100
 
+    @e2e_pytest_component
     def test_get_best_trial_with_no_trial(self, rung):
         best_trial = rung.get_best_trial()
         assert best_trial is None
 
+    @e2e_pytest_component
     def test_get_best_trial_wrong_mode_val(self, rung):
         with pytest.raises(ValueError):
             rung.get_best_trial("wrong")
 
+    @e2e_pytest_component
     def test_need_more_trials(self, rung, good_trial_args):
         for _ in range(rung.num_required_trial):
             trial = AshaTrial(**good_trial_args)
@@ -241,12 +262,14 @@ class TestRung:
 
         assert not rung.need_more_trials()
 
+    @e2e_pytest_component
     def test_get_num_trials(self, rung, good_trial_args):
         for idx in range(rung.num_required_trial):
             trial = AshaTrial(**good_trial_args)
             rung.add_new_trial(trial)
             assert rung.get_num_trials() == idx + 1
 
+    @e2e_pytest_component
     def test_need_more_trails(self, rung, good_trial_args):
         for i in range(1, rung.num_required_trial + 1):
             trial = AshaTrial(**good_trial_args)
@@ -256,6 +279,7 @@ class TestRung:
             else:
                 assert not rung.need_more_trials()
 
+    @e2e_pytest_component
     def test_is_done(self, rung, good_trial_args):
         for i in range(rung.num_required_trial - 1):
             trial = AshaTrial(**good_trial_args)
@@ -270,6 +294,7 @@ class TestRung:
         trial.register_score(100, rung.resource + 1)
         assert rung.is_done()
 
+    @e2e_pytest_component
     def test_get_trial_to_promote_not_asha(self, rung, good_trial_args):
         maximum_score = 9999999
         for i in range(rung.num_required_trial - 1):
@@ -294,6 +319,7 @@ class TestRung:
         best_trial.rung += 1
         assert rung.get_trial_to_promote(False) is None
 
+    @e2e_pytest_component
     def test_get_trial_to_promote_asha(self, rung, good_trial_args):
         num_promoteable = rung._num_required_trial // rung._reduction_factor
         for i in range(num_promoteable // rung._reduction_factor):
@@ -307,6 +333,7 @@ class TestRung:
             best_trial.rung += 1
             assert rung.get_trial_to_promote(True) is None
 
+    @e2e_pytest_component
     def test_get_trial_to_promote_not_running(self, rung, good_trial_args):
         for i in range(rung.num_required_trial):
             trial = AshaTrial(**good_trial_args)
@@ -324,6 +351,7 @@ class TestRung:
         promoted_trial = rung.get_trial_to_promote()
         assert promoted_trial.status != TrialStatus.RUNNING
 
+    @e2e_pytest_component
     def test_get_next_trial(self, rung, good_trial_args):
         trial = AshaTrial(**good_trial_args)
         rung.add_new_trial(trial)
@@ -342,6 +370,7 @@ class TestRung:
         new_trial = rung.get_next_trial()
         assert new_trial is None
 
+    @e2e_pytest_component
     def test_get_next_trial_stopped_in_progress(self, rung, trial):
         rung.add_new_trial(trial)
         register_scores_to_trial(trial, [i for i in range(trial.iteration - 1)])
@@ -350,15 +379,18 @@ class TestRung:
 
 
 class TestBracket:
+    @e2e_pytest_component
     def test_init(self, good_bracket_args):
         Bracket(**good_bracket_args)
 
+    @e2e_pytest_component
     def test_init_minimum_is_negative(self, good_bracket_args):
         wrong_args = good_bracket_args
         wrong_args["minimum_resource"] = -1
         with pytest.raises(ValueError):
             Bracket(**wrong_args)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("reduction_factor", [-10, 0, 1])
     def test_init_wrong_reduction_factor(self, good_bracket_args, reduction_factor):
         wrong_args = good_bracket_args
@@ -366,12 +398,14 @@ class TestBracket:
         with pytest.raises(ValueError):
             Bracket(**wrong_args)
 
+    @e2e_pytest_component
     def test_init_wrong_mode_val(self, good_bracket_args):
         wrong_args = good_bracket_args
         wrong_args["mode"] = "wrong"
         with pytest.raises(ValueError):
             Bracket(**wrong_args)
 
+    @e2e_pytest_component
     def test_init_minimum_val_is_bigger_than_maximum_val(self, good_bracket_args):
         wrong_args = good_bracket_args
         wrong_args["minimum_resource"] = 100
@@ -379,12 +413,14 @@ class TestBracket:
         with pytest.raises(ValueError):
             Bracket(**wrong_args)
 
+    @e2e_pytest_component
     def test_init_empty_hyper_parameter_configurations(self, good_bracket_args):
         wrong_args = good_bracket_args
         wrong_args["hyper_parameter_configurations"] = []
         with pytest.raises(ValueError):
             Bracket(**wrong_args)
 
+    @e2e_pytest_component
     def test_max_rung(self, good_bracket_args):
         bracket = Bracket(**good_bracket_args)
         expected_val = math.ceil(
@@ -395,6 +431,7 @@ class TestBracket:
         )
         assert bracket.max_rung == expected_val
 
+    @e2e_pytest_component
     def test_calcuate_max_rung_idx(self):
         minimum_resource = 1
         maximum_resource = 100
@@ -403,6 +440,7 @@ class TestBracket:
         expected_val = math.ceil(math.log(maximum_resource / minimum_resource, reduction_factor))
         assert Bracket.calcuate_max_rung_idx(minimum_resource, maximum_resource, reduction_factor) == expected_val
 
+    @e2e_pytest_component
     @pytest.mark.parametrize(
         "minimum_resource,maximum_resource,reduction_factor", [(-1, 100, 3), (1, -3, 3), (1, 100, -2), (10, 3, 3)]
     )
@@ -410,6 +448,7 @@ class TestBracket:
         with pytest.raises(ValueError):
             Bracket.calcuate_max_rung_idx(minimum_resource, maximum_resource, reduction_factor)
 
+    @e2e_pytest_component
     def test_release_new_trial(self, bracket):
         while True:
             new_trial = bracket.get_next_trial()
@@ -419,6 +458,7 @@ class TestBracket:
             assert new_trial.bracket == bracket.id
             assert new_trial.rung == 0
 
+    @e2e_pytest_component
     def test_promote_trial_if_available_asha(self, good_bracket_args):
         reduction_factor = good_bracket_args["reduction_factor"]
         bracket = Bracket(**good_bracket_args)
@@ -430,6 +470,7 @@ class TestBracket:
         trial = bracket.get_next_trial()
         assert trial.rung == 1
 
+    @e2e_pytest_component
     def test_promote_trial_if_available_sha(self, good_bracket_args):
         good_bracket_args["asynchronous_sha"] = False
         bracket = Bracket(**good_bracket_args)
@@ -450,6 +491,7 @@ class TestBracket:
         trial = bracket.get_next_trial()
         assert trial.rung == 1
 
+    @e2e_pytest_component
     def test_get_next_trial(self, bracket):
         while not bracket.is_done():
             trial = bracket.get_next_trial()
@@ -461,6 +503,7 @@ class TestBracket:
 
         assert bracket.is_done()
 
+    @e2e_pytest_component
     def test_get_next_trial_if_trial_is_always_running(self, bracket):
         trial_arr = []
         while True:
@@ -477,6 +520,7 @@ class TestBracket:
         trial = bracket.get_next_trial()
         assert trial is None
 
+    @e2e_pytest_component
     def test_is_done(self, bracket):
         while True:
             trial = bracket.get_next_trial()
@@ -487,6 +531,7 @@ class TestBracket:
 
         assert bracket.is_done()
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num", [1, 5, 15])
     def test_num_trial_is_not_enough(self, good_bracket_args, num):
         wrong_bracket_args = good_bracket_args
@@ -497,6 +542,7 @@ class TestBracket:
         with pytest.raises(ValueError):
             Bracket(**wrong_bracket_args)
 
+    @e2e_pytest_component
     def test_get_best_trial(self, bracket):
         expected_score = 999999
         trial = bracket.get_next_trial()
@@ -516,15 +562,18 @@ class TestBracket:
         assert trial.get_best_score(bracket._mode) == expected_score
         assert trial.id == expected_trial_id
 
+    @e2e_pytest_component
     def test_get_best_trial_given_absent_trial(self, bracket):
         assert bracket.get_best_trial() is None
 
+    @e2e_pytest_component
     def test_get_best_trial_with_one_unfinished_trial(self, bracket):
         trial = bracket.get_next_trial()
         register_scores_to_trial(trial, [1])
         best_trial = bracket.get_best_trial()
         assert trial == best_trial
 
+    @e2e_pytest_component
     def test_save_results(self, good_bracket_args, tmp_path):
         trial_num = len(good_bracket_args["hyper_parameter_configurations"])
         bracket = Bracket(**good_bracket_args)
@@ -554,6 +603,7 @@ class TestBracket:
         for i in range(trial_num):
             assert osp.exists(osp.join(tmp_path, f"{i}.json"))
 
+    @e2e_pytest_component
     def test_print_result(self, bracket):
         while True:
             trial = bracket.get_next_trial()
@@ -566,9 +616,11 @@ class TestBracket:
 
         bracket.print_result()
 
+    @e2e_pytest_component
     def test_print_result_without_train(self, bracket):
         bracket.print_result()
 
+    @e2e_pytest_component
     def test_report_trial_exit_abnormally(self, bracket):
         trial = bracket.get_next_trial()
         trial.register_score(score=0, resource=trial.iteration - 0.1)
@@ -577,9 +629,11 @@ class TestBracket:
 
 
 class TestHyperBand:
+    @e2e_pytest_component
     def test_init(self, good_hyperband_args):
         HyperBand(**good_hyperband_args)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("minimum_resource", [-10, 0])
     def test_init_not_postive_maximum_resource(self, good_hyperband_args, minimum_resource):
         wrong_arg = good_hyperband_args
@@ -587,6 +641,7 @@ class TestHyperBand:
         with pytest.raises(ValueError):
             HyperBand(**wrong_arg)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("reduction_factor", [-10, 0, 1])
     def test_init_wrong_reduction_factor(self, good_hyperband_args, reduction_factor):
         wrong_arg = good_hyperband_args
@@ -594,18 +649,22 @@ class TestHyperBand:
         with pytest.raises(ValueError):
             HyperBand(**wrong_arg)
 
+    @e2e_pytest_component
     def test_init_maximum_is_same_with_minimum(self, good_hyperband_args):
         good_hyperband_args["maximum_resource"] = good_hyperband_args["minimum_resource"]
         HyperBand(**good_hyperband_args)
 
+    @e2e_pytest_component
     def test_init_no_minimum_resource(self, good_hyperband_args):
         del good_hyperband_args["minimum_resource"]
         HyperBand(**good_hyperband_args)
 
+    @e2e_pytest_component
     def test_init_no_maximum_resource(self, good_hyperband_args):
         del good_hyperband_args["maximum_resource"]
         HyperBand(**good_hyperband_args)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num", [1, 10])
     def test_make_new_hyper_parameter_configs(self, good_hyperband_args, num):
         hb = HyperBand(**good_hyperband_args)
@@ -620,6 +679,7 @@ class TestHyperBand:
             assert 100 <= trial.configuration["hp2"] <= 1000
             assert trial.configuration["hp2"] % 2 == 0
 
+    @e2e_pytest_component
     def test_get_next_sample(self, hyper_band):
         while True:
             trial = hyper_band.get_next_sample()
@@ -630,6 +690,7 @@ class TestHyperBand:
 
         assert hyper_band.is_done()
 
+    @e2e_pytest_component
     def test_get_next_sample_without_train(self, hyper_band):
         while True:
             trial = hyper_band.get_next_sample()
@@ -639,6 +700,7 @@ class TestHyperBand:
 
         assert not hyper_band.is_done()
 
+    @e2e_pytest_component
     def test_report_score(self, hyper_band):
         trial = hyper_band.get_next_sample()
         score = 100
@@ -646,12 +708,14 @@ class TestHyperBand:
         hyper_band.report_score(score, resource, trial.id)
         assert trial.score[resource] == score
 
+    @e2e_pytest_component
     def test_report_score_trial_done(self, hyper_band):
         trial = hyper_band.get_next_sample()
         hyper_band.report_score(100, 0.1, trial.id)
         hyper_band.report_score(0, 0, trial.id, done=True)
         assert trial.get_progress() == trial.iteration
 
+    @e2e_pytest_component
     def test_get_best_config(self, hyper_band):
         max_score = 9999999
         trial = hyper_band.get_next_sample()
@@ -669,15 +733,18 @@ class TestHyperBand:
 
         assert best_config == expected_configuration
 
+    @e2e_pytest_component
     def test_get_best_config_before_train(self, hyper_band):
         best_config = hyper_band.get_best_config()
         assert best_config is None
 
+    @e2e_pytest_component
     def test_train_option_exists(self, hyper_band):
         trial = hyper_band.get_next_sample()
         train_config = trial.get_train_configuration()
         assert "subset_ratio" in train_config["train_environment"]
 
+    @e2e_pytest_component
     def test_prior_hyper_parameters(self, good_hyperband_args):
         prior1 = {"hp1": 1, "hp2": 2}
         prior2 = {"hp1": 100, "hp2": 200}
@@ -694,6 +761,7 @@ class TestHyperBand:
         assert first_trial.configuration == prior1
         assert second_trial.configuration == prior2
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num_prior_param", [10, 100, 1000])
     def test_many_prior_hyper_parameters(self, good_hyperband_args, num_prior_param):
         prior_hyper_parameters = []
@@ -720,6 +788,7 @@ class TestHyperBand:
 
         assert i == num_prior_param or hyper_band.is_done()
 
+    @e2e_pytest_component
     def test_auto_config_decrease(self, good_hyperband_args):
         full_train_resource = good_hyperband_args["maximum_resource"]
         expected_time_ratio = 4
@@ -741,6 +810,7 @@ class TestHyperBand:
         maximum_resource = full_train_resource * expected_time_ratio * hyperband.acceptable_additional_time_ratio
         assert maximum_resource >= total_resource >= maximum_resource * 0.8
 
+    @e2e_pytest_component
     def test_auto_config_increase(self, good_hyperband_args):
         full_train_resource = good_hyperband_args["maximum_resource"]
         expected_time_ratio = 100
@@ -762,6 +832,7 @@ class TestHyperBand:
         maximum_resource = full_train_resource * expected_time_ratio * hyperband.acceptable_additional_time_ratio
         assert maximum_resource >= total_resource >= maximum_resource * 0.8
 
+    @e2e_pytest_component
     def test_asynchronous_bracket(self, hyper_band):
         bracket_id_arr = []
         while True:
@@ -775,6 +846,7 @@ class TestHyperBand:
 
         assert len(bracket_id_arr) > 1
 
+    @e2e_pytest_component
     def test_synchronous_bracket(self, good_hyperband_args):
         good_hyperband_args["asynchronous_bracket"] = False
         hyper_band = HyperBand(**good_hyperband_args)
@@ -790,6 +862,7 @@ class TestHyperBand:
 
         assert len(bracket_id_arr) == 1
 
+    @e2e_pytest_component
     def test_print_result(self, hyper_band):
         while not hyper_band.is_done():
             trial = hyper_band.get_next_sample()
@@ -801,15 +874,18 @@ class TestHyperBand:
 
         hyper_band.print_result()
 
+    @e2e_pytest_component
     def test_print_result_without_train(self, hyper_band):
         hyper_band.print_result()
 
+    @e2e_pytest_component
     def test_report_trial_exit_abnormally(self, hyper_band):
         trial = hyper_band.get_next_sample()
         hyper_band.report_score(score=50, resource=trial.iteration - 0.1, trial_id=trial.id, done=False)
         new_trial = hyper_band.get_next_sample()
         assert trial.id == new_trial.id
 
+    @e2e_pytest_component
     def test_absence_minimum_resource(self, good_hyperband_args):
         del good_hyperband_args["minimum_resource"]
         hyper_band = HyperBand(**good_hyperband_args)
@@ -831,6 +907,7 @@ class TestHyperBand:
 
         assert min(iter_set) == expected_min
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num_trial_to_estimate", [10, 30, 100])
     def test_without_maximum_resource(self, good_hyperband_args, num_trial_to_estimate):
         del good_hyperband_args["maximum_resource"]
@@ -854,6 +931,7 @@ class TestHyperBand:
 
         assert hyper_band.maximum_resource == max_validation
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num_trial_to_estimate", [10, 30, 100])
     def test_auto_config_decrease_without_maximum_resource(self, good_hyperband_args, num_trial_to_estimate):
         """
@@ -905,6 +983,7 @@ class TestHyperBand:
 
         assert maximum_resource >= total_resource >= maximum_resource * 0.8
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num_trial_to_estimate", [10, 30, 100])
     def test_auto_config_increase_without_maximum_resource(self, good_hyperband_args, num_trial_to_estimate):
         del good_hyperband_args["maximum_resource"]
@@ -950,6 +1029,7 @@ class TestHyperBand:
         )
         assert maximum_resource >= total_resource >= maximum_resource * 0.8
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("num_trial_to_estimate", [10, 30, 100])
     def test_without_minimum_maximum_resource(self, good_hyperband_args, num_trial_to_estimate):
         del good_hyperband_args["minimum_resource"]
@@ -988,6 +1068,7 @@ class TestHyperBand:
         assert min(iter_set) == expected_min
         assert hyper_band.maximum_resource == max_validation
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("expected_time_ratio", [3, 4, 5, 6])
     def test_hyperband_without_minimum_resource(self, good_hyperband_args, expected_time_ratio):
         """
