@@ -30,7 +30,7 @@ class MockImage(Image):
     def numpy(self) -> np.ndarray:
         """Returns empty numpy array"""
 
-        return np.ndarray((256, 256))
+        return np.ndarray((256, 256, 3))
 
 
 class MockPipeline:
