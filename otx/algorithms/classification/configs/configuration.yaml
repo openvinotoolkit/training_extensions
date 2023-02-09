@@ -340,7 +340,7 @@ algo_backend:
     description: Training scheme option that determines how to train the model
     editable: True
     enum_name: TrainType
-    header: train type
+    header: Train type
     options:
       INCREMENTAL: "INCREMENTAL"
       SEMISUPERVISED: "SEMISUPERVISED"

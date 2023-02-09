@@ -45,9 +45,7 @@ def get_dataset_class(task_type):
 
         return AnomalySegmentationDataset
     if task_type == TaskType.CLASSIFICATION:
-        from .image_classification.dataset import ImageClassificationDataset
-
-        return ImageClassificationDataset
+        raise NotImplementedError("This function is deprecated and should be removed")
     if task_type == TaskType.DETECTION:
         from .object_detection.dataset import ObjectDetectionDataset
 

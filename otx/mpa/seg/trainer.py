@@ -58,19 +58,8 @@ class SegTrainer(SegStage):
 
         # FIXME: Currently segmentor does not support multi batch evaluation.
         # For the Self-SL case, there is no val data. So, need to check the
-        if "val" in cfg.data:
+        if "val" in cfg.data and "val_dataloader" in cfg.data:
             cfg.data.val_dataloader.samples_per_gpu = 1
-
-        # Dataset for HPO
-        hp_config = kwargs.get("hp_config", None)
-        if hp_config is not None:
-            import hpopt
-
-            if isinstance(datasets[0], list):
-                for idx, ds in enumerate(datasets[0]):
-                    datasets[0][idx] = hpopt.createHpoDataset(ds, hp_config)
-            else:
-                datasets[0] = hpopt.createHpoDataset(datasets[0], hp_config)
 
         # Target classes
         if "task_adapt" in cfg:

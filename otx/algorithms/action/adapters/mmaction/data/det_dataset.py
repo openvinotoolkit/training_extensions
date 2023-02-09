@@ -78,7 +78,7 @@ class OTXActionDetDataset(AVADataset):
 
             if os.path.exists(self.proposal_file):
                 self.proposals = mmcv.load(self.proposal_file)
-                self.patch_proposals()
+                self._patch_proposals()
             else:
                 self.proposals = None
 
@@ -165,7 +165,7 @@ class OTXActionDetDataset(AVADataset):
 
             return data_info
 
-        def patch_proposals(self):
+        def _patch_proposals(self):
             """Remove fixed string format.
 
             AVA dataset pre-proposals have fixed string format.
@@ -280,7 +280,7 @@ class OTXActionDetDataset(AVADataset):
             "for more info."
         )
         csv_results = det2csv(self, results, self.custom_classes)
-        predictions = self.get_predictions(csv_results)
+        predictions = self._get_predictions(csv_results)
 
         ret = {}
         for metric in metrics:
@@ -306,7 +306,7 @@ class OTXActionDetDataset(AVADataset):
         return ret
 
     @staticmethod
-    def get_predictions(csv_results: List[Tuple]):
+    def _get_predictions(csv_results: List[Tuple]):
         """Convert model's inference results to predictions."""
         np_csv_results = np.array(csv_results)
         _img_keys = np_csv_results[:, :2]

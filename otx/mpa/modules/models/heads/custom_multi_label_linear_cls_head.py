@@ -65,9 +65,20 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         img_metas = kwargs.get("img_metas", False)
         gt_label = gt_label.type_as(x)
         cls_score = self.fc(x) * self.scale
+
+        valid_batch_mask = gt_label >= 0
+        gt_label = gt_label[
+            valid_batch_mask,
+        ].view(gt_label.shape[0], -1)
+        cls_score = cls_score[
+            valid_batch_mask,
+        ].view(cls_score.shape[0], -1)
         if img_metas:
             valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)
             valid_label_mask = valid_label_mask.to(x.device)
+            valid_label_mask = valid_label_mask[
+                valid_batch_mask,
+            ].view(valid_label_mask.shape[0], -1)
             losses = self.loss(cls_score, gt_label, valid_label_mask=valid_label_mask)
         else:
             losses = self.loss(cls_score, gt_label)

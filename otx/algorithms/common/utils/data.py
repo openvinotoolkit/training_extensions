@@ -18,7 +18,11 @@
 
 import glob
 import os
-from typing import Optional
+from typing import Any, Dict, Optional, Union
+
+import cv2
+import numpy as np
+from mmcv.utils import print_log
 
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -135,3 +139,65 @@ def get_old_new_img_indices(labels, new_classes, dataset):
         else:
             ids_old.append(i)
     return {"old": ids_old, "new": ids_new}
+
+
+def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.ndarray:
+    """Load an image and cache it if it's a training video frame.
+
+    Args:
+        results (Dict[str, Any]): A dictionary that contains information about the dataset item.
+        cache_dir (str): A directory path where the cached images will be stored.
+        to_float32 (bool, optional): A flag indicating whether to convert the image to float32. Defaults to False.
+
+    Returns:
+        np.ndarray: The loaded image.
+    """
+
+    def is_training_video_frame(subset, media) -> bool:
+        return subset.name in ["TRAINING", "VALIDATION"] and "VideoFrame" in repr(media)
+
+    def load_image_from_cache(filename: str, to_float32=False) -> Union[np.ndarray, None]:
+        try:
+            cached_img = cv2.imread(filename)
+            if to_float32:
+                cached_img = cached_img.astype(np.float32)
+            return cached_img
+        except Exception as e:  # pylint: disable=broad-except
+            print_log(f"Skip loading cached {filename} \nError msg: {e}")
+            return None
+
+    def save_image_to_cache(img: np.array, filename: str):
+        tmp_filename = filename.replace(".png", "-tmp.png")
+        if os.path.exists(filename) or os.path.exists(tmp_filename):  # if image is cached or caching
+            return
+        try:
+            cv2.imwrite(tmp_filename, img=img)
+        except Exception as e:  # pylint: disable=broad-except
+            print_log(f"Skip caching for {filename} \nError msg: {e}")
+            return
+
+        if os.path.exists(tmp_filename) and not os.path.exists(filename):
+            try:
+                os.replace(tmp_filename, filename)
+            except Exception as e:  # pylint: disable=broad-except
+                os.remove(tmp_filename)
+                print_log(f"Failed to rename {tmp_filename} -> {filename} \nError msg: {e}")
+
+    subset = results["dataset_item"].subset
+    media = results["dataset_item"].media
+    if is_training_video_frame(subset, media):
+        index = results["index"]
+        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.png")
+        if os.path.exists(filename):
+            loaded_img = load_image_from_cache(filename, to_float32=to_float32)
+            if loaded_img is not None:
+                return loaded_img
+
+    img = results["dataset_item"].numpy  # this takes long for VideoFrame
+    if to_float32:
+        img = img.astype(np.float32)
+
+    if is_training_video_frame(subset, media):
+        save_image_to_cache(img, filename)
+
+    return img

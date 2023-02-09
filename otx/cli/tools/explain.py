@@ -14,14 +14,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
-import os
+from pathlib import Path
 
-from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import override_parameters
+from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import (
     get_explain_dataset_from_filelist,
@@ -33,32 +30,17 @@ from otx.cli.utils.io import (
 from otx.cli.utils.nncf import is_checkpoint_nncf
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
-    gen_params_dict_from_args,
+    get_parser_and_hprams_data,
 )
 
 ESC_BUTTON = 27
 SUPPORTED_EXPLAIN_ALGORITHMS = ["activationmap", "eigencam", "classwisesaliencymap"]
 
 
-def parse_args():
+def get_args():
     """Parses command line arguments."""
+    parser, hyper_parameters, _ = get_parser_and_hprams_data()
 
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    if os.path.exists("./template.yaml"):
-        template_path = "./template.yaml"
-    else:
-        pre_parser.add_argument("template")
-        parsed, _ = pre_parser.parse_known_args()
-        template_path = parsed.template
-    # Load template.yaml file.
-    template = find_and_parse_model_template(template_path)
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
-
-    parser = argparse.ArgumentParser()
-    if not os.path.exists("./template.yaml"):
-        parser.add_argument("template")
     parser.add_argument(
         "--explain-data-roots",
         required=True,
@@ -77,13 +59,11 @@ def parse_args():
     parser.add_argument(
         "--explain-algorithm",
         default="ClassWiseSaliencyMap",
-        help=(
-            f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}.",
-            "For Openvino task, default method will be selected.",
-        ),
+        help=f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}."
+        "For Openvino task, default method will be selected.",
     )
     parser.add_argument(
-        "-w",
+        # "-w",
         "--overlay-weight",
         type=float,
         default=0.5,
@@ -91,22 +71,23 @@ def parse_args():
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
-    return parser.parse_args(), template, hyper_parameters
+    return parser.parse_args()
 
 
 def main():
     """Main function that is used for model explanation."""
 
-    # Dynamically create an argument parser based on override parameters.
-    args, template, hyper_parameters = parse_args()
-    # Get new values from user's input.
-    updated_hyper_parameters = gen_params_dict_from_args(args)
-    # Override overridden parameters by user's values.
-    override_parameters(updated_hyper_parameters, hyper_parameters)
+    args = get_args()
 
-    hyper_parameters = create(hyper_parameters)
+    config_manager = ConfigManager(args, mode="eval")
+    # Auto-Configuration for model template
+    config_manager.configure_template()
+
+    # Update Hyper Parameter Configs
+    hyper_parameters = config_manager.get_hyparams_config()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
+    template = config_manager.template
     if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
         task_class = get_impl_class(template.entrypoints.openvino)
     elif args.load_weights.endswith(".pth"):
@@ -132,8 +113,8 @@ def main():
             f"{args.explain_algorithm} currently not supported. \
             Currently only support {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
-    if not os.path.exists(args.save_explanation_to):
-        os.makedirs(args.save_explanation_to)
+    if not Path(args.save_explanation_to).exists():
+        Path(args.save_explanation_to).mkdir(parents=True)
 
     image_files = get_image_files(args.explain_data_roots)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)
@@ -148,7 +129,7 @@ def main():
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
         for metadata in explained_data.get_metadata():
             saliency_data = metadata.data
-            fname = f"{os.path.splitext(os.path.basename(filename))[0]}_{saliency_data.name}".replace(" ", "_")
+            fname = f"{Path(Path(filename).name).stem[0]}_{saliency_data.name}".replace(" ", "_")
             save_saliency_output(
                 img=explained_data.numpy,
                 saliency_map=saliency_data.numpy,
@@ -158,6 +139,8 @@ def main():
             )
 
     print(f"Saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
+
+    return dict(retcode=0, template=template.name)
 
 
 if __name__ == "__main__":

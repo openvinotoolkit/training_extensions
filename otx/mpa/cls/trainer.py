@@ -50,17 +50,6 @@ class ClsTrainer(ClsStage):
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
-        # Dataset for HPO
-        hp_config = kwargs.get("hp_config", None)
-        if hp_config is not None:
-            import hpopt
-
-            if isinstance(datasets[0], list):
-                for idx, ds in enumerate(datasets[0]):
-                    datasets[0][idx] = hpopt.createHpoDataset(ds, hp_config)
-            else:
-                datasets[0] = hpopt.createHpoDataset(datasets[0], hp_config)
-
         # Metadata
         meta = dict()
         meta["env_info"] = env_info

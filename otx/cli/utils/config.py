@@ -36,15 +36,15 @@ def override_parameters(overrides, parameters):
                 raise ValueError(f'The "{k}" is not in allowed_keys: {allowed_keys}')
 
 
-def configure_dataset(args):
+def configure_dataset(args, data_yaml_path=None):
     """Configure dataset args."""
 
     # Create instances of Task, ConfigurableParameters and Dataset.
     data_subset_format = {"ann-files": None, "data-roots": None}
     data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
     data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
-    if args.data is not None and os.path.exists(args.data):
-        with open(args.data, "r", encoding="UTF-8") as stream:
+    if data_yaml_path is not None and os.path.exists(str(data_yaml_path)):
+        with open(str(data_yaml_path), "r", encoding="UTF-8") as stream:
             data_config = yaml.safe_load(stream)
         stream.close()
 
