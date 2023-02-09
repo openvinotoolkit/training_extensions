@@ -160,21 +160,6 @@ if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
     from mmdeploy.utils import get_ir_config
 
-    @FUNCTION_REWRITER.register_rewriter(
-        "mmdeploy.core.optimizers.function_marker.mark_tensors",
-        backend="openvino",
-    )
-    def remove_mark__openvino(ctx, xs: Any, *args, **kwargs):
-        """Disable all marks for openvino backend
-
-        As the Node `mark` is not able to be traced, we just return original input
-        for the function `mark_tensors`.
-
-        Args:
-            xs (Any): Input structure which contains tensor.
-        """
-        return xs
-
     class MMdeployExporter:
         @staticmethod
         def export2openvino(
