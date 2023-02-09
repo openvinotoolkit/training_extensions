@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from copy import deepcopy
 from typing import List, Optional
 
 import numpy as np
@@ -30,6 +31,11 @@ from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.algorithms.action.test_helpers import (
+    generate_action_cls_otx_dataset,
+    generate_action_det_otx_dataset,
+    generate_labels,
+)
 
 
 class MockDatasetEntity(DatasetEntity):
@@ -145,7 +151,7 @@ class TestActionOVDemoDataLoader:
     <Steps>
         1. Create ActionOVDemoDataLoader
         2. Sample first item from ActionOVDemoDataLoader
-        3. The item's frame indices should be [1, 1, 1, 1, 1, 3, 5, 7]
+        3. The item's frame indices should be [0, 0, 0, 0, 0, 2, 4, 6]
     3. Test add_prediction function
     <Steps>
         1. Create sample prediction
@@ -155,24 +161,9 @@ class TestActionOVDemoDataLoader:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.data_len = 40
-        self.items: List[DatasetItemEntity] = []
-        for i in range(self.data_len):
-            self.items.append(
-                DatasetItemEntity(
-                    media=MockImage(),
-                    annotation_scene=AnnotationSceneEntity(
-                        annotations=[
-                            Annotation(
-                                Rectangle.generate_full_box(),
-                                [ScoredLabel(LabelEntity("1", Domain.ACTION_CLASSIFICATION, id=ID(1)))],
-                            )
-                        ],
-                        kind=AnnotationSceneKind.ANNOTATION,
-                    ),
-                    metadata=[MetadataItemEntity(data=VideoMetadata("1", i + 1, False))],
-                )
-            )
-        self.dataset = DatasetEntity(self.items)
+        self.labels = generate_labels(1, Domain.ACTION_CLASSIFICATION)
+        self.dataset = generate_action_cls_otx_dataset(1, self.data_len, self.labels)
+        self.dataloader = ActionOVClsDataLoader(self.dataset, 8, 256, 256)
 
     @e2e_pytest_unit
     def test_len(self) -> None:
@@ -191,7 +182,7 @@ class TestActionOVDemoDataLoader:
         for out in outs:
             frame_idx = out.get_metadata()[0].data.frame_idx
             frame_indices.append(frame_idx)
-        assert frame_indices == [1, 1, 1, 1, 1, 3, 5, 7]
+        assert frame_indices == [0, 0, 0, 0, 0, 2, 4, 6]
 
     @e2e_pytest_unit
     def test_add_prediction(self) -> None:
@@ -229,7 +220,7 @@ class TestActionOVClsDataLoader:
     2. Test __getitem__
     <Steps>
         1. Check len(output) == clip_len(8)
-        2. Check frame_indices == [5, 9, 13, 17, 21, 25, 29, 33]. It comes from setting indices rule.
+        2. Check frame_indices == [4, 8, 12, 16, 20, 24, 28, 32]. It comes from setting indices rule.
     3. Test add_prediciton
     <Steps>
         1. Check self.dataset.get_labels(). It should be 1, because only one label is added to empty dataset.
@@ -239,24 +230,8 @@ class TestActionOVClsDataLoader:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.data_len = 40
-        self.items: List[DatasetItemEntity] = []
-        for i in range(self.data_len):
-            self.items.append(
-                DatasetItemEntity(
-                    media=MockImage(),
-                    annotation_scene=AnnotationSceneEntity(
-                        annotations=[
-                            Annotation(
-                                Rectangle.generate_full_box(),
-                                [ScoredLabel(LabelEntity("1", Domain.ACTION_CLASSIFICATION, id=ID(1)))],
-                            )
-                        ],
-                        kind=AnnotationSceneKind.ANNOTATION,
-                    ),
-                    metadata=[MetadataItemEntity(data=VideoMetadata("1", i + 1, False))],
-                )
-            )
-        self.dataset = DatasetEntity(self.items)
+        self.labels = generate_labels(1, Domain.ACTION_CLASSIFICATION)
+        self.dataset = generate_action_cls_otx_dataset(1, self.data_len, self.labels)
         self.dataloader = ActionOVClsDataLoader(self.dataset, 8, 256, 256)
 
     @e2e_pytest_unit
@@ -276,7 +251,7 @@ class TestActionOVClsDataLoader:
             frame_idx = out.get_metadata()[0].data.frame_idx
             frame_indices.append(frame_idx)
         assert len(outs) == 8
-        assert frame_indices == [5, 9, 13, 17, 21, 25, 29, 33]
+        assert frame_indices == [4, 8, 12, 16, 20, 24, 28, 32]
 
     @e2e_pytest_unit
     def test_add_prediction(self) -> None:
@@ -291,8 +266,9 @@ class TestActionOVClsDataLoader:
             ],
             kind=AnnotationSceneKind.ANNOTATION,
         )
+        items = deepcopy(self.dataset._items)
         self.dataset = self.dataset.with_empty_annotations()
-        self.dataloader.add_prediction(self.dataset, self.items, prediction)
+        self.dataloader.add_prediction(self.dataset, items, prediction)
         assert len(self.dataset.get_labels()) == 1
         assert int(self.dataset.get_labels()[0].id) == 2
 
@@ -303,49 +279,29 @@ class TestActionOVDetDataLoader:
     1. Test initialization
     <Steps>
         1. Check self.dataloader's length. It should be 1 because all dataset item have same video_id
-        2. Check self.dataloader.dataset's length. It should be self.data_len(40)
+        2. Check self.dataloader.dataset's length. It should be 20 (self.data_len - # fo empty frame)
+        3. Check self.dataloader.original_dataset's length. It should be 40 (self.data_len)
     2. Test __getitem__
     <Steps>
         1. Check len(output) == clip_len(8)
-        2. Check frame_indices == [5, 9, 13, 17, 21, 25, 29, 33]. It comes from setting indices rule.
+        2. Check frame_indices == [0, 0, 0, 0, 0, 2, 4, 6]. It comes from setting indices rule.
     3. Test add_prediciton
     <Steps>
-        1. Check self.dataset.get_labels(). It should be 1, because only one label is added to empty dataset.
-        2. Check self.dataset's label's id is 2.
+        1. Check only center frame's annotations are updated
     """
 
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.data_len = 40
-        self.items: List[DatasetItemEntity] = []
-        for i in range(self.data_len):
-            if i % 5 == 0:
-                metadata = MetadataItemEntity(data=VideoMetadata("1", i + 1, True))
-            else:
-                metadata = MetadataItemEntity(data=VideoMetadata("1", i + 1, False))
-            self.items.append(
-                DatasetItemEntity(
-                    media=MockImage(),
-                    annotation_scene=AnnotationSceneEntity(
-                        annotations=[
-                            Annotation(
-                                Rectangle.generate_full_box(),
-                                [ScoredLabel(LabelEntity("1", Domain.ACTION_DETECTION, id=ID(1)))],
-                            )
-                        ],
-                        kind=AnnotationSceneKind.ANNOTATION,
-                    ),
-                    metadata=[metadata],
-                )
-            )
-        self.dataset = DatasetEntity(self.items)
+        self.labels = generate_labels(1, Domain.ACTION_DETECTION)
+        self.dataset = generate_action_det_otx_dataset(1, self.data_len, self.labels)[0]
         self.dataloader = ActionOVDetDataLoader(self.dataset, 8, 256, 256)
 
     @e2e_pytest_unit
     def test_init(self) -> None:
         """Test __init__ function."""
 
-        assert len(self.dataloader) == 32
+        assert len(self.dataloader) == 20
         assert len(self.dataloader.original_dataset) == 40
 
         sample = self.dataloader.dataset[0]
@@ -364,7 +320,7 @@ class TestActionOVDetDataLoader:
             frame_idx = out.get_metadata()[0].data.frame_idx
             frame_indices.append(frame_idx)
         assert len(outs) == 8
-        assert frame_indices == [1, 1, 1, 1, 2, 4, 6, 8]
+        assert frame_indices == [0, 0, 0, 0, 0, 2, 4, 6]
 
     @e2e_pytest_unit
     def test_add_prediction(self) -> None:
