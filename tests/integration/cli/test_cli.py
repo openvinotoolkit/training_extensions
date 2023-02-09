@@ -64,10 +64,10 @@ train_auto_config_args = {
         "template": "otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
         "--train-data-roots": "tests/assets/imagenet_dataset",
     },
-    "detection": {"--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
+    "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
     "detection_with_template": {
         "template": "otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml",
-        "--train-data-roots": "tests/assets/coco_dataset/coco_detection",
+        "--train-data-roots": "tests/assets/car_tree_bug",
     },
 }
 
