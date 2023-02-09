@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import json
 import os
 from typing import Any, Dict, List
 
@@ -92,3 +93,48 @@ def generate_labels(length: int, domain: Domain) -> List[LabelEntity]:
     for i in range(length):
         output.append(LabelEntity(name=f"{i + 1}", domain=domain, id=ID(i + 1)))
     return output
+
+
+def create_dummy_coco_json(json_name):
+    image = {
+        "id": 0,
+        "width": 640,
+        "height": 640,
+        "file_name": "fake_name.jpg",
+    }
+
+    annotation_1 = {
+        "id": 1,
+        "image_id": 0,
+        "category_id": 0,
+        "area": 400,
+        "bbox": [50, 60, 20, 20],
+        "segmentation": [[165.16, 2.58, 344.95, 41.29, 27.5, 363.0, 9.46, 147.1]],
+        "iscrowd": 0,
+    }
+
+    annotation_2 = {
+        "id": 2,
+        "image_id": 0,
+        "category_id": 0,
+        "area": 900,
+        "bbox": [100, 120, 30, 30],
+        "segmentation": [[165.16, 2.58, 344.95, 41.29, 27.5, 363.0, 9.46, 147.1]],
+        "iscrowd": 0,
+    }
+
+    categories = [
+        {
+            "id": 0,
+            "name": "car",
+            "supercategory": "car",
+        }
+    ]
+
+    fake_json = {
+        "images": [image],
+        "annotations": [annotation_1, annotation_2],
+        "categories": categories,
+    }
+    with open(json_name, "w") as f:
+        json.dump(fake_json, f)

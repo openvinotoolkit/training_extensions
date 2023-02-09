@@ -1,6 +1,9 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+import os
+import tempfile
+
 import pytest
 
 from otx.algorithms.detection.utils import generate_label_schema
@@ -9,11 +12,16 @@ from otx.algorithms.detection.utils.data import (
     format_list_to_str,
     get_anchor_boxes,
     get_sizes_from_dataset_entity,
+    load_dataset_items_coco_format,
 )
 from otx.api.entities.label import Domain
 from otx.api.entities.model_template import TaskType, task_type_to_label_domain
+from otx.api.entities.subset import Subset
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.detection.test_helpers import generate_det_dataset
+from tests.unit.algorithms.detection.test_helpers import (
+    create_dummy_coco_json,
+    generate_det_dataset,
+)
 
 
 # TODO: Need to add adaptive_tile_params unit-test
@@ -31,6 +39,27 @@ class TestDetectionDataUtils:
         label_schema = generate_label_schema(classes, task_type_to_label_domain(TaskType.DETECTION))
         with pytest.raises(ValueError):
             find_label_by_name(label_schema.get_labels(include_empty=False), "rectangle", Domain.DETECTION)
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "task_type, domain",
+        [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
+    )
+    def test_load_dataset_items_coco_format(self, task_type, domain):
+        _, labels = generate_det_dataset(task_type=task_type)
+        tmp_dir = tempfile.TemporaryDirectory()
+        fake_json_file = os.path.join(tmp_dir.name, "fake_data.json")
+        create_dummy_coco_json(fake_json_file)
+        data_root_dir = "./some_data_root_dir"
+        with_mask = True if domain == Domain.INSTANCE_SEGMENTATION else False
+        load_dataset_items_coco_format(
+            fake_json_file,
+            data_root_dir,
+            subset=Subset.TRAINING,
+            domain=domain,
+            with_mask=with_mask,
+            labels_list=labels,
+        )
 
     @e2e_pytest_unit
     def test_get_sizes_from_dataset_entity(self):
