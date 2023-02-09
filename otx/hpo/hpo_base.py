@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 import json
+import logging
 import tempfile
 from abc import ABC, abstractmethod
 from enum import IntEnum
@@ -28,7 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 class HpoBase(ABC):
-    """
+    """Abstract class for HPO algorithms.
+
     This implements class for HPO algorithm base.
     Only common methods are implemented but not core algorithm of HPO.
 
@@ -168,6 +169,7 @@ class Trial:
         configuration (Dict): Configuration to train with.
         train_environment (Optional[Dict], optional): Train environment for the trial. Defaults to None.
     """
+
     def __init__(self, id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
         self._id = id
         self._configuration = configuration
@@ -224,7 +226,8 @@ class Trial:
 
         Args:
             mode (str, optional): Decide which is better between highest score or lowest score. Defaults to "max".
-            resource_limit (Optional[Union[float, int]], optional): Find a best score among the score at resource lower than this value. Defaults to None.
+            resource_limit (Optional[Union[float, int]], optional): Find a best score among the score at resource
+                                                                    lower than this value. Defaults to None.
 
         Returns:
             Optional[Union[float, int]]: Best score. If there is not score, return None.
@@ -271,8 +274,8 @@ class Trial:
             json.dump(results, f)
 
     def finalize(self):
-        """
-        Let the trial know that training is done.
+        """Let the trial know that training is done.
+
         If the trial isn't trained until given resource, then make it pretend to train until resouce.
         """
         if self.get_progress() < self.iteration:
@@ -290,6 +293,7 @@ class Trial:
 
 class TrialStatus(IntEnum):
     """Enum class for trial status."""
+
     UNKNOWN = -1
     READY = 0
     RUNNING = 1

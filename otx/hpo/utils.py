@@ -34,7 +34,7 @@ def check_type(
     Raises:
         TypeError: If type of value is different with the available type, then error is raised.
     """
-    if not isinstance(value, available_type):
+    if not isinstance(value, available_type):  # type: ignore
         if not isinstance(available_type, tuple):
             available_type = [available_type]
         if error_message is not None:

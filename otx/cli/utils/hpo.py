@@ -471,7 +471,7 @@ class HpoRunner:
                 initial_weight_name=self._initial_weight_name,
                 metric=self._hpo_config["metric"],
             ),
-            resource_type,
+            resource_type,  # type: ignore
         )
         best_config = hpo_algo.get_best_config()
         self._restore_fixed_hp(best_config["config"])

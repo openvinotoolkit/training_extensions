@@ -19,7 +19,7 @@ import multiprocessing
 import os
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Union, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import torch
 
@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class ResourceManager(ABC):
     """Abstract class for resource manager class."""
+
     @abstractmethod
     def reserve_resource(self, trial_id):
         """Reserve a resource."""
@@ -38,7 +39,7 @@ class ResourceManager(ABC):
 
     @abstractmethod
     def release_resource(self, trial_id):
-        "Release a resource."
+        """Release a resource."""
         raise NotImplementedError
 
     @abstractmethod
@@ -53,6 +54,7 @@ class CPUResourceManager(ResourceManager):
     Args:
         num_parallel_trial (int, optional): How many trials to trun parallelly. Defaults to 4.
     """
+
     def __init__(self, num_parallel_trial: int = 4):
         check_positive(num_parallel_trial, "num_parallel_trial")
 
@@ -101,6 +103,7 @@ class GPUResourceManager(ResourceManager):
         num_gpu_for_single_trial (int, optional): How many GPUs is used for a single trial. Defaults to 1.
         available_gpu (Optional[str], optional): How many GPUs are available. Defaults to None.
     """
+
     def __init__(self, num_gpu_for_single_trial: int = 1, available_gpu: Optional[str] = None):
         check_positive(num_gpu_for_single_trial, "num_gpu_for_single_trial")
 
@@ -178,9 +181,12 @@ def get_resource_manager(
     """Get an appropriate resource manager depending on current environment.
 
     Args:
-        resource_type (Literal["gpu", "cpu"]): Which type of resource to use. If can be changed depending on environment.
-        num_parallel_trial (Optional[int]): How many trials to trun parallelly. It's used for CPUResourceManager. Defaults to None.
-        num_gpu_for_single_trial (Optional[int]): How many GPUs is used for a single trial. It's used for GPUResourceManager. Defaults to None.
+        resource_type (Literal["gpu", "cpu"]): Which type of resource to use.
+                                               If can be changed depending on environment.
+        num_parallel_trial (Optional[int]): How many trials to trun parallelly. It's used for CPUResourceManager.
+                                            Defaults to None.
+        num_gpu_for_single_trial (Optional[int]): How many GPUs is used for a single trial.
+                                                  It's used for GPUResourceManager. Defaults to None.
         available_gpu (Optional[str]): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
 
     Raises:
@@ -218,16 +224,21 @@ class HpoLoop:
     Args:
         hpo_algo (HpoBase): HPO algorithms.
         train_func (Callable): Function to train a model.
-        resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use. If can be changed depending on environment. Defaults to "gpu".
-        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly. It's used for CPUResourceManager. Defaults to None.
-        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial. It's used for GPUResourceManager. Defaults to None.
-        available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
+        resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use.
+                                                         If can be changed depending on environment. Defaults to "gpu".
+        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly.
+                                                    It's used for CPUResourceManager. Defaults to None.
+        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial.
+                                                            It's used for GPUResourceManager. Defaults to None.
+        available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager.
+                                                 Defaults to None.
     """
+
     def __init__(
         self,
         hpo_algo: HpoBase,
         train_func: Callable,
-        resource_type: Literal['gpu', 'cpu'] = "gpu",
+        resource_type: Literal["gpu", "cpu"] = "gpu",
         num_parallel_trial: Optional[int] = None,
         num_gpu_for_single_trial: Optional[int] = None,
         available_gpu: Optional[str] = None,
@@ -353,20 +364,24 @@ def _report_score(score: Union[int, float], progress: Union[int, float], pipe, t
 def run_hpo_loop(
     hpo_algo: HpoBase,
     train_func: Callable,
-    resource_type: Literal['gpu', 'cpu'] = "gpu",
+    resource_type: Literal["gpu", "cpu"] = "gpu",
     num_parallel_trial: Optional[int] = None,
     num_gpu_for_single_trial: Optional[int] = None,
     available_gpu: Optional[str] = None,
 ):
-    """_summary_
+    """Run the HPO loop.
 
     Args:
         hpo_algo (HpoBase): HPO algorithms.
         train_func (Callable): Function to train a model.
-        resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use. If can be changed depending on environment. Defaults to "gpu".
-        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly. It's used for CPUResourceManager. Defaults to None.
-        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial. It's used for GPUResourceManager. Defaults to None.
-        available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
+        resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use.
+                                                         If can be changed depending on environment. Defaults to "gpu".
+        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly.
+                                                      It's used for CPUResourceManager. Defaults to None.
+        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial.
+                                                            It's used for GPUResourceManager. Defaults to None.
+        available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager.
+                                                 Defaults to None.
     """
     hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu)
     hpo_loop.run()

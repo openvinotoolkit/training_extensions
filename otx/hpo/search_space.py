@@ -28,8 +28,8 @@ AVAILABLE_SEARCH_SPACE_TYPE = ["uniform", "quniform", "loguniform", "qloguniform
 
 
 class SingleSearchSpace:
-    """
-    The class which implements single search space used for HPO.
+    """The class which implements single search space used for HPO.
+
     This class supports uniform and quantized uniform with normal and log scale
     in addition to categorical type. Quantized type has step which is unit for change.
 
@@ -190,6 +190,7 @@ class SingleSearchSpace:
                     )
 
     def __repr__(self):
+        """Print serach space status."""
         if self.is_categorical():
             return f"type: {self._type}, candidiate : {', '.join(self._choice_list)}"
         else:
@@ -260,8 +261,8 @@ class SingleSearchSpace:
 
 
 class SearchSpace:
-    """
-    Class which manages all search spaces of hyper parameters to optimize.
+    """Class which manages all search spaces of hyper parameters to optimize.
+
     This class supports HPO algorithms by providing necessary functionalities.
 
     Args:
@@ -340,18 +341,22 @@ class SearchSpace:
                 self.search_space[key] = SingleSearchSpace(**args)
 
     def __getitem__(self, key):
+        """Get search space by key."""
         try:
             return self.search_space[key]
         except KeyError:
             raise KeyError(f"There is no search space named {key}.")
 
     def __repr__(self):
+        """Print all search spaces."""
         return "\n".join(f"{key} => {val}" for key, val in self.search_space.items())
 
     def __iter__(self):
+        """Iterate search spaces."""
         return self._search_space_generator()
 
     def __len__(self):
+        """Number of search spaces."""
         return len(self.search_space)
 
     def _search_space_generator(self):
@@ -359,7 +364,7 @@ class SearchSpace:
             yield key
 
     def has_categorical_param(self):
-        """check there is a search space whose type is choice"""
+        """Check there is a search space whose type is choice."""
         for param in self.search_space.values():
             if param.is_categorical():
                 return True
@@ -394,7 +399,7 @@ class SearchSpace:
         return space_config
 
     def get_bayeopt_search_space(self) -> Dict:
-        """return hyper parameter serach sapce as bayeopt library format"""
+        """Return hyper parameter serach sapce as bayeopt library format."""
         bayesopt_space = {}
         for key, val in self.search_space.items():
             bayesopt_space[key] = (val.lower_space(), val.upper_space())

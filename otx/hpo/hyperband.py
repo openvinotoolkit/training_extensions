@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 import json
+import logging
 import math
 import os
 from os import path as osp
-from typing import Any, Dict, List, Optional, Union, Literal
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from scipy.stats.qmc import LatinHypercube
 
@@ -45,8 +45,10 @@ class AshaTrial(Trial):
     Args:
         id (Any): Id of the trial.
         configuration (Dict): Configuration for the trial.
-        train_environment (Optional[Dict]): Train environment for the trial. For, example, subset ratio can be includes. Defaults to None.
+        train_environment (Optional[Dict]): Train environment for the trial.
+                                            For, example, subset ratio can be includes. Defaults to None.
     """
+
     def __init__(self, id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
         super().__init__(id, configuration, train_environment)
         self._rung: Optional[int] = None
@@ -94,11 +96,14 @@ class Rung:
     Rung is in charge of selecting a trial to train and deciding which trial to promote to next rung in the bracket.
 
     Args:
-        resource (Union[int, float]): Resource to use for training a trial. For example, something like epoch or iteration.
+        resource (Union[int, float]): Resource to use for training a trial.
+                                      For example, something like epoch or iteration.
         num_required_trial (int): Necessary trials for the rung.
-        reduction_factor (int): Decicdes how many trials to promote. Only top 1 / reduction_factor of all trials can be promoted.
+        reduction_factor (int): Decicdes how many trials to promote.
+                                Only top 1 / reduction_factor of all trials can be promoted.
         rung_idx (int): Current rung index.
     """
+
     def __init__(
         self,
         resource: Union[int, float],
@@ -152,7 +157,8 @@ class Rung:
         """Get best trial in the rung.
 
         Args:
-            mode (str, optional): Decide which trial is better between having highest score or lowest score. Defaults to "max".
+            mode (str, optional): Decide which trial is better between having highest score or lowest score.
+                                  Defaults to "max".
 
         Returns:
             Optional[AshaTrial]: Best trial. If there is no trial, return None.
@@ -192,7 +198,8 @@ class Rung:
 
         Args:
             asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to False.
-            mode (str, optional): Decide which trial is better between having highest score or lowest score. Defaults to "max".
+            mode (str, optional): Decide which trial is better between having highest score or lowest score.
+                                  Defaults to "max".
 
         Returns:
             Optional[AshaTrial]: Trial to prmote. If there is no trial to promote, return None.
@@ -242,10 +249,13 @@ class Bracket:
         minimum_resource (Union[float, int]): Maximum resource to use for training a trial.
         maximum_resource (Union[float, int]): Minimum resource to use for training a trial.
         hyper_parameter_configurations (List[AshaTrial]): Hyper parameter configuration to try.
-        reduction_factor (int): Decicdes how many trials to promote to next rung. Only top 1 / reduction_factor of rung trials can be promoted.
-        mode (str, optional): Decide which trial is better between having highest score or lowest score. Defaults to "max".
+        reduction_factor (int): Decicdes how many trials to promote to next rung.
+                                Only top 1 / reduction_factor of rung trials can be promoted.
+        mode (str, optional): Decide which trial is better between having highest score or lowest score.
+                              Defaults to "max".
         asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.
     """
+
     def __init__(
         self,
         id: int,
@@ -307,7 +317,8 @@ class Bracket:
         Args:
             minimum_resource (Union[float, int]): Minimum resource to use for training a trial.
             maximum_resource (Union[float, int]): Maximum resource to use for training a trial.
-            reduction_factor (int): Decicdes how many trials to promote to next rung. Only top 1 / reduction_factor of rung trials can be promoted.
+            reduction_factor (int): Decicdes how many trials to promote to next rung.
+                                    Only top 1 / reduction_factor of rung trials can be promoted.
 
         Raises:
             ValueError: If minimum resource is lower than maximum resource, raise an error.
@@ -473,8 +484,8 @@ class Bracket:
 
 
 class HyperBand(HpoBase):
-    """
-    This implements the Asyncronous HyperBand scheduler with iterations only.
+    """It implements the Asyncronous HyperBand scheduler with iterations only.
+
     Please refer the below papers for the detailed algorithm.
 
     [1] "Hyperband: A Novel Bandit-Based Approach to Hyperparameter Optimization", JMLR 2018
@@ -486,10 +497,13 @@ class HyperBand(HpoBase):
 
     Args:
         minimum_resource (Union[float, int]): Minimum resource to use for training a trial. Defaults to None.
-        reduction_factor (int, optional): Decicdes how many trials to promote to next rung. Only top 1 / reduction_factor of rung trials can be promoted. Defaults to 3.
+        reduction_factor (int, optional): Decicdes how many trials to promote to next rung.
+                                          Only top 1 / reduction_factor of rung trials can be promoted. Defaults to 3.
         asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.
-        asynchronous_bracket (bool, optional): Whether SHAs(brackets) are running parallelly or not. Defaults to True. Defaults to False.
+        asynchronous_bracket (bool, optional): Whether SHAs(brackets) are running parallelly or not.
+                                               Defaults to True. Defaults to False.
     """
+
     def __init__(
         self,
         minimum_resource: Optional[Union[int, float]] = None,
@@ -510,7 +524,7 @@ class HyperBand(HpoBase):
         self._asynchronous_sha = asynchronous_sha
         self._asynchronous_bracket = asynchronous_bracket
         self._trials: Dict[str, AshaTrial] = {}
-        self._brackets: Dict[str, Bracket] = {}
+        self._brackets: Dict[int, Bracket] = {}
 
         if not self._need_to_find_resource_value():
             self._brackets = self._make_brackets()
@@ -526,14 +540,17 @@ class HyperBand(HpoBase):
         return self._make_brackets_as_config(brackets_config)
 
     def _calculate_bracket_resource(self, num_max_rung_trials: int, bracket_index: int) -> Union[int, float]:
-        """calculate how much resource is needed for the bracket given that resume is available."""
+        """Calculate how much resource is needed for the bracket given that resume is available."""
         num_trial = self._calculate_num_bracket_trials(num_max_rung_trials, bracket_index)
         minimum_resource = self.maximum_resource * (self._reduction_factor**-bracket_index)
 
         total_resource = 0
-        num_rungs = (Bracket.calcuate_max_rung_idx(
-                minimum_resource, self.maximum_resource, self._reduction_factor) + 1  # type: ignore
-        ) 
+        num_rungs = (
+            Bracket.calcuate_max_rung_idx(
+                minimum_resource, self.maximum_resource, self._reduction_factor  # type: ignore
+            )
+            + 1
+        )
         previous_resource = 0
         resource = minimum_resource
         for _ in range(num_rungs):
@@ -554,13 +571,13 @@ class HyperBand(HpoBase):
         return math.floor((self._calculate_s_max() + 1) / (bracket_idx + 1))
 
     def _calculate_s_max(self) -> int:
-        return math.floor(math.log(self.maximum_resource / self._minimum_resource, self._reduction_factor))
+        return math.floor(
+            math.log(self.maximum_resource / self._minimum_resource, self._reduction_factor)  # type: ignore
+        )
 
     def _make_default_brackets_setting(self) -> List[Dict[str, Any]]:
-        """
-        bracket order is the opposite of order of paper's.
-        this is for running default hyper parmeters with abundant resource.
-        """
+        # Bracket order is the opposite of order of paper's.
+        # This is for running default hyper parmeters with abundant resource.
         brackets_setting = []
         for idx in range(self._calculate_s_max() + 1):
             brackets_setting.append(
@@ -720,12 +737,13 @@ class HyperBand(HpoBase):
             return self._increase_hyperband_scale()
 
     def _adjust_minimum_resource(self):
-        """
-        Set meaningful minimum resource. Goal of this function is to avoid setting minimum resource too low
+        """Set meaningful minimum resource.
+
+        Goal of this function is to avoid setting minimum resource too low
         to distinguish which trial is better.
         """
         if self.maximum_resource < self._reduction_factor:
-            logger.debug("maximum_resource is less than reduction factor. adjusting minimum resource is skipped.")
+            logger.debug("maximum_resource is lesser than reduction factor. adjusting minimum resource is skipped.")
             return
 
         trial = None
@@ -755,11 +773,11 @@ class HyperBand(HpoBase):
         self._minimum_resource = minimum_resource
 
     def _need_to_dcrease_hyerpband_scale(self) -> bool:
-        """check full ASHA resource exceeds expected_time_ratio."""
+        """Check full ASHA resource exceeds expected_time_ratio."""
         if self.expected_time_ratio is None:
             return False
 
-        total_resource = 0
+        total_resource: Union[int, float] = 0
         for idx in range(self._calculate_s_max() + 1):
             num_max_rung_trials = self._get_num_max_rung_trials(idx)
             total_resource += self._calculate_bracket_resource(num_max_rung_trials, idx)
@@ -767,20 +785,21 @@ class HyperBand(HpoBase):
         return total_resource > self._get_expected_total_resource()
 
     def _decrease_hyperband_scale(self) -> List[Dict[str, Any]]:
-        """
-        from bracket which has biggest number of rung, check that it's resource exceeds expected_time_ratio
+        """Decrease Hyperband scale.
+
+        From bracket which has biggest number of rung, check that it's resource exceeds expected_time_ratio
         if bracket is added. If not, bracket is added. If it does, check that number of trials for bracket
         can be reduced. if not, skip that bracket and check that next bracket can be added by same method.
         """
-        brackets_setting = []
-        total_resource = 0
+        brackets_setting: List = []
+        total_resource: Union[int, float] = 0
         resource_upper_bound = self._get_expected_total_resource()
 
-        reserved_resource = 0
+        reserved_resource: Union[int, float] = 0
         if self._trials:  # reserve resources for trials which should be run on bracket 0
             for trial in self._trials.values():
                 if trial.bracket == 0:
-                    reserved_resource += self.maximum_resource
+                    reserved_resource += self.maximum_resource  # type: ignore
             total_resource += reserved_resource
 
         for idx in range(self._calculate_s_max(), -1, -1):
@@ -810,12 +829,12 @@ class HyperBand(HpoBase):
         )
 
     def _increase_hyperband_scale(self) -> List[Dict[str, Any]]:
-        total_resource = 0
+        total_resource: Union[int, float] = 0
         bracket_status = {}
         s_max = self._calculate_s_max()
 
         # If all brackets can run more than one, then multiply number of trials on each bracket as many as possible
-        sum_unit_resource = 0
+        sum_unit_resource: Union[int, float] = 0
         for idx in range(s_max + 1):
             num_max_rung_trials = self._get_num_max_rung_trials(idx)
             unit_resource = self._calculate_bracket_resource(1, idx)
@@ -848,7 +867,9 @@ class HyperBand(HpoBase):
             brackets_setting.append(
                 {
                     "bracket_index": idx,
-                    "num_trials": self._calculate_num_bracket_trials(bracket_status[idx]["num_max_rung_trials"], idx),
+                    "num_trials": self._calculate_num_bracket_trials(
+                        bracket_status[idx]["num_max_rung_trials"], idx  # type: ignore
+                    ),
                 }
             )
 
@@ -860,7 +881,7 @@ class HyperBand(HpoBase):
 
     def report_score(
         self, score: Union[float, int], resource: Union[float, int], trial_id: str, done: bool = False
-        ) -> Literal[TrialStatus.STOP, TrialStatus.RUNNING]:
+    ) -> Literal[TrialStatus.STOP, TrialStatus.RUNNING]:
         """Report a score to ASHA.
 
         Args:
@@ -904,11 +925,11 @@ class HyperBand(HpoBase):
                 return False
         return True
 
-    def get_best_config(self) -> Dict[str, Any]:
+    def get_best_config(self) -> Optional[Dict[str, Any]]:
         """Get best configuration in ASHA.
 
         Returns:
-            Dict[str, Any]: Best configuration in ASHA.
+            Optional[Dict[str, Any]]: Best configuration in ASHA. If there is no trial to select, return None.
         """
         best_score = None
         best_trial = None
