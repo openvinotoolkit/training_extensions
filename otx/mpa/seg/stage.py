@@ -121,6 +121,10 @@ class SegStage(Stage):
                 for head in decode_head:
                     head.num_classes = len(model_classes)
 
+            # For SupConDetCon
+            if "SupConDetCon" in cfg.model.type:
+                cfg.model.num_classes = len(model_classes)
+
         # Task classes
         self.org_model_classes = org_model_classes
         self.model_classes = model_classes

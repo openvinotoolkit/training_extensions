@@ -107,8 +107,8 @@ def test_preprocess(mocker) -> None:
     imgs, meta = preprocess(clip_len=8, width=256, height=256)
     assert list(imgs.shape) == [1, 3, 3, 256, 256]
     assert torch.all(meta[0][0]["img_shape"] == torch.Tensor([256.0, 256.0]))
-    assert meta[0][0]["ori_shape"] == (192, 256)
-    assert np.all(meta[0][0]["scale_factor"] == np.array([256 / 256, 256 / 192, 256 / 256, 256 / 192]))
+    assert meta[0][0]["ori_shape"] == (5, 10)
+    assert np.all(meta[0][0]["scale_factor"] == np.array([256 / 10, 256 / 5, 256 / 10, 256 / 5]))
 
 
 @e2e_pytest_unit

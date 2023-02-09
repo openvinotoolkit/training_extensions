@@ -16,5 +16,12 @@ jobs:
         uses: actions/checkout@v3
       - name: Install dependencies
         run: python -m pip install tox
-      - name: Pre-Merge Tests
+      - name: E2E Tests
         run: tox -e pre-merge -- tests/e2e
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: .tox/test-results.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}

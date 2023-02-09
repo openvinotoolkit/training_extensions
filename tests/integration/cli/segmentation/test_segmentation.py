@@ -24,10 +24,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
-    "--val-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--test-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--input": "data/common_semantic_segmentation_dataset/train/images",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--input": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "train_params": [
         "params",
         "--learning_parameters.learning_rate_fixed_iters",
@@ -42,10 +42,10 @@ args = {
 }
 
 args_semisl = {
-    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
-    "--val-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--test-data-roots": "data/common_semantic_segmentation_dataset/val",
-    "--unlabeled-data-roots": "data/common_semantic_segmentation_dataset/train",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--unlabeled-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -58,8 +58,8 @@ args_semisl = {
 }
 
 args_selfsl = {
-    "--train-data-roots": "data/common_semantic_segmentation_dataset/train",
-    "--input": "data/segmentation/custom/images/training",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--input": "tests/assets/segmentation/custom/images/training",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -93,12 +93,21 @@ templates_ids = [default_template.model_template_id]
 class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_supcon(self, template, tmp_dir_path):
+        args1 = copy.deepcopy(args)
+        args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation"
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
@@ -109,36 +118,43 @@ class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation"
         otx_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -149,6 +165,7 @@ class TestSegmentationCLI:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu"
         args1 = copy.deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
@@ -156,9 +173,11 @@ class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_semisl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation/test_semisl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)

@@ -128,6 +128,8 @@ def main():
                 row_index += 1
         print(backbone_table)
 
+    return dict(retcode=0, task_type=args.task)
+
 
 if __name__ == "__main__":
     main()

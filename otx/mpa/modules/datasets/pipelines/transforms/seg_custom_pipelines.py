@@ -80,7 +80,14 @@ class DefaultFormatBundle(object):
             img = results[target]
             if len(img.shape) < 3:
                 img = np.expand_dims(img, -1)
-            img = np.ascontiguousarray(img.transpose(2, 0, 1)).astype(np.float32)
+
+            if len(img.shape) == 3:
+                img = np.ascontiguousarray(img.transpose(2, 0, 1)).astype(np.float32)
+            elif len(img.shape) == 4:
+                # for selfsl or supcon
+                img = np.ascontiguousarray(img.transpose(0, 3, 1, 2)).astype(np.float32)
+            else:
+                raise ValueError(f"img.shape={img.shape} is not supported.")
 
             results[target] = DC(to_tensor(img), stack=True)
 
