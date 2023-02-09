@@ -34,7 +34,7 @@ def get_args():
     parsed, _ = pre_parser.parse_known_args()
     template = parsed.template
     parser = argparse.ArgumentParser()
-    if template and Path(template).is_file():
+    if template and template.endswith("yaml") and Path(template).is_file():
         parser.add_argument("template")
     else:
         parser.add_argument("--template", required=False)
