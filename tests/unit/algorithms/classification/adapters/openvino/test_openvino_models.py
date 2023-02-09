@@ -12,37 +12,21 @@ from tests.unit.api.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 from tests.unit.algorithms.classification.test_helper import (
-    DEFAULT_CLS_TEMPLATE,
-    init_environment
+    generate_label_schema,
+    generate_cls_dataset
 )
+from otx.algorithms.classification.utils.labels_utils import get_multihead_class_info
+
 
 class MockClassification(OTXClassification, Classification):
     def __init__(self):
         self.out_layer_name = 'logits'
-        self.multihead_class_info = {'num_multiclass_heads': 3,
-                                  'num_multilabel_classes': 2,
-                                  'head_idx_to_logits_range': {0: (0, 2), 1: (2, 4), 2: (4, 6)},
-                                  'num_single_label_classes': 6,
-                                  'class_to_group_idx': {'equilateral': (0, 0),
-                                                         'right': (0, 1),
-                                                         'non_square': (1, 0),
-                                                         'square': (1, 1),
-                                                         'rectangle': (2, 0),
-                                                         'triangle': (2, 1),
-                                                         'multi a': (3, 0),
-                                                         'multi b': (3, 1)},
-                                  'all_groups': [['equilateral', 'right'],
-                                                 ['non_square', 'square'],
-                                                 ['rectangle', 'triangle'],
-                                                 ['multi a'], ['multi b']],
-                                  'label_to_idx': {'right': 0,
-                                                   'multi a': 1,
-                                                   'multi b': 2,
-                                                   'equilateral': 3,
-                                                   'square': 4,
-                                                   'triangle': 5,
-                                                   'non_square': 6,
-                                                   'rectangle': 7}}
+        hierarchical_dataset = generate_cls_dataset(hierarchical=True)
+        label_schema = generate_label_schema(hierarchical_dataset.get_labels(),
+                                         multilabel=False,
+                                         hierarchical=True)
+        self.multihead_class_info = get_multihead_class_info(label_schema)
+
 
 class TestOTXClassification:
     @pytest.fixture(autouse=True)
