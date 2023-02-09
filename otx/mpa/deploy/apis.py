@@ -3,8 +3,10 @@
 #
 
 import os
+import time
 from collections.abc import Mapping
 from functools import partial
+from subprocess import CalledProcessError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
@@ -256,7 +258,30 @@ if is_mmdeploy_enabled():
             if model_name:
                 mo_options.args += f'--model_name "{model_name}" '
 
-            openvino_api.from_onnx(onnx_path, output_dir, input_info, output_names, mo_options)
+            try:
+                openvino_api.from_onnx(
+                    onnx_path, output_dir, input_info, output_names, mo_options
+                )
+            except CalledProcessError as e:
+                # NOTE: mo returns non zero return code (245) even though it successfully generate IR
+                cur_time = time.time()
+                time_threshold = 5
+                if (
+                    e.returncode == 245
+                    and {model_name + ".bin", model_name + ".xml"}
+                    - set(os.listdir(output_dir))
+                    and (
+                        os.path.getmtime(os.path.join(output_dir, model_name + ".bin"))
+                        - cur_time
+                        < time_threshold
+                        and os.path.getmtime(
+                            os.path.join(output_dir, model_name + ".xml")
+                        )
+                        - cur_time
+                        < time_threshold
+                    )
+                ):
+                    raise e
 
             return (
                 os.path.join(output_dir, model_name + ".xml"),
