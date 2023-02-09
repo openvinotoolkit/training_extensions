@@ -14,7 +14,11 @@ import numpy as np
 import torch
 from mmcv.parallel import collate, scatter
 
-from .utils import convert_batchnorm, is_mmdeploy_enabled, mmdeploy_init_model_helper
+from .utils import (
+    is_mmdeploy_enabled,
+    mmdeploy_init_model_helper,
+    numpy_2_list,
+)
 
 
 class NaiveExporter:
@@ -36,7 +40,6 @@ class NaiveExporter:
         input_data = scatter(collate([input_data], samples_per_gpu=1), [-1])[0]
 
         model = model_builder(cfg)
-        model = convert_batchnorm(model)
         model = model.cpu().eval()
 
         onnx_path = NaiveExporter.torch2onnx(
@@ -107,6 +110,7 @@ class NaiveExporter:
     ) -> str:
 
         img_metas = input_data.get("img_metas")
+        numpy_2_list(img_metas)
         imgs = input_data.get("img")
         model.forward = partial(model.forward, img_metas=img_metas, return_loss=False)
 
@@ -144,7 +148,9 @@ class NaiveExporter:
         }
         mo_args.update(openvino_options)
 
-        ret, msg = mo_wrapper.generate_ir(output_dir, output_dir, silent=False, **mo_args)
+        ret, msg = mo_wrapper.generate_ir(
+            output_dir, output_dir, silent=False, **mo_args
+        )
         if ret != 0:
             raise ValueError(msg)
         return (
@@ -189,7 +195,9 @@ if is_mmdeploy_enabled():
             task_processor = build_task_processor(cfg, deploy_cfg, "cpu")
 
             def helper(*args, **kwargs):
-                return mmdeploy_init_model_helper(*args, **kwargs, model_builder=model_builder)
+                return mmdeploy_init_model_helper(
+                    *args, **kwargs, model_builder=model_builder
+                )
 
             task_processor.__class__.init_pytorch_model = helper
 
@@ -205,7 +213,7 @@ if is_mmdeploy_enabled():
                 # image assumed to be RGB format under OTX
                 input_data = cv2.cvtColor(input_data, cv2.COLOR_BGR2RGB)
             else:
-                input_data = np.zeros(input_data_cfg.shape, dtype=np.uint8)
+                input_data = np.zeros(input_data_cfg["shape"], dtype=np.uint8)
 
             onnx_path = MMdeployExporter.torch2onnx(
                 output_dir,
@@ -238,7 +246,7 @@ if is_mmdeploy_enabled():
                 onnx_file_name,
                 deploy_cfg=deploy_cfg,
                 model_cfg=cfg,
-                model_checkpoint=cfg.load_from,
+                model_checkpoint=cfg.get("load_from", None),
                 device="cpu",
             )
             return os.path.join(output_dir, onnx_file_name)

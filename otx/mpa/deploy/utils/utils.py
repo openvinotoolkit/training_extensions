@@ -3,12 +3,24 @@
 #
 
 import torch
+import numpy as np
+
+from collections.abc import MutableMapping
 
 
-def convert_batchnorm(module):
+def sync_batchnorm_2_batchnorm(module, dim=2):
+    if dim == 1:
+        bn = torch.nn.BatchNorm1d
+    elif dim == 2:
+        bn = torch.nn.BatchNorm2d
+    elif dim == 3:
+        bn = torch.nn.BatchNorm3d
+    else:
+        raise NotImplementedError()
+
     module_output = module
     if isinstance(module, torch.nn.SyncBatchNorm):
-        module_output = torch.nn.BatchNorm2d(
+        module_output = bn(
             module.num_features,
             module.eps,
             module.momentum,
@@ -26,8 +38,27 @@ def convert_batchnorm(module):
         module_output.num_batches_tracked = module.num_batches_tracked
 
     for name, child in module.named_children():
-        module_output.add_module(name, convert_batchnorm(child))
+        module_output.add_module(name, sync_batchnorm_2_batchnorm(child, dim))
 
     del module
 
     return module_output
+
+
+def numpy_2_list(data):
+
+    if isinstance(data, np.ndarray):
+        return data.tolist()
+
+    if isinstance(data, MutableMapping):
+        for key, value in data.items():
+            data[key] = numpy_2_list(value)
+    elif isinstance(data, (list, tuple)):
+        data_ = []
+        for value in data:
+            data_.append(numpy_2_list(value))
+        if isinstance(data, tuple):
+            data = tuple(data_)
+        else:
+            data = data_
+    return data
