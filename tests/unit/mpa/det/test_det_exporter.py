@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
+from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.mpa.deploy.apis import NaiveExporter
 from otx.mpa.det.exporter import DetectionExporter
 from otx.mpa.exporter_mixin import ExporterMixin
@@ -24,7 +24,7 @@ class TestDetectionExporter:
 
     @e2e_pytest_unit
     def test_run(self, mocker):
-        args = {"precision": "FP32", "model_builder": build_segmentor}
+        args = {"precision": "FP32", "model_builder": build_detector}
         mocker.patch.object(ExporterMixin, "run", return_value=True)
         returned_value = self.exporter.run(self.model_cfg, "", self.data_cfg, **args)
 
@@ -34,6 +34,6 @@ class TestDetectionExporter:
     @e2e_pytest_unit
     def test_naive_export(self, mocker):
         mock_export_ov = mocker.patch.object(NaiveExporter, "export2openvino")
-        self.exporter.naive_export("", build_segmentor, "FP32", self.data_cfg)
+        self.exporter.naive_export("", build_detector, "FP32", self.data_cfg)
 
         mock_export_ov.assert_called_once()

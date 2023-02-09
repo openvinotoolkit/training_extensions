@@ -34,7 +34,6 @@ class TestOTXSegTrainer:
         mocker.patch.object(SegInferrer, "configure_samples_per_gpu")
         mocker.patch.object(SegInferrer, "configure_compat_cfg")
         mock_infer_callback = mocker.patch.object(SegInferrer, "set_inference_progress_callback")
-
         returned_value = self.inferrer.infer(cfg)
         mock_infer_callback.assert_called_once()
 
