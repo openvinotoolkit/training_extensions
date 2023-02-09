@@ -36,6 +36,8 @@ def sync_batchnorm_2_batchnorm(module, dim=2):
         module_output.running_mean = module.running_mean
         module_output.running_var = module.running_var
         module_output.num_batches_tracked = module.num_batches_tracked
+        if hasattr(module, "qconfig"):
+            module_output.qconfig = module.qconfig
 
     for name, child in module.named_children():
         module_output.add_module(name, sync_batchnorm_2_batchnorm(child, dim))
