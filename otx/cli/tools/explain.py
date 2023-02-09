@@ -140,6 +140,8 @@ def main():
 
     print(f"Saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
 
+    return dict(retcode=0, template=template.name)
+
 
 if __name__ == "__main__":
     main()

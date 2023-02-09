@@ -329,6 +329,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         This function provides a user-friendly OTX workspace and provides more intuitive
         and create customizable templates to help users use all the features of OTX.
+
+        Args:
+            new_workspace_path (Optional[str]): Workspace dir name for build
         """
 
         # Create OTX-workspace

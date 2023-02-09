@@ -106,6 +106,8 @@ def main():
                 raise ValueError("The selected backbone has inputs that the user must enter.")
             builder.merge_backbone(args.model, args.backbone)
 
+    return dict(retcode=0, task_type=args.task)
+
 
 if __name__ == "__main__":
     main()
