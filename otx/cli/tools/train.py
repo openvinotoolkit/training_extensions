@@ -261,6 +261,8 @@ def main():  # pylint: disable=too-many-branches
     if args.gpus:
         multigpu_manager.finalize()
 
+    return dict(retcode=0, template=template.name)
+
 
 if __name__ == "__main__":
     main()
