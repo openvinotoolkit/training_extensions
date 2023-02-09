@@ -563,4 +563,4 @@ class TestSearchSpace:
     @pytest.mark.parametrize("config", ["wrong_value", [1, 3, 4], (1, 2)])
     def test_convert_from_zero_one_scale_to_real_space_with_bad_arg_type(self, search_space_with_all_types, config):
         with pytest.raises(AttributeError):
-             search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)
+            search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)

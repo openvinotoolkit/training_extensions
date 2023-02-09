@@ -131,12 +131,12 @@ class TestTrial:
 
     def test_is_not_done(self, trial):
         trial.iteration = 10
-        assert trial.is_done() == False
+        assert not trial.is_done()
 
     def test_is_done(self, trial):
         trial.iteration = 10
         trial.register_score(10, 10)
-        assert trial.is_done() == True
+        assert trial.is_done()
 
     def test_is_done_iteration_not_set_yet(self, trial):
         with pytest.raises(ValueError):

@@ -1,13 +1,29 @@
+"""Hyperband implementation."""
+
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
+import logging
 import json
 import math
 import os
 from os import path as osp
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Literal
 
 from scipy.stats.qmc import LatinHypercube
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
-from otx.hpo.logger import get_logger
 from otx.hpo.utils import (
     check_mode_input,
     check_not_negative,
@@ -15,7 +31,7 @@ from otx.hpo.utils import (
     left_is_better,
 )
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 
 def _check_reduction_factor_value(reduction_factor: int):
@@ -24,30 +40,42 @@ def _check_reduction_factor_value(reduction_factor: int):
 
 
 class AshaTrial(Trial):
+    """ASHA trial class.
+
+    Args:
+        id (Any): Id of the trial.
+        configuration (Dict): Configuration for the trial.
+        train_environment (Optional[Dict]): Train environment for the trial. For, example, subset ratio can be includes. Defaults to None.
+    """
     def __init__(self, id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
         super().__init__(id, configuration, train_environment)
-        self._rung = None
-        self._bracket = None
+        self._rung: Optional[int] = None
+        self._bracket: Optional[int] = None
 
     @property
     def rung(self):
+        """Rung where the trial is included."""
         return self._rung
 
     @rung.setter
     def rung(self, val: int):
+        """Setter for rung."""
         check_not_negative(val, "rung")
         self._rung = val
 
     @property
     def bracket(self):
+        """Bracket where the trial is inlcuded."""
         return self._bracket
 
     @bracket.setter
     def bracket(self, val: int):
+        """Setter for bracket."""
         check_not_negative(val, "bracket")
         self._bracket = val
 
     def save_results(self, save_path: str):
+        """Save a result of the trail at 'save_path'."""
         results = {
             "id": self.id,
             "rung": self.rung,
@@ -61,9 +89,19 @@ class AshaTrial(Trial):
 
 
 class Rung:
+    """Rung class.
+
+    Rung is in charge of selecting a trial to train and deciding which trial to promote to next rung in the bracket.
+
+    Args:
+        resource (Union[int, float]): Resource to use for training a trial. For example, something like epoch or iteration.
+        num_required_trial (int): Necessary trials for the rung.
+        reduction_factor (int): Decicdes how many trials to promote. Only top 1 / reduction_factor of all trials can be promoted.
+        rung_idx (int): Current rung index.
+    """
     def __init__(
         self,
-        resource: int,
+        resource: Union[int, float],
         num_required_trial: int,
         reduction_factor: int,
         rung_idx: int,
@@ -81,17 +119,28 @@ class Rung:
 
     @property
     def num_required_trial(self):
+        """Necessary trials for the rung."""
         return self._num_required_trial
 
     @property
     def resource(self):
+        """Resource to use for training a trial."""
         return self._resource
 
     @property
     def rung_idx(self):
+        """Current rung index."""
         return self._rung_idx
 
     def add_new_trial(self, trial: AshaTrial):
+        """Add a new trial to the rung.
+
+        Args:
+            trial (AshaTrial): Trial to add
+
+        Raises:
+            RuntimeError: If no more trial is needed, raise an error.
+        """
         if not self.need_more_trials():
             raise RuntimeError(f"{self.rung_idx} rung has already sufficient trials.")
         trial.iteration = self.resource
@@ -99,7 +148,15 @@ class Rung:
         trial.status = TrialStatus.READY
         self._trials.append(trial)
 
-    def get_best_trial(self, mode: str = "max"):
+    def get_best_trial(self, mode: str = "max") -> Optional[AshaTrial]:
+        """Get best trial in the rung.
+
+        Args:
+            mode (str, optional): Decide which trial is better between having highest score or lowest score. Defaults to "max".
+
+        Returns:
+            Optional[AshaTrial]: Best trial. If there is no trial, return None.
+        """
         check_mode_input(mode)
         best_score = None
         best_trial = None
@@ -113,13 +170,16 @@ class Rung:
 
         return best_trial
 
-    def need_more_trials(self):
+    def need_more_trials(self) -> bool:
+        """Check whether the rung needs more trials."""
         return self.num_required_trial > self.get_num_trials()
 
-    def get_num_trials(self):
+    def get_num_trials(self) -> int:
+        """Number of trails the rung has."""
         return len(self._trials)
 
-    def is_done(self):
+    def is_done(self) -> bool:
+        """Check that the rung is done."""
         if self.need_more_trials():
             return False
         for trial in self._trials:
@@ -127,7 +187,16 @@ class Rung:
                 return False
         return True
 
-    def get_trial_to_promote(self, asynchronous_sha: bool = False, mode: str = "max"):
+    def get_trial_to_promote(self, asynchronous_sha: bool = False, mode: str = "max") -> Optional[AshaTrial]:
+        """Get a trial to promote.
+
+        Args:
+            asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to False.
+            mode (str, optional): Decide which trial is better between having highest score or lowest score. Defaults to "max".
+
+        Returns:
+            Optional[AshaTrial]: Trial to prmote. If there is no trial to promote, return None.
+        """
         num_finished_trial = 0
         num_promoted_trial = 0
         best_score = None
@@ -153,13 +222,30 @@ class Rung:
 
         return None
 
-    def get_next_trial(self):
+    def get_next_trial(self) -> Optional[AshaTrial]:
+        """Get next trial to trian.
+
+        Returns:
+            Optional[AshaTrial]: Next trial to train. If there is no left trial to train, then return None.
+        """
         for trial in self._trials:
             if not trial.is_done() and trial.status != TrialStatus.RUNNING:
                 return trial
+        return None
 
 
 class Bracket:
+    """Bracket class. It operates a single SHA using multiple rungs.
+
+    Args:
+        id (int): Bracket id.
+        minimum_resource (Union[float, int]): Maximum resource to use for training a trial.
+        maximum_resource (Union[float, int]): Minimum resource to use for training a trial.
+        hyper_parameter_configurations (List[AshaTrial]): Hyper parameter configuration to try.
+        reduction_factor (int): Decicdes how many trials to promote to next rung. Only top 1 / reduction_factor of rung trials can be promoted.
+        mode (str, optional): Decide which trial is better between having highest score or lowest score. Defaults to "max".
+        asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.
+    """
     def __init__(
         self,
         id: int,
@@ -185,14 +271,17 @@ class Bracket:
 
     @property
     def id(self):
+        """Bracket id."""
         return self._id
 
     @property
     def maximum_resource(self):
+        """Maximum resource to use for training a trial."""
         return self._maximum_resource
 
     @maximum_resource.setter
     def maximum_resource(self, val: Union[float, int]):
+        """Setter for maximum_resource."""
         check_positive(val, "maximum_resource")
         if val < self._minimum_resource:
             raise ValueError(
@@ -206,12 +295,26 @@ class Bracket:
 
     @property
     def max_rung(self):
+        """Number of rungs the bracket has."""
         return self.calcuate_max_rung_idx(self._minimum_resource, self.maximum_resource, self._reduction_factor)
 
     @staticmethod
     def calcuate_max_rung_idx(
         minimum_resource: Union[float, int], maximum_resource: Union[float, int], reduction_factor: int
-    ):
+    ) -> int:
+        """Calculate the number of rungs the bracket needs.
+
+        Args:
+            minimum_resource (Union[float, int]): Minimum resource to use for training a trial.
+            maximum_resource (Union[float, int]): Maximum resource to use for training a trial.
+            reduction_factor (int): Decicdes how many trials to promote to next rung. Only top 1 / reduction_factor of rung trials can be promoted.
+
+        Raises:
+            ValueError: If minimum resource is lower than maximum resource, raise an error.
+
+        Returns:
+            int: The number of rungs the bracket needs.
+        """
         check_positive(minimum_resource, "minimum_resource")
         check_positive(maximum_resource, "maximum_resource")
         check_positive(reduction_factor, "reduction_factor")
@@ -263,7 +366,12 @@ class Bracket:
 
         return best_trial
 
-    def get_next_trial(self):
+    def get_next_trial(self) -> Optional[AshaTrial]:
+        """Get next trial to train.
+
+        Returns:
+            Optional[AshaTrial]: Next trial to train. There is no trial to trian, then return None.
+        """
         current_rung = self.max_rung
         while current_rung >= 0:
             next_sample = self._promote_trial_if_available(current_rung)
@@ -283,10 +391,20 @@ class Bracket:
 
         return next_sample
 
-    def is_done(self):
+    def is_done(self) -> bool:
+        """Check that the bracket is done.
+
+        Returns:
+            bool: Whether bracket is done or not.
+        """
         return self._rungs[-1].is_done()
 
-    def get_best_trial(self):
+    def get_best_trial(self) -> Optional[AshaTrial]:
+        """Get best trial in the bracket.
+
+        Returns:
+            Optional[AshaTrial]: Best trial in the bracket. If there is no trial to select, then return None.
+        """
         if not self.is_done():
             logger.warning("Bracket is not done yet.")
 
@@ -300,6 +418,11 @@ class Bracket:
         return trial
 
     def save_results(self, save_path: str):
+        """Save a bracket result to 'save_path'.
+
+        Args:
+            save_path (str): Path where to save a bracket result.
+        """
         result = self._get_result()
         with open(osp.join(save_path, "rung_status.json"), "w") as f:
             json.dump(result, f)
@@ -308,6 +431,7 @@ class Bracket:
             trial.save_results(osp.join(save_path, f"{trial_id}.json"))
 
     def print_result(self):
+        """Print a bracket result."""
         print("*" * 20, f"{self.id} bracket", "*" * 20)
         result = self._get_result()
         del result["rung_status"]
@@ -361,12 +485,11 @@ class HyperBand(HpoBase):
         https://arxiv.org/abs/1810.05934
 
     Args:
-        min_iterations (int): Only stop trials at least this old in time.
-            The units are the same as the attribute named by `time_attr`.
-        reduction_factor (float): Used to set halving rate and amount. This
-            is simply a unit-less scalar.
+        minimum_resource (Union[float, int]): Minimum resource to use for training a trial. Defaults to None.
+        reduction_factor (int, optional): Decicdes how many trials to promote to next rung. Only top 1 / reduction_factor of rung trials can be promoted. Defaults to 3.
+        asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.
+        asynchronous_bracket (bool, optional): Whether SHAs(brackets) are running parallelly or not. Defaults to True. Defaults to False.
     """
-
     def __init__(
         self,
         minimum_resource: Optional[Union[int, float]] = None,
@@ -392,23 +515,25 @@ class HyperBand(HpoBase):
         if not self._need_to_find_resource_value():
             self._brackets = self._make_brackets()
 
-    def _need_to_find_resource_value(self):
+    def _need_to_find_resource_value(self) -> bool:
         return self.maximum_resource is None or self._minimum_resource is None
 
-    def _make_brackets(self):
+    def _make_brackets(self) -> Dict[int, Bracket]:
         if self.expected_time_ratio is None:
             brackets_config = self._make_default_brackets_setting()
         else:
             brackets_config = self.auto_config()
         return self._make_brackets_as_config(brackets_config)
 
-    def _calculate_bracket_resource(self, num_max_rung_trials: int, bracket_index: int):
+    def _calculate_bracket_resource(self, num_max_rung_trials: int, bracket_index: int) -> Union[int, float]:
         """calculate how much resource is needed for the bracket given that resume is available."""
         num_trial = self._calculate_num_bracket_trials(num_max_rung_trials, bracket_index)
         minimum_resource = self.maximum_resource * (self._reduction_factor**-bracket_index)
 
         total_resource = 0
-        num_rungs = Bracket.calcuate_max_rung_idx(minimum_resource, self.maximum_resource, self._reduction_factor) + 1
+        num_rungs = (Bracket.calcuate_max_rung_idx(
+                minimum_resource, self.maximum_resource, self._reduction_factor) + 1  # type: ignore
+        ) 
         previous_resource = 0
         resource = minimum_resource
         for _ in range(num_rungs):
@@ -419,19 +544,19 @@ class HyperBand(HpoBase):
 
         return total_resource
 
-    def _calculate_num_bracket_trials(self, num_max_rung_trials: int, bracket_index: int):
+    def _calculate_num_bracket_trials(self, num_max_rung_trials: int, bracket_index: int) -> int:
         return num_max_rung_trials * (self._reduction_factor**bracket_index)
 
-    def _calculate_origin_num_trial_for_bracket(self, bracket_idx: int):
+    def _calculate_origin_num_trial_for_bracket(self, bracket_idx: int) -> int:
         return self._calculate_num_bracket_trials(self._get_num_max_rung_trials(bracket_idx), bracket_idx)
 
-    def _get_num_max_rung_trials(self, bracket_idx: int):
+    def _get_num_max_rung_trials(self, bracket_idx: int) -> int:
         return math.floor((self._calculate_s_max() + 1) / (bracket_idx + 1))
 
-    def _calculate_s_max(self):
+    def _calculate_s_max(self) -> int:
         return math.floor(math.log(self.maximum_resource / self._minimum_resource, self._reduction_factor))
 
-    def _make_default_brackets_setting(self):
+    def _make_default_brackets_setting(self) -> List[Dict[str, Any]]:
         """
         bracket order is the opposite of order of paper's.
         this is for running default hyper parmeters with abundant resource.
@@ -444,7 +569,7 @@ class HyperBand(HpoBase):
 
         return brackets_setting
 
-    def _make_brackets_as_config(self, brackets_settings: List[Dict]):
+    def _make_brackets_as_config(self, brackets_settings: List[Dict]) -> Dict[int, Bracket]:
         brackets = {}
         total_num_trials = 0
         for bracket_setting in brackets_settings:
@@ -478,7 +603,7 @@ class HyperBand(HpoBase):
             bracket = Bracket(
                 bracket_idx,
                 minimum_resource,
-                self.maximum_resource,
+                self.maximum_resource,  # type: ignore
                 bracket_configurations,
                 self._reduction_factor,
                 self.mode,
@@ -488,21 +613,20 @@ class HyperBand(HpoBase):
 
         return brackets
 
-    def _make_new_hyper_parameter_configs(self, num: int):
+    def _make_new_hyper_parameter_configs(self, num: int) -> List[AshaTrial]:
         check_not_negative(num, "num")
 
-        hp_configs = []
+        hp_configs: List[AshaTrial] = []
         if num == 0:
             return hp_configs
 
-        if self.prior_hyper_parameters is not None:
-            hp_configs.extend(self._get_prior_hyper_parameters(num))
+        hp_configs.extend(self._get_prior_hyper_parameters(num))
         if num - len(hp_configs) > 0:
             hp_configs.extend(self._get_random_hyper_parameter(num - len(hp_configs)))
 
         return hp_configs
 
-    def _get_prior_hyper_parameters(self, num_samples: int):
+    def _get_prior_hyper_parameters(self, num_samples: int) -> List[AshaTrial]:
         hp_configs = []
         num_samples = min([num_samples, len(self.prior_hyper_parameters)])
         for _ in range(num_samples):
@@ -511,7 +635,7 @@ class HyperBand(HpoBase):
 
         return hp_configs
 
-    def _get_random_hyper_parameter(self, num_samples: int):
+    def _get_random_hyper_parameter(self, num_samples: int) -> List[AshaTrial]:
         hp_configs = []
         latin_hypercube = LatinHypercube(len(self.search_space))
         configurations = latin_hypercube.random(num_samples)
@@ -523,22 +647,27 @@ class HyperBand(HpoBase):
 
         return hp_configs
 
-    def _make_trial(self, hyper_parameter: Dict):
+    def _make_trial(self, hyper_parameter: Dict) -> AshaTrial:
         id = self._get_new_trial_id()
         trial = AshaTrial(id, hyper_parameter, self._get_train_environment())
         self._trials[id] = trial
         return trial
 
-    def _get_new_trial_id(self):
+    def _get_new_trial_id(self) -> str:
         id = self._next_trial_id
         self._next_trial_id += 1
         return str(id)
 
-    def _get_train_environment(self):
+    def _get_train_environment(self) -> Dict:
         train_environment = {"subset_ratio": self.subset_ratio}
         return train_environment
 
-    def get_next_sample(self):
+    def get_next_sample(self) -> Optional[AshaTrial]:
+        """Get next trial to train.
+
+        Returns:
+            Optional[AshaTrial]: Next trial to train. If there is no trial to train, then return None.
+        """
         if not self._brackets:
             return self._make_trial_to_estimate_resource()
 
@@ -552,7 +681,8 @@ class HyperBand(HpoBase):
 
         return next_sample
 
-    def _make_trial_to_estimate_resource(self):
+    def _make_trial_to_estimate_resource(self) -> AshaTrial:
+        """Trial to esimate a maximum resource or minimum resource."""
         trial = self._make_new_hyper_parameter_configs(1)[0]
         if self.maximum_resource is None:
             if len(self._trials) == 1:  # first trial to estimate
@@ -567,12 +697,21 @@ class HyperBand(HpoBase):
         return trial
 
     def save_results(self):
+        """Save a ASHA result."""
         for idx, bracket in self._brackets.items():
             save_path = osp.join(self.save_path, str(idx))
             os.makedirs(save_path, exist_ok=True)
             bracket.save_results(save_path)
 
-    def auto_config(self):
+    def auto_config(self) -> List[Dict[str, Any]]:
+        """Configure ASHA automatically aligning with possible resoure.
+
+        Configure ASHA automatically. If resource is lesser than full ASHA, decrease ASHA scale.
+        In contrast, resource is more than full ASHA, increase ASHA scale.
+
+        Returns:
+            List[Dict[str, Any]]: ASHA configuration. It's used to make brackets.
+        """
         if self._trials:
             self._adjust_minimum_resource()
         if self._need_to_dcrease_hyerpband_scale():
@@ -615,7 +754,7 @@ class HyperBand(HpoBase):
             minimum_resource = self.maximum_resource // self._reduction_factor
         self._minimum_resource = minimum_resource
 
-    def _need_to_dcrease_hyerpband_scale(self):
+    def _need_to_dcrease_hyerpband_scale(self) -> bool:
         """check full ASHA resource exceeds expected_time_ratio."""
         if self.expected_time_ratio is None:
             return False
@@ -627,7 +766,7 @@ class HyperBand(HpoBase):
 
         return total_resource > self._get_expected_total_resource()
 
-    def _decrease_hyperband_scale(self):
+    def _decrease_hyperband_scale(self) -> List[Dict[str, Any]]:
         """
         from bracket which has biggest number of rung, check that it's resource exceeds expected_time_ratio
         if bracket is added. If not, bracket is added. If it does, check that number of trials for bracket
@@ -670,7 +809,7 @@ class HyperBand(HpoBase):
             * self.num_workers
         )
 
-    def _increase_hyperband_scale(self):
+    def _increase_hyperband_scale(self) -> List[Dict[str, Any]]:
         total_resource = 0
         bracket_status = {}
         s_max = self._calculate_s_max()
@@ -716,9 +855,23 @@ class HyperBand(HpoBase):
         return brackets_setting
 
     def get_progress(self):
+        """Get current progress of ASHA."""
         raise NotImplementedError
 
-    def report_score(self, score: Union[float, int], resource: Union[float, int], trial_id: str, done: bool = False):
+    def report_score(
+        self, score: Union[float, int], resource: Union[float, int], trial_id: str, done: bool = False
+        ) -> Literal[TrialStatus.STOP, TrialStatus.RUNNING]:
+        """Report a score to ASHA.
+
+        Args:
+            score (Union[float, int]): Score to report.
+            resource (Union[float, int]): Resource used to get score.
+            trial_id (str): Trial id.
+            done (bool, optional): Whether training trial is done. Defaults to False.
+
+        Returns:
+            Literal[TrialStatus.STOP, TrialStatus.RUNNING]: Decide whether to continue training or not.
+        """
         trial = self._trials[trial_id]
         if done:
             if self.maximum_resource is None:
@@ -738,7 +891,12 @@ class HyperBand(HpoBase):
 
         return TrialStatus.RUNNING
 
-    def is_done(self):
+    def is_done(self) -> bool:
+        """Check that the ASHA is done.
+
+        Returns:
+            bool: Whether ASHA is done.
+        """
         if not self._brackets:
             return False
         for bracket in self._brackets.values():
@@ -746,7 +904,12 @@ class HyperBand(HpoBase):
                 return False
         return True
 
-    def get_best_config(self):
+    def get_best_config(self) -> Dict[str, Any]:
+        """Get best configuration in ASHA.
+
+        Returns:
+            Dict[str, Any]: Best configuration in ASHA.
+        """
         best_score = None
         best_trial = None
 
@@ -761,6 +924,7 @@ class HyperBand(HpoBase):
         return {"id": best_trial.id, "config": best_trial.configuration}
 
     def print_result(self):
+        """Print a ASHA result."""
         print(
             "HPO(ASHA) result summary\n"
             f"Best config : {self.get_best_config()}.\n"

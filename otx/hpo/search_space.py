@@ -1,10 +1,28 @@
+"""Search space class for HPO."""
+
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
+
+import logging
 import math
+import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from otx.hpo.logger import get_logger
 from otx.hpo.utils import check_positive
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 AVAILABLE_SEARCH_SPACE_TYPE = ["uniform", "quniform", "loguniform", "qloguniform", "choice"]
 
@@ -51,26 +69,32 @@ class SingleSearchSpace:
 
     @property
     def type(self):
+        """Type of hyper parameter in search space."""
         return self._type
 
     @property
     def min(self):
+        """Lower bounding of search space."""
         return self._min
 
     @property
     def max(self):
+        """Upper bounding of search space."""
         return self._max
 
     @property
     def step(self):
+        """Unit for change."""
         return self._step
 
     @property
     def log_base(self):
+        """Base of logarithm."""
         return self._log_base
 
     @property
     def choice_list(self):
+        """Candidiates for choice type."""
         return self._choice_list
 
     def set_value(
@@ -82,6 +106,26 @@ class SingleSearchSpace:
         log_base: Optional[int] = None,
         choice_list: Optional[Union[List, Tuple]] = None,
     ):
+        """Set attributes of the class.
+
+        There are some dependencies when setting attributes of this class.
+        So, modifying a single attribute at a time can set wrong value.
+        For example, `max` can be set as a value lower than `min`.
+        To prevent it, this function priovides a way to set all necessary values at a time.
+
+        Args:
+            type (str): type of hyper parameter in search space.
+                        supported types: uniform, loguniform, quniform, qloguniform, choice
+            min (float or int, optional): upper bounding of search space.
+                                        If type isn't choice, this value is required.
+            max (float or int, optional): lower bounding of search space
+                                        If type isn't choice, this value is required.
+            step (int, optional): unit for change. If type is quniform or qloguniform,
+                                This value is required.
+            log_base (int, optional): base of logarithm. Default value is 2.
+            choice_list (list, optional): candidiates for choice type. If task is choice,
+                                        this value is required.
+        """
         if type is not None:
             self._type = type
         if min is not None:
@@ -157,25 +201,39 @@ class SingleSearchSpace:
             return rep
 
     def is_categorical(self):
+        """Check current instance is categorical type."""
         return self._type == "choice"
 
     def use_quantized_step(self):
+        """Check current instance is one of type to use `step`."""
         return self._type == "quniform" or self._type == "qloguniform"
 
     def use_log_scale(self):
+        """Check current instance is one of type to use `log scale`."""
         return self._type == "loguniform" or self._type == "qloguniform"
 
     def lower_space(self):
+        """Get lower bound value considering log scale if necessary."""
         if self.use_log_scale():
             return math.log(self._min, self._log_base)
         return self._min
 
     def upper_space(self):
+        """Get upper bound value considering log scale if necessary."""
         if self.use_log_scale():
             return math.log(self._max, self._log_base)
         return self._max
 
-    def space_to_real(self, number: Union[int, float]):
+    @typing.no_type_check
+    def space_to_real(self, number: Union[int, float]) -> Union[int, float]:
+        """Convert search space from HPO perspective to human perspective.
+
+        Args:
+            number (Union[int, float]): Value to convert
+
+        Returns:
+            Union[int, float]: value converted to human perspective.
+        """
         if self.is_categorical():
             idx = max(min(int(number), len(self._choice_list) - 1), 0)
             return self._choice_list[idx]
@@ -187,9 +245,17 @@ class SingleSearchSpace:
                 number = round((number - gap) / self._step) * self._step + gap
             return number
 
-    def real_to_space(self, number: Union[int, float]):
+    def real_to_space(self, number: Union[int, float]) -> Union[int, float]:
+        """Convert search space from human perspective to HPO perspective.
+
+        Args:
+            number (Union[int, float]): Value to convert
+
+        Returns:
+            Union[int, float]: value converted to HPO perspective.
+        """
         if self.use_log_scale():
-            return math.log(number, self._log_base)
+            return math.log(number, self._log_base)  # type: ignore
         return number
 
 
@@ -299,19 +365,35 @@ class SearchSpace:
                 return True
         return False
 
-    def get_real_config(self, config: Dict):
+    def get_real_config(self, config: Dict) -> Dict:
+        """Convert search space of each config from HPO perspective to human perspective.
+
+        Args:
+            config (Dict): config to convert
+
+        Returns:
+            Dict: config converted to human perspective.
+        """
         real_config = {}
         for param, value in config.items():
             real_config[param] = self[param].space_to_real(value)
         return real_config
 
-    def get_space_config(self, config: Dict):
+    def get_space_config(self, config: Dict) -> Dict:
+        """Convert search space of each config from human perspective to HPO perspective.
+
+        Args:
+            config (Dict): config to convert
+
+        Returns:
+            Dict: config converted to human perspective.
+        """
         space_config = {}
         for param, value in config.items():
             space_config[param] = self[param].real_to_space(value)
         return space_config
 
-    def get_bayeopt_search_space(self):
+    def get_bayeopt_search_space(self) -> Dict:
         """return hyper parameter serach sapce as bayeopt library format"""
         bayesopt_space = {}
         for key, val in self.search_space.items():
@@ -319,7 +401,15 @@ class SearchSpace:
 
         return bayesopt_space
 
-    def convert_from_zero_one_scale_to_real_space(self, config: Dict):
+    def convert_from_zero_one_scale_to_real_space(self, config: Dict) -> Dict:
+        """Convert search space of each config from zero one scale to human perspective.
+
+        Args:
+            config (Dict): config to convert
+
+        Returns:
+            Dict: config converted to human perspective.
+        """
         for key, val in config.items():
             lower = self.search_space[key].lower_space()
             upper = self.search_space[key].upper_space()

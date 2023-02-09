@@ -1,41 +1,73 @@
+"""HPO runner and resource manager class."""
+
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
+import logging
 import multiprocessing
 import os
 from abc import ABC, abstractmethod
 from functools import partial
-from multiprocessing import Process
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, Literal
 
 import torch
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
-from otx.hpo.logger import get_logger
 from otx.hpo.utils import check_positive
 
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 
 class ResourceManager(ABC):
+    """Abstract class for resource manager class."""
     @abstractmethod
     def reserve_resource(self, trial_id):
+        """Reserve a resource."""
         raise NotImplementedError
 
     @abstractmethod
     def release_resource(self, trial_id):
+        "Release a resource."
         raise NotImplementedError
 
     @abstractmethod
     def have_available_resource(self):
+        """Check that there is available resource."""
         raise NotImplementedError
 
 
 class CPUResourceManager(ResourceManager):
+    """Resource manager class for CPU.
+
+    Args:
+        num_parallel_trial (int, optional): How many trials to trun parallelly. Defaults to 4.
+    """
     def __init__(self, num_parallel_trial: int = 4):
         check_positive(num_parallel_trial, "num_parallel_trial")
 
         self._num_parallel_trial = num_parallel_trial
-        self._usage_status = []
+        self._usage_status: List = []
 
-    def reserve_resource(self, trial_id: Any):
+    def reserve_resource(self, trial_id: Any) -> Optional[Dict]:
+        """Reserve a resource under 'trial_id'.
+
+        Args:
+            trial_id (Any): Name of trial to reserve the resource.
+
+        Raises:
+            RuntimeError: If there is already resource reserved by 'trial_id', then raise an error.
+        """
         if not self.have_available_resource():
             return None
         if trial_id in self._usage_status:
@@ -46,6 +78,11 @@ class CPUResourceManager(ResourceManager):
         return {}
 
     def release_resource(self, trial_id: Any):
+        """Release a resource under 'trial_id'.
+
+        Args:
+            trial_id (Any): Name of trial which uses the resource to release.
+        """
         if trial_id not in self._usage_status:
             logger.warning(f"{trial_id} trial don't use resource now.")
         else:
@@ -53,28 +90,36 @@ class CPUResourceManager(ResourceManager):
             logger.debug(f"{trial_id} released.")
 
     def have_available_resource(self):
+        """Check that there is available resource."""
         return len(self._usage_status) < self._num_parallel_trial
 
 
 class GPUResourceManager(ResourceManager):
+    """Resource manager class for GPU.
+
+    Args:
+        num_gpu_for_single_trial (int, optional): How many GPUs is used for a single trial. Defaults to 1.
+        available_gpu (Optional[str], optional): How many GPUs are available. Defaults to None.
+    """
     def __init__(self, num_gpu_for_single_trial: int = 1, available_gpu: Optional[str] = None):
         check_positive(num_gpu_for_single_trial, "num_gpu_for_single_trial")
 
         self._num_gpu_for_single_trial = num_gpu_for_single_trial
         self._available_gpu = self._set_available_gpu(available_gpu)
-        self._usage_status = {}
+        self._usage_status: Dict[Any, List] = {}
 
     def _set_available_gpu(self, available_gpu: Optional[str] = None):
         if available_gpu is None:
-            if os.getenv("CUDA_VISIBLE_DEVICES") is not None:
-                available_gpu = self._transform_gpu_format_from_string_to_arr(os.getenv("CUDA_VISIBLE_DEVICES"))
+            cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
+            if cuda_visible_devices is not None:
+                available_gpu_arr = self._transform_gpu_format_from_string_to_arr(cuda_visible_devices)
             else:
                 num_gpus = torch.cuda.device_count()
-                available_gpu = [val for val in range(num_gpus)]
+                available_gpu_arr = [val for val in range(num_gpus)]
         else:
-            available_gpu = self._transform_gpu_format_from_string_to_arr(available_gpu)
+            available_gpu_arr = self._transform_gpu_format_from_string_to_arr(available_gpu)
 
-        return available_gpu
+        return available_gpu_arr
 
     def _transform_gpu_format_from_string_to_arr(self, gpu: str):
         for val in gpu.split(","):
@@ -84,7 +129,18 @@ class GPUResourceManager(ResourceManager):
                 )
         return [int(val) for val in gpu.split(",")]
 
-    def reserve_resource(self, trial_id):
+    def reserve_resource(self, trial_id: Any) -> Optional[Dict]:
+        """Reserve a resource under 'trial_id'.
+
+        Args:
+            trial_id (Any): Name of trial to reserve the resource.
+
+        Raises:
+            RuntimeError: If there is already resource reserved by 'trial_id', then raise an error.
+
+        Returns:
+            Optional[Dict]: Training environment to use.
+        """
         if not self.have_available_resource():
             return None
         if trial_id in self._usage_status:
@@ -96,7 +152,12 @@ class GPUResourceManager(ResourceManager):
         self._usage_status[trial_id] = resource
         return {"CUDA_VISIBLE_DEVICES": ",".join([str(val) for val in resource])}
 
-    def release_resource(self, trial_id):
+    def release_resource(self, trial_id: Any):
+        """Release a resource under 'trial_id'.
+
+        Args:
+            trial_id (Any): Name of trial which uses the resource to release.
+        """
         if trial_id not in self._usage_status:
             logger.warning(f"{trial_id} trial don't use resource now.")
         else:
@@ -104,15 +165,30 @@ class GPUResourceManager(ResourceManager):
             del self._usage_status[trial_id]
 
     def have_available_resource(self):
+        """Check that there is available resource."""
         return len(self._available_gpu) >= self._num_gpu_for_single_trial
 
 
 def get_resource_manager(
-    resource_type: str,
+    resource_type: Literal["gpu", "cpu"],
     num_parallel_trial: Optional[int] = None,
     num_gpu_for_single_trial: Optional[int] = None,
     available_gpu: Optional[str] = None,
-):
+) -> ResourceManager:
+    """Get an appropriate resource manager depending on current environment.
+
+    Args:
+        resource_type (Literal["gpu", "cpu"]): Which type of resource to use. If can be changed depending on environment.
+        num_parallel_trial (Optional[int]): How many trials to trun parallelly. It's used for CPUResourceManager. Defaults to None.
+        num_gpu_for_single_trial (Optional[int]): How many GPUs is used for a single trial. It's used for GPUResourceManager. Defaults to None.
+        available_gpu (Optional[str]): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
+
+    Raises:
+        ValueError: If resource_type is neither 'gpu' nor 'cpu, then raise an error.
+
+    Returns:
+        ResourceManager: Resource manager to use.
+    """
     if resource_type == "gpu" and not torch.cuda.is_available():
         logger.warning("GPU can't be used now. resource type is modified to cpu.")
         resource_type = "cpu"
@@ -120,11 +196,11 @@ def get_resource_manager(
     if resource_type == "cpu":
         args = {"num_parallel_trial": num_parallel_trial}
         args = _remove_none_from_dict(args)
-        return CPUResourceManager(**args)
+        return CPUResourceManager(**args)  # type: ignore
     elif resource_type == "gpu":
-        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}
+        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}  # type: ignore
         args = _remove_none_from_dict(args)
-        return GPUResourceManager(**args)
+        return GPUResourceManager(**args)  # type: ignore
     else:
         raise ValueError(f"Available resource type is cpu, gpu. Your value is {resource_type}.")
 
@@ -137,18 +213,28 @@ def _remove_none_from_dict(d: Dict):
 
 
 class HpoLoop:
+    """HPO loop manager to run trials.
+
+    Args:
+        hpo_algo (HpoBase): HPO algorithms.
+        train_func (Callable): Function to train a model.
+        resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use. If can be changed depending on environment. Defaults to "gpu".
+        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly. It's used for CPUResourceManager. Defaults to None.
+        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial. It's used for GPUResourceManager. Defaults to None.
+        available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
+    """
     def __init__(
         self,
         hpo_algo: HpoBase,
         train_func: Callable,
-        resource_type: str = "gpu",
+        resource_type: Literal['gpu', 'cpu'] = "gpu",
         num_parallel_trial: Optional[int] = None,
         num_gpu_for_single_trial: Optional[int] = None,
         available_gpu: Optional[str] = None,
     ):
         self._hpo_algo = hpo_algo
         self._train_func = train_func
-        self._running_trials: Dict[int, Dict[str, Union[Trial, Process]]] = {}
+        self._running_trials: Dict[int, Dict] = {}
         self._mp = multiprocessing.get_context("spawn")
         self._uid_index = 0
         self._resource_manager = get_resource_manager(
@@ -156,6 +242,7 @@ class HpoLoop:
         )
 
     def run(self):
+        """Run a HPO loop."""
         logger.info("HPO loop starts.")
         while not self._hpo_algo.is_done():
             if self._resource_manager.have_available_resource():
@@ -236,14 +323,15 @@ class HpoLoop:
 
         self._running_trials = {}
 
-    def _get_uid(self):
+    def _get_uid(self) -> int:
         uid = self._uid_index
         self._uid_index += 1
         return uid
 
 
 def _run_train(train_func: Callable, hp_config: Dict, report_func: Callable):
-    multiprocessing.set_start_method(None, True)  # set multi process method as default
+    # set multi process method as default
+    multiprocessing.set_start_method(None, True)  # type: ignore
     train_func(hp_config, report_func)
 
 
@@ -265,10 +353,20 @@ def _report_score(score: Union[int, float], progress: Union[int, float], pipe, t
 def run_hpo_loop(
     hpo_algo: HpoBase,
     train_func: Callable,
-    resource_type: str = "gpu",
+    resource_type: Literal['gpu', 'cpu'] = "gpu",
     num_parallel_trial: Optional[int] = None,
     num_gpu_for_single_trial: Optional[int] = None,
     available_gpu: Optional[str] = None,
 ):
+    """_summary_
+
+    Args:
+        hpo_algo (HpoBase): HPO algorithms.
+        train_func (Callable): Function to train a model.
+        resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use. If can be changed depending on environment. Defaults to "gpu".
+        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly. It's used for CPUResourceManager. Defaults to None.
+        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial. It's used for GPUResourceManager. Defaults to None.
+        available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
+    """
     hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu)
     hpo_loop.run()
