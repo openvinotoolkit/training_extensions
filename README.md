@@ -6,6 +6,7 @@
 
 ---
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/86f1239be6624d18bc3708de38ec7b3a)](https://app.codacy.com/gh/openvinotoolkit/training_extensions?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade_Settings)
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
 [![mypy](https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat)]()
