@@ -98,11 +98,7 @@ if is_mmdeploy_enabled():
         out = self.roi_head.simple_test(x, proposals, img_metas, rescale=False)
         return (*out, feature_vector, saliency_map)
 
-    @mark(
-        "custom_maskrcnn_forward",
-        inputs=["input"],
-        outputs=["dets", "labels", "masks", "feats", "saliencies"]
-    )
+    @mark("custom_maskrcnn_forward", inputs=["input"], outputs=["dets", "labels", "masks", "feats", "saliencies"])
     def __forward_impl(ctx, self, img, img_metas, **kwargs):
         assert isinstance(img, torch.Tensor)
 

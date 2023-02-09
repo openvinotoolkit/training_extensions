@@ -131,11 +131,7 @@ if is_mmdeploy_enabled():
         saliency_map = DetSaliencyMapHook(self).func(cls_scores, cls_scores_provided=True)
         return (*bbox_results, feature_vector, saliency_map)
 
-    @mark(
-        "custom_yolox_forward",
-        inputs=["input"],
-        outputs=["dets", "labels", "feats", "saliencies"]
-    )
+    @mark("custom_yolox_forward", inputs=["input"], outputs=["dets", "labels", "feats", "saliencies"])
     def __forward_impl(ctx, self, img, img_metas, **kwargs):
         assert isinstance(img, torch.Tensor)
 
@@ -148,9 +144,7 @@ if is_mmdeploy_enabled():
         img_metas[0]["img_shape"] = img_shape
         return self.simple_test(img, img_metas, **kwargs)
 
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.detectors.custom_yolox_detector.CustomYOLOX.forward"
-    )
+    @FUNCTION_REWRITER.register_rewriter("otx.mpa.modules.models.detectors.custom_yolox_detector.CustomYOLOX.forward")
     def custom_yolox__forward(ctx, self, img, img_metas=None, return_loss=False, **kwargs):
         if img_metas is None:
             img_metas = [{}]
