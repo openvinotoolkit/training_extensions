@@ -8,7 +8,7 @@ from otx.hpo.hpo_base import Trial
 
 @pytest.fixture
 def good_trial_args():
-    return {"id": "name", "configuration": {"hp1": 1, "hp2": 1.2}, "train_environment": {"subset_ratio": 0.5}}
+    return {"trial_id": "name", "configuration": {"hp1": 1, "hp2": 1.2}, "train_environment": {"subset_ratio": 0.5}}
 
 
 @pytest.fixture

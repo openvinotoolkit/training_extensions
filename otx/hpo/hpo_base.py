@@ -56,9 +56,11 @@ class HpoBase(ABC):
         resume (bool): resume flag decide to use previous HPO results.
                        If HPO completed, you can just use optimized hyper parameters.
                        If HPO stopped in middle, you can resume in middle.
-        prior_hyper_parameters (Union[Dict, List[Dict]]) = Hyper parameters to try first.
+        prior_hyper_parameters (Optional[Union[Dict, List[Dict]]]) = Hyper parameters to try first.
         acceptable_additional_time_ratio (Union[float, int]) = Decide how much additional time can be acceptable.
     """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(
         self,
@@ -77,13 +79,14 @@ class HpoBase(ABC):
         min_subset_size: int = 500,
         batch_size_name: Optional[str] = None,
         resume: bool = False,
-        prior_hyper_parameters: Union[Dict, List[Dict]] = [],
+        prior_hyper_parameters: Optional[Union[Dict, List[Dict]]] = None,
         acceptable_additional_time_ratio: Union[float, int] = 1.0,
     ):
+        # pylint: disable=too-many-arguments, too-many-locals
         check_mode_input(mode)
         check_positive(full_dataset_size, "full_dataset_size")
         check_positive(num_full_iterations, "num_full_iterations")
-        if not (0 < non_pure_train_ratio <= 1):
+        if not 0 < non_pure_train_ratio <= 1:
             raise ValueError("non_pure_train_ratio should be between 0 and 1." f" Your value is {non_pure_train_ratio}")
         if maximum_resource is not None:
             check_positive(maximum_resource, "maximum_resource")
@@ -91,7 +94,7 @@ class HpoBase(ABC):
             check_positive(num_trials, "num_trials")
         check_positive(num_workers, "num_workers")
         if subset_ratio is not None:
-            if not (0 < subset_ratio <= 1.0):
+            if not 0 < subset_ratio <= 1.0:
                 raise ValueError(
                     "subset_ratio should be greater than 0 and lesser than or equal to 1."
                     f" Your value is {subset_ratio}"
@@ -116,9 +119,11 @@ class HpoBase(ABC):
         self.metric = metric
         self.batch_size_name = batch_size_name
         self.acceptable_additional_time_ratio = acceptable_additional_time_ratio
+        if prior_hyper_parameters is None:
+            prior_hyper_parameters = []
+        elif isinstance(prior_hyper_parameters, dict):
+            prior_hyper_parameters = [prior_hyper_parameters]
         self.prior_hyper_parameters = prior_hyper_parameters
-        if isinstance(self.prior_hyper_parameters, dict):
-            self.prior_hyper_parameters = [self.prior_hyper_parameters]
 
     @abstractmethod
     def print_result(self):
@@ -165,13 +170,13 @@ class Trial:
     """Trial to train with given hyper parameters.
 
     Args:
-        id (Any): Trial id.
+        trial_id (Any): Trial id.
         configuration (Dict): Configuration to train with.
         train_environment (Optional[Dict], optional): Train environment for the trial. Defaults to None.
     """
 
-    def __init__(self, id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
-        self._id = id
+    def __init__(self, trial_id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
+        self._id = trial_id
         self._configuration = configuration
         self.score: Dict[Union[float, int], Union[float, int]] = {}
         self._train_environment = train_environment
@@ -244,8 +249,7 @@ class Trial:
 
         if mode == "max":
             return max(scores)
-        else:
-            return min(scores)
+        return min(scores)
 
     def get_progress(self) -> Union[float, int]:
         """Get a progress of the trial.
@@ -267,10 +271,10 @@ class Trial:
             "id": self.id,
             "configuration": self.configuration,
             "train_environment": self.train_environment,
-            "score": {resource: score for resource, score in self.score.items()},
+            "score": self.score,
         }
 
-        with open(save_path, "w") as f:
+        with open(save_path, "w", encoding="utf-8") as f:
             json.dump(results, f)
 
     def finalize(self):

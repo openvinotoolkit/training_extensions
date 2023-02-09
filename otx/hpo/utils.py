@@ -121,5 +121,4 @@ def left_is_better(val1, val2, mode: str) -> bool:
     check_mode_input(mode)
     if mode == "max":
         return val1 > val2
-    else:
-        return val1 < val2
+    return val1 < val2

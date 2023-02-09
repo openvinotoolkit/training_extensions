@@ -118,7 +118,7 @@ class GPUResourceManager(ResourceManager):
                 available_gpu_arr = self._transform_gpu_format_from_string_to_arr(cuda_visible_devices)
             else:
                 num_gpus = torch.cuda.device_count()
-                available_gpu_arr = [val for val in range(num_gpus)]
+                available_gpu_arr = list(range(num_gpus))
         else:
             available_gpu_arr = self._transform_gpu_format_from_string_to_arr(available_gpu)
 
@@ -203,19 +203,18 @@ def get_resource_manager(
         args = {"num_parallel_trial": num_parallel_trial}
         args = _remove_none_from_dict(args)
         return CPUResourceManager(**args)  # type: ignore
-    elif resource_type == "gpu":
+    if resource_type == "gpu":
         args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}  # type: ignore
         args = _remove_none_from_dict(args)
         return GPUResourceManager(**args)  # type: ignore
-    else:
-        raise ValueError(f"Available resource type is cpu, gpu. Your value is {resource_type}.")
+    raise ValueError(f"Available resource type is cpu, gpu. Your value is {resource_type}.")
 
 
-def _remove_none_from_dict(d: Dict):
-    key_to_remove = [key for key, val in d.items() if val is None]
+def _remove_none_from_dict(dict_val: Dict):
+    key_to_remove = [key for key, val in dict_val.items() if val is None]
     for key in key_to_remove:
-        del d[key]
-    return d
+        del dict_val[key]
+    return dict_val
 
 
 class HpoLoop:

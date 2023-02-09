@@ -56,6 +56,7 @@ class SingleSearchSpace:
         log_base: Optional[int] = 2,
         choice_list: Optional[Union[List, Tuple]] = None,
     ):
+        # pylint: disable=redefined-builtin
         self._type = type
         if self.is_categorical():
             self._choice_list = choice_list
@@ -106,6 +107,7 @@ class SingleSearchSpace:
         log_base: Optional[int] = None,
         choice_list: Optional[Union[List, Tuple]] = None,
     ):
+        # pylint: disable=redefined-builtin
         """Set attributes of the class.
 
         There are some dependencies when setting attributes of this class.
@@ -149,6 +151,7 @@ class SingleSearchSpace:
             self._max = len(self._choice_list) - 1
 
     def _check_all_value_is_right(self):
+        # pylint: disable=too-many-branches
         if self._type not in AVAILABLE_SEARCH_SPACE_TYPE:
             raise ValueError(
                 f"type should be one of {', '.join(AVAILABLE_SEARCH_SPACE_TYPE)}. " f"But your argument is {self._type}"
@@ -193,13 +196,12 @@ class SingleSearchSpace:
         """Print serach space status."""
         if self.is_categorical():
             return f"type: {self._type}, candidiate : {', '.join(self._choice_list)}"
-        else:
-            rep = f"type: {self._type}, search space : {self._min} ~ {self._max}"
-            if self.use_quantized_step():
-                rep += f", step : {self._step}"
-            if self.use_log_scale():
-                rep += f", log base : {self._log_base}"
-            return rep
+        rep = f"type: {self._type}, search space : {self._min} ~ {self._max}"
+        if self.use_quantized_step():
+            rep += f", step : {self._step}"
+        if self.use_log_scale():
+            rep += f", log base : {self._log_base}"
+        return rep
 
     def is_categorical(self):
         """Check current instance is categorical type."""
@@ -207,11 +209,11 @@ class SingleSearchSpace:
 
     def use_quantized_step(self):
         """Check current instance is one of type to use `step`."""
-        return self._type == "quniform" or self._type == "qloguniform"
+        return self._type in ("quniform", "qloguniform")
 
     def use_log_scale(self):
         """Check current instance is one of type to use `log scale`."""
-        return self._type == "loguniform" or self._type == "qloguniform"
+        return self._type in ("loguniform", "qloguniform")
 
     def lower_space(self):
         """Get lower bound value considering log scale if necessary."""
@@ -238,13 +240,12 @@ class SingleSearchSpace:
         if self.is_categorical():
             idx = max(min(int(number), len(self._choice_list) - 1), 0)
             return self._choice_list[idx]
-        else:
-            if self.use_log_scale():
-                number = self._log_base**number
-            if self.use_quantized_step():
-                gap = self._min % self._step
-                number = round((number - gap) / self._step) * self._step + gap
-            return number
+        if self.use_log_scale():
+            number = self._log_base**number
+        if self.use_quantized_step():
+            gap = self._min % self._step
+            number = round((number - gap) / self._step) * self._step + gap
+        return number
 
     def real_to_space(self, number: Union[int, float]) -> Union[int, float]:
         """Convert search space from human perspective to HPO perspective.
@@ -304,7 +305,7 @@ class SearchSpace:
     ):
         self.search_space: Dict[str, SingleSearchSpace] = {}
 
-        for key, val in search_space.items():
+        for key, val in search_space.items():  # pylint: disable=too-many-nested-blocks
             if "range" not in val:
                 val["type"] = val.pop("param_type")
                 self.search_space[key] = SingleSearchSpace(**val)
@@ -327,7 +328,7 @@ class SearchSpace:
                             args["step"] = val["range"][2]
                             if len(val["range"]) == 4:
                                 args["log_base"] = val["range"][3]
-                    except IndexError:
+                    except IndexError as exc:
                         raise ValueError(
                             "You should give all necessary value depending on search space type."
                             "which values are needed depending on type are as bellow."
@@ -337,15 +338,15 @@ class SearchSpace:
                             "   - qloguniform : min value, max value, step, log baes(default 2)"
                             "But your value is:"
                             f"  - {val['param_type']} : {', '.join([str(element) for element in val['range']])}"
-                        )
+                        ) from exc
                 self.search_space[key] = SingleSearchSpace(**args)
 
     def __getitem__(self, key):
         """Get search space by key."""
         try:
             return self.search_space[key]
-        except KeyError:
-            raise KeyError(f"There is no search space named {key}.")
+        except KeyError as exc:
+            raise KeyError(f"There is no search space named {key}.") from exc
 
     def __repr__(self):
         """Print all search spaces."""

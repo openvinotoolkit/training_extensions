@@ -18,7 +18,7 @@ from otx.hpo.hyperband import AshaTrial, Bracket, HyperBand, Rung
 
 @pytest.fixture
 def good_trial_args():
-    return {"id": "name", "configuration": {"hp1": 1, "hp2": 1.2}, "train_environment": {"subset_ratio": 0.5}}
+    return {"trial_id": "name", "configuration": {"hp1": 1, "hp2": 1.2}, "train_environment": {"subset_ratio": 0.5}}
 
 
 @pytest.fixture
@@ -49,7 +49,7 @@ def rung(good_rung_args):
 def good_bracket_args():
     hp_configs = [AshaTrial(i, {"hp1": 1, "hp2": 1.2}) for i in range(100)]
     return {
-        "id": 0,
+        "bracket_id": 0,
         "minimum_resource": 4,
         "maximum_resource": 64,
         "hyper_parameter_configurations": hp_configs,

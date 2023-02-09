@@ -43,14 +43,14 @@ class AshaTrial(Trial):
     """ASHA trial class.
 
     Args:
-        id (Any): Id of the trial.
+        trial_id (Any): Id of the trial.
         configuration (Dict): Configuration for the trial.
         train_environment (Optional[Dict]): Train environment for the trial.
                                             For, example, subset ratio can be includes. Defaults to None.
     """
 
-    def __init__(self, id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
-        super().__init__(id, configuration, train_environment)
+    def __init__(self, trial_id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
+        super().__init__(trial_id, configuration, train_environment)
         self._rung: Optional[int] = None
         self._bracket: Optional[int] = None
 
@@ -83,10 +83,10 @@ class AshaTrial(Trial):
             "rung": self.rung,
             "configuration": self.configuration,
             "train_environment": self.train_environment,
-            "score": {resource: score for resource, score in self.score.items()},
+            "score": self.score,
         }
 
-        with open(save_path, "w") as f:
+        with open(save_path, "w", encoding="utf-8") as f:
             json.dump(results, f)
 
 
@@ -245,7 +245,7 @@ class Bracket:
     """Bracket class. It operates a single SHA using multiple rungs.
 
     Args:
-        id (int): Bracket id.
+        bracket_id (int): Bracket id.
         minimum_resource (Union[float, int]): Maximum resource to use for training a trial.
         maximum_resource (Union[float, int]): Minimum resource to use for training a trial.
         hyper_parameter_configurations (List[AshaTrial]): Hyper parameter configuration to try.
@@ -256,9 +256,11 @@ class Bracket:
         asynchronous_sha (bool, optional): Whether to operate SHA asynchronously. Defaults to True.
     """
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(
         self,
-        id: int,
+        bracket_id: int,
         minimum_resource: Union[float, int],
         maximum_resource: Union[float, int],
         hyper_parameter_configurations: List[AshaTrial],
@@ -266,11 +268,12 @@ class Bracket:
         mode: str = "max",
         asynchronous_sha: bool = True,
     ):
+        # pylint: disable=too-many-arguments
         check_positive(minimum_resource, "minimum_resource")
         _check_reduction_factor_value(reduction_factor)
         check_mode_input(mode)
 
-        self._id = id
+        self._id = bracket_id
         self._minimum_resource = minimum_resource
         self.maximum_resource = maximum_resource
         self._reduction_factor = reduction_factor
@@ -298,7 +301,7 @@ class Bracket:
                 "maxnum_resource should be greater than minimum_resource.\n"
                 f"value to set : {val}, minimum_resource : {self._minimum_resource}"
             )
-        elif val == self._minimum_resource:
+        if val == self._minimum_resource:
             logger.warning("maximum_resource is same with the minimum_resource.")
 
         self._maximum_resource = val
@@ -391,8 +394,7 @@ class Bracket:
                     if current_rung < self.max_rung - 1:
                         current_rung += 1
                     continue
-                else:
-                    break
+                break
 
             next_sample = self._rungs[current_rung].get_next_trial()
             if next_sample is not None:
@@ -435,7 +437,7 @@ class Bracket:
             save_path (str): Path where to save a bracket result.
         """
         result = self._get_result()
-        with open(osp.join(save_path, "rung_status.json"), "w") as f:
+        with open(osp.join(save_path, "rung_status.json"), "w", encoding="utf-8") as f:
             json.dump(result, f)
 
         for trial_id, trial in self._trials.items():
@@ -504,6 +506,8 @@ class HyperBand(HpoBase):
                                                Defaults to True. Defaults to False.
     """
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(
         self,
         minimum_resource: Optional[Union[int, float]] = None,
@@ -512,7 +516,7 @@ class HyperBand(HpoBase):
         asynchronous_bracket: bool = False,
         **kwargs,
     ):
-        super(HyperBand, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         if minimum_resource is not None:
             check_positive(minimum_resource, "minimum_resource")
@@ -665,15 +669,15 @@ class HyperBand(HpoBase):
         return hp_configs
 
     def _make_trial(self, hyper_parameter: Dict) -> AshaTrial:
-        id = self._get_new_trial_id()
-        trial = AshaTrial(id, hyper_parameter, self._get_train_environment())
-        self._trials[id] = trial
+        trial_id = self._get_new_trial_id()
+        trial = AshaTrial(trial_id, hyper_parameter, self._get_train_environment())
+        self._trials[trial_id] = trial
         return trial
 
     def _get_new_trial_id(self) -> str:
-        id = self._next_trial_id
+        trial_id = self._next_trial_id
         self._next_trial_id += 1
-        return str(id)
+        return str(trial_id)
 
     def _get_train_environment(self) -> Dict:
         train_environment = {"subset_ratio": self.subset_ratio}
@@ -733,8 +737,7 @@ class HyperBand(HpoBase):
             self._adjust_minimum_resource()
         if self._need_to_dcrease_hyerpband_scale():
             return self._decrease_hyperband_scale()
-        else:
-            return self._increase_hyperband_scale()
+        return self._increase_hyperband_scale()
 
     def _adjust_minimum_resource(self):
         """Set meaningful minimum resource.
