@@ -4,8 +4,10 @@
 
 from .hpo_runner import run_hpo_loop
 from .hpo_base import TrialStatus
+from .hyperband import HyperBand
 
 __all__ = [
     "run_hpo_loop",
     "TrialStatus",
+    "HyperBand",
 ]

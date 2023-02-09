@@ -2,7 +2,7 @@ import json
 import pytest
 from os import path as osp
 
-from hpopt.hpo_base import Trial
+from otx.hpo.hpo_base import Trial
 
 @pytest.fixture
 def good_trial_args():

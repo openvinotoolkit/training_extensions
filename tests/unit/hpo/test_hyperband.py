@@ -5,13 +5,14 @@
 import copy
 import math
 import json
+from tempfile import TemporaryDirectory
 from math import ceil
 from os import path as osp
 
 import pytest
-from hpopt import hyperband
-from hpopt.hyperband import AshaTrial, Rung, Bracket, HyperBand
-from hpopt.hpo_base import TrialStatus
+from otx.hpo import hyperband
+from otx.hpo.hyperband import AshaTrial, Rung, Bracket, HyperBand
+from otx.hpo.hpo_base import TrialStatus
 
 @pytest.fixture
 def good_trial_args():
@@ -56,34 +57,35 @@ def bracket(good_bracket_args):
 
 @pytest.fixture
 def good_hyperband_args():
-    return {
-        "search_space" : {
-            "hp1" : {
-                "param_type" : "uniform",
-                "max" : 100,
-                "min" : 10
+    with TemporaryDirectory() as tmp_dir:
+        yield {
+            "search_space" : {
+                "hp1" : {
+                    "param_type" : "uniform",
+                    "max" : 100,
+                    "min" : 10
+                },
+                "hp2" : {
+                    "param_type" : "qloguniform",
+                    "max" : 1000,
+                    "min" : 100,
+                    "step" : 2,
+                    "log_base" : 10
+                }
             },
-            "hp2" : {
-                "param_type" : "qloguniform",
-                "max" : 1000,
-                "min" : 100,
-                "step" : 2,
-                "log_base" : 10
-            }
-        },
-        "save_path" : "/tmp/hpopt",
-        "mode" : "max",
-        "num_workers" : 1,
-        "num_full_iterations" : 64,
-        "non_pure_train_ratio" : 0.2,
-        "full_dataset_size" : 100,
-        "metric" : "mAP",
-        "maximum_resource" : 64,
-        "minimum_resource" : 1,
-        "reduction_factor" : 4,
-        "asynchronous_sha" : True,
-        "asynchronous_bracket" : True
-    }
+            "save_path" : tmp_dir,
+            "mode" : "max",
+            "num_workers" : 1,
+            "num_full_iterations" : 64,
+            "non_pure_train_ratio" : 0.2,
+            "full_dataset_size" : 100,
+            "metric" : "mAP",
+            "maximum_resource" : 64,
+            "minimum_resource" : 1,
+            "reduction_factor" : 4,
+            "asynchronous_sha" : True,
+            "asynchronous_bracket" : True
+        }
 
 @pytest.fixture
 def hyper_band(good_hyperband_args):

@@ -30,17 +30,9 @@ from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCal
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
+from otx.hpo import TrialStatus, run_hpo_loop, HyperBand
 
 logger = logging.getLogger(__name__)
-
-try:
-    import hpopt
-    from hpopt.hpo_base import TrialStatus
-    from hpopt.hpo_runner import run_hpo_loop
-    from hpopt.hyperband import HyperBand
-except ImportError:
-    logger.warning("cannot import hpopt module")
-    hpopt = None
 
 
 def _check_hpo_enabled_task(task_type):
@@ -54,11 +46,6 @@ def _check_hpo_enabled_task(task_type):
         TaskType.ANOMALY_DETECTION,
         TaskType.ANOMALY_SEGMENTATION,
     ]
-
-
-def is_hpopt_available() -> bool:
-    """Check whether hpopt is avaiable."""
-    return hpopt is not None
 
 
 class TaskManager:
@@ -526,7 +513,7 @@ class HpoRunner:
             "asynchronous_sha": torch.cuda.device_count() != 1,
         }
 
-        logger.debug(f"ASHA args for create hpopt = {args}")
+        logger.debug(f"ASHA args = {args}")
 
         return HyperBand(**args)
 
@@ -560,10 +547,6 @@ def run_hpo(
         dataset (DatasetEntity): dataset to use for training
         data_roots (Dict[str, str]): dataset path of each dataset type
     """
-    if not is_hpopt_available():
-        logger.warning("hpopt isn't available. hpo is skipped.")
-        return None
-
     task_type = environment.model_template.task_type
     if not _check_hpo_enabled_task(task_type):
         logger.warning(
@@ -809,7 +792,7 @@ def run_trial(
 
 
 class HpoCallback(UpdateProgressCallback):
-    """Callback class to report score to hpopt.
+    """Callback class to report score to HPO.
 
     Args:
         report_func (Callable): function to report score

@@ -3,13 +3,14 @@
 #
 
 import json
+import tempfile
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from typing import Any, Dict, List, Optional, Union
 
-from hpopt.logger import get_logger
-from hpopt.search_space import SearchSpace
-from hpopt.utils import check_mode_input, check_positive
+from otx.hpo.logger import get_logger
+from otx.hpo.search_space import SearchSpace
+from otx.hpo.utils import check_mode_input, check_positive
 
 logger = get_logger()
 
@@ -49,7 +50,7 @@ class HpoBase(ABC):
     def __init__(
         self,
         search_space: Dict[str, Dict[str, Any]],
-        save_path: str = "/tmp/hpopt",
+        save_path: Optional[str] = None,
         mode: str = "max",
         num_trials: Optional[int] = None,
         num_workers: int = 1,
@@ -87,6 +88,8 @@ class HpoBase(ABC):
                     f" Your value is {subset_ratio}"
                 )
 
+        if save_path is None:
+            save_path = tempfile.mkdtemp(prefix="OTX-hpo-")
         self.save_path = save_path
         self.search_space = SearchSpace(search_space)
         self.mode = mode

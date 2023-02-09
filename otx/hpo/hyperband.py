@@ -6,10 +6,10 @@ from typing import Any, Dict, List, Optional, Union
 
 from scipy.stats.qmc import LatinHypercube
 
-from hpopt.hpo_base import HpoBase, Trial
-from hpopt.hpo_base import TrialStatus
-from hpopt.logger import get_logger
-from hpopt.utils import (
+from otx.hpo.hpo_base import HpoBase, Trial
+from otx.hpo.hpo_base import TrialStatus
+from otx.hpo.logger import get_logger
+from otx.hpo.utils import (
     check_mode_input,
     check_not_negative,
     check_positive,

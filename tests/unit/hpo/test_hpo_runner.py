@@ -1,7 +1,6 @@
 import pytest
 
-from hpopt import hpo_runner
-from hpopt.hpo_runner import (
+from otx.hpo.hpo_runner import (
     CPUResourceManager,
     GPUResourceManager,
     get_resource_manager,
@@ -146,7 +145,7 @@ def test_get_resource_manager_wrong_resource_type():
         get_resource_manager("wrong")
 
 def test_get_resource_manager_gpu_without_available_gpu(mocker):
-    mock_is_available = mocker.patch("hpopt.hpo_runner.torch.cuda.is_available")
+    mock_is_available = mocker.patch("otx.hpo.hpo_runner.torch.cuda.is_available")
     mock_is_available.return_value = False
 
     manager = get_resource_manager("gpu")

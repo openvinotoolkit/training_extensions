@@ -13,7 +13,7 @@ logging.addLevelName(_CUSTOM_LOG_LEVEL, "LOG")
 
 
 def _get_logger():
-    logger = logging.getLogger("hpopt")
+    logger = logging.getLogger("otx.hpo")
     logger.propagate = False
 
     def print(message, *args, **kws):

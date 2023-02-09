@@ -1,8 +1,8 @@
 import math
 from typing import Any, Dict, List, Optional, Union, Tuple
 
-from hpopt.logger import get_logger
-from hpopt.utils import check_positive
+from otx.hpo.logger import get_logger
+from otx.hpo.utils import check_positive
 
 logger = get_logger()
 

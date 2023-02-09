@@ -5,9 +5,9 @@ from functools import partial
 from multiprocessing import Process
 from typing import Any, Callable, Dict, Optional, Union
 
-from hpopt.hpo_base import HpoBase, Trial, TrialStatus
-from hpopt.logger import get_logger
-from hpopt.utils import check_positive
+from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
+from otx.hpo.logger import get_logger
+from otx.hpo.utils import check_positive
 
 import torch
 

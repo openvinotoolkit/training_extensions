@@ -2,7 +2,7 @@ import math
 import pytest
 import copy
 
-from hpopt.search_space import SingleSearchSpace, SearchSpace
+from otx.hpo.search_space import SingleSearchSpace, SearchSpace
 
 ALL_TYPE = ["uniform", "loguniform", "quniform", "qloguniform", "choice"]
 NOT_CATEGORICAL_TYPE = ["uniform", "loguniform", "quniform", "qloguniform"]
