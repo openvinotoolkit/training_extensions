@@ -89,13 +89,15 @@ class DetConLoss(nn.Module):
             dict[str, Tensor]: A single scalar loss for the XT-NCE objective.
         """
         batch_size, num_samples, num_features = pred1.shape
-        infinity_proxy = 1e9  # Used for masks to proxy a very large number.
+        main_dtype = pred1.dtype
+        # infinity_proxy is reduced to avoid overflow when training w/ fp16.
+        infinity_proxy = 1e4  # Used for masks to proxy a very large number.
 
         def make_same_obj(ind_0, ind_1):
             same_obj = torch.eq(
                 ind_0.reshape([batch_size, num_samples, 1]), ind_1.reshape([batch_size, 1, num_samples])
             )
-            same_obj = same_obj.unsqueeze(2).to(torch.float)
+            same_obj = same_obj.unsqueeze(2).to(main_dtype)
             return same_obj
 
         same_obj_dict = {}
@@ -105,10 +107,15 @@ class DetConLoss(nn.Module):
             same_obj_dict[pair] = make_same_obj(pind, tind)
 
         # L2 normalize the tensors to use for the cosine-similarity
-        pred1 = F.normalize(pred1, dim=-1)
-        pred2 = F.normalize(pred2, dim=-1)
-        target1 = F.normalize(target1, dim=-1)
-        target2 = F.normalize(target2, dim=-1)
+        def normalize_same_dtype(logit, p=2, dim=1, eps=1e-12, dtype=None):
+            # modified from torch.nn.functional.normalize
+            denom = logit.norm(p, dim, keepdim=True, dtype=dtype).clamp_min(eps).expand_as(logit)
+            return logit / denom
+
+        pred1 = normalize_same_dtype(pred1, dim=-1, dtype=main_dtype)
+        pred2 = normalize_same_dtype(pred2, dim=-1, dtype=main_dtype)
+        target1 = normalize_same_dtype(target1, dim=-1, dtype=main_dtype)
+        target2 = normalize_same_dtype(target2, dim=-1, dtype=main_dtype)
         target1_large, target2_large, labels = self.get_distributed_tensors(
             target1, target2, batch_size, num_samples, num_features, pred1.device
         )

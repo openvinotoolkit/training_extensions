@@ -212,6 +212,22 @@ learning_parameters:
     value: 0
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
+  enable_supcon:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description:
+      Enable an auxiliar supervised contrastive loss, which might increase robustness
+      and accuracy for small datasets.
+    editable: true
+    header: Enable Supervised Contrastive helper loss
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:

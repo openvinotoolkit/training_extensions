@@ -30,39 +30,6 @@ def map_class_names(src_classes, dst_classes):
     return src2dst
 
 
-def class_sensitive_copy_state_dict(src_dict, src_classes, dst_dict, dst_classes, model_type):
-    if model_type in ["ImageClassifier", "TaskIncrementalLwF", "ClsIncrementalClassifier", "SAMImageClassifier"]:
-        class_sensitive_copy_state_dict_cls(src_dict, src_classes, dst_dict, dst_classes)
-    else:
-        logger.warning(f"Class-sensitive state_dict copy for {model_type} is not yet supported!")
-
-
-def class_sensitive_copy_state_dict_cls(src_dict, src_classes, dst_dict, dst_classes):
-    logger.info("Class sensitive weight copy called!")
-
-    # Strip 'module.' from state_dicts if any
-    dst2src = map_class_names(dst_classes, src_classes)
-    logger.info(f"{src_classes} -> {dst_classes}")
-    src_dict = {k.replace("module.", ""): v for k, v in src_dict.items()}
-    dst_dict = {k.replace("module.", ""): v for k, v in dst_dict.items()}
-    # (model, state_dict):
-    for k, v_load in src_dict.items():
-        if k in dst_dict:
-            v = dst_dict[k]
-            if torch.equal(torch.tensor(v.shape), torch.tensor(v_load.shape)):
-                v.copy_(v_load)
-            elif "head" in k:
-                if len(v.shape) > 1:
-                    v_load = sync_transpose_tensor(v_load, v)
-                for dst_idx, src_idx in enumerate(dst2src):
-                    v[dst_idx].copy_(v_load[src_idx])
-            else:
-                raise ValueError("the size of model and checkpoint file are not matched key: " f"{k}")
-        else:
-            logger.warning(f"WARNING: can not find weight key: {k} in dst_model")
-    logger.info("copied state dict completely")
-
-
 def prob_extractor(model, data_loader):
     if torch.cuda.is_available():
         model = model.cuda()
@@ -127,17 +94,6 @@ def map_cat_and_cls_as_order(classes, cats):
                 cat_ids.append(cat_id)
                 cat2label.update({cat_id: i})
     return cat2label, cat_ids
-
-
-def sync_transpose_tensor(src_w, dst_w):
-    src_shape = torch.tensor(src_w.shape)
-    dst_shape = torch.tensor(dst_w.shape)
-    if src_shape[1] == dst_shape[1]:
-        return src_w
-    elif src_shape[0] == dst_shape[1]:
-        return src_w.t()
-    else:
-        raise ValueError("the size of model and checkpoint file are not matched")
 
 
 def unwrap_dataset(dataset):
