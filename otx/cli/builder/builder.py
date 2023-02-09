@@ -20,7 +20,6 @@ and supports the replacement of the backbone of the model.
 # and limitations under the License.
 
 import inspect
-import shutil
 from pathlib import Path
 from typing import Any, Dict, Union
 
@@ -30,21 +29,12 @@ from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
 from otx.api.entities.model_template import TaskType
-from otx.cli.registry import Registry as OTXRegistry
 from otx.cli.utils.importing import (
     get_backbone_list,
     get_backbone_registry,
     get_module_args,
 )
 from otx.mpa.utils.config_utils import MPAConfig
-
-DEFAULT_MODEL_TEMPLATE_ID = {
-    "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
-    "DETECTION": "Custom_Object_Detection_Gen3_ATSS",
-    "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
-    "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
-}
-
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -136,86 +126,6 @@ def update_channels(model_config: MPAConfig, out_channels: Any):
 
 class Builder:
     """Class that implements a model templates registry."""
-
-    def build_task_config(
-        self,
-        task_type: str,
-        workspace_path: Path,
-        model_type: str = None,
-        train_type: str = "incremental",
-        otx_root: str = ".",
-    ):
-        """Create OTX workspace with Template configs from task type.
-
-        This function provides a user-friendly OTX workspace and provides more intuitive
-        and create customizable templates to help users use all the features of OTX.
-        task_type: The type of task want to get (str)
-        model_type: Specifies the template of a model (str)
-        workspace_path: This is the folder path of the workspace want to create (Union[Path, str])
-        """
-
-        # Create OTX-workspace
-        # Check whether the workspace is existed or not
-        workspace_path.mkdir(exist_ok=False)
-
-        # Load & Save Model Template
-        otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
-        if model_type:
-            template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
-            if len(template_lst) == 0:
-                raise ValueError(
-                    f"[otx build] {model_type} is not a type supported by OTX {task_type}."
-                    f"\n[otx build] Please refer to 'otx find --template --task_type {task_type}'"
-                )
-            template = template_lst[0]
-        else:
-            template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
-        template_dir = Path(template.model_template_path).parent
-
-        # Copy task base configuration file
-        task_configuration_path = template_dir / template.hyper_parameters.base_path
-        shutil.copyfile(task_configuration_path, str(workspace_path / "configuration.yaml"))
-        # Load Model Template
-        template_config = MPAConfig.fromfile(template.model_template_path)
-        template_config.hyper_parameters.base_path = "./configuration.yaml"
-
-        # Configuration of Train Type value
-        train_type_rel_path = ""
-        if train_type != "incremental":
-            train_type_rel_path = train_type
-        model_dir = template_dir.absolute() / train_type_rel_path
-        if not model_dir.exists():
-            raise ValueError(f"[otx build] {train_type} is not a type supported by OTX {task_type}")
-        train_type_dir = workspace_path / train_type_rel_path
-        train_type_dir.mkdir(exist_ok=True)
-
-        # Update Hparams
-        if (model_dir / "hparam.yaml").exists():
-            template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
-
-        # Load & Save Model config
-        model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
-        model_config.dump(str(train_type_dir / "model.py"))
-
-        # Copy Data pipeline config
-        if (model_dir / "data_pipeline.py").exists():
-            data_pipeline_config = MPAConfig.fromfile(str(model_dir / "data_pipeline.py"))
-            data_pipeline_config.dump(str(train_type_dir / "data_pipeline.py"))
-        template_config.dump(str(workspace_path / "template.yaml"))
-
-        # Copy compression_config.json
-        if (model_dir / "compression_config.json").exists():
-            shutil.copyfile(
-                str(model_dir / "compression_config.json"),
-                str(train_type_dir / "compression_config.json"),
-            )
-        # Copy deployment.py
-        if (template_dir / "deployment.py").exists():
-            deployment_config = MPAConfig.fromfile(str(template_dir / "deployment.py"))
-            deployment_config.dump(str(workspace_path / "deployment.py"))
-
-        print(f"[*] Load Model Template ID: {template.model_template_id}")
-        print(f"[*] Load Model Name: {template.name}")
 
     def build_backbone_config(self, backbone_type: str, output_path: Union[Path, str]):
         """Build Backbone configs from backbone type.

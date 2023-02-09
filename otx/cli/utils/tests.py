@@ -132,6 +132,7 @@ def otx_train_testing(template, root, otx_dir, args):
         if arg_value:
             command_line.extend([arg, os.path.join(otx_dir, arg_value)])
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
@@ -150,7 +151,6 @@ def otx_resume_testing(template, root, otx_dir, args):
         template.model_template_path,
     ]
     for option in [
-        "--data",
         "--train-ann-file",
         "--train-data-roots",
         "--val-ann-file",
@@ -163,6 +163,7 @@ def otx_resume_testing(template, root, otx_dir, args):
             command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
 
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth")
@@ -181,6 +182,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
         if arg_value:
             command_line.extend([arg, os.path.join(otx_dir, arg_value)])
     command_line.extend(["--save-model-to", f"{template_work_dir}/hpo_trained_{template.model_template_id}"])
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(["--enable-hpo", "--hpo-time-ratio", "1"])
 
     command_line.extend(args["train_params"])
@@ -229,6 +231,7 @@ def otx_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(args.get("eval_params", []))
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
@@ -247,6 +250,7 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/exported_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
@@ -362,6 +366,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/deployed_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
@@ -407,6 +412,7 @@ def pot_optimize_testing(template, root, otx_dir, args):
         "--save-model-to",
         f"{template_work_dir}/pot_{template.model_template_id}",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin")
@@ -445,6 +451,7 @@ def pot_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/pot_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
 
@@ -466,6 +473,7 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
@@ -517,6 +525,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/nncf_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json") as read_file:
@@ -544,6 +553,7 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json")
 
@@ -685,6 +695,16 @@ def otx_build_backbone_testing(root, backbone_args):
     """
     task, backbone = backbone_args
     task_workspace = os.path.join(root, f"otx-workspace-{task}")
+    command_line = [
+        "otx",
+        "build",
+        "--task",
+        f"{task}",
+        "--workspace-root",
+        task_workspace,
+    ]
+    check_run(command_line)
+    assert os.path.exists(task_workspace)
     # Build Backbone.yaml from backbone type
     command_line = [
         "otx",
@@ -742,11 +762,24 @@ def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
     workspace_root = os.path.join(root, "otx-workspace")
     command_line = ["otx", "build", "--workspace-root", workspace_root]
 
-    for option, val in args.items():
+    for option, value in args.items():
         if option in ["--train-data-roots", "--val-data-roots"]:
-            command_line.extend([option, f"{os.path.join(otx_dir, val)}"])
+            command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
         elif option in ["--task"]:
             command_line.extend([option, args[option]])
     check_run(command_line)
 
-    shutil.rmtree(workspace_root)
+
+def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
+    work_dir = os.path.join(root, "otx-workspace")
+    command_line = ["otx", "train"]
+
+    for option, value in args.items():
+        if option == "template":
+            command_line.extend([args[option]])
+        elif option in ["--train-data-roots", "--val-data-roots"]:
+            command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
+    command_line.extend(["--save-model-to", f"{work_dir}"])
+    command_line.extend(["--work-dir", f"{work_dir}"])
+    command_line.extend(args["train_params"])
+    check_run(command_line)

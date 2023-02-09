@@ -10,12 +10,11 @@ from unittest.mock import patch
 import pytest
 
 from otx.cli.tools import cli
-from otx.cli.tools.build import SUPPORTED_TASKS
 from otx.cli.utils.tests import (
     otx_build_auto_config,
     otx_build_backbone_testing,
-    otx_build_task_testing,
     otx_find_testing,
+    otx_train_auto_config,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
@@ -38,44 +37,55 @@ class TestToolsOTXCLI:
         otx_find_testing()
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("task", SUPPORTED_TASKS, ids=SUPPORTED_TASKS)
-    def test_otx_workspace_build(self, tmp_dir_path, task):
-        otx_build_task_testing(tmp_dir_path, task)
-
-    @e2e_pytest_component
     @pytest.mark.parametrize("build_backbone_args", build_backbone_args, ids=build_backbone_args_ids)
     def test_otx_backbone_build(self, tmp_dir_path, build_backbone_args):
         otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
 
 
-auto_config_args_with_autosplit = {"--train-data-roots": "tests/assets/imagenet_dataset"}
-
-auto_config_args_with_autosplit_task = {
-    "--task": "classification",
-    "--train-data-roots": "tests/assets/imagenet_dataset",
-}
-
-auto_config_args_without_autosplit = {
-    "--train-data-roots": "tests/assets/imagenet_dataset",
-    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+build_auto_config_args = {
+    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
+    "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/imagenet_dataset"},
+    "detection": {"--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
+    "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
 }
 
 
-class TestToolsOTXAutoConfig:
+class TestToolsOTXBuildAutoConfig:
     @e2e_pytest_component
-    def test_otx_build_with_autosplit(self, tmp_dir_path):
+    @pytest.mark.parametrize("case", build_auto_config_args.keys())
+    def test_otx_build_with_autosplit(self, case, tmp_dir_path):
         otx_dir = os.getcwd()
-        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_with_autosplit)
+        otx_build_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=build_auto_config_args[case])
 
-    @e2e_pytest_component
-    def test_otx_build_with_autosplit_task(self, tmp_dir_path):
-        otx_dir = os.getcwd()
-        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_with_autosplit_task)
 
+train_auto_config_args = {
+    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
+    "classification_with_template": {
+        "template": "otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
+        "--train-data-roots": "tests/assets/imagenet_dataset",
+    },
+    "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
+    "detection_with_template": {
+        "template": "otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml",
+        "--train-data-roots": "tests/assets/car_tree_bug",
+    },
+}
+
+train_params = [
+    "params",
+    "--learning_parameters.num_iters",
+    "1",
+]
+
+
+class TestToolsOTXTrainAutoConfig:
     @e2e_pytest_component
-    def test_otx_build_without_autosplit(self, tmp_dir_path):
+    @pytest.mark.parametrize("case", train_auto_config_args.keys())
+    def test_otx_train(self, case, tmp_dir_path):
         otx_dir = os.getcwd()
-        otx_build_auto_config(tmp_dir_path, otx_dir, auto_config_args_without_autosplit)
+        tmp_dir_path = tmp_dir_path / case
+        train_auto_config_args[case]["train_params"] = train_params
+        otx_train_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=train_auto_config_args[case])
 
 
 class TestTelemetryIntegration:
