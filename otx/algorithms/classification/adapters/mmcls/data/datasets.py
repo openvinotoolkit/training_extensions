@@ -270,6 +270,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
             acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)  # MICRO average
             eval_results["accuracy-mlc"] = acc
+            eval_results["accuracy"] = eval_results["accuracy-mlc"]
 
         if "mAP" in metrics:
             mAP_value = mAP(results, gt_labels)
@@ -281,7 +282,6 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 if k in metrics:
                     eval_results[k] = v
 
-        eval_results["accuracy"] = eval_results["accuracy-mlc"]
         return eval_results
 
 

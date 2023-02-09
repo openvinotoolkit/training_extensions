@@ -45,8 +45,8 @@ class TestActionTaskAPI:
     Collection of tests for OTX API and OTX Model Templates
     """
 
-    train_data_roots = "data/cvat_dataset/action_detection/train"
-    val_data_roots = "data/cvat_dataset/action_detection/train"
+    train_data_roots = "tests/assets/cvat_dataset/action_detection/train"
+    val_data_roots = "tests/assets/cvat_dataset/action_detection/train"
 
     @e2e_pytest_api
     def test_reading_action_model_template(self):
