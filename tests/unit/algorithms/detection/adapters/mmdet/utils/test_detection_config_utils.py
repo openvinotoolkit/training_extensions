@@ -3,6 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+import tempfile
 from typing import List
 
 import pytest
@@ -37,9 +38,10 @@ class TestOTXDetConfigUtils:
             data=dict(train=dict(labels=dict()), val=dict(labels=dict()), test=dict(labels=dict())),
         )
         config.merge_from_dict(options)
-        work_dir = "./some_work_dir"
+
         labels = generate_labels(3, domain)
-        patch_config(config, work_dir, labels)
+        with tempfile.TemporaryDirectory() as work_dir:
+            patch_config(config, work_dir, labels)
         assert "train_pipeline" not in config
         assert "test_pipeline" not in config
         assert "gpu_ids" in config
@@ -120,15 +122,17 @@ class TestOTXDetConfigUtils:
     def test_prepare_for_training(self):
         """Test build_detector method."""
         config = Config()
-        config_options = dict(
-            data=dict(
-                train=dict(type="RepeatDataset", adaptive_repeat_times=True, otx_dataset=[]), val=dict(), test=dict()
-            ),
-            work_dir="./some_work_dir",
-            runner=dict(type="EpochBasedRunner", max_epochs=1),
-        )
-        config.merge_from_dict(config_options)
+        with tempfile.TemporaryDirectory() as work_dir:
+            config_options = dict(
+                data=dict(
+                    train=dict(type="RepeatDataset", adaptive_repeat_times=True, otx_dataset=[]),
+                    val=dict(),
+                    test=dict(),
+                ),
+                work_dir=work_dir,
+                runner=dict(type="EpochBasedRunner", max_epochs=1),
+            )
+            config.merge_from_dict(config_options)
 
-        data_config = ConfigDict(data=dict(train=dict(otx_dataset=[1, 2, 3]), val=dict(), test=dict()))
-        # data_config.merge_from_dict(data_config_options)
-        prepare_for_training(config, data_config)
+            data_config = ConfigDict(data=dict(train=dict(otx_dataset=[1, 2, 3]), val=dict(), test=dict()))
+            prepare_for_training(config, data_config)
