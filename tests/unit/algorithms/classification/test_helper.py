@@ -157,4 +157,4 @@ def init_environment(params, model_template, multilabel=False, hierarchical=Fals
             label_schema=labels_schema,
             model_template=model_template,
         )
-        return environment, dataset, labels_schema
+        return environment, dataset

@@ -34,7 +34,7 @@ class TestOTXClsTaskTrain:
         model_template = parse_model_template(DEFAULT_CLS_TEMPLATE)
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.learning_parameters.num_iters = 10
-        self.task_env, self.dataset, _ = init_environment(params=hyper_parameters, model_template=model_template)
+        self.task_env, self.dataset = init_environment(params=hyper_parameters, model_template=model_template)
         self.model = otx_model
         self.cls_train_task = ClassificationTrainTask(self.task_env, output_path=str(tmp_dir_path))
 

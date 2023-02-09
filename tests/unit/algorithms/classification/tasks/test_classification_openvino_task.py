@@ -55,7 +55,8 @@ class TestOpenVINOClassificationInferencer:
         model_template = parse_model_template(DEFAULT_CLS_TEMPLATE)
         hyper_parameters = create(model_template.hyper_parameters.data)
         cls_params = ClassificationConfig(header=hyper_parameters.header)
-        environment, dataset, self.label_schema = init_environment(hyper_parameters, model_template)
+        environment, dataset = init_environment(hyper_parameters, model_template)
+        self.label_schema = environment.label_schema
         mocker.patch("otx.algorithms.classification.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, self.label_schema, "")
@@ -112,7 +113,8 @@ class TestOpenVINOClassificationTask:
         model_template = parse_model_template(DEFAULT_CLS_TEMPLATE)
         hyper_parameters = create(model_template.hyper_parameters.data)
         cls_params = ClassificationConfig(header=hyper_parameters.header)
-        self.task_env, self.dataset, self.label_schema = init_environment(params=hyper_parameters, model_template=model_template)
+        self.task_env, self.dataset = init_environment(params=hyper_parameters, model_template=model_template)
+        self.label_schema = self.task_env.label_schema
         mocker.patch("otx.algorithms.classification.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, self.label_schema, "")
