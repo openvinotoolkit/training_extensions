@@ -36,10 +36,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "tests/assets/coco_dataset/coco_instance_segmentation",
-    "--val-data-roots": "tests/assets/coco_dataset/coco_instance_segmentation",
-    "--test-data-roots": "tests/assets/coco_dataset/coco_instance_segmentation",
-    "--input": "tests/assets/coco_dataset/coco_instance_segmentation/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",

@@ -178,6 +178,8 @@ def main():
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
 
+    return dict(retcode=0, template=template.name)
+
 
 if __name__ == "__main__":
     main()

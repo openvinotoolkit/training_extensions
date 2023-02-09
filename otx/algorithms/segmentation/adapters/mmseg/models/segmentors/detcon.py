@@ -24,6 +24,9 @@ from mmseg.models.builder import (  # pylint: disable=no-name-in-module
 from mmseg.ops import resize
 from torch import nn
 
+from otx.mpa.modules.models.segmentors.class_incr_encoder_decoder import (
+    ClassIncrEncoderDecoder,
+)
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -154,7 +157,7 @@ class DetConB(nn.Module):
         num_samples: int = 16,
         downsample: int = 32,
         input_transform: str = "resize_concat",
-        in_index: List[int] = [0],
+        in_index: Union[List[int], int] = [0],
         align_corners: bool = False,
         loss_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
@@ -245,16 +248,18 @@ class DetConB(nn.Module):
             Tensor: The transformed inputs.
         """
         # TODO (sungchul): consider tensor component, too
-        if self.input_transform == "resize_concat":
+        if self.input_transform == "resize_concat" and isinstance(self.in_index, (list, tuple)):
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
                 resize(input=x, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
                 for x in inputs
             ]
             inputs = torch.cat(upsampled_inputs, dim=1)
-        elif self.input_transform == "multiple_select":
+        elif self.input_transform == "multiple_select" and isinstance(self.in_index, (list, tuple)):
             inputs = [inputs[i] for i in self.in_index]
         else:
+            if isinstance(self.in_index, (list, tuple)):
+                self.in_index = self.in_index[0]
             inputs = inputs[self.in_index]  # type: ignore
 
         return inputs
@@ -266,9 +271,9 @@ class DetConB(nn.Module):
             img (Tensor): Input image.
 
         Return:
-            Tensor: Features from the backbone.
+            Tensor: Features from the online_backbone.
         """
-        x = self.backbone(img)
+        x = self.online_backbone(img)
         return x
 
     def sample_masked_feats(self, feats: Union[torch.Tensor, List, Tuple], masks: torch.Tensor, projector: nn.Module):
@@ -285,6 +290,7 @@ class DetConB(nn.Module):
         if isinstance(feats, (list, tuple)) and len(feats) > 1:
             feats = self.transform_inputs(feats)
 
+        # TODO (sungchul): consider self.input_transform == "multiple_select"
         sampled_masks, sampled_mask_ids = self.mask_pool(masks)
 
         b, c, h, w = feats.shape  # type: ignore
@@ -297,7 +303,9 @@ class DetConB(nn.Module):
         return proj, sampled_mask_ids
 
     # pylint: disable=too-many-locals
-    def forward(self, img: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor):
+    def forward_train(
+        self, img: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, return_embedding: bool = False
+    ):
         """Forward function for training.
 
         Args:
@@ -305,15 +313,18 @@ class DetConB(nn.Module):
             img_metas (list[dict]): Input information.
             gt_semantic_seg (Tensor): Pseudo masks.
                 It is used to organize features among the same classes.
+            return_embedding (bool): Whether returning embeddings from the online backbone.
+                It can be used for SupCon. Default: False.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        assert img.ndim == 5 and gt_semantic_seg.ndim == 4
+        assert img.ndim == 5 and gt_semantic_seg.ndim == 5
         img1, img2 = img[:, 0], img[:, 1]
-        mask1, mask2 = gt_semantic_seg[:, 0], gt_semantic_seg[:, 1]
+        mask1, mask2 = gt_semantic_seg[:, :, 0], gt_semantic_seg[:, :, 1]
 
-        proj1, id1 = self.sample_masked_feats(self.online_backbone(img1), mask1, self.online_projector)
+        embd1 = self.online_backbone(img1)
+        proj1, id1 = self.sample_masked_feats(embd1, mask1, self.online_projector)
         proj2, id2 = self.sample_masked_feats(self.online_backbone(img2), mask2, self.online_projector)
 
         with torch.no_grad():
@@ -341,7 +352,22 @@ class DetConB(nn.Module):
             tind2=id2_tgt,
         )
 
+        if return_embedding:
+            return loss, embd1
         return loss
+
+    def forward(self, img, img_metas, return_loss=True, **kwargs):
+        """Calls either :func:`forward_train` or :func:`forward_test` depending on whether ``return_loss`` is ``True``.
+
+        Note this setting will change the expected inputs. When
+        ``return_loss=True``, img and img_meta are single-nested (i.e. Tensor
+        and List[dict]), and when ``resturn_loss=False``, img and img_meta
+        should be double nested (i.e.  List[Tensor], List[List[dict]]), with
+        the outer list indicating test time augmentations.
+        """
+        if return_loss:
+            return self.forward_train(img, img_metas, **kwargs)
+        raise AttributeError("Self-SL doesn't support `forward_test` for evaluation.")
 
     def train_step(self, data_batch: Dict[str, Any], optimizer: Union[torch.optim.Optimizer, Dict], **kwargs):
         """The iteration step during training.
@@ -433,3 +459,99 @@ class DetConB(nn.Module):
                 k = k.replace("online_backbone.", "backbone.")
                 output[k] = v
         return output
+
+
+# pylint: disable=too-many-locals
+@SEGMENTORS.register_module()
+class SupConDetConB(ClassIncrEncoderDecoder):
+    """Apply DetConB as a contrastive part of `Supervised Contrastive Learning` (https://arxiv.org/abs/2004.11362).
+
+    SupCon with DetConB uses ground truth masks instead of pseudo masks to organize features among the same classes.
+
+    Args:
+        decode_head (dict, optional): Config dict for module of decode head. Default: None.
+        train_cfg (dict, optional): Config dict for training. Default: None.
+    """
+
+    def __init__(
+        self,
+        backbone: Dict[str, Any],
+        decode_head: Optional[Dict[str, Any]] = None,
+        neck: Optional[Dict[str, Any]] = None,
+        head: Optional[Dict[str, Any]] = None,
+        pretrained: Optional[str] = None,
+        base_momentum: float = 0.996,
+        num_classes: int = 256,
+        num_samples: int = 16,
+        downsample: int = 32,
+        input_transform: str = "resize_concat",
+        in_index: List[int] = [0],
+        align_corners: bool = False,
+        loss_cfg: Optional[Dict[str, Any]] = None,
+        train_cfg: Optional[Dict[str, Any]] = None,
+        test_cfg: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
+        super().__init__(backbone=backbone, decode_head=decode_head, train_cfg=train_cfg, test_cfg=test_cfg, **kwargs)
+
+        self.detconb = DetConB(
+            backbone=backbone,
+            neck=neck,
+            head=head,
+            pretrained=pretrained,
+            base_momentum=base_momentum,
+            num_classes=num_classes,
+            num_samples=num_samples,
+            downsample=downsample,
+            input_transform=input_transform,
+            in_index=in_index,
+            align_corners=align_corners,
+            loss_cfg=loss_cfg,
+            **kwargs,
+        )
+        self.backbone = self.detconb.online_backbone
+        # TODO (sungchul): Is state_dict_hook needed to save segmentor only?
+        # 1. use state_dict_hook : we can save memory as only saving backbone + decode_head.
+        # 2. save all : we can use additional training with the whole weights (backbone + decode_head + detcon).
+
+    # pylint: disable=arguments-renamed
+    def forward_train(
+        self,
+        img: torch.Tensor,
+        img_metas: List[Dict],
+        gt_semantic_seg: torch.Tensor,
+        pixel_weights: Optional[torch.Tensor] = None,
+        **kwargs,
+    ):
+        """Forward function for training.
+
+        Args:
+            img (Tensor): Input images.
+            img_metas (list[dict]): Input information.
+            gt_semantic_seg (Tensor): Ground truth masks.
+                It is used to organize features among the same classes.
+            pixel_weights (Tensor): Pixels weights.
+
+        Returns:
+            dict[str, Tensor]: A dictionary of loss components.
+        """
+        losses = {}
+        if img.ndim == 4:
+            # supervised learning with interval
+            embd = self.detconb.online_backbone(img)
+            mask = gt_semantic_seg
+        else:
+            # supcon training
+            mask = gt_semantic_seg[:, :, 0]
+            loss_detcon, embd = self.detconb.forward_train(
+                img=img, img_metas=img_metas, gt_semantic_seg=gt_semantic_seg, return_embedding=True
+            )
+            losses.update(dict(loss_detcon=loss_detcon["loss"]))
+
+        # decode head
+        loss_decode, _ = self._decode_head_forward_train(
+            embd, img_metas, gt_semantic_seg=mask, pixel_weights=pixel_weights
+        )
+        losses.update(loss_decode)
+
+        return losses

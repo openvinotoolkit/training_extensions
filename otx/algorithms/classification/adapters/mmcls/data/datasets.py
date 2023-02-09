@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 
-from typing import List
+from typing import Any, Dict, List
 
 import numpy as np
 from mmcls.core import average_performance, mAP
@@ -421,7 +421,10 @@ class SelfSLDataset(Dataset):
 
     CLASSES = None
 
-    def __init__(self, otx_dataset=None, pipeline=None, **kwargs):  # pylint: disable=unused-argument
+    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
+    def __init__(
+        self, otx_dataset: DatasetEntity, pipeline: Dict[str, Any], **kwargs
+    ):  # pylint: disable=unused-argument
         super().__init__()
         self.otx_dataset = otx_dataset
 

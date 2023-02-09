@@ -22,7 +22,7 @@ from typing import Any, Dict, Optional, Union
 
 import cv2
 import numpy as np
-from mmcv.utils import get_logger
+from mmcv.utils import print_log
 
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -34,8 +34,6 @@ from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
     check_input_parameters_type,
 )
-
-logger = get_logger(name="otx.algorithm.common.utils.data")
 
 
 @check_input_parameters_type({"file_list_path": DirectoryPathCheck})
@@ -165,7 +163,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
                 cached_img = cached_img.astype(np.float32)
             return cached_img
         except Exception as e:  # pylint: disable=broad-except
-            logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
+            print_log(f"Skip loading cached {filename} \nError msg: {e}")
             return None
 
     def save_image_to_cache(img: np.array, filename: str):
@@ -175,7 +173,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
         try:
             cv2.imwrite(tmp_filename, img=img)
         except Exception as e:  # pylint: disable=broad-except
-            logger.warning(f"Skip caching for {filename} \nError msg: {e}")
+            print_log(f"Skip caching for {filename} \nError msg: {e}")
             return
 
         if os.path.exists(tmp_filename) and not os.path.exists(filename):
@@ -183,7 +181,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
                 os.replace(tmp_filename, filename)
             except Exception as e:  # pylint: disable=broad-except
                 os.remove(tmp_filename)
-                logger.warning(f"Failed to rename {tmp_filename} -> {filename} \nError msg: {e}")
+                print_log(f"Failed to rename {tmp_filename} -> {filename} \nError msg: {e}")
 
     subset = results["dataset_item"].subset
     media = results["dataset_item"].media
