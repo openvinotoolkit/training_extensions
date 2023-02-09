@@ -21,12 +21,8 @@ class TestRegistry:
         mock_glob.return_value = ["./template.yaml"]
         mock_abspath = mocker.patch("os.path.abspath")
         mock_abspath.return_value = "./template.yaml"
-        # mock_exists = mocker.patch("os.path.exists")
         mock_parse_model_template = mocker.patch("otx.cli.registry.registry.parse_model_template")
         mock_parse_model_template.return_value = mock_templates[0]
-
-        with pytest.raises(RuntimeError):
-            r = Registry()
 
         r = Registry(templates_dir=".")
         assert r.templates == [mock_templates[0]]
@@ -36,6 +32,11 @@ class TestRegistry:
 
         r = Registry(templates=mock_templates)
         assert r.templates == mock_templates
+
+    @e2e_pytest_unit
+    def test_init_empty_raise_RuntimeError(self):
+        with pytest.raises(RuntimeError):
+            Registry()
 
     @e2e_pytest_unit
     def test_filter(self, mock_templates):
@@ -71,6 +72,9 @@ class TestRegistry:
         template = registry.get("003")
         assert template.task_type == "Detection"
 
+    @e2e_pytest_unit
+    def test_get_unexpected(self, mock_templates):
+        registry = Registry(templates=mock_templates)
         with pytest.raises(ValueError):
             registry.get("004")
 
@@ -93,6 +97,12 @@ def test_find_and_parse_model_template(mocker):
 
     assert find_and_parse_model_template("001") == mock_template
 
+
+@e2e_pytest_unit
+def test_find_and_parse_model_template_exists_true(mocker):
+    mock_template = mocker.MagicMock(framework="test", task_type="test", model_template_id="001")
+    mock_parse_model_template = mocker.patch("otx.cli.registry.registry.parse_model_template")
+    mock_parse_model_template.return_value = mock_template
     mock_exists = mocker.patch("os.path.exists")
     mock_exists.return_value = True
     assert find_and_parse_model_template("001") == mock_template

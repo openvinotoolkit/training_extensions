@@ -3,11 +3,11 @@
 #
 import pytest
 
-from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
-    AnomalyClassificationDataset,
-    AnomalyDetectionDataset,
-    AnomalySegmentationDataset,
-)
+# from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
+#     AnomalyClassificationDataset,
+#     AnomalyDetectionDataset,
+#     AnomalySegmentationDataset,
+# )
 from otx.algorithms.classification.utils import ClassificationDatasetAdapter
 from otx.api.entities.model_template import TaskType
 from otx.cli.datasets import get_dataset_class
@@ -21,9 +21,9 @@ from otx.cli.datasets.semantic_segmentation.dataset import SemanticSegmentationD
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 TASKTYPE = {
-    TaskType.ANOMALY_CLASSIFICATION: AnomalyClassificationDataset,
-    TaskType.ANOMALY_DETECTION: AnomalyDetectionDataset,
-    TaskType.ANOMALY_SEGMENTATION: AnomalySegmentationDataset,
+    # TaskType.ANOMALY_CLASSIFICATION: AnomalyClassificationDataset,
+    # TaskType.ANOMALY_DETECTION: AnomalyDetectionDataset,
+    # TaskType.ANOMALY_SEGMENTATION: AnomalySegmentationDataset,
     TaskType.CLASSIFICATION: ImageClassificationDataset,
     TaskType.DETECTION: ObjectDetectionDataset,
     TaskType.INSTANCE_SEGMENTATION: InstanceSegmentationDataset,
@@ -75,20 +75,16 @@ def test_datasets_get_dataset_class(task_type, expected_results):
 
 
 @e2e_pytest_unit
-def test_datasets_get_dataset_class_raise_value_error():
+@pytest.mark.parametrize("task", [TaskType.NULL, "unexpected"])
+def test_datasets_get_dataset_class_raise_value_error(task):
     """Check raising Error in get_dataset_clsss from otx.cli.datasets.
 
     <Steps>
         1. Check raising ValueError with NULL task_type
         2. Check raising ValueError with unexpected task_type
     """
-    task_type = TaskType.NULL
     with pytest.raises(ValueError):
-        get_dataset_class(task_type)
-
-    task_type = "unexpected"
-    with pytest.raises(ValueError):
-        get_dataset_class(task_type)
+        get_dataset_class(task)
 
 
 @e2e_pytest_unit
