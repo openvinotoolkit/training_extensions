@@ -36,7 +36,7 @@ multilabel_ann_format = {
 }  # type: Dict[str, Any]
 
 
-def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: str):
+def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: str, test_mode: bool = False):
     """Convert coco dataset to datumaro multi-label format.
 
     Args:
@@ -50,13 +50,14 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
         ann_file=ann_file_path,
         data_root=data_root_dir,
         classes=None,
-        test_mode=False,
+        test_mode=test_mode,
         with_mask=False,
     )
 
     # Fill the categories part
     # For the multi-label classification,
     # Datumaro will make label_groups and labels
+
     overall_classes = coco_dataset.get_classes()  # type: List
     for class_name in overall_classes:
         multilabel_ann_format["categories"]["label"]["label_groups"].append(
