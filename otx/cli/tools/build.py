@@ -48,6 +48,10 @@ def get_args():
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
+        "--test-data-roots",
+        help="Comma-separated paths to test data folders.",
+    )
+    parser.add_argument(
         "--unlabeled-data-roots",
         help="Comma-separated paths to unlabeled data folders",
     )
