@@ -1,24 +1,29 @@
 import json
-import pytest
 from os import path as osp
+
+import pytest
 
 from otx.hpo.hpo_base import Trial
 
+
 @pytest.fixture
 def good_trial_args():
-    return {"id" : "name", "configuration" : {"hp1" : 1, "hp2" : 1.2}, "train_environment" : {"subset_ratio" : 0.5}}
+    return {"id": "name", "configuration": {"hp1": 1, "hp2": 1.2}, "train_environment": {"subset_ratio": 0.5}}
+
 
 @pytest.fixture
 def trial(good_trial_args):
     return Trial(**good_trial_args)
 
-def register_scores_to_trial(trial, scores = [val for val in range(100)]):
+
+def register_scores_to_trial(trial, scores=[val for val in range(100)]):
     if len(trial.score) != 0:
         base_resource = max(trial.score.keys())
     else:
         base_resource = 0
     for idx, score in enumerate(scores):
-        trial.register_score(score, base_resource+idx+1)
+        trial.register_score(score, base_resource + idx + 1)
+
 
 class TestTrial:
     def test_init(self, good_trial_args):
@@ -64,7 +69,7 @@ class TestTrial:
         register_scores_to_trial(trial, scores)
 
         if resource_limit is not None:
-            scores = {i+1 : score for i, score in enumerate(scores)}
+            scores = {i + 1: score for i, score in enumerate(scores)}
             scores = [val for key, val in scores.items() if key <= resource_limit]
 
         if mode == "min":
@@ -84,7 +89,7 @@ class TestTrial:
 
     def test_get_best_score_with_empty_scores(self, trial):
         assert trial.get_best_score() == None
-        
+
     def test_get_best_score_with_wrong_mode_value(self, trial):
         register_scores_to_trial(trial)
         with pytest.raises(ValueError):
@@ -111,7 +116,7 @@ class TestTrial:
         assert result["configuration"]["hp2"] == 1.2
         assert result["train_environment"]["subset_ratio"] == 0.5
         for key, val in result["score"].items():
-            assert int(key)-1 == val
+            assert int(key) - 1 == val
 
     def test_finalize(self, trial):
         trial.iteration = 10

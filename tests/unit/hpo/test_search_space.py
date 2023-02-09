@@ -1,21 +1,24 @@
-import math
-import pytest
 import copy
+import math
 
-from otx.hpo.search_space import SingleSearchSpace, SearchSpace
+import pytest
+
+from otx.hpo.search_space import SearchSpace, SingleSearchSpace
 
 ALL_TYPE = ["uniform", "loguniform", "quniform", "qloguniform", "choice"]
 NOT_CATEGORICAL_TYPE = ["uniform", "loguniform", "quniform", "qloguniform"]
 USE_LOG_SCALE_TYPE = ["loguniform", "qloguniform"]
 USE_QUANTIZED_STEP_TYPE = ["quniform", "qloguniform"]
 
+
 def make_single_search_space_uniform_good_arguments():
     return [
-        {"type" : "uniform", "min" : 1, "max" : 100},
-        {"type" : "uniform", "min" : 1.12, "max" : 53.221},
-        {"type" : "uniform", "min" : -300, "max" : -299},
-        {"type" : "uniform", "min" : -12.543, "max" : 15.233},
+        {"type": "uniform", "min": 1, "max": 100},
+        {"type": "uniform", "min": 1.12, "max": 53.221},
+        {"type": "uniform", "min": -300, "max": -299},
+        {"type": "uniform", "min": -12.543, "max": 15.233},
     ]
+
 
 def add_step_from_args(args, type_name=None):
     new_args = []
@@ -27,6 +30,7 @@ def add_step_from_args(args, type_name=None):
         new_args.append(arg)
 
     return new_args
+
 
 def add_log_base_from_args(args, type_name):
     new_args = []
@@ -40,38 +44,32 @@ def add_log_base_from_args(args, type_name):
             new_args.append(arg)
 
     return new_args
-    
+
+
 def make_single_search_space_quniform_good_arguments():
-    return add_step_from_args(
-        make_single_search_space_uniform_good_arguments(),
-        "quniform"
-    )
+    return add_step_from_args(make_single_search_space_uniform_good_arguments(), "quniform")
+
 
 def make_single_search_space_loguniform_good_arguments():
-    return add_log_base_from_args(
-        make_single_search_space_uniform_good_arguments(),
-        "loguniform"
-    )
-        
+    return add_log_base_from_args(make_single_search_space_uniform_good_arguments(), "loguniform")
+
+
 def make_single_search_space_qloguniform_good_arguments():
-    return add_log_base_from_args(
-        make_single_search_space_quniform_good_arguments(),
-        "qloguniform"
-    )
+    return add_log_base_from_args(make_single_search_space_quniform_good_arguments(), "qloguniform")
+
 
 def make_single_search_space_choice_good_arguments():
-    return [
-        {"type" : "choice", "choice_list" : ("abc", "def")},
-        {"type" : "choice", "choice_list" : [1,2,3]}
-    ]
+    return [{"type": "choice", "choice_list": ("abc", "def")}, {"type": "choice", "choice_list": [1, 2, 3]}]
+
 
 MAKE_GOOD_ARGS = {
-    "uniform" : make_single_search_space_uniform_good_arguments,
-    "quniform" : make_single_search_space_quniform_good_arguments,
-    "loguniform" : make_single_search_space_loguniform_good_arguments,
-    "qloguniform" : make_single_search_space_qloguniform_good_arguments,
-    "choice" : make_single_search_space_choice_good_arguments
+    "uniform": make_single_search_space_uniform_good_arguments,
+    "quniform": make_single_search_space_quniform_good_arguments,
+    "loguniform": make_single_search_space_loguniform_good_arguments,
+    "qloguniform": make_single_search_space_qloguniform_good_arguments,
+    "choice": make_single_search_space_choice_good_arguments,
 }
+
 
 def get_wrong_arg(original_arg, attr_names, values, errors):
     wrong_arg = copy.deepcopy(original_arg)
@@ -84,6 +82,7 @@ def get_wrong_arg(original_arg, attr_names, values, errors):
     wrong_arg["error"] = errors
 
     return wrong_arg
+
 
 def make_arg_minmax_wrong(arg):
     args = []
@@ -102,6 +101,7 @@ def make_arg_minmax_wrong(arg):
 
     return args
 
+
 def make_arg_step_wrong(arg):
     args = []
 
@@ -109,11 +109,10 @@ def make_arg_step_wrong(arg):
     args.append(get_wrong_arg(arg, "step", None, (TypeError, ValueError)))
 
     # step is too big
-    args.append(
-        get_wrong_arg(arg, "step", arg["max"] - arg["min"] + 1, (TypeError, ValueError))
-    )
+    args.append(get_wrong_arg(arg, "step", arg["max"] - arg["min"] + 1, (TypeError, ValueError)))
 
     return args
+
 
 def make_arg_logbase_wrong(arg):
     args = []
@@ -121,8 +120,9 @@ def make_arg_logbase_wrong(arg):
     # too small value
     for val in [1, 0, -1]:
         args.append(get_wrong_arg(arg, "log_base", val, ValueError))
-        
+
     return args
+
 
 def make_arg_choicelist_wrong(arg):
     args = []
@@ -136,14 +136,16 @@ def make_arg_choicelist_wrong(arg):
 
     return args
 
+
 def make_arg_type_wrong(arg):
     args = []
 
     # wrong type
-    for val in ["wrong_type", 12, 1.24, [1,2]]:
+    for val in ["wrong_type", 12, 1.24, [1, 2]]:
         args.append(get_wrong_arg(arg, "type", val, ValueError))
 
     return args
+
 
 class TestSingleSearchSpace:
     @pytest.mark.parametrize("type", ALL_TYPE)
@@ -358,7 +360,7 @@ class TestSingleSearchSpace:
             if type == "choice":
                 choice_list = arg["choice_list"]
                 ret = sss.space_to_real(number)
-                expected_ret = min(max(int(number), 0), len(choice_list)-1)
+                expected_ret = min(max(int(number), 0), len(choice_list) - 1)
                 assert ret == sss.choice_list[expected_ret]
             else:
                 ret = sss.space_to_real(number)
@@ -366,11 +368,11 @@ class TestSingleSearchSpace:
 
                 if type in USE_LOG_SCALE_TYPE:
                     log_base = arg["log_base"]
-                    expected_ret = log_base ** expected_ret
+                    expected_ret = log_base**expected_ret
                 if type in USE_QUANTIZED_STEP_TYPE:
                     step = arg["step"]
                     gap = sss.min % step
-                    expected_ret = round((expected_ret - gap) / step) * step  + gap
+                    expected_ret = round((expected_ret - gap) / step) * step + gap
                 assert ret == expected_ret
 
     @pytest.mark.parametrize("type", ALL_TYPE)
@@ -384,6 +386,7 @@ class TestSingleSearchSpace:
                 assert sss.real_to_space(number) == math.log(number, log_base)
             else:
                 assert sss.real_to_space(number) == number
+
 
 class TestSearchSpace:
     @staticmethod
@@ -407,49 +410,41 @@ class TestSearchSpace:
 
     @staticmethod
     def add_uniform_search_space(search_space, range_format=False):
-        search_space["uniform_search_space"] = {"param_type" : "uniform"}
+        search_space["uniform_search_space"] = {"param_type": "uniform"}
         if range_format:
             search_space["uniform_search_space"]["range"] = [1, 10]
         else:
-            search_space["uniform_search_space"].update(
-                {"min" : 1, "max" : 10}
-            )
+            search_space["uniform_search_space"].update({"min": 1, "max": 10})
 
     @staticmethod
     def add_quniform_search_space(search_space, range_format=False):
-        search_space["quniform_search_space"] = {"param_type" : "quniform"}
+        search_space["quniform_search_space"] = {"param_type": "quniform"}
         if range_format:
             search_space["quniform_search_space"]["range"] = [1, 10, 3]
         else:
-            search_space["quniform_search_space"].update(
-                {"min" : 1, "max" : 10, "step" : 3}
-            )
+            search_space["quniform_search_space"].update({"min": 1, "max": 10, "step": 3})
 
     @staticmethod
     def add_loguniform_search_space(search_space, range_format=False):
-        search_space["loguniform_search_space"] = {"param_type" : "loguniform"}
+        search_space["loguniform_search_space"] = {"param_type": "loguniform"}
         if range_format:
             search_space["loguniform_search_space"]["range"] = [1, 10, 2]
         else:
-            search_space["loguniform_search_space"].update(
-                {"min" : 1, "max" : 10, "log_base" : 2}
-            )
+            search_space["loguniform_search_space"].update({"min": 1, "max": 10, "log_base": 2})
 
     @staticmethod
     def add_qloguniform_search_space(search_space, range_format=False):
-        search_space["qloguniform_search_space"] = {"param_type" : "qloguniform"}
+        search_space["qloguniform_search_space"] = {"param_type": "qloguniform"}
         if range_format:
             search_space["qloguniform_search_space"]["range"] = [1, 10, 3, 2]
         else:
-            search_space["qloguniform_search_space"].update(
-                {"min" : 1, "max" : 10, "step" : 3, "log_base" : 2}
-            )
+            search_space["qloguniform_search_space"].update({"min": 1, "max": 10, "step": 3, "log_base": 2})
 
     @staticmethod
     def add_choice_search_space(search_space):
         search_space["choice_search_space"] = {
-            "param_type" : "choice",
-            "choice_list" : ["somevalue1", "somevalue2", "somevalue3"]
+            "param_type": "choice",
+            "choice_list": ["somevalue1", "somevalue2", "somevalue3"],
         }
 
     @pytest.fixture
@@ -500,7 +495,6 @@ class TestSearchSpace:
 
         assert ss.has_categorical_param() == choice_exist
 
-
     def test_get_real_config_with_proper_argument(self, search_space_with_all_types):
         # search space configuration
         step = 3
@@ -508,14 +502,14 @@ class TestSearchSpace:
         min_val = 1
         requested_val = 3.2
 
-        config = {f"{type}_search_space" : requested_val for type in ALL_TYPE}
+        config = {f"{type}_search_space": requested_val for type in ALL_TYPE}
         real_space = search_space_with_all_types.get_real_config(config)
 
         for key, val in real_space.items():
             rescaled_requested_val = requested_val
             if key in ["loguniform_search_space", "qloguniform_search_space"]:
-                rescaled_requested_val = log_base ** requested_val
-            if key in ["quniform_search_space" ,"qloguniform_search_space"]:
+                rescaled_requested_val = log_base**requested_val
+            if key in ["quniform_search_space", "qloguniform_search_space"]:
                 gap = min_val % step
                 rescaled_requested_val = round((rescaled_requested_val - gap) / step) * step + gap
             if key == "choice_search_space":
@@ -527,7 +521,7 @@ class TestSearchSpace:
 
     @pytest.mark.parametrize("wrong_name", ["wrong_name", 1, 3.2])
     def test_get_real_config_with_wrong_name_config(self, search_space_with_all_types, wrong_name):
-        config = {wrong_name : 3.2}
+        config = {wrong_name: 3.2}
         with pytest.raises(KeyError):
             real_space = search_space_with_all_types.get_real_config(config)
 
@@ -536,7 +530,7 @@ class TestSearchSpace:
         log_base = 2
         requested_val = 10
 
-        config = {f"{type}_search_space" : requested_val for type in ALL_TYPE}
+        config = {f"{type}_search_space": requested_val for type in ALL_TYPE}
         real_space = search_space_with_all_types.get_space_config(config)
 
         for key, val in real_space.items():
@@ -548,7 +542,7 @@ class TestSearchSpace:
 
     @pytest.mark.parametrize("wrong_name", ["wrong_name", 1, 3.2])
     def test_get_space_config_with_wrong_name_config(self, search_space_with_all_types, wrong_name):
-        config = {wrong_name : 3.2}
+        config = {wrong_name: 3.2}
         with pytest.raises(KeyError):
             real_space = search_space_with_all_types.get_space_config(config)
 
@@ -560,20 +554,13 @@ class TestSearchSpace:
             min_val, max_val = val
             assert min_val < max_val
 
-    def test_convert_from_zero_one_scale_to_real_space_with_good_args(
-        self,
-        search_space_with_all_types
-    ):
+    def test_convert_from_zero_one_scale_to_real_space_with_good_args(self, search_space_with_all_types):
         config = {}
         for key in search_space_with_all_types:
             config[key] = 0.5
         real_space = search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)
 
-    @pytest.mark.parametrize("config", ["wrong_value", [1,3,4], (1,2)])
-    def test_convert_from_zero_one_scale_to_real_space_with_bad_arg_type(
-        self,
-        search_space_with_all_types,
-        config
-    ):
+    @pytest.mark.parametrize("config", ["wrong_value", [1, 3, 4], (1, 2)])
+    def test_convert_from_zero_one_scale_to_real_space_with_bad_arg_type(self, search_space_with_all_types, config):
         with pytest.raises(AttributeError):
             real_space = search_space_with_all_types.convert_from_zero_one_scale_to_real_space(config)

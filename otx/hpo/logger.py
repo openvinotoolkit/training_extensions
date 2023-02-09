@@ -79,10 +79,7 @@ def _get_log_level(level):
     # get level number
     level_number = logging.getLevelName(level.upper())
     if level_number not in [0, 10, 20, 30, 40, 50, _CUSTOM_LOG_LEVEL]:
-        msg = (
-            "Log level must be one of DEBUG/INFO/WARN/ERROR/CRITICAL/LOG"
-            ", but {} is given.".format(level)
-        )
+        msg = "Log level must be one of DEBUG/INFO/WARN/ERROR/CRITICAL/LOG" ", but {} is given.".format(level)
         raise ValueError(msg)
 
     return level_number

@@ -5,11 +5,11 @@ from functools import partial
 from multiprocessing import Process
 from typing import Any, Callable, Dict, Optional, Union
 
+import torch
+
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.logger import get_logger
 from otx.hpo.utils import check_positive
-
-import torch
 
 logger = get_logger()
 
@@ -26,6 +26,7 @@ class ResourceManager(ABC):
     @abstractmethod
     def have_available_resource(self):
         raise NotImplementedError
+
 
 class CPUResourceManager(ResourceManager):
     def __init__(self, num_parallel_trial: int = 4):
@@ -54,6 +55,7 @@ class CPUResourceManager(ResourceManager):
     def have_available_resource(self):
         return len(self._usage_status) < self._num_parallel_trial
 
+
 class GPUResourceManager(ResourceManager):
     def __init__(self, num_gpu_for_single_trial: int = 1, available_gpu: Optional[str] = None):
         check_positive(num_gpu_for_single_trial, "num_gpu_for_single_trial")
@@ -75,14 +77,12 @@ class GPUResourceManager(ResourceManager):
         return available_gpu
 
     def _transform_gpu_format_from_string_to_arr(self, gpu: str):
-        for val in gpu.split(','):
+        for val in gpu.split(","):
             if not val.isnumeric():
                 raise ValueError(
-                    "gpu format is wrong. "
-                    "gpu should only have numbers delimited by ','.\n"
-                    f"your value is {gpu}"
+                    "gpu format is wrong. " "gpu should only have numbers delimited by ','.\n" f"your value is {gpu}"
                 )
-        return [int(val) for val in gpu.split(',')]
+        return [int(val) for val in gpu.split(",")]
 
     def reserve_resource(self, trial_id):
         if not self.have_available_resource():
@@ -90,12 +90,11 @@ class GPUResourceManager(ResourceManager):
         if trial_id in self._usage_status:
             raise RuntimeError(f"{trial_id} already has reserved resource.")
 
-        resource = list(self._available_gpu[:self._num_gpu_for_single_trial])
-        self._available_gpu = self._available_gpu[self._num_gpu_for_single_trial:]
+        resource = list(self._available_gpu[: self._num_gpu_for_single_trial])
+        self._available_gpu = self._available_gpu[self._num_gpu_for_single_trial :]
 
         self._usage_status[trial_id] = resource
-        return {"CUDA_VISIBLE_DEVICES" : ",".join([str(val) for val in resource])}
-
+        return {"CUDA_VISIBLE_DEVICES": ",".join([str(val) for val in resource])}
 
     def release_resource(self, trial_id):
         if trial_id not in self._usage_status:
@@ -106,6 +105,7 @@ class GPUResourceManager(ResourceManager):
 
     def have_available_resource(self):
         return len(self._available_gpu) >= self._num_gpu_for_single_trial
+
 
 def get_resource_manager(
     resource_type: str,
@@ -118,21 +118,23 @@ def get_resource_manager(
         resource_type = "cpu"
 
     if resource_type == "cpu":
-        args = {"num_parallel_trial" : num_parallel_trial}
+        args = {"num_parallel_trial": num_parallel_trial}
         args = _remove_none_from_dict(args)
         return CPUResourceManager(**args)
     elif resource_type == "gpu":
-        args = {"num_gpu_for_single_trial" : num_gpu_for_single_trial, "available_gpu" : available_gpu}
+        args = {"num_gpu_for_single_trial": num_gpu_for_single_trial, "available_gpu": available_gpu}
         args = _remove_none_from_dict(args)
         return GPUResourceManager(**args)
     else:
         raise ValueError(f"Available resource type is cpu, gpu. Your value is {resource_type}.")
 
+
 def _remove_none_from_dict(d: Dict):
-    key_to_remove = [key for key, val in d.items() if val is None] 
+    key_to_remove = [key for key, val in d.items() if val is None]
     for key in key_to_remove:
         del d[key]
     return d
+
 
 class HpoLoop:
     def __init__(
@@ -150,10 +152,7 @@ class HpoLoop:
         self._mp = multiprocessing.get_context("spawn")
         self._uid_index = 0
         self._resource_manager = get_resource_manager(
-            resource_type,
-            num_parallel_trial,
-            num_gpu_for_single_trial,
-            available_gpu
+            resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu
         )
 
     def run(self):
@@ -174,7 +173,7 @@ class HpoLoop:
     def _start_trial_process(self, trial: Trial):
         logger.info(f"{trial.id} trial is now running.")
         logger.debug(f"{trial.id} hyper paramter => {trial.configuration}")
-        
+
         trial.status = TrialStatus.RUNNING
         uid = self._get_uid()
 
@@ -190,11 +189,11 @@ class HpoLoop:
             args=(
                 self._train_func,
                 trial.get_train_configuration(),
-                partial(_report_score, pipe=pipe2, trial_id=trial.id)
-            )
+                partial(_report_score, pipe=pipe2, trial_id=trial.id),
+            ),
         )
         os.environ = origin_env
-        self._running_trials[uid] = {"process" : process, "trial" : trial, "pipe" : pipe1}
+        self._running_trials[uid] = {"process": process, "trial": trial, "pipe": pipe1}
         process.start()
 
     def _remove_finished_process(self):
@@ -221,15 +220,12 @@ class HpoLoop:
                 except EOFError:
                     continue
                 trial_status = self._hpo_algo.report_score(
-                    report["score"],
-                    report["progress"],
-                    report["trial_id"],
-                    report["done"]
+                    report["score"], report["progress"], report["trial_id"], report["done"]
                 )
                 pipe.send(trial_status)
 
         self._hpo_algo.save_results()
-    
+
     def _join_all_processes(self):
         for val in self._running_trials.values():
             val["pipe"].close()
@@ -245,28 +241,16 @@ class HpoLoop:
         self._uid_index += 1
         return uid
 
+
 def _run_train(train_func: Callable, hp_config: Dict, report_func: Callable):
     multiprocessing.set_start_method(None, True)  # set multi process method as default
     train_func(hp_config, report_func)
 
-def _report_score(
-    score: Union[int, float],
-    progress: Union[int, float],
-    pipe,
-    trial_id: Any,
-    done: bool = False
-):
+
+def _report_score(score: Union[int, float], progress: Union[int, float], pipe, trial_id: Any, done: bool = False):
     logger.debug(f"score : {score}, progress : {progress}, trial_id : {trial_id}, pid : {os.getpid()}, done : {done}")
     try:
-        pipe.send(
-            {
-                "score" : score,
-                "progress" : progress,
-                "trial_id" : trial_id,
-                "pid" : os.getpid(),
-                "done" : done
-            }
-        )
+        pipe.send({"score": score, "progress": progress, "trial_id": trial_id, "pid": os.getpid(), "done": done})
     except BrokenPipeError:
         return TrialStatus.STOP
     try:
@@ -277,6 +261,7 @@ def _report_score(
     logger.debug(f"trial_status : {trial_status}")
     return trial_status
 
+
 def run_hpo_loop(
     hpo_algo: HpoBase,
     train_func: Callable,
@@ -285,5 +270,5 @@ def run_hpo_loop(
     num_gpu_for_single_trial: Optional[int] = None,
     available_gpu: Optional[str] = None,
 ):
-    hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_gpu_for_single_trial,available_gpu)
+    hpo_loop = HpoLoop(hpo_algo, train_func, resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu)
     hpo_loop.run()

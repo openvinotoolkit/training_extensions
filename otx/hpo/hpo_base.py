@@ -66,16 +66,13 @@ class HpoBase(ABC):
         verbose: int = 0,
         resume: bool = False,
         prior_hyper_parameters: Optional[Union[Dict, List[Dict]]] = None,
-        acceptable_additional_time_ratio: Union[float, int] = 1.0
+        acceptable_additional_time_ratio: Union[float, int] = 1.0,
     ):
         check_mode_input(mode)
         check_positive(full_dataset_size, "full_dataset_size")
         check_positive(num_full_iterations, "num_full_iterations")
         if not (0 < non_pure_train_ratio <= 1):
-            raise ValueError(
-                "non_pure_train_ratio should be between 0 and 1."
-                f" Your value is {non_pure_train_ratio}"
-            )
+            raise ValueError("non_pure_train_ratio should be between 0 and 1." f" Your value is {non_pure_train_ratio}")
         if maximum_resource is not None:
             check_positive(maximum_resource, "maximum_resource")
         if num_trials is not None:
@@ -166,13 +163,9 @@ class HpoBase(ABC):
     def print_result(self):
         raise NotImplementedError
 
+
 class Trial:
-    def __init__(
-        self,
-        id: Any,
-        configuration: Dict,
-        train_environment: Optional[Dict] = None
-    ):
+    def __init__(self, id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
         self._id = id
         self._configuration = configuration
         self.score: Dict[Union[float, int], Union[float, int]] = {}
@@ -203,11 +196,7 @@ class Trial:
 
     def get_train_configuration(self):
         self._configuration["iterations"] = self.iteration
-        return {
-            "id" : self.id,
-            "configuration" : self.configuration,
-            "train_environment" : self.train_environment
-        }
+        return {"id": self.id, "configuration": self.configuration, "train_environment": self.train_environment}
 
     def register_score(self, score: Union[int, float], resource: Union[int, float]):
         check_positive(resource, "resource")
@@ -236,10 +225,10 @@ class Trial:
 
     def save_results(self, save_path: str):
         results = {
-            "id" : self.id,
-            "configuration" : self.configuration,
-            "train_environment" : self.train_environment,
-            "score" : {resource : score for resource, score in self.score.items()}
+            "id": self.id,
+            "configuration": self.configuration,
+            "train_environment": self.train_environment,
+            "score": {resource: score for resource, score in self.score.items()},
         }
 
         with open(save_path, "w") as f:
@@ -256,6 +245,7 @@ class Trial:
         if self.iteration is None:
             raise ValueError("iteration isn't set yet.")
         return self.get_progress() >= self.iteration
+
 
 class TrialStatus(IntEnum):
     UNKNOWN = -1

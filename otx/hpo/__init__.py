@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .hpo_runner import run_hpo_loop
 from .hpo_base import TrialStatus
+from .hpo_runner import run_hpo_loop
 from .hyperband import HyperBand
 
 __all__ = [

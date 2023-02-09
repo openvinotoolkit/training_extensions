@@ -1,5 +1,5 @@
 import math
-from typing import Any, Dict, List, Optional, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from otx.hpo.logger import get_logger
 from otx.hpo.utils import check_positive
@@ -7,6 +7,7 @@ from otx.hpo.utils import check_positive
 logger = get_logger()
 
 AVAILABLE_SEARCH_SPACE_TYPE = ["uniform", "quniform", "loguniform", "qloguniform", "choice"]
+
 
 class SingleSearchSpace:
     """
@@ -35,14 +36,14 @@ class SingleSearchSpace:
         max: Optional[Union[float, int]] = None,
         step: Optional[Union[float, int]] = None,
         log_base: Optional[int] = 2,
-        choice_list: Optional[Union[List, Tuple]] = None
+        choice_list: Optional[Union[List, Tuple]] = None,
     ):
         self._type = type
         if self.is_categorical():
             self._choice_list = choice_list
             self._align_min_max_to_choice_list_if_categorical()
         else:
-            self._min = min 
+            self._min = min
             self._max = max
             self._step = step
             self._log_base = log_base
@@ -51,27 +52,27 @@ class SingleSearchSpace:
     @property
     def type(self):
         return self._type
-    
+
     @property
     def min(self):
         return self._min
-    
+
     @property
     def max(self):
         return self._max
-    
+
     @property
     def step(self):
         return self._step
-    
+
     @property
     def log_base(self):
         return self._log_base
-    
+
     @property
     def choice_list(self):
         return self._choice_list
-    
+
     def set_value(
         self,
         type: Optional[str] = None,
@@ -79,12 +80,12 @@ class SingleSearchSpace:
         max: Optional[Union[float, int]] = None,
         step: Optional[Union[float, int]] = None,
         log_base: Optional[int] = None,
-        choice_list: Optional[Union[List, Tuple]] = None
+        choice_list: Optional[Union[List, Tuple]] = None,
     ):
         if type is not None:
             self._type = type
         if min is not None:
-            self._min = min 
+            self._min = min
         if max is not None:
             self._max = max
         if step is not None:
@@ -106,8 +107,7 @@ class SingleSearchSpace:
     def _check_all_value_is_right(self):
         if self._type not in AVAILABLE_SEARCH_SPACE_TYPE:
             raise ValueError(
-                f"type should be one of {', '.join(AVAILABLE_SEARCH_SPACE_TYPE)}. "
-                f"But your argument is {self._type}"
+                f"type should be one of {', '.join(AVAILABLE_SEARCH_SPACE_TYPE)}. " f"But your argument is {self._type}"
             )
 
         if self.is_categorical():
@@ -115,10 +115,8 @@ class SingleSearchSpace:
                 raise ValueError("If type is choice, choice_list should have more than one element")
             if self._min != 0:
                 raise ValueError("if type is categorical, min should be 0.")
-            if self._max != len(self._choice_list) -1:
-                raise ValueError(
-                    "if type is categorical, max should be last index number of choice_list."
-                )
+            if self._max != len(self._choice_list) - 1:
+                raise ValueError("if type is categorical, max should be last index number of choice_list.")
         else:
             if min is None:
                 raise ValueError("If type isn't choice, you should set min value of search space.")
@@ -127,26 +125,19 @@ class SingleSearchSpace:
 
             if self._min >= self._max:
                 raise ValueError(
-                    "max value should be greater than min value.\n"
-                    f"max value : {self._max} / min value : {self._min}"
+                    "max value should be greater than min value.\n" f"max value : {self._max} / min value : {self._min}"
                 )
 
             if self.use_log_scale():
                 if self._log_base <= 1:
-                    raise ValueError(
-                        "log base should be greater than 1.\n"
-                        f"your log base value is {self._log_base}."
-                    )
+                    raise ValueError("log base should be greater than 1.\n" f"your log base value is {self._log_base}.")
                 if self._min <= 0:
                     raise ValueError(
-                        "If you use log scale, min value should be greater than 0.\n"
-                        f"your min value is {self._min}"
+                        "If you use log scale, min value should be greater than 0.\n" f"your min value is {self._min}"
                     )
             if self.use_quantized_step():
                 if self._step is None:
-                    raise ValueError(
-                        f"The {self._type} type requires step value. But it doesn't exists"
-                    )
+                    raise ValueError(f"The {self._type} type requires step value. But it doesn't exists")
                 check_positive(self._step, "step")
                 if self._step > self._max - self._min:
                     raise ValueError(
@@ -163,7 +154,7 @@ class SingleSearchSpace:
                 rep += f", step : {self._step}"
             if self.use_log_scale():
                 rep += f", log base : {self._log_base}"
-            return  rep
+            return rep
 
     def is_categorical(self):
         return self._type == "choice"
@@ -190,16 +181,17 @@ class SingleSearchSpace:
             return self._choice_list[idx]
         else:
             if self.use_log_scale():
-                number = self._log_base ** number
+                number = self._log_base**number
             if self.use_quantized_step():
                 gap = self._min % self._step
-                number =  round((number - gap) / self._step) * self._step + gap
+                number = round((number - gap) / self._step) * self._step + gap
             return number
 
     def real_to_space(self, number: Union[int, float]):
         if self.use_log_scale():
             return math.log(number, self._log_base)
         return number
+
 
 class SearchSpace:
     """
@@ -221,7 +213,7 @@ class SearchSpace:
                     "min" : lower_bound_value,
                     ...
                     # available keys are max, min, step, log_base, choice_list.
-                    # second format is adding a list whose key is "range" which contains 
+                    # second format is adding a list whose key is "range" which contains
                     # necessary values mentioned above with proper order as bellow.
                     "range" (list): range of hyper parameter search space.
                                     What value at each position means is as bellow.
@@ -250,7 +242,7 @@ class SearchSpace:
                 val["type"] = val.pop("param_type")
                 self.search_space[key] = SingleSearchSpace(**val)
             else:
-                args = {"type" : val["param_type"]}
+                args = {"type": val["param_type"]}
                 if val["param_type"] == "choice":
                     args["choice_list"] = val["range"]
                 else:
@@ -285,7 +277,7 @@ class SearchSpace:
         try:
             return self.search_space[key]
         except KeyError:
-            raise KeyError(f"There is no search space named {key}.") 
+            raise KeyError(f"There is no search space named {key}.")
 
     def __repr__(self):
         return "\n".join(f"{key} => {val}" for key, val in self.search_space.items())
@@ -323,10 +315,7 @@ class SearchSpace:
         """return hyper parameter serach sapce as bayeopt library format"""
         bayesopt_space = {}
         for key, val in self.search_space.items():
-            bayesopt_space[key] = (
-                val.lower_space(),
-                val.upper_space()
-            )
+            bayesopt_space[key] = (val.lower_space(), val.upper_space())
 
         return bayesopt_space
 
