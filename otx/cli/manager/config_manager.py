@@ -324,7 +324,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
         return template
 
-    def build_workspace(self, new_workspace_path: str = None) -> None:
+    def build_workspace(self, new_workspace_path: Optional[str] = None) -> None:
         """Create OTX workspace with Template configs from task type.
 
         This function provides a user-friendly OTX workspace and provides more intuitive
