@@ -1,4 +1,4 @@
-"""OTX Algorithms - Segmentation Segmentors."""
+"""Initialization of OCR-Lite-HRnet-18-mod2 model for SupCon Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,7 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .detcon import DetConB, SupConDetConB
-
-__all__ = ["DetConB", "SupConDetConB"]

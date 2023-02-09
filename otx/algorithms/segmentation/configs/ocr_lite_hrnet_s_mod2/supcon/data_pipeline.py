@@ -1,6 +1,6 @@
-"""OTX Algorithms - Segmentation Segmentors."""
+"""Data Pipeline of HR-Net model for Segmentation Task."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,5 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .detcon import DetConB, SupConDetConB
-
-__all__ = ["DetConB", "SupConDetConB"]
+# pylint: disable=invalid-name
+_base_ = ["../../base/data/supcon/data_pipeline.py"]

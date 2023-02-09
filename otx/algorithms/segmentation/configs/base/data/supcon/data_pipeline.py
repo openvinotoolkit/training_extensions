@@ -1,4 +1,4 @@
-"""Data Pipeline for Self-SL model of Segmentation Task."""
+"""Data Pipeline for SupCon model of Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -16,8 +16,9 @@
 
 # pylint: disable=invalid-name
 
-__resize_target_size = (224, 224)
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+__img_scale = (544, 544)
+__resize_target_size = (512, 512)
 
 __train_pipeline = [
     dict(type="LoadImageFromFile"),
@@ -50,4 +51,26 @@ __train_pipeline = [
     dict(type="Collect", keys=["img", "gt_semantic_seg"]),
 ]
 
-data = dict(train=dict(type="MPASegDataset", pipeline=__train_pipeline))
+__test_pipeline = [
+    dict(type="LoadImageFromFile"),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=__img_scale,
+        flip=False,
+        transforms=[
+            dict(type="Resize", keep_ratio=False),
+            dict(type="RandomFlip"),
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(type="Collect", keys=["img"]),
+        ],
+    ),
+]
+
+# TODO (Sungchul, Soobee) : Remove Repeatdataset in data config
+# when otx/algorithms/segmentation/configs/base/data/data_pipeline.py is updated.
+data = dict(
+    train=dict(dataset=dict(pipeline=__train_pipeline)),
+    val=dict(pipeline=__test_pipeline),
+    test=dict(pipeline=__test_pipeline),
+)
