@@ -43,6 +43,7 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
         ann_file_path (str): The path of annotation file (COCO)
         data_root_dir (str): The path of images folder (COCO)
         output (str): Destination path of converted data (CVAT multi-label format)
+        test_mode (bool): Omit filtering irrelevant images during COCO dataset initialization for testing purposes.
     """
 
     # Prepare COCO dataset to load annotations

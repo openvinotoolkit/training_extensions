@@ -1,16 +1,11 @@
 import pytest
 import numpy as np
 
-from openvino.model_zoo.model_api.adapters import create_core
-from otx.algorithms.classification.tasks.openvino import OpenvinoAdapter
 from openvino.model_zoo.model_api.models.classification import Classification
 from otx.algorithms.classification.adapters.openvino.model_wrappers import (
     OTXClassification,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import (
-    check_value_error_exception_raised,
-)
 from tests.unit.algorithms.classification.test_helper import (
     generate_label_schema,
     generate_cls_dataset
@@ -30,14 +25,14 @@ class MockClassification(OTXClassification, Classification):
 
 class TestOTXClassification:
     @pytest.fixture(autouse=True)
-    def setup(self, mocker) -> None:
+    def setup(self) -> None:
         self.cls_ov_model = MockClassification()
         self.fake_logits = np.array([-0.12, 0.92])
         self.fake_logits_hierarchical = np.array([3.01, -2.75, -0.63, 0.74, 0.017, -0.12, -0.42, -0.88])
 
     @pytest.mark.parametrize("multilabel, hierarchical", [(False, False), (True, False), (False, True)])
     @e2e_pytest_unit
-    def test_postprocess(self, multilabel, hierarchical, mocker):
+    def test_postprocess(self, multilabel, hierarchical):
         self.cls_ov_model.multilabel = multilabel
         self.cls_ov_model.hierarchical = hierarchical
         fake_model_out = {'logits': self.fake_logits}
@@ -54,7 +49,7 @@ class TestOTXClassification:
 
     @pytest.mark.parametrize("multilabel, hierarchical", [(False, False), (True, False), (False, True)])
     @e2e_pytest_unit
-    def test_aux_postprocess(self, multilabel, hierarchical, mocker):
+    def test_postprocess_aux_outputs(self, multilabel, hierarchical):
         self.cls_ov_model.multilabel = multilabel
         self.cls_ov_model.hierarchical = hierarchical
         fake_map = np.random.rand(1,100,100)

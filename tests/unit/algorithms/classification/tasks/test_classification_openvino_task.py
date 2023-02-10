@@ -17,7 +17,6 @@ from otx.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
 from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
@@ -35,8 +34,7 @@ from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE,
-    init_environment,
-    generate_label_schema
+    init_environment
 )
 
 
@@ -121,28 +119,39 @@ class TestOpenVINOClassificationTask:
         self.task_env.model = otx_model
         mocker.patch.object(ClassificationOpenVINOTask, "load_inferencer", return_value=cls_ov_inferencer)
         self.cls_ov_task = ClassificationOpenVINOTask(self.task_env)
-
-    @e2e_pytest_unit
-    def test_infer(self, mocker):
-        labels = self.label_schema.get_labels(include_empty=True)
+        self.labels = self.label_schema.get_labels(include_empty=True)
         fake_annotation = [
             Annotation(
                 Rectangle.generate_full_box(),
                 id=0,
-                labels=[ScoredLabel(LabelEntity(name="fake", domain="CLASSIFICATION"), probability=1.0)],
+                labels=[ScoredLabel(label, probability=1.0) for label in self.labels],
             )
         ]
-        fake_ann_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=fake_annotation)
-        fake_input = mocker.MagicMock()
+        self.fake_ann_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=fake_annotation)
+        self.fake_input = mocker.MagicMock()
+
+    @e2e_pytest_unit
+    def test_infer(self, mocker):
         mock_predict = mocker.patch.object(
-            ClassificationOpenVINOInferencer, "predict", return_value=(fake_ann_scene, np.array([0, 1]), fake_input, fake_input, fake_input)
+            ClassificationOpenVINOInferencer, "predict", return_value=(self.fake_ann_scene, np.array([0, 1]), self.fake_input, self.fake_input, self.fake_input)
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
         updated_dataset = self.cls_ov_task.infer(self.dataset)
 
         mock_predict.assert_called()
         for updated in updated_dataset:
-            assert updated.annotation_scene.contains_any([LabelEntity(name="fake", domain="CLASSIFICATION")])
+            assert updated.annotation_scene.contains_any(self.labels)
+
+    @e2e_pytest_unit
+    def test_explain(self, mocker):
+        self.fake_silency_map = np.random.randint(255, size=(2,224,224), dtype=np.uint8)
+        mock_predict = mocker.patch.object(
+            ClassificationOpenVINOInferencer, "predict", return_value=(self.fake_ann_scene, np.array([0, 1]), self.fake_silency_map, self.fake_input, self.fake_input)
+        )
+        updpated_dataset = self.cls_ov_task.explain(self.dataset)
+
+        assert updpated_dataset is not None
+        assert updpated_dataset.get_labels() == self.dataset.get_labels()
 
     @e2e_pytest_unit
     def test_evaluate(self, mocker):

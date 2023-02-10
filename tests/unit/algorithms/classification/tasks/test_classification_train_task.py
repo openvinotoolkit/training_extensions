@@ -7,11 +7,7 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.model_template import parse_model_template
-from otx.api.entities.train_parameters import TrainParameters
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import (
-    check_value_error_exception_raised,
-)
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.configuration.helper import create
 from tests.unit.algorithms.classification.test_helper import init_environment, DEFAULT_CLS_TEMPLATE
