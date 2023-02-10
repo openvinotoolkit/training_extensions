@@ -1,6 +1,8 @@
+from typing import List
+
 import datumaro as dm
 import numpy as np
-from typing import List, Union
+
 
 def generate_datumaro_dataset_item(
     item_id: str,
@@ -24,18 +26,14 @@ def generate_datumaro_dataset_item(
     ann_task_dict = {
         "classification": dm.Label(label=0),
         "detection": dm.Bbox(1, 2, 3, 4, label=0),
-        "segmentation": dm.Mask(np.zeros(mask_shape))
+        "segmentation": dm.Mask(np.zeros(mask_shape)),
     }
-    
-    return dm.DatasetItem(
-        id=item_id,
-        subset=subset,
-        image=np.ones(image_shape),
-        annotations=[ann_task_dict[task]]
-    )
+
+    return dm.DatasetItem(id=item_id, subset=subset, image=np.ones(image_shape), annotations=[ann_task_dict[task]])
+
 
 def generate_datumaro_dataset(
-    subsets: List[str], 
+    subsets: List[str],
     task: str,
     num_data: int = 1,
     image_shape: np.array = np.array((5, 5, 3)),
@@ -53,16 +51,16 @@ def generate_datumaro_dataset(
     Returns:
         dm.Dataset: Datumaro Dataset
     """
-    dataset_items:dm.DatasetItem = []
+    dataset_items: dm.DatasetItem = []
     for subset in subsets:
         for idx in range(num_data):
             dataset_items.append(
                 generate_datumaro_dataset_item(
-                    item_id=f"{subset}/image{idx}", 
+                    item_id=f"{subset}/image{idx}",
                     subset=subset,
                     task=task,
                     image_shape=image_shape,
-                    mask_shape=mask_shape
+                    mask_shape=mask_shape,
                 )
             )
-    return dm.Dataset.from_iterable(dataset_items, categories=['cat', 'dog']) 
+    return dm.Dataset.from_iterable(dataset_items, categories=["cat", "dog"])
