@@ -26,11 +26,10 @@ from otx.api.entities.shapes.rectangle import Rectangle
 class MockImage(Image):
     """Mock class for Image entity."""
 
-    @property
-    def numpy(self) -> np.ndarray:
-        """Returns empty numpy array"""
-
-        return np.ndarray((256, 256))
+    def __init__(self, file_path):
+        self.__file_path = file_path
+        self.__data = np.ndarray((256, 256, 3))
+        super().__init__(self.__data)
 
 
 class MockPipeline:
