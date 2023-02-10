@@ -52,7 +52,7 @@ class CPUResourceManager(ResourceManager):
     """Resource manager class for CPU.
 
     Args:
-        num_parallel_trial (int, optional): How many trials to trun parallelly. Defaults to 4.
+        num_parallel_trial (int, optional): How many trials to run in parallel. Defaults to 4.
     """
 
     def __init__(self, num_parallel_trial: int = 4):
