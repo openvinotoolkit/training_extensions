@@ -14,17 +14,11 @@ from tests.unit.algorithms.detection.test_helpers import (
 )
 
 
-class TestOTXDetBuilder:
-    """Test OTXDetBuilder class."""
-
-    @e2e_pytest_unit
-    @pytest.mark.parametrize("model_cfg", [DEFAULT_DET_MODEL_CONFIG_PATH, DEFAULT_ISEG_MODEL_CONFIG_PATH])
-    @pytest.mark.parametrize("cfg_options", [None, MPAConfig()])
-    def test_build_detector(self, model_cfg, cfg_options):
-        """Test build_detector method."""
-        cfg = MPAConfig.fromfile(model_cfg)
-        cfg.model.type = cfg.model.type.replace("Custom", "")
-        cfg.model.backbone.type = cfg.model.backbone.type.replace("mobilenetv2_w1", "MobileNetV2")
-        cfg.model.backbone.pretrained = None
-        model = build_detector(cfg, checkpoint=cfg.load_from, cfg_options=cfg_options)
-        assert model is not None
+@e2e_pytest_unit
+@pytest.mark.parametrize("model_cfg", [DEFAULT_DET_MODEL_CONFIG_PATH, DEFAULT_ISEG_MODEL_CONFIG_PATH])
+@pytest.mark.parametrize("cfg_options", [None, MPAConfig()])
+def test_build_detector(model_cfg, cfg_options):
+    """Test build_detector function."""
+    cfg = MPAConfig.fromfile(model_cfg)
+    model = build_detector(cfg, checkpoint=cfg.load_from, cfg_options=cfg_options)
+    assert model is not None

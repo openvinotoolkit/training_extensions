@@ -12,19 +12,25 @@ from mmcv.utils import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import is_epoch_based_runner
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    cluster_anchors,
     patch_adaptive_repeat_dataset,
     patch_config,
+    patch_datasets,
+    patch_evaluation,
     patch_model_config,
     prepare_for_training,
     set_hyperparams,
+    should_cluster_anchors,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.entities.label import Domain
+from otx.api.entities.model_template import TaskType
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_MODEL_CONFIG_PATH,
     DEFAULT_ISEG_MODEL_CONFIG_PATH,
+    generate_det_dataset,
     generate_labels,
 )
 
@@ -155,3 +161,68 @@ class TestOTXDetConfigUtils:
             assert "meta" in config.runner
             assert "checkpoints_round_0" in config.work_dir
             assert config.data.train.otx_dataset == [1, 2, 3]
+
+    @e2e_pytest_unit
+    def test_patch_datasets(self):
+        """Test patch_datasets function."""
+        config = Config(
+            dict(
+                data=dict(
+                    train=dict(),
+                    val=dict(),
+                    test=dict(),
+                ),
+            )
+        )
+        patch_datasets(config, type="FakeType")
+
+    @e2e_pytest_unit
+    def test_patch_evaluation(self):
+        """Test patch_datasets function."""
+        config = Config(dict(evaluation=dict()))
+        patch_evaluation(config)
+        assert "metric" in config.evaluation
+        assert "save_best" in config.evaluation
+        assert "early_stop_metric" in config
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("reclustering_anchors", [True, False])
+    def test_should_cluster_anchors(self, reclustering_anchors):
+        """Test patch_datasets function."""
+        config = Config(
+            dict(
+                model=dict(
+                    bbox_head=dict(
+                        anchor_generator=dict(reclustering_anchors=reclustering_anchors),
+                    )
+                )
+            )
+        )
+        out = should_cluster_anchors(config)
+        assert out == reclustering_anchors
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("widths, heights", [([1, 10], [1, 10]), ([1, 3, 5, 7, 9], [1, 3, 5, 7, 9])])
+    def test_cluster_anchors(self, widths, heights):
+        """Test patch_datasets function."""
+        model_config = Config(
+            dict(model=dict(bbox_head=dict(anchor_generator=dict(widths=[widths], heights=[heights]))))
+        )
+
+        data_config = Config(
+            dict(
+                data=dict(
+                    test=dict(
+                        pipeline=[
+                            dict(type="LoadImageFromFile"),
+                            dict(
+                                type="MultiScaleFlipAug",
+                                img_scale=(10, 10),
+                            ),
+                        ]
+                    )
+                )
+            )
+        )
+        dataset, _ = generate_det_dataset(task_type=TaskType.DETECTION)
+        cluster_anchors(model_config, data_config, dataset)
