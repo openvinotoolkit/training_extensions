@@ -7,6 +7,7 @@ from io import BytesIO
 import pytest
 import torch
 
+from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 from otx.algorithms.common.adapters.nncf.utils.utils import (
     _is_nncf_enabled,
     check_nncf_is_enabled,
@@ -48,6 +49,18 @@ def test_load_checkpoint():
     assert state_dict.keys() == mock_model.state_dict().keys()
     for k in state_dict.keys():
         assert torch.equal(state_dict[k], mock_model.state_dict()[k])
+
+    buffer = BytesIO()
+    torch.save(
+        {
+            "state_dict": {"dummy": "dummy"},
+            "meta": {"nncf_meta": NNCFMetaState(state_to_build=state_dict, compression_ctrl={"dummy": "dummy"})},
+        },
+        buffer,
+    )
+    buffer.seek(0)
+    load_checkpoint(mock_model, buffer, strict=False)
+    assert state_dict.keys() == mock_model.state_dict().keys()
 
     state_dict["dummy"] = torch.tensor(1)
     buffer = BytesIO()

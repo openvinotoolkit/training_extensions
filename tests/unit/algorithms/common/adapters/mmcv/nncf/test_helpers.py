@@ -6,11 +6,11 @@ from functools import partial
 
 import numpy as np
 import torch
-from torch.optim import SGD
 from mmcls.core import EvalHook
 from mmcls.datasets import build_dataloader
 from mmcls.datasets.pipelines import Compose
 from mmcv.utils import Config, ConfigDict, get_logger
+from torch.optim import SGD
 
 import otx.algorithms.common.adapters.mmcv.nncf.patches  # noqa: F401
 from otx.algorithms.common.adapters.mmcv.nncf.hooks import CompressionHook
