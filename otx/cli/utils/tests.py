@@ -678,7 +678,7 @@ def otx_build_task_testing(root, task):
         "build",
         "--task",
         task,
-        "--workspace-root",
+        "--work-dir",
         os.path.join(root, f"otx-workspace-{task}"),
     ]
     check_run(command_line)
@@ -700,53 +700,19 @@ def otx_build_backbone_testing(root, backbone_args):
         "build",
         "--task",
         f"{task}",
-        "--workspace-root",
+        "--work-dir",
         task_workspace,
     ]
     check_run(command_line)
     assert os.path.exists(task_workspace)
-    # Build Backbone.yaml from backbone type
-    command_line = [
-        "otx",
-        "build",
-        "--backbone",
-        backbone,
-        "--workspace-root",
-        task_workspace,
-        "--save-backbone-to",
-        os.path.join(task_workspace, "backbone.yaml"),
-    ]
-    check_run(command_line)
-    assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
-
-    # Build model.py from backbone.yaml
-    command_line = [
-        "otx",
-        "build",
-        "--model",
-        os.path.join(task_workspace, "model.py"),
-        "--backbone",
-        os.path.join(task_workspace, "backbone.yaml"),
-        "--workspace-root",
-        task_workspace,
-    ]
-    check_run(command_line)
-    model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
-    assert "model" in model_config, "'model' is not in model configs"
-    assert "backbone" in model_config["model"], "'backbone' is not in model configs"
-    assert (
-        model_config["model"]["backbone"]["type"] == backbone
-    ), f"{model_config['model']['backbone']['type']} != {backbone}"
 
     # Build model.py from backbone type
     command_line = [
         "otx",
         "build",
-        "--model",
-        os.path.join(task_workspace, "model.py"),
         "--backbone",
         backbone,
-        "--workspace-root",
+        "--work-dir",
         task_workspace,
     ]
     check_run(command_line)
@@ -760,7 +726,7 @@ def otx_build_backbone_testing(root, backbone_args):
 
 def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
     workspace_root = os.path.join(root, "otx-workspace")
-    command_line = ["otx", "build", "--workspace-root", workspace_root]
+    command_line = ["otx", "build", "--work-dir", workspace_root]
 
     for option, value in args.items():
         if option in ["--train-data-roots", "--val-data-roots"]:

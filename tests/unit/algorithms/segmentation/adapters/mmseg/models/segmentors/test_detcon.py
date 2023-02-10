@@ -199,7 +199,7 @@ class TestDetConB:
         setattr(self.detconb, "in_index", [0, 1])
         setattr(self.detconb, "input_transform", "resize_concat")
         img = torch.randn((1, 2, 3, 4, 4))
-        gt_semantic_seg = torch.randint(0, 3, (1, 2, 4, 4), dtype=torch.int64)
+        gt_semantic_seg = torch.randint(0, 3, (1, 1, 2, 4, 4), dtype=torch.int64)
 
         outputs = self.detconb.train_step(
             data_batch=dict(img=img, img_metas={}, gt_semantic_seg=gt_semantic_seg), optimizer=None

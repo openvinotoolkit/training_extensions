@@ -57,23 +57,27 @@ class ExporterMixin(object):
             else:
                 self.naive_export(cfg.work_dir, model_builder, precision, cfg, model_name)
         except Exception as ex:
-            if (
-                len([f for f in os.listdir(cfg.work_dir) if f.endswith(".bin")]) == 0
-                and len([f for f in os.listdir(cfg.work_dir) if f.endswith(".xml")]) == 0
-            ):
-                # output_model.model_status = ModelStatus.FAILED
-                # raise RuntimeError('Optimization was unsuccessful.') from ex
-                return {
-                    "outputs": None,
-                    "msg": f"exception {type(ex)}: {ex}\n\n{traceback.format_exc()}",
-                }
+            # output_model.model_status = ModelStatus.FAILED
+            # raise RuntimeError('Optimization was unsuccessful.') from ex
+            return {
+                "outputs": None,
+                "msg": f"exception {type(ex)}: {ex}\n\n{traceback.format_exc()}",
+            }
 
-        bin_file = [f for f in os.listdir(cfg.work_dir) if f.endswith(".bin")][0]
-        xml_file = [f for f in os.listdir(cfg.work_dir) if f.endswith(".xml")][0]
         return {
             "outputs": {
-                "bin": os.path.join(cfg.work_dir, bin_file),
-                "xml": os.path.join(cfg.work_dir, xml_file),
+                "bin": os.path.join(cfg.work_dir, f"{model_name}.bin"),
+                "xml": os.path.join(cfg.work_dir, f"{model_name}.xml"),
+                "partitioned": [
+                    {
+                        "bin": os.path.join(cfg.work_dir, name.replace(".xml", ".bin")),
+                        "xml": os.path.join(cfg.work_dir, name),
+                    }
+                    for name in os.listdir(cfg.work_dir)
+                    if name.endswith(".xml")
+                    and name != f"{model_name}.xml"
+                    and name.replace(".xml", ".bin") in os.listdir(cfg.work_dir)
+                ],
             },
             "msg": "",
         }
