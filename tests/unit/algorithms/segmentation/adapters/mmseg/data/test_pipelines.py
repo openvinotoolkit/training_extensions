@@ -37,10 +37,11 @@ def inputs_PIL():
 
 
 class TestTwoCropTransform:
-
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
-        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.data.pipelines.build_from_cfg", return_value=lambda x: x)
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.data.pipelines.build_from_cfg", return_value=lambda x: x
+        )
         self.two_crop_transform = TwoCropTransform(view0=[], view1=[])
 
     @e2e_pytest_unit
@@ -64,6 +65,7 @@ class TestTwoCropTransform:
         assert "img" in results and results["img"].ndim == 3
         assert "gt_semantic_seg" in results and results["gt_semantic_seg"].ndim == 2
         assert "flip" in results and isinstance(results["flip"], bool)
+
 
 @e2e_pytest_unit
 def test_random_resized_crop(inputs_PIL: Dict[str, Any]) -> None:

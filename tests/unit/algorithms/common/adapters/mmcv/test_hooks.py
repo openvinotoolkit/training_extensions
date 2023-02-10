@@ -1,24 +1,23 @@
-import pytest
 from typing import List
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock
 
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
+import pytest
 from mmcv.runner import BaseRunner
+
 from otx.algorithms.common.adapters.mmcv.hooks import TwoCropTransformHook
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 @pytest.fixture
 def mock_iter_runner(mocker):
     _mock_iter_runner = mocker.patch("mmcv.runner.IterBasedRunner", autospec=True)
     _mock_iter_runner.data_loader = MagicMock()
-    
-    return _mock_iter_runner
 
+    return _mock_iter_runner
 
 
 @pytest.mark.usefixtures("mock_iter_runner")
 class TestTwoCropTransformHook:
-
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.two_crop_transform_hook = TwoCropTransformHook(interval=1)
@@ -33,7 +32,7 @@ class TestTwoCropTransformHook:
     @e2e_pytest_unit
     def test_use_not_implemented_by_epoch(self) -> None:
         with pytest.raises(NotImplementedError):
-            fail_two_crop_transform_hook = TwoCropTransformHook(interval=1, by_epoch=True)
+            TwoCropTransformHook(interval=1, by_epoch=True)
 
     @e2e_pytest_unit
     def test_get_dataset(self, mock_iter_runner: BaseRunner) -> None:
@@ -54,7 +53,10 @@ class TestTwoCropTransformHook:
         assert results
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("transforms_order", [["TwoCropTransform", "A", "B"], ["A", "TwoCropTransform", "B"], ["A", "B", "TwoCropTransform"]])
+    @pytest.mark.parametrize(
+        "transforms_order",
+        [["TwoCropTransform", "A", "B"], ["A", "TwoCropTransform", "B"], ["A", "B", "TwoCropTransform"]],
+    )
     def test_find_two_crop_transform(self, transforms_order: List[object]) -> None:
         """Test _find_two_crop_transform."""
         transforms = [self.set_mock_name(name) for name in transforms_order]
@@ -75,13 +77,14 @@ class TestTwoCropTransformHook:
         transforms_order = ["TwoCropTransform", "A", "B"]
         transforms = [self.set_mock_name(name=name) for name in transforms_order]
         mock_iter_runner.data_loader.dataset.pipeline.transforms = transforms
-                
+
         self.two_crop_transform_hook.before_train_epoch(mock_iter_runner)
 
         assert transforms[0].is_both == expected
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("is_both,interval,cnt,expected",
+    @pytest.mark.parametrize(
+        "is_both,interval,cnt,expected",
         [
             (False, 1, 0, False),
             (True, 1, 0, True),
@@ -89,10 +92,12 @@ class TestTwoCropTransformHook:
             (True, 3, 0, True),
             (False, 3, 1, True),
             (True, 3, 1, False),
-            (True, 2, 0, False)
-        ]
+            (True, 2, 0, False),
+        ],
     )
-    def test_after_train_iter(self, mock_iter_runner: BaseRunner, is_both: bool, interval: int, cnt: int, expected: bool) -> None:
+    def test_after_train_iter(
+        self, mock_iter_runner: BaseRunner, is_both: bool, interval: int, cnt: int, expected: bool
+    ) -> None:
         """Test after_train_iter."""
         if hasattr(mock_iter_runner.data_loader.dataset, "dataset"):
             del mock_iter_runner.data_loader.dataset.dataset

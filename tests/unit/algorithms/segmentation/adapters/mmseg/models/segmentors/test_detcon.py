@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from copy import deepcopy
-from functools import reduce, partial
+from functools import partial, reduce
 from typing import List, Union
 
 import pytest
@@ -53,7 +53,8 @@ def setup_module(monkeypatch, mocker):
         return mock_class()
 
     monkeypatch.setattr(
-        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_backbone", partial(build_mock, MockBackbone)
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_backbone",
+        partial(build_mock, MockBackbone),
     )
     monkeypatch.setattr(
         "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_neck", partial(build_mock, MockNeck)
@@ -73,12 +74,13 @@ def setup_module(monkeypatch, mocker):
     )
     mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB.state_dict_hook")
     mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.load_checkpoint")
-    mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.SupConDetConB._decode_head_forward_train",
-                 return_value=(dict(loss=1.0), None))
+    mocker.patch(
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.SupConDetConB._decode_head_forward_train",
+        return_value=(dict(loss=1.0), None),
+    )
 
 
 class TestMaskPooling:
-
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "masks", [torch.Tensor([[[[0, 1], [1, 2]]]]).to(torch.int64), torch.Tensor([[[0, 1], [1, 2]]]).to(torch.int64)]
@@ -233,13 +235,26 @@ class TestSupConDetConB:
     """Test SupConDetConB."""
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("img,gt_semantic_seg,expected", [
-        (torch.ones((1, 2, 3, 4, 4), dtype=torch.float32), torch.ones((1, 1, 2, 4, 4), dtype=torch.int64), True),
-        (torch.ones((1, 3, 4, 4), dtype=torch.float32), torch.ones((1, 1, 4, 4), dtype=torch.int64), False),
-    ])
+    @pytest.mark.parametrize(
+        "img,gt_semantic_seg,expected",
+        [
+            (torch.ones((1, 2, 3, 4, 4), dtype=torch.float32), torch.ones((1, 1, 2, 4, 4), dtype=torch.int64), True),
+            (torch.ones((1, 3, 4, 4), dtype=torch.float32), torch.ones((1, 1, 4, 4), dtype=torch.int64), False),
+        ],
+    )
     def test_forward_train(self, img: torch.Tensor, gt_semantic_seg: torch.Tensor, expected: bool):
         """Test forward_train function."""
-        supcon_detconb = SupConDetConB(backbone={}, neck={}, head={}, decode_head={}, downsample=1, input_transform="resize_concat", in_index=[0, 1], loss_cfg=dict(type="DetConLoss"), task_adapt=dict(dst_classes=1, src_classes=1))
+        supcon_detconb = SupConDetConB(
+            backbone={},
+            neck={},
+            head={},
+            decode_head={},
+            downsample=1,
+            input_transform="resize_concat",
+            in_index=[0, 1],
+            loss_cfg=dict(type="DetConLoss"),
+            task_adapt=dict(dst_classes=1, src_classes=1),
+        )
 
         results = supcon_detconb(img=img, img_metas=[], gt_semantic_seg=gt_semantic_seg)
 

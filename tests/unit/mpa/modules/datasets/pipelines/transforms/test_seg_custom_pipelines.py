@@ -12,13 +12,13 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 class TestNormalize:
-
     @e2e_pytest_unit
-    @pytest.mark.parametrize("mean,std,to_rgb,expected",
+    @pytest.mark.parametrize(
+        "mean,std,to_rgb,expected",
         [
-            (1., 1., True, np.array([[[1., 0., 0.]]], dtype=np.float32)),
-            (1., 1., False, np.array([[[-1.,  0.,  0.]]], dtype=np.float32))
-        ]
+            (1.0, 1.0, True, np.array([[[1.0, 0.0, 0.0]]], dtype=np.float32)),
+            (1.0, 1.0, False, np.array([[[-1.0, 0.0, 0.0]]], dtype=np.float32)),
+        ],
     )
     def test_call(self, mean: float, std: float, to_rgb: bool, expected: np.array) -> None:
         """Test __call__."""
@@ -32,7 +32,7 @@ class TestNormalize:
         assert np.all(results["img"] == expected)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("mean,std,to_rgb", [(1., 1., True)])
+    @pytest.mark.parametrize("mean,std,to_rgb", [(1.0, 1.0, True)])
     def test_repr(self, mean: float, std: float, to_rgb: bool) -> None:
         """Test __repr__."""
         normalize = Normalize(mean=mean, std=std, to_rgb=to_rgb)
@@ -41,18 +41,13 @@ class TestNormalize:
 
 
 class TestDefaultFormatBundle:
-
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.default_format_bundle = DefaultFormatBundle()
-    
+
     @e2e_pytest_unit
     @pytest.mark.parametrize("img", [np.ones((1, 1)), np.ones((1, 1, 1)), np.ones((1, 1, 1, 1))])
-    @pytest.mark.parametrize("gt_semantic_seg,pixel_weights",
-        [
-            (np.ones((1, 1)), np.ones((1, 1)))
-        ]
-    )
+    @pytest.mark.parametrize("gt_semantic_seg,pixel_weights", [(np.ones((1, 1)), np.ones((1, 1)))])
     def test_call(self, img: np.array, gt_semantic_seg: np.array, pixel_weights: np.array) -> None:
         """Test __call__."""
         inputs = dict(img=img, gt_semantic_seg=gt_semantic_seg, pixel_weights=pixel_weights)
@@ -77,7 +72,7 @@ class TestDefaultFormatBundle:
         inputs = dict(img=img)
 
         with pytest.raises(ValueError):
-            fail_default_format_bundle = self.default_format_bundle(inputs.copy())
+            self.default_format_bundle(inputs.copy())
 
     @e2e_pytest_unit
     def test_repr(self) -> None:
@@ -86,7 +81,6 @@ class TestDefaultFormatBundle:
 
 
 class TestBranchImage:
-
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.branch_image = BranchImage(key_map={"key1": "key2"})
@@ -95,7 +89,7 @@ class TestBranchImage:
     def test_call(self) -> None:
         """Test __call__."""
         inputs = dict(key1="key1", img_fields=["key1"])
-        
+
         results = self.branch_image(inputs.copy())
 
         assert isinstance(results, dict)
