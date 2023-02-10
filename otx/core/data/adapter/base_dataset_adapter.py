@@ -123,10 +123,6 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 val_data_type = self._select_data_type(val_data_candidates)
                 dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
 
-            if Subset.VALIDATION not in dataset:
-                # TODO: auto_split
-                pass
-
         if test_data_roots:
             test_data_candidates = self._detect_dataset_format(path=test_data_roots)
             test_data_type = self._select_data_type(test_data_candidates)
