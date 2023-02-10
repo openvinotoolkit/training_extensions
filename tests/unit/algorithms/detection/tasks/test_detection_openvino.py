@@ -51,7 +51,8 @@ class TestOpenVINODetectionInferencer:
         params = DetectionConfig(header=hyper_parameters.header)
         label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
         mocker.patch("otx.algorithms.detection.tasks.openvino.OpenvinoAdapter")
-        mocker.patch.object(Model, "create_model")
+        mocked_model = mocker.patch.object(Model, "create_model")
+        mocked_model.return_value = mocker.MagicMock(spec=Model)
         self.ov_inferencer = OpenVINODetectionInferencer(params, label_schema, "")
         self.fake_input = np.full((5, 1), 0.1)
 
@@ -105,7 +106,8 @@ class TestOpenVINOMaskInferencer:
         params = DetectionConfig(header=hyper_parameters.header)
         label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
         mocker.patch("otx.algorithms.detection.tasks.openvino.OpenvinoAdapter")
-        mocker.patch.object(Model, "create_model")
+        mocked_model = mocker.patch.object(Model, "create_model")
+        mocked_model.return_value = mocker.MagicMock(spec=Model)
         self.ov_inferencer = OpenVINOMaskInferencer(params, label_schema, "")
         self.fake_input = np.full((5, 1), 0.1)
 
@@ -127,7 +129,8 @@ class TestOpenVINORotatedRectInferencer:
         params = DetectionConfig(header=hyper_parameters.header)
         label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
         mocker.patch("otx.algorithms.detection.tasks.openvino.OpenvinoAdapter")
-        mocker.patch.object(Model, "create_model")
+        mocked_model = mocker.patch.object(Model, "create_model")
+        mocked_model.return_value = mocker.MagicMock(spec=Model)
         self.ov_inferencer = OpenVINORotatedRectInferencer(params, label_schema, "")
         self.fake_input = np.full((5, 1), 0.1)
 
@@ -152,7 +155,8 @@ class TestOpenVINODetectionTask:
         task_env = init_environment(hyper_parameters, model_template, task_type=task_type)
         params = DetectionConfig(header=hyper_parameters.header)
         mocker.patch("otx.algorithms.detection.tasks.openvino.OpenvinoAdapter")
-        mocker.patch.object(Model, "create_model")
+        mocked_model = mocker.patch.object(Model, "create_model")
+        mocked_model.return_value = mocker.MagicMock(spec=Model)
         ov_inferencer = OpenVINODetectionInferencer(params, label_schema, "")
         ov_inferencer.model.__model__ = "OTX_SSD"
         task_env.model = otx_model
