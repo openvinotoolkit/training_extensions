@@ -1,10 +1,14 @@
 from typing import List
 from unittest.mock import MagicMock
 
+import numpy as np
 import pytest
 from mmcv.runner import BaseRunner
 
-from otx.algorithms.common.adapters.mmcv.hooks import TwoCropTransformHook
+from otx.algorithms.common.adapters.mmcv.hooks import (
+    EMAMomentumUpdateHook,
+    TwoCropTransformHook,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -12,8 +16,83 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 def mock_iter_runner(mocker):
     _mock_iter_runner = mocker.patch("mmcv.runner.IterBasedRunner", autospec=True)
     _mock_iter_runner.data_loader = MagicMock()
+    _mock_iter_runner.model = MagicMock()
 
     return _mock_iter_runner
+
+
+@pytest.fixture
+def mock_epoch_runner(mocker):
+    _mock_epoch_runner = mocker.patch("mmcv.runner.EpochBasedRunner", autospec=True)
+    _mock_epoch_runner.model = MagicMock()
+
+    return _mock_epoch_runner
+
+
+@pytest.mark.usefixtures("mock_epoch_runner")
+@pytest.mark.usefixtures("mock_iter_runner")
+class TestEMAMomentumUpdateHook:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.ema_momentum_update_hook = EMAMomentumUpdateHook()
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "by_epoch,cur_epoch,expected",
+        [
+            (True, 1, 0.9960002467350366),
+            (True, 50, 0.9965857864376269),
+            (True, 150, 0.9994142135623731),
+            (False, 200, 0.996),
+        ],
+    )
+    def test_before_train_epoch(
+        self, mock_epoch_runner: BaseRunner, by_epoch: bool, cur_epoch: int, expected: float
+    ) -> None:
+        """Test before_train_epoch."""
+        mock_epoch_runner.model.momentum = 0.996  # default value of BYOL
+        mock_epoch_runner.model.base_momentum = 0.996
+        mock_epoch_runner.epoch = cur_epoch
+        mock_epoch_runner.max_epochs = 200
+        self.ema_momentum_update_hook.by_epoch = by_epoch
+
+        self.ema_momentum_update_hook.before_train_epoch(mock_epoch_runner)
+
+        assert np.allclose(mock_epoch_runner.model.momentum, expected)
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "by_epoch,cur_iter,expected",
+        [
+            (False, 1, 0.9960002467350366),
+            (False, 50, 0.9965857864376269),
+            (False, 150, 0.9994142135623731),
+            (True, 200, 0.996),
+        ],
+    )
+    def test_before_train_iter(
+        self, mock_iter_runner: BaseRunner, by_epoch: bool, cur_iter: int, expected: float
+    ) -> None:
+        """Test before_train_iter."""
+        mock_iter_runner.model.momentum = 0.996  # default value of BYOL
+        mock_iter_runner.model.base_momentum = 0.996
+        mock_iter_runner.iter = cur_iter
+        mock_iter_runner.max_iters = 200
+        self.ema_momentum_update_hook.by_epoch = by_epoch
+
+        self.ema_momentum_update_hook.before_train_iter(mock_iter_runner)
+
+        assert np.allclose(mock_iter_runner.model.momentum, expected)
+
+    @e2e_pytest_unit
+    def test_after_train_iter(self, mock_iter_runner: BaseRunner) -> None:
+        """Test after_train_iter."""
+        mock_iter_runner.iter = 1
+        mock_iter_runner.model.momentum_update = MagicMock()
+
+        self.ema_momentum_update_hook.after_train_iter(mock_iter_runner)
+
+        mock_iter_runner.model.momentum_update.assert_called_once()
 
 
 @pytest.mark.usefixtures("mock_iter_runner")
