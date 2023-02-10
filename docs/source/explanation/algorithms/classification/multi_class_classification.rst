@@ -1,8 +1,10 @@
 Multi-class Classification
 ==========================
 
-Multi-class Classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
+Multi-class classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
 For the supervised training we use the following algorithms components:
+
+.. _mcl_cls_supervised_pipeline:
 
 - ``Augmentations``: Besides basic augmentations like random flip and random rotate, we use `Augmix <https://arxiv.org/abs/1912.02781>`_. This advanced type of augmentations helps to significantly expand the training distribution.
 
@@ -10,22 +12,12 @@ For the supervised training we use the following algorithms components:
 
 - ``Learning rate schedule``: `Cosine Annealing <https://arxiv.org/abs/1608.03983v5>`_. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.
 
-- ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. This is a balancing training method that helps us to solve the imbalanced data problem.
+- ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model. However, for the class-incremental scenario we use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
 
-- Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
+- Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting. Besides this we use `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11>`_ to create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.
+
+
 To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
-
-In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained all models on 1 GPU Nvidia GeForce GTX3090.
-
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
-+=======================+=================+===========+===========+===========+===========+
-| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 **************
 Dataset Format
@@ -57,6 +49,10 @@ This format has the following structure:
     └── val
         ...
 
+.. note::
+
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classificaiton models.
+
 ******
 Models
 ******
@@ -67,18 +63,18 @@ We support the following ready-to-use model templates:
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFLOPs) | Model size (MB) |
 +==============================================================================================================================================================================================================================+========================+=====================+=================+
-| `Custom_Image_Classification_MobileNet-V3-large-1x <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml>`_             | MobileNet-V3-large-1x  | 0.44                | 4.29            |
+| `Custom_Image_Classification_MobileNet-V3-large-1x <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml>`_             | MobileNet-V3-large-1x  | 0.44                | 4.29            |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Image_Classification_EfficinetNet-B0 <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml>`_                        | EfficientNet-B0        | 0.81                | 4.09            |
+| `Custom_Image_Classification_EfficinetNet-B0 <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml>`_                        | EfficientNet-B0        | 0.81                | 4.09            |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Image_Classification_EfficientNet-V2-S <https://github.com/openvinotoolkit/training_extensions/blob/feature/otx/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml>`_                    | EfficientNet-V2-S      | 5.76                | 20.23           |
+| `Custom_Image_Classification_EfficientNet-V2-S <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml>`_                    | EfficientNet-V2-S      | 5.76                | 20.23           |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 
 `EfficientNet-V2-S <https://arxiv.org/abs/2104.00298>`_ has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. `MobileNet-V3-large-1x <https://arxiv.org/abs/1905.02244>`_ is the best choice when training time and computational cost are in priority, nevertheless, this template provides competitive accuracy as well.
 `EfficientNet-B0 <https://arxiv.org/abs/1905.11946>`_ consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.
 
 Besides this, we support public backbones from `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcls <https://github.com/open-mmlab/mmclassification>`_ and `OpenVino Model Zoo <https://github.com/openvinotoolkit/open_model_zoo>`_.
-Please, refer to the `tutorial <N/A>`_ how to customize models and run public backbones.
+Please, refer to the :doc:`tutorial <../../../tutorials/advanced/backbones>` how to customize models and run public backbones.
 
 To see which public backbones are available for the task, the following command can be executed:
 
@@ -86,6 +82,17 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
+In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
++=======================+=================+===========+===========+===========+===========+
+| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
+| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 ************************
 Semi-supervised Learning

@@ -284,10 +284,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         else:
             self._recipe_cfg.pop("adaptive_validation_interval", None)
 
-        # TODO (sungchul): it will be removed after an update that applies hparam.yaml
-        if self._hyperparams.algo_backend.train_type != TrainType.SELFSUPERVISED:
-            # to disenable early stopping during self-sl
-            self.set_early_stopping_hook()
+        self.set_early_stopping_hook()
 
         # add Cancel tranining hook
         update_or_add_custom_hook(
@@ -371,7 +368,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
         )
 
-        if params.enable_early_stopping:
+        if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
             early_stop = ConfigDict(
                 start=int(params.early_stop_start),
                 patience=int(params.early_stop_patience),

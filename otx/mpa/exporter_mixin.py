@@ -31,6 +31,17 @@ class ExporterMixin(object):
         logger.info(f"Model will be exported with precision {precision}")
         model_name = cfg.get("model_name", "model")
 
+        # TODO: handle complicated pipeline
+        # If test dataset is a wrapper dataset
+        # pipeline may not include load transformation which is assumed to be included afterwards
+        # Here, we assume simple wrapper datasets where pipeline of the wrapper is just a consecutive one.
+        if cfg.data.test.get("dataset", None) or cfg.data.test.get("datasets", None):
+            dataset = cfg.data.test.get("dataset", cfg.data.test.get("datasets", [None])[0])
+            assert dataset is not None
+            pipeline = dataset.get("pipeline", [])
+            pipeline += cfg.data.test.get("pipeline", [])
+            cfg.data.test.pipeline = pipeline
+
         model_builder = kwargs.get("model_builder")
         try:
             deploy_cfg = kwargs.get("deploy_cfg", None)

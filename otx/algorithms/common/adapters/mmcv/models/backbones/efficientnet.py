@@ -334,7 +334,7 @@ class EffiInvResUnit(nn.Module):
             in_channels=mid_channels,
             out_channels=mid_channels,
             stride=stride,
-            padding=(0 if tf_mode else (kernel_size // 2)),
+            padding=(0 if tf_mode else kernel_size // 2),
             bn_eps=bn_eps,
             activation=activation,
         )

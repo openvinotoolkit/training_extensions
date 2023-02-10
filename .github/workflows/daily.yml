@@ -1,0 +1,27 @@
+name: Daily Test
+
+on:
+  workflow_dispatch: # run on request (no need for PR)
+  schedule:
+    # every UTC 7PM from Tue to Sat
+    - cron: "0 19 * * 2-6"
+
+jobs:
+  Daily-Tests:
+    runs-on: [self-hosted, linux, x64, dev]
+    timeout-minutes: 1440
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install tox
+      - name: E2E Tests
+        run: tox -e pre-merge -- tests/e2e
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: .tox/test-results.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}

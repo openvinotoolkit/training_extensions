@@ -41,10 +41,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "data/anomaly/shapes/train",
-    "--val-data-roots": "data/anomaly/shapes/test",
-    "--test-data-roots": "data/anomaly/shapes/test",
-    "--input": "data/anomaly/shapes/test/hexagon",
+    "--train-data-roots": "tests/assets/anomaly/shapes/train",
+    "--val-data-roots": "tests/assets/anomaly/shapes/test",
+    "--test-data-roots": "tests/assets/anomaly/shapes/test",
+    "--input": "tests/assets/anomaly/shapes/test/hexagon",
     "train_params": [],
 }
 
@@ -126,13 +126,11 @@ class TestToolsAnomalySegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.xfail(reason="CVS-83124")
     def test_nncf_eval(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        # TODO(AlexanderDokuchaev): return threshold=0.0001 after fix loading NNCF model
-        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.3)
+        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0001)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

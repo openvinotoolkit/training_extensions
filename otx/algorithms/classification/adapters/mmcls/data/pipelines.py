@@ -2,8 +2,8 @@
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
 import copy
+import tempfile
 from typing import Any, Dict, List
 
 import numpy as np
@@ -13,12 +13,15 @@ from mmcv.utils.registry import build_from_cfg
 from PIL import Image, ImageFilter
 from torchvision import transforms as T
 
+from otx.algorithms.common.utils.data import get_image
 from otx.api.utils.argument_checks import check_input_parameters_type
 
+_CACHE_DIR = tempfile.TemporaryDirectory(prefix="img-cache-")  # pylint: disable=consider-using-with
 
-# Temporary copy from detection_tasks
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.
+
+
 @PIPELINES.register_module()
 class LoadImageFromOTXDataset:
     """Pipeline element that loads an image from a OTX Dataset on the fly.
@@ -39,8 +42,8 @@ class LoadImageFromOTXDataset:
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
-        dataset_item = results["dataset_item"]
-        img = dataset_item.numpy
+        # Get image (possibly from cache)
+        img = get_image(results, _CACHE_DIR.name, to_float32=self.to_float32)
         shape = img.shape
 
         assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
@@ -61,9 +64,6 @@ class LoadImageFromOTXDataset:
             to_rgb=False,
         )
         results["img_fields"] = ["img"]
-
-        if self.to_float32:
-            results["img"] = results["img"].astype(np.float32)
 
         return results
 

@@ -12,17 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
 import copy
+import tempfile
 from typing import Any, Dict, Optional
 
 import numpy as np
 from mmdet.datasets.builder import PIPELINES
 
+from otx.algorithms.common.utils.data import get_image
 from otx.api.entities.label import Domain
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 from .dataset import get_annotation_mmdet_format
+
+_CACHE_DIR = tempfile.TemporaryDirectory(prefix="img-cache-")  # pylint: disable=consider-using-with
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -45,8 +48,8 @@ class LoadImageFromOTXDataset:
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function LoadImageFromOTXDataset."""
-        dataset_item = results["dataset_item"]
-        img = dataset_item.numpy
+        # Get image (possibly from cache)
+        img = get_image(results, _CACHE_DIR.name, to_float32=self.to_float32)
         shape = img.shape
 
         assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
@@ -67,9 +70,6 @@ class LoadImageFromOTXDataset:
             to_rgb=False,
         )
         results["img_fields"] = ["img"]
-
-        if self.to_float32:
-            results["img"] = results["img"].astype(np.float32)
 
         return results
 

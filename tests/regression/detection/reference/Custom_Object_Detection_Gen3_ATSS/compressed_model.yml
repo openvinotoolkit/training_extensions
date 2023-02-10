@@ -2,7 +2,7 @@ TestToolsMPADetection:
   pot:
     number_of_fakequantizers: 212
   nncf:
-    number_of_fakequantizers: -1
+    number_of_fakequantizers: 160
 TestToolsTilingDetection:
   pot:
     number_of_fakequantizers: 212
