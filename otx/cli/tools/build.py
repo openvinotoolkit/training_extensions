@@ -23,7 +23,17 @@ from otx.cli.builder import Builder
 from otx.cli.manager import ConfigManager
 from otx.cli.utils.parser import get_parser_and_hprams_data
 
-SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
+SUPPORTED_TASKS = (
+    "CLASSIFICATION",
+    "DETECTION",
+    "INSTANCE_SEGMENTATION",
+    "SEGMENTATION",
+    "ACTION_CLASSIFICATION",
+    "ACTION_DETECTION",
+    "ANOMALY_CLASSIFICATION",
+    "ANOMALY_DETECTION",
+    "ANOMALY_SEGMENTATION",
+)
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 
 

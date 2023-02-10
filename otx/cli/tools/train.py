@@ -134,14 +134,11 @@ def main():  # pylint: disable=too-many-branches
     config_manager.configure_template()
 
     # Creates a workspace if it doesn't exist.
-    # FIXME: Anomaly currently does not support workspace and auto-config.
-    is_anomaly_task = "anomaly" in args.template if args.template else False
-    if not config_manager.check_workspace() and is_anomaly_task is False:
+    if not config_manager.check_workspace():
         config_manager.build_workspace(new_workspace_path=args.work_dir)
 
     # Auto-Configuration for Dataset configuration
-    update_data_yaml = not is_anomaly_task
-    config_manager.configure_data_config(update_data_yaml=update_data_yaml)
+    config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
     dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
