@@ -274,7 +274,7 @@ class OTXDetDataset(CustomDataset):
                 Default: None.
         """
         metrics = metric if isinstance(metric, list) else [metric]
-        allowed_metrics = ["mAP", "recall", "mIoU", "mae", "mae%"]
+        allowed_metrics = ["mAP"]
         eval_results = OrderedDict()
         for metric in metrics:  # pylint: disable=redefined-argument-from-local
             if metric not in allowed_metrics:

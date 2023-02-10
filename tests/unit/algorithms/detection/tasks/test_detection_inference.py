@@ -49,30 +49,17 @@ class TestOTXDetTaskInference:
     def test_infer(self, task_type, domain, mocker):
         dataset, labels = generate_det_dataset(task_type=task_type)
         if task_type == TaskType.DETECTION:
-            fake_prediction = [[np.array([[0, 0, 32, 24, 0.55]], dtype=np.float32)]]
+            fake_prediction = [[np.random.rand(1, 5)]]
         elif task_type == TaskType.INSTANCE_SEGMENTATION:
             sample = dataset[0]
-            # TODO [Jihwan]: Resolve length issue
             fake_prediction = [
                 (
-                    [np.array([[8, 5, 10, 20, 0.90]], dtype=np.float32)],
+                    [np.random.rand(1, 5)],
                     [
                         [
                             {
                                 "size": [sample.width, sample.height],
-                                "counts": b"""WVo1c0Z>4E_OSBd0l=81SOSBe0U>O1N3N2N3EfAI\\>3;NU?7
-                                            i]O8VFCUN5_;c0VFYO[N4];i0SFTO_N5X;o0VFlNbN5V;R1WFiN
-                                            dN4T;V1WFdNfN6Q;Z1XF^NjN5m:b1gFYNV9m1k16J4M3M2N3L6D
-                                            <WEoLZ9T3SFQMBOZ:Q3RF^Mm9d2gEhL2e0W:d2cEkL5a0W:n2iE
-                                            PMX:P3k02M2O2O1N1O1O2N2M3O2M3N1N2O0O2N1K6N1O100O101
-                                            N10000000001O1O2N1O2N2N2N2N1O001O00001O000000000000
-                                            000000000000000000000000000000000000000000000000000
-                                            0000000000000000000O1000000000000O100O1O1001O00001O
-                                            H\\FTKd9k4^FTKb9l4_FSKa9m4900O100000000000000000000
-                                            00O100O1O1N200O100O1O2N1O1O2N1eKbET4^:iKeEV4d:O0O2N
-                                            1N2O1O2O0O2N1N3M5L3M3M1O1O1O1O1N2N3TMWD^2n;[MUD\\2K
-                                            iMZ<U2jCgMY<V2:N;E7H6J3N10000O1000\\OfNZC0MX1i<jNXC
-                                            0NV1c=iN\\Bb0Z>_O_i\\4""",
+                                "counts": b"<4601OO11OO100O100O",
                             }
                         ]
                     ],
