@@ -162,7 +162,7 @@ def test_get_resource_manager_wrong_resource_type():
 
 @e2e_pytest_component
 def test_get_resource_manager_gpu_without_available_gpu(mocker):
-    mock_is_available = mocker.patch("otx.hpo.hpo_runner.torch.cuda.is_available")
+    mock_is_available = mocker.patch("otx.hpo.resource_manager.torch.cuda.is_available")
     mock_is_available.return_value = False
 
     manager = get_resource_manager("gpu")
