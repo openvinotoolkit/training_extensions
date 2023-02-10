@@ -8,7 +8,7 @@ import onnx
 def remove_nodes_by_op_type(onnx_model, op_type):
     # TODO: support more nodes
 
-    supported_op_types = ["Mark", "Conv"]
+    supported_op_types = ["Mark", "Conv", "Gemm"]
     assert op_type in supported_op_types
 
     target_nodes = []

@@ -182,7 +182,6 @@ if is_mmdeploy_enabled():
             deploy_cfg: mmcv.Config,
             *,
             model_name: str = "model",
-            partition: bool = True,
         ):
 
             task_processor = build_task_processor(cfg, deploy_cfg, "cpu")
@@ -218,7 +217,7 @@ if is_mmdeploy_enabled():
             )
 
             partition_cfgs = get_partition_config(deploy_cfg)
-            if partition and partition_cfgs:
+            if partition_cfgs:
                 partition_cfgs = partition_cfgs.get("partition_cfg", None)
                 onnx_paths.extend(
                     MMdeployExporter.partition_onnx(

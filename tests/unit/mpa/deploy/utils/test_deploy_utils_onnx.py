@@ -27,6 +27,14 @@ def test_remove_nodes_by_op_type():
         assert os.path.exists(onnx_path)
 
         onnx_model = onnx.load(onnx_path)
+        onnx_model = remove_nodes_by_op_type(onnx_model, "Gemm")
+        nodes = []
+        for node in onnx_model.graph.node:
+            if node.op_type == "Gemm":
+                nodes.append(node)
+        assert not nodes
+
+        onnx_model = onnx.load(onnx_path)
         onnx_model = remove_nodes_by_op_type(onnx_model, "Conv")
         nodes = []
         for node in onnx_model.graph.node:

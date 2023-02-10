@@ -6,47 +6,48 @@ import torch
 from mmcv.utils import Config
 
 
+class MockModel(torch.nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.conv1 = torch.nn.Conv2d(3, 3, 3)
+        self.conv2 = torch.nn.Conv2d(3, 3, 3)
+        self.linear = torch.nn.Linear(3, 1)
+
+    def forward(self, img, img_metas=None, **kwargs):
+        if isinstance(img, list):
+            img = img[0]
+        if img.shape[-1] == 3:
+            img = img.permute(0, 3, 1, 2)
+
+        x = self.conv1(img)
+        x = self.conv2(img)
+        x = torch.mean(x, dim=(2, 3))
+        x = self.linear(x)
+        return x
+
+    def forward_dummy(self, img, img_metas=None, **kwargs):
+        if isinstance(img, list):
+            img = img[0]
+        if img.shape[-1] == 3:
+            img = img.permute(0, 3, 1, 2)
+
+        x = self.conv1(img)
+        x = self.conv2(img)
+        x = torch.mean(x, dim=(2, 3))
+        x = self.linear(x)
+        return x
+
+    def train_step(self, *args, **kwargs):
+        return dict()
+
+    def init_weights(self, *args, **kwargs):
+        pass
+
+    def set_step_params(self, *args, **kwargs):
+        pass
+
+
 def create_model(lib="mmcls"):
-    class MockModel(torch.nn.Module):
-        def __init__(self, *args, **kwargs):
-            super().__init__()
-            self.conv1 = torch.nn.Conv2d(3, 3, 3)
-            self.conv2 = torch.nn.Conv2d(3, 3, 3)
-            self.linear = torch.nn.Linear(3, 1)
-
-        def forward(self, img, img_metas=None, **kwargs):
-            if isinstance(img, list):
-                img = img[0]
-            if img.shape[-1] == 3:
-                img = img.permute(0, 3, 1, 2)
-
-            x = self.conv1(img)
-            x = self.conv2(img)
-            x = torch.mean(x, dim=(2, 3))
-            x = self.linear(x)
-            return x
-
-        def forward_dummy(self, img, img_metas=None, **kwargs):
-            if isinstance(img, list):
-                img = img[0]
-            if img.shape[-1] == 3:
-                img = img.permute(0, 3, 1, 2)
-
-            x = self.conv1(img)
-            x = self.conv2(img)
-            x = torch.mean(x, dim=(2, 3))
-            x = self.linear(x)
-            return x
-
-        def train_step(self, *args, **kwargs):
-            return dict()
-
-        def init_weights(self, *args, **kwargs):
-            pass
-
-        def set_step_params(self, *args, **kwargs):
-            pass
-
     if lib == "mmcls":
         from mmcls.models import CLASSIFIERS
 
