@@ -31,7 +31,6 @@ def generate_random_single_image(filename: str, width: int = 10, height: int = 1
 
 
 class TestMMSegDataUtilsValidation:
-
     @pytest.fixture(autouse=True)
     def setUp(self) -> None:
 
@@ -47,21 +46,21 @@ class TestMMSegDataUtilsValidation:
 
     @e2e_pytest_unit
     def test_check_labels(self) -> None:
-        check_labels(cur_labels = self.labels, new_labels = [("class_1", None), ("class_0", None)])
-        #function doesn't return anything, but throws exeption in case of failure
+        check_labels(cur_labels=self.labels, new_labels=[("class_1", None), ("class_0", None)])
+        # function doesn't return anything, but throws exeption in case of failure
         assert True
 
     @e2e_pytest_unit
     def test_add_labels(self) -> None:
-        add_labels(cur_labels = self.labels, new_labels = [("class_2", None)])
+        add_labels(cur_labels=self.labels, new_labels=[("class_2", None)])
 
         assert len(self.labels) == 3
 
     @e2e_pytest_unit
     def test_create_pseudo_masks_fh_mode(self, mocker) -> None:
-        mocker.patch("cv2.imread", return_value = np.array([[1, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0]]))
+        mocker.patch("cv2.imread", return_value=np.array([[1, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0]]))
         mocker.patch("cv2.imwrite")
-        mocker.patch("os.listdir", return_value = ['image.jpg'])
+        mocker.patch("os.listdir", return_value=["image.jpg"])
 
         ann_file_path: str = "ann_file_path"
         data_root_dir: str = "data_root_dir"
@@ -71,7 +70,7 @@ class TestMMSegDataUtilsValidation:
 
         assert osp.exists(osp.join(ann_file_path, "meta.json"))
 
-        os.remove(f'{ann_file_path}/meta.json')
+        os.remove(f"{ann_file_path}/meta.json")
         os.rmdir(ann_file_path)
 
     @e2e_pytest_unit
@@ -82,7 +81,7 @@ class TestMMSegDataUtilsValidation:
         generate_random_single_image(osp.join(tmp_dir.name, "image.jpg"))
         generate_random_single_image(osp.join(tmp_dir.name, "image.png"))
         fake_json_file: str = osp.join(tmp_dir.name, "meta.json")
-        mmcv.dump({'labels_map': []}, fake_json_file)
+        mmcv.dump({"labels_map": []}, fake_json_file)
 
         # ann_file_path dir should exist
         dataset_items: list = load_dataset_items(tmp_dir.name, tmp_dir.name)

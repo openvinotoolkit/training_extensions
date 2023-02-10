@@ -8,18 +8,16 @@ import pytest
 
 from otx.algorithms.segmentation.adapters.mmseg.data.pipelines import (
     LoadAnnotationFromOTXDataset,
+    NDArrayToPILImage,
+    PILImageToNDArray,
     RandomResizedCrop,
     RandomSolarization,
-    NDArrayToPILImage,
-    PILImageToNDArray
 )
-
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
-
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
@@ -35,23 +33,24 @@ def label_entity(name="test label") -> LabelEntity:
 def dataset_item() -> DatasetItemEntity:
     image: Image = Image(data=np.random.randint(low=0, high=255, size=(10, 16, 3)))
     annotation: Annotation = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(label_entity())])
-    annotation_scene: AnnotationSceneEntity = AnnotationSceneEntity(annotations=[annotation], kind=AnnotationSceneKind.ANNOTATION)
+    annotation_scene: AnnotationSceneEntity = AnnotationSceneEntity(
+        annotations=[annotation], kind=AnnotationSceneKind.ANNOTATION
+    )
     return DatasetItemEntity(media=image, annotation_scene=annotation_scene)
 
 
-class TestLoadAnnotationFromOTXDataset():
-    
+class TestLoadAnnotationFromOTXDataset:
     @pytest.fixture(autouse=True)
     def setUp(self) -> None:
 
         self.dataset_item: DatasetItemEntity = dataset_item()
         self.results: dict = {
             "dataset_item": self.dataset_item,
-            "ann_info": {'labels': [label_entity("class_1")]},
-            "seg_fields": []
+            "ann_info": {"labels": [label_entity("class_1")]},
+            "seg_fields": [],
         }
         self.pipeline: LoadAnnotationFromOTXDataset = LoadAnnotationFromOTXDataset()
-    
+
     @e2e_pytest_unit
     def test_call(self) -> None:
         loaded_annotations: dict = self.pipeline(self.results)
@@ -59,11 +58,10 @@ class TestLoadAnnotationFromOTXDataset():
         assert loaded_annotations["dataset_item"] == self.dataset_item
 
 
-class TestNDArrayToPILImage():
-
+class TestNDArrayToPILImage:
     @pytest.fixture(autouse=True)
     def setUp(self) -> None:
-        self.results: dict = {'img': np.random.randint(0, 255, (3,3,3), dtype=np.uint8)}
+        self.results: dict = {"img": np.random.randint(0, 255, (3, 3, 3), dtype=np.uint8)}
         self.nd_array_to_pil_image: NDArrayToPILImage = NDArrayToPILImage(keys=["img"])
 
     @e2e_pytest_unit
@@ -77,11 +75,10 @@ class TestNDArrayToPILImage():
         assert str(self.nd_array_to_pil_image) == "NDArrayToPILImage"
 
 
-class TestPILImageToNDArray():
-
+class TestPILImageToNDArray:
     @pytest.fixture(autouse=True)
     def setUp(self) -> None:
-        self.results: dict = {'img': PIL.Image.new("RGB", (3,3))}
+        self.results: dict = {"img": PIL.Image.new("RGB", (3, 3))}
         self.pil_image_to_nd_array: PILImageToNDArray = PILImageToNDArray(keys=["img"])
 
     @e2e_pytest_unit
@@ -95,11 +92,10 @@ class TestPILImageToNDArray():
         assert str(self.pil_image_to_nd_array) == "PILImageToNDArray"
 
 
-class TestRandomResizedCrop():
-    
+class TestRandomResizedCrop:
     @pytest.fixture(autouse=True)
     def setUp(self) -> None:
-        self.results: dict = {'img': PIL.Image.new("RGB", (10, 16)), "img_shape": (10, 16), "ori_shape": (10, 16)}
+        self.results: dict = {"img": PIL.Image.new("RGB", (10, 16)), "img_shape": (10, 16), "ori_shape": (10, 16)}
         self.random_resized_crop: RandomResizedCrop = RandomResizedCrop((5, 5), (0.5, 1.0))
 
     @e2e_pytest_unit
@@ -109,12 +105,11 @@ class TestRandomResizedCrop():
         assert cropped_img["ori_shape"] == (10, 16)
 
 
-class TestRandomSolarization():
-
+class TestRandomSolarization:
     @pytest.fixture(autouse=True)
     def setUp(self) -> None:
-        self.results: dict = {'img': np.random.randint(0, 255, (3,3,3), dtype=np.uint8)}
-        self.random_solarization: RandomSolarization = RandomSolarization(p = 1.0)
+        self.results: dict = {"img": np.random.randint(0, 255, (3, 3, 3), dtype=np.uint8)}
+        self.random_solarization: RandomSolarization = RandomSolarization(p=1.0)
 
     @e2e_pytest_unit
     def test_call(self) -> None:
