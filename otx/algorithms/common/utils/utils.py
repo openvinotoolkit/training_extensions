@@ -17,7 +17,7 @@
 import importlib
 import inspect
 from collections import defaultdict
-from typing import Callable, Optional, Tuple, Literal
+from typing import Callable, Literal, Optional, Tuple
 
 import yaml
 
@@ -96,7 +96,7 @@ def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
     return tuple(args)
 
 
-def left_vlaue_is_better(val1, val2, mode: Literal['max', 'min']) -> bool:
+def left_vlaue_is_better(val1, val2, mode: Literal["max", "min"]) -> bool:
     """Check left value is better than right value.
 
     Whether check it's greather or lesser is changed depending on 'model'.
@@ -113,6 +113,7 @@ def left_vlaue_is_better(val1, val2, mode: Literal['max', 'min']) -> bool:
     if mode == "max":
         return val1 > val2
     return val1 < val2
+
 
 def check_positive(value, variable_name: Optional[str] = None, error_message: Optional[str] = None):
     """Validate that value is positivle.

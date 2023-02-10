@@ -27,7 +27,6 @@ from otx.hpo.resource_manager import get_resource_manager
 logger = logging.getLogger(__name__)
 
 
-
 class HpoLoop:
     """HPO loop manager to run trials.
 
