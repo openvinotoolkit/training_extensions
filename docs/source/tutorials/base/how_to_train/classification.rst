@@ -75,7 +75,7 @@ The list of supported templates for classification is available with the command
 
 .. code-block::
 
-  (otx) ...$ otx find --template --task CLASSIFICATION
+  (otx) ...$ otx find --task classification
 
   +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
   |      TASK      |                         ID                        |          NAME         |                                        PATH                                       |
@@ -136,7 +136,7 @@ and save performance results in ``performance.json`` file:
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                      --load-weights results/weights.pth \
+                      --load-weights models/weights.pth \
                       --save-performance performance.json
 
 We will get a similar to this validation output:
@@ -163,7 +163,7 @@ and save the exported model to the ``openvino_model`` folder.
 
 .. code-block::
 
-  (otx) ...$ otx export --load-weights results/weights.pth \
+  (otx) ...$ otx export --load-weights models/weights.pth \
                         --save-model-to openvino_model
 
   ...
@@ -200,7 +200,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights results/weights.pth --save-model-to nncf_model
+  (otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
 
   ...
 
