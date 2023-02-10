@@ -335,6 +335,7 @@ def _write_random_video(width: int, height: int, number_of_frames: int, filename
 
     videowriter.release()
 
+
 class ConfigExample(ConfigurableParameters):
     header = string_attribute("Test configuration for an object detection task")
     description = header

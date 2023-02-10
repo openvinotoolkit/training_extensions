@@ -28,7 +28,7 @@ class DatasetManager:
         for k, v in dataset.subsets().items():
             if "train" in k or "default" in k:
                 return v
-        raise ValueError(f"Can't find training data.")    
+        raise ValueError("Can't find training data.")
 
     @staticmethod
     def get_val_dataset(dataset: Dataset) -> DatasetSubset:
@@ -36,7 +36,7 @@ class DatasetManager:
         for k, v in dataset.subsets().items():
             if "val" in k or "default" in k:
                 return v
-        raise ValueError(f"Can't find validation data.")
+        raise ValueError("Can't find validation data.")
 
     @staticmethod
     def get_data_format(data_root: str) -> str:

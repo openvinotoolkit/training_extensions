@@ -39,7 +39,7 @@ AUTOSPLIT_SUPPORTED_FORMAT = [
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
     "CLASSIFICATION": ["imagenet", "datumaro"],
     "DETECTION": ["coco", "voc", "yolo"],
-    "SEGMENTATION": ["cityscapes", "common_semantic_segmentation", "voc","ade20k2017", "ade20k2020"],
+    "SEGMENTATION": ["cityscapes", "common_semantic_segmentation", "voc", "ade20k2017", "ade20k2020"],
     "ACTION_CLASSIFICATION": ["multi-cvat"],
     "ACTION_DETECTION": ["multi-cvat"],
     "ANOMALY_CLASSIFICATION": ["mvtec"],
