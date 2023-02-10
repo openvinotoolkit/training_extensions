@@ -235,7 +235,7 @@ class Trial:
                                                                     lower than this value. Defaults to None.
 
         Returns:
-            Optional[Union[float, int]]: Best score. If there is not score, return None.
+            Optional[Union[float, int]]: Best score. If there is no score, return None.
         """
         check_mode_input(mode)
 
