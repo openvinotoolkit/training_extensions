@@ -91,8 +91,7 @@ logger = get_logger()
 class BaseInferencerWithConverter(BaseInferencer):
     """BaseInferencerWithConverter class in OpenVINO task."""
 
-    # TODO [Jihwan]: Resolve type issue by Magicmock <-> Model
-    # @check_input_parameters_type()
+    @check_input_parameters_type()
     def __init__(
         self,
         configuration: dict,

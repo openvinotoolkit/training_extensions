@@ -102,7 +102,7 @@ def get_annotation_mmdet_format(
 
 
 @DATASETS.register_module()
-class MPADetDataset(CustomDataset):
+class OTXDetDataset(CustomDataset):
     """Wrapper that allows using a OTX dataset to train mmdetection models.
 
     This wrapper is not based on the filesystem,
@@ -183,7 +183,7 @@ class MPADetDataset(CustomDataset):
         # even if we need only checking aspect ratio of the image; due to it
         # this implementation of dataset does not uses such tricks as skipping images with wrong aspect ratios or
         # small image size, since otherwise reading the whole dataset during initialization will be required.
-        self.data_infos = MPADetDataset._DataInfoProxy(otx_dataset, labels)
+        self.data_infos = OTXDetDataset._DataInfoProxy(otx_dataset, labels)
 
         self.proposals = None  # Attribute expected by mmdet but not used for OTX datasets
 

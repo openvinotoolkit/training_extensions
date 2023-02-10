@@ -1,4 +1,4 @@
-"""Unit Test for otx.algorithms.action.adapters.detection.data.dataset."""
+"""Unit Test for otx.algorithms.detection.adapters.mmdet.data.dataset."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -6,7 +6,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.detection.adapters.mmdet.data.dataset import MPADetDataset
+from otx.algorithms.detection.adapters.mmdet.data.dataset import OTXDetDataset
 from otx.api.entities.label import Domain
 from otx.api.entities.model_template import TaskType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -17,17 +17,13 @@ from tests.unit.algorithms.detection.test_helpers import (
 
 
 class TestOTXDetDataset:
-    # TODO:[Jihwan] Update docstring
-    """Test OTXDetDataset class.
-
-    1. Check _DataInfoProxy
-    <Steps>
-        1. Create otx_dataset, labels
-        2. Check len(_DataInfoProxy)
-    2. Check prepare_train_img
-    3. Check "__len__" function
-    4. Check "prepare_train_frames" function
-    5. Check "prepare_test_frames" function
+    """
+    Test OTXDetDataset class.
+    1. Test _DataInfoProxy
+    2. Test prepare_train_img
+    3. Test prepare_test_img
+    4. Test get_ann_info
+    5. Test evaluate
     """
 
     @pytest.fixture(autouse=True)
@@ -42,7 +38,7 @@ class TestOTXDetDataset:
     def test_DataInfoProxy(self, task_type):
         """Test _DataInfoProxy Class."""
         otx_dataset, labels = self.dataset[task_type]
-        proxy = MPADetDataset._DataInfoProxy(otx_dataset, labels)
+        proxy = OTXDetDataset._DataInfoProxy(otx_dataset, labels)
         sample = proxy[0]
         assert "dataset_item" in sample
         assert "width" in sample
@@ -59,7 +55,7 @@ class TestOTXDetDataset:
     def test_prepare_train_img(self, task_type, domain) -> None:
         """Test prepare_train_img method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=False)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=False)
         img = dataset.prepare_train_img(0)
         assert isinstance(img, dict)
         assert "dataset_item" in img
@@ -75,7 +71,7 @@ class TestOTXDetDataset:
     def test_prepare_test_img(self, task_type, domain) -> None:
         """Test prepare_test_img method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=True)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=True)
         img = dataset.prepare_test_img(0)
         assert isinstance(img, dict)
         assert "dataset_item" in img
@@ -91,8 +87,7 @@ class TestOTXDetDataset:
     def test_get_ann_info(self, task_type, domain) -> None:
         """Test get_ann_info method"""
         otx_dataset, labels = self.dataset[task_type]
-
-        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain)
         dataset.pipeline = MockPipeline()
         ann_info = dataset.get_ann_info(0)
         assert isinstance(ann_info, dict)
@@ -110,15 +105,15 @@ class TestOTXDetDataset:
     def test_evaluate(self, task_type, domain, metric, logger) -> None:
         """Test evaluate method for detection and instance segmentation"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = MPADetDataset(otx_dataset, labels, self.pipeline, domain)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain)
         dataset.pipeline = MockPipeline()
         sample = dataset[0]
         if task_type == TaskType.DETECTION:
-            results = [[np.array([[0, 0, 32, 24, 0.55]], dtype=np.float32)]]
+            results = [[np.random.rand(1, 5)]]
         elif task_type == TaskType.INSTANCE_SEGMENTATION:
             results = [
                 (
-                    [np.array([[8, 5, 10, 20, 0.90]], dtype=np.float32)],
+                    [np.random.rand(1, 5)],
                     [[{"size": [sample["width"], sample["height"]], "counts": "some counts"}]],
                 )
             ]

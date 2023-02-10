@@ -1,8 +1,9 @@
-"""Unit Test for otx.algorithms.action.adapters.detection.utils.config_utils."""
+"""Unit Test for otx.algorithms.detection.adapters.mmdet.utils.config_utils."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+import math
 import tempfile
 from typing import List
 
@@ -21,25 +22,28 @@ from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.entities.label import Domain
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.detection.test_helpers import generate_labels
+from tests.unit.algorithms.detection.test_helpers import (
+    DEFAULT_DET_MODEL_CONFIG_PATH,
+    DEFAULT_ISEG_MODEL_CONFIG_PATH,
+    generate_labels,
+)
 
 
 class TestOTXDetConfigUtils:
-    """Test OTXDetConfigUtils methods."""
+    """Test OTXDetConfigUtils functions."""
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("domain", [Domain.DETECTION, Domain.INSTANCE_SEGMENTATION])
     def test_patch_config(self, domain):
-        """Test build_detector method."""
-        config = Config()
-        options = dict(
-            evaluation=dict(),
-            checkpoint_config=dict(),
-            data=dict(train=dict(labels=dict()), val=dict(labels=dict()), test=dict(labels=dict())),
+        """Test patch_config function."""
+        config = Config(
+            dict(
+                evaluation=dict(),
+                checkpoint_config=dict(),
+                data=dict(train=dict(labels=dict()), val=dict(labels=dict()), test=dict(labels=dict())),
+            )
         )
-        config.merge_from_dict(options)
-
-        labels = generate_labels(3, domain)
+        labels = generate_labels(1, domain)
         with tempfile.TemporaryDirectory() as work_dir:
             patch_config(config, work_dir, labels)
         assert "train_pipeline" not in config
@@ -56,16 +60,16 @@ class TestOTXDetConfigUtils:
     @pytest.mark.parametrize(
         "cfg_path, domain",
         [
-            ("./otx/algorithms/detection/configs/detection/mobilenetv2_atss/model.py", Domain.DETECTION),
+            (DEFAULT_DET_MODEL_CONFIG_PATH, Domain.DETECTION),
             (
-                "./otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/model.py",
+                DEFAULT_ISEG_MODEL_CONFIG_PATH,
                 Domain.INSTANCE_SEGMENTATION,
             ),
         ],
     )
-    def test_patch_model_config(self, cfg_path, domain):
-        """Test build_detector method."""
-        num_classes = 3
+    @pytest.mark.parametrize("num_classes", [1, 3, 10, 80])
+    def test_patch_model_config(self, num_classes, cfg_path, domain):
+        """Test patch_model_config function."""
         config = MPAConfig.fromfile(cfg_path)
         labels = generate_labels(num_classes, domain)
         head_names = ("mask_head", "bbox_head", "segm_head")
@@ -75,7 +79,7 @@ class TestOTXDetConfigUtils:
                 if head_name in config.model.roi_head:
                     if isinstance(config.model.roi_head[head_name], List):
                         for head in config.model.roi_head[head_name]:
-                            assert head.num_classes == 3
+                            assert head.num_classes == 1
                     else:
                         assert config.model.roi_head[head_name].num_classes == num_classes
         else:
@@ -85,10 +89,8 @@ class TestOTXDetConfigUtils:
 
     @e2e_pytest_unit
     def test_set_hyperparams(self):
-        """Test build_detector method."""
-        config = Config()
-        options = dict(data=dict(), optimizer=dict(), lr_config=dict(), runner=dict(type="EpochBasedRunner"))
-        config.merge_from_dict(options)
+        """Test set_hyperparams function."""
+        config = Config(dict(data=dict(), optimizer=dict(), lr_config=dict(), runner=dict(type="EpochBasedRunner")))
         hyperparams = DetectionConfig()
         set_hyperparams(config, hyperparams)
         assert config.data.samples_per_gpu == int(hyperparams.learning_parameters.batch_size)
@@ -101,38 +103,55 @@ class TestOTXDetConfigUtils:
         else:
             assert config.runner.max_iters == total_iterations
 
-    # TODO[Jihwan] - add various test codes, assert
     @e2e_pytest_unit
+    @pytest.mark.parametrize("num_samples", [10, 10000])
+    @pytest.mark.parametrize("decay", [-0.002, -0.2])
+    @pytest.mark.parametrize("factor", [30, 3000])
     @pytest.mark.parametrize("dataset_type", ["MultiImageMixDataset", "RepeatDataset"])
-    @pytest.mark.parametrize("num_samples", [1, 3000])
-    def test_patch_adaptive_repeat_dataset(self, num_samples, dataset_type):
-        """Test build_detector method."""
-        config = Config()
-        options = dict(
-            runner=dict(type="EpochBasedRunner", max_epochs=3),
-            data=dict(train=dict(type=dataset_type, adaptive_repeat_times=True)),
+    def test_patch_adaptive_repeat_dataset(self, num_samples, decay, factor, dataset_type):
+        """Test patch_adaptive_repeat function."""
+        cur_epoch, cur_repeat = 2, 1
+        config = Config(
+            dict(
+                runner=dict(type="EpochBasedRunner", max_epochs=cur_epoch),
+                data=dict(train=dict(type=dataset_type, adaptive_repeat_times=True, times=cur_repeat)),
+            )
         )
         if dataset_type == "MultiImageMixDataset":
-            options["data"]["train"].update(dataset=dict(type="RepeatDataset", adaptive_repeat_times=True))
-        config.merge_from_dict(options)
-        patch_adaptive_repeat_dataset(config, num_samples=num_samples)
+            config.merge_from_dict(
+                dict(
+                    data=dict(
+                        train=dict(dataset=dict(type="RepeatDataset", adaptive_repeat_times=True, times=cur_repeat))
+                    )
+                )
+            )
+        patch_adaptive_repeat_dataset(config, num_samples=num_samples, decay=decay, factor=factor)
+        adaptive_repeat = max(round(math.exp(decay * num_samples) * factor), 1)
+        adaptive_epoch = math.ceil(cur_epoch / num_samples)
+        if adaptive_epoch == 1:
+            assert config.data.train.times == cur_repeat
+            assert config.runner.max_epochs == cur_epoch
+        else:
+            assert config.data.train.times == adaptive_repeat
+            assert config.runner.max_epochs == adaptive_epoch
 
-    # TODO[Jihwan] - add various test codes, assert, task랑 stage하면 자동으로 채워질듯?
     @e2e_pytest_unit
     def test_prepare_for_training(self):
-        """Test build_detector method."""
-        config = Config()
+        """Test prepare_for_training function."""
         with tempfile.TemporaryDirectory() as work_dir:
-            config_options = dict(
-                data=dict(
-                    train=dict(type="RepeatDataset", adaptive_repeat_times=True, otx_dataset=[]),
-                    val=dict(),
-                    test=dict(),
-                ),
-                work_dir=work_dir,
-                runner=dict(type="EpochBasedRunner", max_epochs=1),
+            config = Config(
+                dict(
+                    data=dict(
+                        train=dict(type="RepeatDataset", adaptive_repeat_times=True, otx_dataset=[]),
+                        val=dict(),
+                        test=dict(),
+                    ),
+                    work_dir=work_dir,
+                    runner=dict(type="EpochBasedRunner", max_epochs=1),
+                )
             )
-            config.merge_from_dict(config_options)
-
             data_config = ConfigDict(data=dict(train=dict(otx_dataset=[1, 2, 3]), val=dict(), test=dict()))
             prepare_for_training(config, data_config)
+            assert "meta" in config.runner
+            assert "checkpoints_round_0" in config.work_dir
+            assert config.data.train.otx_dataset == [1, 2, 3]

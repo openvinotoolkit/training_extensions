@@ -69,7 +69,7 @@ class TestTilingDetection(unittest.TestCase):
                     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
                 ],
                 dataset=dict(
-                    type="MPADetDataset",
+                    type="OTXDetDataset",
                     pipeline=[
                         dict(type="LoadImageFromOTXDataset"),
                         dict(
@@ -105,7 +105,7 @@ class TestTilingDetection(unittest.TestCase):
                     )
                 ],
                 dataset=dict(
-                    type="MPADetDataset",
+                    type="OTXDetDataset",
                     pipeline=[dict(type="LoadImageFromOTXDataset")],
                     otx_dataset=self.otx_dataset.with_empty_annotations(),
                     labels=list(self.labels),

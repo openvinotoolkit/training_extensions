@@ -60,19 +60,6 @@ def get_classes_from_annotation(path):
     return categories
 
 
-@check_input_parameters_type()
-def find_label_by_name(labels: List[LabelEntity], name: str, domain: Domain):
-    """Return label from name."""
-    matching_labels = [label for label in labels if label.name == name]
-    if len(matching_labels) == 1:
-        return matching_labels[0]
-    if len(matching_labels) == 0:
-        label = LabelEntity(name=name, domain=domain, id=ID(len(labels)))
-        labels.append(label)
-        return label
-    raise ValueError("Found multiple matching labels")
-
-
 class LoadAnnotations:
     """Load Annotations class."""
 
@@ -317,6 +304,19 @@ class CocoDataset:
         )
 
         return ann
+
+
+@check_input_parameters_type()
+def find_label_by_name(labels: List[LabelEntity], name: str, domain: Domain):
+    """Return label from name."""
+    matching_labels = [label for label in labels if label.name == name]
+    if len(matching_labels) == 1:
+        return matching_labels[0]
+    if len(matching_labels) == 0:
+        label = LabelEntity(name=name, domain=domain, id=ID(len(labels)))
+        labels.append(label)
+        return label
+    raise ValueError("Found multiple matching labels")
 
 
 @check_input_parameters_type({"ann_file_path": JsonFilePathCheck, "data_root_dir": DirectoryPathCheck})
