@@ -44,7 +44,7 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", help="Supported task types.", choices=SUPPORTED_TASKS)
+    parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
     parser.add_argument(
         "--template", action="store_true", help="Shows a list of templates that can be used immediately."
     )
@@ -99,12 +99,10 @@ def main():
     args = parse_args()
 
     otx_root = get_otx_root_path()
-    otx_registry = Registry(otx_root)
-    if args.task:
-        otx_registry = otx_registry.filter(task_type=args.task)
+    otx_registry = Registry(otx_root).filter(task_type=args.task)
 
-    if args.template:
-        template_table = PrettyTable(["TASK", "ID", "NAME", "PATH"])
+    if not args.backbone or args.template:
+        template_table = PrettyTable(["TASK", "ID", "NAME", "BASE PATH"])
         for template in otx_registry.templates:
             relpath = os.path.relpath(template.model_template_path, os.path.abspath("."))
             template_table.add_row(
