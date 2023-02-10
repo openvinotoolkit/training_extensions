@@ -3,8 +3,10 @@
 #
 
 import os
+import time
 from collections.abc import Mapping
 from functools import partial
+from subprocess import CalledProcessError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
@@ -12,7 +14,7 @@ import numpy as np
 import torch
 from mmcv.parallel import collate, scatter
 
-from .utils import convert_batchnorm, is_mmdeploy_enabled, mmdeploy_init_model_helper
+from .utils import is_mmdeploy_enabled, mmdeploy_init_model_helper, numpy_2_list
 
 
 class NaiveExporter:
@@ -34,7 +36,6 @@ class NaiveExporter:
         input_data = scatter(collate([input_data], samples_per_gpu=1), [-1])[0]
 
         model = model_builder(cfg)
-        model = convert_batchnorm(model)
         model = model.cpu().eval()
 
         onnx_path = NaiveExporter.torch2onnx(
@@ -105,6 +106,7 @@ class NaiveExporter:
     ) -> str:
 
         img_metas = input_data.get("img_metas")
+        numpy_2_list(img_metas)
         imgs = input_data.get("img")
         model.forward = partial(model.forward, img_metas=img_metas, return_loss=False)
 
@@ -203,7 +205,7 @@ if is_mmdeploy_enabled():
                 # image assumed to be RGB format under OTX
                 input_data = cv2.cvtColor(input_data, cv2.COLOR_BGR2RGB)
             else:
-                input_data = np.zeros(input_data_cfg.shape, dtype=np.uint8)
+                input_data = np.zeros(input_data_cfg["shape"], dtype=np.uint8)
 
             onnx_path = MMdeployExporter.torch2onnx(
                 output_dir,
@@ -236,7 +238,7 @@ if is_mmdeploy_enabled():
                 onnx_file_name,
                 deploy_cfg=deploy_cfg,
                 model_cfg=cfg,
-                model_checkpoint=cfg.load_from,
+                model_checkpoint=cfg.get("load_from", None),
                 device="cpu",
             )
             return os.path.join(output_dir, onnx_file_name)
@@ -256,7 +258,21 @@ if is_mmdeploy_enabled():
             if model_name:
                 mo_options.args += f'--model_name "{model_name}" '
 
-            openvino_api.from_onnx(onnx_path, output_dir, input_info, output_names, mo_options)
+            try:
+                openvino_api.from_onnx(onnx_path, output_dir, input_info, output_names, mo_options)
+            except CalledProcessError as e:
+                # NOTE: mo returns non zero return code (245) even though it successfully generate IR
+                cur_time = time.time()
+                time_threshold = 5
+                if (
+                    e.returncode == 245
+                    and {model_name + ".bin", model_name + ".xml"} - set(os.listdir(output_dir))
+                    and (
+                        os.path.getmtime(os.path.join(output_dir, model_name + ".bin")) - cur_time < time_threshold
+                        and os.path.getmtime(os.path.join(output_dir, model_name + ".xml")) - cur_time < time_threshold
+                    )
+                ):
+                    raise e
 
             return (
                 os.path.join(output_dir, model_name + ".xml"),
