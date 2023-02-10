@@ -22,7 +22,7 @@ from enum import IntEnum
 from typing import Any, Dict, List, Optional, Union
 
 from otx.hpo.search_space import SearchSpace
-from otx.hpo.utils import check_mode_input, check_positive
+from otx.algorithms.common.utils.utils import check_mode_input, check_positive
 
 logger = logging.getLogger(__name__)
 

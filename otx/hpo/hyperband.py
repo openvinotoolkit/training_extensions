@@ -24,11 +24,11 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from scipy.stats.qmc import LatinHypercube
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
-from otx.hpo.utils import (
+from otx.algorithms.common.utils.utils import (
     check_mode_input,
     check_not_negative,
     check_positive,
-    left_is_better,
+    left_vlaue_is_better,
 )
 
 logger = logging.getLogger(__name__)
@@ -170,7 +170,7 @@ class Rung:
             if trial.rung != self.rung_idx:
                 continue
             trial_score = trial.get_best_score(mode, self.resource)
-            if trial_score is not None and (best_score is None or left_is_better(trial_score, best_score, mode)):
+            if trial_score is not None and (best_score is None or left_vlaue_is_better(trial_score, best_score, mode)):
                 best_trial = trial
                 best_score = trial_score
 
@@ -214,7 +214,7 @@ class Rung:
                 if trial.is_done() and trial.status != TrialStatus.RUNNING:
                     num_finished_trial += 1
                     trial_score = trial.get_best_score(mode, self.resource)
-                    if best_score is None or left_is_better(trial_score, best_score, mode):
+                    if best_score is None or left_vlaue_is_better(trial_score, best_score, mode):
                         best_trial = trial
                         best_score = trial_score
             else:
@@ -764,7 +764,7 @@ class HyperBand(HpoBase):
             if resource > self.maximum_resource // self._reduction_factor:
                 break
             cur_score = cur_score * 0.5 + score * 0.5
-            if not left_is_better(best_score, cur_score, self.mode):
+            if not left_vlaue_is_better(best_score, cur_score, self.mode):
                 best_score = cur_score
                 if minimum_resource == 0:
                     minimum_resource = resource
@@ -939,7 +939,7 @@ class HyperBand(HpoBase):
 
         for trial in self._trials.values():
             score = trial.get_best_score()
-            if score is not None and (best_score is None or left_is_better(score, best_score, self.mode)):
+            if score is not None and (best_score is None or left_vlaue_is_better(score, best_score, self.mode)):
                 best_score = score
                 best_trial = trial
 
