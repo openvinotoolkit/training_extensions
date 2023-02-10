@@ -17,8 +17,11 @@ class TestMask2Bbox:
 
     @e2e_pytest_unit
     def test_mask_to_border(self):
-        mask_to_border(self.mask)
+        out = mask_to_border(self.mask)
+        assert (out == self.mask).all()
 
     @e2e_pytest_unit
     def test_mask2bbox(self):
-        mask2bbox(self.mask)
+        out = mask2bbox(self.mask)
+        expected_out = [[0, 0, 1, 1]]
+        assert out == expected_out

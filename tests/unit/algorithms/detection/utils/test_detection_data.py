@@ -29,8 +29,8 @@ from tests.unit.algorithms.detection.test_helpers import (
 def test_find_label_by_name(name):
     classes = ("rectangle", "ellipse", "triangle")
     label_schema = generate_label_schema(classes, task_type_to_label_domain(TaskType.DETECTION))
-    find_label_by_name(label_schema.get_labels(include_empty=False), name, Domain.DETECTION)
-
+    out = find_label_by_name(label_schema.get_labels(include_empty=False), name, Domain.DETECTION)
+    assert out.name == name
 
 @e2e_pytest_unit
 def test_find_label_by_name_error():
@@ -48,31 +48,37 @@ def test_find_label_by_name_error():
 def test_load_dataset_items_coco_format(task_type, domain):
     _, labels = generate_det_dataset(task_type=task_type)
     tmp_dir = tempfile.TemporaryDirectory()
-    fake_json_file = os.path.join(tmp_dir.name, "fake_data.json")
-    create_dummy_coco_json(fake_json_file)
-    data_root_dir = "./some_data_root_dir"
-    with_mask = True if domain == Domain.INSTANCE_SEGMENTATION else False
-    load_dataset_items_coco_format(
-        fake_json_file,
-        data_root_dir,
-        subset=Subset.TRAINING,
-        domain=domain,
-        with_mask=with_mask,
-        labels_list=labels,
-    )
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        fake_json_file = os.path.join(tmp_dir, "fake_data.json")
+        create_dummy_coco_json(fake_json_file)
+        data_root_dir = "./some_data_root_dir"
+        with_mask = True if domain == Domain.INSTANCE_SEGMENTATION else False
+        out = load_dataset_items_coco_format(
+            fake_json_file,
+            data_root_dir,
+            subset=Subset.TRAINING,
+            domain=domain,
+            with_mask=with_mask,
+            labels_list=labels,
+        )
+    assert out is not None
 
 
 @e2e_pytest_unit
 def test_get_sizes_from_dataset_entity():
     dataset, _ = generate_det_dataset(task_type=TaskType.DETECTION)
-    get_sizes_from_dataset_entity(dataset, [480, 640])
+    out = get_sizes_from_dataset_entity(dataset, [480, 640])
+    assert out is not None
 
 
 @e2e_pytest_unit
 def test_get_anchor_boxes():
-    get_anchor_boxes([(100, 120), (100, 120)], [1, 1])
-
+    out = get_anchor_boxes([(100, 120), (100, 120)], [1, 1])
+    expected_out = ([[100.0], [100.0]], [[120.0], [120.0]])
+    assert out == expected_out
 
 @e2e_pytest_unit
 def test_format_list_to_str():
-    format_list_to_str([[0.1239128319, 0.12398123]])
+    out = format_list_to_str([[0.1839128319, 0.47398123]])
+    expected_out = '[[0.18, 0.47]]'
+    assert out == expected_out
