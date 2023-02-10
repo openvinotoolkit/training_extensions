@@ -98,15 +98,15 @@ class ClassificationInferenceTask(
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
         if self._multilabel:
-            logger.info("Classiification mode: multilabel")
+            logger.info("Classification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
-            logger.info("Classiification mode: hierarchical")
+            logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
-        else:
-            logger.info("Classiification mode: multiclass")
+        if not self._multilabel and not self._hierarchical:
+            logger.info("Classification mode: multiclass")
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
@@ -209,16 +209,16 @@ class ClassificationInferenceTask(
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
-            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
-        else:
-            bin_file = outputs.get("bin")
-            xml_file = outputs.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
-                output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
-                output_model.set_data("openvino.xml", f.read())
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+        if xml_file is None or bin_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
         output_model.precision = [ModelPrecision.FP32]
         output_model.set_data(
             "label_schema.json",
@@ -328,14 +328,14 @@ class ClassificationInferenceTask(
                 ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
             )
 
-        if params.enable_early_stopping:
-            early_stop = ConfigDict(
-                start=int(params.early_stop_start),
-                patience=int(params.early_stop_patience),
-                iteration_patience=int(params.early_stop_iteration_patience),
-            )
-        else:
-            early_stop = False
+        early_stop = False
+        if self._recipe_cfg is not None:
+            if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
+                early_stop = ConfigDict(
+                    start=int(params.early_stop_start),
+                    patience=int(params.early_stop_patience),
+                    iteration_patience=int(params.early_stop_iteration_patience),
+                )
 
         if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
             runner = ConfigDict(max_iters=int(params.num_iters))

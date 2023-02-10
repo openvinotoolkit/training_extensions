@@ -27,8 +27,7 @@ from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.cli.datasets import get_dataset_class
-from otx.cli.utils.io import generate_label_schema
+from otx.core.data.adapter import get_dataset_adapter
 
 logger = get_logger(name="sample")
 
@@ -41,28 +40,27 @@ def parse_args():
     return parser.parse_args()
 
 
-TRAIN_ANN_FILES = "data/custom_action_recognition/custom_dataset/val.csv"
-TRAIN_DATA_ROOTS = "data/custom_action_recognition/custom_dataset/rawframes"
-VAL_ANN_FILES = "data/custom_action_recognition/custom_dataset/val.csv"
-VAL_DATA_ROOTS = "data/custom_action_recognition/custom_dataset/rawframes"
+TRAIN_DATA_ROOTS = "tests/assets/cvat_dataset/action_detection/train"
+VAL_DATA_ROOTS = "tests/assets/cvat_dataset/action_detection/train"
 
 
 def load_test_dataset(model_template):
     """Load Sample dataset for detection."""
-    dataset_class = get_dataset_class(model_template.task_type)
-    dataset = dataset_class(
-        train_subset={"ann_file": TRAIN_ANN_FILES, "data_root": TRAIN_DATA_ROOTS},
-        val_subset={"ann_file": VAL_ANN_FILES, "data_root": VAL_DATA_ROOTS},
+    dataset_adapter = get_dataset_adapter(
+        model_template.task_type,
+        train_data_roots=TRAIN_DATA_ROOTS,
+        val_data_roots=VAL_DATA_ROOTS,
     )
-    labels_schema = generate_label_schema(dataset, model_template.task_type)
-    return dataset, labels_schema
+    dataset = dataset_adapter.get_otx_dataset()
+    label_schema = dataset_adapter.get_label_schema()
+    return dataset, label_schema
 
 
 # pylint: disable=too-many-locals, too-many-statements
 def main(args):
     """Main function of Detection Sample."""
     logger.info("Fine tuning sample dataset")
-    logger.info("Sample dataset can be found at data/custom_action_recognition/custom_dataset")
+    logger.info("Sample dataset can be found at tests/assets/cvat_dataset/action_classification/train")
 
     logger.info("Load model template")
     model_template = parse_model_template(args.template_file_path)
@@ -110,7 +108,7 @@ def main(args):
     logger.info(str(resultset.performance))
 
     if args.export:
-        raise NotImplementedError("Export task is not supported in action detection task")
+        raise Exception("CVS-102941 ONNX export of action detection model keeps failed")
 
 
 if __name__ == "__main__":

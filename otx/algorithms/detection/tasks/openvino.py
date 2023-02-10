@@ -138,6 +138,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
+    # TODO [Eugene]: implement unittest for tiling predict
     @check_input_parameters_type()
     def predict_tile(
         self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
@@ -342,7 +343,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
-        _hparams.tiling_parameters.enable_tiling = self.config["tiling_parameters"]["enable_tiling"]["value"]
         args = [
             _hparams,
             self.task_environment.label_schema,
@@ -373,7 +373,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             update_progress_callback = default_progress_callback
             add_saliency_map = True
 
-        if self.config and self.config["tiling_parameters"]["enable_tiling"]["value"]:
+        tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
+
+        if tile_enabled:
             tile_size = self.config["tiling_parameters"]["tile_size"]["value"]
             tile_overlap = self.config["tiling_parameters"]["tile_overlap"]["value"]
             max_number = self.config["tiling_parameters"]["tile_max_number"]["value"]
@@ -381,7 +383,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            if self.config["tiling_parameters"]["enable_tiling"]["value"]:
+            if tile_enabled:
                 predicted_scene, features = self.inferencer.predict_tile(
                     dataset_item.numpy,
                     tile_size=tile_size,

@@ -27,10 +27,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--test-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--input": "data/coco_dataset/coco_instance_segmentation/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "2"],
 }
 
@@ -61,11 +61,13 @@ class TestInstanceSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
@@ -76,46 +78,55 @@ class TestInstanceSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -126,6 +137,7 @@ class TestInstanceSegmentationCLI:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg/test_multi_gpu"
         args1 = copy.deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)

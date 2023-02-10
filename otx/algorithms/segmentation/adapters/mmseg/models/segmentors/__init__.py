@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .detcon import DetConB
+from .detcon import DetConB, SupConDetConB
 
-__all__ = ["DetConB"]
+__all__ = ["DetConB", "SupConDetConB"]

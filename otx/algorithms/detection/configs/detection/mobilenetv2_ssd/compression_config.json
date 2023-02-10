@@ -51,7 +51,7 @@
         {
           "algorithm": "filter_pruning",
           "ignored_scopes": [
-            "{re}SingleStageDetector/SSDHead\\[bbox_head\\].*"
+            "{re}CustomSingleStageDetector/CustomSSDHead\\[bbox_head\\].*"
           ],
           "params": {
             "schedule": "baseline",

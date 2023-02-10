@@ -39,10 +39,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'label_0', 'label_1' classes
 args0 = {
-    "--train-data-roots": "data/imagenet_dataset",
-    "--val-data-roots": "data/imagenet_dataset",
-    "--test-data-roots": "data/imagenet_dataset",
-    "--input": "data/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/imagenet_dataset",
+    "--val-data-roots": "tests/assets/imagenet_dataset",
+    "--test-data-roots": "tests/assets/imagenet_dataset",
+    "--input": "tests/assets/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -54,10 +54,10 @@ args0 = {
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "data/imagenet_dataset_class_incremental",
-    "--val-data-roots": "data/imagenet_dataset_class_incremental",
-    "--test-data-roots": "data/imagenet_dataset_class_incremental",
-    "--input": "data/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--test-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--input": "tests/assets/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -101,6 +101,7 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_supcon(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_supcon"
         args1 = copy.deepcopy(args)
         args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
@@ -108,6 +109,7 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
@@ -118,6 +120,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0)
@@ -129,72 +132,84 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_demo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -204,6 +219,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -213,6 +229,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -222,6 +239,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -231,6 +249,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -240,18 +259,21 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -260,6 +282,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu"
         args1 = copy.deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
@@ -269,6 +292,7 @@ class TestToolsMultiClassSemiSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args0)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
         args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
@@ -278,15 +302,16 @@ class TestToolsMultiClassSemiSLClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args0)
 
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    "--train-data-roots": "data/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro_multilabel",
-    "--input": "data/datumaro_multilabel/images/train",
+    "--train-data-roots": "tests/assets/datumaro_multilabel",
+    "--val-data-roots": "tests/assets/datumaro_multilabel",
+    "--test-data-roots": "tests/assets/datumaro_multilabel",
+    "--input": "tests/assets/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -299,10 +324,10 @@ args0_m = {
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 # TODO: Not include incremental case yet
 args_m = {
-    "--train-data-roots": "data/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro_multilabel",
-    "--input": "data/datumaro_multilabel/images/train",
+    "--train-data-roots": "tests/assets/datumaro_multilabel",
+    "--val-data-roots": "tests/assets/datumaro_multilabel",
+    "--test-data-roots": "tests/assets/datumaro_multilabel",
+    "--input": "tests/assets/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -317,6 +342,7 @@ class TestToolsMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_train_testing(template, tmp_dir_path, otx_dir, args0_m)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_m)
@@ -327,6 +353,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args0_m)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0_m)
@@ -338,30 +365,35 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pytest.skip("Demo for multi-label classification is not supported now.")
         otx_demo_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -369,6 +401,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pytest.skip("Demo for multi-label classification is not supported now.")
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -376,18 +409,21 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pytest.xfail("Demo for multi-label classification is not supported now.")
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -395,12 +431,14 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -410,6 +448,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -419,6 +458,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -428,6 +468,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -437,6 +478,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -446,18 +488,21 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
@@ -466,16 +511,17 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls/test_multi_gpu"
         args0 = copy.deepcopy(args_m)
         args0["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
 
 
 args_h = {
-    "--train-data-roots": "data/datumaro_h-label",
-    "--val-data-roots": "data/datumaro_h-label",
-    "--test-data-roots": "data/datumaro_h-label",
-    "--input": "data/datumaro_h-label/images/train",
+    "--train-data-roots": "tests/assets/datumaro_h-label",
+    "--val-data-roots": "tests/assets/datumaro_h-label",
+    "--test-data-roots": "tests/assets/datumaro_h-label",
+    "--input": "tests/assets/datumaro_h-label/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -490,6 +536,7 @@ class TestToolsHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_h)
@@ -500,6 +547,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args_h)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_h)
@@ -511,30 +559,35 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_export_testing(template, tmp_dir_path)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.02)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         pytest.skip("Demo for hierarchical classification is not supported now.")
         otx_demo_testing(template, tmp_dir_path, otx_dir, args_h)
 
@@ -542,6 +595,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         pytest.skip("Demo for hierarchical classification is not supported now.")
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
@@ -549,18 +603,21 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_demo_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         pytest.skip("Demo for hierarchical classification is not supported now.")
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_h)
 
@@ -568,12 +625,14 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -583,6 +642,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -592,6 +652,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -601,6 +662,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_validate_fq(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -610,6 +672,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -619,12 +682,14 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
@@ -632,6 +697,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
@@ -639,6 +705,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls/test_multi_gpu"
         args1 = copy.deepcopy(args_h)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
@@ -646,7 +713,7 @@ class TestToolsHierarchicalClassification:
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--train-data-roots": "data/imagenet_dataset",
+    "--train-data-roots": "tests/assets/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -663,14 +730,17 @@ class TestToolsSelfSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_selfsl_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
-        template_work_dir = get_template_dir(template, tmp_dir_path)
+        tmp_dir_path_1 = tmp_dir_path / "multi_class_cls/test_selfsl"
+        otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
+        template_work_dir = get_template_dir(template, tmp_dir_path_1)
         args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+        tmp_dir_path_2 = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
+        otx_train_testing(template, tmp_dir_path_2, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_selfsl_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)

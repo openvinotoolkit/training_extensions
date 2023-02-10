@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import os
 import subprocess
-
-# import os
 import sys
+import time
 
 
 def __mo_check_requirements(framework="onnx"):
@@ -113,26 +113,39 @@ def generate_ir(output_path, model_path, silent, save_xml=True, **mo_kwargs):
     # ret = __mo_main_wrapper(mo_args, None)
     # ret = os.system('mo.py ' + ' '.join(mo_args))
     ret = subprocess.run(["mo"] + mo_args, shell=False).returncode
-    if ret != 0:
-        err_msg = "Failed to run the model optimizer to convert a model"
-        return ret, err_msg
 
     if silent:
         # return back stdout
         sys.stdout = old_stdout
 
+    # NOTE: mo returns non zero return code (245) even though it successfully generate IR
+    cur_time = time.time()
+    time_threshold = 5
+    model_name = mo_kwargs.get("model_name", "model")
+    if not (
+        ret == 245
+        and not {f"{model_name}.bin", f"{model_name}.xml"} - set(os.listdir(model_path))
+        and (
+            os.path.getmtime(os.path.join(model_path, f"{model_name}.bin")) - cur_time < time_threshold
+            and os.path.getmtime(os.path.join(model_path, f"{model_name}.xml")) - cur_time < time_threshold
+        )
+    ):
+        err_msg = "Failed to run the model optimizer to convert a model"
+        return ret, err_msg
+
     print("*** Model optimization completed ***")
     # move bin files to workspace
-    import os
 
-    bin_filename = mo_kwargs["model_name"]
-    output_filename = bin_filename
-    # while os.path.exists(os.path.join(output_path, output_filename + '.bin')):
-    #    output_filename = output_filename + "_"
     if not os.path.exists(output_path):
         os.makedirs(output_path)
-    os.rename(os.path.join(model_path, bin_filename + ".bin"), os.path.join(output_path, output_filename + ".bin"))
+    os.rename(
+        os.path.join(model_path, model_name + ".bin"),
+        os.path.join(output_path, model_name + ".bin"),
+    )
     if save_xml:
-        os.rename(os.path.join(model_path, bin_filename + ".xml"), os.path.join(output_path, output_filename + ".xml"))
+        os.rename(
+            os.path.join(model_path, model_name + ".xml"),
+            os.path.join(output_path, model_name + ".xml"),
+        )
 
-    return ret, "Saved outputs into {}".format(output_path)
+    return 0, "Saved outputs into {}".format(output_path)

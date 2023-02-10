@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from .data import MPADetDataset
+from .data import OTXDetDataset
 
 # fmt: off
 # isort: off
@@ -15,4 +15,4 @@ get_root_logger().propagate = False  # pylint: disable=wrong-import-order
 # isort:on
 # fmt: on
 
-__all__ = ["MPADetDataset"]
+__all__ = ["OTXDetDataset"]

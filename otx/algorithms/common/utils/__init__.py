@@ -19,7 +19,7 @@ from .callback import (
     OptimizationProgressCallback,
     TrainingProgressCallback,
 )
-from .data import get_cls_img_indices, get_old_new_img_indices
+from .data import get_cls_img_indices, get_image, get_old_new_img_indices
 from .utils import UncopiableDefaultDict, get_arg_spec, get_task_class, load_template
 
 __all__ = [
@@ -32,4 +32,5 @@ __all__ = [
     "load_template",
     "get_task_class",
     "get_arg_spec",
+    "get_image",
 ]

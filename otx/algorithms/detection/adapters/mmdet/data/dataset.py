@@ -22,13 +22,13 @@ from typing import Any, Dict, List, Sequence, Tuple, Union
 import numpy as np
 from mmcv import Config
 from mmcv.utils import print_log
-from mmdet.core import PolygonMasks, eval_map, eval_recalls
+from mmdet.core import PolygonMasks, eval_map
 from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
-from otx.algorithms.detection.adapters.mmdet.evaluation import CustomMAE, eval_segm
+from otx.algorithms.detection.adapters.mmdet.evaluation import eval_segm
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
@@ -102,7 +102,7 @@ def get_annotation_mmdet_format(
 
 
 @DATASETS.register_module()
-class MPADetDataset(CustomDataset):
+class OTXDetDataset(CustomDataset):
     """Wrapper that allows using a OTX dataset to train mmdetection models.
 
     This wrapper is not based on the filesystem,
@@ -183,7 +183,7 @@ class MPADetDataset(CustomDataset):
         # even if we need only checking aspect ratio of the image; due to it
         # this implementation of dataset does not uses such tricks as skipping images with wrong aspect ratios or
         # small image size, since otherwise reading the whole dataset during initialization will be required.
-        self.data_infos = MPADetDataset._DataInfoProxy(otx_dataset, labels)
+        self.data_infos = OTXDetDataset._DataInfoProxy(otx_dataset, labels)
 
         self.proposals = None  # Attribute expected by mmdet but not used for OTX datasets
 
@@ -274,7 +274,7 @@ class MPADetDataset(CustomDataset):
                 Default: None.
         """
         metrics = metric if isinstance(metric, list) else [metric]
-        allowed_metrics = ["mAP", "recall", "mIoU", "mae", "mae%"]
+        allowed_metrics = ["mAP"]
         eval_results = OrderedDict()
         for metric in metrics:  # pylint: disable=redefined-argument-from-local
             if metric not in allowed_metrics:
@@ -307,55 +307,6 @@ class MPADetDataset(CustomDataset):
                     mean_aps.append(mean_ap)
                     eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
                 eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
-            elif metric == "recall":
-                gt_bboxes = [ann["bboxes"] for ann in annotations]
-                recalls = eval_recalls(gt_bboxes, results, proposal_nums, iou_thr, logger=logger)
-                for i, num in enumerate(proposal_nums):
-                    for j, iou in enumerate(iou_thrs):
-                        eval_results[f"recall@{num}@{iou}"] = recalls[i, j]
-                if recalls.shape[1] > 1:
-                    ar = recalls.mean(axis=1)
-                    for i, num in enumerate(proposal_nums):
-                        eval_results[f"AR@{num}"] = ar[i]
-            elif metric == "mIoU":
-                assert isinstance(results[0], tuple), "Result format not supported"
-                mean_mious = []
-                for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
-                    print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-                    mean_iou, _ = eval_segm(
-                        results,
-                        annotations,
-                        iou_thr=iou_thr,
-                        dataset=self.CLASSES,
-                        logger=logger,
-                        metric=metric,
-                    )
-                    mean_mious.append(mean_iou)
-                    eval_results[f"mIoU{int(iou_thr * 100):02d}"] = round(mean_iou, 3)
-                eval_results["mIoU"] = sum(mean_mious) / len(mean_mious)
-            elif metric == "mae":
-                mae = CustomMAE(
-                    self.otx_dataset,
-                    results,
-                    annotations,
-                    vary_confidence_threshold=True,
-                    labels=self.CLASSES,
-                )
-                eval_results["MAE best score"] = float(f"{mae.mae.value:.3f}")
-                eval_results["MAE conf thres"] = float(f"{mae.best_confidence_threshold.value:.3f}")
-                print(f"MAE best score = {mae.mae.value:.3f}")
-                print(f"MAE conf thres = {mae.best_confidence_threshold.value:.3f}")
-                for class_name, score_metric in mae.mae_per_label.items():
-                    eval_results[f"MAE:{class_name}"] = float(f"{score_metric.value:.3f}")
-                    print(f"MAE:{class_name} = {score_metric.value:.3f}")
-
-                eval_results["Relative MAE best score"] = float(f"{mae.relative_mae.value:.3f}")
-                print(f"Relative MAE best score = {mae.relative_mae.value:.3f}")
-                for class_name, score_metric in mae.relative_mae_per_label.items():
-                    eval_results[f"Relative MAE:{class_name}"] = float(f"{score_metric.value:.3f}")
-                    print(f"Relative MAE:{class_name} = {score_metric.value:.3f}")
-                eval_results["mae"] = eval_results["MAE best score"]
-                eval_results["mae%"] = eval_results["Relative MAE best score"]
         return eval_results
 
 

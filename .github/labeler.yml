@@ -1,13 +1,31 @@
 # See help here: https://github.com/marketplace/actions/labeler
 
-dependencies:
-  - "requirements/*"
-  - "setup.py"
 CLI:
   - "otx/cli/**/*"
-SDK:
-  - "otx/sdk/**/*"
-tests:
-  - "tests/**/*"
-tasks:
+API:
+  - "otx/api/**/*"
+ALGO:
   - "otx/algorithms/**/*"
+TEST:
+  - "tests/**/*"
+DOC:
+  - "docs/**/*"
+  - "**/*.md"
+  - "LICENSE"
+  - "third-party-programs.txt"
+BUILD:
+  - ".ci/**/*"
+  - ".github/**/*"
+  - ".flake8"
+  - ".isort.cfg"
+  - ".mdlrc"
+  - ".pre-commit-config.yaml"
+  - "markdownlint.rb"
+  - "setup.py"
+  - "pyproject.toml"
+  - "tox.ini"
+  - "MANIFEST.in"
+DEPENDENCY:
+  - "requirements/*"
+  - "setup.py"
+  - "pyproject.toml"

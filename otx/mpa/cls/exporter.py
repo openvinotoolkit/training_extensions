@@ -5,6 +5,7 @@
 import numpy as np
 from mmcv.runner import wrap_fp16_model
 
+from otx.mpa.deploy.utils import sync_batchnorm_2_batchnorm
 from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
@@ -24,6 +25,9 @@ class ClsExporter(ExporterMixin, ClsStage):
 
         def model_builder_helper(*args, **kwargs):
             model = model_builder(*args, **kwargs)
+            # TODO: handle various input size
+            model = sync_batchnorm_2_batchnorm(model, 2)
+
             if hasattr(model, "is_export"):
                 model.is_export = True
 
