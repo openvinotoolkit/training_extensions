@@ -17,6 +17,7 @@ import logging
 import os
 import random
 import tempfile
+import datumaro as dm
 from typing import Iterator, List, Optional, Sequence, Tuple
 
 import cv2
@@ -318,6 +319,38 @@ def generate_random_single_video(width: int = 480, height: int = 360, number_of_
     finally:
         temp_dir.cleanup()
 
+@contextlib.contextmanager
+def generate_datumaro_dataset(
+        subsets: List[str], 
+        task: str,
+        num_data: int = 1,
+    ) -> dm.Dataset:
+    """Generate Datumaro Dataset.
+
+    Args:
+        subsets (List): the list of subset, e.g. ["train", "val"]
+        task (str): task name, e.g. "classification", "segmentation", ..
+        num_data (int): the number of dataset to make
+
+    Returns:
+        dm.Dataset: Datumaro Dataset
+    """
+    dataset_items:dm.DatasetItem = []
+    ann_task_dict = {
+        "classificaiton": dm.Label(label=0),
+        "detection": dm.Bbox(1, 2, 3, 4, label=0),
+    }
+    for subset in subsets:
+        for idx in num_data:
+            dataset_items.append(
+                dm.DatasetItem(
+                    id=f"{subset}/image{idx}", 
+                    subset=subset,
+                    image=np.ones((5, 5, 3)),
+                    annotations=[ann_task_dict[task]]
+                )
+            )
+    return dm.Dataset(dataset_items, categories=['cat', 'dog']) 
 
 def _write_random_image(width: int, height: int, filename: str):
     img = np.uint8(np.random.random((height, width, 3)) * 255)
@@ -334,7 +367,6 @@ def _write_random_video(width: int, height: int, number_of_frames: int, filename
         videowriter.write(img)
 
     videowriter.release()
-
 
 class ConfigExample(ConfigurableParameters):
     header = string_attribute("Test configuration for an object detection task")
