@@ -33,6 +33,7 @@ class TestOTXDetTaskTrain:
 
     @e2e_pytest_unit
     def test_save_model(self, mocker):
+        """Test save_model method in OTXDetTaskTrain."""
         mocker.patch("torch.load", return_value="")
         self.train_task.save_model(self.model)
 
@@ -41,7 +42,7 @@ class TestOTXDetTaskTrain:
 
     @e2e_pytest_unit
     def test_train(self, mocker):
-
+        """Test train method in OTXDetTaskTrain."""
         self.dataset, _ = generate_det_dataset(task_type=TaskType.DETECTION)
         mock_lcurve_val = OTXLoggerHook.Curve()
         mock_lcurve_val.x = [0, 1]
@@ -72,5 +73,6 @@ class TestOTXDetTaskTrain:
 
     @e2e_pytest_unit
     def test_cancel_training(self):
+        """Test cancel_training method in OTXDetTaskTrain."""
         self.train_task.cancel_training()
         assert self.train_task._should_stop is True

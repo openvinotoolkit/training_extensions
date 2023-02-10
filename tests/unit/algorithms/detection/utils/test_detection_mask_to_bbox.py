@@ -9,7 +9,6 @@ from otx.algorithms.detection.utils.mask_to_bbox import mask2bbox, mask_to_borde
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-# TODO: Need to add adaptive_tile_params unit-test
 class TestMask2Bbox:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:

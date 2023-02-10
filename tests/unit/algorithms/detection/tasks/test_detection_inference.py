@@ -26,7 +26,7 @@ from tests.unit.algorithms.detection.test_helpers import (
 )
 
 
-class TestOTXDetTaskInference:
+class TestOTXDetectionTaskInference:
     @pytest.fixture(autouse=True)
     def setup(self, otx_model, tmp_dir_path) -> None:
         self.inference_task = dict()
@@ -47,6 +47,7 @@ class TestOTXDetTaskInference:
         [(TaskType.DETECTION, Domain.DETECTION), (TaskType.INSTANCE_SEGMENTATION, Domain.INSTANCE_SEGMENTATION)],
     )
     def test_infer(self, task_type, domain, mocker):
+        """Test infer method in DetectionInferenceTask."""
         dataset, labels = generate_det_dataset(task_type=task_type)
         if task_type == TaskType.DETECTION:
             fake_prediction = [[np.random.rand(1, 5)]]
@@ -87,6 +88,7 @@ class TestOTXDetTaskInference:
         [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION],
     )
     def test_evaluate(self, task_type, mocker):
+        """Test evaluate method in DetectionInferenceTask."""
         result_set = ResultSetEntity(
             model=self.model,
             ground_truth_dataset=DatasetEntity(),
@@ -106,6 +108,7 @@ class TestOTXDetTaskInference:
         [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION],
     )
     def test_export(self, task_type, mocker):
+        """Test export method in DetectionInferenceTask, expected RuntimeError without model file."""
         fake_output = {"outputs": {"bin": None, "xml": None}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
 
@@ -119,6 +122,7 @@ class TestOTXDetTaskInference:
         [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION],
     )
     def test_export_with_model_files(self, task_type, mocker):
+        """Test export method in DetectionInferenceTask."""
         with open(f"{self.output_path}/model.xml", "wb") as f:
             f.write(b"foo")
         with open(f"{self.output_path}/model.bin", "wb") as f:
@@ -138,6 +142,7 @@ class TestOTXDetTaskInference:
         [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION],
     )
     def test_unload(self, task_type, mocker):
+        """Test unload method in DetectionInferenceTask."""
         mock_cleanup = mocker.patch.object(BaseTask, "cleanup")
         self.inference_task[task_type].unload()
         mock_cleanup.assert_called_once()
