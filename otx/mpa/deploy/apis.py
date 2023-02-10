@@ -5,16 +5,24 @@
 import os
 import time
 from collections.abc import Mapping
+from copy import deepcopy
 from functools import partial
 from subprocess import CalledProcessError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
 import numpy as np
+import onnx
 import torch
 from mmcv.parallel import collate, scatter
 
-from .utils import is_mmdeploy_enabled, mmdeploy_init_model_helper, numpy_2_list
+from .utils import numpy_2_list
+from .utils.mmdeploy import (
+    is_mmdeploy_enabled,
+    mmdeploy_init_model_helper,
+    update_deploy_cfg,
+)
+from .utils.onnx import prepare_onnx_for_openvino
 
 
 class NaiveExporter:
@@ -155,10 +163,15 @@ class NaiveExporter:
 
 if is_mmdeploy_enabled():
     import mmdeploy.apis.openvino as openvino_api
-    from mmdeploy.apis import build_task_processor, torch2onnx
+    from mmdeploy.apis import (
+        build_task_processor,
+        extract_model,
+        get_predefined_partition_cfg,
+        torch2onnx,
+    )
     from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
     from mmdeploy.core import FUNCTION_REWRITER
-    from mmdeploy.utils import get_ir_config
+    from mmdeploy.utils import get_backend_config, get_ir_config, get_partition_config
 
     class MMdeployExporter:
         @staticmethod
@@ -169,6 +182,7 @@ if is_mmdeploy_enabled():
             deploy_cfg: mmcv.Config,
             *,
             model_name: str = "model",
+            partition: bool = True,
         ):
 
             task_processor = build_task_processor(cfg, deploy_cfg, "cpu")
@@ -192,20 +206,39 @@ if is_mmdeploy_enabled():
             else:
                 input_data = np.zeros(input_data_cfg["shape"], dtype=np.uint8)
 
-            onnx_path = MMdeployExporter.torch2onnx(
-                output_dir,
-                input_data,
-                cfg,
-                deploy_cfg,
-                model_name=model_name,
+            onnx_paths = []
+            onnx_paths.append(
+                MMdeployExporter.torch2onnx(
+                    output_dir,
+                    input_data,
+                    cfg,
+                    deploy_cfg,
+                    model_name=model_name,
+                )
             )
 
-            MMdeployExporter.onnx2openvino(
-                output_dir,
-                onnx_path,
-                deploy_cfg,
-                model_name=model_name,
-            )
+            partition_cfgs = get_partition_config(deploy_cfg)
+            if partition and partition_cfgs:
+                partition_cfgs = partition_cfgs.get("partition_cfg", None)
+                onnx_paths.extend(
+                    MMdeployExporter.partition_onnx(
+                        output_dir,
+                        onnx_paths[0],
+                        partition_cfgs,
+                    )
+                )
+
+            for i, onnx_path in enumerate(onnx_paths):
+                mo_options = {}
+                if i > 0:
+                    mo_options = partition_cfgs[i - 1].get("mo_options", {})
+                deploy_cfg_ = deepcopy(deploy_cfg)
+                update_deploy_cfg(onnx_path, deploy_cfg_, mo_options)
+                MMdeployExporter.onnx2openvino(
+                    output_dir,
+                    onnx_path,
+                    deploy_cfg_,
+                )
 
         @staticmethod
         def torch2onnx(
@@ -229,29 +262,56 @@ if is_mmdeploy_enabled():
             return os.path.join(output_dir, onnx_file_name)
 
         @staticmethod
+        def partition_onnx(
+            output_dir,
+            onnx_path: str,
+            partition_cfgs: Union[mmcv.ConfigDict, List[mmcv.ConfigDict]],
+        ) -> Tuple[str, ...]:
+            partitioned_paths = []
+
+            if not isinstance(partition_cfgs, list):
+                partition_cfgs = [partition_cfgs]
+
+            for partition_cfg in partition_cfgs:
+                save_file = partition_cfg["save_file"]
+                save_path = os.path.join(output_dir, save_file)
+                start = partition_cfg["start"]
+                end = partition_cfg["end"]
+                dynamic_axes = partition_cfg.get("dynamic_axes", None)
+
+                extract_model(onnx_path, start, end, dynamic_axes=dynamic_axes, save_file=save_path)
+                partitioned_paths.append(save_path)
+            return tuple(partitioned_paths)
+
+        @staticmethod
         def onnx2openvino(
             output_dir: str,
             onnx_path: str,
             deploy_cfg: Union[str, mmcv.Config],
             *,
-            model_name: str = "model",
+            model_name: Optional[str] = None,
         ) -> Tuple[str, str]:
+
             input_info = get_input_info_from_cfg(deploy_cfg)
             output_names = get_ir_config(deploy_cfg).output_names
             mo_options = get_mo_options_from_cfg(deploy_cfg)
 
-            if model_name:
-                mo_options.args += f'--model_name "{model_name}" '
+            if not model_name:
+                model_name = os.path.basename(onnx_path).replace(".onnx", "")
+            mo_options.args += f'--model_name "{model_name}" '
+
+            onnx_ready_path = os.path.join(os.path.dirname(onnx_path), f"{model_name}_ready.onnx")
+            prepare_onnx_for_openvino(onnx_path, os.path.join(os.path.dirname(onnx_path), f"{model_name}_ready.onnx"))
 
             try:
-                openvino_api.from_onnx(onnx_path, output_dir, input_info, output_names, mo_options)
+                openvino_api.from_onnx(onnx_ready_path, output_dir, input_info, output_names, mo_options)
             except CalledProcessError as e:
                 # NOTE: mo returns non zero return code (245) even though it successfully generate IR
                 cur_time = time.time()
                 time_threshold = 5
-                if (
+                if not (
                     e.returncode == 245
-                    and {model_name + ".bin", model_name + ".xml"} - set(os.listdir(output_dir))
+                    and not {model_name + ".bin", model_name + ".xml"} - set(os.listdir(output_dir))
                     and (
                         os.path.getmtime(os.path.join(output_dir, model_name + ".bin")) - cur_time < time_threshold
                         and os.path.getmtime(os.path.join(output_dir, model_name + ".xml")) - cur_time < time_threshold

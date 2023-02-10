@@ -94,6 +94,7 @@ if is_mmdeploy_enabled():
                     config,
                     deploy_config,
                 )
+                assert isinstance(onnx_path, str)
                 assert os.path.exists(onnx_path)
 
                 openvino_paths = MMdeployExporter.onnx2openvino(
