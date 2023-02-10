@@ -142,7 +142,7 @@ class HpoBase(ABC):
 
     @abstractmethod
     def get_next_sample(self):
-        """Get next sample to trian."""
+        """Get next sample to train."""
         raise NotImplementedError
 
     @abstractmethod
