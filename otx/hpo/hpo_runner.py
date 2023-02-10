@@ -18,6 +18,7 @@ import logging
 import multiprocessing
 import os
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from functools import partial
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
@@ -190,7 +191,7 @@ def get_resource_manager(
         available_gpu (Optional[str]): How many GPUs are available. It's used for GPUResourceManager. Defaults to None.
 
     Raises:
-        ValueError: If resource_type is neither 'gpu' nor 'cpu, then raise an error.
+        ValueError: If resource_type is neither 'gpu' nor 'cpu', then raise an error.
 
     Returns:
         ResourceManager: Resource manager to use.
@@ -225,9 +226,9 @@ class HpoLoop:
         train_func (Callable): Function to train a model.
         resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use.
                                                          If can be changed depending on environment. Defaults to "gpu".
-        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly.
+        num_parallel_trial (Optional[int], optional): How many trials to run in parallel.
                                                     It's used for CPUResourceManager. Defaults to None.
-        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial.
+        num_gpu_for_single_trial (Optional[int], optional): How many GPUs are used for a single trial.
                                                             It's used for GPUResourceManager. Defaults to None.
         available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager.
                                                  Defaults to None.
@@ -274,7 +275,7 @@ class HpoLoop:
         trial.status = TrialStatus.RUNNING
         uid = self._get_uid()
 
-        origin_env = os.environ
+        origin_env = deepcopy(os.environ)
         env = self._resource_manager.reserve_resource(uid)
         if env is not None:
             for key, val in env.items():
@@ -375,9 +376,9 @@ def run_hpo_loop(
         train_func (Callable): Function to train a model.
         resource_type (Literal['gpu', 'cpu'], optional): Which type of resource to use.
                                                          If can be changed depending on environment. Defaults to "gpu".
-        num_parallel_trial (Optional[int], optional): How many trials to trun parallelly.
+        num_parallel_trial (Optional[int], optional): How many trials to run in parallel.
                                                       It's used for CPUResourceManager. Defaults to None.
-        num_gpu_for_single_trial (Optional[int], optional): How many GPUs is used for a single trial.
+        num_gpu_for_single_trial (Optional[int], optional): How many GPUs are used for a single trial.
                                                             It's used for GPUResourceManager. Defaults to None.
         available_gpu (Optional[str], optional): How many GPUs are available. It's used for GPUResourceManager.
                                                  Defaults to None.

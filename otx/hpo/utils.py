@@ -102,7 +102,7 @@ def check_mode_input(mode: str):
         ValueError: If 'mode' is not both 'max' and 'min', the error is raised.
     """
     if mode not in ["max", "min"]:
-        raise ValueError("mode should be max on min.\n" f"Your value : {mode}")
+        raise ValueError("mode should be max or min.\n" f"Your value : {mode}")
 
 
 def left_is_better(val1, val2, mode: str) -> bool:

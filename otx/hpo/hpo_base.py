@@ -77,7 +77,6 @@ class HpoBase(ABC):
         maximum_resource: Optional[Union[int, float]] = None,
         subset_ratio: Optional[Union[float, int]] = None,
         min_subset_size: int = 500,
-        batch_size_name: Optional[str] = None,
         resume: bool = False,
         prior_hyper_parameters: Optional[Union[Dict, List[Dict]]] = None,
         acceptable_additional_time_ratio: Union[float, int] = 1.0,
@@ -87,14 +86,17 @@ class HpoBase(ABC):
         check_positive(full_dataset_size, "full_dataset_size")
         check_positive(num_full_iterations, "num_full_iterations")
         if not 0 < non_pure_train_ratio <= 1:
-            raise ValueError("non_pure_train_ratio should be between 0 and 1." f" Your value is {non_pure_train_ratio}")
+            raise ValueError(
+                "non_pure_train_ratio should be greater than 0 and lesser than or equal to 1."
+                f" Your value is {subset_ratio}"
+            )
         if maximum_resource is not None:
             check_positive(maximum_resource, "maximum_resource")
         if num_trials is not None:
             check_positive(num_trials, "num_trials")
         check_positive(num_workers, "num_workers")
         if subset_ratio is not None:
-            if not 0 < subset_ratio <= 1.0:
+            if not 0 < subset_ratio <= 1:
                 raise ValueError(
                     "subset_ratio should be greater than 0 and lesser than or equal to 1."
                     f" Your value is {subset_ratio}"
@@ -117,7 +119,6 @@ class HpoBase(ABC):
         self.resume = resume
         self.hpo_status: dict = {}
         self.metric = metric
-        self.batch_size_name = batch_size_name
         self.acceptable_additional_time_ratio = acceptable_additional_time_ratio
         if prior_hyper_parameters is None:
             prior_hyper_parameters = []

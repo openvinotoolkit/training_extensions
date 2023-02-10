@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 def _check_reduction_factor_value(reduction_factor: int):
     if reduction_factor < 2:
-        raise ValueError("reduction_factor should be at least 2.\n" f"your value : {reduction_factor}")
+        raise ValueError("reduction_factor should be greater than 2.\n" f"your value : {reduction_factor}")
 
 
 class AshaTrial(Trial):
@@ -46,7 +46,7 @@ class AshaTrial(Trial):
         trial_id (Any): Id of the trial.
         configuration (Dict): Configuration for the trial.
         train_environment (Optional[Dict]): Train environment for the trial.
-                                            For, example, subset ratio can be includes. Defaults to None.
+                                            For, example, subset ratio can be included. Defaults to None.
     """
 
     def __init__(self, trial_id: Any, configuration: Dict, train_environment: Optional[Dict] = None):
@@ -77,7 +77,7 @@ class AshaTrial(Trial):
         self._bracket = val
 
     def save_results(self, save_path: str):
-        """Save a result of the trail at 'save_path'."""
+        """Save a result of the trial at 'save_path'."""
         results = {
             "id": self.id,
             "rung": self.rung,
@@ -124,7 +124,7 @@ class Rung:
 
     @property
     def num_required_trial(self):
-        """Necessary trials for the rung."""
+        """Number of required trials for the rung."""
         return self._num_required_trial
 
     @property
@@ -181,7 +181,7 @@ class Rung:
         return self.num_required_trial > self.get_num_trials()
 
     def get_num_trials(self) -> int:
-        """Number of trails the rung has."""
+        """Number of trials the rung has."""
         return len(self._trials)
 
     def is_done(self) -> bool:
@@ -384,7 +384,7 @@ class Bracket:
         """Get next trial to train.
 
         Returns:
-            Optional[AshaTrial]: Next trial to train. There is no trial to trian, then return None.
+            Optional[AshaTrial]: Next trial to train. There is no trial to train, then return None.
         """
         current_rung = self.max_rung
         while current_rung >= 0:
@@ -703,7 +703,7 @@ class HyperBand(HpoBase):
         return next_sample
 
     def _make_trial_to_estimate_resource(self) -> AshaTrial:
-        """Trial to esimate a maximum resource or minimum resource."""
+        """Trial to estimate a maximum resource or minimum resource."""
         trial = self._make_new_hyper_parameter_configs(1)[0]
         if self.maximum_resource is None:
             if len(self._trials) == 1:  # first trial to estimate
@@ -725,7 +725,7 @@ class HyperBand(HpoBase):
             bracket.save_results(save_path)
 
     def auto_config(self) -> List[Dict[str, Any]]:
-        """Configure ASHA automatically aligning with possible resoure.
+        """Configure ASHA automatically aligning with possible resource.
 
         Configure ASHA automatically. If resource is lesser than full ASHA, decrease ASHA scale.
         In contrast, resource is more than full ASHA, increase ASHA scale.
