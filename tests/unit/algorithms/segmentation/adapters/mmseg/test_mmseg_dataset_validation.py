@@ -4,7 +4,6 @@
 
 import numpy as np
 import pytest
-from typing import Any
 
 from otx.algorithms.segmentation.adapters.mmseg.data.dataset import MPASegDataset
 
@@ -74,14 +73,3 @@ class TestMPASegDataset():
     def test_get_gt_seg_maps(self) -> None:
         gt_seg_map: np.ndarray = self.dataset.get_gt_seg_maps()[0]
         assert np.equal(gt_seg_map, np.zeros((10, 16))).all()
-        
-
-    # @e2e_pytest_unit
-    # def test_conversion_to_mmseg_format(self):
-    #     dataset_item_sample: DatasetItemEntity = dataset_item()
-    #     labels = [label_entity()]
-    #     result = get_annotation_mmseg_format(dataset_item_sample, labels)
-    #     expected = {'gt_semantic_seg': np.zeros((10, 16), dtype=np.int8)}
-
-    #     np.testing.assert_equal(result, expected)
-        # assert result == expected
