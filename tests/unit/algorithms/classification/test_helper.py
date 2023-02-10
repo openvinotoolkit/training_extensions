@@ -1,3 +1,7 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from pathlib import Path
 import random
 import time
