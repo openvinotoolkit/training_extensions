@@ -104,10 +104,7 @@ def main():
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
     # Auto-Configuration for Dataset configuration
-    # FIXME: Anomaly currently does not support workspace.
-    is_anomaly_task = "anomaly" in args.template if args.template else False
-    update_data_yaml = not is_anomaly_task
-    config_manager.configure_data_config(update_data_yaml=update_data_yaml)
+    config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
     dataset_config = config_manager.get_dataset_config(subsets=["test"])
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()

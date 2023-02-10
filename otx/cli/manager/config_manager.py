@@ -27,6 +27,11 @@ DEFAULT_MODEL_TEMPLATE_ID = {
     "DETECTION": "Custom_Object_Detection_Gen3_ATSS",
     "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
+    "ACTION_CLASSIFICATION": "Custom_Action_Classificaiton_X3D",
+    "ACTION_DETECTION": "Custom_Action_Detection_X3D_FAST_RCNN",
+    "ANOMALY_CLASSIFICATION": "ote_anomaly_classification_padim",
+    "ANOMALY_DETECTION": "ote_anomaly_detection_padim",
+    "ANOMALY_SEGMENTATION": "ote_anomaly_segmentation_padim",
 }
 
 AUTOSPLIT_SUPPORTED_FORMAT = [
@@ -373,8 +378,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
 
         # Load & Save Model config
-        model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
-        model_config.dump(str(train_type_dir / "model.py"))
+        if (model_dir / "model.py").exists():
+            model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
+            model_config.dump(str(train_type_dir / "model.py"))
 
         # Copy config files
         config_files = [
@@ -394,6 +400,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             shutil.copyfile(
                 str(model_dir / "compression_config.json"),
                 str(train_type_dir / "compression_config.json"),
+            )
+        # Copy compression_config.json
+        if (model_dir / "pot_optimization_config.json").exists():
+            shutil.copyfile(
+                str(model_dir / "pot_optimization_config.json"),
+                str(train_type_dir / "pot_optimization_config.json"),
             )
 
         self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
