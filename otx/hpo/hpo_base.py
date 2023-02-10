@@ -195,7 +195,7 @@ class Trial:
 
     @property
     def iteration(self):
-        """Iteration to use for trianing."""
+        """Iteration to use for training."""
         return self._iteration
 
     @iteration.setter
