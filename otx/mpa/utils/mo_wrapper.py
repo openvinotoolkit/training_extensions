@@ -122,9 +122,9 @@ def generate_ir(output_path, model_path, silent, save_xml=True, **mo_kwargs):
     cur_time = time.time()
     time_threshold = 5
     model_name = mo_kwargs.get("model_name", "model")
-    if (
+    if not (
         ret == 245
-        and {f"{model_name}.bin", f"{model_name}.xml"} - set(os.listdir(model_path))
+        and not {f"{model_name}.bin", f"{model_name}.xml"} - set(os.listdir(model_path))
         and (
             os.path.getmtime(os.path.join(model_path, f"{model_name}.bin")) - cur_time < time_threshold
             and os.path.getmtime(os.path.join(model_path, f"{model_name}.xml")) - cur_time < time_threshold
