@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from otx.algorithms.detection.adapters.mmdet.data.dataset import (
-    MPADetDataset,
+    OTXDetDataset,
     get_annotation_mmdet_format,
 )
 from otx.api.entities.annotation import (
@@ -77,11 +77,11 @@ class TestMMDatasetFunctionsInputParamsValidation:
         )
 
 
-class TestMPADetDatasetInputParamsValidation:
+class TestOTXDetDatasetInputParamsValidation:
     @staticmethod
     def dataset():
         pipeline = [{"type": "LoadImageFromFile", "to_float32": True}]
-        return MPADetDataset(
+        return OTXDetDataset(
             otx_dataset=DatasetEntity(),
             labels=[label_entity()],
             pipeline=pipeline,
@@ -93,14 +93,14 @@ class TestMPADetDatasetInputParamsValidation:
     def test_otx_dataset_init_params_validation(self):
         """
         <b>Description:</b>
-        Check MPADetDataset object initialization parameters validation
+        Check OTXDetDataset object initialization parameters validation
 
         <b>Input data:</b>
-        MPADetDataset object initialization parameters with unexpected type
+        OTXDetDataset object initialization parameters with unexpected type
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
-        MPADetDataset object initialization parameter
+        OTXDetDataset object initialization parameter
         """
         label = label_entity()
 
@@ -130,17 +130,17 @@ class TestMPADetDatasetInputParamsValidation:
         check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
-            class_or_function=MPADetDataset,
+            class_or_function=OTXDetDataset,
         )
 
     @e2e_pytest_unit
     def test_otx_dataset_prepare_train_img_params_validation(self):
         """
         <b>Description:</b>
-        Check MPADetDataset object "prepare_train_img" method input parameters validation
+        Check OTXDetDataset object "prepare_train_img" method input parameters validation
 
         <b>Input data:</b>
-        MPADetDataset object, "idx" non-integer type parameter
+        OTXDetDataset object, "idx" non-integer type parameter
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
@@ -154,10 +154,10 @@ class TestMPADetDatasetInputParamsValidation:
     def test_otx_dataset_prepare_test_img_params_validation(self):
         """
         <b>Description:</b>
-        Check MPADetDataset object "prepare_test_img" method input parameters validation
+        Check OTXDetDataset object "prepare_test_img" method input parameters validation
 
         <b>Input data:</b>
-        MPADetDataset object, "idx" non-integer type parameter
+        OTXDetDataset object, "idx" non-integer type parameter
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
@@ -171,10 +171,10 @@ class TestMPADetDatasetInputParamsValidation:
     def test_otx_dataset_pre_pipeline_params_validation(self):
         """
         <b>Description:</b>
-        Check MPADetDataset object "pre_pipeline" method input parameters validation
+        Check OTXDetDataset object "pre_pipeline" method input parameters validation
 
         <b>Input data:</b>
-        MPADetDataset object, "results" unexpected type object
+        OTXDetDataset object, "results" unexpected type object
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
@@ -195,10 +195,10 @@ class TestMPADetDatasetInputParamsValidation:
     def test_otx_dataset_get_ann_info_params_validation(self):
         """
         <b>Description:</b>
-        Check MPADetDataset object "get_ann_info" method input parameters validation
+        Check OTXDetDataset object "get_ann_info" method input parameters validation
 
         <b>Input data:</b>
-        MPADetDataset object, "idx" non-integer type parameter
+        OTXDetDataset object, "idx" non-integer type parameter
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
