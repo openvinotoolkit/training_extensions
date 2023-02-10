@@ -32,6 +32,7 @@ def test_find_label_by_name(name):
     out = find_label_by_name(label_schema.get_labels(include_empty=False), name, Domain.DETECTION)
     assert out.name == name
 
+
 @e2e_pytest_unit
 def test_find_label_by_name_error():
     classes = ("rectangle", "rectangle", "triangle")
@@ -77,8 +78,9 @@ def test_get_anchor_boxes():
     expected_out = ([[100.0], [100.0]], [[120.0], [120.0]])
     assert out == expected_out
 
+
 @e2e_pytest_unit
 def test_format_list_to_str():
     out = format_list_to_str([[0.1839128319, 0.47398123]])
-    expected_out = '[[0.18, 0.47]]'
+    expected_out = "[[0.18, 0.47]]"
     assert out == expected_out
