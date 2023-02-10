@@ -589,12 +589,12 @@ class EMAMomentumUpdateHook(Hook):
     :param by_epoch: Whether updating momentum by epoch or not, defaults to False.
     """
 
-    def __init__(self, end_momentum=1.0, update_interval=1, by_epoch=False, **kwargs):
+    def __init__(self, end_momentum: float = 1.0, update_interval: int = 1, by_epoch: bool = False, **kwargs):
         self.by_epoch = by_epoch
         self.end_momentum = end_momentum
         self.update_interval = update_interval
 
-    def before_train_epoch(self, runner):
+    def before_train_epoch(self, runner: BaseRunner):
         """Called before_train_epoch in EMAMomentumUpdateHook."""
         if not self.by_epoch:
             return
@@ -618,7 +618,7 @@ class EMAMomentumUpdateHook(Hook):
             )
             model.momentum = updated_m
 
-    def before_train_iter(self, runner):
+    def before_train_iter(self, runner: BaseRunner):
         """Called before_train_iter in EMAMomentumUpdateHook."""
         if self.by_epoch:
             return
@@ -642,7 +642,7 @@ class EMAMomentumUpdateHook(Hook):
             )
             model.momentum = updated_m
 
-    def after_train_iter(self, runner):
+    def after_train_iter(self, runner: BaseRunner):
         """Called after_train_iter in EMAMomentumUpdateHook."""
         if self.every_n_iters(runner, self.update_interval):
             if is_module_wrapper(runner.model):
