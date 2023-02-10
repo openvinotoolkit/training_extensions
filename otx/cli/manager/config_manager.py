@@ -39,7 +39,7 @@ AUTOSPLIT_SUPPORTED_FORMAT = [
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
     "CLASSIFICATION": ["imagenet", "datumaro"],
     "DETECTION": ["coco", "voc", "yolo"],
-    "SEGMENTATION": ["common_semantic_segmentation", "voc", "cityscapes", "ade20k2017", "ade20k2020"],
+    "SEGMENTATION": ["cityscapes", "common_semantic_segmentation", "voc", "ade20k2017", "ade20k2020"],
     "ACTION_CLASSIFICATION": ["multi-cvat"],
     "ACTION_DETECTION": ["multi-cvat"],
     "ANOMALY_CLASSIFICATION": ["mvtec"],
@@ -109,7 +109,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         has_data_yaml = default_workspace_components["data_path"].exists()
         return has_template_yaml and has_data_yaml
 
-    def configure_template(self) -> None:
+    def configure_template(self, model: str = None) -> None:
         """Update the template appropriate for the situation."""
         if self.check_workspace():
             # Workspace -> template O
@@ -119,9 +119,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             self.template = parse_model_template(self.template)
         else:
             task_type = self.task_type
-            if not task_type:
+            if not task_type and not model:
                 task_type = self.auto_task_detection(self.args.train_data_roots)
-            self.template = self._get_template(task_type)
+            self.template = self._get_template(task_type, model=model)
         self.task_type = self.template.task_type
         self.model = self.template.name
         self.train_type = self._get_train_type()
@@ -153,6 +153,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
     def auto_task_detection(self, data_roots: str) -> str:
         """Detect task type automatically."""
+        if not data_roots:
+            raise ValueError("Workspace must already exist or one of {task or model or train-data-roots} must exist.")
         self.data_format = self.dataset_manager.get_data_format(data_roots)
         print(f"[*] Detected dataset format: {self.data_format}")
         return self._get_task_type_from_data_format(self.data_format)
@@ -301,7 +303,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if self.mode == "train" and str(self.train_type).upper() == "SELFSUPERVISED":
             self.data_config["val_subset"] = {"data_root": None}
 
-    def _get_template(self, task_type: str, model: str = None) -> ModelTemplate:
+    def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:
         """Returns the appropriate template for each situation.
 
         Args:
@@ -311,7 +313,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         Returns:
             ModelTemplate: Selected model template.
         """
-        otx_registry = OTXRegistry(self.otx_root).filter(task_type=task_type)
+        otx_registry = OTXRegistry(self.otx_root).filter(task_type=task_type if task_type else None)
         if model:
             template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model.lower()]
             if not template_lst:
