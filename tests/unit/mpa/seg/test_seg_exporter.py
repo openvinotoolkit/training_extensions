@@ -4,23 +4,23 @@ import pytest
 
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.mpa.deploy.apis import NaiveExporter
-from otx.mpa.det.exporter import DetectionExporter
 from otx.mpa.exporter_mixin import ExporterMixin
+from otx.mpa.seg.exporter import SegExporter
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.detection.test_helpers import (
-    DEFAULT_DET_RECIPE_CONFIG_PATH,
-    DEFAULT_DET_TEMPLATE_DIR,
+from tests.unit.algorithms.segmentation.test_helpers import (
+    DEFAULT_RECIPE_CONFIG_PATH,
+    DEFAULT_SEG_TEMPLATE_DIR,
 )
 
 
-class TestDetectionExporter:
+class TestOTXSegExporter:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        cfg = MPAConfig.fromfile(DEFAULT_DET_RECIPE_CONFIG_PATH)
-        self.exporter = DetectionExporter(name="", mode="train", config=cfg, common_cfg=None, index=0)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        cfg = MPAConfig.fromfile(DEFAULT_RECIPE_CONFIG_PATH)
+        self.exporter = SegExporter(name="", mode="train", config=cfg, common_cfg=None, index=0)
+        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
+        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
 
     @e2e_pytest_unit
     def test_run(self, mocker):
