@@ -183,7 +183,7 @@ def get_resource_manager(
     Args:
         resource_type (Literal["gpu", "cpu"]): Which type of resource to use.
                                                If can be changed depending on environment.
-        num_parallel_trial (Optional[int]): How many trials to trun parallelly. It's used for CPUResourceManager.
+        num_parallel_trial (Optional[int]): How many trials to run in parallel. It's used for CPUResourceManager.
                                             Defaults to None.
         num_gpu_for_single_trial (Optional[int]): How many GPUs is used for a single trial.
                                                   It's used for GPUResourceManager. Defaults to None.
