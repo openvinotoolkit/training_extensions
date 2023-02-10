@@ -19,3 +19,4 @@ hpopt @ git+https://github.com/openvinotoolkit/hyper_parameter_optimization@new_
 imagesize==1.4.1
 datumaro==0.4.0.1
 psutil
+tensorboard
