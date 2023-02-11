@@ -13,8 +13,8 @@ def create_inference_test_with_gnn():
     class InferenceTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
+            
             cls.config = get_config(action='inference', gnn=True)
-
             if not os.path.exists(cls.config['data']):
                 download_data(gnn=True)
 

@@ -103,7 +103,6 @@ def load_inference_model(config, run_type):
         glbl_cnv_wt=checkpoint['cnv_lyr_state_dict']
         glbl_backbone_wt=checkpoint['backbone_model_state_dict']
         glbl_fc_wt=checkpoint['fc_layers_state_dict']
-
         model.cnv_lyr.load_state_dict(glbl_cnv_wt)
         model.backbone_model.load_state_dict(glbl_backbone_wt)
         model.fc_layers.load_state_dict(glbl_fc_wt)
@@ -117,10 +116,8 @@ def load_inference_model(config, run_type):
                                                 sit3_gnn_wt, sit4_gnn_wt, torch.device('cpu'))
             model.gnn_model.load_state_dict(glbl_gnn_wt)
         model.eval()
-
     elif run_type == 'onnx':
         model = onnxruntime.InferenceSession(os.path.splitext(config['checkpoint'])[0] + ".onnx")
-
     else:
         ie = IECore()
         split_text = os.path.splitext(config['checkpoint'])[0]
@@ -141,12 +138,9 @@ def validate_model(model, config, run_type):
     data_test=construct_dataset(config['data'], config['split_npz'], -999, test_transform, tn_vl_idx=2)
     test_loader=DataLoader(data_test,batch_size=1, shuffle=False, num_workers=1, pin_memory=False)
     tot_loss=0
-    tot_auc=0
-    
     gt_lst=[]
     pred_lst=[]
     criterion = Custom_Loss(-999,device)
-
     count = 0
     with torch.no_grad():
         for count, sample in enumerate(test_loader):
@@ -193,19 +187,14 @@ def validate_model(model, config, run_type):
     
     gt_lst=np.concatenate(gt_lst, axis=1)
     pred_lst=np.concatenate(pred_lst, axis=1)
-    
     gt_lst=np.transpose(gt_lst)
     pred_lst=np.transpose(pred_lst)
-    
     # Now compute and display the average
     count=count+1 # since it began from 0
     avg_loss=tot_loss/count
-    
-    # sens_lst, spec_lst, acc_lst, auc_lst=compute_performance(pred_lst, gt_lst)
+    # sens_lst, spec_lst, acc_lst, auc_lst are returned by compute_performance(pred_lst, gt_lst)
     _, _, _, auc_lst=compute_performance(pred_lst, gt_lst)
     avg_auc=np.mean(auc_lst)
-    
-    
     print ("\n Test_Loss:  {:.4f},  Avg. AUC: {:.4f}".format(avg_loss, avg_auc))
 
 def inference_model(config, run_type):
