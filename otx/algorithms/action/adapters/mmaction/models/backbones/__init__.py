@@ -3,9 +3,8 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from mmaction.models.backbones.x3d import X3D
 from mmdet.models import BACKBONES as MMDET_BACKBONES
-
-from .x3d import X3D
 
 
 def register_action_backbones():

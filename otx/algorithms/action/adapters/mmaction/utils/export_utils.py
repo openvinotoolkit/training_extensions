@@ -70,7 +70,7 @@ def preprocess(
     To get proper proposals from Faster-RCNN, the action detector needs real data
     """
     frames = []
-    frame_dir = f"data/cvat_dataset/action_detection/train/{category}/images"
+    frame_dir = f"tests/assets/cvat_dataset/action_detection/train/{category}/images"
     mean = [123.675, 116.28, 103.53]
     std = [58.395, 57.12, 57.375]
     # TODO: allow only .jpg, .png exts
@@ -123,7 +123,6 @@ def pytorch2onnx(
     opset_version: int = 11,
     show: bool = False,
     output_file: Optional[str] = "tmp.onnx",
-    softmax: bool = False,
     is_localizer: bool = False,
 ):
     """Convert pytorch model to onnx model.
@@ -135,8 +134,6 @@ def pytorch2onnx(
         show (bool): Determines whether to print the onnx model architecture.
             Default: False.
         output_file (str): Output onnx model name. Default: 'tmp.onnx'.
-        softmax (bool): Determines whether to use softmax function.
-            Default: False.
         is_localizer(bool): Determines this model is localizer or not
             Default: False.
     """
@@ -155,7 +152,8 @@ def pytorch2onnx(
         output_names = ["det_bboxes", "det_labels"]
     else:
         if hasattr(model, "forward_dummy"):
-            model.forward = partial(model.forward_dummy, softmax=softmax)
+            # TODO Replace model.forward with model.onnx_export
+            model.forward = model.forward_dummy
         elif hasattr(model, "_forward") and is_localizer:
             model.forward = model._forward
         else:

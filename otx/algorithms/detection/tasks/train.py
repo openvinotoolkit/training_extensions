@@ -66,7 +66,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in DetectionTrainTask."""
-        assert self._model_cfg is not None
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
@@ -79,7 +78,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             "confidence_threshold": self.confidence_threshold,
             "VERSION": 1,
         }
-        if should_cluster_anchors(self._model_cfg):
+        if self._model_cfg is not None and should_cluster_anchors(self._model_cfg):
             modelinfo["anchors"] = {}
             self._update_anchors(modelinfo["anchors"], self._model_cfg.model.bbox_head.anchor_generator)
 

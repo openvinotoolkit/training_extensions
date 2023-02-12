@@ -30,8 +30,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from otx.cli.datasets import get_dataset_class
-from otx.cli.utils.io import generate_label_schema
+from otx.core.data.adapter import get_dataset_adapter
 
 logger = get_logger(name="sample")
 
@@ -44,28 +43,27 @@ def parse_args():
     return parser.parse_args()
 
 
-TRAIN_ANN_FILES = "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt"
-TRAIN_DATA_ROOTS = "data/custom_action_recognition/custom_dataset/rawframes"
-VAL_ANN_FILES = "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt"
-VAL_DATA_ROOTS = "data/custom_action_recognition/custom_dataset/rawframes"
+TRAIN_DATA_ROOTS = "tests/assets/cvat_dataset/action_classification/train"
+VAL_DATA_ROOTS = "tests/assets/cvat_dataset/action_classification/train"
 
 
 def load_test_dataset(model_template):
     """Load Sample dataset for detection."""
-    dataset_class = get_dataset_class(model_template.task_type)
-    dataset = dataset_class(
-        train_subset={"ann_file": TRAIN_ANN_FILES, "data_root": TRAIN_DATA_ROOTS},
-        val_subset={"ann_file": VAL_ANN_FILES, "data_root": VAL_DATA_ROOTS},
+    dataset_adapter = get_dataset_adapter(
+        model_template.task_type,
+        train_data_roots=TRAIN_DATA_ROOTS,
+        val_data_roots=VAL_DATA_ROOTS,
     )
-    labels_schema = generate_label_schema(dataset, model_template.task_type)
-    return dataset, labels_schema
+    dataset = dataset_adapter.get_otx_dataset()
+    label_schema = dataset_adapter.get_label_schema()
+    return dataset, label_schema
 
 
 # pylint: disable=too-many-locals, too-many-statements
 def main(args):
     """Main function of Detection Sample."""
     logger.info("Fine tuning sample dataset")
-    logger.info("Sample dataset can be found at data/custom_action_recognition/custom_dataset")
+    logger.info("Sample dataset can be found at tests/assets/cvat_dataset/action_classification")
 
     logger.info("Load model template")
     model_template = parse_model_template(args.template_file_path)

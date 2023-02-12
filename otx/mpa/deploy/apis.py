@@ -3,16 +3,26 @@
 #
 
 import os
+import time
 from collections.abc import Mapping
+from copy import deepcopy
 from functools import partial
+from subprocess import CalledProcessError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
 import numpy as np
+import onnx
 import torch
 from mmcv.parallel import collate, scatter
 
-from .utils import convert_batchnorm, is_mmdeploy_enabled, mmdeploy_init_model_helper
+from .utils import numpy_2_list
+from .utils.mmdeploy import (
+    is_mmdeploy_enabled,
+    mmdeploy_init_model_helper,
+    update_deploy_cfg,
+)
+from .utils.onnx import prepare_onnx_for_openvino
 
 
 class NaiveExporter:
@@ -34,7 +44,6 @@ class NaiveExporter:
         input_data = scatter(collate([input_data], samples_per_gpu=1), [-1])[0]
 
         model = model_builder(cfg)
-        model = convert_batchnorm(model)
         model = model.cpu().eval()
 
         onnx_path = NaiveExporter.torch2onnx(
@@ -105,6 +114,7 @@ class NaiveExporter:
     ) -> str:
 
         img_metas = input_data.get("img_metas")
+        numpy_2_list(img_metas)
         imgs = input_data.get("img")
         model.forward = partial(model.forward, img_metas=img_metas, return_loss=False)
 
@@ -153,25 +163,15 @@ class NaiveExporter:
 
 if is_mmdeploy_enabled():
     import mmdeploy.apis.openvino as openvino_api
-    from mmdeploy.apis import build_task_processor, torch2onnx
+    from mmdeploy.apis import (
+        build_task_processor,
+        extract_model,
+        get_predefined_partition_cfg,
+        torch2onnx,
+    )
     from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
     from mmdeploy.core import FUNCTION_REWRITER
-    from mmdeploy.utils import get_ir_config
-
-    @FUNCTION_REWRITER.register_rewriter(
-        "mmdeploy.core.optimizers.function_marker.mark_tensors",
-        backend="openvino",
-    )
-    def remove_mark__openvino(ctx, xs: Any, *args, **kwargs):
-        """Disable all marks for openvino backend
-
-        As the Node `mark` is not able to be traced, we just return original input
-        for the function `mark_tensors`.
-
-        Args:
-            xs (Any): Input structure which contains tensor.
-        """
-        return xs
+    from mmdeploy.utils import get_backend_config, get_ir_config, get_partition_config
 
     class MMdeployExporter:
         @staticmethod
@@ -203,22 +203,41 @@ if is_mmdeploy_enabled():
                 # image assumed to be RGB format under OTX
                 input_data = cv2.cvtColor(input_data, cv2.COLOR_BGR2RGB)
             else:
-                input_data = np.zeros(input_data_cfg.shape, dtype=np.uint8)
+                input_data = np.zeros(input_data_cfg["shape"], dtype=np.uint8)
 
-            onnx_path = MMdeployExporter.torch2onnx(
-                output_dir,
-                input_data,
-                cfg,
-                deploy_cfg,
-                model_name=model_name,
+            onnx_paths = []
+            onnx_paths.append(
+                MMdeployExporter.torch2onnx(
+                    output_dir,
+                    input_data,
+                    cfg,
+                    deploy_cfg,
+                    model_name=model_name,
+                )
             )
 
-            MMdeployExporter.onnx2openvino(
-                output_dir,
-                onnx_path,
-                deploy_cfg,
-                model_name=model_name,
-            )
+            partition_cfgs = get_partition_config(deploy_cfg)
+            if partition_cfgs:
+                partition_cfgs = partition_cfgs.get("partition_cfg", None)
+                onnx_paths.extend(
+                    MMdeployExporter.partition_onnx(
+                        output_dir,
+                        onnx_paths[0],
+                        partition_cfgs,
+                    )
+                )
+
+            for i, onnx_path in enumerate(onnx_paths):
+                mo_options = {}
+                if i > 0:
+                    mo_options = partition_cfgs[i - 1].get("mo_options", {})
+                deploy_cfg_ = deepcopy(deploy_cfg)
+                update_deploy_cfg(onnx_path, deploy_cfg_, mo_options)
+                MMdeployExporter.onnx2openvino(
+                    output_dir,
+                    onnx_path,
+                    deploy_cfg_,
+                )
 
         @staticmethod
         def torch2onnx(
@@ -236,10 +255,32 @@ if is_mmdeploy_enabled():
                 onnx_file_name,
                 deploy_cfg=deploy_cfg,
                 model_cfg=cfg,
-                model_checkpoint=cfg.load_from,
+                model_checkpoint=cfg.get("load_from", None),
                 device="cpu",
             )
             return os.path.join(output_dir, onnx_file_name)
+
+        @staticmethod
+        def partition_onnx(
+            output_dir,
+            onnx_path: str,
+            partition_cfgs: Union[mmcv.ConfigDict, List[mmcv.ConfigDict]],
+        ) -> Tuple[str, ...]:
+            partitioned_paths = []
+
+            if not isinstance(partition_cfgs, list):
+                partition_cfgs = [partition_cfgs]
+
+            for partition_cfg in partition_cfgs:
+                save_file = partition_cfg["save_file"]
+                save_path = os.path.join(output_dir, save_file)
+                start = partition_cfg["start"]
+                end = partition_cfg["end"]
+                dynamic_axes = partition_cfg.get("dynamic_axes", None)
+
+                extract_model(onnx_path, start, end, dynamic_axes=dynamic_axes, save_file=save_path)
+                partitioned_paths.append(save_path)
+            return tuple(partitioned_paths)
 
         @staticmethod
         def onnx2openvino(
@@ -247,16 +288,35 @@ if is_mmdeploy_enabled():
             onnx_path: str,
             deploy_cfg: Union[str, mmcv.Config],
             *,
-            model_name: str = "model",
+            model_name: Optional[str] = None,
         ) -> Tuple[str, str]:
+
             input_info = get_input_info_from_cfg(deploy_cfg)
             output_names = get_ir_config(deploy_cfg).output_names
             mo_options = get_mo_options_from_cfg(deploy_cfg)
 
-            if model_name:
-                mo_options.args += f'--model_name "{model_name}" '
+            if not model_name:
+                model_name = os.path.basename(onnx_path).replace(".onnx", "")
+            mo_options.args += f'--model_name "{model_name}" '
 
-            openvino_api.from_onnx(onnx_path, output_dir, input_info, output_names, mo_options)
+            onnx_ready_path = os.path.join(os.path.dirname(onnx_path), f"{model_name}_ready.onnx")
+            prepare_onnx_for_openvino(onnx_path, os.path.join(os.path.dirname(onnx_path), f"{model_name}_ready.onnx"))
+
+            try:
+                openvino_api.from_onnx(onnx_ready_path, output_dir, input_info, output_names, mo_options)
+            except CalledProcessError as e:
+                # NOTE: mo returns non zero return code (245) even though it successfully generate IR
+                cur_time = time.time()
+                time_threshold = 5
+                if not (
+                    e.returncode == 245
+                    and not {model_name + ".bin", model_name + ".xml"} - set(os.listdir(output_dir))
+                    and (
+                        os.path.getmtime(os.path.join(output_dir, model_name + ".bin")) - cur_time < time_threshold
+                        and os.path.getmtime(os.path.join(output_dir, model_name + ".xml")) - cur_time < time_threshold
+                    )
+                ):
+                    raise e
 
             return (
                 os.path.join(output_dir, model_name + ".xml"),
