@@ -2,21 +2,25 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import pytest
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+import pytest
+
 from otx.algorithms.classification.tasks import ClassificationTrainTask
+from otx.algorithms.common.tasks import BaseTask
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
+from otx.api.entities.metrics import NullPerformance
 from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.model_template import parse_model_template
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from otx.algorithms.common.tasks import BaseTask
-from otx.api.configuration.helper import create
-from tests.unit.algorithms.classification.test_helper import init_environment, DEFAULT_CLS_TEMPLATE
-
-from otx.api.entities.metrics import NullPerformance
+from tests.unit.algorithms.classification.test_helper import (
+    DEFAULT_CLS_TEMPLATE,
+    init_environment,
+)
 
 
 @pytest.fixture
@@ -49,6 +53,7 @@ class TestOTXClsTaskTrain:
     @e2e_pytest_unit
     def test_train(self, mocker):
         from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+
         # generate some dummy learning curves
         mock_lcurve_val = OTXLoggerHook.Curve()
         mock_lcurve_val.x = [0, 1]
@@ -60,7 +65,7 @@ class TestOTXClsTaskTrain:
         self.cls_train_task.train(self.dataset, self.model)
 
         assert self.model.performance != NullPerformance()
-        assert self.model.performance.score.value == .2
+        assert self.model.performance.score.value == 0.2
 
     @e2e_pytest_unit
     def test_cancel_training(self):

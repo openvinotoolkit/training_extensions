@@ -76,8 +76,7 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
 
         annotations = []
         for i, label in enumerate(labels):
-            annotation = {"id": int(i), "type": "label", "group": 0, "label_id": int(label)}
-            annotations.append(annotation)
+            annotations.append({"id": int(i), "type": "label", "group": 0, "label_id": int(label)})
 
         multilabel_ann_format["items"].append(
             {"id": str(file_id), "annotations": str(annotations), "image": {"path": str(filename)}}

@@ -7,13 +7,18 @@ import os
 
 import numpy as np
 import pytest
+from openvino.model_zoo.model_api.models import Model
 
 import otx.algorithms.classification.tasks.openvino
+from otx.algorithms.classification.adapters.openvino.model_wrappers.openvino_models import (
+    OTXClassification,
+)
 from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.algorithms.classification.tasks.openvino import (
     ClassificationOpenVINOInferencer,
     ClassificationOpenVINOTask,
 )
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
@@ -21,24 +26,21 @@ from otx.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
+from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
-from openvino.model_zoo.model_api.models import Model
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.model import ModelConfiguration, ModelEntity
+from otx.api.entities.subset import Subset
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from otx.algorithms.classification.adapters.openvino.model_wrappers.openvino_models import OTXClassification
 from otx.api.utils.shape_factory import ShapeFactory
-from otx.api.entities.subset import Subset
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from otx.api.entities.label_schema import LabelSchemaEntity
-from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE,
-    init_environment
+    init_environment,
 )
 
 
@@ -75,10 +77,14 @@ class TestOpenVINOClassificationInferencer:
 
     @e2e_pytest_unit
     def test_post_process(self):
-        fake_feature_vector = np.random.rand(1,100)
-        fake_logits = np.random.rand(1,2)
-        fake_prediction = {"logits": fake_logits, 'feature_vector': fake_feature_vector, 'saliency_map': self.fake_input}
-        fake_metadata = {'original_shape': (254, 320, 3), 'resized_shape': (224, 224, 3)}
+        fake_feature_vector = np.random.rand(1, 100)
+        fake_logits = np.random.rand(1, 2)
+        fake_prediction = {
+            "logits": fake_logits,
+            "feature_vector": fake_feature_vector,
+            "saliency_map": self.fake_input,
+        }
+        fake_metadata = {"original_shape": (254, 320, 3), "resized_shape": (224, 224, 3)}
         self.cls_ov_inferencer.model.postprocess.return_value = [[0, 0.87], [1, 0.13]]
         returned_value = self.cls_ov_inferencer.post_process(fake_prediction, fake_metadata)
 
@@ -90,7 +96,7 @@ class TestOpenVINOClassificationInferencer:
         fake_output = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=[])
         mock_pre_process = mocker.patch.object(ClassificationOpenVINOInferencer, "pre_process", return_value=("", ""))
         mock_forward = mocker.patch.object(ClassificationOpenVINOInferencer, "forward")
-        self.cls_ov_inferencer.model.postprocess_aux_outputs.return_value = ("","","","")
+        self.cls_ov_inferencer.model.postprocess_aux_outputs.return_value = ("", "", "", "")
         mock_post_process = mocker.patch.object(
             ClassificationOpenVINOInferencer, "post_process", return_value=fake_output
         )
@@ -99,11 +105,11 @@ class TestOpenVINOClassificationInferencer:
         mock_pre_process.assert_called_once()
         mock_forward.assert_called_once()
         mock_post_process.assert_called_once()
-        assert returned_value == (fake_output, "","","","")
+        assert returned_value == (fake_output, "", "", "", "")
 
     @e2e_pytest_unit
     def test_forward(self):
-        fake_output = {"logits": np.random.rand(1,2)}
+        fake_output = {"logits": np.random.rand(1, 2)}
         self.cls_ov_inferencer.model.infer_sync.return_value = fake_output
         returned_value = self.cls_ov_inferencer.forward({"image": self.fake_input})
         assert returned_value == fake_output
@@ -137,7 +143,9 @@ class TestOpenVINOClassificationTask:
     @e2e_pytest_unit
     def test_infer(self, mocker):
         mock_predict = mocker.patch.object(
-            ClassificationOpenVINOInferencer, "predict", return_value=(self.fake_ann_scene, np.array([0, 1]), self.fake_input, self.fake_input, self.fake_input)
+            ClassificationOpenVINOInferencer,
+            "predict",
+            return_value=(self.fake_ann_scene, np.array([0, 1]), self.fake_input, self.fake_input, self.fake_input),
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
         updated_dataset = self.cls_ov_task.infer(self.dataset)
@@ -148,9 +156,17 @@ class TestOpenVINOClassificationTask:
 
     @e2e_pytest_unit
     def test_explain(self, mocker):
-        self.fake_silency_map = np.random.randint(255, size=(2,224,224), dtype=np.uint8)
+        self.fake_silency_map = np.random.randint(255, size=(2, 224, 224), dtype=np.uint8)
         mock_predict = mocker.patch.object(
-            ClassificationOpenVINOInferencer, "predict", return_value=(self.fake_ann_scene, np.array([0, 1]), self.fake_silency_map, self.fake_input, self.fake_input)
+            ClassificationOpenVINOInferencer,
+            "predict",
+            return_value=(
+                self.fake_ann_scene,
+                np.array([0, 1]),
+                self.fake_silency_map,
+                self.fake_input,
+                self.fake_input,
+            ),
         )
         updpated_dataset = self.cls_ov_task.explain(self.dataset)
 
