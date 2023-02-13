@@ -13,5 +13,6 @@ def test_configure_task(model_classes, mocker):
     stage.task_adapt_type = "mpa"
     stage.org_model_classes = ["red", "green"]
     stage.model_classes = model_classes
-    mocker.patch("otx.mpa.det.stage.DetectionStage.configure_task")
+    mock_config_task = mocker.patch("otx.mpa.det.stage.DetectionStage.configure_task")
     stage.configure_task(cfg, True)
+    mock_config_task.assert_called_once()

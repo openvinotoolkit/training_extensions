@@ -32,7 +32,6 @@ def test_run(recipe_cfg, template_dir, mocker):
     args = {"precision": "FP32", "model_builder": build_detector}
     mocker.patch.object(ExporterMixin, "run", return_value=True)
     returned_value = exporter.run(model_cfg, "", data_cfg, **args)
-
     assert "model_builder" in args
     assert returned_value is True
 
@@ -51,5 +50,4 @@ def test_naive_export(recipe_cfg, template_dir, mocker):
     data_cfg = MPAConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
     mock_export_ov = mocker.patch.object(NaiveExporter, "export2openvino")
     exporter.naive_export("", build_detector, "FP32", data_cfg)
-
     mock_export_ov.assert_called_once()

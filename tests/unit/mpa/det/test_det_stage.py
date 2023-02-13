@@ -36,7 +36,6 @@ class TestOTXDetectionStage:
         mock_cfg_regularization.assert_called_once_with(self.stage.cfg, True)
         mock_cfg_task.assert_called_once_with(self.stage.cfg, True, **fake_arg)
         mock_cfg_hook.assert_called_once_with(self.stage.cfg)
-
         assert returned_value == self.stage.cfg
 
     @e2e_pytest_unit
@@ -65,7 +64,6 @@ class TestOTXDetectionStage:
     def test_configure_data(self, mocker):
         mock_super_cfg_data = mocker.patch.object(Stage, "configure_data")
         self.stage.configure_data(self.stage.cfg, True, self.data_cfg, pretrained=None)
-
         mock_super_cfg_data.assert_called_once()
         assert self.stage.cfg.data
         assert self.stage.cfg.data.train
