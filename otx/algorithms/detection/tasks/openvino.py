@@ -138,6 +138,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
+    # TODO [Eugene]: implement unittest for tiling predict
     @check_input_parameters_type()
     def predict_tile(
         self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
@@ -327,8 +328,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         Returns:
             Dict: config dictionary
         """
-        if self.model is not None and self.model.get_data("config.json"):
-            return json.loads(self.model.get_data("config.json"))
+        try:
+            if self.model is not None and self.model.get_data("config.json"):
+                return json.loads(self.model.get_data("config.json"))
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning(f"Failed to load config.json: {e}")
         return {}
 
     def load_inferencer(

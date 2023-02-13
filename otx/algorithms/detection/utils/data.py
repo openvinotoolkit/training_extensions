@@ -20,8 +20,6 @@ import os.path as osp
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
-
-# from pycocotools.coco import COCO
 from mmdet.datasets.api_wrappers.coco_api import COCO
 
 from otx.algorithms.detection.adapters.mmdet.data.dataset import (
@@ -465,6 +463,7 @@ def format_list_to_str(value_lists: list):
     return f"[{str_value[:-2]}]"
 
 
+# TODO [Eugene] please add unit test for this function
 def adaptive_tile_params(
     tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"
 ):

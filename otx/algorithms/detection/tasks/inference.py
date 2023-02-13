@@ -314,7 +314,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
 
-        options_for_patch_datasets = {"type": "MPADetDataset"}
+        options_for_patch_datasets = {"type": "OTXDetDataset"}
         patch_default_config(self._recipe_cfg)
         patch_runner(self._recipe_cfg)
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
