@@ -143,7 +143,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if self.template.name != self.args.model.upper():
             print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
             result = True
-        template_train_type = self._get_train_type()
+        template_train_type = self._get_train_type(ignore_args=True)
         if template_train_type != self.args.train_type.upper():
             self.train_type = self.args.train_type.upper()
             print(f"[*] Rebuild train-type: {template_train_type} -> {self.train_type}")
@@ -166,15 +166,18 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             self._export_data_cfg(data_yaml, str(data_yaml_path))
         self.update_data_config(data_yaml)
 
-    def _get_train_type(self) -> str:
+    def _get_train_type(self, ignore_args: bool = False) -> str:
         """Check and return the train_type received as input args."""
-        args_hyper_parameters = gen_params_dict_from_args(self.args)
-        arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
-        if arg_algo_backend:
-            train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})
-            return train_type.get("value", "INCREMENTAL")
-        if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
-            return self.train_type
+        if not ignore_args:
+            args_hyper_parameters = gen_params_dict_from_args(self.args)
+            arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
+            if arg_algo_backend:
+                train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})
+                return train_type.get("value", "INCREMENTAL")
+            if self.mode in ("build") and self.args.train_type:
+                self.train_type = self.args.train_type.upper()
+            if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
+                return self.train_type
 
         algo_backend = self.template.hyper_parameters.parameter_overrides.get("algo_backend", False)
         if algo_backend:
