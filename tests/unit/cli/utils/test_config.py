@@ -75,12 +75,12 @@ def test_configure_dataset_with_data_args(mocker):
     mock_args = mocker.MagicMock()
 
     with TemporaryDirectory() as tmp_dir:
-        mock_args.data = osp.join(tmp_dir, "data.yaml")
+        data_yaml_path = osp.join(tmp_dir, "data.yaml")
         mock_data = {"data" : {"train" : {"ann-files" : "a", "data-roots" : "b"}}}
-        with open(mock_args.data, "w") as f:
+        with open(data_yaml_path, "w") as f:
             yaml.dump(mock_data, f)
 
-        data_config = configure_dataset(mock_args)
+        data_config = configure_dataset(mock_args, data_yaml_path)
 
     assert data_config["data"]["train"]["ann-files"] == mock_data["data"]["train"]["ann-files"]
     assert data_config["data"]["train"]["data-roots"] == mock_data["data"]["train"]["data-roots"]

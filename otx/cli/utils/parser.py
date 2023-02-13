@@ -21,21 +21,24 @@ from typing import Dict, Optional
 from otx.cli.registry import find_and_parse_model_template
 
 
-def gen_param_help(hyper_parameters):
+def gen_param_help(hyper_parameters: Dict) -> Dict:
     """Generates help for hyper parameters section."""
 
     type_map = {"FLOAT": float, "INTEGER": int, "BOOLEAN": bool, "SELECTABLE": str}
 
     help_keys = ("header", "type", "default_value", "max_value", "min_value")
 
-    def _gen_param_help(prefix, cur_params):
+    def _gen_param_help(prefix: str, cur_params: Dict) -> Dict:
         cur_help = {}
         for k, val in cur_params.items():
-            if isinstance(val, dict) and "default_value" not in val.keys():
+            if not isinstance(val, dict):
+                continue
+
+            if "default_value" not in val.keys():
                 if "visible_in_ui" in val and val["visible_in_ui"]:
                     x = _gen_param_help(prefix + f"{k}.", val)
                     cur_help.update(x)
-            elif isinstance(val, dict) and "default_value" in val.keys():
+            else:
                 assert isinstance(val["default_value"], (int, float, str))
                 help_str = "\n".join([f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()])
                 assert "." not in k
@@ -56,26 +59,28 @@ def gen_param_help(hyper_parameters):
     return _gen_param_help("", hyper_parameters)
 
 
-def gen_params_dict_from_args(args, type_hint: Optional[dict] = None):
+def gen_params_dict_from_args(args, type_hint: Optional[dict] = None) -> Dict[str, dict]:
     """Generates hyper parameters dict from parsed command line arguments."""
 
     params_dict: Dict[str, dict] = {}
     for param_name in dir(args):
-        if param_name.startswith("params."):
-            value_type = None
-            cur_dict = params_dict
-            split_param_name = param_name.split(".")[1:]
-            if type_hint:
-                origin_key = ".".join(split_param_name)
-                value_type = type_hint[origin_key].get("type", None)
-            for i, k in enumerate(split_param_name):
-                if k not in cur_dict:
-                    cur_dict[k] = {}
-                if i < len(split_param_name) - 1:
-                    cur_dict = cur_dict[k]
-                else:
-                    value = getattr(args, param_name)
-                    cur_dict[k] = {"value": value_type(value) if value_type else value}
+        if not param_name.startswith("params."):
+            continue
+
+        value_type = None
+        cur_dict = params_dict
+        split_param_name = param_name.split(".")[1:]
+        if type_hint:
+            origin_key = ".".join(split_param_name)
+            value_type = type_hint[origin_key].get("type", None)
+        for i, k in enumerate(split_param_name):
+            if k not in cur_dict:
+                cur_dict[k] = {}
+            if i < len(split_param_name) - 1:
+                cur_dict = cur_dict[k]
+            else:
+                value = getattr(args, param_name)
+                cur_dict[k] = {"value": value_type(value) if value_type else value}
 
     return params_dict
 
