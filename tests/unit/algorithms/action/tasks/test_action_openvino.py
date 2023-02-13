@@ -1,4 +1,4 @@
-"""Unit Test for otx.algorithms.action.tasks.train."""
+"""Unit Test for otx.algorithms.action.tasks.openvino."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
