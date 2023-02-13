@@ -328,8 +328,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         Returns:
             Dict: config dictionary
         """
-        if self.model is not None and self.model.get_data("config.json"):
-            return json.loads(self.model.get_data("config.json"))
+        try:
+            if self.model is not None and self.model.get_data("config.json"):
+                return json.loads(self.model.get_data("config.json"))
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning(f"Failed to load config.json: {e}")
         return {}
 
     def load_inferencer(

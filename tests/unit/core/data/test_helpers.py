@@ -1,7 +1,83 @@
+"""Test Helpers for otx.core.data."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 from typing import List
 
 import datumaro as dm
 import numpy as np
+
+from otx.api.entities.model_template import TaskType
+
+TASK_NAME_TO_TASK_TYPE = {
+    "classification": TaskType.CLASSIFICATION,
+    "detection": TaskType.DETECTION,
+    "rotated_detection": TaskType.ROTATED_DETECTION,
+    "instance_segmentation": TaskType.INSTANCE_SEGMENTATION,
+    "segmentation": TaskType.SEGMENTATION,
+    "anomaly_classification": TaskType.ANOMALY_CLASSIFICATION,
+    "anomaly_detection": TaskType.ANOMALY_DETECTION,
+    "anomaly_segmentation": TaskType.ANOMALY_SEGMENTATION,
+    "action_classification": TaskType.ACTION_CLASSIFICATION,
+    "action_detection": TaskType.ACTION_DETECTION,
+}
+
+TASK_NAME_TO_DATA_ROOT = {
+    "classification": {
+        "train": "tests/assets/imagenet_dataset",
+        "val": "tests/assets/imagenet_dataset",
+        "test": "tests/assets/imagenet_dataset",
+        "unlabeled": "tests/assets/imagenet_dataset",
+    },
+    "detection": {
+        "train": "tests/assets/car_tree_bug",
+        "val": "tests/assets/car_tree_bug",
+        "test": "tests/assets/car_tree_bug",
+        "unlabeled": "tests/assets/car_tree_bug",
+    },
+    "rotated_detection": {
+        "train": "tests/assets/car_tree_bug",
+        "val": "tests/assets/car_tree_bug",
+        "test": "tests/assets/car_tree_bug",
+        "unlabeled": "tests/assets/car_tree_bug",
+    },
+    "instance_segmentation": {
+        "train": "tests/assets/car_tree_bug",
+        "val": "tests/assets/car_tree_bug",
+        "test": "tests/assets/car_tree_bug",
+    },
+    "segmentation": {
+        "train": "tests/assets/common_semantic_segmentation_dataset/train",
+        "val": "tests/assets/common_semantic_segmentation_dataset/val",
+        "test": "tests/assets/common_semantic_segmentation_dataset/val",
+        "unlabeled": "tests/assets/common_semantic_segmentation_dataset/val",
+    },
+    "anomaly_classification": {
+        "train": "tests/assets/anomaly/shapes",
+        "val": "tests/assets/anomaly/shapes",
+        "test": "tests/assets/anomaly/shapes",
+    },
+    "anomaly_detection": {
+        "train": "tests/assets/anomaly/shapes",
+        "val": "tests/assets/anomaly/shapes",
+        "test": "tests/assets/anomaly/shapes",
+    },
+    "anomaly_segmentation": {
+        "train": "tests/assets/anomaly/shapes",
+        "val": "tests/assets/anomaly/shapes",
+        "test": "tests/assets/anomaly/shapes",
+    },
+    "action_classification": {
+        "train": "tests/assets/cvat_dataset/action_classification/train",
+        "val": "tests/assets/cvat_dataset/action_classification/train",
+        "test": "tests/assets/cvat_dataset/action_classification/train",
+    },
+    "action_detection": {
+        "train": "tests/assets/cvat_dataset/action_detection/train",
+        "val": "tests/assets/cvat_dataset/action_detection/train",
+        "test": "tests/assets/cvat_dataset/action_detection/train",
+    },
+}
 
 
 def generate_datumaro_dataset_item(

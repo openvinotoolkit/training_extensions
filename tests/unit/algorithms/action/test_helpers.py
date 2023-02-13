@@ -19,6 +19,7 @@ from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
+from otx.api.entities.model_template import ModelTemplate
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 
@@ -99,3 +100,20 @@ def generate_action_det_otx_dataset(video_len: int, frame_len: int, labels: List
             items.append(item)
     dataset = DatasetEntity(items=items)
     return dataset, proposals
+
+
+class MockModelTemplate(ModelTemplate):
+    """Mock class for ModelTemplate."""
+
+    def __post_init__(self):
+        pass
+
+
+def return_args(*args, **kwargs):
+    """This function returns its args."""
+    return args, kwargs
+
+
+def return_inputs(inputs):
+    """This function returns its input."""
+    return inputs
