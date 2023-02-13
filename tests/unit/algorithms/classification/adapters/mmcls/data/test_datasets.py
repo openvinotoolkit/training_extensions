@@ -27,9 +27,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.api.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
-from tests.integration.api.classification.test_api_classification import (
-    DEFAULT_CLS_TEMPLATE_DIR,
-    ClassificationTaskAPIBase,
+from tests.unit.algorithms.classification.test_helper import (
+    DEFAULT_CLS_TEMPLATE,
+    init_environment,
+    setup_configurable_parameters,
 )
 
 
@@ -100,9 +101,7 @@ class TestSelfSLDataset:
 class TestOTXClsDataset:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.hyper_parameters, self.model_template = ClassificationTaskAPIBase.setup_configurable_parameters(
-            DEFAULT_CLS_TEMPLATE_DIR
-        )
+        self.hyper_parameters, self.model_template = setup_configurable_parameters(DEFAULT_CLS_TEMPLATE)
         self.dataset_len = 20
 
     @pytest.mark.parametrize(
@@ -112,7 +111,7 @@ class TestOTXClsDataset:
     @e2e_pytest_unit
     def test_create_dataset_adapter(self, adapter_type):
         multilabel = adapter_type == MPAClsDataset
-        self.task_environment, self.dataset = ClassificationTaskAPIBase.init_environment(
+        self.task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, multilabel, False, self.dataset_len
         )
         dataset = adapter_type(self.dataset, labels=self.dataset.get_labels())
@@ -128,7 +127,7 @@ class TestOTXClsDataset:
     @e2e_pytest_unit
     def test_metric_dataset_adapter(self, adapter_type):
         multilabel = adapter_type == MPAMultilabelClsDataset
-        self.task_environment, self.dataset = ClassificationTaskAPIBase.init_environment(
+        self.task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, multilabel, False, self.dataset_len
         )
         dataset = adapter_type(self.dataset, labels=self.dataset.get_labels())
@@ -143,7 +142,7 @@ class TestOTXClsDataset:
 
     @e2e_pytest_unit
     def test_create_hierarchical_adapter(self):
-        self.task_environment, self.dataset = ClassificationTaskAPIBase.init_environment(
+        self.task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, False, True, self.dataset_len
         )
         class_info = get_multihead_class_info(self.task_environment.label_schema)
@@ -157,7 +156,7 @@ class TestOTXClsDataset:
 
     @e2e_pytest_unit
     def test_metric_hierarchical_adapter(self):
-        self.task_environment, self.dataset = ClassificationTaskAPIBase.init_environment(
+        self.task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, False, True, self.dataset_len
         )
         class_info = get_multihead_class_info(self.task_environment.label_schema)

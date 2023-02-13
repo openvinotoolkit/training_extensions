@@ -17,9 +17,10 @@ from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from tests.integration.api.classification.test_api_classification import (
-    DEFAULT_CLS_TEMPLATE_DIR,
-    ClassificationTaskAPIBase,
+from tests.unit.algorithms.classification.test_helper import (
+    DEFAULT_CLS_TEMPLATE,
+    init_environment,
+    setup_configurable_parameters,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
@@ -37,10 +38,10 @@ class TestOTXClassificationInferenceTask:
     @pytest.fixture(autouse=True)
     def setup(self, otx_classification_model, tmp_dir_path) -> None:
         self.dataset_len = 5
-        self.hyper_parameters, self.model_template = ClassificationTaskAPIBase.setup_configurable_parameters(
-            DEFAULT_CLS_TEMPLATE_DIR
+        self.hyper_parameters, self.model_template = setup_configurable_parameters(
+            DEFAULT_CLS_TEMPLATE
         )
-        task_environment, self.dataset = ClassificationTaskAPIBase.init_environment(
+        task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, False, False, self.dataset_len
         )
 
@@ -51,7 +52,7 @@ class TestOTXClassificationInferenceTask:
     @pytest.mark.parametrize("multilabel, hierarchical", [(False, False), (True, False), (False, True)])
     @e2e_pytest_unit
     def test_infer(self, mocker, multilabel, hierarchical):
-        task_environment, dataset = ClassificationTaskAPIBase.init_environment(
+        task_environment, dataset = init_environment(
             self.hyper_parameters, self.model_template, multilabel, hierarchical, self.dataset_len
         )
         custom_cls_inference_task = ClassificationInferenceTask(task_environment, output_path=self.output_path)

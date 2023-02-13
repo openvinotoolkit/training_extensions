@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2 as cv
 import numpy as np
 
+from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -17,6 +18,7 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
+from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -136,8 +138,8 @@ def generate_cls_dataset(hierarchical=False, number_of_images=10):
     return dataset
 
 
-def init_environment(params, model_template, multilabel=False, hierarchical=False):
-    dataset = generate_cls_dataset(hierarchical)
+def init_environment(params, model_template, multilabel=False, hierarchical=False, number_of_images=10):
+    dataset = generate_cls_dataset(hierarchical, number_of_images)
     labels_schema = generate_label_schema(dataset.get_labels(), multilabel=multilabel, hierarchical=hierarchical)
     environment = TaskEnvironment(
         model=None,
@@ -146,3 +148,10 @@ def init_environment(params, model_template, multilabel=False, hierarchical=Fals
         model_template=model_template,
     )
     return environment, dataset
+
+
+def setup_configurable_parameters(template_dir, num_iters=10):
+    model_template = parse_model_template(str(template_dir))
+    hyper_parameters = create(model_template.hyper_parameters.data)
+    hyper_parameters.learning_parameters.num_iters = num_iters
+    return hyper_parameters, model_template
