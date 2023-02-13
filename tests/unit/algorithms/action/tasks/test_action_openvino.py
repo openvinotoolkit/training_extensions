@@ -252,11 +252,6 @@ class TestActionOVTask:
             label_schema=self.label_schema,
             model_template=template,
         )
-        # mocker.patch(
-        #     "otx.algorithms.action.tasks.openvino.ActionOpenVINOTask.load_inferencer",
-        #     return_value=MockOVInferencer()
-        # )
-        # self.task = ActionOpenVINOTask(self.task_environment)
 
     @e2e_pytest_unit
     def test_load_inferencer(self, mocker) -> None:
