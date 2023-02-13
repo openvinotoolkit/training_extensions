@@ -16,7 +16,7 @@
 
 import argparse
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from otx.cli.registry import find_and_parse_model_template
 
@@ -84,7 +84,19 @@ def gen_params_dict_from_args(args, type_hint: Optional[dict] = None) -> Dict[st
 
     return params_dict
 
-def str2bool(val):
+
+def str2bool(val: Union[str, bool]) -> bool:
+    """If input type is string, convert it to boolean.
+
+    Args:
+        val (Union[str, bool]): value to convert to boolean.
+
+    Raises:
+        argparse.ArgumentTypeError: If type is neither string and boolean, raise an error.
+
+    Returns:
+        bool: return converted boolean value.
+    """
     if isinstance(val, bool):
         return val
     if isinstance(val, str):
@@ -94,6 +106,7 @@ def str2bool(val):
             return False
     raise argparse.ArgumentTypeError("Boolean value expected.")
 
+
 class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
     """Text Help Formatter that shortens."""
 
@@ -101,7 +114,9 @@ class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
         return action.dest.split(".")[-1].upper()
 
 
-def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parser=False):
+def add_hyper_parameters_sub_parser(
+    parser, config, modes=None, return_sub_parser=False
+) -> Optional[argparse.ArgumentParser]:
     """Adds hyper parameters sub parser."""
 
     default_modes = ("TRAINING", "INFERENCE")
@@ -134,6 +149,7 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parse
         )
     if return_sub_parser:
         return parser_a
+    return None
 
 
 def get_parser_and_hprams_data():

@@ -30,14 +30,12 @@ from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKi
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
-from otx.api.entities.label import Domain, LabelEntity
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import (
     ModelConfiguration,
     ModelEntity,
     ModelOptimizationType,
 )
-from otx.api.entities.model_template import TaskType
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.utils.nncf import is_checkpoint_nncf

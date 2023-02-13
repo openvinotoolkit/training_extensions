@@ -1,26 +1,25 @@
 import json
+import shutil
 import struct
 from os import path as osp
 from pathlib import Path
-import shutil
-import numpy as np
 
 import cv2
-
+import numpy as np
 import pytest
 
+from otx.api.entities.model import ModelOptimizationType
+from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.utils import io as target_package
 from otx.cli.utils.io import (
-    save_model_data,
-    read_binary,
-    read_model,
-    read_label_schema,
-    get_image_files,
-    save_saliency_output,
     get_explain_dataset_from_filelist,
+    get_image_files,
+    read_binary,
+    read_label_schema,
+    read_model,
+    save_model_data,
+    save_saliency_output,
 )
-from otx.api.usecases.adapters.model_adapter import ModelAdapter
-from otx.api.entities.model import ModelOptimizationType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 IMG_DATA_FORMATS = (
@@ -46,20 +45,22 @@ def test_save_model_data(mocker, tmp_dir):
     mock_model = mocker.MagicMock()
     model_adapter = ModelAdapter(b"fake")
     file_name = "model.pth"
-    mock_model.model_adapters = {file_name : model_adapter}
+    mock_model.model_adapters = {file_name: model_adapter}
 
     save_model_data(mock_model, tmp_dir)
 
     with open(osp.join(tmp_dir, file_name), "rb") as f:
         assert f.readline() == b"fake"
 
+
 @e2e_pytest_unit
 def test_read_binary(tmp_dir):
-    file_path = osp.join(tmp_dir, "test.txt") 
+    file_path = osp.join(tmp_dir, "test.txt")
     with open(file_path, "w") as f:
         f.write("fake")
 
     assert read_binary(file_path) == b"fake"
+
 
 @pytest.fixture
 def model_adapter_keys():
@@ -72,6 +73,7 @@ def model_adapter_keys():
         "config.json",
     )
 
+
 @e2e_pytest_unit
 def test_read_xml_bin_model(mocker, model_adapter_keys, tmp_dir):
     # prepare
@@ -79,9 +81,9 @@ def test_read_xml_bin_model(mocker, model_adapter_keys, tmp_dir):
     for key in model_adapter_keys:
         (tmp_dir / key).write_text(key)
 
-    xml_model_path = (tmp_dir / "model.xml")
+    xml_model_path = tmp_dir / "model.xml"
     xml_model_path.write_text("xml_model")
-    bin_model_path = (tmp_dir / "model.bin")
+    bin_model_path = tmp_dir / "model.bin"
     bin_model_path.write_text("bin_model")
 
     # run
@@ -92,13 +94,14 @@ def test_read_xml_bin_model(mocker, model_adapter_keys, tmp_dir):
     assert model_adapters["openvino.xml"].data == b"xml_model"
     assert model_adapters["openvino.bin"].data == b"bin_model"
     for key in model_adapter_keys:
-        assert model_adapters[key].data == bytes(key, 'utf-8')
+        assert model_adapters[key].data == bytes(key, "utf-8")
+
 
 @e2e_pytest_unit
 def test_read_pth_model(mocker, tmp_dir):
     # prepare
     tmp_dir = Path(tmp_dir)
-    model_path = (tmp_dir / "model.pth")
+    model_path = tmp_dir / "model.pth"
     model_path.write_text("model")
     mock_is_checkpoint_nncf = mocker.patch.object(target_package, "is_checkpoint_nncf")
     mock_is_checkpoint_nncf.return_value = True
@@ -113,8 +116,9 @@ def test_read_pth_model(mocker, tmp_dir):
     model_adapters = model.model_adapters
     assert model_adapters["weights.pth"].data == b"model"
     for i in range(1, 5):
-        model_adapters[f"aux_model_{i}.pth"].data == bytes(f"aux_model_{i}.pth", 'utf-8')
+        model_adapters[f"aux_model_{i}.pth"].data == bytes(f"aux_model_{i}.pth", "utf-8")
     assert model.optimization_type == ModelOptimizationType.NNCF
+
 
 @pytest.fixture
 def mock_zip_file(model_adapter_keys, tmp_dir) -> str:
@@ -127,22 +131,22 @@ def mock_zip_file(model_adapter_keys, tmp_dir) -> str:
     model_adapter_keys => should have float value
     """
     tmp_dir = Path(tmp_dir)
-    model_zip_dir = (tmp_dir / "model_zip")
+    model_zip_dir = tmp_dir / "model_zip"
     model_zip_dir.mkdir()
-    model_dir_in_zip = (model_zip_dir / "model")
+    model_dir_in_zip = model_zip_dir / "model"
     model_dir_in_zip.mkdir()
     (model_dir_in_zip / "model.xml").write_text("xml_model")
     (model_dir_in_zip / "model.bin").write_text("bin_model")
     with (model_dir_in_zip / "config.json").open("w") as f:
-        model_config = {"model_parameters" : {}}
+        model_config = {"model_parameters": {}}
         for key in model_adapter_keys:
             model_config["model_parameters"][key] = 0.1234
-        model_config["model_parameters"]["labels"] = {"fake" : "fake"}
+        model_config["model_parameters"]["labels"] = {"fake": "fake"}
         json.dump(model_config, f)
 
-    shutil.make_archive(tmp_dir / "model", 'zip', model_zip_dir)
+    shutil.make_archive(tmp_dir / "model", "zip", model_zip_dir)
 
-    return (tmp_dir / "model.zip")
+    return tmp_dir / "model.zip"
 
 
 @e2e_pytest_unit
@@ -157,10 +161,12 @@ def test_read_zip_model(mocker, model_adapter_keys, mock_zip_file):
     for key in model_adapter_keys:
         assert model_adapters[key].data == struct.pack("f", 0.1234)
 
+
 @e2e_pytest_unit
 def test_read_unknown_model(mocker):
     with pytest.raises(ValueError):
         read_model(mocker.MagicMock(), "fake.unknown", mocker.MagicMock())
+
 
 @pytest.fixture
 def mock_lebel_schema_mapper_instance(mocker):
@@ -176,9 +182,9 @@ def test_read_label_schema_with_model_file(mock_lebel_schema_mapper_instance, ex
     # prepare
     tmp_dir = Path(tmp_dir)
 
-    model_path = (tmp_dir / f"model.{extension}")
+    model_path = tmp_dir / f"model.{extension}"
     model_path.write_text("fake")
-    fake_label_schema = {"fake" : "fake"}
+    fake_label_schema = {"fake": "fake"}
     with (tmp_dir / "label_schema.json").open("w") as f:
         json.dump(fake_label_schema, f)
 
@@ -195,7 +201,7 @@ def test_read_label_schema_with_model_zipfile(mock_lebel_schema_mapper_instance,
     read_label_schema(str(mock_zip_file))
 
     # check
-    mock_lebel_schema_mapper_instance.backward.assert_called_once_with({"fake" : "fake"})
+    mock_lebel_schema_mapper_instance.backward.assert_called_once_with({"fake": "fake"})
 
 
 @e2e_pytest_unit
@@ -204,6 +210,7 @@ def test_get_single_image_files(img_data_format):
     img_files = get_image_files(f"fake_path/img{img_data_format}")
 
     assert img_files[0] == ("./", f"fake_path/img{img_data_format}")
+
 
 @e2e_pytest_unit
 def test_get_image_files_in_dir(tmp_dir):
@@ -224,14 +231,16 @@ def test_get_image_files_in_dir(tmp_dir):
     assert img_files[0] == (str(sub_dir_1_1), "fake.jpg")
     assert img_files[1] == (str(sub_dir_2), "fake.jpg")
 
+
 @e2e_pytest_unit
 def test_get_image_files_empty_dir(tmp_dir):
     assert get_image_files(tmp_dir) is None
 
+
 @e2e_pytest_unit
 def test_save_saliency_output(tmp_dir):
     # prepare
-    img = np.array([[100 for _ in range(3)]  for _ in range(3)])
+    img = np.array([[100 for _ in range(3)] for _ in range(3)])
     saliency_map = np.zeros([3, 3])
     weight = 0.3
 
@@ -248,13 +257,14 @@ def test_save_saliency_output(tmp_dir):
     saved_overlay = cv2.imread(str(overlay_img))
 
     assert (saved_saliency == saliency_map).all()
-    assert (saved_overlay == np.array([[100*weight for _ in range(3)]  for _ in range(3)])).all()
+    assert (saved_overlay == np.array([[100 * weight for _ in range(3)] for _ in range(3)])).all()
+
 
 @e2e_pytest_unit
 def test_get_explain_dataset_from_filelist(tmp_dir):
     # prepare
     tmp_dir = Path(tmp_dir)
-    fake_img = np.array([[[i for _ in range(3) ] for _ in range(3) ] for i in range(1, 4)])
+    fake_img = np.array([[[i for _ in range(3)] for _ in range(3)] for i in range(1, 4)])
     cv2.imwrite(str(tmp_dir / "fake1.jpg"), fake_img)
     cv2.imwrite(str(tmp_dir / "fake2.jpg"), fake_img)
     image_files = [(tmp_dir, "fake1.jpg"), (tmp_dir, "fake2.jpg")]

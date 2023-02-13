@@ -1,51 +1,49 @@
-import yaml
 from os import path as osp
 from tempfile import TemporaryDirectory
 
 import pytest
-from otx.cli.utils.config import override_parameters, configure_dataset
+import yaml
 
+from otx.cli.utils.config import configure_dataset, override_parameters
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
 
 @pytest.fixture
 def mock_parameters():
-    return {
-        "a" : {"a.a" : {"value" : 1, "default_value" : 2}}
-    }
+    return {"a": {"a.a": {"value": 1, "default_value": 2}}}
+
 
 @e2e_pytest_unit
 def test_override_mock_parameters(mock_parameters):
-    overrides = {
-        "a" : {"a.a" : {"value" : 3, "default_value" : 4}}
-    }
+    overrides = {"a": {"a.a": {"value": 3, "default_value": 4}}}
     override_parameters(overrides, mock_parameters)
 
     assert mock_parameters["a"]["a.a"]["value"] == 3
     assert mock_parameters["a"]["a.a"]["default_value"] == 4
 
+
 @e2e_pytest_unit
 def test_override_mock_parameters_not_allowed_key(mock_parameters):
-    overrides = {
-        "a" : {"a.a" : {"fake" : 3, "default_value" : 4}}
-    }
+    overrides = {"a": {"a.a": {"fake": 3, "default_value": 4}}}
 
     with pytest.raises(ValueError):
         override_parameters(overrides, mock_parameters)
+
 
 @e2e_pytest_unit
 def test_override_mock_parameters_non_exist_key(mock_parameters):
-    overrides = {
-        "a" : {"a.b" : {"value" : 3, "default_value" : 4}}
-    }
+    overrides = {"a": {"a.b": {"value": 3, "default_value": 4}}}
 
     with pytest.raises(ValueError):
         override_parameters(overrides, mock_parameters)
+
 
 @e2e_pytest_unit
 def test_configure_dataset(mocker):
     # prepare
     def mock_contain(self, key):
         return key in self.__dict__
+
     mock_args = mocker.MagicMock()
     mock_args.__contains__ = mock_contain
     mock_args.train_ann_files = "train_ann_files"
@@ -70,13 +68,14 @@ def test_configure_dataset(mocker):
     assert data_config["data"]["test"]["ann-files"] == mock_args.test_ann_files
     assert data_config["data"]["test"]["data-roots"] == mock_args.test_data_roots
 
+
 @e2e_pytest_unit
 def test_configure_dataset_with_data_args(mocker):
     mock_args = mocker.MagicMock()
 
     with TemporaryDirectory() as tmp_dir:
         data_yaml_path = osp.join(tmp_dir, "data.yaml")
-        mock_data = {"data" : {"train" : {"ann-files" : "a", "data-roots" : "b"}}}
+        mock_data = {"data": {"train": {"ann-files": "a", "data-roots": "b"}}}
         with open(data_yaml_path, "w") as f:
             yaml.dump(mock_data, f)
 
