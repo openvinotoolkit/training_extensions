@@ -119,6 +119,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
             if self.mode == "build" and self._check_rebuild():
                 self.rebuild = True
+                model = model if model else self.template.name
                 self.template = self._get_template(str(self.task_type), model=model)
         elif self.template and Path(self.template).exists():
             # No workspace -> template O
@@ -134,7 +135,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
     def _check_rebuild(self):
         """Checking for Rebuild status."""
-        if not self.args.model or not self.args.train_type:
+        if not self.args.model and not self.args.train_type:
             return False
         if self.args.task and str(self.task_type) != self.args.task.upper():
             raise NotImplementedError("Changing workspace tasks is not yet supported.")
