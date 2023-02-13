@@ -17,7 +17,9 @@
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-from anomalib.pre_processing import PreProcessor
+import torch
+from anomalib.data.base.datamodule import collate_fn
+from anomalib.data.utils.transform import get_transforms
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
@@ -27,6 +29,7 @@ from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.shapes.polygon import Polygon
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.dataset_utils import (
     contains_anomalous_images,
@@ -64,10 +67,8 @@ class OTXAnomalyDataset(Dataset):
         self.task_type = task_type
 
         # TODO: distinguish between train and val config here
-        self.pre_processor = PreProcessor(
-            config=config.dataset.transform_config.train,
-            image_size=tuple(config.dataset.image_size),
-            to_tensor=True,
+        self.transform = get_transforms(
+            config=config.dataset.transform_config.train, image_size=tuple(config.dataset.image_size), to_tensor=True
         )
 
     def __len__(self) -> int:
@@ -93,23 +94,44 @@ class OTXAnomalyDataset(Dataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        if self.task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             # Detection currently relies on image labels only, meaning it'll use image
             #   threshold to find the predicted bounding boxes.
-            item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
+            item["image"] = self.transform(image=dataset_item.numpy)["image"]
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            item["image"] = self.transform(image=dataset_item.numpy)["image"]
+            item["boxes"] = torch.empty((0, 4))
+            height, width = self.config.dataset.image_size
+            boxes = []
+            for annotation in dataset_item.get_annotations():
+                if isinstance(annotation.shape, Rectangle) and not Rectangle.is_full_box(annotation.shape):
+                    boxes.append(
+                        Tensor(
+                            [
+                                annotation.shape.x1 * width,
+                                annotation.shape.y1 * height,
+                                annotation.shape.x2 * width,
+                                annotation.shape.y2 * height,
+                            ]
+                        )
+                    )
+                if boxes:
+                    item["boxes"] = torch.stack(boxes)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
                 mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
-            pre_processed = self.pre_processor(image=dataset_item.numpy, mask=mask)
+            pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
             raise ValueError(f"Unsupported task type: {self.task_type}")
 
-        if len(dataset_item.get_shapes_labels()) > 0:
-            item["label"] = 1 if dataset_item.get_shapes_labels()[0].is_anomalous else 0
+        if len(dataset_item.get_shapes_labels()) > 0 and dataset_item.get_shapes_labels()[0].is_anomalous:
+            item["label"] = 1
+        else:
+            item["label"] = 0
         return item
 
 
@@ -198,6 +220,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.dataset.train_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )
 
     def val_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -218,8 +241,9 @@ class OTXAnomalyDataModule(LightningDataModule):
         return DataLoader(
             dataset,
             shuffle=False,
-            batch_size=self.config.dataset.test_batch_size,
+            batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )
 
     def test_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -234,6 +258,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.dataset.test_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )
 
     def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -246,6 +271,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         return DataLoader(
             dataset,
             shuffle=False,
-            batch_size=self.config.dataset.test_batch_size,
+            batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )

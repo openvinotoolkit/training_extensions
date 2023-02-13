@@ -56,6 +56,8 @@ class TestNaiveExporter:
 
 
 if is_mmdeploy_enabled():
+    from mmdeploy.core import FUNCTION_REWRITER, mark
+
     from otx.mpa.deploy.apis import MMdeployExporter
 
     class TestMMdeployExporter:
@@ -94,6 +96,7 @@ if is_mmdeploy_enabled():
                     config,
                     deploy_config,
                 )
+                assert isinstance(onnx_path, str)
                 assert os.path.exists(onnx_path)
 
                 openvino_paths = MMdeployExporter.onnx2openvino(
@@ -145,3 +148,71 @@ if is_mmdeploy_enabled():
                 )
                 assert [f for f in os.listdir(tempdir) if f.endswith(".xml")]
                 assert [f for f in os.listdir(tempdir) if f.endswith(".bin")]
+
+        @e2e_pytest_unit
+        def test_partition(self):
+            from otx.algorithms.classification.adapters.mmcls.utils.builder import (
+                build_classifier,
+            )
+
+            config = create_config()
+            deploy_config = Config(
+                {
+                    "ir_config": {
+                        "type": "onnx",
+                        "input_names": ["input"],
+                        "output_names": ["output"],
+                    },
+                    "codebase_config": {
+                        "type": "mmcls",
+                        "task": "Classification",
+                    },
+                    "backend_config": {
+                        "type": "openvino",
+                        "model_inputs": [
+                            {
+                                "opt_shapes": {
+                                    "input": [1, 3, 50, 50],
+                                }
+                            }
+                        ],
+                    },
+                    "partition_config": {
+                        "apply_marks": True,
+                        "partition_cfg": [
+                            {
+                                "save_file": "partition.onnx",
+                                "start": ["test:input"],
+                                "end": ["test:output"],
+                                "output_names": ["output"],
+                                "mo_options": {
+                                    "_delete_": True,
+                                    "args": {},
+                                    "flags": [],
+                                },
+                            }
+                        ],
+                    },
+                }
+            )
+            create_model("mmcls")
+
+            @FUNCTION_REWRITER.register_rewriter("tests.unit.mpa.deploy.test_helpers.MockModel.forward")
+            @mark("test", inputs=["input"], outputs=["output"])
+            def forward(ctx, self, *args, **kwargs):
+                return ctx.origin_func(self, *args, **kwargs)
+
+            with tempfile.TemporaryDirectory() as tempdir:
+                MMdeployExporter.export2openvino(
+                    tempdir,
+                    build_classifier,
+                    config,
+                    deploy_config,
+                )
+                files = os.listdir(tempdir)
+                assert "model.onnx" in files
+                assert "model.xml" in files
+                assert "model.bin" in files
+                assert "partition.onnx" in files
+                assert "partition.xml" in files
+                assert "partition.bin" in files

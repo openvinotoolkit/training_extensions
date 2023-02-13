@@ -22,9 +22,11 @@ from typing import Dict, Optional
 
 import torch
 from anomalib.models import AnomalyModule, get_model
+from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
+    PostProcessingConfigurationCallback,
 )
 from anomalib.utils.callbacks.nncf.callback import NNCFCallback
 from anomalib.utils.callbacks.nncf.utils import (
@@ -179,18 +181,23 @@ class NNCFTask(InferenceTask, IOptimizationTask):
 
         datamodule = OTXAnomalyDataModule(config=self.config, dataset=dataset, task_type=self.task_type)
         nncf_callback = NNCFCallback(config=self.optimization_config["nncf_config"])
-        metrics_configuration_callback = MetricsConfigurationCallback(
-            adaptive_threshold=self.config.metrics.threshold.adaptive,
-            default_image_threshold=self.config.metrics.threshold.image_default,
-            default_pixel_threshold=self.config.metrics.threshold.pixel_default,
-            image_metric_names=self.config.metrics.image,
-            pixel_metric_names=self.config.metrics.pixel,
+        metrics_configuration = MetricsConfigurationCallback(
+            task=self.config.dataset.task,
+            image_metrics=self.config.metrics.image,
+            pixel_metrics=self.config.metrics.get("pixel"),
+        )
+        post_processing_configuration = PostProcessingConfigurationCallback(
+            normalization_method=NormalizationMethod.MIN_MAX,
+            threshold_method=ThresholdMethod.ADAPTIVE,
+            manual_image_threshold=self.config.metrics.threshold.manual_image,
+            manual_pixel_threshold=self.config.metrics.threshold.manual_pixel,
         )
         callbacks = [
             ProgressCallback(parameters=optimization_parameters),
             MinMaxNormalizationCallback(),
             nncf_callback,
-            metrics_configuration_callback,
+            metrics_configuration,
+            post_processing_configuration,
         ]
 
         self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)

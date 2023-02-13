@@ -24,6 +24,7 @@ from otx.api.entities.datasets import DatasetItemEntity
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 try:
+    from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
     from openvino.model_zoo.model_api.models.model import Model
     from openvino.model_zoo.model_api.models.utils import (
         RESIZE_TYPES,
@@ -59,7 +60,7 @@ class OTXOVActionCls(Model):
 
     __model__ = "ACTION_CLASSIFICATION"
 
-    def __init__(self, model_adapter, configuration=None, preload=False):
+    def __init__(self, model_adapter: OpenvinoAdapter, configuration=None, preload=False):
         """Image model constructor.
 
         Calls the `Model` constructor first
@@ -101,14 +102,14 @@ class OTXOVActionCls(Model):
             frame = item.media.numpy
             frame = self.resize(frame, (self.w, self.h))
             frames.append(frame)
-        np_frames = self.reshape(frames)
+        np_frames = self._reshape(frames)
         dict_inputs = {self.image_blob_name: np_frames}
         meta.update({"resized_shape": np_frames[0].shape})
         return dict_inputs, meta
 
     @staticmethod
     @check_input_parameters_type()
-    def reshape(inputs: List[np.ndarray]) -> np.ndarray:
+    def _reshape(inputs: List[np.ndarray]) -> np.ndarray:
         """Reshape(expand, transpose, permute) the input np.ndarray."""
         np_inputs = np.expand_dims(inputs, axis=(0, 1))  # [1, 1, T, H, W, C]
         np_inputs = np_inputs.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
@@ -127,7 +128,7 @@ class OTXOVActionDet(Model):
 
     __model__ = "ACTION_DETECTION"
 
-    def __init__(self, model_adapter, configuration=None, preload=False):
+    def __init__(self, model_adapter: OpenvinoAdapter, configuration=None, preload=False):
         """Image model constructor.
 
         Calls the `Model` constructor first
@@ -172,7 +173,7 @@ class OTXOVActionDet(Model):
             frames.append(frame)
         np_frames = self.reshape(frames)
         dict_inputs = {self.image_blob_name: np_frames}
-        meta.update({"resized_shape": np_frames[0].shape})
+        meta.update({"resized_shape": np_frames.shape})
         return dict_inputs, meta
 
     @staticmethod

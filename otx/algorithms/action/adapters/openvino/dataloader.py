@@ -30,16 +30,16 @@ def get_ovdataloader(dataset: DatasetEntity, task_type: str, clip_len: int, widt
     If dataset has only a single video, this returns DataLoader for online demo
     If dataset has multiple videos, this return DataLoader for academia evaluation
     """
-    if is_multi_video(dataset):
+    if _is_multi_video(dataset):
         if task_type == "ACTION_CLASSIFICATION":
             return ActionOVClsDataLoader(dataset, clip_len, width, height)
         if task_type == "ACTION_DETECTION":
             return ActionOVDetDataLoader(dataset, clip_len, width, height)
         raise NotImplementedError(f"{task_type} is not supported from action task")
-    return ActionOVDemoDataLoader
+    return ActionOVDemoDataLoader(dataset, task_type, clip_len, width, height)
 
 
-def is_multi_video(dataset: DatasetEntity) -> bool:
+def _is_multi_video(dataset: DatasetEntity) -> bool:
     """Check dataset has multiple videos."""
     _video_id = dataset[0].get_metadata()[0].data.video_id
     for data in dataset:
@@ -121,14 +121,14 @@ class ActionOVClsDataLoader(DataLoader):
     def __getitem__(self, index: int):
         """Sample frames from given video."""
         items = self.dataset[index]
-        indices = self.get_indices(len(items))
+        indices = self._get_indices(len(items))
         dataset_items = []
         for idx in indices:
             dataset_item = items[idx]
             dataset_items.append(dataset_item)
         return dataset_items
 
-    def get_indices(self, video_len: int):
+    def _get_indices(self, video_len: int):
         """Sample frame indices from video length."""
         ori_clip_len = self.clip_len * self.interval
         if video_len > ori_clip_len - 1:
@@ -205,7 +205,7 @@ class ActionOVDetDataLoader(DataLoader):
         timestamp = metadata.frame_idx
         timestamp_start = metadata.timestamp_start
         timestamp_end = metadata.timestamp_end
-        indices = self.get_indices(timestamp, timestamp_start, timestamp_end)
+        indices = self._get_indices(timestamp, timestamp_start, timestamp_end)
         indices = indices - timestamp_start + metadata.start_index
         dataset_items = []
         for idx in indices:
@@ -213,7 +213,7 @@ class ActionOVDetDataLoader(DataLoader):
             dataset_items.append(dataset_item)
         return dataset_items
 
-    def get_indices(self, timestamp: int, timestamp_start: int, timestamp_end: int):
+    def _get_indices(self, timestamp: int, timestamp_start: int, timestamp_end: int):
         """Get indices from timestamp.
 
         Samples from back and forth of key timestamp, and clips using start, and end timestamp

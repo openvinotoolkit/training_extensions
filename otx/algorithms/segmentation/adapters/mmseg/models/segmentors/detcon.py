@@ -485,7 +485,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):
         num_samples: int = 16,
         downsample: int = 32,
         input_transform: str = "resize_concat",
-        in_index: List[int] = [0],
+        in_index: Union[List[int], int] = [0],
         align_corners: bool = False,
         loss_cfg: Optional[Dict[str, Any]] = None,
         train_cfg: Optional[Dict[str, Any]] = None,
