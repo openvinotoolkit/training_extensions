@@ -279,7 +279,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     ):
         """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
-        self.remove_empty_frames(output_resultset.ground_truth_dataset)
+        self._remove_empty_frames(output_resultset.ground_truth_dataset)
         metric = self._get_metric(output_resultset)
         performance = metric.get_performance()
         logger.info(f"Final model performance: {str(performance)}")
@@ -293,7 +293,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             return MetricsHelper.compute_f_measure(output_resultset)
         raise NotImplementedError(f"{self._task_type} is not supported in action task")
 
-    def remove_empty_frames(self, dataset: DatasetEntity):
+    def _remove_empty_frames(self, dataset: DatasetEntity):
         """Remove empty frame for action detection dataset."""
         remove_indices = []
         for idx, item in enumerate(dataset):
@@ -400,7 +400,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     def _add_det_predictions_to_dataset(self, prediction_results: Iterable, dataset: DatasetEntity):
         confidence_threshold = 0.05
-        self.remove_empty_frames(dataset)
+        self._remove_empty_frames(dataset)
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             shapes = []
             for label_idx, detections in enumerate(all_results):
