@@ -84,6 +84,15 @@ def gen_params_dict_from_args(args, type_hint: Optional[dict] = None) -> Dict[st
 
     return params_dict
 
+def str2bool(val):
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        if val.lower() in ("true", "1"):
+            return True
+        if val.lower() in ("false", "0"):
+            return False
+    raise argparse.ArgumentTypeError("Boolean value expected.")
 
 class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
     """Text Help Formatter that shortens."""
@@ -101,15 +110,6 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parse
     assert isinstance(modes, tuple)
     for mode in modes:
         assert mode in default_modes
-
-    def str2bool(val):
-        if isinstance(val, bool):
-            return val
-        if val.lower() in ("true", "1"):
-            return True
-        if val.lower() in ("false", "0"):
-            return False
-        raise argparse.ArgumentTypeError("Boolean value expected.")
 
     params = gen_param_help(config)
 
@@ -146,6 +146,7 @@ def get_parser_and_hprams_data():
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template", nargs="?", default=None)
     parsed, params = pre_parser.parse_known_args()
+
     template = parsed.template
     hyper_parameters = {}
     parser = argparse.ArgumentParser()
@@ -155,4 +156,5 @@ def get_parser_and_hprams_data():
         parser.add_argument("template")
     else:
         parser.add_argument("--template", required=False)
+
     return parser, hyper_parameters, params

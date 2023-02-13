@@ -1,7 +1,6 @@
 import json
 import struct
 from os import path as osp
-from tempfile import TemporaryDirectory
 from pathlib import Path
 import shutil
 import numpy as np
@@ -41,11 +40,6 @@ IMG_DATA_FORMATS = (
     ".PNG",
 )
 
-
-@pytest.fixture
-def tmp_dir():
-    with TemporaryDirectory() as tmp_dir:
-        yield tmp_dir
 
 @e2e_pytest_unit
 def test_save_model_data(mocker, tmp_dir):
