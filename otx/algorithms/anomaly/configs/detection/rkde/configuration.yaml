@@ -28,7 +28,127 @@ description: Configuration for an anomaly classification task
 header: Configuration for an anomaly classification task
 learning_parameters:
   description: Learning Parameters
+  feature_scaling_method:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: scale
+    description:
+      Feature scaling method applied to the collection of extracted features
+      before applying KDE.
+    editable: true
+    enum_name: FeatureScalingMethod
+    header: Feature scaling Method
+    options:
+      NORM: norm
+      SCALE: scale
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
   header: Learning Parameters
+  iou_threshold:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 0.3
+    description:
+      Intersection-Over-Union threshold used in class-agnostic NMS when
+      post-processing the raw region proposals.
+    editable: true
+    header: IOU threshold
+    max_value: 1
+    min_value: 1.0e-05
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  max_detections_per_image:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 100
+    description:
+      Maximum number of region proposals per image. Region proposals are
+      included/excluded based on  class/objectness score.
+    editable: true
+    header: Max detections per image
+    max_value: 1000
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  n_pca_components:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 16
+    description:
+      Number of principal components used for dimensionality reduction
+      during pre-processing before training the KDE model.
+    editable: true
+    header: Number of PCA components.
+    max_value: 128
+    min_value: 2
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  roi_score_threshold:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 0.009
+    description: Confidence score threshold for the region proposals.
+    editable: true
+    header: ROI score threshold
+    max_value: 1
+    min_value: 1.0e-05
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  roi_stage:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: rcnn
+    description: Processing stage of the region extractor that yields the box proposals.
+    editable: true
+    enum_name: ROIStage
+    header: ROI stage
+    options:
+      RCNN: rcnn
+      RPN: rpn
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
   train_batch_size:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
