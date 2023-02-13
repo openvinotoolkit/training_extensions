@@ -20,7 +20,7 @@ and build models with new backbone replacements.
 from pathlib import Path
 
 from otx.cli.builder import Builder
-from otx.cli.manager import ConfigManager
+from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME, ConfigManager
 from otx.cli.utils.parser import get_parser_and_hprams_data
 
 SUPPORTED_TASKS = (
@@ -34,15 +34,6 @@ SUPPORTED_TASKS = (
     "ANOMALY_DETECTION",
     "ANOMALY_SEGMENTATION",
 )
-SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
-
-
-def set_workspace(task, model):
-    """Set workspace path according to path, task, model arugments."""
-    path = f"./otx-workspace-{task}"
-    if model:
-        path += f"-{model}"
-    return path
 
 
 def get_args():
@@ -72,7 +63,7 @@ def get_args():
     parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.", default="")
     parser.add_argument(
         "--train-type",
-        help=f"The currently supported options: {SUPPORTED_TRAIN_TYPE}.",
+        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}.",
         type=str,
         default="incremental",
     )
@@ -98,19 +89,15 @@ def main():
 
     args = get_args()
     config_manager = ConfigManager(args, mode="build")
-    config_manager.task_type = args.task.upper()
-    config_manager.train_type = args.train_type
+    if args.task:
+        config_manager.task_type = args.task.upper()
     if args.work_dir:
         config_manager.workspace_root = Path(args.work_dir)
 
     # Auto-Configuration for model template
     config_manager.configure_template(model=args.model)
 
-    if not config_manager.check_workspace():
-        new_workspace_path = None
-        if args.work_dir:
-            new_workspace_path = args.work_dir
-        config_manager.build_workspace(new_workspace_path=new_workspace_path)
+    config_manager.build_workspace(new_workspace_path=args.work_dir)
 
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config()

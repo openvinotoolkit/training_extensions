@@ -39,14 +39,15 @@ class TestToolsOTXCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("build_backbone_args", build_backbone_args, ids=build_backbone_args_ids)
     def test_otx_backbone_build(self, tmp_dir_path, build_backbone_args):
+        tmp_dir_path = tmp_dir_path / build_backbone_args[0] / build_backbone_args[1]
         otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
 
 
 build_auto_config_args = {
     "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
     "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/imagenet_dataset"},
-    "detection": {"--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
-    "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/coco_dataset/coco_detection"},
+    "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
+    "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/car_tree_bug"},
 }
 
 
@@ -55,6 +56,7 @@ class TestToolsOTXBuildAutoConfig:
     @pytest.mark.parametrize("case", build_auto_config_args.keys())
     def test_otx_build_with_autosplit(self, case, tmp_dir_path):
         otx_dir = os.getcwd()
+        tmp_dir_path = tmp_dir_path / case
         otx_build_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=build_auto_config_args[case])
 
 
