@@ -5,6 +5,7 @@
 # different way instead of using static link url
 requires = [
     "setuptools>=42",
+    #"setuptools<=57.5.0",
     "wheel",
     "Cython~=0.29.32",
     "numpy~=1.21.0"
