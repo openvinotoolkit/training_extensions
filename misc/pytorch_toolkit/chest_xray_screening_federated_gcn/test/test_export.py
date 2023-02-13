@@ -85,7 +85,7 @@ def create_export_test_without_gnn():
 
 
 class TestInferenceEff(create_export_test_without_gnn()):
-    'Test case with gnn'
+    'Test case without gnn'
 
 class TestInference(create_export_test_with_gnn()):
     'Test case with gnn'
