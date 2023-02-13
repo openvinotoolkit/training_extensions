@@ -8,6 +8,7 @@
 from typing import Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType
+from datumaro.components.dataset import Dataset as DatumaroDataset
 from datumaro.plugins.transforms import MasksToPolygons
 
 from otx.api.entities.annotation import Annotation
@@ -16,6 +17,7 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.model_template import TaskType
+from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
@@ -107,3 +109,19 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
             entity.id = ID(i)
 
         return is_removed
+
+class SelfSLSegmentationDatasetAdapter(BaseDatasetAdapter):
+    """Self-SL for segmentation adapter inherited from BaseDatasetAdapter."""
+
+    def _import_dataset(
+        self,
+        train_data_roots: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
+    ) -> Dict[Subset, DatumaroDataset]:
+        """Import custom Self-SL dataset for using DetCon."""
+        raise NotImplementedError
+
+    def get_otx_dataset(self) -> DatasetEntity:
+        raise NotImplementedError

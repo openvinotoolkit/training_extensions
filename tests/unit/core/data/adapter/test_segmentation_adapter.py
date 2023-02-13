@@ -58,3 +58,7 @@ class TestOTXSegmentationDatasetAdapter:
     def test_get_otx_dataset(self):
         assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
         assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+
+
+class TestSelfSLSegmentationDatasetAdapter:
+    pass
