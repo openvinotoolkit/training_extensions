@@ -5,7 +5,7 @@
 
 # flake8: noqa
 
-from otx.algorithms.common.utils.patcher import Patcher
+from otx.core.patcher import Patcher
 
 from .compression import (
     AccuracyAwareLrUpdater,

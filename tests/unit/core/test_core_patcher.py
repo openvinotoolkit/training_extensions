@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.algorithms.common.utils.patcher import Patcher
+from otx.core.patcher import Patcher
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -202,43 +202,39 @@ class TestPatcher:
             ctr = Counter()
 
             patcher.patch(
-                "tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function",
+                "tests.unit.core.test_core_patcher.mock_function",
                 dummy_wrapper,
             )
             patcher.patch(
-                "tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function",
+                "tests.unit.core.test_core_patcher.mock_function",
                 dummy_wrapper,
             )
-            from tests.unit.algorithms.common.utils.test_common_utils_patcher import (
-                mock_function,
-            )
+            from tests.unit.core.test_core_patcher import mock_function
 
             mock_function(ctr=ctr)
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 1
             assert ctr == 1
-            patcher.unpatch("tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function")
+            patcher.unpatch("tests.unit.core.test_core_patcher.mock_function")
             assert len(patcher._patched) == 0
 
             patcher.patch(
-                "tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function",
+                "tests.unit.core.test_core_patcher.mock_function",
                 dummy_wrapper,
             )
             patcher.patch(
-                "tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function",
+                "tests.unit.core.test_core_patcher.mock_function",
                 dummy_wrapper,
                 force=False,
             )
-            from tests.unit.algorithms.common.utils.test_common_utils_patcher import (
-                mock_function,
-            )
+            from tests.unit.core.test_core_patcher import mock_function
 
             mock_function(ctr=ctr)
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 2
             assert ctr == 3
             patcher.unpatch(
-                "tests.unit.algorithms.common.utils.test_common_utils_patcher.mock_function",
+                "tests.unit.core.test_core_patcher.mock_function",
                 1,
             )
             assert len(list(patcher._patched.values())[-1]) == 1
@@ -253,5 +249,5 @@ class TestPatcher:
     @e2e_pytest_unit
     def test_import_obj(self):
         patcher = Patcher()
-        assert (Patcher, "patch") == patcher.import_obj("otx.algorithms.common.utils.patcher.Patcher.patch")
+        assert (Patcher, "patch") == patcher.import_obj("otx.core.patcher.Patcher.patch")
         assert (Patcher, "patch") == patcher.import_obj(Patcher.patch)
