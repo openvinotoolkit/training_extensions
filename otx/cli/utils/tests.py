@@ -137,7 +137,8 @@ def otx_train_testing(template, root, otx_dir, args):
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
             command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
-    command_line.extend(args["train_params"])
+    if "train_params" in args:
+        command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
@@ -749,3 +750,33 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
     command_line.extend(["--work-dir", f"{work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
+
+def otx_regression_testing(template, root, otx_dir, args, criteria, threshold: 0.05):
+    template_work_dir = get_template_dir(template, root)
+
+    command_line = [
+        "otx",
+        "eval",
+        template.model_template_path,
+        "--test-data-roots",
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
+        "--load-weights",
+        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+        "--save-performance",
+        f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
+    ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
+    command_line.extend(args.get("eval_params", []))
+    check_run(command_line)
+    
+    performance_json_path = f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
+    assert os.path.exists(performance_json_path)
+    
+    with open(performance_json_path) as read_file:
+        trained_performance = json.load(read_file)
+
+    modified_criteria = criteria - (criteria * threshold)
+    for k in trained_performance.keys():
+        assert (
+            trained_performance[k] <= modified_criteria
+        ), f"Current model performance: ({trained_performance[k]}) <= criteria: ({modified_criteria})."
