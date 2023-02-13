@@ -18,9 +18,9 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
-from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset

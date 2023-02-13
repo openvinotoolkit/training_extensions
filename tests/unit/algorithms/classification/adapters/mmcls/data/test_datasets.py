@@ -5,7 +5,13 @@
 import numpy as np
 import pytest
 
+from otx.algorithms.classification.adapters.mmcls.data import (
+    MPAClsDataset,
+    MPAHierarchicalClsDataset,
+    MPAMultilabelClsDataset,
+)
 from otx.algorithms.classification.adapters.mmcls.data.datasets import SelfSLDataset
+from otx.algorithms.classification.utils import get_multihead_class_info
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -17,20 +23,14 @@ from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.algorithms.classification.adapters.mmcls.data import (
-    MPAClsDataset,
-    MPAHierarchicalClsDataset,
-    MPAMultilabelClsDataset,
-)
-from otx.algorithms.classification.utils import get_multihead_class_info
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import (
-    check_value_error_exception_raised,
-)
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE,
     init_environment,
     setup_configurable_parameters,
+)
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
 )
 
 

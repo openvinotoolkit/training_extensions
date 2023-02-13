@@ -17,12 +17,12 @@ from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE,
     init_environment,
     setup_configurable_parameters,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 @pytest.fixture
@@ -38,9 +38,7 @@ class TestOTXClassificationInferenceTask:
     @pytest.fixture(autouse=True)
     def setup(self, otx_classification_model, tmp_dir_path) -> None:
         self.dataset_len = 5
-        self.hyper_parameters, self.model_template = setup_configurable_parameters(
-            DEFAULT_CLS_TEMPLATE
-        )
+        self.hyper_parameters, self.model_template = setup_configurable_parameters(DEFAULT_CLS_TEMPLATE)
         task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, False, False, self.dataset_len
         )
