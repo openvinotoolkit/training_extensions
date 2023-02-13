@@ -7,7 +7,8 @@ from typing import Any
 
 import pytorch_lightning as pl
 import torch
-from anomalib.utils.metrics import AdaptiveThreshold, MinMax
+from anomalib.data.utils import masks_to_boxes
+from anomalib.utils.metrics import AnomalyScoreThreshold, MinMax
 
 
 class DummyModel(pl.LightningModule):
@@ -15,7 +16,7 @@ class DummyModel(pl.LightningModule):
 
     def __init__(self):
         super().__init__()
-        self.image_threshold = AdaptiveThreshold()
+        self.image_threshold = AnomalyScoreThreshold()
         self.normalization_metrics = MinMax()
 
     def training_step(self, *args, **kwargs):
@@ -34,5 +35,7 @@ class DummyModel(pl.LightningModule):
         # Just return everything as anomalous
         batch["anomaly_maps"] = batch["pred_masks"] = torch.ones(batch["image"].shape[0], 1, *batch["image"].shape[2:])
         batch["pred_labels"] = batch["pred_scores"] = torch.ones((batch["image"].shape[0]))
-
+        batch["pred_boxes"], batch["box_scores"] = masks_to_boxes(batch["pred_masks"], batch["anomaly_maps"])
+        is_anomalous = [scores > 0.5 for scores in batch["box_scores"]]
+        batch["box_labels"] = [labels.int() for labels in is_anomalous]
         return batch

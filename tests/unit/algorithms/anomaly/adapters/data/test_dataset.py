@@ -15,7 +15,9 @@ from tests.unit.algorithms.anomaly.helpers.dummy_dataset import ShapesDataModule
 def test_dataloaders(task_type):
     """Tests whether the dataloaders can load the data correctly."""
     datamodule = ShapesDataModule(task_type)
-    if task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+    if task_type == TaskType.ANOMALY_CLASSIFICATION:
         assert next(iter(datamodule.predict_dataloader())).keys() == {"image", "label", "index"}
+    elif task_type == TaskType.ANOMALY_DETECTION:
+        assert next(iter(datamodule.predict_dataloader())).keys() == {"image", "label", "index", "boxes"}
     else:
         assert next(iter(datamodule.predict_dataloader())).keys() == {"image", "label", "index", "mask"}

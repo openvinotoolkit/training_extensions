@@ -9,7 +9,9 @@ from typing import Dict, Tuple
 import albumentations as A
 import numpy as np
 from albumentations.pytorch import ToTensorV2
+from anomalib.data.base.datamodule import collate_fn
 from bson import ObjectId
+from omegaconf import OmegaConf
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch.utils.data import DataLoader
 
@@ -89,12 +91,13 @@ class MockDataset(OTXAnomalyDataset):
         )
         self.dataset = self.get_mock_dataitems()
         self.task_type = task_type
-        self.pre_processor = A.Compose(
+        self.transform = A.Compose(
             [
                 A.Resize(32, 32, always_apply=True),
                 ToTensorV2(),
             ]
         )
+        self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
 
     def get_mock_dataitems(self) -> DatasetEntity:
         dataset_items = []
@@ -143,13 +146,14 @@ class ShapesDataset(OTXAnomalyDataset):
     def __init__(self, dataset: DatasetEntity, task_type: TaskType):
         self.dataset = dataset
         self.task_type = task_type
-        self.pre_processor = A.Compose(
+        self.transform = A.Compose(
             [
                 A.Resize(64, 64, always_apply=True),
                 A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
                 ToTensorV2(),
             ]
         )
+        self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
 
 
 class ShapesDataModule(OTXAnomalyDataModule):
@@ -158,12 +162,12 @@ class ShapesDataModule(OTXAnomalyDataModule):
         self.labels = self.dataset.dataset.get_labels()
 
     def predict_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset, shuffle=False, batch_size=32, num_workers=2)
+        return DataLoader(self.dataset, shuffle=False, batch_size=32, num_workers=2, collate_fn=collate_fn)
 
 
 def _get_annotations(task: str) -> Tuple[Dict, Dict, Dict]:
-    ann_file_root = Path("data", "anomaly", task)
-    data_root = Path("data", "anomaly", "shapes")
+    ann_file_root = Path("tests", "assets", "anomaly", task)
+    data_root = Path("tests", "assets", "anomaly", "shapes")
 
     train_subset = {"ann_file": str(ann_file_root / "train.json"), "data_root": str(data_root)}
     test_subset = {"ann_file": str(ann_file_root / "test.json"), "data_root": str(data_root)}
