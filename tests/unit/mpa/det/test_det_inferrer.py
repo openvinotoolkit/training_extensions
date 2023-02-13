@@ -39,21 +39,31 @@ class TestDetectionInferrer:
         mock_infer.assert_not_called()
 
     @e2e_pytest_unit
+    @pytest.mark.parametrize("input_source", ["train", "test"])
     @pytest.mark.parametrize("dump_saliency_map", [True, False])
-    def test_infer(self, dump_saliency_map, mocker):
+    def test_infer(self, input_source, dump_saliency_map, mocker):
         with tempfile.TemporaryDirectory() as tmp_dir:
             fake_json_path = os.path.join(tmp_dir, "fake_data.json")
             create_dummy_coco_json(fake_json_path)
+
             self.data_cfg.data.train.ann_file = fake_json_path
-            self.data_cfg.data.train.data_classes = ["red", "green"]
             self.data_cfg.data.val.ann_file = fake_json_path
             self.data_cfg.data.test.ann_file = fake_json_path
+
+            if input_source == "train":
+                self.data_cfg.data.train.img_prefix = tmp_dir
+                self.data_cfg.data.val.img_prefix = tmp_dir
+            elif input_source == "test":
+                self.data_cfg.data.test.img_prefix = tmp_dir
+
+            self.data_cfg.data.train.data_classes = ["red", "green"]
             self.data_cfg.data.val_dataloader = dict()
-            self.data_cfg.data.test.img_prefix = tmp_dir
+
             arr = np.ones((10, 10), dtype=np.uint8)
             cv2.imwrite(os.path.join(tmp_dir, "fake_name.jpg"), arr)
             cfg = self.inferrer.configure(self.model_cfg, "", self.data_cfg, training=False)
-            cfg.input_source = "test"
+            cfg.input_source = input_source
+
             mocker.patch.object(DetectionInferrer, "configure_samples_per_gpu")
             mocker.patch.object(DetectionInferrer, "configure_compat_cfg")
             mock_infer_callback = mocker.patch.object(DetectionInferrer, "set_inference_progress_callback")
