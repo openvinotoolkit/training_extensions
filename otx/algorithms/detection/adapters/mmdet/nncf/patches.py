@@ -87,7 +87,7 @@ def _wrap_mmdet_sampler(obj_cls):
 def _wrap_register_module(self, fn, *args, **kwargs):
     """A function to wrap classes lazily defined such as custom ones."""
 
-    module = kwargs.get("module", args[0] if len(args) else None)
+    module = kwargs.get("module", args[0] if args else None)
     assert module is not None
     _wrap_mmdet_head(module)
     _wrap_mmdet_bbox_assigner(module)
