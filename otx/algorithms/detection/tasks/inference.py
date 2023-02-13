@@ -238,8 +238,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self.cleanup()
 
     @check_input_parameters_type()
+<<<<<<< HEAD
     def export(self, export_type: ExportType, output_model: ModelEntity,
                precision: ModelPrecision = ModelPrecision.FP32, dump_features: bool = False):
+=======
+    def export(
+        self, export_type: ExportType, output_model: ModelEntity, precision: ModelPrecision = ModelPrecision.FP32
+    ):
+>>>>>>> b6657da39 (Fix code style)
         """Export function of OTX Detection Task."""
         # copied from OTX inference_task.py
         logger.info("Exporting the model")

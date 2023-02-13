@@ -266,5 +266,4 @@ def export_model(
         layout = "bctwh"
     pytorch2onnx(model, input_shape=input_shape, output_file=onnx_model_path)
     precision = "FP16" if half_precision else "FP32"
-    onnx2openvino(config, onnx_model_path, output_dir_path, layout, input_shape,
-                  precision=precision)
+    onnx2openvino(config, onnx_model_path, output_dir_path, layout, input_shape, precision=precision)
