@@ -3,7 +3,6 @@ import numpy as np
 import unittest
 import torchvision
 import sys
-sys.path.append(r'/storage/adityak/federated/')
 from src.utils.inference_utils import inference_model
 from torch.utils.data import DataLoader
 from src.utils.get_config import get_config
