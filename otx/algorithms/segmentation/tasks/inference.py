@@ -147,7 +147,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
+    def export(self, export_type: ExportType, output_model: ModelEntity,
+               precision: ModelPrecision = ModelPrecision.FP32, dump_features: bool = True):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
@@ -167,6 +168,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             mode="train",
             export=True,
             dump_features=dump_features,
+            enable_fp16=(precision == ModelPrecision.FP16),
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
@@ -181,7 +183,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
         output_model.optimization_methods = self._optimization_methods
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")

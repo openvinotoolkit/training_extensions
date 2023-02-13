@@ -247,12 +247,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             opset_version=11,
         )
 
-    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True) -> None:
+    def export(self, export_type: ExportType, output_model: ModelEntity,
+               precision: ModelPrecision = ModelPrecision.FP32, dump_features: bool = True) -> None:
         """Export model to OpenVINO IR.
 
         Args:
             export_type (ExportType): Export type should be ExportType.OPENVINO
             output_model (ModelEntity): The model entity in which to write the OpenVINO IR data
+            precision (bool): Output model weights and inference precision
             dump_features (bool): Flag to return "feature_vector" and "saliency_map".
 
         Raises:
@@ -265,6 +267,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "The saliency maps and representation vector outputs will be dumped in the exported model."
             )
 
+        self.precision[0] = precision
         assert export_type == ExportType.OPENVINO, f"Incorrect export_type={export_type}"
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
@@ -277,6 +280,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         self._export_to_onnx(onnx_path)
         optimize_command = ["mo", "--input_model", onnx_path, "--output_dir", self.config.project.path]
+        if precision == ModelPrecision.FP16:
+            optimize_command.append("--compress_to_fp16")
         subprocess.run(optimize_command, check=True)
         bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
         xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
