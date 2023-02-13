@@ -5,8 +5,6 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from otx.algorithms.classification.utils.convert_coco_to_multilabel import (
     coco_to_datumaro_multilabel,
     multilabel_ann_format,

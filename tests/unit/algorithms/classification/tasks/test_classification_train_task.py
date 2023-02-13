@@ -2,9 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from pathlib import Path
-
-import numpy as np
 import pytest
 
 from otx.algorithms.classification.tasks import ClassificationTrainTask
@@ -59,8 +56,8 @@ class TestOTXClsTaskTrain:
         mock_lcurve_val.x = [0, 1]
         mock_lcurve_val.y = [0.1, 0.2]
         # patch training process
-        mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value={"final_ckpt": ""})
-        self.cls_train_task._learning_curves = {f"val/accuracy_top-1": mock_lcurve_val}
+        mocker.patch.object(BaseTask, "_run_task", return_value={"final_ckpt": ""})
+        self.cls_train_task._learning_curves = {"val/accuracy_top-1": mock_lcurve_val}
         mocker.patch.object(ClassificationTrainTask, "save_model")
         self.cls_train_task.train(self.dataset, self.model)
 

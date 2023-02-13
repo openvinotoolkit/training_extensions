@@ -3,16 +3,12 @@
 #
 
 import copy
-import os
 
 import numpy as np
 import pytest
 from openvino.model_zoo.model_api.models import Model
 
 import otx.algorithms.classification.tasks.openvino
-from otx.algorithms.classification.adapters.openvino.model_wrappers.openvino_models import (
-    OTXClassification,
-)
 from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.algorithms.classification.tasks.openvino import (
     ClassificationOpenVINOInferencer,
@@ -33,7 +29,6 @@ from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.subset import Subset
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from otx.api.utils.shape_factory import ShapeFactory
@@ -157,7 +152,7 @@ class TestOpenVINOClassificationTask:
     @e2e_pytest_unit
     def test_explain(self, mocker):
         self.fake_silency_map = np.random.randint(255, size=(2, 224, 224), dtype=np.uint8)
-        mock_predict = mocker.patch.object(
+        mocker.patch.object(
             ClassificationOpenVINOInferencer,
             "predict",
             return_value=(
