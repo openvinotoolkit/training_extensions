@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import numpy as np
 import pytest
 from PIL import Image
@@ -34,23 +36,39 @@ def inputs_PIL():
     }
 
 
+class TestTwoCropTransform:
+    @pytest.fixture(autouse=True)
+    def setup(self, mocker) -> None:
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.mmseg.data.pipelines.build_from_cfg", return_value=lambda x: x
+        )
+        self.two_crop_transform = TwoCropTransform(view0=[], view1=[])
+
+    @e2e_pytest_unit
+    def test_call(self, mocker, inputs_np: Dict[str, Any]) -> None:
+        """Test __call__."""
+        results = self.two_crop_transform(inputs_np)
+
+        assert isinstance(results, dict)
+        assert "img" in results and results["img"].ndim == 4
+        assert "gt_semantic_seg" in results and results["gt_semantic_seg"].ndim == 3
+        assert "flip" in results and isinstance(results["flip"], list)
+
+    @e2e_pytest_unit
+    def test_call_with_single_pipeline(self, mocker, inputs_np: Dict[str, Any]) -> None:
+        """Test __call__ with single pipeline."""
+        self.two_crop_transform.is_both = False
+
+        results = self.two_crop_transform(inputs_np)
+
+        assert isinstance(results, dict)
+        assert "img" in results and results["img"].ndim == 3
+        assert "gt_semantic_seg" in results and results["gt_semantic_seg"].ndim == 2
+        assert "flip" in results and isinstance(results["flip"], bool)
+
+
 @e2e_pytest_unit
-def test_two_crop_transform(mocker, inputs_np) -> None:
-    """Test TwoCropTransform."""
-    mocker.patch("otx.algorithms.segmentation.adapters.mmseg.data.pipelines.build_from_cfg", return_value=lambda x: x)
-
-    two_crop_transform = TwoCropTransform(view0=[], view1=[])
-
-    results = two_crop_transform(inputs_np)
-
-    assert isinstance(results, dict)
-    assert "img" in results and results["img"].ndim == 4
-    assert "gt_semantic_seg" in results and results["gt_semantic_seg"].ndim == 3
-    assert "flip" in results and isinstance(results["flip"], list)
-
-
-@e2e_pytest_unit
-def test_random_resized_crop(inputs_PIL) -> None:
+def test_random_resized_crop(inputs_PIL: Dict[str, Any]) -> None:
     """Test RandomResizedCrop."""
     random_resized_crop = RandomResizedCrop(size=(8, 8))
 
@@ -65,7 +83,7 @@ def test_random_resized_crop(inputs_PIL) -> None:
 
 
 @e2e_pytest_unit
-def test_random_color_jitter(inputs_PIL) -> None:
+def test_random_color_jitter(inputs_PIL: Dict[str, Any]) -> None:
     """Test RandomColorJitter."""
     random_color_jitter = RandomColorJitter(p=1.0)
 
@@ -76,7 +94,7 @@ def test_random_color_jitter(inputs_PIL) -> None:
 
 
 @e2e_pytest_unit
-def test_random_grayscale(inputs_PIL) -> None:
+def test_random_grayscale(inputs_PIL: Dict[str, Any]) -> None:
     """Test RandomGrayscale."""
     random_grayscale = RandomGrayscale()
 
@@ -87,7 +105,7 @@ def test_random_grayscale(inputs_PIL) -> None:
 
 
 @e2e_pytest_unit
-def test_random_gaussian_blur(inputs_PIL) -> None:
+def test_random_gaussian_blur(inputs_PIL: Dict[str, Any]) -> None:
     """Test RandomGaussianBlur."""
     random_gaussian_blur = RandomGaussianBlur(p=1.0, kernel_size=3)
 
@@ -98,7 +116,7 @@ def test_random_gaussian_blur(inputs_PIL) -> None:
 
 
 @e2e_pytest_unit
-def test_random_solarization(inputs_np) -> None:
+def test_random_solarization(inputs_np: Dict[str, Any]) -> None:
     """Test RandomSolarization."""
     random_solarization = RandomSolarization(p=1.0)
 
@@ -110,7 +128,7 @@ def test_random_solarization(inputs_np) -> None:
 
 
 @e2e_pytest_unit
-def test_nd_array_to_pil_image(inputs_np) -> None:
+def test_nd_array_to_pil_image(inputs_np: Dict[str, Any]) -> None:
     """Test NDArrayToPILImage."""
     nd_array_to_pil_image = NDArrayToPILImage(keys=["img"])
 
@@ -122,7 +140,7 @@ def test_nd_array_to_pil_image(inputs_np) -> None:
 
 
 @e2e_pytest_unit
-def test_pil_image_to_nd_array(inputs_PIL) -> None:
+def test_pil_image_to_nd_array(inputs_PIL: Dict[str, Any]) -> None:
     """Test PILImageToNDArray."""
     pil_image_to_nd_array = PILImageToNDArray(keys=["img"])
 

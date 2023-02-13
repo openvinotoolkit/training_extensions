@@ -2,18 +2,82 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from copy import deepcopy
-from functools import reduce
+from functools import partial, reduce
 from typing import List, Union
 
 import pytest
 import torch
 import torch.nn as nn
 
-from otx.algorithms.segmentation.adapters.mmseg import DetConB
+from otx.algorithms.segmentation.adapters.mmseg import DetConB, SupConDetConB
 from otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon import (
     MaskPooling,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
+
+@pytest.fixture(autouse=True)
+def setup_module(monkeypatch, mocker):
+    class MockBackbone(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.pipeline1 = nn.Sequential(nn.Conv2d(3, 1, (1, 1), bias=False), nn.Conv2d(1, 1, (1, 1), bias=False))
+            self.pipeline2 = nn.Sequential(
+                nn.Conv2d(3, 1, (1, 1), stride=2, bias=False), nn.Conv2d(1, 1, (1, 1), bias=False)
+            )
+
+        def init_weights(self, init_linear=None):
+            pass
+
+        def forward(self, x):
+            return [self.pipeline1(x), self.pipeline2(x)]
+
+    class MockNeck(nn.Sequential):
+        def __init__(self):
+            super().__init__(nn.Linear(2, 2, bias=False), nn.Linear(2, 2, bias=False))
+
+        def init_weights(self, init_linear=None):
+            pass
+
+    class MockDecodeHead(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.align_corners = None
+            self.num_classes = 1
+            self.out_channels = 1
+
+        def forward(self, x):
+            return x
+
+    def build_mock(mock_class, *args, **kwargs):
+        return mock_class()
+
+    monkeypatch.setattr(
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_backbone",
+        partial(build_mock, MockBackbone),
+    )
+    monkeypatch.setattr(
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_neck", partial(build_mock, MockNeck)
+    )
+    monkeypatch.setattr(
+        "mmseg.models.segmentors.encoder_decoder.builder.build_backbone", partial(build_mock, MockBackbone)
+    )
+    monkeypatch.setattr(
+        "mmseg.models.segmentors.encoder_decoder.builder.build_head", partial(build_mock, MockDecodeHead)
+    )
+    mocker.patch(
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_loss",
+        return_value=lambda *args, **kwargs: dict(loss=1.0),
+    )
+    mocker.patch(
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB._register_state_dict_hook"
+    )
+    mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB.state_dict_hook")
+    mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.load_checkpoint")
+    mocker.patch(
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.SupConDetConB._decode_head_forward_train",
+        return_value=(dict(loss=1.0), None),
+    )
 
 
 class TestMaskPooling:
@@ -59,50 +123,7 @@ class TestDetConB:
     """Test DetConB."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, monkeypatch, mocker) -> None:
-        class MockBackbone(nn.Module):
-            def __init__(self):
-                super().__init__()
-                self.pipeline1 = nn.Sequential(nn.Conv2d(3, 1, (1, 1), bias=False), nn.Conv2d(1, 1, (1, 1), bias=False))
-                self.pipeline2 = nn.Sequential(
-                    nn.Conv2d(3, 1, (1, 1), stride=2, bias=False), nn.Conv2d(1, 1, (1, 1), bias=False)
-                )
-
-            def init_weights(self, init_linear=None):
-                pass
-
-            def forward(self, x):
-                return [self.pipeline1(x), self.pipeline2(x)]
-
-        class MockNeck(nn.Sequential):
-            def __init__(self):
-                super().__init__(nn.Linear(2, 2, bias=False), nn.Linear(2, 2, bias=False))
-
-            def init_weights(self, init_linear=None):
-                pass
-
-        def build_mock_backbone(*args, **kwargs):
-            return MockBackbone()
-
-        def build_mock_neck(*args, **kwargs):
-            return MockNeck()
-
-        monkeypatch.setattr(
-            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_backbone", build_mock_backbone
-        )
-        monkeypatch.setattr(
-            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_neck", build_mock_neck
-        )
-        mocker.patch(
-            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_loss",
-            return_value=lambda *args, **kwargs: dict(loss=1.0),
-        )
-        mocker.patch(
-            "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB._register_state_dict_hook"
-        )
-        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB.state_dict_hook")
-        mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.load_checkpoint")
-
+    def setup(self) -> None:
         self.detconb = DetConB(backbone={}, neck={}, head={}, downsample=1, loss_cfg=dict(type="DetConLoss"))
 
     @e2e_pytest_unit
@@ -208,3 +229,33 @@ class TestDetConB:
         assert "loss" in outputs
         assert "log_vars" in outputs
         assert "num_samples" in outputs
+
+
+class TestSupConDetConB:
+    """Test SupConDetConB."""
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "img,gt_semantic_seg,expected",
+        [
+            (torch.ones((1, 2, 3, 4, 4), dtype=torch.float32), torch.ones((1, 1, 2, 4, 4), dtype=torch.int64), True),
+            (torch.ones((1, 3, 4, 4), dtype=torch.float32), torch.ones((1, 1, 4, 4), dtype=torch.int64), False),
+        ],
+    )
+    def test_forward_train(self, img: torch.Tensor, gt_semantic_seg: torch.Tensor, expected: bool):
+        """Test forward_train function."""
+        supcon_detconb = SupConDetConB(
+            backbone={},
+            neck={},
+            head={},
+            decode_head={},
+            downsample=1,
+            input_transform="resize_concat",
+            in_index=[0, 1],
+            loss_cfg=dict(type="DetConLoss"),
+            task_adapt=dict(dst_classes=1, src_classes=1),
+        )
+
+        results = supcon_detconb(img=img, img_metas=[], gt_semantic_seg=gt_semantic_seg)
+
+        assert ("loss_detcon" in results) == expected
