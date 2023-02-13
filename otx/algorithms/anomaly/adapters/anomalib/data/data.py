@@ -237,7 +237,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             dataset = OTXAnomalyDataset(self.config, local_dataset, self.task_type)
         else:
             logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
-            dataset = OTXAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
+            dataset = OTXAnomalyDataset(self.config, global_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
