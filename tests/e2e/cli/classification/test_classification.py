@@ -11,6 +11,7 @@ import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     get_template_dir,
     nncf_eval_openvino_testing,
@@ -35,7 +36,6 @@ from tests.test_suite.run_test_command import (
     pot_optimize_testing,
     pot_validate_fq_testing,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'label_0', 'label_1' classes
 args0 = {

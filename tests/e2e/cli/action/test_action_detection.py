@@ -9,6 +9,7 @@ import pytest
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     otx_eval_openvino_testing,
     otx_eval_testing,
@@ -17,7 +18,6 @@ from tests.test_suite.run_test_command import (
     pot_eval_testing,
     pot_optimize_testing,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
 # TODO: Need to change sample dataset

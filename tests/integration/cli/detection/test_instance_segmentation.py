@@ -10,6 +10,7 @@ import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     get_template_dir,
     nncf_optimize_testing,
@@ -24,7 +25,6 @@ from tests.test_suite.run_test_command import (
     otx_resume_testing,
     otx_train_testing,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
     "--train-data-roots": "tests/assets/car_tree_bug",
