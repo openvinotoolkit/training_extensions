@@ -6,6 +6,3 @@ openmodelzoo-modelapi==2022.3.0
 openvino==2022.3.0
 openvino-dev==2022.3.0
 openvino-telemetry>=2022.1.0
-# FIXME: Below is the only one left as git+https install
-# But, the latest one on PyPI is 0.2.0. Might need custom build & upload
-mmdeploy @ git+https://git@github.com/open-mmlab/mmdeploy@v0.12.0
