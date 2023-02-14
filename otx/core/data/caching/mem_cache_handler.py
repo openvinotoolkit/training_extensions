@@ -103,7 +103,7 @@ class MemCacheHandlerBase:
 
     def __repr__(self):
         """Representation for the current handler status."""
-        perc = 100.0 * self._cur_page.value / self.mem_size
+        perc = 100.0 * self._cur_page.value / self.mem_size if self.mem_size > 0 else 0.0
         return (
             f"{self.__class__.__name__} "
             f"uses {self._cur_page.value} / {self.mem_size} ({perc:.1f}%) memory pool and "

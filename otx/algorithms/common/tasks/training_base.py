@@ -34,7 +34,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
 )
 from otx.algorithms.common.configs import TrainType
-from otx.algorithms.common.tools import caching
 from otx.algorithms.common.utils import UncopiableDefaultDict
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
@@ -47,6 +46,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.core.data import caching
 from otx.mpa.builder import build
 from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage

@@ -3,13 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from tempfile import TemporaryDirectory
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import numpy as np
 
-from otx.algorithms.common.tools.caching import MemCacheHandlerSingleton
 from otx.algorithms.common.utils.data import get_image
 from otx.api.utils.argument_checks import check_input_parameters_type
+
+from ..caching import MemCacheHandlerSingleton
 
 _CACHE_DIR = TemporaryDirectory(prefix="img-cache-")  # pylint: disable=consider-using-with
 
@@ -34,10 +35,18 @@ class LoadImageFromOTXDataset:
         self.to_float32 = to_float32
         self.mem_cache_handler = MemCacheHandlerSingleton.get()
 
+    @staticmethod
+    def _get_unique_key(results: Dict[str, Any]) -> Tuple:
+        # TODO: We should improve it by assigning an unique id to DatasetItemEntity.
+        # This is because there is a case which
+        # d_item.media.path is None, but d_item.media.data is not None
+        d_item = results["dataset_item"]
+        return d_item.media.path, d_item.roi.id
+
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
-        key = results["dataset_item"].media.path
+        key = self._get_unique_key(results)
 
         img = self.mem_cache_handler.get(key)
 
