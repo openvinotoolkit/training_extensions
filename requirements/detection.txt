@@ -3,3 +3,6 @@ mmdet==2.28.1
 pytorchcv
 mmcls==0.25.0
 timm
+# FIXME: Below is the only one left as git+https install
+# But, the latest one on PyPI is 0.2.0. Might need custom build & upload
+mmdeploy @ git+https://git@github.com/open-mmlab/mmdeploy@v0.12.0
