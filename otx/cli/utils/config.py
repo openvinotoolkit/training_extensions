@@ -46,7 +46,6 @@ def configure_dataset(args, data_yaml_path=None):
     if data_yaml_path is not None and os.path.exists(str(data_yaml_path)):
         with open(str(data_yaml_path), "r", encoding="UTF-8") as stream:
             data_config = yaml.safe_load(stream)
-        stream.close()
 
     # The command's args are overridden and use first
     if "train_ann_files" in args and args.train_ann_files:
