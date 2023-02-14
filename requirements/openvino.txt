@@ -6,4 +6,3 @@ openmodelzoo-modelapi==2022.3.0
 openvino==2022.3.0
 openvino-dev==2022.3.0
 openvino-telemetry>=2022.1.0
-otxdeploy==0.12.1  # FIXME: mmdeploy==? when PyPI packages are available
