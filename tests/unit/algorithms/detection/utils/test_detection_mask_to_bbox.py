@@ -5,7 +5,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.detection.utils.mask_to_bbox import mask2bbox, mask_to_border
+from otx.algorithms.common.utils.mask_to_bbox import mask2bbox, mask_to_border
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
