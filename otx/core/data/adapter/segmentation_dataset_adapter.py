@@ -6,7 +6,6 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from typing import List
-import numpy as np
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.transforms import MasksToPolygons
