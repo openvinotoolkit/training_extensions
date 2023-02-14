@@ -49,25 +49,3 @@ def load_regression_configuration(
         result["data_path"] = reg_config["data_path"][task_type]
 
     return result
-
-
-def test_model_performance(
-    dir_path: str, template: ModelTemplate, criteria: Union[int, float], threshold: float = 0.05
-):
-    """Check the model performance.
-
-    Args:
-        performance_json_path (str): The path of performance file
-        criteria (Union[int, float]): The criteria of model
-        threshold (float, optional): The threshold of model performance. Defaults to 0.05.
-    """
-    template_work_dir = get_template_dir(template, dir_path)
-    performance_json_path = f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
-    with open(performance_json_path) as read_file:
-        trained_performance = json.load(read_file)
-
-    modified_criteria = criteria - (criteria * threshold)
-    for k in trained_performance.keys():
-        assert (
-            trained_performance[k] <= modified_criteria
-        ), f"Current model performance: ({trained_performance[k]}) <= criteria: ({modified_criteria})."
