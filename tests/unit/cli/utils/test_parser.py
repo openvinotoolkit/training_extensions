@@ -1,62 +1,56 @@
-import pytest
-import sys
 from argparse import ArgumentParser, ArgumentTypeError
 from pathlib import Path
 
+import pytest
+
 from otx.cli.utils import parser as target_package
 from otx.cli.utils.parser import (
+    add_hyper_parameters_sub_parser,
     gen_param_help,
     gen_params_dict_from_args,
-    ShortDefaultsHelpFormatter,
+    get_parser_and_hprams_data,
     str2bool,
-    add_hyper_parameters_sub_parser,
-    get_parser_and_hprams_data
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
-
 FAKE_HYPER_PARAMETERS = {
-    "a" : {
-        "a" : "fake",
-        "b" : {
-            "default_value" : "default_value",
-            "type" : "SELECTABLE",
-            "affects_outcome_of" : "TRAINING",
-            "header" : "header"
+    "a": {
+        "a": "fake",
+        "b": {
+            "default_value": "default_value",
+            "type": "SELECTABLE",
+            "affects_outcome_of": "TRAINING",
+            "header": "header",
         },
-        "visible_in_ui" : True
+        "visible_in_ui": True,
     },
-    "b" : {
-        "a" : {
-            "default_value" : "default_value",
-            "type" : "BOOLEAN",
-            "affects_outcome_of" : "TRAINING",
-            "header" : "header"
+    "b": {
+        "a": {
+            "default_value": "default_value",
+            "type": "BOOLEAN",
+            "affects_outcome_of": "TRAINING",
+            "header": "header",
         },
-        "visible_in_ui" : True
+        "visible_in_ui": True,
     },
-    "c" : {
-        "a" : {
-            "a" : {
-                "default_value" : "default_value",
-                "type" : "INTEGER",
-                "affects_outcome_of" : "TRAINING",
-                "header" : "header"
+    "c": {
+        "a": {
+            "a": {
+                "default_value": "default_value",
+                "type": "INTEGER",
+                "affects_outcome_of": "TRAINING",
+                "header": "header",
             },
-            "visible_in_ui" : True
+            "visible_in_ui": True,
         },
-        "visible_in_ui" : True
+        "visible_in_ui": True,
     },
-    "d" : {
-        "a" : {
-            "default_value" : "default_value",
-            "type" : "FLOAT",
-            "affects_outcome_of" : "TRAINING",
-            "header" : "header"
-        },
-        "visible_in_ui" : True
+    "d": {
+        "a": {"default_value": "default_value", "type": "FLOAT", "affects_outcome_of": "TRAINING", "header": "header"},
+        "visible_in_ui": True,
     },
 }
+
 
 @e2e_pytest_unit
 def test_gen_param_help():
@@ -64,10 +58,10 @@ def test_gen_param_help():
     param_help = gen_param_help(FAKE_HYPER_PARAMETERS)
 
     hp_type_map = {
-        "a.b" : str,
-        "b.a" : bool,
-        "c.a.a" : int,
-        "d.a" : float,
+        "a.b": str,
+        "b.a": bool,
+        "c.a.a": int,
+        "d.a": float,
     }
     for key, val in hp_type_map.items():
         assert param_help[key]["default"] == "default_value"
@@ -94,7 +88,7 @@ def test_gen_params_dict_from_args(mock_args):
 
     assert param_dict["a"]["a"]["value"] == 1
     assert param_dict["a"]["b"]["value"] == 2.1
-    assert param_dict["a"]["c"]["value"] == True
+    assert param_dict["a"]["c"]["value"] is True
     assert param_dict["b"]["value"] == "fake"
     assert param_dict["c"]["value"] == 10
 
@@ -102,18 +96,18 @@ def test_gen_params_dict_from_args(mock_args):
 @e2e_pytest_unit
 def test_gen_params_dict_from_args_with_type_hint(mock_args):
     type_hint = {
-        "a.a" : {"type" : str},
-        "a.b" : {"type" : int},
-        "a.c" : {"type" : bool},
-        "b" : {"type" : str},
-        "c" : {"type" : str}
+        "a.a": {"type": str},
+        "a.b": {"type": int},
+        "a.c": {"type": bool},
+        "b": {"type": str},
+        "c": {"type": str},
     }
 
     param_dict = gen_params_dict_from_args(mock_args, type_hint)
 
     assert param_dict["a"]["a"]["value"] == "1"
     assert param_dict["a"]["b"]["value"] == 2
-    assert param_dict["a"]["c"]["value"] == True
+    assert param_dict["a"]["c"]["value"] is True
     assert param_dict["b"]["value"] == "fake"
     assert param_dict["c"]["value"] == "10"
 
@@ -123,10 +117,12 @@ def test_gen_params_dict_from_args_with_type_hint(mock_args):
 def test_str2bool_with_bool_input(val):
     assert str2bool(val) is val
 
+
 @e2e_pytest_unit
 @pytest.mark.parametrize("val", ["true", "1"])
 def test_str2bool_with_bool_string_true(val):
     assert str2bool(val) is True
+
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("val", ["false", "0"])
@@ -140,6 +136,7 @@ def test_str2bool_with_bool_wrong_input(val):
     with pytest.raises(ArgumentTypeError):
         assert str2bool(val)
 
+
 @e2e_pytest_unit
 def test_add_hyper_parameters_sub_parser(mocker):
     # prepare
@@ -152,10 +149,10 @@ def test_add_hyper_parameters_sub_parser(mocker):
 
     # check
     hp_type_map = {
-        "a.b" : str,
-        "b.a" : bool,
-        "c.a.a" : int,
-        "d.a" : float,
+        "a.b": str,
+        "b.a": bool,
+        "c.a.a": int,
+        "d.a": float,
     }
     assert parser is not None
     add_args_call_args = mock_subparser.add_argument.call_args_list
@@ -170,6 +167,7 @@ def test_add_hyper_parameters_sub_parser(mocker):
             assert add_args_call_args[i][1]["type"] == hp_type
         else:
             assert add_args_call_args[i][1]["type"] == str2bool
+
 
 @e2e_pytest_unit
 def test_get_parser_and_hprams_data_with_template(mocker, tmp_dir):
@@ -191,6 +189,7 @@ def test_get_parser_and_hprams_data_with_template(mocker, tmp_dir):
     assert hyper_parameters == mock_hyper_parameters
     assert params == ["--left-args"]
     assert isinstance(parser, ArgumentParser)
+
 
 @e2e_pytest_unit
 def test_get_parser_and_hprams_data(mocker):
