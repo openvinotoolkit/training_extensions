@@ -1,224 +1,224 @@
 {
-    "data_path": {
-        "classification": {
-            "supervised": {
-                "multi_class": {
-                    "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
-                    "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
-                    "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
-                },
-                "multi_label": {
-                    "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression",
-                    "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression",
-                    "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression"
-                },
-                "h_label": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                },
-                "supcon": {
-                    "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
-                    "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
-                    "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
-                }
-            },
-            "class_incr": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                }
-            },
-            "semi_supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": "",
-                    "unlabeled": ""
-                }
-            },
-            "self_supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": "",
-                    "unlabeled": ""
-                }
-            }
+  "data_path": {
+    "classification": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
         },
-        "detection": {
-            "supervised": {
-                "multi_class": {
-                    "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd",
-                    "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd",
-                    "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd"
-                },
-                "class_incr": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                }
-            },
-            "semi_supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": "",
-                    "unlabeled": ""
-                }
-            }
+        "multi_label": {
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression"
         },
-        "semantic_segmentation": {
-            "supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                },
-                "class_incr": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                }
-            },
-            "semi_supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": "",
-                    "unlabeled": ""
-                }
-            },
-            "self_supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": "",
-                    "unlabeled": ""
-                }
-            }
+        "h_label": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
         },
-        "instance_segmentation": {
-            "supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                },
-                "class_incr": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                }
-            },
-            "semi_supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": "",
-                    "unlabeled": ""
-                }
-            }
-        },
-        "action_classification": {
-            "supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                }
-            }
-        },
-        "action_detection": {
-            "supervised": {
-                "multi_class": {
-                    "--train-data-roots": "",
-                    "--val-data-roots": "",
-                    "--test-data-roots": ""
-                }
-            }
-        },
-        "anomaly": {
-            "classification": {
-                "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-                "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-                "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
-            },
-            "detection": {
-                "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-                "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-                "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
-            },
-            "segmentation": {
-                "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-                "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-                "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
-            }
+        "supcon": {
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
         }
+      },
+      "class_incr": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added",
+          "unlabeled": "will be added"
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added",
+          "unlabeled": "will be added"
+        }
+      }
     },
-    "model_criteria": {
-        "classification": {
-            "supervised": {
-                "multi_class": 100,
-                "multi_label": 100,
-                "h_label": 100,
-                "supcon": 100
-            },
-            "class_incr": {
-                "multi_class": 100
-            },
-            "semi_supervised": {
-                "multi_class": 100
-            },
-            "self_supervised": {
-                "multi_class": 100
-            }
+    "detection": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd"
         },
-        "detection": {
-            "supervised": {
-                "multi_class": 100,
-                "class_incr": 100
-            },
-            "semi_supervised": {
-                "multi_class": 100
-            }
-        },
-        "semantic_segmentation": {
-            "supervised": {
-                "multi_class": 100,
-                "class_incr": 100
-            },
-            "semi_supervised": {
-                "multi_class": 100
-            },
-            "self_supervised": {
-                "multi_class": 100
-            }
-        },
-        "instance_segmentation": {
-            "supervised": {
-                "multi_class": 100,
-                "class_incr": 100
-            },
-            "semi_supervised": {
-                "multi_class": 100
-            }
-        },
-        "action_classification": {
-            "supervised": {
-                "multi_class": 100
-            }
-        },
-        "action_detection": {
-            "supervised": {
-                "multi_class": 100
-            }
-        },
-        "anomaly": {
-            "classification": 100,
-            "detection": 100,
-            "segmentation": 100
+        "class_incr": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
         }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added",
+          "unlabeled": "will be added"
+        }
+      }
+    },
+    "semantic_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
+        },
+        "class_incr": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added",
+          "unlabeled": "will be added"
+        }
+      },
+      "self_supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added",
+          "unlabeled": "will be added"
+        }
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
+        },
+        "class_incr": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
+        }
+      },
+      "semi_supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added",
+          "unlabeled": "will be added"
+        }
+      }
+    },
+    "action_classification": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
+        }
+      }
+    },
+    "action_detection": {
+      "supervised": {
+        "multi_class": {
+          "--train-data-roots": "will be added",
+          "--val-data-roots": "will be added",
+          "--test-data-roots": "will be added"
+        }
+      }
+    },
+    "anomaly": {
+      "classification": {
+        "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+        "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+        "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
+      },
+      "detection": {
+        "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+        "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+        "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
+      },
+      "segmentation": {
+        "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+        "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+        "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
+      }
     }
+  },
+  "model_criteria": {
+    "classification": {
+      "supervised": {
+        "multi_class": 0.95,
+        "multi_label": 0.95,
+        "h_label": 0.95,
+        "supcon": 0.95
+      },
+      "class_incr": {
+        "multi_class": 0.95
+      },
+      "semi_supervised": {
+        "multi_class": 0.95
+      },
+      "self_supervised": {
+        "multi_class": 0.95
+      }
+    },
+    "detection": {
+      "supervised": {
+        "multi_class": 100,
+        "class_incr": 100
+      },
+      "semi_supervised": {
+        "multi_class": 100
+      }
+    },
+    "semantic_segmentation": {
+      "supervised": {
+        "multi_class": 100,
+        "class_incr": 100
+      },
+      "semi_supervised": {
+        "multi_class": 100
+      },
+      "self_supervised": {
+        "multi_class": 100
+      }
+    },
+    "instance_segmentation": {
+      "supervised": {
+        "multi_class": 100,
+        "class_incr": 100
+      },
+      "semi_supervised": {
+        "multi_class": 100
+      }
+    },
+    "action_classification": {
+      "supervised": {
+        "multi_class": 100
+      }
+    },
+    "action_detection": {
+      "supervised": {
+        "multi_class": 100
+      }
+    },
+    "anomaly": {
+      "classification": 100,
+      "detection": 100,
+      "segmentation": 100
+    }
+  }
 }

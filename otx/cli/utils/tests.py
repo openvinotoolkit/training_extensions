@@ -751,6 +751,7 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
     command_line.extend(args["train_params"])
     check_run(command_line)
 
+
 def otx_regression_testing(template, root, otx_dir, args, criteria, threshold=0.05):
     template_work_dir = get_template_dir(template, root)
 
@@ -768,10 +769,10 @@ def otx_regression_testing(template, root, otx_dir, args, criteria, threshold=0.
     command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(args.get("eval_params", []))
     check_run(command_line)
-    
+
     performance_json_path = f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
     assert os.path.exists(performance_json_path)
-    
+
     with open(performance_json_path) as read_file:
         trained_performance = json.load(read_file)
 
