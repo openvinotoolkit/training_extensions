@@ -6,7 +6,6 @@ from typing import List
 from unittest.mock import MagicMock
 
 import pytest
-from hpopt.hpo_base import TrialStatus
 
 import otx
 from otx.api.configuration.helper import create as create_conf_hp
@@ -23,10 +22,10 @@ from otx.cli.utils.hpo import (
     TaskManager,
     Trainer,
     get_best_hpo_weight,
-    is_hpopt_available,
     run_hpo,
     run_trial,
 )
+from otx.hpo.hpo_base import TrialStatus
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 CLASSIFCATION_TASK = {TaskType.CLASSIFICATION}
@@ -611,18 +610,6 @@ class TestHpoDataset:
 
 
 @e2e_pytest_unit
-def test_is_hpopt_available(mocker):
-    mocker.patch("otx.cli.utils.hpo.hpopt")
-    assert is_hpopt_available()
-
-
-@e2e_pytest_unit
-def test_check_hpopt_unavailable(mocker):
-    mocker.patch("otx.cli.utils.hpo.hpopt", None)
-    assert not is_hpopt_available()
-
-
-@e2e_pytest_unit
 def test_run_hpo(mocker, mock_environment):
     with TemporaryDirectory() as tmp_dir:
         # prepare
@@ -659,18 +646,6 @@ def test_run_hpo(mocker, mock_environment):
         assert env_hp.a.b == 1
         assert env_hp.c.d == 2
         assert environment.model == "mock_best_weight_path"  # check that best model weight is used
-
-
-@e2e_pytest_unit
-def test_run_hpo_hpopt_unavailable(mocker):
-    mock_hpo_runner_instance = mocker.MagicMock()
-    mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
-    mock_hpo_runner_class.return_value = mock_hpo_runner_instance
-
-    mocker.patch("otx.cli.utils.hpo.hpopt", None)
-
-    run_hpo(mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
-    mock_hpo_runner_instance.run_hpo.assert_not_called()
 
 
 @e2e_pytest_unit

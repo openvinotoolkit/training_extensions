@@ -50,6 +50,7 @@ from typing import Any, Dict, List, Optional
 import cv2
 import pandas as pd
 from anomalib.data.mvtec import make_mvtec_dataset
+from anomalib.data.utils import Split
 
 
 def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
@@ -198,7 +199,10 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
         else:
             raise ValueError(f"Unknown task {task}. Available tasks are classification, detection and segmentation.")
 
-        df_items = make_mvtec_dataset(path=Path(data_path), create_validation_set=True, split=split)
+        if split == "train":
+            df_items = make_mvtec_dataset(root=Path(data_path), split=Split.TRAIN)
+        else:
+            df_items = make_mvtec_dataset(root=Path(data_path), split=Split.TEST)
         json_items = create_json_items(df_items)
         save_json_items(json_items, f"{annotation_path}/{split}.json")
 

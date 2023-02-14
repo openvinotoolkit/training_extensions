@@ -17,7 +17,7 @@
 import argparse
 import re
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from otx.cli.registry import find_and_parse_model_template
 
@@ -65,21 +65,24 @@ class MemSizeAction(argparse.Action):
         return number * units[unit]
 
 
-def gen_param_help(hyper_parameters):
+def gen_param_help(hyper_parameters: Dict) -> Dict:
     """Generates help for hyper parameters section."""
 
     type_map = {"FLOAT": float, "INTEGER": int, "BOOLEAN": bool, "SELECTABLE": str}
 
     help_keys = ("header", "type", "default_value", "max_value", "min_value")
 
-    def _gen_param_help(prefix, cur_params):
+    def _gen_param_help(prefix: str, cur_params: Dict) -> Dict:
         cur_help = {}
         for k, val in cur_params.items():
-            if isinstance(val, dict) and "default_value" not in val.keys():
+            if not isinstance(val, dict):
+                continue
+
+            if "default_value" not in val.keys():
                 if "visible_in_ui" in val and val["visible_in_ui"]:
                     x = _gen_param_help(prefix + f"{k}.", val)
                     cur_help.update(x)
-            elif isinstance(val, dict) and "default_value" in val.keys():
+            else:
                 assert isinstance(val["default_value"], (int, float, str))
                 help_str = "\n".join([f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()])
                 assert "." not in k
@@ -100,28 +103,52 @@ def gen_param_help(hyper_parameters):
     return _gen_param_help("", hyper_parameters)
 
 
-def gen_params_dict_from_args(args, type_hint: Optional[dict] = None):
+def gen_params_dict_from_args(args, type_hint: Optional[dict] = None) -> Dict[str, dict]:
     """Generates hyper parameters dict from parsed command line arguments."""
 
     params_dict: Dict[str, dict] = {}
     for param_name in dir(args):
-        if param_name.startswith("params."):
-            value_type = None
-            cur_dict = params_dict
-            split_param_name = param_name.split(".")[1:]
-            if type_hint:
-                origin_key = ".".join(split_param_name)
-                value_type = type_hint[origin_key].get("type", None)
-            for i, k in enumerate(split_param_name):
-                if k not in cur_dict:
-                    cur_dict[k] = {}
-                if i < len(split_param_name) - 1:
-                    cur_dict = cur_dict[k]
-                else:
-                    value = getattr(args, param_name)
-                    cur_dict[k] = {"value": value_type(value) if value_type else value}
+        if not param_name.startswith("params."):
+            continue
+
+        value_type = None
+        cur_dict = params_dict
+        split_param_name = param_name.split(".")[1:]
+        if type_hint:
+            origin_key = ".".join(split_param_name)
+            value_type = type_hint[origin_key].get("type", None)
+        for i, k in enumerate(split_param_name):
+            if k not in cur_dict:
+                cur_dict[k] = {}
+            if i < len(split_param_name) - 1:
+                cur_dict = cur_dict[k]
+            else:
+                value = getattr(args, param_name)
+                cur_dict[k] = {"value": value_type(value) if value_type else value}
 
     return params_dict
+
+
+def str2bool(val: Union[str, bool]) -> bool:
+    """If input type is string, convert it to boolean.
+
+    Args:
+        val (Union[str, bool]): value to convert to boolean.
+
+    Raises:
+        argparse.ArgumentTypeError: If type is neither string and boolean, raise an error.
+
+    Returns:
+        bool: return converted boolean value.
+    """
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        if val.lower() in ("true", "1"):
+            return True
+        if val.lower() in ("false", "0"):
+            return False
+    raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
@@ -131,7 +158,9 @@ class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
         return action.dest.split(".")[-1].upper()
 
 
-def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parser=False):
+def add_hyper_parameters_sub_parser(
+    parser, config, modes=None, return_sub_parser=False
+) -> Optional[argparse.ArgumentParser]:
     """Adds hyper parameters sub parser."""
 
     default_modes = ("TRAINING", "INFERENCE")
@@ -140,15 +169,6 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parse
     assert isinstance(modes, tuple)
     for mode in modes:
         assert mode in default_modes
-
-    def str2bool(val):
-        if isinstance(val, bool):
-            return val
-        if val.lower() in ("true", "1"):
-            return True
-        if val.lower() in ("false", "0"):
-            return False
-        raise argparse.ArgumentTypeError("Boolean value expected.")
 
     params = gen_param_help(config)
 
@@ -173,6 +193,7 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None, return_sub_parse
         )
     if return_sub_parser:
         return parser_a
+    return None
 
 
 def get_parser_and_hprams_data():
@@ -185,6 +206,7 @@ def get_parser_and_hprams_data():
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template", nargs="?", default=None)
     parsed, params = pre_parser.parse_known_args()
+
     template = parsed.template
     hyper_parameters = {}
     parser = argparse.ArgumentParser()
@@ -194,4 +216,5 @@ def get_parser_and_hprams_data():
         parser.add_argument("template")
     else:
         parser.add_argument("--template", required=False)
+
     return parser, hyper_parameters, params

@@ -71,8 +71,8 @@ def update_backbone_args(backbone_config: dict, registry: Registry, backend: str
             missing_args.append(arg)
     if len(missing_args) > 0:
         print(
-            f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
-            f"\n[otx build] Please refer to {inspect.getfile(backbone_module)}"
+            f"[*] {backbone_config['type']} requires the argument : {missing_args}"
+            f"\n[*] Please refer to {inspect.getfile(backbone_module)}"
         )
     if "out_indices" in backbone_config:
         backbone_config["use_out_indices"] = True
@@ -90,8 +90,8 @@ def update_backbone_args(backbone_config: dict, registry: Registry, backend: str
         if "options" in backbone_data and arg in backbone_data["options"]:
             backbone_config[arg] = backbone_data["options"][arg][0]
             print(
-                f"[otx build] '{arg}' can choose between: {backbone_data['options'][arg]}"
-                f"\n[otx build] '{arg}' default value: {backbone_config[arg]}"
+                f"[*] '{arg}' can choose between: {backbone_data['options'][arg]}"
+                f"\n[*] '{arg}' default value: {backbone_config[arg]}"
             )
         else:
             backbone_config[arg] = "!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!"
@@ -135,7 +135,7 @@ class Builder:
         backbone_type: The type of backbone want to get - {backend.backbone_type} (str)
         output_path: new backbone configuration file output path (Union[Path, str])
         """
-        print(f"[otx build] Backbone Config: {backbone_type}")
+        print(f"[*] Backbone Config: {backbone_type}")
         output_path = output_path if isinstance(output_path, Path) else Path(output_path)
 
         backend, backbone_class = Registry.split_scope_key(backbone_type)
@@ -147,7 +147,7 @@ class Builder:
         missing_args = update_backbone_args(backbone_config, backbone_registry, backend)
         if str(output_path).endswith((".yml", ".yaml", ".json")):
             mmcv.dump({"backbone": backbone_config}, str(output_path.absolute()))
-            print(f"[otx build] Save backbone configuration: {str(output_path.absolute())}")
+            print(f"[*] Save backbone configuration: {str(output_path.absolute())}")
         else:
             raise ValueError("The backbone config support file format is as follows: (.yml, .yaml, .json)")
         return missing_args
@@ -166,7 +166,7 @@ class Builder:
         backbone_config_path: backbone configuration file path (Union[Path, str])
         output_path: new model.py output path (Union[Path, str])
         """
-        print(f"[otx build] Update {model_config_path} with {backbone_config_path}")
+        print(f"[*] Update {model_config_path} with {backbone_config_path}")
         model_config_path = model_config_path if isinstance(model_config_path, Path) else Path(model_config_path)
         backbone_config_path = (
             backbone_config_path if isinstance(backbone_config_path, Path) else Path(backbone_config_path)
@@ -177,13 +177,13 @@ class Builder:
             model_config = MPAConfig.fromfile(str(model_config_path))
             print(f"\tTarget Model: {model_config.model.type}")
         else:
-            raise ValueError(f"[otx build] The model is not properly defined or not found: {model_config_path}")
+            raise ValueError(f"[*] The model is not properly defined or not found: {model_config_path}")
 
         # Get Backbone config from config file
         if backbone_config_path.exists():
             backbone_config = mmcv.load(str(backbone_config_path))
         else:
-            raise ValueError(f"[otx build] The backbone is not found: {str(backbone_config_path)}")
+            raise ValueError(f"[*] The backbone is not found: {str(backbone_config_path)}")
 
         if "backbone" in backbone_config:
             backbone_config = backbone_config["backbone"]
@@ -231,4 +231,4 @@ class Builder:
         if output_path is None:
             output_path = model_config_path
         model_config.dump(str(output_path))
-        print(f"[otx build] Save model configuration: {str(output_path)}")
+        print(f"[*] Save model configuration: {str(output_path)}")
