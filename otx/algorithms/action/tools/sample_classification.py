@@ -51,6 +51,7 @@ def load_test_dataset(model_template):
     """Load Sample dataset for detection."""
     dataset_adapter = get_dataset_adapter(
         model_template.task_type,
+        model_template.train_type,
         train_data_roots=TRAIN_DATA_ROOTS,
         val_data_roots=VAL_DATA_ROOTS,
     )
