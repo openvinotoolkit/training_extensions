@@ -19,7 +19,7 @@ import os
 import pytest
 
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import (
+from tests.test_suite.run_test_command import (
     nncf_eval_openvino_testing,
     nncf_eval_testing,
     nncf_export_testing,

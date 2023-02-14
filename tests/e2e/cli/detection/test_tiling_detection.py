@@ -9,7 +9,7 @@ import pytest
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import (
+from tests.test_suite.run_test_command import (
     get_template_dir,
     nncf_eval_openvino_testing,
     nncf_eval_testing,

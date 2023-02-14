@@ -10,7 +10,7 @@ from unittest.mock import patch
 import pytest
 
 from otx.cli.tools import cli
-from otx.cli.utils.tests import (
+from tests.test_suite.run_test_command import (
     otx_build_auto_config,
     otx_build_backbone_testing,
     otx_build_testing,

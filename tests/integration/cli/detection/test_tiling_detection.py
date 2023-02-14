@@ -7,7 +7,7 @@ import os
 import pytest
 
 from otx.api.entities.model_template import parse_model_template
-from otx.cli.utils.tests import (
+from tests.test_suite.run_test_command import (
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
     otx_eval_deployment_testing,
