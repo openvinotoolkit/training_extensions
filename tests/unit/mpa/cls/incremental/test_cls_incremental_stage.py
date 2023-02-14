@@ -5,7 +5,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
 
 
-class TestOTXClsStage:
+class TestOTXIncrClsStage:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters(
