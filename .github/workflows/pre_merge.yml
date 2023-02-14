@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: 3.8
       - name: Install dependencies
-        run: python -m pip install tox==4.4.5
+        run: python -m pip install -r requirements/dev.txt
       - name: Code Quality Checks
         run: tox -e pre-commit
   Pre-Merge-Unit-Test:
@@ -40,7 +40,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: python -m pip install tox==4.4.5
+        run: python -m pip install -r requirements/dev.txt
       - name: Unit-testing
         run: tox -e pre-merge -- tests/unit
       - name: Upload coverage reports to Codecov
@@ -69,6 +69,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: python -m pip install tox
+        run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
         run: tox -e pre-merge -- tests/integration/cli
