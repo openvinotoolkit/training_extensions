@@ -6,6 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from typing import List
+import numpy as np
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.transforms import MasksToPolygons
@@ -44,7 +45,8 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                                 if d_polygon.label != 0:
                                     d_polygon.label -= 1
                                     shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
-                                    used_labels.append(d_polygon.label)
+                                    if d_polygon.label not in used_labels:
+                                        used_labels.append(d_polygon.label)
 
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
