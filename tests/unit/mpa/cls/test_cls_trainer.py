@@ -2,9 +2,7 @@ import pytest
 
 from otx.mpa.cls.trainer import ClsTrainer
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.classification.test_helper import (
-    setup_mpa_task_parameters
-)
+from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
 
 
 class TestOTXClsTrainer:

@@ -1,21 +1,17 @@
-import os
-
 import pytest
 
 from otx.mpa import Stage
 from otx.mpa.cls.stage import ClsStage
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.classification.test_helper import (
-    setup_mpa_task_parameters
-)
-
+from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
 
 
 class TestOTXClsStage:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters(task_type="incremental", create_test=True, create_val=True)
+        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters(
+            task_type="incremental", create_test=True, create_val=True
+        )
         self.stage = ClsStage(name="", mode="train", config=recipie_cfg, common_cfg=None, index=0)
 
     @e2e_pytest_unit

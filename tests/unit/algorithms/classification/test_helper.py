@@ -27,7 +27,6 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.mpa.utils.config_utils import MPAConfig
 
-
 DEFAULT_CLS_TEMPLATE_DIR = Path("otx") / "algorithms" / "classification" / "configs" / "mobilenet_v3_large_1_cls_incr"
 DEFAULT_CLS_TEMPLATE = DEFAULT_CLS_TEMPLATE_DIR / "template.yaml"
 

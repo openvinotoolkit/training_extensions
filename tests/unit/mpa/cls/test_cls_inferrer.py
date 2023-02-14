@@ -1,20 +1,17 @@
-import os
-
 import numpy as np
 import pytest
 
 from otx.mpa.cls.inferrer import ClsInferrer
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.classification.test_helper import (
-    setup_mpa_task_parameters
-)
+from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
 
 
 class TestOTXClsInferrer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters(task_type="incremental", create_test=True)
+        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters(
+            task_type="incremental", create_test=True
+        )
         self.inferrer = ClsInferrer(name="", mode="train", config=recipie_cfg, common_cfg=None, index=0)
 
     @e2e_pytest_unit
@@ -35,12 +32,12 @@ class TestOTXClsInferrer:
         mock_infer_callback = mocker.patch.object(ClsInferrer, "set_inference_progress_callback")
         mocker.patch("otx.mpa.cls.inferrer.build_data_parallel")
         mock_build_model = mocker.patch.object(ClsInferrer, "build_model")
-        fake_output = np.random.rand(10,10)
-        monkeypatch.setattr("otx.mpa.cls.inferrer.prob_extractor",
-                             lambda x, y: ({"pred": fake_output}, fake_output))
+        fake_output = np.random.rand(10, 10)
+        monkeypatch.setattr("otx.mpa.cls.inferrer.prob_extractor", lambda x, y: ({"pred": fake_output}, fake_output))
 
         returned_value = self.inferrer.infer(cfg)
         mock_infer_callback.assert_called_once()
+        mock_build_model.assert_called_once()
 
         assert "saliency_maps" in returned_value
         assert "eval_predictions" in returned_value
