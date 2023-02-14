@@ -25,6 +25,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
+from mmcv.runner import get_dist_info
 from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
@@ -33,6 +34,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
 )
 from otx.algorithms.common.configs import TrainType
+from otx.algorithms.common.tools import caching
 from otx.algorithms.common.utils import UncopiableDefaultDict
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
@@ -323,6 +325,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 dataloader_cfg["persistent_workers"] = False
                 data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
+        # Update recipe with caching modules
+        self._update_caching_modules(data_cfg)
+
         if self._data_cfg is not None:
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
@@ -403,7 +408,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
-
                 normalize_cfg = get_configs_by_pairs(
                     self._recipe_cfg.data.test.pipeline,
                     dict(type="Normalize"),
@@ -611,3 +615,26 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 update_or_add_custom_hook(self._recipe_cfg, early_stop_hook)
             else:
                 remove_custom_hook(self._recipe_cfg, "LazyEarlyStoppingHook")
+
+    def _update_caching_modules(self, data_cfg: Config) -> None:
+        def _find_max_num_workers(cfg: dict):
+            num_workers = [0]
+            for key, value in cfg.items():
+                if key == "workers_per_gpu" and isinstance(value, int):
+                    num_workers += [value]
+                elif isinstance(value, dict):
+                    num_workers += [_find_max_num_workers(value)]
+
+            return max(num_workers)
+
+        _, world_size = get_dist_info()
+        mem_cache_size = self.hyperparams.algo_backend.mem_cache_size // world_size
+        max_num_workers = _find_max_num_workers(data_cfg)
+
+        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
+        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
+
+        update_or_add_custom_hook(
+            self._recipe_cfg,
+            ConfigDict(type="MemCacheHook"),
+        )
