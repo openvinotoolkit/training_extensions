@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: python -m pip install tox
+        run: python -m pip install -r requirements/dev.txt
       - name: Regression Tests
         run: tox -e pre-merge -- tests/regression
       - name: Upload test results
