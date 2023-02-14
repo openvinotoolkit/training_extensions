@@ -8,17 +8,27 @@ on:
 
 jobs:
   Snyk-scan:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, dev]
+    permissions:
+      security-events: write
     steps:
-      - uses: actions/checkout@v3
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python-3.8@master
-        continue-on-error: true # To make sure that SARIF upload gets called
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install tox
+      - name: Snyk Scanning
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --sarif-file-output=snyk.sarif
+          SNYK_ENDPOINT: ${{ secrets.SNYK_ENDPOINT }}
+        continue-on-error: true
+        run: tox -e snyk-scan
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: snyk.sarif
+          sarif_file: .tox/snyk.sarif
+      - name: Upload snyk html artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: .tox/snyk.html
+        # Use always() to always run this step to publish scan results when there are test failures
+        if: ${{ always() }}

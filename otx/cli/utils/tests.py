@@ -725,6 +725,20 @@ def otx_build_backbone_testing(root, backbone_args):
     ), f"{model_config['model']['backbone']['type']} != {backbone}"
 
 
+def otx_build_testing(root, args: Dict[str, str], expected: Dict[str, str]):
+    workspace_root = os.path.join(root, "otx-workspace")
+    command_line = ["otx", "build", "--work-dir", workspace_root]
+    for option, value in args.items():
+        command_line.extend([option, value])
+    check_run(command_line)
+    template_config = MPAConfig.fromfile(os.path.join(workspace_root, "template.yaml"))
+    assert template_config.name == expected["model"]
+    assert (
+        template_config.hyper_parameters.parameter_overrides.algo_backend.train_type.default_value
+        == expected["train_type"].upper()
+    )
+
+
 def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
     workspace_root = os.path.join(root, "otx-workspace")
     command_line = ["otx", "build", "--work-dir", workspace_root]

@@ -3,7 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import os
 import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -60,11 +59,9 @@ TASK_TYPE_TO_SUB_DIR_NAME = {
 }
 
 
-def set_workspace(task: str, model: str = None, root: str = None, name: str = "otx-workspace"):
+def set_workspace(task: str, root: str = None, name: str = "otx-workspace"):
     """Set workspace path according to arguments."""
     path = f"{root}/{name}-{task}" if root else f"./{name}-{task}"
-    if model:
-        path += f"-{model}"
     return path
 
 
@@ -89,6 +86,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.otx_root = get_otx_root_path()
         self.workspace_root = Path(workspace_root) if workspace_root else Path(".")
         self.mode = mode
+        self.rebuild: bool = False
 
         self.args = args
         self.template = args.template
@@ -119,6 +117,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if self.check_workspace():
             # Workspace -> template O
             self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
+            if self.mode == "build" and self._check_rebuild():
+                self.rebuild = True
+                model = model if model else self.template.name
+                self.template = self._get_template(str(self.task_type), model=model)
         elif self.template and Path(self.template).exists():
             # No workspace -> template O
             self.template = parse_model_template(self.template)
@@ -130,6 +132,23 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.task_type = self.template.task_type
         self.model = self.template.name
         self.train_type = self._get_train_type()
+
+    def _check_rebuild(self):
+        """Checking for Rebuild status."""
+        if self.args.task and str(self.template.task_type) != self.args.task.upper():
+            raise NotImplementedError("Task Update is not yet supported.")
+        if not self.args.model and not self.args.train_type:
+            return False
+        result = False
+        if self.template.name != self.args.model.upper():
+            print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
+            result = True
+        template_train_type = self._get_train_type(ignore_args=True)
+        if template_train_type != self.args.train_type.upper():
+            self.train_type = self.args.train_type.upper()
+            print(f"[*] Rebuild train-type: {template_train_type} -> {self.train_type}")
+            result = True
+        return result
 
     def configure_data_config(self, update_data_yaml: bool = True) -> None:
         """Configure data_config according to the situation and create data.yaml."""
@@ -147,13 +166,23 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             self._export_data_cfg(data_yaml, str(data_yaml_path))
         self.update_data_config(data_yaml)
 
-    def _get_train_type(self) -> str:
+    def _get_train_type(self, ignore_args: bool = False) -> str:
         """Check and return the train_type received as input args."""
-        args_hyper_parameters = gen_params_dict_from_args(self.args)
-        algo_backend = args_hyper_parameters.get("algo_backend", False)
+        if not ignore_args:
+            args_hyper_parameters = gen_params_dict_from_args(self.args)
+            arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
+            if arg_algo_backend:
+                train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})  # type: ignore
+                return train_type.get("value", "INCREMENTAL")
+            if self.mode in ("build") and self.args.train_type:
+                self.train_type = self.args.train_type.upper()
+            if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
+                return self.train_type
+
+        algo_backend = self.template.hyper_parameters.parameter_overrides.get("algo_backend", False)
         if algo_backend:
-            train_type = algo_backend.get("train_type", {"value": "INCREMENTAL"})
-            return train_type.get("value", "INCREMENTAL")
+            train_type = algo_backend.get("train_type", {"default_value": "INCREMENTAL"})
+            return train_type.get("default_value", "INCREMENTAL")
         return "INCREMENTAL"
 
     def auto_task_detection(self, data_roots: str) -> str:
@@ -234,8 +263,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             data_config (dict): dictionary that has information about data path
         """
         for phase, dataset in splitted_dataset.items():
-            dst_dir_path = os.path.join(self.workspace_root, default_data_folder_name, phase)
-            data_config["data"][phase]["data-roots"] = os.path.abspath(dst_dir_path)
+            dst_dir_path = self.workspace_root / default_data_folder_name / phase
+            data_config["data"][phase]["data-roots"] = str(dst_dir_path.absolute())
             # Convert Datumaro class: DatasetFilter(IDataset) --> Dataset
             if isinstance(dataset, Dataset):
                 datum_dataset = dataset
@@ -246,7 +275,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             # Currently, saving all images to the workspace.
             # It might needs quite large disk storage.
             self.dataset_manager.export_dataset(
-                dataset=datum_dataset, output_dir=dst_dir_path, data_format=self.data_format, save_media=True
+                dataset=datum_dataset, output_dir=str(dst_dir_path), data_format=self.data_format, save_media=True
             )
 
     def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
@@ -343,10 +372,18 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         # Create OTX-workspace
         # Check whether the workspace is existed or not
+        print(f"[*] Workspace Path: {self.workspace_root}")
+        print(f"[*] Load Model Template ID: {self.template.model_template_id}")
+        print(f"[*] Load Model Name: {self.template.name}")
+
+        if self.check_workspace() and not self.rebuild:
+            return
+        if self.rebuild:
+            print(f"[*] \t- Rebuild: model-{self.model} / train type-{self.train_type}")
         if new_workspace_path:
             self.workspace_root = Path(new_workspace_path)
         elif not self.check_workspace():
-            self.workspace_root = Path(set_workspace(task=self.task_type, model=self.model))
+            self.workspace_root = Path(set_workspace(task=self.task_type))
         self.workspace_root.mkdir(exist_ok=True, parents=True)
 
         template_dir = Path(self.template.model_template_path).parent
@@ -377,13 +414,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if (model_dir / "hparam.yaml").exists():
             template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
 
-        # Load & Save Model config
-        if (model_dir / "model.py").exists():
-            model_config = MPAConfig.fromfile(str(model_dir / "model.py"))
-            model_config.dump(str(train_type_dir / "model.py"))
-
         # Copy config files
         config_files = [
+            (model_dir, "model.py", train_type_dir),
             (model_dir, "data_pipeline.py", train_type_dir),
             (template_dir, "tile_pipeline.py", self.workspace_root),
             (template_dir, "deployment.py", self.workspace_root),
@@ -401,19 +434,20 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 str(model_dir / "compression_config.json"),
                 str(train_type_dir / "compression_config.json"),
             )
+            print(f"[*] \t- Updated: {str(train_type_dir / 'compression_config.json')}")
         # Copy compression_config.json
         if (model_dir / "pot_optimization_config.json").exists():
             shutil.copyfile(
                 str(model_dir / "pot_optimization_config.json"),
                 str(train_type_dir / "pot_optimization_config.json"),
             )
+            print(f"[*] \t- Updated: {str(train_type_dir / 'pot_optimization_config.json')}")
 
         self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
-        print(f"[*] Load Model Template ID: {self.template.model_template_id}")
-        print(f"[*] Load Model Name: {self.template.name}")
 
     def _copy_config_files(self, target_dir: Path, file_name: str, dest_dir: Path) -> None:
         """Copy Configuration files for workspace."""
         if (target_dir / file_name).exists():
             config = MPAConfig.fromfile(str(target_dir / file_name))
             config.dump(str(dest_dir / file_name))
+            print(f"[*] \t- Updated: {str(dest_dir / file_name)}")
