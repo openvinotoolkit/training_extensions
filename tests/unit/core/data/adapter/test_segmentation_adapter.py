@@ -66,7 +66,6 @@ class TestOTXSegmentationDatasetAdapter:
 
 
 class TestSelfSLSegmentationDatasetAdapter:
-
     def setup_method(self, method) -> None:
         self.root_path = os.getcwd()
         task = "segmentation"
@@ -76,11 +75,11 @@ class TestSelfSLSegmentationDatasetAdapter:
         self.train_data_roots: str = os.path.join(self.root_path, data_root_dict["train"], "images")
 
         self.pseudo_mask_roots = os.path.abspath(self.train_data_roots.replace("images", "detcon_mask"))
-    
+
     @e2e_pytest_unit
     def test_import_dataset_create_all_masks(self, mocker):
         """Test _import_dataset when creating all masks.
-        
+
         This test is for when all masks are not created and it is required to create masks.
         """
         shutil.rmtree(self.pseudo_mask_roots, ignore_errors=True)
@@ -98,8 +97,9 @@ class TestSelfSLSegmentationDatasetAdapter:
     @pytest.mark.parametrize("idx_remove", [1, 2, 3])
     def test_import_dataset_create_some_uncreated_masks(self, mocker, idx_remove: int):
         """Test _import_dataset when there are both uncreated and created masks.
-        
-        This test is for when there are both created and uncreated masks and it is required to either create or just load masks.
+
+        This test is for when there are both created and uncreated masks
+        and it is required to either create or just load masks.
         In this test, remove a mask created before and check if `create_pseudo_masks` is called once.
         """
         shutil.rmtree(self.pseudo_mask_roots, ignore_errors=True)
@@ -114,7 +114,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         os.remove(os.path.join(self.pseudo_mask_roots, f"000{idx_remove}.png"))
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
-        dataset = dataset_adapter._import_dataset(
+        _ = dataset_adapter._import_dataset(
             train_data_roots=self.train_data_roots,
         )
 
@@ -126,7 +126,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         """Test _import_dataset when just loading all masks."""
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
-        dataset_adapter = SelfSLSegmentationDatasetAdapter(
+        _ = SelfSLSegmentationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
         )
@@ -134,12 +134,13 @@ class TestSelfSLSegmentationDatasetAdapter:
         spy_create_pseudo_masks.assert_not_called()
 
     @e2e_pytest_unit
+    @pytest.mark.xfail
     def test_get_otx_dataset_without_skipping_background(self):
         """Test get_otx_dataset without skipping background.
 
         TODO (sungchul): don't skip background class in get_otx_dataset
         """
-        pass
+        assert 0
 
     @e2e_pytest_unit
     def test_create_pseudo_masks(self, mocker):
