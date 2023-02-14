@@ -15,7 +15,7 @@ from tests.unit.algorithms.classification.test_helper import (
 class TestOTXClsStage:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters("otx/recipes/stages/classification/incremental.yaml")
+        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters(task_type="incremental", create_test=True, create_val=True)
         self.stage = ClsStage(name="", mode="train", config=recipie_cfg, common_cfg=None, index=0)
 
     @e2e_pytest_unit
@@ -72,13 +72,3 @@ class TestOTXClsStage:
         self.stage.configure_topk(self.stage.cfg)
 
         assert self.stage.cfg.model.head.topk == (1,)
-
-
-    # @e2e_pytest_unit
-    # def test_configure_in_channel(self):
-    #     # self.stage.cfg.model.head.in_channels = -1
-    #     self.stage.configure_in_channel(self.model_cfg)
-
-    #     assert self.stage.cfg.model.head.in_channels > 0
-
-

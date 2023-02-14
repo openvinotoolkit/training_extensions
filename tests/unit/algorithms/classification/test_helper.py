@@ -159,15 +159,26 @@ def setup_configurable_parameters(template_dir, num_iters=10):
     return hyper_parameters, model_template
 
 
-def setup_mpa_task_parameters(recipie_path):
+def setup_mpa_task_parameters(task_type, create_val=False, create_test=False):
+    if task_type == "semisl":
+        recipie_path = "otx/recipes/stages/classification/semisl.yaml"
+    elif task_type == "incremental":
+        recipie_path = "otx/recipes/stages/classification/incremental.yaml"
     recipie_cfg = MPAConfig.fromfile(recipie_path)
     model_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "model.py")
     model_cfg.model.multilabel = False
     model_cfg.model.hierarchical = False
     data_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "data_pipeline.py")
     data_cfg.data.train.data_dir = "tests/assets/imagenet_dataset"
-    data_cfg.data.test.data_dir = "tests/assets/imagenet_dataset"
-    data_cfg.data.val.data_dir = "tests/assets/imagenet_dataset"
+    if create_val:
+        data_cfg.data.val.data_dir = "tests/assets/imagenet_dataset"
+    else:
+        data_cfg.data.val = None
+    if create_test:
+        data_cfg.data.test.data_dir = "tests/assets/imagenet_dataset"
+    else:
+        data_cfg.data.test = None
     data_cfg.data.train.data_classes = ["label_0", "label_1"]
+    data_cfg.data.train.new_classes = ["label_0", "label_1", "label_3"]
 
     return model_cfg, data_cfg, recipie_cfg

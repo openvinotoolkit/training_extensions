@@ -10,7 +10,7 @@ from tests.unit.algorithms.classification.test_helper import (
 class TestOTXClsTrainer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters("otx/recipes/stages/classification/incremental.yaml")
+        self.model_cfg, self.data_cfg, recipie_cfg = setup_mpa_task_parameters(task_type="incremental")
         self.trainer = ClsTrainer(name="", mode="train", config=recipie_cfg, common_cfg=None, index=0)
 
     @e2e_pytest_unit
