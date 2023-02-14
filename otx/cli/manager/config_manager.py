@@ -172,7 +172,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             args_hyper_parameters = gen_params_dict_from_args(self.args)
             arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
             if arg_algo_backend:
-                train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})
+                train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})  # type: ignore
                 return train_type.get("value", "INCREMENTAL")
             if self.mode in ("build") and self.args.train_type:
                 self.train_type = self.args.train_type.upper()
