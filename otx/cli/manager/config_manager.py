@@ -404,11 +404,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         print(f"[*] Load Model Template ID: {self.template.model_template_id}")
         print(f"[*] Load Model Name: {self.template.name}")
 
-        # if self.args.mem_cache_size is not None:
-        #     self.template.mem_cache_size = self.args.mem_cache_size
-        #     # TODO: need a logger
-        #     print(f"[*] Override mem_cache_size to {self.args.mem_cache_size}")
-
     def _copy_config_files(self, target_dir: Path, file_name: str, dest_dir: Path) -> None:
         """Copy Configuration files for workspace."""
         if (target_dir / file_name).exists():

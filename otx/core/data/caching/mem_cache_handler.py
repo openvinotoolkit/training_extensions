@@ -58,7 +58,7 @@ class MemCacheHandlerBase:
         Returns:
             If succeed return np.ndarray, otherwise return None
         """
-        if key not in self._cache_addr:
+        if self.mem_size == 0 or key not in self._cache_addr:
             return None
 
         addr = self._cache_addr[key]
