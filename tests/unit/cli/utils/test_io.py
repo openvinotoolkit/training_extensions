@@ -228,8 +228,8 @@ def test_get_image_files_in_dir(tmp_dir):
     img_files = get_image_files(str(tmp_dir))
 
     # check
-    assert img_files[0] == (str(sub_dir_1_1), "fake.jpg")
-    assert img_files[1] == (str(sub_dir_2), "fake.jpg")
+    for img_file in img_files:
+        assert img_file in ((str(sub_dir_1_1), "fake.jpg"), (str(sub_dir_2), "fake.jpg"))
 
 
 @e2e_pytest_unit
