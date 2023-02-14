@@ -9,7 +9,6 @@ from typing import Dict, Tuple
 import albumentations as A
 import numpy as np
 from albumentations.pytorch import ToTensorV2
-from anomalib.data.base.datamodule import collate_fn
 from bson import ObjectId
 from omegaconf import OmegaConf
 from pytorch_lightning.core.datamodule import LightningDataModule
@@ -46,7 +45,8 @@ def get_shapes_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEn
 
     Args:
         task_type (TaskType): Task type.
-        one_each (bool): Gets one each of each class. Defaults to False.
+        one_each (bool): If this flag is true then it will sample one normal and one abnormal image for each split.
+            The training split will have only one normal image. Defaults to False.
     """
     dataset: DatasetEntity
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
@@ -68,10 +68,12 @@ def get_shapes_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEn
         for item in dataset._items:
             if item.subset == Subset.TRAINING and len(train_subset) < 1:
                 train_subset.append(item)
+            # Check if the label is already present in the subset.
             elif item.subset == Subset.TESTING and item.annotation_scene.annotations[0].get_labels()[0].name not in [
                 a.annotation_scene.annotations[0].get_labels()[0].name for a in test_subset
             ]:
                 test_subset.append(item)
+            # Check if the label is already present in the subset.
             elif item.subset == Subset.VALIDATION and item.annotation_scene.annotations[0].get_labels()[0].name not in [
                 a.annotation_scene.annotations[0].get_labels()[0].name for a in val_subset
             ]:
@@ -80,7 +82,7 @@ def get_shapes_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEn
     return dataset
 
 
-class MockDataset(OTXAnomalyDataset):
+class DummyDataset(OTXAnomalyDataset):
     def __init__(self, task_type: TaskType):
         self.normal_label = LabelEntity(id=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION)
         self.abnormal_label = LabelEntity(
@@ -123,10 +125,10 @@ class MockDataset(OTXAnomalyDataset):
         return DatasetEntity(items=dataset_items, purpose=DatasetPurpose.INFERENCE)
 
 
-class MockDataModule(LightningDataModule):
+class DummyDataModule(LightningDataModule):
     def __init__(self, task_type: TaskType):
         super().__init__()
-        self.dataset = MockDataset(task_type)
+        self.dataset = DummyDataset(task_type)
         self.labels = [self.dataset.abnormal_label, self.dataset.normal_label]
 
     def train_dataloader(self) -> DataLoader:
@@ -142,27 +144,29 @@ class MockDataModule(LightningDataModule):
         return DataLoader(self.dataset, shuffle=False, pin_memory=True)
 
 
-class ShapesDataset(OTXAnomalyDataset):
-    def __init__(self, dataset: DatasetEntity, task_type: TaskType):
-        self.dataset = dataset
-        self.task_type = task_type
-        self.transform = A.Compose(
-            [
-                A.Resize(64, 64, always_apply=True),
-                A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-                ToTensorV2(),
-            ]
-        )
-        self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
-
-
 class ShapesDataModule(OTXAnomalyDataModule):
-    def __init__(self, task_type: TaskType):
-        self.dataset = ShapesDataset(get_shapes_dataset(task_type), task_type)
-        self.labels = self.dataset.dataset.get_labels()
+    """Creates datamodule with shapes dataset.
 
-    def predict_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset, shuffle=False, batch_size=32, num_workers=2, collate_fn=collate_fn)
+    Args:
+        task_type (TaskType): Task type (classification, detection, segmentation)
+    """
+
+    def __init__(self, task_type: TaskType):
+        self.config = OmegaConf.create(
+            {
+                "dataset": {
+                    "eval_batch_size": 32,
+                    "train_batch_size": 32,
+                    "test_batch_size": 32,
+                    "num_workers": 2,
+                    "image_size": [32, 32],
+                    "transform_config": {"train": None},
+                }
+            }
+        )
+        # self.dataset = ShapesDataset(get_shapes_dataset(task_type), task_type, self.config)
+        self.dataset = get_shapes_dataset(task_type)
+        super().__init__(config=self.config, dataset=self.dataset, task_type=task_type)
 
 
 def _get_annotations(task: str) -> Tuple[Dict, Dict, Dict]:

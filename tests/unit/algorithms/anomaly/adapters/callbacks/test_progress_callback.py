@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.api.entities.model_template import TaskType
-from tests.unit.algorithms.anomaly.helpers.dummy_dataset import MockDataModule
+from tests.unit.algorithms.anomaly.helpers.dummy_dataset import DummyDataModule
 from tests.unit.algorithms.anomaly.helpers.dummy_model import DummyModel
 
 
@@ -32,7 +32,8 @@ class ProgressStageCheckerCallback(pl.Callback):
 
 class TestProgressCallback:
     def test_progress_callback(self):
-        datamodule = MockDataModule(TaskType.ANOMALY_CLASSIFICATION)
+        """Tests if progress callback runs and that the progress is not reset after validation step."""
+        datamodule = DummyDataModule(TaskType.ANOMALY_CLASSIFICATION)
         model = DummyModel()
         progress_callback = ProgressCallback()
         # inject callback after progress callback

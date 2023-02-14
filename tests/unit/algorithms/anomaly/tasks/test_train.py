@@ -3,15 +3,12 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import pytest
+from copy import deepcopy
+
 from torch import nn
 
 from otx.algorithms.anomaly.tasks.train import TrainingTask
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.model import ModelEntity
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.train_parameters import TrainParameters
-from tests.unit.algorithms.anomaly.helpers.dummy_dataset import get_shapes_dataset
 from tests.unit.algorithms.anomaly.helpers.utils import create_task_environment
 
 
@@ -27,19 +24,16 @@ class TestTrainTask:
             if not param1.data.isnan().any() and "bn" not in key1:
                 assert param1.data.allclose(param2.data)
 
-    @pytest.mark.parametrize(
-        "task_type", [TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION]
-    )
-    def test_train_and_load(self, task_type, tmpdir):
+    def test_train_and_load(self, tmpdir, setup_task_environment):
         """Tests the train method and check if it can be loaded correctly."""
         root = str(tmpdir.mkdir("anomaly_training_test"))
-        dataset: DatasetEntity = get_shapes_dataset(task_type, one_each=True)
-        task_environment = create_task_environment(dataset, task_type)
-        # get model configuration
-        output_model = ModelEntity(
-            dataset,
-            task_environment.get_model_configuration(),
-        )
+
+        # Get task environment
+        setup_task_environment = deepcopy(setup_task_environment)  # since fixture is mutable
+        task_environment = setup_task_environment.task_environment
+        output_model = setup_task_environment.output_model
+        dataset = setup_task_environment.dataset
+        task_type = setup_task_environment.task_type
 
         train_task = TrainingTask(task_environment, output_path=root)
         train_task.train(dataset, output_model, TrainParameters())

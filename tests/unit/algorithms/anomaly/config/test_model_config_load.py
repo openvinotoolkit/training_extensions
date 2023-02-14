@@ -46,6 +46,7 @@ from tests.unit.algorithms.anomaly.helpers.utils import get_model_template
     ],
 )
 def test_model_template_loading(model_name, configurable_parameters):
+    """Test that we can load the model template and create a config from it."""
     # Create from class
     configuration = configurable_parameters()
     configurable_parameters_yaml_str = convert(configuration, str)
@@ -61,4 +62,4 @@ def test_model_template_loading(model_name, configurable_parameters):
     assert configurable_parameters_yaml == configurable_parameters_loaded
 
     # Confirm that we can create an anomalib config from the loaded yaml
-    get_anomalib_config(model_name, configurable_parameters_yaml)
+    get_anomalib_config(model_name, configurable_parameters_loaded)

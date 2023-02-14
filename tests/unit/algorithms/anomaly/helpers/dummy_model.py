@@ -19,17 +19,11 @@ class DummyModel(pl.LightningModule):
         self.image_threshold = AnomalyScoreThreshold()
         self.normalization_metrics = MinMax()
 
-    def training_step(self, *args, **kwargs):
-        pass
-
-    def test_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0):
-        return self.predict_step(batch, batch_idx, dataloader_idx)
-
-    def validation_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0):
-        return self.predict_step(batch, batch_idx, dataloader_idx)
-
     def configure_optimizers(self):
         return None
+
+    def training_step(self, *args, **kwargs):
+        pass
 
     def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> Any:
         # Just return everything as anomalous
@@ -39,3 +33,9 @@ class DummyModel(pl.LightningModule):
         is_anomalous = [scores > 0.5 for scores in batch["box_scores"]]
         batch["box_labels"] = [labels.int() for labels in is_anomalous]
         return batch
+
+    def validation_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0):
+        return self.predict_step(batch, batch_idx, dataloader_idx)
+
+    def test_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0):
+        return self.predict_step(batch, batch_idx, dataloader_idx)

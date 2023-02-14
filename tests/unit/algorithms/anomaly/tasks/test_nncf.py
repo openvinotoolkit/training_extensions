@@ -3,38 +3,28 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import pytest
+from copy import deepcopy
 
 from otx.algorithms.anomaly.tasks.nncf import NNCFTask
 from otx.algorithms.anomaly.tasks.train import TrainingTask
-from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity, ModelOptimizationType
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from tests.unit.algorithms.anomaly.helpers.dummy_dataset import get_shapes_dataset
-from tests.unit.algorithms.anomaly.helpers.utils import create_task_environment
 
 
 class TestNNCFTask:
     """Tests methods in the NNCF task."""
 
-    @pytest.mark.parametrize(
-        "task_type", [TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION]
-    )
-    def test_nncf(self, task_type, tmpdir):
+    def test_nncf(self, tmpdir, setup_task_environment):
         """Tests the NNCF optimize method."""
         root = str(tmpdir.mkdir("anomaly_nncf_test"))
 
-        dataset: DatasetEntity = get_shapes_dataset(task_type, one_each=True)
-
-        task_environment = create_task_environment(dataset, task_type)
-
-        output_model = ModelEntity(
-            dataset,
-            task_environment.get_model_configuration(),
-        )
+        # Get task environment
+        setup_task_environment = deepcopy(setup_task_environment)  # since fixture is mutable
+        task_environment = setup_task_environment.task_environment
+        output_model = setup_task_environment.output_model
+        dataset = setup_task_environment.dataset
 
         train_task = TrainingTask(task_environment, output_path=root)
         train_task.train(dataset, output_model, TrainParameters())
