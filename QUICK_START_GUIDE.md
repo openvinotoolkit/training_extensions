@@ -104,8 +104,10 @@ And with the `--help` command along with `template`, you can list additional inf
 ```bash
 # Command example to get common paramters to any model templates
 (otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
-usage: otx train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS [--load-weights LOAD_WEIGHTS] --save-model-to SAVE_MODEL_TO
-                 [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO]
+usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]
+                 [--unlabeled-file-list UNLABELED_FILE_LIST] [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR]
+                 [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS] [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE]
+                 [--mem-cache-size MEM_CACHE_SIZE]
                  template {params} ...
 
 positional arguments:
@@ -115,23 +117,34 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --train-ann-files TRAIN_ANN_FILES
-                        Comma-separated paths to training annotation files.
   --train-data-roots TRAIN_DATA_ROOTS
                         Comma-separated paths to training data folders.
-  --val-ann-files VAL_ANN_FILES
-                        Comma-separated paths to validation annotation files.
   --val-data-roots VAL_DATA_ROOTS
                         Comma-separated paths to validation data folders.
+  --unlabeled-data-roots UNLABELED_DATA_ROOTS
+                        Comma-separated paths to unlabeled data folders
+  --unlabeled-file-list UNLABELED_FILE_LIST
+                        Comma-separated paths to unlabeled file list
   --load-weights LOAD_WEIGHTS
-                        Load only weights from previously saved checkpoint
+                        Load model weights from previously saved checkpoint.
   --resume-from RESUME_FROM
-                         Resume training from previously saved checkpoint
+                        Resume training from previously saved checkpoint
   --save-model-to SAVE_MODEL_TO
                         Location where trained model will be stored.
+  --work-dir WORK_DIR   Location where the intermediate output of the training will be stored.
   --enable-hpo          Execute hyper parameters optimization (HPO) before training.
   --hpo-time-ratio HPO_TIME_RATIO
                         Expected ratio of total time to run HPO to time taken for full fine-tuning.
+  --gpus GPUS           Comma-separated indices of GPU. If there are more than one available GPU, then model is trained with multi GPUs.
+  --rdzv-endpoint RDZV_ENDPOINT
+                        Rendezvous endpoint for multi-node training.
+  --base-rank BASE_RANK
+                        Base rank of the current node workers.
+  --world-size WORLD_SIZE
+                        Total number of workers in a worker group.
+  --mem-cache-size MEM_CACHE_SIZE
+                        Size of memory pool for caching decoded data to load data faster. For example, you can use digits for bytes size (e.g. 1024) or a string with size
+                        units (e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30).
 ```
 
 #### Model template-specific parameters
@@ -176,25 +189,28 @@ optional arguments:
 #### Command example of the training
 
 ```bash
-(otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-ann-file data/airport/annotation_person_train.json  --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --save-model-to outputs
+(otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-data-roots tests/assets/car_tree_bug --val-data-roots tests/assets/car_tree_bug --save-model-to outputs --mem-cache-size 64MB
 ...
 
 ---------------iou_thr: 0.5---------------
 
-+--------+-----+------+--------+-------+
-| class  | gts | dets | recall | ap    |
-+--------+-----+------+--------+-------+
-| person | 0   | 2000 | 0.000  | 0.000 |
-+--------+-----+------+--------+-------+
-| mAP    |     |      |        | 0.000 |
-+--------+-----+------+--------+-------+
-2022-11-17 11:08:15,245 | INFO : run task done.
-2022-11-17 11:08:15,318 | INFO : Inference completed
-2022-11-17 11:08:15,319 | INFO : called evaluate()
-2022-11-17 11:08:15,334 | INFO : F-measure after evaluation: 0.8809523809523808
-2022-11-17 11:08:15,334 | INFO : Evaluation completed
-Performance(score: 0.8809523809523808, dashboard: (1 metric groups))
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| car   | 7   | 530  | 1.000  | 0.571 |
+| tree  | 7   | 585  | 1.000  | 0.929 |
+| bug   | 8   | 485  | 1.000  | 0.805 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.768 |
++-------+-----+------+--------+-------+
+2023-02-14 17:27:35,707 | INFO : Inference completed
+2023-02-14 17:27:35,707 | INFO : called evaluate()
+2023-02-14 17:27:35,714 | INFO : F-measure after evaluation: 0.6285714285714284
+2023-02-14 17:27:35,715 | INFO : Evaluation completed
+Performance(score: 0.6285714285714284, dashboard: (1 metric groups))
 ```
+
+- `--mem-cache-size 64MB` reserves a memory pool of 64 Megabytes in main memory. It is used for caching decoded data. Setting this value as high as possible can improve data load performance in training.
 
 ### Exporting
 
