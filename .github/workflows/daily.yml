@@ -3,8 +3,8 @@ name: Daily Test
 on:
   workflow_dispatch: # run on request (no need for PR)
   schedule:
-    # every UTC 7PM from Tue to Sat
-    - cron: "0 19 * * 2-6"
+    # every UTC 7PM from Mon to Fri
+    - cron: "0 19 * * 1-5"
 
 jobs:
   Daily-Tests:
