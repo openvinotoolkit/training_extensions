@@ -790,7 +790,8 @@ def otx_regression_testing(template, root, otx_dir, args, criteria, threshold=0.
     with open(performance_json_path) as read_file:
         trained_performance = json.load(read_file)
 
-    modified_criteria = criteria - (criteria * threshold)
+    model_criteria = criteria[template.name]
+    modified_criteria = model_criteria - (model_criteria * threshold)
     for k in trained_performance.keys():
         print(f"trained_performance: {trained_performance[k]}, modified_criteria:{modified_criteria}")
         assert (

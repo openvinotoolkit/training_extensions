@@ -160,65 +160,167 @@
   "model_criteria": {
     "classification": {
       "supervised": {
-        "multi_class": 0.95,
-        "multi_label": 0.95,
-        "h_label": 0.95,
-        "supcon": 0.95
+        "multi_class": {
+          "EfficientNet-B0": 1.0,
+          "EfficientNet-V2-S": 1.0,
+          "MobileNet-V3-large-1x": 1.0,
+          "MobileNet-V3-large-0.75x": 1.0,
+          "MobileNet-V3-small": 1.0
+        },
+        "multi_label": {
+          "EfficientNet-B0": 1.0,
+          "EfficientNet-V2-S": 1.0,
+          "MobileNet-V3-large-1x": 1.0,
+          "MobileNet-V3-large-0.75x": 1.0,
+          "MobileNet-V3-small": 1.0
+        },
+        "h_label": {
+          "EfficientNet-B0": 1.0,
+          "EfficientNet-V2-S": 1.0,
+          "MobileNet-V3-large-1x": 1.0,
+          "MobileNet-V3-large-0.75x": 1.0,
+          "MobileNet-V3-small": 1.0
+        },
+        "supcon": {
+          "EfficientNet-B0": 1.0,
+          "EfficientNet-V2-S": 1.0,
+          "MobileNet-V3-large-1x": 1.0,
+          "MobileNet-V3-large-0.75x": 1.0,
+          "MobileNet-V3-small": 1.0
+        }
       },
       "class_incr": {
-        "multi_class": 0.95
+        "multi_class": {
+          "EfficientNet-B0": 1.0,
+          "EfficientNet-V2-S": 1.0,
+          "MobileNet-V3-large-1x": 1.0,
+          "MobileNet-V3-large-0.75x": 1.0,
+          "MobileNet-V3-small": 1.0
+        }
       },
       "semi_supervised": {
-        "multi_class": 0.95
+        "multi_class": {
+          "EfficientNet-B0": 1.0,
+          "EfficientNet-V2-S": 1.0,
+          "MobileNet-V3-large-1x": 1.0,
+          "MobileNet-V3-large-0.75x": 1.0,
+          "MobileNet-V3-small": 1.0
+        }
       },
       "self_supervised": {
-        "multi_class": 0.95
+        "multi_class": {
+          "EfficientNet-B0": 1.0,
+          "EfficientNet-V2-S": 1.0,
+          "MobileNet-V3-large-1x": 1.0,
+          "MobileNet-V3-large-0.75x": 1.0,
+          "MobileNet-V3-small": 1.0
+        }
       }
     },
     "detection": {
       "supervised": {
-        "multi_class": 100,
-        "class_incr": 100
+        "multi_class": {
+          "YOLOX": 1.0,
+          "ATSS": 1.0,
+          "SSD": 1.0,
+          "VFNet": 1.0
+        },
+        "class_incr": {
+          "YOLOX": 1.0,
+          "ATSS": 1.0,
+          "SSD": 1.0,
+          "VFNet": 1.0
+        }
       },
       "semi_supervised": {
-        "multi_class": 100
+        "multi_class": {
+          "YOLOX": 1.0,
+          "ATSS": 1.0,
+          "SSD": 1.0,
+          "VFNet": 1.0
+        }
       }
     },
     "semantic_segmentation": {
       "supervised": {
-        "multi_class": 100,
-        "class_incr": 100
+        "multi_class": {
+          "Lite-HRNet-18": 1.0,
+          "Lite-HRNet-18-mod2": 1.0,
+          "Lite-HRNet-s-mod2": 1.0,
+          "Lite-HRNet-x-mod3": 1.0
+        },
+        "class_incr": {
+          "Lite-HRNet-18": 1.0,
+          "Lite-HRNet-18-mod2": 1.0,
+          "Lite-HRNet-s-mod2": 1.0,
+          "Lite-HRNet-x-mod3": 1.0
+        }
       },
       "semi_supervised": {
-        "multi_class": 100
+        "multi_class": {
+          "Lite-HRNet-18": 1.0,
+          "Lite-HRNet-18-mod2": 1.0,
+          "Lite-HRNet-s-mod2": 1.0,
+          "Lite-HRNet-x-mod3": 1.0
+        }
       },
       "self_supervised": {
-        "multi_class": 100
+        "multi_class": {
+          "Lite-HRNet-18": 1.0,
+          "Lite-HRNet-18-mod2": 1.0,
+          "Lite-HRNet-s-mod2": 1.0,
+          "Lite-HRNet-x-mod3": 1.0
+        }
       }
     },
     "instance_segmentation": {
       "supervised": {
-        "multi_class": 100,
-        "class_incr": 100
+        "multi_class": {
+          "MaskRCNN-EfficientNetB2B": 1.0,
+          "MaskRCNN-ResNet50": 1.0
+        },
+        "class_incr": {
+          "MaskRCNN-EfficientNetB2B": 1.0,
+          "MaskRCNN-ResNet50": 1.0
+        }
       },
       "semi_supervised": {
-        "multi_class": 100
+        "multi_class": {
+          "MaskRCNN-EfficientNetB2B": 1.0,
+          "MaskRCNN-ResNet50": 1.0
+        }
       }
     },
     "action_classification": {
       "supervised": {
-        "multi_class": 100
+        "multi_class": {
+          "X3D": 1.0
+        }
       }
     },
     "action_detection": {
       "supervised": {
-        "multi_class": 100
+        "multi_class": {
+          "X3D_FAST_RCNN": 1.0
+        }
       }
     },
     "anomaly": {
-      "classification": 100,
-      "detection": 100,
-      "segmentation": 100
+      "classification": {
+        "DRAEM": 1.0,
+        "PADIM": 1.0,
+        "STFPM": 1.0
+      },
+      "detection": {
+        "DRAEM": 1.0,
+        "PADIM": 1.0,
+        "STFPM": 1.0
+      },
+      "segmentation": {
+        "DRAEM": 1.0,
+        "PADIM": 1.0,
+        "STFPM": 1.0
+      }
     }
   }
 }

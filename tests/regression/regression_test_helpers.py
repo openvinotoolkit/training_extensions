@@ -2,9 +2,6 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Union
 
-from otx.api.entities.model_template import ModelTemplate
-from otx.cli.utils.tests import get_template_dir
-
 
 def load_regression_config(otx_dir: str) -> Dict[str, Any]:
     """Load regression config from path.
