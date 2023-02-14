@@ -152,7 +152,11 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     def roi(self) -> Annotation:
         """Region Of Interest."""
         with self.__roi_lock:
-            requested_roi = self.__roi
+            if self.__roi is None:
+                requested_roi = Annotation(Rectangle.generate_full_box(), labels=[])
+                self.__roi = requested_roi
+            else:
+                requested_roi = self.__roi
             return requested_roi
 
     @roi.setter
