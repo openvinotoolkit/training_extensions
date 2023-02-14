@@ -131,7 +131,7 @@ class TestLoadImageFromFileWithCache:
             for _ in DataLoader(dataset):
                 continue
 
-            # This initial round requires all data samples to be put().
+            # This initial round requires all data samples to be read from disk.
             assert mock.call_count == len(dataset)
 
         with patch(
@@ -141,5 +141,5 @@ class TestLoadImageFromFileWithCache:
             for _ in DataLoader(dataset):
                 continue
 
-            # The second round requires no put().
+            # The second round requires no read.
             assert mock.call_count == 0
