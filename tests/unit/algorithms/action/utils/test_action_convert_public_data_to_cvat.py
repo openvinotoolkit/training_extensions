@@ -5,7 +5,6 @@
 #
 
 import numpy as np
-from lxml import etree
 
 from otx.algorithms.action.utils.convert_public_data_to_cvat import (
     convert_ava_dataset_to_datumaro,
@@ -103,7 +102,7 @@ def test_convert_jester_dataset_to_datumaro(mocker) -> None:
     mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.shutil.copytree", return_value=True)
     mocker.patch(
         "otx.algorithms.action.utils.convert_public_data_to_cvat.generate_default_cvat_xml_fields",
-        return_value=(etree.Element("annotations"), (256, 256, 3), etree.Element("labels")),
+        return_value=([], (256, 256, 3), []),
     )
     mocker.patch(
         "otx.algorithms.action.utils.convert_public_data_to_cvat.os.listdir", return_value=(["frame0", "frame1"])
@@ -129,7 +128,7 @@ def test_convert_ava_dataset_to_datumaro(mocker) -> None:
     mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.shutil.copytree", return_value=True)
     mocker.patch(
         "otx.algorithms.action.utils.convert_public_data_to_cvat.generate_default_cvat_xml_fields",
-        return_value=(etree.Element("annotations"), (256, 256, 3), etree.Element("labels")),
+        return_value=([], (256, 256, 3), []),
     )
     mocker.patch(
         "otx.algorithms.action.utils.convert_public_data_to_cvat.etree.ElementTree", return_value=MockElementTree()
