@@ -5,7 +5,7 @@ This live example shows how to easily train, validate, optimize and export class
 
 .. note::
 
-  To learn deeper how to manage training process of the model, refer to :doc:`./detection`.
+  To learn deeper how to manage training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
 
   To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
@@ -20,7 +20,7 @@ The process has been tested on the following configuration.
 
 .. note::
 
-  While this example shows how to work with :doc:`multi-class classification <../../../explanation/algorithms/classification/multi_class_classification>`, it is easy to extend it for the :doc:`multi-label <../../../explanation/algorithms/classification/multi_label_classification>` or :doc:`hierarchical <../../../explanation/algorithms/classification/multi_label_classification>` classification.
+  While this example shows how to work with :doc:`multi-class classification <../../../explanation/algorithms/classification/multi_class_classification>`, it is easy to extend it for the :doc:`multi-label <../../../explanation/algorithms/classification/multi_label_classification>` or :doc:`hierarchical <../../../explanation/algorithms/classification/hierarhical_classification>` classification.
   Substitute the dataset with a multi-label or hierarchical one. Everything else remains the same.
 
 
@@ -34,7 +34,8 @@ You can follow the installation process from a :doc:`quick start guide <../../..
 Dataset preparation
 ***************************
 
-1.  Download and prepare a `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ with the following command:
+Download and prepare a `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_
+with the following command:
 
 .. code-block::
 
@@ -87,7 +88,8 @@ The list of supported templates for classification is available with the command
 
 To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classificaiton_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance
+2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance.
+
 Let's prepare an OTX classification workspase running the following command:
 
 .. note::
@@ -104,9 +106,10 @@ Let's prepare an OTX classification workspase running the following command:
 
   (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
 
-It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset
+It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
-2. To start training we need to call ``otx train`` command in our worspace:
+2. To start training we need to call ``otx train``
+command in our worspace:
 
 .. code-block::
 
@@ -128,7 +131,7 @@ model on a specific dataset.
 The eval function receives test annotation information and model snapshot, trained in the previous step.
 Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
 
-otx eval will output a top-1 accuracy score for multi-class classification
+``otx eval`` will output a top-1 accuracy score for multi-class classification.
 
 2. The command below will run validation on our dataset
 and save performance results in ``performance.json`` file:
