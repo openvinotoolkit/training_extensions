@@ -751,7 +751,7 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
     command_line.extend(args["train_params"])
     check_run(command_line)
 
-def otx_regression_testing(template, root, otx_dir, args, criteria, threshold: 0.05):
+def otx_regression_testing(template, root, otx_dir, args, criteria, threshold=0.05):
     template_work_dir = get_template_dir(template, root)
 
     command_line = [
@@ -777,6 +777,7 @@ def otx_regression_testing(template, root, otx_dir, args, criteria, threshold: 0
 
     modified_criteria = criteria - (criteria * threshold)
     for k in trained_performance.keys():
+        print(f"trained_performance: {trained_performance[k]}, modified_criteria:{modified_criteria}")
         assert (
             trained_performance[k] <= modified_criteria
         ), f"Current model performance: ({trained_performance[k]}) <= criteria: ({modified_criteria})."
