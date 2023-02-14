@@ -19,7 +19,6 @@ and build models with new backbone replacements.
 
 from pathlib import Path
 
-from otx.cli.builder import Builder
 from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME, ConfigManager
 from otx.cli.utils.parser import get_parser_and_hprams_data
 
@@ -104,6 +103,8 @@ def main():
 
     # Build Backbone related
     if args.backbone:
+        from otx.cli.builder import Builder
+
         builder = Builder()
         missing_args = []
         if not args.backbone.endswith((".yml", ".yaml", ".json")):

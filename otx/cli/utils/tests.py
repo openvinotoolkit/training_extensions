@@ -26,7 +26,6 @@ import yaml
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
-from otx.mpa.utils.config_utils import MPAConfig
 
 
 def get_template_rel_dir(template):
@@ -716,8 +715,10 @@ def otx_build_backbone_testing(root, backbone_args):
         task_workspace,
     ]
     check_run(command_line)
+    from otx.mpa.utils.config_utils import MPAConfig
+
     model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
-    assert "model" in model_config, "'model' is not in model configs"
+    assert os.path.exists(os.path.join(task_workspace, "model.py"))
     assert "backbone" in model_config["model"], "'backbone' is not in model configs"
     assert (
         model_config["model"]["backbone"]["type"] == backbone
@@ -730,6 +731,8 @@ def otx_build_testing(root, args: Dict[str, str], expected: Dict[str, str]):
     for option, value in args.items():
         command_line.extend([option, value])
     check_run(command_line)
+    from otx.mpa.utils.config_utils import MPAConfig
+
     template_config = MPAConfig.fromfile(os.path.join(workspace_root, "template.yaml"))
     assert template_config.name == expected["model"]
     assert (

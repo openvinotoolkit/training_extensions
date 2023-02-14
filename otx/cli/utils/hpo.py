@@ -18,7 +18,6 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 import yaml
-from mmcv import ConfigDict
 
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
@@ -229,7 +228,7 @@ class TaskEnvironmentManager:
         Args:
             hyper_parameter (Dict[str, Any]): hyper parameter to set which has a string format
         """
-        env_hp = self._environment.get_hyper_parameters()  # type: ConfigDict
+        env_hp = self._environment.get_hyper_parameters()  # type: ignore
 
         for param_key, param_val in hyper_parameter.items():
             splited_param_key = param_key.split(".")
