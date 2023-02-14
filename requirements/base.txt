@@ -20,3 +20,4 @@ datumaro==0.4.0.1
 psutil
 scipy>=1.8
 bayesian-optimization>=1.2.0
+tensorboard
