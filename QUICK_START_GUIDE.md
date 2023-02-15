@@ -12,40 +12,87 @@ Current version of OTX was tested under following environments
 
 ## Setup OpenVINO™ Training Extensions
 
+### Install OTX for users
+
 1. Clone the training_extensions repository with the following commands:
 
-   ```bash
-   git clone https://github.com/openvinotoolkit/training_extensions.git
-   cd training_extensions
-   git checkout develop
-   ```
+```bash
+git clone https://github.com/openvinotoolkit/training_extensions.git
+cd training_extensions
+git checkout develop
+```
 
-1. Install prerequisites with:
+1. Set up a virtual environment
 
-   (Optional) Install pytorch according to your system environment
-   Refer to the [official inatllation guide](https://pytorch.org/get-started/previous-versions/)
+```bash
+# Create virtual env.
+python -m venv .venv
 
-   > **_Important note:_** Currently, only torch==1.8 was fully validated. torch==1.13/2.x will be supported soon.
+# Activate virtual env.
+source .venv/bin/activate
+```
 
-   (Optional) You may also want to use Jupyter notebooks or OTX CLI tools:
+1. Install prerequisite dependencies with:
 
-   ```bash
-   pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
-   ```
+Install pytorch according to your system environment.
+Refer to the [official inatllation guide](https://pytorch.org/get-started/previous-versions/)
 
-   > **_Important note:_** You should confirm that the Python version that installed on your machine should be 3.8.X. For the future release of OTX will support wide range of the Python version.
+> **_Important note:_** Currently, only torch==1.3.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
 
-1. Create a virtual environment, then install OTX package
+```bash
+# Example install command for torch==1.13.1+cu116
+pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu116
+```
 
-   ```bash
-   # Create virtual env.
-   otx/algorithms/init_venv.sh .venv
-   # Activate virtual env.
-   source .venv/bin/activate
-   ```
+(Optional) You may also want to use Jupyter notebooks or OTX CLI tools:
+
+```bash
+pip install notebook; cd ote_cli/notebooks/; jupyter notebook
+```
+
+> **_Important note:_** You should confirm that the Python version that installed on your machine should be 3.8.X. For the future release of OTX will support wide range of the Python version.
+
+1. Then, install OTX package
+
+```bash
+# Install from local source in development mode
+pip install -e .[full]
+
+# Or, you can install from PyPI
+pip install otx  # Will be available from otx==1.0.0
+```
 
 1. Once the package is installed to the virtual environment, you can use the
    `otx` command line interface to perform various commands for templates related to the chosen task type, described in [OTX CLI commands](#otx-cli-commands) on that virutal environment.
+
+### Install OTX for developers
+
+#### Run tests
+
+```bash
+# Install development prerequisite
+python -m pip install requirements/dev.txt
+
+# Run tests
+tox -e pre-merge
+tox -e pre-merge
+```
+
+#### Development environment
+
+```bash
+# Create development environment
+# -- need to fix '38' in tox.ini if other python version needed
+tox devenv -e pre-merge venv/otx
+source venv/otx/bin/activate
+
+# Fix code
+# ... fixes will be directly applied to editable package
+
+# Run test
+pytest tests/unit
+```
+
 
 ## OTX CLI commands
 
