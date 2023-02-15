@@ -8,6 +8,7 @@ import math
 from math import ceil
 from os import path as osp
 from tempfile import TemporaryDirectory
+from typing import Union
 
 import pytest
 
@@ -85,6 +86,7 @@ def good_hyperband_args():
             "reduction_factor": 4,
             "asynchronous_sha": True,
             "asynchronous_bracket": True,
+            "acceptable_additional_time_ratio": 1,
         }
 
 
@@ -1090,3 +1092,85 @@ class TestHyperBand:
 
         hyper_band.report_score(score, iter, trial.id, True)
         assert trial.get_progress() < trial.iteration + val_interval
+
+    @e2e_pytest_component
+    def test_get_done_progress(self, hyper_band: HyperBand):
+        while not hyper_band.is_done():
+            trial = hyper_band.get_next_sample()
+            if trial is None:
+                break
+
+            hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=False)
+            hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=True)
+
+        assert hyper_band.get_progress() == 1
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("expected_time_ratio", [3, 4, 5, 6])
+    def test_get_progress_with_expected_time_ratio(self, good_hyperband_args, expected_time_ratio):
+        good_hyperband_args["expected_time_ratio"] = expected_time_ratio
+        del good_hyperband_args["minimum_resource"]
+        hyper_band = HyperBand(**good_hyperband_args)
+
+        trial = hyper_band.get_next_sample()
+        hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=False)
+        hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=True)
+
+        expected_total_resource = (
+            good_hyperband_args["num_full_iterations"]
+            * good_hyperband_args["num_workers"]
+            * good_hyperband_args["acceptable_additional_time_ratio"]
+            * expected_time_ratio
+        )
+
+        assert math.isclose(hyper_band.get_progress(), trial.get_progress() / expected_total_resource)
+
+    @e2e_pytest_component
+    def test_get_progress_with_out_expected_time_ratio(self, good_hyperband_args):
+        hyper_band = HyperBand(**good_hyperband_args)
+        full_asha_resource = _get_full_asha_resource(
+            good_hyperband_args["maximum_resource"],
+            good_hyperband_args["minimum_resource"],
+            good_hyperband_args["reduction_factor"],
+        )
+
+        trial = hyper_band.get_next_sample()
+        hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=False)
+        hyper_band.report_score(score=50, resource=trial.iteration, trial_id=trial.id, done=True)
+
+        assert math.isclose(hyper_band.get_progress(), trial.get_progress() / full_asha_resource)
+
+
+def _get_full_asha_resource(
+    maximum_resource: Union[float, int], minimum_resource: Union[float, int], reduction_factor: int
+) -> Union[int, float]:
+    total_resource: Union[int, float] = 0
+    s_max = math.floor(math.log(maximum_resource / minimum_resource, reduction_factor))
+    for idx in range(s_max + 1):
+        num_max_rung_trials = math.floor((s_max + 1) / (idx + 1))
+        total_resource += _calculate_bracket_resource(maximum_resource, reduction_factor, num_max_rung_trials, idx)
+
+    return total_resource
+
+
+def _calculate_bracket_resource(
+    maximum_resource: Union[float, int],
+    reduction_factor: Union[float, int],
+    num_max_rung_trials: int,
+    bracket_index: int,
+) -> Union[int, float]:
+    """Calculate how much resource is needed for the bracket given that resume is available."""
+    num_trial = num_max_rung_trials * (reduction_factor**bracket_index)
+    minimum_resource = maximum_resource * (reduction_factor**-bracket_index)
+
+    total_resource = 0
+    num_rungs = math.ceil(math.log(maximum_resource / minimum_resource, reduction_factor)) + 1
+    previous_resource = 0
+    resource = minimum_resource
+    for _ in range(num_rungs):
+        total_resource += num_trial * (resource - previous_resource)
+        num_trial //= reduction_factor
+        previous_resource = resource
+        resource *= reduction_factor
+
+    return total_resource
