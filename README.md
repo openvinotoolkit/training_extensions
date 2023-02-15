@@ -23,13 +23,12 @@ OpenVINO™ Training eXtensions (OTX) is a command-line interface (CLI) framewor
 toolkit](https://software.intel.com/en-us/openvino-toolkit). OTX provides so-called "model templates" for every supported task which have been tested on various datasets and are a turnkey solution for obtaining an average good model without the need to change any hyperparameters. Besides, it is possible to configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [mmcv](https://github.com/open-mmlab/mmcv), [pytorchcv](https://github.com/osmr/imgclsmob) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).  Moreover, OTX supports auto-configuration functionality to choose a suitable model template based on the dataset. We will further extend our functionality to make training as much simple as possible for obtaining accurate, fast and light models ready to integrate into your projects.
 
 To this end OTX supports the following computer vision tasks:
-- Classification, including multi-class, multi-label and hierarchical image classification tasks.
-- Object detection including rotated bounding box support
-- Semantic segmentation
-- Instance segmentation including tiling algorithm support
-- Action classification
-- Action detection
-- Anomaly tasks, including anomaly classification, detection and segmentation
+- **Classification**, including multi-class, multi-label and hierarchical image classification tasks.
+- **Object detection** including rotated bounding box support
+- **Semantic segmentation**
+- **Instance segmentation** including tiling algorithm support
+- **Action recognition** including action classification and detection
+- **Anomaly recognition tasks** including anomaly classification, detection and segmentation
 
 OTX also supports different training types:
 - Supervised, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks

@@ -2,11 +2,11 @@
 
 ## Prerequisites
 
-Current version of OTX was tested under following environments
+The current version of OTX was tested under the following environments
 
 - Ubuntu 20.04
 - Python 3.8.x
-- (Opional) To use the NVidia GPU for the training: [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-11-7-0-download-archive)
+- (Optional) To use the NVidia GPU for the training: [CUDA Toolkit 11.7](https://developer.nvidia.com/cuda-11-7-0-download-archive)
 
 > **_Note:_** If using CUDA, make sure you are using a proper driver version. To do so, use `ls -la /usr/local | grep cuda`. If necessary, [install CUDA 11.7](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local) (requires 'sudo' permission) and select it with `export CUDA_HOME=/usr/local/cuda-11.7`.
 
@@ -34,8 +34,8 @@ Current version of OTX was tested under following environments
 
 1. Install prerequisite dependencies with:
 
-   Install pytorch according to your system environment.
-   Refer to the [official inatllation guide](https://pytorch.org/get-started/previous-versions/)
+   Install PyTorch according to your system environment.
+   Refer to the [official installation guide](https://pytorch.org/get-started/previous-versions/)
 
    > **_Important note:_** Currently, only torch==1.13.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
 
@@ -47,14 +47,14 @@ Current version of OTX was tested under following environments
 1. Then, install OTX package
 
    ```bash
-   # Install from local source in development mode
+   # Install from a local source in development mode
    pip install -e .[full]
 
    # Or, you can install from PyPI
    pip install otx  # Will be available from otx==1.0.0
    ```
 
-1. Once the package is installed to the virtual environment, you can use full
+1. Once the package is installed in the virtual environment, you can use full
    `otx` command line functionality as described in [OTX CLI commands](#otx-cli-commands).
 
 ### Install OTX for developers
@@ -62,13 +62,13 @@ Current version of OTX was tested under following environments
 #### Development environment
 
 ```bash
-# Create development environment
-# -- need to fix '38' in tox.ini if other python version needed
+# Create a development environment
+# -- need to fix '38' in tox.ini if another python version needed
 tox --devenv venv/otx -e pre-merge
 source venv/otx/bin/activate
 
 # Fix code
-# ... fixes will be directly applied to editable package
+# ... fixes will be directly applied to the editable package
 ```
 
 #### Run unit tests
@@ -79,9 +79,11 @@ pytest tests/unit
 
 ## OTX CLI commands
 
+Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/tutorials/index.html) in our documentation with life-practical examples on specific datasets.
+
 ### Find
 
-`find` lists model templates and backbones available for the given task. Specify task name with `--task` option. Use `--backbone BACKBONE` to find backbone from supported frameworks.
+`find` lists model templates and backbones available for the given task. Specify the task name with `--task` option. Use `--backbone BACKBONE` to find the backbone from supported frameworks.
 
 ```bash
 (otx) ...$ otx find --help
@@ -109,7 +111,7 @@ optional arguments:
 ```
 ### Building workspace folder
 
-`otx build` creates a workspace with particular model template and all the necessery components for training, evaluation, optimization, etc. This option is also used for modifying backbone for the template.
+`otx build` creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for a modifying backbone for the template.
 
 ```bash
 (otx) ...$ otx build --help
@@ -138,14 +140,14 @@ optional arguments:
   --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'. If there is an already created backbone configuration yaml file, enter the corresponding path.
 ```
 
-This line will create object detection `Custom_Object_Detection_Gen3_SSD` model template with ResNet backbone from mmdetection. It also will automatically create a data split for toy example dataset:
+This line will create an object detection `Custom_Object_Detection_Gen3_SSD` model template with ResNet backbone from [mmdetection](https://github.com/open-mmlab/mmdetection):
 
 ```bash
-(otx) ...$ otx build --template Custom_Object_Detection_Gen3_SSD --backbone mmdet.ResNet --train-data-roots tests/assets/car_tree_bug
+(otx) ...$ otx build --template Custom_Object_Detection_Gen3_SSD --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 ```
 
-> **_Note:_** each task supports different dataset formats. To know more about which formats supported by each task, refer to [explanation section](https://openvinotoolkit.github.io/training_extensions/explanation/index.html) in the documentation.
+> **_Note:_** each task supports different dataset formats. To know more about which formats are supported by each task, refer to [explanation section](https://openvinotoolkit.github.io/training_extensions/explanation/index.html) in the documentation.
 
 ### Training
 
@@ -156,7 +158,7 @@ This line will create object detection `Custom_Object_Detection_Gen3_SSD` model 
 
 The results will be saved in `./model` folder by default. It can be modified by `--save-model-to` option. These files can be used by other commands: `export`, `eval`, `demo`, etc.
 
-`otx train` recieves `template` as a positional argument. Also, the path to train and val data root should be passed to the CLI to start training. Template name could be taken from the output of the `find` command above.
+`otx train` receives `template` as a positional argument. Also, the path to train and val data root should be passed to the CLI to start training. The template name could be taken from the output of the `find` command above.
 
 ```bash
 otx train --help
@@ -201,7 +203,7 @@ optional arguments:
 
 ```
 
-It is also possible to start training just passing the path to dataset roots, then the auto-configuration will be enabled. If you created workspace with `otx build`, the training process can be started (in the workspace directory) just with `otx train` command without any additional options.
+It is also possible to start training by just passing the path to dataset roots, then the auto-configuration will be enabled. If you created a workspace with `otx build`, the training process can be started (in the workspace directory) just with `otx train` command without any additional options.
 
 ```bash
 # example of the command line to start object detection training
@@ -209,7 +211,7 @@ It is also possible to start training just passing the path to dataset roots, th
 
 ```
 
-We also can modify model template-specific parameters through command line, to print all the available parameters the following command can be executed:
+We also can modify model template-specific parameters through the command line, to print all the available parameters the following command can be executed:
 
 ```bash
 (otx) ...$ otx train <path/to/template.yaml> params --help
@@ -218,7 +220,7 @@ We also can modify model template-specific parameters through command line, to p
 
 ```
 
-For example, that is how we can change learning rate and batch size:
+For example, that is how we can change the learning rate and the batch size:
 
 ```bash
 (otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
@@ -228,7 +230,7 @@ As can be noticed to run training is also possible with `otx train <path/to/temp
 
 ### Exporting
 
-`otx export` exports a trained model to the OpenVINO™ IR format in order to efficiently run it on Intel hardware.
+`otx export` exports a trained model to the OpenVINO™ IR format to efficiently run it on Intel hardware.
 
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 
@@ -257,7 +259,7 @@ The command results in `openvino.xml`, `openvino.bin` and `label_schema.json`
 
 `otx optimize` optimizes a model using [NNCF](https://github.com/openvinotoolkit/nncf) or [POT](https://docs.openvino.ai/latest/pot_introduction.html) depending on the model format.
 
-- NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch
+- NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch
 - POT optimization used for models exported in the OpenVINO™ IR format
 
 With the `--help` command, you can list additional information:
@@ -296,15 +298,13 @@ Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
 
 Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:
 
-The command below performs optimization to the [exported model](#command-example-of-the-exporting) `outputs/ov/openvino.xml` in previous section and save optimized model to the `outputs/ov/pot` folder.
-
 ```bash
 (otx) ...$ otx optimize --template Custom_Object_Detection_Gen3_SSD --load-weights <path/to/openvino.xml> --val-data-roots <path/to/val/root> --save-model-to outputs/pot
 ```
 
 ### Evaluation
 
-`otx eval` runs evaluation of a model on the specific dataset.
+`otx eval` runs the evaluation of a model on the specific dataset.
 
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 
@@ -328,7 +328,7 @@ optional arguments:
   --work-dir WORK_DIR   Location where the intermediate output of the task will be stored.
 ```
 
-The command below will perform the evaluation of the trained model on the provided dataset:
+The command below will evaluate the trained model on the provided dataset:
 
 (otx) ...$ otx eval --template Custom_Object_Detection_Gen3_SSD --test-data-roots <path/to/test/root> --load-weights <path/to/model_weghts> --save-performance outputs/performance.json
 
@@ -336,11 +336,11 @@ The command below will perform the evaluation of the trained model on the provid
 
 ### Demonstrate
 
-`otx demo` runs model inference on images, videos, or webcam streams in order to see how it works with user's data
+`otx demo` runs model inference on images, videos, or webcam streams to show how it works with the user's data
 
 > **_Note:_** `otx demo` command requires GUI backend to your system for displaying inference results.
 >
-> **_Note:_** Only IR model can be used for the `otx demo` command.
+> **_Note:_** Only the OpenVINO™ IR model can be used for the `otx demo` command.
 
 
 ```bash
@@ -366,13 +366,13 @@ optional arguments:
                         processing.
 ```
 
-Command example of the demostration:
+Command example of the demonstration:
 
 ```bash
 (otx) ...$ otx demo --template Custom_Object_Detection_Gen3_SSD --input <path/to/data/root> --load-weights <path/to/openvino.xml> --display-perf --delay 1000
 ```
 
-> **_Note:_** The inference results with a model will be display to the GUI window with 1 second interval. If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error message from this command.
+> **_Note:_** The inference results with a model will be displayed to the GUI window with a 1-second interval. If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
 
 ### Deployment
 
