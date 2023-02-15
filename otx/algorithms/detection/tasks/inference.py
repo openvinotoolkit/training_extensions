@@ -227,7 +227,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity):
+    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = False):
         """Export function of OTX Detection Task."""
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
@@ -241,6 +241,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             stage_module,
             mode="train",
             export=True,
+            dump_features=dump_features,
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")

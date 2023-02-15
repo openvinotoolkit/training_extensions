@@ -103,8 +103,6 @@ class OTXClassification(Classification):
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         """Post-process for auxiliary outputs."""
-        saliency_map = outputs["saliency_map"][0]
-        repr_vector = outputs["feature_vector"].reshape(-1)
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
             probs = sigmoid_numpy(logits)
@@ -113,6 +111,13 @@ class OTXClassification(Classification):
         else:
             probs = softmax_numpy(logits)
         act_score = float(np.max(probs) - np.min(probs))
+
+        if "saliency_map" in outputs:
+            saliency_map = outputs["saliency_map"][0]
+            repr_vector = outputs["feature_vector"].reshape(-1)
+        else:
+            saliency_map, repr_vector = None, None
+        
         return probs, saliency_map, repr_vector, act_score
 
 

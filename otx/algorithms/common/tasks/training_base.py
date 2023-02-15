@@ -332,6 +332,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 assert len(self._precision) == 1
                 options["precision"] = str(self._precision[0])
 
+            options["deploy_cfg"]["dump_features"] = options["dump_features"]
+            if options["dump_features"]:
+                output_names = options["deploy_cfg"]["ir_config"]["output_names"]
+                if "feature_vector" not in output_names and "saliency_map" not in output_names:
+                    options["deploy_cfg"]["ir_config"]["output_names"] += ["feature_vector", "saliency_map"]
+
         self._initialize_post_hook(options)
 
         logger.info("initialized.")
