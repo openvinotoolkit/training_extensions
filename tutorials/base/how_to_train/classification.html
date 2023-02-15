@@ -200,9 +200,44 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setup-virtual-environment">
+   Setup virtual environment
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset-preparation">
+   Dataset preparation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training">
+   Training
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#validation">
+   Validation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#export">
+   Export
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#optimization">
+   Optimization
+  </a>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -224,8 +259,186 @@
                 
   <div class="section" id="classification-model">
 <h1>Classification  model<a class="headerlink" href="#classification-model" title="Permalink to this headline">¶</a></h1>
-<p>&lt;Guidelines for writing&gt;</p>
-<p>This tutorial explores the OTX classification task that could be used for standard, hierarchical, and multi-label use cases.</p>
+<p>This live example shows how to easily train, validate, optimize and export classification model on the <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a> from TensorFlow.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To learn deeper how to manage training process of the model including additional parameters and its modification, refer to <a class="reference internal" href="detection.html"><span class="doc">Object Detection model</span></a>.</p>
+<p>To learn how to deploy the trained model, refer to: <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model</span></a>.</p>
+<p>To learn how to run the demo and visualize results, refer to: <a class="reference internal" href="../demo.html"><span class="doc">How to run the demo with exportable code</span></a>.</p>
+</div>
+<p>The process has been tested on the following configuration.</p>
+<ul class="simple">
+<li><p>Ubuntu 20.04</p></li>
+<li><p>NVIDIA GeForce RTX 3090</p></li>
+<li><p>Intel(R) Core(TM) i9-10980XE</p></li>
+<li><p>CUDA Toolkit 11.1</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While this example shows how to work with <a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html"><span class="doc">multi-class classification</span></a>, it is easy to extend it for the <a class="reference internal" href="../../../explanation/algorithms/classification/multi_label_classification.html"><span class="doc">multi-label</span></a> or <a class="reference internal" href="../../../explanation/algorithms/classification/hierarhical_classification.html"><span class="doc">hierarchical</span></a> classification.
+Substitute the dataset with a multi-label or hierarchical one. Everything else remains the same.</p>
+</div>
+<div class="section" id="setup-virtual-environment">
+<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>You can follow the installation process from a <a class="reference internal" href="../../../get_started/installation.html"><span class="doc">quick start guide</span></a> to create a universal virtual environment for OTX.</p>
+</div>
+<div class="section" id="dataset-preparation">
+<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">¶</a></h2>
+<p>Download and prepare a <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a>
+with the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">data</span>
+<span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">tensorflow</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">example_images</span><span class="o">/</span><span class="n">flower_photos</span><span class="o">.</span><span class="n">tgz</span>
+<span class="n">tar</span> <span class="o">-</span><span class="n">xzvf</span> <span class="n">flower_photos</span><span class="o">.</span><span class="n">tgz</span>
+<span class="n">cd</span> <span class="o">..</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../../_images/flowers.jpg"><img alt="../../../_images/flowers.jpg" src="../../../_images/flowers.jpg" style="width: 600px;" /></a>
+<p>This dataset contains images of 5 different flower categories and is stored in the imagenet format which is supported by OTX:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>flower_photos
+  ├── daisy
+  ├── dandelion
+  ├── roses
+  ├── sunflowers
+  ├── tulips
+</pre></div>
+</div>
+</div>
+<div class="section" id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h2>
+<p>1. First of all, we need to choose which classification model will we train.
+The list of supported templates for classification is available with the command line below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html"><span class="doc">Explanation section</span></a>.</p>
+<p>We also can modify the architecture of supported models with various backbones, please refer to the <a class="reference internal" href="../../advanced/backbones.html"><span class="doc">advanced tutorial for model customization</span></a>.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --task classification
+
++----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+|      TASK      |                         ID                        |          NAME         |                                        PATH                                       |
++----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+| CLASSIFICATION | Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml |
+| CLASSIFICATION |    Custom_Image_Classification_EfficinetNet-B0    |    EfficientNet-B0    |    otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml   |
+| CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
++----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+</pre></div>
+</div>
+<p>To have a specific example in this tutorial, all commands will be run on the <a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html#classificaiton-models"><span class="std std-ref">MobileNet-V3-large-1x</span></a>  model. It’s a light model, that achieves competitive accuracy while keeping the inference fast.</p>
+<ol class="arabic simple" start="2">
+<li><p>Next, we need to create train/validation sets. OTX supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance.</p></li>
+</ol>
+<p>Let’s prepare an OTX classification workspase running the following command:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, OTX supports auto-split only for multi-class classificaiton. For the multi-label and hierarchical tasks we need to prepare data splits in advance.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
+
+[*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
+[*] Load Model Name: MobileNet-V3-large-1x
+[*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x/data.yaml
+
+(otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
+</pre></div>
+</div>
+<p>It will create <strong>otx-workspace-CLASSIFICATION</strong> with all necessery configs for MobileNet-V3-large-1x, prepared <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands launch and splitted dataset.</p>
+<p>2. To start training we need to call <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>
+command in our worspace:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train
+</pre></div>
+</div>
+<p>That’s it! The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code>, which are needed as input for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  etc.</p>
+<p>The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 8 minutes.</p>
+<p>After that, we have the PyTorch classification model trained with OTX, which we can use for evaluation, export, optimization and deployment.</p>
+</div>
+<div class="section" id="validation">
+<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h2>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
+model on a specific dataset.</p>
+<p>The eval function receives test annotation information and model snapshot, trained in the previous step.
+Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.</p>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a top-1 accuracy score for multi-class classification.</p>
+<p>2. The command below will run validation on our dataset
+and save performance results in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
+                    --load-weights models/weights.pth \
+                    --save-performance performance.json
+</pre></div>
+</div>
+<p>We will get a similar to this validation output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+
+<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">23</span><span class="p">:</span><span class="mi">43</span><span class="p">:</span><span class="mi">29</span><span class="p">,</span><span class="mi">514</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">run</span> <span class="n">task</span> <span class="n">done</span><span class="o">.</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">23</span><span class="p">:</span><span class="mi">43</span><span class="p">:</span><span class="mi">35</span><span class="p">,</span><span class="mi">859</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">called</span> <span class="n">evaluate</span><span class="p">()</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">23</span><span class="p">:</span><span class="mi">43</span><span class="p">:</span><span class="mi">35</span><span class="p">,</span><span class="mi">870</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Accuracy</span> <span class="n">after</span> <span class="n">evaluation</span><span class="p">:</span> <span class="mf">0.9659400544959128</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">23</span><span class="p">:</span><span class="mi">43</span><span class="p">:</span><span class="mi">35</span><span class="p">,</span><span class="mi">871</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Evaluation</span> <span class="n">completed</span>
+<span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.9659400544959128</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="export">
+<h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">¶</a></h2>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+<p>2. We can run the below command line to export the trained model
+and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_model</span></code> folder.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights models/weights.pth \
+                      --save-model-to openvino_model
+
+...
+
+2023-02-02 03:23:03,057 | INFO : run task done.
+2023-02-02 03:23:03,064 | INFO : Exporting completed
+</pre></div>
+</div>
+<p>3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
+                    --load-weights openvino_model/openvino.xml \
+                    --save-performance openvino_model/performance.json
+
+...
+
+Performance(score: 0.9659400544959128, dashboard: (3 metric groups))
+</pre></div>
+</div>
+</div>
+<div class="section" id="optimization">
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h2>
+<p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
+It uses NNCF or POT depending on the model format.</p>
+<p>Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
+<p>2. Command example for optimizing
+a PyTorch model (<cite>.pth</cite>) with OpenVINO™ NNCF.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
+
+...
+
+INFO:nncf:Loaded 983/983 parameters
+2023-02-04 00:06:11,725 | INFO : run task done.
+2023-02-04 00:06:16,924 | INFO : called evaluate()
+2023-02-04 00:06:16,935 | INFO : Accuracy after evaluation: 0.9591280653950953
+2023-02-04 00:06:16,936 | INFO : Evaluation completed
+Performance(score: 0.9591280653950953, dashboard: (3 metric groups))
+</pre></div>
+</div>
+<p>The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.</p>
+<p>3.  Command example for optimizing
+OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
+                        --save-model-to pot_model
+
+...
+
+Performance(score: 0.9577656675749319, dashboard: (3 metric groups))
+</pre></div>
+</div>
+<p>Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
+<p>4. Now we have fully trained, optimized and exported an
+efficient model representation ready-to-use classification model.</p>
+<p>The following tutorials provide further steps on how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.
+The examples are provided with an object detection model, but it is easy to apply them for classification by substituting the object detection model with classification one.</p>
+</div>
 </div>
 
 
