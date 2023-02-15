@@ -442,6 +442,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             )
             print(f"[*] \t- Updated: {str(train_type_dir / 'pot_optimization_config.json')}")
 
+        if not (self.workspace_root / "data.yaml").exists():
+            data_yaml = self._get_arg_data_yaml()
+            self._export_data_cfg(data_yaml, str((self.workspace_root / "data.yaml")))
+
         self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
 
     def _copy_config_files(self, target_dir: Path, file_name: str, dest_dir: Path) -> None:

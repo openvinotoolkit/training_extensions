@@ -7,7 +7,8 @@ import os
 import pytest
 
 from otx.api.entities.model_template import parse_model_template
-from otx.cli.utils.tests import (
+from tests.test_suite.e2e_test_system import e2e_pytest_component
+from tests.test_suite.run_test_command import (
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
     otx_eval_deployment_testing,
@@ -19,7 +20,6 @@ from otx.cli.utils.tests import (
     otx_hpo_testing,
     otx_train_testing,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
     "--train-data-roots": "tests/assets/car_tree_bug",
