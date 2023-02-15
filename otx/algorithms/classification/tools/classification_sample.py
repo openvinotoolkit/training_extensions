@@ -42,7 +42,7 @@ torch.cuda.manual_seed_all(SEED)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-logger = get_logger(name="sample")
+logger = get_logger(name="mmcls")
 
 parser = argparse.ArgumentParser(description="Sample showcasing the new API")
 parser.add_argument("template_file_path", help="path to template file")
@@ -353,15 +353,12 @@ def main():
         environment.model = output_model
         task = nncf_task_cls(task_environment=environment)
 
-        validate(task, validation_dataset, output_model)
-
         print("Optimize model by NNCF")
         optimized_model = ModelEntity(
             dataset,
             environment.get_model_configuration(),
         )
         task.optimize(OptimizationType.NNCF, dataset, optimized_model, None)
-
         validate(task, validation_dataset, output_model)
 
 
