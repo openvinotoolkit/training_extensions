@@ -20,7 +20,7 @@ from pkg_resources import Requirement
 from setuptools import Extension, find_packages, setup
 
 try:
-    from torch.utils.cpp_extension import BuildExtension, CppExtension
+    from torch.utils.cpp_extension import BuildExtension
 
     cmd_class = {"build_ext": BuildExtension}
 except ModuleNotFoundError:
