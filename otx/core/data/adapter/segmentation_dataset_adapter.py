@@ -31,6 +31,15 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
+
+        self.ignored_labels = None
+
+        # voc datumaro does not remove ignored label.
+        # so instead, when entity name is ignored, that polygon will be removed
+        for entity in self.label_entities:
+            if entity.name == "ignored":
+                self.ignored_labels = int(entity.id)
+
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -38,11 +47,12 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                     shapes: List[Annotation] = []
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.mask:
+                            # import numpy as np
                             # TODO: consider case -> didn't include the background information
+                            # cv2.imwrite("./tmp/mask.jpg", np.array(ann.image, dtype=np.uint8)*255)
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
-                                if d_polygon.label != 0:
-                                    d_polygon.label -= 1
+                                if d_polygon.label != 0 and d_polygon.label != self.ignored_labels:
                                     shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
                                     if d_polygon.label not in used_labels:
                                         used_labels.append(d_polygon.label)
@@ -51,4 +61,6 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                     dataset_items.append(dataset_item)
 
         self.remove_unused_label_entities(used_labels)
+        breakpoint()
+
         return DatasetEntity(items=dataset_items)

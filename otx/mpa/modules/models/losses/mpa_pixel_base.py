@@ -33,6 +33,7 @@ class MPABasePixelLoss(BasePixelLoss):
 
         _labels = labels.cpu().detach().numpy()
         _labels[np.where((_labels == self.ignore_index))] = 0
+
         num_classes = output.size(1)
         valid_labels = torch.clamp(labels, 0, num_classes - 1)
         valid_mask = labels != self.ignore_index

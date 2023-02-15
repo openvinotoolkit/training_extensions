@@ -152,7 +152,10 @@ def check_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
 def get_extended_label_names(labels: List[LabelEntity]):
     """Getter function of extended label names."""
     target_labels = [v.name for v in sorted(labels, key=lambda x: x.id)]
-    all_labels = ["background"] + target_labels
+    if "background" not in target_labels:
+        all_labels = ["background"] + target_labels
+    else:
+        all_labels = target_labels
     return all_labels
 
 

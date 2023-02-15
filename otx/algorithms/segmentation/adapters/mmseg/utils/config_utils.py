@@ -71,7 +71,11 @@ def patch_config(
     config.checkpoint_config.max_keep_ckpts = 5
     config.checkpoint_config.interval = config.evaluation.get("interval", 1)
 
-    label_names = ["background"] + [label.name for label in labels]
+    label_name = [label.name for label in labels]
+    if "background" not in label_name:
+        label_names = ["background"] + label_name
+    else:
+        label_names = label_name
     set_data_classes(config, label_names)
 
     remove_from_config(config, "img_norm_cfg")
@@ -87,7 +91,11 @@ def patch_model_config(
     distributed: bool = False,
 ):
     """Patch model config."""
-    label_names = ["background"] + [label.name for label in labels]
+    label_name = [label.name for label in labels]
+    if "background" not in label_name:
+        label_names = ["background"] + label_name
+    else:
+        label_names = label_name
     set_num_classes(config, len(label_names))
 
     if "test_cfg" not in config.model:
