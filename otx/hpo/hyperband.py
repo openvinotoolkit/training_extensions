@@ -775,17 +775,20 @@ class HyperBand(HpoBase):
             minimum_resource = self.maximum_resource // self._reduction_factor
         self._minimum_resource = minimum_resource
 
-    def _need_to_dcrease_hyerpband_scale(self) -> bool:
-        """Check full ASHA resource exceeds expected_time_ratio."""
-        if self.expected_time_ratio is None:
-            return False
-
+    def _get_full_asha_resource(self) -> Union[int, float]:
         total_resource: Union[int, float] = 0
         for idx in range(self._calculate_s_max() + 1):
             num_max_rung_trials = self._get_num_max_rung_trials(idx)
             total_resource += self._calculate_bracket_resource(num_max_rung_trials, idx)
 
-        return total_resource > self._get_expected_total_resource()
+        return total_resource
+
+    def _need_to_dcrease_hyerpband_scale(self) -> bool:
+        """Check full ASHA resource exceeds expected_time_ratio."""
+        if self.expected_time_ratio is None:
+            return False
+
+        return self._get_full_asha_resource() > self._get_expected_total_resource()
 
     def _decrease_hyperband_scale(self) -> List[Dict[str, Any]]:
         """Decrease Hyperband scale.
@@ -878,9 +881,26 @@ class HyperBand(HpoBase):
 
         return brackets_setting
 
-    def get_progress(self):
+    def _get_used_resource(self) -> Union[int, float]:
+        used_resource: Union[int, float] = 0
+        for trial in self._trials.values():
+            used_resource += trial.get_progress()
+
+        return used_resource
+
+    def get_progress(self) -> Union[int, float]:
         """Get current progress of ASHA."""
-        raise NotImplementedError
+        if self.is_done():
+            return 1
+
+        if self.expected_time_ratio is None:
+            total_resource = self._get_full_asha_resource()
+        else:
+            total_resource = self._get_expected_total_resource()
+
+        progress = self._get_used_resource() / total_resource
+
+        return min(progress, 0.99)
 
     def report_score(
         self, score: Union[float, int], resource: Union[float, int], trial_id: str, done: bool = False
