@@ -3,8 +3,8 @@ name: Daily Test
 on:
   workflow_dispatch: # run on request (no need for PR)
   schedule:
-    # every UTC 7PM from Tue to Sat
-    - cron: "0 19 * * 2-6"
+    # every UTC 7PM from Mon to Fri
+    - cron: "0 19 * * 1-5"
 
 jobs:
   Daily-Tests:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: python -m pip install tox
+        run: python -m pip install -r requirements/dev.txt
       - name: E2E Tests
         run: tox -e pre-merge -- tests/e2e
       - name: Upload test results

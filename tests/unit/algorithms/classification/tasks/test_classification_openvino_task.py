@@ -15,7 +15,6 @@ from otx.algorithms.classification.tasks.openvino import (
     ClassificationOpenVINOTask,
 )
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
-from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -25,7 +24,6 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
 from otx.api.entities.model import ModelConfiguration, ModelEntity
-from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
@@ -36,6 +34,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE,
     init_environment,
+    setup_configurable_parameters,
 )
 
 
@@ -51,8 +50,7 @@ def otx_model():
 class TestOpenVINOClassificationInferencer:
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
-        model_template = parse_model_template(DEFAULT_CLS_TEMPLATE)
-        hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters, model_template = setup_configurable_parameters(DEFAULT_CLS_TEMPLATE)
         cls_params = ClassificationConfig(header=hyper_parameters.header)
         environment, dataset = init_environment(hyper_parameters, model_template)
         self.label_schema = environment.label_schema
@@ -113,8 +111,7 @@ class TestOpenVINOClassificationInferencer:
 class TestOpenVINOClassificationTask:
     @pytest.fixture(autouse=True)
     def setup(self, mocker, otx_model) -> None:
-        model_template = parse_model_template(DEFAULT_CLS_TEMPLATE)
-        hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters, model_template = setup_configurable_parameters(DEFAULT_CLS_TEMPLATE)
         cls_params = ClassificationConfig(header=hyper_parameters.header)
         self.task_env, self.dataset = init_environment(params=hyper_parameters, model_template=model_template)
         self.label_schema = self.task_env.label_schema
