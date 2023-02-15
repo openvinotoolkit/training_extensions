@@ -13,6 +13,19 @@ build-backend = "setuptools.build_meta"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# COVERAGE CONFIGURATION.                                                     #
+[tool.coverage.run]
+source = [
+    "otx/",
+]
+omit = [
+    "otx/algorithms/*/configs/**/*pipeline*.py",
+    "otx/algorithms/*/configs/**/model*.py",
+    "**/__init__.py",
+    "otx/recipes/*",
+]
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # ISORT CONFIGURATION.                                                        #
 [tool.isort]
 profile = "black"

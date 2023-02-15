@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 from datumaro.components.dataset import Dataset as DatumaroDataset
 
-from otx.algorithms.detection.utils.mask_to_bbox import mask2bbox
+from otx.algorithms.common.utils.mask_to_bbox import mask2bbox
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,

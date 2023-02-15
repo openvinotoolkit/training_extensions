@@ -7,13 +7,13 @@ import os
 
 import pytest
 
-from otx.cli.utils.tests import (
+from tests.test_suite.e2e_test_system import e2e_pytest_component
+from tests.test_suite.run_test_command import (
     otx_build_auto_config,
     otx_build_backbone_testing,
     otx_find_testing,
     otx_train_auto_config,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 otx_dir = os.getcwd()
 
@@ -36,6 +36,7 @@ class TestToolsOTXCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("build_backbone_args", build_backbone_args, ids=build_backbone_args_ids)
     def test_otx_backbone_build(self, tmp_dir_path, build_backbone_args):
+        tmp_dir_path = tmp_dir_path / build_backbone_args[0] / build_backbone_args[1]
         otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
 
 
@@ -64,6 +65,7 @@ class TestToolsOTXBuildAutoConfig:
     @pytest.mark.parametrize("case", build_auto_config_args.keys())
     def test_otx_build_with_autosplit(self, case, tmp_dir_path):
         otx_dir = os.getcwd()
+        tmp_dir_path = tmp_dir_path / "test_build_auto_config" / case
         otx_build_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=build_auto_config_args[case])
 
 

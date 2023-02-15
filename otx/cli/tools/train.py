@@ -111,15 +111,22 @@ def get_args():
         default=0,
         help="Total number of workers in a worker group.",
     )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default=None,
+        help="The data.yaml path want to use in train task.",
+    )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
-    if not hyper_parameters:
-        _, params = sub_parser.parse_known_args()
+    if not hyper_parameters and "params" in params:
         if "params" in params:
             params = params[params.index("params") :]
             for param in params:
-                if param.startswith("--"):
+                if param == "--help":
+                    print("Without template configuration, hparams information is unknown.")
+                elif param.startswith("--"):
                     sub_parser.add_argument(
                         f"{param}",
                         dest=f"params.{param[2:]}",

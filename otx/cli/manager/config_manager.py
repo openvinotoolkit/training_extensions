@@ -7,9 +7,9 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import mmcv
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import IDataset
+from omegaconf import OmegaConf
 
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import create
@@ -19,7 +19,6 @@ from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_otx_root_path
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
-from otx.mpa.utils.config_utils import MPAConfig
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -98,18 +97,30 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.data_format: str = ""
         self.data_config: Dict[str, dict] = {}
 
+    @property
+    def data_config_file_path(self) -> Path:
+        """The path of the data configuration yaml to use for the task.
+
+        Raises:
+            FileNotFoundError: If data is received as args from otx train and the file does not exist, Error.
+
+        Returns:
+            Path: Path of target data configuration file.
+        """
+        if "data" in self.args and self.args.data:
+            if Path(self.args.data).exists():
+                return Path(self.args.data)
+            raise FileNotFoundError(f"Not found: {self.args.data}")
+        return self.workspace_root / "data.yaml"
+
     def check_workspace(self) -> bool:
         """Check that the class's workspace_root is an actual workspace folder.
 
         Returns:
             bool: true for workspace else false
         """
-        default_workspace_components = {
-            "template_path": self.workspace_root / "template.yaml",
-            "data_path": self.workspace_root / "data.yaml",
-        }
-        has_template_yaml = default_workspace_components["template_path"].exists()
-        has_data_yaml = default_workspace_components["data_path"].exists()
+        has_template_yaml = (self.workspace_root / "template.yaml").exists()
+        has_data_yaml = self.data_config_file_path.exists()
         return has_template_yaml and has_data_yaml
 
     def configure_template(self, model: str = None) -> None:
@@ -152,7 +163,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
     def configure_data_config(self, update_data_yaml: bool = True) -> None:
         """Configure data_config according to the situation and create data.yaml."""
-        data_yaml_path = self.workspace_root / "data.yaml"
+        data_yaml_path = self.data_config_file_path
         data_yaml = configure_dataset(self.args, data_yaml_path=data_yaml_path)
         if self.mode in ("train", "build"):
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
@@ -164,6 +175,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
         if update_data_yaml:
             self._export_data_cfg(data_yaml, str(data_yaml_path))
+            print(f"[*] Update data configuration file to: {str(data_yaml_path)}")
         self.update_data_config(data_yaml)
 
     def _get_train_type(self, ignore_args: bool = False) -> str:
@@ -289,8 +301,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
     def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str) -> None:
         """Export the data configuration file to output_path."""
-        mmcv.dump(data_cfg, output_path)
-        print(f"[*] Saving data configuration file to: {output_path}")
+        Path(output_path).write_text(OmegaConf.to_yaml(data_cfg), encoding="utf-8")
 
     def get_hyparams_config(self) -> ConfigurableParameters:
         """Separates the input params received from args and updates them.."""
@@ -392,7 +403,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         task_configuration_path = template_dir / self.template.hyper_parameters.base_path
         shutil.copyfile(task_configuration_path, str(self.workspace_root / "configuration.yaml"))
         # Load Model Template
-        template_config = MPAConfig.fromfile(self.template.model_template_path)
+        template_config = OmegaConf.load(self.template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
 
         # Configuration of Train Type value
@@ -412,7 +423,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         # Update Hparams
         if (model_dir / "hparam.yaml").exists():
-            template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
+            template_config = OmegaConf.merge(template_config, OmegaConf.load(str(model_dir / "hparam.yaml")))
 
         # Copy config files
         config_files = [
@@ -426,7 +437,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         ]
         for target_dir, file_name, dest_dir in config_files:
             self._copy_config_files(target_dir, file_name, dest_dir)
-        template_config.dump(str(self.workspace_root / "template.yaml"))
+        (self.workspace_root / "template.yaml").write_text(OmegaConf.to_yaml(template_config))
 
         # Copy compression_config.json
         if (model_dir / "compression_config.json").exists():
@@ -443,11 +454,24 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             )
             print(f"[*] \t- Updated: {str(train_type_dir / 'pot_optimization_config.json')}")
 
+        if not (self.workspace_root / "data.yaml").exists():
+            data_yaml = self._get_arg_data_yaml()
+            self._export_data_cfg(data_yaml, str((self.workspace_root / "data.yaml")))
+
         self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
 
     def _copy_config_files(self, target_dir: Path, file_name: str, dest_dir: Path) -> None:
         """Copy Configuration files for workspace."""
         if (target_dir / file_name).exists():
-            config = MPAConfig.fromfile(str(target_dir / file_name))
-            config.dump(str(dest_dir / file_name))
+            if file_name.endswith(".py"):
+                try:
+                    from otx.mpa.utils.config_utils import MPAConfig
+
+                    config = MPAConfig.fromfile(str(target_dir / file_name))
+                    config.dump(str(dest_dir / file_name))
+                except Exception as exc:
+                    raise ImportError(f"{self.task_type} requires mmcv-full to be installed.") from exc
+            elif file_name.endswith((".yml", ".yaml")):
+                config = OmegaConf.load(str(target_dir / file_name))
+                (dest_dir / file_name).write_text(OmegaConf.to_yaml(config))
             print(f"[*] \t- Updated: {str(dest_dir / file_name)}")

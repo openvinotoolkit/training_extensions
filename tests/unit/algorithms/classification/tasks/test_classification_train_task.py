@@ -7,16 +7,15 @@ import pytest
 from otx.algorithms.classification.tasks import ClassificationTrainTask
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
-from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import NullPerformance
 from otx.api.entities.model import ModelConfiguration, ModelEntity
-from otx.api.entities.model_template import parse_model_template
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE,
     init_environment,
+    setup_configurable_parameters,
 )
 
 
@@ -32,9 +31,7 @@ def otx_model():
 class TestOTXClsTaskTrain:
     @pytest.fixture(autouse=True)
     def setup(self, otx_model, tmp_dir_path) -> None:
-        model_template = parse_model_template(DEFAULT_CLS_TEMPLATE)
-        hyper_parameters = create(model_template.hyper_parameters.data)
-        hyper_parameters.learning_parameters.num_iters = 10
+        hyper_parameters, model_template = setup_configurable_parameters(DEFAULT_CLS_TEMPLATE)
         self.task_env, self.dataset = init_environment(params=hyper_parameters, model_template=model_template)
         self.model = otx_model
         self.cls_train_task = ClassificationTrainTask(self.task_env, output_path=str(tmp_dir_path))
