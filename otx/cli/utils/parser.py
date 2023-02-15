@@ -171,12 +171,12 @@ def get_parser_and_hprams_data():
     template = parsed.template
     hyper_parameters = {}
     parser = argparse.ArgumentParser()
-    if template and template.endswith("yaml") and Path(template).is_file():
+    if is_template(template):
         template_config = find_and_parse_model_template(template)
         hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template")
     elif Path("./template.yaml").exists():
-        # In workspace, environments
+        # Workspace Environments
         template_config = parse_model_template("./template.yaml")
         hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("--template", required=False, default="./template.yaml")
@@ -184,3 +184,17 @@ def get_parser_and_hprams_data():
         parser.add_argument("--template", required=False)
 
     return parser, hyper_parameters, params
+
+
+def is_template(template_path: Optional[str]) -> bool:
+    """A function that determines whether the corresponding template path is a template.
+
+    Args:
+        template_path (str): The path of the file you want to know if it is a template.
+
+    Returns:
+        bool: True if template_path is template file else False.
+    """
+    if template_path and Path(template_path).is_file() and "template" in Path(template_path).name:
+        return True
+    return False
