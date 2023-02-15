@@ -15,9 +15,11 @@
 # and limitations under the License.
 
 import argparse
+import sys
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import find_and_parse_model_template
 
 
@@ -161,7 +163,10 @@ def get_parser_and_hprams_data():
     # TODO: Declaring pre_parser to get the template
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template", nargs="?", default=None)
-    parsed, params = pre_parser.parse_known_args()
+    parsed, _ = pre_parser.parse_known_args()
+    params = []
+    if "params" in sys.argv:
+        params = sys.argv[sys.argv.index("params") :]
 
     template = parsed.template
     hyper_parameters = {}
@@ -170,6 +175,11 @@ def get_parser_and_hprams_data():
         template_config = find_and_parse_model_template(template)
         hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template")
+    elif Path("./template.yaml").exists():
+        # In workspace, environments
+        template_config = parse_model_template("./template.yaml")
+        hyper_parameters = template_config.hyper_parameters.data
+        parser.add_argument("--template", required=False, default="./template.yaml")
     else:
         parser.add_argument("--template", required=False)
 
