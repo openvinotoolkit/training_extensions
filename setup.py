@@ -120,7 +120,7 @@ def get_extensions():
     return extensions
 
 
-REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
+REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "openvino"])
 EXTRAS_REQUIRE = {
     "action": get_requirements(requirement_files="action"),
     "anomaly": get_requirements(requirement_files="anomaly"),
