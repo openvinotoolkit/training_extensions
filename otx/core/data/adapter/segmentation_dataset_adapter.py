@@ -122,6 +122,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         return is_removed
 
+
 class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
     """Self-SL for segmentation adapter inherited from SegmentationDatasetAdapter."""
 
@@ -194,7 +195,8 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         if flag_create_mask:
             # Save dataset_meta.json for newly created pseudo masks
             # FIXME: Because background class is ignored when generating polygon at L58, meta is set with len(labels)-1.
-            # It must be considered to set the whole labels later. (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
+            # It must be considered to set the whole labels later.
+            # (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
             meta = {"label_map": {i: f"target{i+1}" for i in range(max(total_labels))}}
             with open(os.path.join(pseudo_mask_roots, "dataset_meta.json"), "w", encoding="UTF-8") as f:
                 json.dump(meta, f, indent=4)
