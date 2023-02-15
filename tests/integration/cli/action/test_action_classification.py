@@ -9,13 +9,13 @@ import pytest
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import (
+from tests.test_suite.e2e_test_system import e2e_pytest_component
+from tests.test_suite.run_test_command import (
     otx_eval_openvino_testing,
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
 # TODO: Need to change sample dataset
