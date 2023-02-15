@@ -104,8 +104,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         # Construct dataset for training, validation, testing, unlabeled
         if train_data_roots:
             # Find self.data_type and task_type
-            data_type_candidates = self._detect_dataset_format(path=train_data_roots)
-            self.data_type = self._select_data_type(data_type_candidates)
+            self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
+            self.data_type = self._select_data_type(self.data_type_candidates)
 
             datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
