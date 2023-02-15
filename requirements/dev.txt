@@ -3,3 +3,7 @@
 tox==4.4.5
 pre-commit==2.20.0
 pylint
+pytest
+coverage
+pytest-timeout
+pytest-mock

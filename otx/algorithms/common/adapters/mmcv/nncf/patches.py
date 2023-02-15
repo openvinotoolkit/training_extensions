@@ -5,11 +5,11 @@
 
 from copy import deepcopy
 
-from otx.algorithms.common.adapters.nncf.patchers import (
+from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
+    is_nncf_enabled,
     no_nncf_trace_wrapper,
 )
-from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled
 
 if is_nncf_enabled():
     from nncf.torch.nncf_network import NNCFNetwork

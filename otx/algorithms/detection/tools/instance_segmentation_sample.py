@@ -45,7 +45,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
-logger = get_logger(name="sample")
+logger = get_logger(name="mmdet")
 
 # pylint: disable=too-many-locals, too-many-statements
 
