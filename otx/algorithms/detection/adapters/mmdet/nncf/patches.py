@@ -19,7 +19,7 @@ from mmdet.models.roi_heads.bbox_heads.bbox_head import BBoxHead
 from mmdet.models.roi_heads.bbox_heads.sabl_head import SABLHead
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
-from otx.algorithms.common.adapters.nncf.patchers import (
+from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
     nncf_trace_wrapper,
     no_nncf_trace_wrapper,
@@ -87,7 +87,8 @@ def _wrap_mmdet_sampler(obj_cls):
 def _wrap_register_module(self, fn, *args, **kwargs):
     """A function to wrap classes lazily defined such as custom ones."""
 
-    module = kwargs["module"]
+    module = kwargs.get("module", args[0] if args else None)
+    assert module is not None
     _wrap_mmdet_head(module)
     _wrap_mmdet_bbox_assigner(module)
     _wrap_mmdet_sampler(module)

@@ -38,7 +38,11 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):  # pylint: disable=too-many-in
     def __init__(self, *args, nncf_config, nncf_meta=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.nncf_config = nncf_config
+
+        if nncf_meta is None:
+            nncf_meta = NNCFMetaState()
         self.nncf_meta = nncf_meta
+
         self.compression_ctrl = None
         self._target_metric_name = nncf_config["target_metric_name"]
         self._train_data_loader = None

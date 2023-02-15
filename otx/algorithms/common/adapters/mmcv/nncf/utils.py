@@ -4,9 +4,8 @@
 #
 
 import os
-import pathlib
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -36,9 +35,13 @@ def get_fake_input(
     preprocessor: Callable[..., Dict[str, Any]],
     data: Optional[np.ndarray] = None,
     shape: Tuple[int, ...] = (128, 128, 3),
-    device: str = "cpu",
+    device: Union[str, torch.device] = "cpu",
 ):
     """A function to generate fake data."""
+
+    if isinstance(device, str):
+        device = torch.device(device)
+
     if data is None:
         data = dict(img=np.zeros(shape, dtype=np.uint8))
     else:
@@ -49,10 +52,12 @@ def get_fake_input(
         if not isinstance(value, list):
             data[key] = [value]
 
-    if device == torch.device("cpu"):
+    if device.type == "cpu":
         data = scatter(collate([data], samples_per_gpu=1), [-1])[0]
-    else:
+    elif device.type == "cuda":
         data = scatter(collate([data], samples_per_gpu=1), [device.index])[0]
+    else:
+        raise NotImplementedError()
     return data
 
 
@@ -145,7 +150,6 @@ def wrap_nncf_model(  # noqa: C901
             kwargs = {k: v.data[0] if isinstance(v, DataContainer) else v for k, v in dataloader_output.items()}
             return (), kwargs
 
-    pathlib.Path(config.work_dir).mkdir(parents=True, exist_ok=True)
     nncf_config = NNCFConfig(config.nncf_config)
     resuming_state_dict = None
 
