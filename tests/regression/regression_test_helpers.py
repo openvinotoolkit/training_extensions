@@ -25,7 +25,8 @@ def load_regression_configuration(
 
     Args:
         otx_dir (str): The path of otx root directoy
-        task_type (str): ["classification", "detection", "segmentation", ...]
+        task_type (str): ["classification", "detection", "instance segmentation", "semantic segmentation", 
+                            "action_classification", "action_detection", "anomaly"]
         train_type (str): ["supervised", "semi_supervised", "self_supervised", "class_incr"]
         label_type (str): ["multi_class", "multi_label", "h_label", "supcon"]
 

@@ -795,5 +795,5 @@ def otx_regression_testing(template, root, otx_dir, args, criteria, threshold=0.
     for k in trained_performance.keys():
         print(f"trained_performance: {trained_performance[k]}, modified_criteria:{modified_criteria}")
         assert (
-            trained_performance[k] <= modified_criteria
-        ), f"Current model performance: ({trained_performance[k]}) <= criteria: ({modified_criteria})."
+            trained_performance[k] >= modified_criteria
+        ), f"Current model performance: ({trained_performance[k]}) < criteria: ({modified_criteria})."

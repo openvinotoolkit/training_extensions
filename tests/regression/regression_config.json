@@ -8,14 +8,14 @@
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
         },
         "multi_label": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/mlc_coco_regression"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset"
         },
         "h_label": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10"
         },
         "supcon": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
@@ -25,47 +25,54 @@
       },
       "class_incr": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
+        },
+        "multi_label": {
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset"
+        },
+        "h_label": {
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10"
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added",
-          "unlabeled": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
+          "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train"
         }
       },
       "self_supervised": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added",
-          "unlabeled": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train"
         }
       }
     },
     "detection": {
       "supervised": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/bccd"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         },
         "class_incr": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added",
-          "unlabeled": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         }
       }
     },
@@ -87,7 +94,7 @@
           "--train-data-roots": "will be added",
           "--val-data-roots": "will be added",
           "--test-data-roots": "will be added",
-          "unlabeled": "will be added"
+          "--unlabeled-data-roots": "will be added"
         }
       },
       "self_supervised": {
@@ -95,31 +102,27 @@
           "--train-data-roots": "will be added",
           "--val-data-roots": "will be added",
           "--test-data-roots": "will be added",
-          "unlabeled": "will be added"
+          "--unlabeled-data-roots": "will be added"
         }
       }
     },
     "instance_segmentation": {
-      "supervised": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         },
         "class_incr": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
+        },
+        "semi_supervised": {
+            "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+            "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+            "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+            "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         }
-      },
-      "semi_supervised": {
-        "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added",
-          "unlabeled": "will be added"
-        }
-      }
     },
     "action_classification": {
       "supervised": {
