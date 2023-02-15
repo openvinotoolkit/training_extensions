@@ -147,7 +147,9 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         Returns:
             DatumaroDataset: Datumaro Dataset
         """
-        assert train_data_roots
+        if train_data_roots is None:
+            raise ValueError("train_data_root must be set.")
+
         logger = get_logger()
         logger.warning(f"Please check if {train_data_roots} is data roots only for images, not annotations.")
 
@@ -191,13 +193,15 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         pseudo_mask_roots = train_data_roots.replace(img_dir, pseudo_mask_dir)  # type: ignore
         if flag_create_mask:
             # Save dataset_meta.json for newly created pseudo masks
-            meta = {"label_map": {i + 1: f"target{i+1}" for i in range(max(total_labels) + 1)}}
+            # FIXME: Because background class is ignored when generating polygon at L58, meta is set with len(labels)-1.
+            # It must be considered to set the whole labels later. (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
+            meta = {"label_map": {i: f"target{i+1}" for i in range(max(total_labels))}}
             with open(os.path.join(pseudo_mask_roots, "dataset_meta.json"), "w", encoding="UTF-8") as f:
                 json.dump(meta, f, indent=4)
 
         # Make categories for pseudo masks
         label_map = parse_meta_file(os.path.join(pseudo_mask_roots, "dataset_meta.json"))
-        dataset[Subset.TRAINING]._data._categories = make_categories(label_map)
+        dataset[Subset.TRAINING].define_categories(make_categories(label_map))
 
         return dataset
 
