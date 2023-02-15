@@ -111,6 +111,12 @@ def get_args():
         default=0,
         help="Total number of workers in a worker group.",
     )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default=None,
+        help="The data.yaml path want to use in train task.",
+    )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
