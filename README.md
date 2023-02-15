@@ -31,16 +31,16 @@ To this end OTX supports the following computer vision tasks:
 - **Anomaly recognition tasks** including anomaly classification, detection and segmentation
 
 OTX also supports different training types:
-- Supervised, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks
-- Semi-supervised learning
-- Self-supervised learning
+- **Supervised**, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks
+- **Semi-supervised learning**
+- **Self-supervised learning**
 
 Moving forward, OTX provides the following features:
-- Distributed training to accelerate the training process when you have multiple GPUs
-- Half-precision training to save GPUs memory and use larger batch sizes
-- Integrated, efficient hyper-parameter optimization module (HPO). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
-- OTX uses [Datumaro](https://github.com/openvinotoolkit/datumaro) as the backend to hadle datasets. Thanks to that, OTX supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
-- Auto-configuration functionality. OTX analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- **Distributed training** to accelerate the training process when you have multiple GPUs
+- **Half-precision training** to save GPUs memory and use larger batch sizes
+- Integrated, efficient **hyper-parameter optimization module (HPO)**. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
+- OTX uses **[Datumaro](https://github.com/openvinotoolkit/datumaro)** as the backend to hadle datasets. Thanks to that, OTX supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
+- **Auto-configuration functionality**. OTX analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 
 ---
 
