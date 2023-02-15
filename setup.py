@@ -127,9 +127,6 @@ EXTRAS_REQUIRE = {
     "classification": get_requirements(requirement_files="classification"),
     "detection": get_requirements(requirement_files="detection"),
     "segmentation": get_requirements(requirement_files="segmentation"),
-    "mpa": get_requirements(
-        requirement_files=["classification", "detection", "segmentation", "action"]
-    ),
     "full": get_requirements(
         requirement_files=[
             "anomaly",
