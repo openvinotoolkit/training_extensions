@@ -7,9 +7,9 @@ import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import mmcv
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import IDataset
+from omegaconf import OmegaConf
 
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import create
@@ -19,7 +19,6 @@ from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_otx_root_path
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
-from otx.mpa.utils.config_utils import MPAConfig
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -289,7 +288,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
     def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str) -> None:
         """Export the data configuration file to output_path."""
-        mmcv.dump(data_cfg, output_path)
+        Path(output_path).write_text(OmegaConf.to_yaml(data_cfg), encoding="utf-8")
         print(f"[*] Saving data configuration file to: {output_path}")
 
     def get_hyparams_config(self) -> ConfigurableParameters:
@@ -398,7 +397,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         task_configuration_path = template_dir / self.template.hyper_parameters.base_path
         shutil.copyfile(task_configuration_path, str(self.workspace_root / "configuration.yaml"))
         # Load Model Template
-        template_config = MPAConfig.fromfile(self.template.model_template_path)
+        template_config = OmegaConf.load(self.template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
 
         # Configuration of Train Type value
@@ -418,7 +417,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         # Update Hparams
         if (model_dir / "hparam.yaml").exists():
-            template_config.merge_from_dict(MPAConfig.fromfile(str(model_dir / "hparam.yaml")))
+            template_config = OmegaConf.merge(template_config, OmegaConf.load(str(model_dir / "hparam.yaml")))
 
         # Copy config files
         config_files = [
@@ -432,7 +431,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         ]
         for target_dir, file_name, dest_dir in config_files:
             self._copy_config_files(target_dir, file_name, dest_dir)
-        template_config.dump(str(self.workspace_root / "template.yaml"))
+        (self.workspace_root / "template.yaml").write_text(OmegaConf.to_yaml(template_config))
 
         # Copy compression_config.json
         if (model_dir / "compression_config.json").exists():
@@ -454,6 +453,15 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
     def _copy_config_files(self, target_dir: Path, file_name: str, dest_dir: Path) -> None:
         """Copy Configuration files for workspace."""
         if (target_dir / file_name).exists():
-            config = MPAConfig.fromfile(str(target_dir / file_name))
-            config.dump(str(dest_dir / file_name))
+            if file_name.endswith(".py"):
+                try:
+                    from otx.mpa.utils.config_utils import MPAConfig
+
+                    config = MPAConfig.fromfile(str(target_dir / file_name))
+                    config.dump(str(dest_dir / file_name))
+                except Exception as exc:
+                    raise ImportError(f"{self.task_type} requires mmcv-full to be installed.") from exc
+            elif file_name.endswith((".yml", ".yaml")):
+                config = OmegaConf.load(str(target_dir / file_name))
+                (dest_dir / file_name).write_text(OmegaConf.to_yaml(config))
             print(f"[*] \t- Updated: {str(dest_dir / file_name)}")
