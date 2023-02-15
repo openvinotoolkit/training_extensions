@@ -97,18 +97,30 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.data_format: str = ""
         self.data_config: Dict[str, dict] = {}
 
+    @property
+    def data_config_file_path(self) -> Path:
+        """The path of the data configuration yaml to use for the task.
+
+        Raises:
+            FileNotFoundError: If data is received as args from otx train and the file does not exist, Error.
+
+        Returns:
+            Path: Path of target data configuration file.
+        """
+        if "data" in self.args and self.args.data:
+            if Path(self.args.data).exists():
+                return Path(self.args.data)
+            raise FileNotFoundError(f"Not found: {self.args.data}")
+        return self.workspace_root / "data.yaml"
+
     def check_workspace(self) -> bool:
         """Check that the class's workspace_root is an actual workspace folder.
 
         Returns:
             bool: true for workspace else false
         """
-        default_workspace_components = {
-            "template_path": self.workspace_root / "template.yaml",
-            "data_path": self.workspace_root / "data.yaml",
-        }
-        has_template_yaml = default_workspace_components["template_path"].exists()
-        has_data_yaml = default_workspace_components["data_path"].exists()
+        has_template_yaml = (self.workspace_root / "template.yaml").exists()
+        has_data_yaml = self.data_config_file_path.exists()
         return has_template_yaml and has_data_yaml
 
     def configure_template(self, model: str = None) -> None:
@@ -151,7 +163,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
     def configure_data_config(self, update_data_yaml: bool = True) -> None:
         """Configure data_config according to the situation and create data.yaml."""
-        data_yaml_path = self.workspace_root / "data.yaml"
+        data_yaml_path = self.data_config_file_path
         data_yaml = configure_dataset(self.args, data_yaml_path=data_yaml_path)
         if self.mode in ("train", "build"):
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
@@ -163,6 +175,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
         if update_data_yaml:
             self._export_data_cfg(data_yaml, str(data_yaml_path))
+            print(f"[*] Update data configuration file to: {str(data_yaml_path)}")
         self.update_data_config(data_yaml)
 
     def _get_train_type(self, ignore_args: bool = False) -> str:
@@ -289,7 +302,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
     def _export_data_cfg(self, data_cfg: Dict[str, Dict[str, Dict[str, Any]]], output_path: str) -> None:
         """Export the data configuration file to output_path."""
         Path(output_path).write_text(OmegaConf.to_yaml(data_cfg), encoding="utf-8")
-        print(f"[*] Saving data configuration file to: {output_path}")
 
     def get_hyparams_config(self) -> ConfigurableParameters:
         """Separates the input params received from args and updates them.."""
@@ -447,6 +459,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 str(train_type_dir / "pot_optimization_config.json"),
             )
             print(f"[*] \t- Updated: {str(train_type_dir / 'pot_optimization_config.json')}")
+
+        if not (self.workspace_root / "data.yaml").exists():
+            data_yaml = self._get_arg_data_yaml()
+            self._export_data_cfg(data_yaml, str((self.workspace_root / "data.yaml")))
 
         self.template = parse_model_template(str(self.workspace_root / "template.yaml"))
 

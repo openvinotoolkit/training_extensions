@@ -10,14 +10,14 @@ from unittest.mock import patch
 import pytest
 
 from otx.cli.tools import cli
-from otx.cli.utils.tests import (
+from tests.test_suite.e2e_test_system import e2e_pytest_component
+from tests.test_suite.run_test_command import (
     otx_build_auto_config,
     otx_build_backbone_testing,
     otx_build_testing,
     otx_find_testing,
     otx_train_auto_config,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 otx_dir = os.getcwd()
 
