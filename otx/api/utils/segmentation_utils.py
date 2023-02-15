@@ -90,6 +90,7 @@ def mask_from_annotation(
         mask = cv2.drawContours(mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1)
 
     mask = np.expand_dims(mask, axis=2)
+
     return mask
 
 

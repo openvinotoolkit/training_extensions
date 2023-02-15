@@ -49,9 +49,6 @@ def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[La
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
 
     ann_info = dict(gt_semantic_seg=gt_seg_map)
-    import cv2
-
-    cv2.imwrite("./tmp/gt_sementic_seg.jpg", np.array(gt_seg_map, dtype=np.uint8) * 255)
 
     return ann_info
 
@@ -100,7 +97,7 @@ class OTXSegDataset(CustomDataset):
             """
             dataset = self.otx_dataset
             item = dataset[index]
-            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+            ignored_labels = np.array([self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
 
             data_info = dict(
                 dataset_item=item,
@@ -131,7 +128,6 @@ class OTXSegDataset(CustomDataset):
         dataset_labels = self.otx_dataset.get_labels(include_empty=False)
         self.project_labels = self.filter_labels(dataset_labels, classes)
         self.CLASSES, self.PALETTE = self.get_classes_and_palette(classes, None)
-        breakpoint()
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset
         # uses a proxy class with overriden __len__ and __getitem__; this proxy class
@@ -262,8 +258,7 @@ class MPASegDataset(OTXSegDataset):
 
         if classes:
             classes = [c.name for c in classes]
-            if "background" not in classes:
-                classes = ["background"] + classes
+            classes = ["background"] + classes
         else:
             classes = []
         super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
