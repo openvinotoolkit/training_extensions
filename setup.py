@@ -143,7 +143,7 @@ def find_yaml_recipes():
     """Find YAML recipe files in the package."""
     results = defaultdict(list)
 
-    for root, _, files in os.walk(os.path.join("otx", "recipes")):
+    for root, _, files in os.walk("otx"):
         module = ".".join(root.split(os.sep))
         for file in files:
             _, ext = os.path.splitext(file)
