@@ -93,7 +93,6 @@ source venv/otx/bin/activate
 pytest tests/unit
 ```
 
-
 ## OTX CLI commands
 
 ### Find
