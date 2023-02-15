@@ -13,6 +13,7 @@ from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
+from otx.api.entities.model import ModelPrecision
 from otx.api.entities.model_template import TaskType, parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
@@ -107,13 +108,14 @@ class TestOTXDetectionTaskInference:
         "task_type",
         [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION],
     )
-    def test_export(self, task_type, mocker):
+    @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
+    def test_export(self, task_type, mocker, precision: ModelPrecision):
         """Test export method in DetectionInferenceTask, expected RuntimeError without model file."""
         fake_output = {"outputs": {"bin": None, "xml": None}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
 
         with pytest.raises(RuntimeError):
-            self.inference_task[task_type].export(ExportType.OPENVINO, self.model)
+            self.inference_task[task_type].export(ExportType.OPENVINO, self.model, precision)
             mock_run_task.assert_called_once()
 
     @e2e_pytest_unit
@@ -121,7 +123,8 @@ class TestOTXDetectionTaskInference:
         "task_type",
         [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION],
     )
-    def test_export_with_model_files(self, task_type, mocker):
+    @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
+    def test_export_with_model_files(self, task_type, mocker, precision: ModelPrecision):
         """Test export method in DetectionInferenceTask."""
         with open(f"{self.output_path}/model.xml", "wb") as f:
             f.write(b"foo")
@@ -130,7 +133,7 @@ class TestOTXDetectionTaskInference:
 
         fake_output = {"outputs": {"bin": f"{self.output_path}/model.xml", "xml": f"{self.output_path}/model.bin"}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
-        self.inference_task[task_type].export(ExportType.OPENVINO, self.model)
+        self.inference_task[task_type].export(ExportType.OPENVINO, self.model, precision)
 
         mock_run_task.assert_called_once()
         assert self.model.get_data("openvino.bin")
