@@ -3,31 +3,34 @@
     "classification": {
       "supervised": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test",
+          "--input": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test/airplane"
         },
         "multi_label": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset"
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
+          "--input": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset/images/test"
         },
         "h_label": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10_subset",
+          "--input": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10_subset/images/test/airplane"
         },
         "supcon": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test"
         }
       },
       "class_incr": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test"
         },
         "multi_label": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset",
@@ -35,22 +38,22 @@
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/multi_label_classification/multi_label_coco_subset"
         },
         "h_label": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/hierarhical_classification/h_label_cifar10_subset"
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/test",
-          "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test",
+          "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/train"
         }
       },
       "self_supervised": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10/train"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/train"
         }
       }
     },
@@ -107,6 +110,7 @@
       }
     },
     "instance_segmentation": {
+      "supervised":{
         "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
@@ -116,13 +120,16 @@
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
-        },
-        "semi_supervised": {
-            "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
-            "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
-            "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
-            "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         }
+      },
+      "semi_supervised": {
+        "multi_class":{
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
+        }
+      }
     },
     "action_classification": {
       "supervised": {
@@ -160,7 +167,7 @@
       }
     }
   },
-  "model_criteria": {
+  "regression_criteria": {
     "classification": {
       "supervised": {
         "multi_class": {
@@ -227,8 +234,10 @@
           "ATSS": 1.0,
           "SSD": 1.0,
           "VFNet": 1.0
-        },
-        "class_incr": {
+        }
+      },
+      "class_incr": {
+        "multi_class": {
           "YOLOX": 1.0,
           "ATSS": 1.0,
           "SSD": 1.0,
@@ -251,8 +260,10 @@
           "Lite-HRNet-18-mod2": 1.0,
           "Lite-HRNet-s-mod2": 1.0,
           "Lite-HRNet-x-mod3": 1.0
-        },
-        "class_incr": {
+        }
+      },
+      "class_incr": {
+        "multi_class": {
           "Lite-HRNet-18": 1.0,
           "Lite-HRNet-18-mod2": 1.0,
           "Lite-HRNet-s-mod2": 1.0,
@@ -281,8 +292,10 @@
         "multi_class": {
           "MaskRCNN-EfficientNetB2B": 1.0,
           "MaskRCNN-ResNet50": 1.0
-        },
-        "class_incr": {
+        }
+      },
+      "class_incr": {
+        "multi_class": {
           "MaskRCNN-EfficientNetB2B": 1.0,
           "MaskRCNN-ResNet50": 1.0
         }

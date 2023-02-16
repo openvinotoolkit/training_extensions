@@ -132,6 +132,8 @@ def otx_train_testing(template, root, otx_dir, args):
             command_line.extend([arg, os.path.join(otx_dir, arg_value)])
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
     command_line.extend(["--work-dir", f"{template_work_dir}"])
+    if "--load-weights" in args:
+        command_line.extend(["--load-weights", args["--load-weights"]])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
@@ -237,7 +239,7 @@ def otx_eval_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
 
-def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
+def otx_eval_openvino_testing(template, root, otx_dir, args, threshold, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -259,6 +261,8 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
         exported_performance = json.load(read_file)
 
     for k in trained_performance.keys():
+        if result_dict:
+            result_dict[template.name] = str(exported_performance[k])
         assert (
             exported_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
@@ -353,7 +357,7 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
     )
 
 
-def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
+def otx_eval_deployment_testing(template, root, otx_dir, args, threshold, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -375,6 +379,8 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
         deployed_performance = json.load(read_file)
 
     for k in exported_performance.keys():
+        if result_dict:
+            result_dict[template.name] = str(deployed_performance[k])
         assert (
             deployed_performance[k] >= exported_performance[k]
             or abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
@@ -438,7 +444,7 @@ def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
 
 
-def pot_eval_testing(template, root, otx_dir, args):
+def pot_eval_testing(template, root, otx_dir, args, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -454,6 +460,13 @@ def pot_eval_testing(template, root, otx_dir, args):
     command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
+
+    with open(f"{template_work_dir}/pot_{template.model_template_id}/performance.json") as read_file:
+        pot_performance = json.load(read_file)
+
+    for k in pot_performance.keys():
+        if result_dict:
+            result_dict[template.name] = str(pot_performance[k])
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
@@ -512,7 +525,7 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf", test_name)
 
 
-def nncf_eval_testing(template, root, otx_dir, args, threshold):
+def nncf_eval_testing(template, root, otx_dir, args, threshold, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -534,6 +547,8 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
         evaluated_performance = json.load(read_file)
 
     for k in trained_performance.keys():
+        if result_dict:
+            result_dict[template.name] = str(evaluated_performance[k])
         assert (
             evaluated_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
@@ -769,7 +784,15 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
     check_run(command_line)
 
 
-def otx_regression_testing(template, root, otx_dir, args, criteria, threshold=0.05):
+def otx_eval_compare(
+    template,
+    root,
+    otx_dir,
+    args,
+    criteria,
+    result_dict,
+    threshold=0.05,
+):
     template_work_dir = get_template_dir(template, root)
 
     command_line = [
@@ -796,6 +819,7 @@ def otx_regression_testing(template, root, otx_dir, args, criteria, threshold=0.
     model_criteria = criteria[template.name]
     modified_criteria = model_criteria - (model_criteria * threshold)
     for k in trained_performance.keys():
+        result_dict[template.name] = str(trained_performance[k])
         print(f"trained_performance: {trained_performance[k]}, modified_criteria:{modified_criteria}")
         assert (
             trained_performance[k] >= modified_criteria
