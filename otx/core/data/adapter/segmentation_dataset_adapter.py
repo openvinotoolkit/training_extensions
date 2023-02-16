@@ -34,20 +34,23 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         unlabeled_data_roots: Optional[str] = None,
     ):
         super().__init__(task_type, train_data_roots, val_data_roots, test_data_roots, unlabeled_data_roots)
-        self.updated_label_id: Dict[int, int]
+        self.updated_label_id: Dict[int, int] = {}
 
     def remove_labels(self, label_names: List):
         """Remove background label in label entity set."""
+        is_removed = False
         new_label_entities = []
         for i, entity in enumerate(self.label_entities):
             if entity.name not in label_names:
                 new_label_entities.append(entity)
-
-        self.label_entities = new_label_entities
+            else:
+                is_removed = True
 
         for i, entity in enumerate(self.label_entities):
             self.updated_label_id[int(entity.id)] = i
             entity.id = ID(i)
+
+        return is_removed
 
     def set_voc_labels(self):
         """Set labels for common_semantic_segmentation dataset."""
@@ -57,7 +60,10 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
     def set_common_labels(self):
         """Set labels for common_semantic_segmentation dataset."""
         # Remove background if in label_entities
-        self.remove_labels(["background"])
+        is_removed = self.remove_labels(["background"])
+
+        if is_removed is False:
+            self.updated_label_id = {k + 1: v for k, v in self.updated_label_id.items()}
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
@@ -67,6 +73,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
+
         if self.data_type_candidates[0] == "voc":
             self.set_voc_labels()
 
@@ -84,7 +91,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
                                 new_label = self.updated_label_id.get(d_polygon.label, None)
-                                if new_label:
+                                if new_label is not None:
                                     d_polygon.label = new_label
                                 else:
                                     continue
