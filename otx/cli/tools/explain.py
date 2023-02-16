@@ -71,11 +71,6 @@ def get_args():
         default=0.5,
         help="weight of the saliency map when overlaying the saliency map",
     )
-    parser.add_argument(
-        "--work-dir",
-        help="Location where the intermediate output of the task will be stored.",
-        default=None,
-    )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
 
