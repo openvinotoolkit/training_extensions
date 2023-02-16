@@ -17,10 +17,11 @@ class TestSchedulers:
     """Test schedulers."""
 
     def test_constant_scalar_scheduler(self):
-        """Test constant scalar scheduler."""
-        scheduler = ConstantScalarScheduler(scale=30.0)
+        """Test constant scalar scheduler.
 
-        # learning rate should not change over time
+        Learning rate should not change over time.
+        """
+        scheduler = ConstantScalarScheduler(scale=30.0)
         assert scheduler(0, 1) == 30.0
         assert scheduler(1, 1) == 30.0
         assert scheduler(2, 10) == 30.0
@@ -30,17 +31,17 @@ class TestSchedulers:
         with pytest.raises(AssertionError):
             ConstantScalarScheduler(scale=-1.0)
 
+    @pytest.mark.xfail
     def test_constant_scalar_scheduler_invalid_step(self):
         """Test constant scalar scheduler with invalid step.
 
         TODO: ConstantScalarScheculer should be modified to raise this error
         """
-        # scheduler = ConstantScalarScheduler(scale=30.0)
-        # with pytest.raises(AssertionError):
-        #     scheduler(-1, 1)
-        pass
+        scheduler = ConstantScalarScheduler(scale=30.0)
+        with pytest.raises(AssertionError):
+            scheduler(-1, 1)
 
-    def test_poly_scalar_scheduler(self):
+    def test_poly_scalar_scheduler_by_epoch_false(self):
         """Test poly scalar scheduler."""
         # By epoch is False
         scheduler = PolyScalarScheduler(
@@ -64,7 +65,7 @@ class TestSchedulers:
         assert scheduler(101, 1) == 0.0
         assert scheduler(102, 1) == 0.0
 
-        # By epoch is True
+    def test_poly_scalar_scheduler_by_epoch_true(self):
         scheduler = PolyScalarScheduler(
             start_scale=30.0,
             end_scale=0.0,
@@ -86,7 +87,7 @@ class TestSchedulers:
         assert scheduler(101, 1) == 0.0
         assert scheduler(102, 1) == 0.0
 
-    def test_step_scalar_scheduler(self):
+    def test_step_scalar_scheduler_by_epoch_false(self):
         """Test step scalar scheduler."""
         # By epoch is False
         scheduler = StepScalarScheduler(
@@ -108,6 +109,7 @@ class TestSchedulers:
 
         assert scheduler(10, 1) == 5.0  # steps greater than total num_iters
 
+    def test_step_scalar_scheduler_by_epoch_true(self):
         # By epoch is True
         scheduler = StepScalarScheduler(
             scales=[30.0, 20.0, 10.0, 5.0],
