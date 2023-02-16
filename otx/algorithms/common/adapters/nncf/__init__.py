@@ -5,6 +5,8 @@
 
 # flake8: noqa
 
+from otx.core.patcher import Patcher
+
 from .compression import (
     AccuracyAwareLrUpdater,
     get_nncf_metadata,
@@ -12,16 +14,26 @@ from .compression import (
     is_checkpoint_nncf,
     is_state_nncf,
 )
-from .patches import *
+from .patches import (
+    nncf_trace_context,
+    nncf_trace_wrapper,
+    nncf_train_step,
+    no_nncf_trace_wrapper,
+)
 from .utils import (
     check_nncf_is_enabled,
     get_nncf_version,
     is_accuracy_aware_training_set,
     is_in_nncf_tracing,
+    is_nncf_enabled,
     no_nncf_trace,
 )
 
+NNCF_PATCHER = Patcher()
+
+
 __all__ = [
+    "NNCF_PATCHER",
     "AccuracyAwareLrUpdater",
     "check_nncf_is_enabled",
     "get_nncf_metadata",
@@ -32,4 +44,9 @@ __all__ = [
     "is_in_nncf_tracing",
     "is_state_nncf",
     "no_nncf_trace",
+    "nncf_trace_context",
+    "nncf_train_step",
+    "no_nncf_trace_wrapper",
+    "nncf_trace_wrapper",
+    "is_nncf_enabled",
 ]

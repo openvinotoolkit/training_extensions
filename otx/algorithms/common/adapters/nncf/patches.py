@@ -1,10 +1,12 @@
-"""NNCFNetwork patch functions for mmcv models."""
+"""NNCFNetwork patch util functions for mmcv models."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 from contextlib import contextmanager
 from functools import partial
+
+from otx.algorithms.common.adapters.nncf.utils import nncf_trace, no_nncf_trace
 
 
 @contextmanager
@@ -48,3 +50,17 @@ def nncf_train_step(self, data, optimizer):
 
     # TODO: deal with kd_loss_handler in forward method of NNCFNetwork
     return retval
+
+
+def no_nncf_trace_wrapper(self, fn, *args, **kwargs):  # pylint: disable=unused-argument,invalid-name
+    """A wrapper function not to trace in NNCF."""
+
+    with no_nncf_trace():
+        return fn(*args, **kwargs)
+
+
+def nncf_trace_wrapper(self, fn, *args, **kwargs):  # pylint: disable=unused-argument,invalid-name
+    """A wrapper function to trace in NNCF."""
+
+    with nncf_trace():
+        return fn(*args, **kwargs)
