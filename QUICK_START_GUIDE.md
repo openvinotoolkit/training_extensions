@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-The current version of OTX was tested under the following environments
+The current version of OTX was tested under the following environment:
 
 - Ubuntu 20.04
 - Python 3.8.x
@@ -64,7 +64,7 @@ The current version of OTX was tested under the following environments
 ```bash
 # Create a development environment
 # -- need to fix '38' in tox.ini if another python version needed
-tox --devenv venv/otx -e pre-merge
+tox devenv venv/otx -e pre-merge
 source venv/otx/bin/activate
 
 # Fix code
