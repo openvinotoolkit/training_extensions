@@ -1,4 +1,4 @@
-from os import path as osp
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
@@ -59,14 +59,14 @@ def test_configure_dataset(mocker):
     data_config = configure_dataset(mock_args)
 
     # check
-    assert data_config["data"]["train"]["ann-files"] == mock_args.train_ann_files
-    assert data_config["data"]["train"]["data-roots"] == mock_args.train_data_roots
-    assert data_config["data"]["val"]["ann-files"] == mock_args.val_ann_files
-    assert data_config["data"]["val"]["data-roots"] == mock_args.val_data_roots
-    assert data_config["data"]["unlabeled"]["file-list"] == mock_args.unlabeled_file_list
-    assert data_config["data"]["unlabeled"]["data-roots"] == mock_args.unlabeled_data_roots
-    assert data_config["data"]["test"]["ann-files"] == mock_args.test_ann_files
-    assert data_config["data"]["test"]["data-roots"] == mock_args.test_data_roots
+    assert data_config["data"]["train"]["ann-files"] == str(Path(mock_args.train_ann_files).absolute())
+    assert data_config["data"]["train"]["data-roots"] == str(Path(mock_args.train_data_roots).absolute())
+    assert data_config["data"]["val"]["ann-files"] == str(Path(mock_args.val_ann_files).absolute())
+    assert data_config["data"]["val"]["data-roots"] == str(Path(mock_args.val_data_roots).absolute())
+    assert data_config["data"]["unlabeled"]["file-list"] == str(Path(mock_args.unlabeled_file_list).absolute())
+    assert data_config["data"]["unlabeled"]["data-roots"] == str(Path(mock_args.unlabeled_data_roots).absolute())
+    assert data_config["data"]["test"]["ann-files"] == str(Path(mock_args.test_ann_files).absolute())
+    assert data_config["data"]["test"]["data-roots"] == str(Path(mock_args.test_data_roots).absolute())
 
 
 @e2e_pytest_unit
@@ -74,12 +74,12 @@ def test_configure_dataset_with_data_args(mocker):
     mock_args = mocker.MagicMock()
 
     with TemporaryDirectory() as tmp_dir:
-        data_yaml_path = osp.join(tmp_dir, "data.yaml")
+        data_yaml_path = Path(tmp_dir) / "data.yaml"
         mock_data = {"data": {"train": {"ann-files": "a", "data-roots": "b"}}}
         with open(data_yaml_path, "w") as f:
             yaml.dump(mock_data, f)
 
-        data_config = configure_dataset(mock_args, data_yaml_path)
+        data_config = configure_dataset(mock_args, str(data_yaml_path))
 
     assert data_config["data"]["train"]["ann-files"] == mock_data["data"]["train"]["ann-files"]
     assert data_config["data"]["train"]["data-roots"] == mock_data["data"]["train"]["data-roots"]

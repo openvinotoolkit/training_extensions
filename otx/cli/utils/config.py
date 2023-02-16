@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
+from pathlib import Path
 
 import yaml
 
@@ -43,25 +43,25 @@ def configure_dataset(args, data_yaml_path=None):
     data_subset_format = {"ann-files": None, "data-roots": None}
     data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
     data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
-    if data_yaml_path is not None and os.path.exists(str(data_yaml_path)):
-        with open(str(data_yaml_path), "r", encoding="UTF-8") as stream:
+    if data_yaml_path and Path(data_yaml_path).exists():
+        with open(Path(data_yaml_path), "r", encoding="UTF-8") as stream:
             data_config = yaml.safe_load(stream)
 
     # The command's args are overridden and use first
     if "train_ann_files" in args and args.train_ann_files:
-        data_config["data"]["train"]["ann-files"] = args.train_ann_files
+        data_config["data"]["train"]["ann-files"] = str(Path(args.train_ann_files).absolute())
     if "train_data_roots" in args and args.train_data_roots:
-        data_config["data"]["train"]["data-roots"] = args.train_data_roots
+        data_config["data"]["train"]["data-roots"] = str(Path(args.train_data_roots).absolute())
     if "val_ann_files" in args and args.val_ann_files:
-        data_config["data"]["val"]["ann-files"] = args.val_ann_files
+        data_config["data"]["val"]["ann-files"] = str(Path(args.val_ann_files).absolute())
     if "val_data_roots" in args and args.val_data_roots:
-        data_config["data"]["val"]["data-roots"] = args.val_data_roots
+        data_config["data"]["val"]["data-roots"] = str(Path(args.val_data_roots).absolute())
     if "unlabeled_file_list" in args and args.unlabeled_file_list:
-        data_config["data"]["unlabeled"]["file-list"] = args.unlabeled_file_list
+        data_config["data"]["unlabeled"]["file-list"] = str(Path(args.unlabeled_file_list).absolute())
     if "unlabeled_data_roots" in args and args.unlabeled_data_roots:
-        data_config["data"]["unlabeled"]["data-roots"] = args.unlabeled_data_roots
+        data_config["data"]["unlabeled"]["data-roots"] = str(Path(args.unlabeled_data_roots).absolute())
     if "test_ann_files" in args and args.test_ann_files:
-        data_config["data"]["test"]["ann-files"] = args.test_ann_files
+        data_config["data"]["test"]["ann-files"] = str(Path(args.test_ann_files).absolute())
     if "test_data_roots" in args and args.test_data_roots:
-        data_config["data"]["test"]["data-roots"] = args.test_data_roots
+        data_config["data"]["test"]["data-roots"] = str(Path(args.test_data_roots).absolute())
     return data_config
