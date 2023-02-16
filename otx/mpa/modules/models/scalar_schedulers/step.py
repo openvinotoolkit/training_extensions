@@ -16,8 +16,8 @@ class StepScalarScheduler(BaseScalarScheduler):
 
     Example:
         >>> scheduler = StepScalarScheduler(scales=[1.0, 0.1, 0.01], num_iters=[100, 200])
-            This means that the learning rate will be 1.0 for the first 100 iterations,
-            0.1 for the next 200 iterations, and 0.01 for the rest of the iterations.
+        This means that the learning rate will be 1.0 for the first 100 iterations,
+        0.1 for the next 200 iterations, and 0.01 for the rest of the iterations.
 
     Args:
         scales (List[int]): List of learning rate scales.
