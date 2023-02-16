@@ -99,6 +99,7 @@ optional arguments:
   --backbone BACKBONE [BACKBONE ...]
                         The currently supported options: ['otx', 'mmcls', 'mmdet', 'mmseg', 'torchvision', 'pytorchcv', 'omz.mmcls'].
 ```
+
 Example to find ready-to-use templates for the detection task:
 
 ```bash
@@ -111,6 +112,7 @@ Example to find ready-to-use templates for the detection task:
 | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
 +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 ```
+
 Example to find supported torchvision backbones for the detection task:
 
 ```bash
@@ -170,7 +172,9 @@ For example, the following command line will create an object detection `Custom_
 (otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 ```
-If train dataset root  and validation dataset root are the same - pass the same path to both options. For example, you have standart COCO format for object detection:
+
+If the train dataset root and validation dataset root are the same - pass the same path to both options. For example, you have a standart COCO format for object detection:
+
 ```
 coco_data_root
   |---- annotations
@@ -184,11 +188,12 @@ coco_data_root
       |---- 000.jpg
       ....
 ```
+
 Then pass the path to `coco_data_root` to both root options: `--train-data-roots coco_data_root --val-data-roots coco_data_root`. However, if you store your training set and validation separately - provide paths to both accordingly.
 
-OTX supports also auto-split functionality. If you don't have prepared validation set - Datumaro manager will run random auto-split and will save final dataset to `splitted_dataset` folder inside otx workspace folder. This split can be further used for training.
+OTX supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to `splitted_dataset` folder inside the otx workspace folder. This split can be further used for training.
 
-> **_Note:_** Not all of the tasks suport auto-split feature. If the task isn't supported - unexpected behaviour or errors may appears. Please, refer to [simple auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) documentation.
+> **_Note:_** Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to [simple auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) documentation.
 
 ### Training
 
@@ -199,7 +204,7 @@ OTX supports also auto-split functionality. If you don't have prepared validatio
 
 The results will be saved in `./model` folder by default. The output folder can be modified by `--save-model-to` option. These files can be used by other commands: `export`, `eval`, `demo`, etc.
 
-`otx train` receives `template` as a positional argument. `template` can be a path to the specific `template.yaml` file, template name or template ID.  Also, the path to train and val data root should be passed to the CLI to start training.
+`otx train` receives `template` as a positional argument. `template` can be a path to the specific `template.yaml` file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.
 
 However, if you created a workspace with `otx build`, the training process can be started (in the workspace directory) just with `otx train` command without any additional options. OTX will fetch everything else automatically.
 
@@ -246,13 +251,15 @@ optional arguments:
   --data DATA           The data.yaml path want to use in train task.
 
 ```
+
 Example of the command line to start object detection training:
+
 ```bash
 (otx) ...$ otx train SSD  --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 ```
 
-It is also possible to start training by ommiting template and just passing the paths to dataset roots, then the [auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) will be enabled. Based on the dataset OTX will choose task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the [auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) will be enabled. Based on the dataset OTX will choose the task type and template with the best accuracy/speed trade-off.
 
 We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
@@ -261,7 +268,7 @@ We also can modify model template-specific parameters through the command line. 
 
 ```
 
-For example, that is how we can change the learning rate and the batch size for SSD model:
+For example, that is how we can change the learning rate and the batch size for the SSD model:
 
 ```bash
 (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
@@ -343,6 +350,7 @@ Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:
 ```bash
 (otx) ...$ otx optimize SSD --load-weights <path/to/openvino.xml> --val-data-roots <path/to/val/root> --save-model-to outputs/pot
 ```
+
 Thus, to use POT pass the path to exported IR model, to use NNCF pass the path to the PyTorch .pth weights.
 
 ### Evaluation
@@ -414,13 +422,14 @@ Command example of the demonstration:
 ```bash
 (otx) ...$ otx demo SSD --input INPUT --load-weights <path/to/openvino.xml> --display-perf --delay 1000
 ```
-Input can be a folder with images, a single image, webcam ID or a video.
+
+Input can be a folder with images, a single image, a webcam ID or a video.
 
 > **_Note:_** The inference results with a model will be displayed to the GUI window with a 1-second interval. If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
 
 ### Deployment
 
-`otx deploy` creates `openvino.zip` with a self-contained python package, a demo application, and an exported model. As follows from the zip archive name, the deploy can be used only with the OpenVINO™ IR model.
+`otx deploy` creates `openvino.zip` with a self-contained python package, a demo application, and an exported model. As follows from the zip archive name, the `deploy` can be used only with the OpenVINO™ IR model.
 
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 
@@ -439,9 +448,9 @@ optional arguments:
   --save-model-to SAVE_MODEL_TO
                         Location where openvino.zip will be stored.
 ```
+
 Command example:
 
 ```bash
 (otx) ...$ otx deploy Custom_Object_Detection_Gen3_SSD --load-weights <path/to/openvino.xml> --save-model-to outputs/deploy
 ```
-
