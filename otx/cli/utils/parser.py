@@ -111,25 +111,36 @@ def gen_param_help(hyper_parameters: Dict) -> Dict:
 def gen_params_dict_from_args(args, type_hint: Optional[dict] = None) -> Dict[str, dict]:
     """Generates hyper parameters dict from parsed command line arguments."""
 
+    def _get_leaf_node(curr_dict: Dict[str, dict], curr_key: str):
+        split_key = curr_key.split(".")
+        node_key = split_key[0]
+
+        if len(split_key) == 1:
+            # It is leaf node
+            return curr_dict, node_key
+
+        # Dive deeper
+        curr_key = ".".join(split_key[1:])
+        if node_key not in curr_dict:
+            curr_dict[node_key] = {}
+        return _get_leaf_node(curr_dict[node_key], curr_key)
+
+    _prefix = "params."
     params_dict: Dict[str, dict] = {}
     for param_name in dir(args):
-        if not param_name.startswith("params."):
+        value = getattr(args, param_name)
+
+        if not param_name.startswith(_prefix) or value is None:
             continue
 
+        # param_name.removeprefix(_prefix)
+        origin_key = param_name[len(_prefix) :]
         value_type = None
-        cur_dict = params_dict
-        split_param_name = param_name.split(".")[1:]
-        if type_hint:
-            origin_key = ".".join(split_param_name)
-            value_type = type_hint[origin_key].get("type", None)
-        for i, k in enumerate(split_param_name):
-            if k not in cur_dict:
-                cur_dict[k] = {}
-            if i < len(split_param_name) - 1:
-                cur_dict = cur_dict[k]
-            else:
-                value = getattr(args, param_name)
-                cur_dict[k] = {"value": value_type(value) if value_type else value}
+        if type_hint is not None:
+            value_type = type_hint.get(origin_key, {}).get("type", None)
+
+        leaf_node_dict, node_key = _get_leaf_node(params_dict, origin_key)
+        leaf_node_dict[node_key] = {"value": value_type(value) if value_type else value}
 
     return params_dict
 

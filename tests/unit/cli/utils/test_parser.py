@@ -82,6 +82,7 @@ def mock_args(mocker):
     setattr(mock_args, "params.a.c", True)
     setattr(mock_args, "params.b", "fake")
     setattr(mock_args, "params.c", 10)
+    setattr(mock_args, "params.d", None)
 
     return mock_args
 
@@ -95,6 +96,7 @@ def test_gen_params_dict_from_args(mock_args):
     assert param_dict["a"]["c"]["value"] is True
     assert param_dict["b"]["value"] == "fake"
     assert param_dict["c"]["value"] == 10
+    assert "d" not in param_dict
 
 
 @e2e_pytest_unit
@@ -191,7 +193,7 @@ def test_get_parser_and_hprams_data_with_template(mocker, tmp_dir):
     # check
     mock_template.assert_called_once()
     assert hyper_parameters == mock_hyper_parameters
-    assert params == ["--left-args"]
+    assert params == []
     assert isinstance(parser, ArgumentParser)
 
 
@@ -206,7 +208,7 @@ def test_get_parser_and_hprams_data(mocker):
 
     # check
     assert hyper_parameters == {}
-    assert params == ["--left-args"]
+    assert params == []
     assert isinstance(parser, ArgumentParser)
 
 

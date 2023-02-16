@@ -627,9 +627,17 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
             return max(num_workers)
 
-        _, world_size = get_dist_info()
-        mem_cache_size = self.hyperparams.algo_backend.mem_cache_size // world_size
+        def _get_mem_cache_size():
+            if not hasattr(self.hyperparams, "algo_backend"):
+                return 0
+            if not hasattr(self.hyperparams.algo_backend, "mem_cache_size"):
+                return 0
+
+            _, world_size = get_dist_info()
+            return self.hyperparams.algo_backend.mem_cache_size // world_size
+
         max_num_workers = _find_max_num_workers(data_cfg)
+        mem_cache_size = _get_mem_cache_size()
 
         mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
         caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)

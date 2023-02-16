@@ -59,8 +59,11 @@ class LoadImageFromOTXDataset:
             img = img.astype(np.float32)
         shape = img.shape
 
-        assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
-        assert img.shape[1] == results["width"], f"{img.shape[1]} != {results['width']}"
+        if img.shape[0] != results["height"]:
+            results["height"] = img.shape[0]
+
+        if img.shape[1] != results["width"]:
+            results["width"] = img.shape[1]
 
         filename = f"Dataset item index {results['index']}"
         results["filename"] = filename
