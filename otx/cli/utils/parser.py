@@ -16,10 +16,11 @@
 
 import argparse
 import sys
+from argparse import RawTextHelpFormatter
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.model_template import ModelTemplate, parse_model_template
 from otx.cli.registry import find_and_parse_model_template
 
 
@@ -170,31 +171,23 @@ def get_parser_and_hprams_data():
 
     template = parsed.template
     hyper_parameters = {}
-    parser = argparse.ArgumentParser()
-    if is_template(template):
-        template_config = find_and_parse_model_template(template)
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    template_config = find_and_parse_model_template(template)
+    template_help_str = (
+        "Enter the path or ID or name of the template file. \n"
+        "This can be omitted if you have train-data-roots or run inside a workspace."
+    )
+
+    if isinstance(template_config, ModelTemplate):
+        sys.argv[sys.argv.index(template)] = template_config.model_template_path
         hyper_parameters = template_config.hyper_parameters.data
-        parser.add_argument("template")
+        parser.add_argument("template", help=template_help_str)
     elif Path("./template.yaml").exists():
         # Workspace Environments
         template_config = parse_model_template("./template.yaml")
         hyper_parameters = template_config.hyper_parameters.data
-        parser.add_argument("--template", required=False, default="./template.yaml")
+        parser.add_argument("template", nargs="?", default="./template.yaml", help=template_help_str)
     else:
-        parser.add_argument("--template", required=False)
+        parser.add_argument("template", nargs="?", default=None, help=template_help_str)
 
     return parser, hyper_parameters, params
-
-
-def is_template(template_path: Optional[str]) -> bool:
-    """A function that determines whether the corresponding template path is a template.
-
-    Args:
-        template_path (str): The path of the file you want to know if it is a template.
-
-    Returns:
-        bool: True if template_path is template file else False.
-    """
-    if template_path and Path(template_path).is_file() and "template" in Path(template_path).name:
-        return True
-    return False
