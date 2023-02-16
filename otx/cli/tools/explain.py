@@ -71,6 +71,11 @@ def get_args():
         default=0.5,
         help="weight of the saliency map when overlaying the saliency map",
     )
+    parser.add_argument(
+        "--work-dir",
+        help="Location where the intermediate output of the task will be stored.",
+        default=None,
+    )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
 
@@ -82,7 +87,7 @@ def main():
 
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, mode="eval")
+    config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="eval")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -121,12 +126,13 @@ def main():
 
     image_files = get_image_files(args.explain_data_roots)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)
-    explained_dataset = task.explain(
-        dataset_to_explain.with_empty_annotations(),
-        InferenceParameters(
+    explain_parameters = InferenceParameters(
             is_evaluation=False,
             explainer=args.explain_algorithm,
-        ),
+        )
+    explained_dataset = task.explain(
+        dataset_to_explain.with_empty_annotations(),
+        explain_parameters,
     )
 
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
@@ -134,6 +140,7 @@ def main():
             saliency_data = metadata.data
             fname = f"{Path(Path(filename).name).stem[0]}_{saliency_data.name}".replace(" ", "_")
             save_saliency_output(
+                process_saliency_maps=explain_parameters.process_saliency_maps,
                 img=explained_data.numpy,
                 saliency_map=saliency_data.numpy,
                 save_dir=args.save_explanation_to,

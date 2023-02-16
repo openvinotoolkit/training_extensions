@@ -26,6 +26,7 @@ from otx.api.entities.model import ModelEntity
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.scored_label import ScoredLabel
 from otx.api.utils.vis_utils import get_actmap
 
 
@@ -198,7 +199,9 @@ def add_saliency_maps_to_dataset_item(
     model: Optional[ModelEntity],
     labels: List[LabelEntity],
     task: str = "",
-    predicted_scene: AnnotationSceneEntity = None,
+    predicted_scored_labels: Optional[List[ScoredLabel]] = None,
+    explain_predicted_classes: bool = True,
+    process_saliency_maps: bool = False,
 ):
     """Add saliency maps(2d for class-ignore saliency map, 3d for class-wise saliency maps) to a single dataset item.
 
@@ -206,28 +209,45 @@ def add_saliency_maps_to_dataset_item(
     """
     if saliency_map.ndim == 2:
         # Single saliency map per image, support e.g. EigenCAM use case
-        actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+        if process_saliency_maps:
+            saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
         saliency_media = ResultMediaEntity(
             name="Saliency Map",
             type="saliency_map",
             annotation_scene=dataset_item.annotation_scene,
-            numpy=actmap,
+            numpy=saliency_map,
             roi=dataset_item.roi,
         )
         dataset_item.append_metadata_item(saliency_media, model=model)
     elif saliency_map.ndim == 3:
         # Multiple saliency maps per image (class-wise saliency map)
         # If predicted_scene is provided, add saliency map with only predicted classes(used for openvino task)
-        predicted_labels = set()
-        if predicted_scene is not None:
-            if task == "cls" and len(predicted_scene.annotations) > 0:
-                predicted_labels = set(
-                    scored_label.label for scored_label in predicted_scene.annotations[0].get_labels()
-                )
-            elif task == "det":
-                for bbox in predicted_scene.annotations:
-                    scored_label = bbox.get_labels()[0]
-                    predicted_labels.add(scored_label.label)
+
+
+        # predicted_labels = set()
+        # if predicted_scene is not None:
+        #     if task == "cls" and len(predicted_scene.annotations) > 0:
+        #         predicted_labels = set(
+        #             scored_label.label for scored_label in predicted_scene.annotations[0].get_labels()
+        #         )
+        #     elif task == "det":
+        #         for bbox in predicted_scene.annotations:
+        #             scored_label = bbox.get_labels()[0]
+        #             predicted_labels.add(scored_label.label)
+
+
+
+        # if explain_predicted_classes and predicted_scored_labels is None:
+        #     raise ValueError("To explain only predictions, list of predicted scored labels have to be provided.")
+
+        # if predicted_scored_labels is None:
+        #     predicted_scored_labels = []
+        # predicted_label_set = set()
+        # if explain_predicted_classes:
+        #     if task == "cls":
+        #         for scored_label in predicted_scored_labels:
+        #             if scored_label.label is not None:  # Check for an empty label
+        #                 predicted_label_set.add(scored_label.label)
 
         if task == "det":
             num_saliency_maps = saliency_map.shape[0]
@@ -235,19 +255,40 @@ def add_saliency_maps_to_dataset_item(
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
+
+        if explain_predicted_classes:
+            # Explain only predicted classes
+            if predicted_scored_labels is None:
+                raise ValueError("To explain only predictions, list of predicted scored labels have to be provided.")
+
+            explain_targets = set()
+            if task == "cls":
+                for scored_label in predicted_scored_labels:
+                    if scored_label.label is not None:  # Check for an empty label
+                        explain_targets.add(scored_label.label)
+        else:
+            # Explain all classes
+            explain_targets = set(labels)
+
+
         for class_id, class_wise_saliency_map in enumerate(saliency_map):
             label = labels[class_id]
-            if predicted_scene is not None and label not in predicted_labels:
-                continue
-            class_wise_act_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
-            saliency_media = ResultMediaEntity(
-                name=label.name,
-                type="saliency_map",
-                annotation_scene=dataset_item.annotation_scene,
-                numpy=class_wise_act_map,
-                roi=dataset_item.roi,
-                label=label,
-            )
-            dataset_item.append_metadata_item(saliency_media, model=model)
+
+            # if explain_predicted_classes and label not in predicted_label_set:
+            # # if predicted_scene is not None and label not in predicted_labels:
+            #     continue
+
+            if label in explain_targets:
+                if process_saliency_maps:
+                    class_wise_saliency_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+                saliency_media = ResultMediaEntity(
+                    name=label.name,
+                    type="saliency_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=class_wise_saliency_map,
+                    roi=dataset_item.roi,
+                    label=label,
+                )
+                dataset_item.append_metadata_item(saliency_media, model=model)
     else:
         raise RuntimeError(f"Single saliency map has to be 2 or 3-dimensional, but got {saliency_map.ndim} dims")

@@ -403,13 +403,20 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
             if add_saliency_map and saliency_map is not None:
+                predicted_scored_labels = []
+                for bbox in predicted_scene.annotations:
+                    scored_label = bbox.get_labels()[0]
+                    predicted_scored_labels.append(scored_label)
                 add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
                     model=self.model,
                     labels=self.task_environment.get_labels(),
                     task="det",
-                    predicted_scene=predicted_scene,
+                    # predicted_scene=predicted_scene,
+                    predicted_scored_labels=predicted_scored_labels,
+                    explain_predicted_classes=inference_parameters.explain_predicted_classes,
+                    process_saliency_maps=inference_parameters.process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100), None)
         logger.info("OpenVINO inference completed")

@@ -227,6 +227,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, probs, saliency_map, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
+            item_labels = predicted_scene.annotations[0].get_labels()
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
             active_score_media = FloatMetadata(name="active_score", value=act_score, float_type=FloatType.ACTIVE_SCORE)
             dataset_item.append_metadata_item(active_score_media, model=self.model)
@@ -243,7 +244,9 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                     model=self.model,
                     labels=self.task_environment.get_labels(),
                     task="cls",
-                    predicted_scene=predicted_scene,
+                    predicted_scored_labels=item_labels,
+                    explain_predicted_classes=inference_parameters.explain_predicted_classes,
+                    process_saliency_maps=inference_parameters.process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
@@ -262,14 +265,17 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, _, saliency_map, _, _ = self.inferencer.predict(dataset_item.numpy)
+            item_labels = predicted_scene.annotations[0].get_labels()
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=saliency_map,
+                saliency_map=np.copy(saliency_map),
                 model=self.model,
                 labels=self.task_environment.get_labels(),
                 task="cls",
-                predicted_scene=predicted_scene,
+                predicted_scored_labels=item_labels,
+                explain_predicted_classes=explain_parameters.explain_predicted_classes,
+                process_saliency_maps=explain_parameters.process_saliency_maps,
             )
             update_progress_callback(int(i / dataset_size * 100))
         return dataset

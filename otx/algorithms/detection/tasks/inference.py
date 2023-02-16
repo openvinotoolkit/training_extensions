@@ -117,7 +117,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info(f"Confidence threshold {self.confidence_threshold}")
 
         prediction_results, _ = self._infer_detector(dataset, inference_parameters)
-        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
+        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold,
+                                         inference_parameters.process_saliency_maps,
+                                         inference_parameters.explain_predicted_classes)
         logger.info("Inference completed")
         return dataset
 
@@ -353,7 +355,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             stage_module = module_prefix[self._train_type] + stage_module
         return stage_module
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
+    def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0,
+                                    process_saliency_maps=False, explain_predicted_classes=True):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             width = dataset_item.width
@@ -383,6 +386,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     model=self._task_environment.model,
                     labels=self._labels,
                     task="det",
+                    predicted_scored_labels=item_labels,
+                    explain_predicted_classes=explain_predicted_classes,
+                    process_saliency_maps=process_saliency_maps,
                 )
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
