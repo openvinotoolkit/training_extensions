@@ -1,12 +1,10 @@
 import argparse
-import pytest
 from pathlib import Path
 
+import pytest
+
 from otx.cli.tools import deploy as target_package
-from otx.cli.tools.deploy import (
-    get_args,
-    main
-)
+from otx.cli.tools.deploy import get_args, main
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -14,25 +12,30 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 def test_get_args(mocker):
     mocker.patch("sys.argv", ["otx", "--load-weights", "load_weights", "--save-model-to", "save_model_to"])
     mocker.patch.object(
-        target_package, "get_parser_and_hprams_data", return_value=[argparse.ArgumentParser(), "fake", "fake"])
+        target_package, "get_parser_and_hprams_data", return_value=[argparse.ArgumentParser(), "fake", "fake"]
+    )
 
     parsed_args = get_args()
 
     assert parsed_args.load_weights == "load_weights"
     assert parsed_args.save_model_to == "save_model_to"
 
+
 @pytest.fixture
 def mock_args(mocker, tmp_dir):
     mock_args = mocker.MagicMock()
     mock_args.load_weights = "fake.bin"
     mock_args.save_model_to = tmp_dir
+
     def mock_contains(self, val):
         return val in self.__dict__
+
     mock_args.__contains__ = mock_contains
     mock_get_args = mocker.patch("otx.cli.tools.deploy.get_args")
     mock_get_args.return_value = mock_args
 
     return mock_args
+
 
 @pytest.fixture
 def mock_task(mocker):
@@ -43,6 +46,7 @@ def mock_task(mocker):
 
     return mock_task
 
+
 @pytest.fixture
 def mock_config_manager(mocker):
     mock_config_manager = mocker.patch.object(target_package, "ConfigManager")
@@ -51,6 +55,7 @@ def mock_config_manager(mocker):
     mock_config_manager.return_value.template = mock_template
 
     return mock_config_manager
+
 
 @e2e_pytest_unit
 def test_main(mocker, mock_args, mock_task, mock_config_manager, tmp_dir):
@@ -74,6 +79,7 @@ def test_main(mocker, mock_args, mock_task, mock_config_manager, tmp_dir):
         val = f.readline()
         assert val == "exportable_code"
 
+
 @e2e_pytest_unit
 def test_main_wrong_workspace(mock_args, mock_config_manager):
     mock_args.load_weights = ""
@@ -81,6 +87,7 @@ def test_main_wrong_workspace(mock_args, mock_config_manager):
 
     with pytest.raises(RuntimeError):
         main()
+
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("load_weights", ["fake.jpg", "fake.png"])
