@@ -37,11 +37,13 @@ class TestCustomMultiLabelLinearClsHead:
         result = self.default_head.simple_test(self.default_input)
         assert result[0].shape[0] == self.num_classes
 
+    @e2e_pytest_unit
     def test_angular(self, head_type) -> None:
         head = head_type(self.num_classes, self.head_dim, loss=self.loss, normalized=True)
         result = head.simple_test(self.default_input)
         assert result[0].shape[0] == self.num_classes
 
+    @e2e_pytest_unit
     def test_neg_classes(self, head_type) -> None:
         with pytest.raises(ValueError):
             head_type(-1, self.head_dim, loss=self.loss, normalized=True)
