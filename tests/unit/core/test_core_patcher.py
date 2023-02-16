@@ -43,164 +43,232 @@ class TestPatcher:
 
         def test_instance():
             patcher = Patcher()
-            ctr = Counter()
             mock_class = MockClass()
 
+            ctr = Counter()
             patcher.patch(mock_class.method, dummy_wrapper)
             patcher.patch(mock_class.method, dummy_wrapper)
-            mock_class.method(ctr=ctr)
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.method(ctr=ctr)
             assert ctr == 1
             patcher.unpatch(mock_class.method)
             assert len(patcher._patched) == 0
 
+            ctr = Counter()
             patcher.patch(mock_class.method, dummy_wrapper)
             patcher.patch(mock_class.method, dummy_wrapper, force=False)
-            mock_class.method(ctr=ctr)
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 2
-            assert ctr == 3
+            mock_class.method(ctr=ctr)
+            assert ctr == 2
             patcher.unpatch(mock_class.method, 1)
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.method(ctr=ctr)
+            assert ctr == 3
 
+            ctr = Counter()
             patcher.patch(mock_class.method, dummy_wrapper, force=False)
             patcher.patch(mock_class.method, dummy_wrapper, force=False)
-            assert len(list(patcher._patched.values())[-1]) == 3
-            patcher.unpatch(mock_class.method, 2)
-            assert len(list(patcher._patched.values())[-1]) == 1
+            patcher.patch(mock_class.method, dummy_wrapper, force=False)
+            patcher.patch(mock_class.method, dummy_wrapper, force=False)
+            assert len(list(patcher._patched.values())[-1]) == 5
+            mock_class.method(ctr=ctr)
+            assert ctr == 5
+            patcher.unpatch(mock_class.method, 3)
+            assert len(list(patcher._patched.values())[-1]) == 2
+            mock_class.method(ctr=ctr)
+            assert ctr == 7
 
+            ctr = Counter()
             patcher.patch(mock_class.static_method, dummy_wrapper)
-            mock_class.static_method(ctr=ctr)
+            patcher.patch(mock_class.static_method, dummy_wrapper)
             assert len(patcher._patched) == 2
             assert len(list(patcher._patched.values())[-1]) == 1
-            assert ctr == 4
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 1
             patcher.unpatch(mock_class.static_method)
             assert len(patcher._patched) == 1
 
+            ctr = Counter()
             patcher.patch(mock_class.static_method, dummy_wrapper)
             patcher.patch(mock_class.static_method, dummy_wrapper, force=False)
-            mock_class.static_method(ctr=ctr)
             assert len(patcher._patched) == 2
             assert len(list(patcher._patched.values())[-1]) == 2
-            assert ctr == 6
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 2
             patcher.unpatch(mock_class.static_method, 1)
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 3
 
+            ctr = Counter()
             patcher.patch(mock_class.static_method, dummy_wrapper, force=False)
             patcher.patch(mock_class.static_method, dummy_wrapper, force=False)
-            assert len(list(patcher._patched.values())[-1]) == 3
-            patcher.unpatch(mock_class.static_method, 2)
-            assert len(list(patcher._patched.values())[-1]) == 1
+            patcher.patch(mock_class.static_method, dummy_wrapper, force=False)
+            patcher.patch(mock_class.static_method, dummy_wrapper, force=False)
+            assert len(list(patcher._patched.values())[-1]) == 5
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 5
+            patcher.unpatch(mock_class.static_method, 3)
+            assert len(list(patcher._patched.values())[-1]) == 2
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 7
 
+            ctr = Counter()
             patcher.patch(mock_class.class_method, dummy_wrapper)
-            mock_class.class_method(ctr=ctr)
+            patcher.patch(mock_class.class_method, dummy_wrapper)
             assert len(patcher._patched) == 3
             assert len(list(patcher._patched.values())[-1]) == 1
-            assert ctr == 7
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 1
             patcher.unpatch(mock_class.class_method)
             assert len(patcher._patched) == 2
 
+            ctr = Counter()
             patcher.patch(mock_class.class_method, dummy_wrapper)
             patcher.patch(mock_class.class_method, dummy_wrapper, force=False)
-            mock_class.class_method(ctr=ctr)
             assert len(patcher._patched) == 3
             assert len(list(patcher._patched.values())[-1]) == 2
-            assert ctr == 9
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 2
             patcher.unpatch(mock_class.class_method, 1)
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 3
 
+            ctr = Counter()
             patcher.patch(mock_class.class_method, dummy_wrapper, force=False)
             patcher.patch(mock_class.class_method, dummy_wrapper, force=False)
-            assert len(list(patcher._patched.values())[-1]) == 3
-            patcher.unpatch(mock_class.class_method, 2)
-            assert len(list(patcher._patched.values())[-1]) == 1
+            patcher.patch(mock_class.class_method, dummy_wrapper, force=False)
+            patcher.patch(mock_class.class_method, dummy_wrapper, force=False)
+            assert len(list(patcher._patched.values())[-1]) == 5
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 5
+            patcher.unpatch(mock_class.class_method, 3)
+            assert len(list(patcher._patched.values())[-1]) == 2
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 7
 
             patcher.unpatch()
             assert len(patcher._patched) == 0
 
         def test_class():
             patcher = Patcher()
-            ctr = Counter()
             mock_class = MockClass()
 
+            ctr = Counter()
             patcher.patch(MockClass.method, dummy_wrapper)
             patcher.patch(MockClass.method, dummy_wrapper)
-            mock_class.method(ctr=ctr)
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.method(ctr=ctr)
             assert ctr == 1
             patcher.unpatch(MockClass.method)
             assert len(patcher._patched) == 0
 
+            ctr = Counter()
             patcher.patch(MockClass.method, dummy_wrapper)
             patcher.patch(MockClass.method, dummy_wrapper, force=False)
-            mock_class.method(ctr=ctr)
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 2
-            assert ctr == 3
+            mock_class.method(ctr=ctr)
+            assert ctr == 2
             patcher.unpatch(MockClass.method, 1)
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.method(ctr=ctr)
+            assert ctr == 3
 
+            ctr = Counter()
             patcher.patch(MockClass.method, dummy_wrapper, force=False)
             patcher.patch(MockClass.method, dummy_wrapper, force=False)
-            assert len(list(patcher._patched.values())[-1]) == 3
-            patcher.unpatch(MockClass.method, 2)
-            assert len(list(patcher._patched.values())[-1]) == 1
+            patcher.patch(MockClass.method, dummy_wrapper, force=False)
+            patcher.patch(MockClass.method, dummy_wrapper, force=False)
+            assert len(list(patcher._patched.values())[-1]) == 5
+            mock_class.method(ctr=ctr)
+            assert ctr == 5
+            patcher.unpatch(MockClass.method, 3)
+            assert len(list(patcher._patched.values())[-1]) == 2
+            mock_class.method(ctr=ctr)
+            assert ctr == 7
 
+            ctr = Counter()
             patcher.patch(MockClass.static_method, dummy_wrapper)
-            mock_class.static_method(ctr=ctr)
+            patcher.patch(MockClass.static_method, dummy_wrapper)
             assert len(patcher._patched) == 2
             assert len(list(patcher._patched.values())[-1]) == 1
-            assert ctr == 4
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 1
             patcher.unpatch(MockClass.static_method)
             assert len(patcher._patched) == 1
 
+            ctr = Counter()
             patcher.patch(MockClass.static_method, dummy_wrapper)
             patcher.patch(MockClass.static_method, dummy_wrapper, force=False)
-            mock_class.static_method(ctr=ctr)
             assert len(patcher._patched) == 2
             assert len(list(patcher._patched.values())[-1]) == 2
-            assert ctr == 6
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 2
             patcher.unpatch(MockClass.static_method, 1)
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 3
 
+            ctr = Counter()
             patcher.patch(MockClass.static_method, dummy_wrapper, force=False)
             patcher.patch(MockClass.static_method, dummy_wrapper, force=False)
-            assert len(list(patcher._patched.values())[-1]) == 3
-            patcher.unpatch(MockClass.static_method, 2)
-            assert len(list(patcher._patched.values())[-1]) == 1
+            patcher.patch(MockClass.static_method, dummy_wrapper, force=False)
+            patcher.patch(MockClass.static_method, dummy_wrapper, force=False)
+            assert len(list(patcher._patched.values())[-1]) == 5
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 5
+            patcher.unpatch(MockClass.static_method, 3)
+            assert len(list(patcher._patched.values())[-1]) == 2
+            mock_class.static_method(ctr=ctr)
+            assert ctr == 7
 
+            ctr = Counter()
             patcher.patch(MockClass.class_method, dummy_wrapper)
-            mock_class.class_method(ctr=ctr)
+            patcher.patch(MockClass.class_method, dummy_wrapper)
             assert len(patcher._patched) == 3
             assert len(list(patcher._patched.values())[-1]) == 1
-            assert ctr == 7
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 1
             patcher.unpatch(MockClass.class_method)
             assert len(patcher._patched) == 2
 
+            ctr = Counter()
             patcher.patch(MockClass.class_method, dummy_wrapper)
             patcher.patch(MockClass.class_method, dummy_wrapper, force=False)
-            mock_class.class_method(ctr=ctr)
             assert len(patcher._patched) == 3
             assert len(list(patcher._patched.values())[-1]) == 2
-            assert ctr == 9
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 2
             patcher.unpatch(MockClass.class_method, 1)
             assert len(list(patcher._patched.values())[-1]) == 1
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 3
 
+            ctr = Counter()
             patcher.patch(MockClass.class_method, dummy_wrapper, force=False)
             patcher.patch(MockClass.class_method, dummy_wrapper, force=False)
-            assert len(list(patcher._patched.values())[-1]) == 3
-            patcher.unpatch(MockClass.class_method, 2)
-            assert len(list(patcher._patched.values())[-1]) == 1
+            patcher.patch(MockClass.class_method, dummy_wrapper, force=False)
+            patcher.patch(MockClass.class_method, dummy_wrapper, force=False)
+            assert len(list(patcher._patched.values())[-1]) == 5
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 5
+            patcher.unpatch(MockClass.class_method, 3)
+            assert len(list(patcher._patched.values())[-1]) == 2
+            mock_class.class_method(ctr=ctr)
+            assert ctr == 7
 
             patcher.unpatch()
             assert len(patcher._patched) == 0
 
         def test_module():
             patcher = Patcher()
+
             ctr = Counter()
-
             patcher.patch(
                 "tests.unit.core.test_core_patcher.mock_function",
                 dummy_wrapper,
@@ -209,15 +277,15 @@ class TestPatcher:
                 "tests.unit.core.test_core_patcher.mock_function",
                 dummy_wrapper,
             )
-            from tests.unit.core.test_core_patcher import mock_function
-
-            mock_function(ctr=ctr)
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 1
+            from tests.unit.core.test_core_patcher import mock_function
+            mock_function(ctr=ctr)
             assert ctr == 1
             patcher.unpatch("tests.unit.core.test_core_patcher.mock_function")
             assert len(patcher._patched) == 0
 
+            ctr = Counter()
             patcher.patch(
                 "tests.unit.core.test_core_patcher.mock_function",
                 dummy_wrapper,
@@ -227,17 +295,52 @@ class TestPatcher:
                 dummy_wrapper,
                 force=False,
             )
-            from tests.unit.core.test_core_patcher import mock_function
-
-            mock_function(ctr=ctr)
-            assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 2
-            assert ctr == 3
+            from tests.unit.core.test_core_patcher import mock_function
+            mock_function(ctr=ctr)
+            assert ctr == 2
             patcher.unpatch(
                 "tests.unit.core.test_core_patcher.mock_function",
                 1,
             )
             assert len(list(patcher._patched.values())[-1]) == 1
+            from tests.unit.core.test_core_patcher import mock_function
+            mock_function(ctr=ctr)
+            assert ctr == 3
+
+            ctr = Counter()
+            patcher.patch(
+                "tests.unit.core.test_core_patcher.mock_function",
+                dummy_wrapper,
+                force=False,
+            )
+            patcher.patch(
+                "tests.unit.core.test_core_patcher.mock_function",
+                dummy_wrapper,
+                force=False,
+            )
+            patcher.patch(
+                "tests.unit.core.test_core_patcher.mock_function",
+                dummy_wrapper,
+                force=False,
+            )
+            patcher.patch(
+                "tests.unit.core.test_core_patcher.mock_function",
+                dummy_wrapper,
+                force=False,
+            )
+            assert len(list(patcher._patched.values())[-1]) == 5
+            from tests.unit.core.test_core_patcher import mock_function
+            mock_function(ctr=ctr)
+            assert ctr == 5
+            patcher.unpatch(
+                "tests.unit.core.test_core_patcher.mock_function",
+                3,
+            )
+            assert len(list(patcher._patched.values())[-1]) == 2
+            from tests.unit.core.test_core_patcher import mock_function
+            mock_function(ctr=ctr)
+            assert ctr == 7
 
             patcher.unpatch()
             assert len(patcher._patched) == 0
