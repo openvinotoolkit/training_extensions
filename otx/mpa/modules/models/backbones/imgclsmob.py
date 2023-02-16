@@ -30,7 +30,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 # import types
 
-
+# TODO: [Jihwan] can be replaced with otx/algorithms/common/adapters/mmcv/models/backbones/torchvision_backbones.py?
 def replace_activation(model, activation_cfg):
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
