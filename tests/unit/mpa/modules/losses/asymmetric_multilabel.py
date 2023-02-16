@@ -2,10 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import pytest
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import AsymmetricLossWithIgnore
-from otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
+import torch
+
+from otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore import (
+    AsymmetricAngularLossWithIgnore,
+)
+from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (
+    AsymmetricLossWithIgnore,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -19,8 +24,8 @@ class TestAsymmetricLoss:
         self.num_classes = 2
         self.default_gt = torch.zeros((2, self.num_classes))
         self.default_input = torch.zeros((2, self.num_classes))
-        self.default_input[0,0] = 1
-        self.default_gt[0,0] = 1
+        self.default_input[0, 0] = 1
+        self.default_gt[0, 0] = 1
         self.default_loss = loss_type(reduction="mean")
 
     @e2e_pytest_unit
@@ -47,14 +52,14 @@ class TestAsymmetricLoss:
     @e2e_pytest_unit
     def test_gamma_neg(self, loss_type) -> None:
         result = self.default_loss(self.default_input, self.default_gt)
-        loss_s = loss_type(gamma_neg=0., reduction="mean")
+        loss_s = loss_type(gamma_neg=0.0, reduction="mean")
         result_s = loss_s(self.default_input, self.default_gt)
         assert result_s > result
 
     @e2e_pytest_unit
     def test_gamma_pos(self, loss_type) -> None:
         result = self.default_loss(self.default_input, self.default_gt)
-        loss_s = loss_type(gamma_pos=1., reduction="mean")
+        loss_s = loss_type(gamma_pos=1.0, reduction="mean")
         result_s = loss_s(self.default_input, self.default_gt)
         assert result_s < result
 

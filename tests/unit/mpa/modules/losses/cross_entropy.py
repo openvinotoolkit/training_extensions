@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import pytest
+import torch
+
 from otx.mpa.modules.models.losses.cross_entropy_loss import CrossEntropyLossWithIgnore
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
@@ -14,7 +15,7 @@ class TestCrossEntropyLossWithIgnore:
         self.num_classes = 2
         self.default_gt = torch.zeros(2).long()
         self.default_input = torch.zeros((2, self.num_classes))
-        self.default_input[0,0] = 1
+        self.default_input[0, 0] = 1
         self.default_loss = CrossEntropyLossWithIgnore()
 
     @e2e_pytest_unit

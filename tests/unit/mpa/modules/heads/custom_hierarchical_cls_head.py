@@ -2,12 +2,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import pytest
+import torch
+
+from otx.mpa.modules.models.heads.custom_hierarchical_linear_cls_head import (
+    CustomHierarchicalLinearClsHead,
+)
+from otx.mpa.modules.models.heads.custom_hierarchical_non_linear_cls_head import (
+    CustomHierarchicalNonLinearClsHead,
+)
+
 # pylint: disable=unused-import
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import AsymmetricLossWithIgnore
-from otx.mpa.modules.models.heads.custom_hierarchical_linear_cls_head import CustomHierarchicalLinearClsHead
-from otx.mpa.modules.models.heads.custom_hierarchical_non_linear_cls_head import CustomHierarchicalNonLinearClsHead
+from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (  # noqa: F401
+    AsymmetricLossWithIgnore,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -23,13 +31,18 @@ class TestCustomHierarchicalLinearClsHead:
         self.cls_heads_info = {
             "num_multiclass_heads": 1,
             "num_multilabel_classes": 1,
-            "head_idx_to_logits_range": {0:(0,2)},
+            "head_idx_to_logits_range": {0: (0, 2)},
             "num_single_label_classes": 2,
         }
         self.loss = dict(type="CrossEntropyLoss", use_sigmoid=False, reduction="mean", loss_weight=1.0)
         self.multilabel_loss = dict(type="AsymmetricLossWithIgnore", reduction="sum")
-        self.default_head = head_type(self.num_classes, self.head_dim, hierarchical_info=self.cls_heads_info,
-                                      loss=self.loss, multilabel_loss=self.multilabel_loss)
+        self.default_head = head_type(
+            self.num_classes,
+            self.head_dim,
+            hierarchical_info=self.cls_heads_info,
+            loss=self.loss,
+            multilabel_loss=self.multilabel_loss,
+        )
         self.default_head.init_weights()
         self.default_input = torch.ones((2, self.head_dim))
         self.default_gt = torch.zeros((2, 2))
@@ -49,14 +62,24 @@ class TestCustomHierarchicalLinearClsHead:
         self.cls_heads_info["num_multiclass_heads"] = 0
         self.cls_heads_info["num_multilabel_classes"] = 0
         with pytest.raises(ValueError):
-            head_type(self.num_classes, self.head_dim, hierarchical_info=self.cls_heads_info,
-                      loss=self.loss, multilabel_loss=self.multilabel_loss)
+            head_type(
+                self.num_classes,
+                self.head_dim,
+                hierarchical_info=self.cls_heads_info,
+                loss=self.loss,
+                multilabel_loss=self.multilabel_loss,
+            )
 
     @e2e_pytest_unit
     def test_neg_classes(self, head_type) -> None:
         with pytest.raises(ValueError):
-            head_type(-1, self.head_dim, hierarchical_info=self.cls_heads_info,
-                      loss=self.loss, multilabel_loss=self.multilabel_loss)
+            head_type(
+                -1,
+                self.head_dim,
+                hierarchical_info=self.cls_heads_info,
+                loss=self.loss,
+                multilabel_loss=self.multilabel_loss,
+            )
 
 
 class TestCustomHierarchicalNonLinearClsHead(TestCustomHierarchicalLinearClsHead):

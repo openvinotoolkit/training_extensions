@@ -34,7 +34,7 @@ class NonLinearClsHead(ClsHead):
         topk=(1,),
         dropout=False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         topk = (1,) if num_classes < 5 else (1, 5)
         super(NonLinearClsHead, self).__init__(loss=loss, topk=topk, *args, **kwargs)

@@ -2,12 +2,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import pytest
+import torch
+
+from otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head import (
+    CustomMultiLabelLinearClsHead,
+)
+from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import (
+    CustomMultiLabelNonLinearClsHead,
+)
+
 # pylint: disable=unused-import
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import AsymmetricLossWithIgnore
-from otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head import CustomMultiLabelLinearClsHead
-from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import CustomMultiLabelNonLinearClsHead
+from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (  # noqa: F401
+    AsymmetricLossWithIgnore,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

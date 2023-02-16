@@ -2,9 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import pytest
-from otx.mpa.modules.models.heads.custom_cls_head import CustomLinearClsHead, CustomNonLinearClsHead
+import torch
+
+from otx.mpa.modules.models.heads.custom_cls_head import (
+    CustomLinearClsHead,
+    CustomNonLinearClsHead,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
