@@ -1,7 +1,7 @@
 """Test helpers for MPA."""
 import torch
 import torch.nn as nn
-import numpy as np
+
 
 def generate_random_torch_image(batch=1, width=3, height=3, channels=3, channel_last=False):
     """Generate random torch tensor image.
@@ -25,10 +25,9 @@ def generate_random_torch_image(batch=1, width=3, height=3, channels=3, channel_
 
 def generate_toy_cnn_model(in_channels=3, mid_channels=3, out_channels=3):
     return nn.Sequential(
-        nn.Conv2d(in_channels, mid_channels, (1,1)),
-        nn.BatchNorm2d(mid_channels),
-        nn.AdaptiveAvgPool2d((1,1))
+        nn.Conv2d(in_channels, mid_channels, (1, 1)), nn.BatchNorm2d(mid_channels), nn.AdaptiveAvgPool2d((1, 1))
     )
+
 
 def generate_toy_head(in_features, out_features):
     return nn.Linear(in_features, out_features)
