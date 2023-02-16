@@ -46,7 +46,7 @@ from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain
+from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.model import (
     ModelEntity,
     ModelFormat,
@@ -138,8 +138,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             update_progress_callback = default_progress_callback
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        explain_results = self._explain_detector(dataset, explain_parameters)
-        self._add_explanations_to_dataset(explain_results, dataset)
+        detections, explain_results = self._explain_detector(dataset, explain_parameters)
+        self._add_explanations_to_dataset(detections, explain_results, dataset,
+                                          explain_parameters.process_saliency_maps,
+                                          explain_parameters.explain_predicted_classes
+                                          )
         logger.info("Explain completed")
         return dataset
 
@@ -204,8 +207,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             dataset=dataset,
             explainer=explain_parameters.explainer if explain_parameters else None,
         )
+        detections = results["outputs"]["detections"]
         explain_results = results["outputs"]["saliency_maps"]
-        return explain_results
+        return detections, explain_results
 
     @check_input_parameters_type()
     def evaluate(
@@ -355,24 +359,23 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             stage_module = module_prefix[self._train_type] + stage_module
         return stage_module
 
+    def _get_shapes(self, all_results, width, height, confidence_threshold):
+        if self._task_type == TaskType.DETECTION:
+            shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+        elif self._task_type in {
+            TaskType.INSTANCE_SEGMENTATION,
+            TaskType.ROTATED_DETECTION,
+        }:
+            shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+        else:
+            raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
+        return shapes
+
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0,
                                     process_saliency_maps=False, explain_predicted_classes=True):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
-            width = dataset_item.width
-            height = dataset_item.height
-
-            shapes = []
-            if self._task_type == TaskType.DETECTION:
-                shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-            elif self._task_type in {
-                TaskType.INSTANCE_SEGMENTATION,
-                TaskType.ROTATED_DETECTION,
-            }:
-                shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-            else:
-                raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
-
+            shapes = self._get_shapes(all_results, dataset_item.width, dataset_item.height, confidence_threshold)
             dataset_item.append_annotations(shapes)
 
             if feature_vector is not None:
@@ -380,13 +383,21 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
+                labels = list(self._labels)
+                if saliency_map.shape[0] == len(self._labels) + 1:
+                    # Include the background as the last category
+                    labels.append(LabelEntity("background", Domain.DETECTION))
+
+                predicted_scored_labels = []
+                for shape in shapes:
+                    predicted_scored_labels += shape.get_labels()
+
                 add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
                     model=self._task_environment.model,
-                    labels=self._labels,
-                    task="det",
-                    predicted_scored_labels=item_labels,
+                    labels=labels,
+                    predicted_scored_labels=predicted_scored_labels,
                     explain_predicted_classes=explain_predicted_classes,
                     process_saliency_maps=process_saliency_maps,
                 )
@@ -442,15 +453,23 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
-    def _add_explanations_to_dataset(self, explain_results, dataset):
+    def _add_explanations_to_dataset(self, detections, explain_results, dataset,
+                                     process_saliency_maps, explain_predicted_classes):
         """Add saliency map to the dataset."""
-        for dataset_item, saliency_map in zip(dataset, explain_results):
+        for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
+            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4)
+            predicted_scored_labels = []
+            for shape in shapes:
+                predicted_scored_labels += shape.get_labels()
+
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
                 model=self._task_environment.model,
                 labels=self._labels,
-                task="det",
+                predicted_scored_labels=predicted_scored_labels,
+                explain_predicted_classes=explain_predicted_classes,
+                process_saliency_maps=process_saliency_maps,
             )
 
     @staticmethod

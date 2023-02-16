@@ -28,6 +28,9 @@ class InferenceParameters:
             about the progress of a task.
         explainer: Explain algorithm to be used in explanation mode.
             Will be converted automatically to lowercase.
+        process_saliency_maps: Process saliency map to input image resolution and apply colormap
+        explain_predicted_classes: If set to True, provide explanations only for predicted classes.
+            Otherwise, explain all classes.
     """
 
     is_evaluation: bool = False

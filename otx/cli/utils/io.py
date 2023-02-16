@@ -208,6 +208,7 @@ def save_saliency_output(
 ) -> None:
     """Saves processed saliency map (with image overlay) or raw saliency map."""
     if process_saliency_maps:
+        # Saves processed saliency map
         overlay = img * weight + saliency_map * (1 - weight)
         overlay[overlay > 255] = 255
         overlay = overlay.astype(np.uint8)

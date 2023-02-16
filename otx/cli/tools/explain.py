@@ -138,7 +138,7 @@ def main():
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
         for metadata in explained_data.get_metadata():
             saliency_data = metadata.data
-            fname = f"{Path(Path(filename).name).stem[0]}_{saliency_data.name}".replace(" ", "_")
+            fname = f"{Path(Path(filename).name).stem}_{saliency_data.name}".replace(" ", "_")
             save_saliency_output(
                 process_saliency_maps=explain_parameters.process_saliency_maps,
                 img=explained_data.numpy,

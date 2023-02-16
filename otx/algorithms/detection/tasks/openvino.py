@@ -44,6 +44,7 @@ from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
+from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import (
     ModelEntity,
@@ -403,17 +404,20 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
             if add_saliency_map and saliency_map is not None:
+                labels = list(self.task_environment.get_labels())
+                if saliency_map.shape[0] == len(labels) + 1:
+                    # Include the background as the last category
+                    labels.append(LabelEntity("background", Domain.DETECTION))
+
                 predicted_scored_labels = []
                 for bbox in predicted_scene.annotations:
-                    scored_label = bbox.get_labels()[0]
-                    predicted_scored_labels.append(scored_label)
+                    predicted_scored_labels += bbox.get_labels()
+
                 add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
                     model=self.model,
                     labels=self.task_environment.get_labels(),
-                    task="det",
-                    # predicted_scene=predicted_scene,
                     predicted_scored_labels=predicted_scored_labels,
                     explain_predicted_classes=inference_parameters.explain_predicted_classes,
                     process_saliency_maps=inference_parameters.process_saliency_maps,
@@ -440,14 +444,19 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100), None)
             _, saliency_map = features
-            labels = self.task_environment.get_labels()
+
+            predicted_scored_labels = []
+            for bbox in predicted_scene.annotations:
+                predicted_scored_labels += bbox.get_labels()
+
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=saliency_map,
+                saliency_map=np.copy(saliency_map),
                 model=self.model,
-                labels=labels,
-                task="det",
-                predicted_scene=predicted_scene,
+                labels=self.task_environment.get_labels(),
+                predicted_scored_labels=predicted_scored_labels,
+                explain_predicted_classes=explain_parameters.explain_predicted_classes,
+                process_saliency_maps=explain_parameters.process_saliency_maps,
             )
         logger.info("OpenVINO explain completed")
         return dataset

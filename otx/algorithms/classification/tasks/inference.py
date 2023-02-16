@@ -169,13 +169,13 @@ class ClassificationInferenceTask(
             explainer=explain_parameters.explainer if explain_parameters else None,
         )
         logger.debug(f"result of run_task {stage_module} module = {results}")
-        saliency_maps = results["outputs"]["saliency_maps"]
         predictions = results["outputs"]["eval_predictions"]
+        saliency_maps = results["outputs"]["saliency_maps"]
         update_progress_callback = default_progress_callback
         if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress  # type: ignore
 
-        self._add_saliency_maps_to_dataset(predictions, saliency_maps, dataset, update_progress_callback,
+        self._add_explanations_to_dataset(predictions, saliency_maps, dataset, update_progress_callback,
                                            explain_parameters.process_saliency_maps,
                                            explain_parameters.explain_predicted_classes)
         return dataset
@@ -311,14 +311,13 @@ class ClassificationInferenceTask(
                     saliency_map=saliency_map,
                     model=self._task_environment.model,
                     labels=self._labels,
-                    task="cls",
                     predicted_scored_labels=item_labels,
                     explain_predicted_classes=explain_predicted_classes,
                     process_saliency_maps=process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100))
 
-    def _add_saliency_maps_to_dataset(self, predictions, saliency_maps, dataset, update_progress_callback,
+    def _add_explanations_to_dataset(self, predictions, saliency_maps, dataset, update_progress_callback,
                                       process_saliency_maps, explain_predicted_classes):
         """Loop over dataset again and assign saliency maps."""
         dataset_size = len(dataset)
@@ -329,8 +328,6 @@ class ClassificationInferenceTask(
                 saliency_map=saliency_map,
                 model=self._task_environment.model,
                 labels=self._labels,
-                task="cls",
-
                 predicted_scored_labels=item_labels,
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,
