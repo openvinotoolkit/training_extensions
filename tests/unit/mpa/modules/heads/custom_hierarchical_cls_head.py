@@ -11,9 +11,7 @@ from otx.mpa.modules.models.heads.custom_hierarchical_linear_cls_head import (
 from otx.mpa.modules.models.heads.custom_hierarchical_non_linear_cls_head import (
     CustomHierarchicalNonLinearClsHead,
 )
-
-# pylint: disable=unused-import
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (  # noqa: F401
+from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (
     AsymmetricLossWithIgnore,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -35,7 +33,7 @@ class TestCustomHierarchicalLinearClsHead:
             "num_single_label_classes": 2,
         }
         self.loss = dict(type="CrossEntropyLoss", use_sigmoid=False, reduction="mean", loss_weight=1.0)
-        self.multilabel_loss = dict(type="AsymmetricLossWithIgnore", reduction="sum")
+        self.multilabel_loss = dict(type=AsymmetricLossWithIgnore.__name__, reduction="sum")
         self.default_head = head_type(
             self.num_classes,
             self.head_dim,

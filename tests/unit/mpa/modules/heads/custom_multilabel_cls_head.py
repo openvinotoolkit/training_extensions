@@ -11,9 +11,7 @@ from otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head import (
 from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import (
     CustomMultiLabelNonLinearClsHead,
 )
-
-# pylint: disable=unused-import
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (  # noqa: F401
+from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (
     AsymmetricLossWithIgnore,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -28,7 +26,7 @@ class TestCustomMultiLabelLinearClsHead:
     def setup(self, head_type) -> None:
         self.num_classes = 2
         self.head_dim = 5
-        self.loss = dict(type="AsymmetricLossWithIgnore", reduction="sum")
+        self.loss = dict(type=AsymmetricLossWithIgnore.__name__, reduction="sum")
         self.default_head = head_type(self.num_classes, self.head_dim, loss=self.loss)
         self.default_head.init_weights()
         self.default_input = torch.ones((2, self.head_dim))
