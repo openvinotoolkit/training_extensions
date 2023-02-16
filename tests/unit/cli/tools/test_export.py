@@ -1,12 +1,10 @@
-import pytest
 import argparse
 from pathlib import Path
 
+import pytest
+
 from otx.cli.tools import export as target_package
-from otx.cli.tools.export import (
-    get_args,
-    main
-)
+from otx.cli.tools.export import get_args, main
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -14,7 +12,8 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 def test_get_args(mocker):
     mocker.patch("sys.argv", ["otx", "--load-weights", "load_weights", "--save-model-to", "save_model_to"])
     mocker.patch.object(
-        target_package, "get_parser_and_hprams_data", return_value=[argparse.ArgumentParser(), "fake", "fake"])
+        target_package, "get_parser_and_hprams_data", return_value=[argparse.ArgumentParser(), "fake", "fake"]
+    )
 
     parsed_args = get_args()
 
@@ -65,8 +64,10 @@ def test_main(mocker, mock_args, mock_task, mock_config_manager, tmp_dir):
     mocker.patch.object(target_package, "TaskEnvironment")
     mocker.patch.object(target_package, "read_label_schema")
     mocker.patch.object(target_package, "read_binary")
+
     def mock_export_side_effect(export_type, output_model):
         output_model.set_data("fake.xml", b"fake")
+
     mock_task.export.side_effect = mock_export_side_effect
     tmp_dir = Path(tmp_dir)
 
