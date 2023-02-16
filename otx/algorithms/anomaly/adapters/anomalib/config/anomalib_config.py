@@ -42,8 +42,12 @@ def get_anomalib_config(task_name: str, otx_config: ConfigurableParameters) -> U
     anomalib_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
     # TODO: remove this hard coding of the config location
     if anomalib_config.model.name == "draem":
-        anomalib_config.dataset.transform_config.train = "external/anomaly/configs/draem/transform_config.yaml"
-        anomalib_config.dataset.transform_config.val = "external/anomaly/configs/draem/transform_config.yaml"
+        anomalib_config.dataset.transform_config.train = (
+            f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
+        )
+        anomalib_config.dataset.transform_config.val = (
+            f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
+        )
     else:
         anomalib_config.dataset.transform_config.train = None
         anomalib_config.dataset.transform_config.val = None

@@ -89,7 +89,7 @@ class OTXClassification(Classification):
         return layer_name
 
     @check_input_parameters_type()
-    def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):  # pylint: disable=unused-argument
+    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
         """Post-process."""
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
