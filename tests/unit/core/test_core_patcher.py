@@ -280,6 +280,7 @@ class TestPatcher:
             assert len(patcher._patched) == 1
             assert len(list(patcher._patched.values())[-1]) == 1
             from tests.unit.core.test_core_patcher import mock_function
+
             mock_function(ctr=ctr)
             assert ctr == 1
             patcher.unpatch("tests.unit.core.test_core_patcher.mock_function")
@@ -297,6 +298,7 @@ class TestPatcher:
             )
             assert len(list(patcher._patched.values())[-1]) == 2
             from tests.unit.core.test_core_patcher import mock_function
+
             mock_function(ctr=ctr)
             assert ctr == 2
             patcher.unpatch(
@@ -305,6 +307,7 @@ class TestPatcher:
             )
             assert len(list(patcher._patched.values())[-1]) == 1
             from tests.unit.core.test_core_patcher import mock_function
+
             mock_function(ctr=ctr)
             assert ctr == 3
 
@@ -331,6 +334,7 @@ class TestPatcher:
             )
             assert len(list(patcher._patched.values())[-1]) == 5
             from tests.unit.core.test_core_patcher import mock_function
+
             mock_function(ctr=ctr)
             assert ctr == 5
             patcher.unpatch(
@@ -339,6 +343,7 @@ class TestPatcher:
             )
             assert len(list(patcher._patched.values())[-1]) == 2
             from tests.unit.core.test_core_patcher import mock_function
+
             mock_function(ctr=ctr)
             assert ctr == 7
 
