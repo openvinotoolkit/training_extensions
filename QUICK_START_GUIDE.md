@@ -37,7 +37,7 @@ Current version of OTX was tested under following environments
    Install pytorch according to your system environment.
    Refer to the [official inatllation guide](https://pytorch.org/get-started/previous-versions/)
 
-   > **_Important note:_** Currently, only torch==1.3.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
+   > **_Important note:_** Currently, only torch==1.13.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
 
    ```bash
    # Example install command for torch==1.13.1+cu116

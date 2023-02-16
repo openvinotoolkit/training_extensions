@@ -46,7 +46,7 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("operation", choices=[x[4:] for x in __all__])
+    parser.add_argument("operation", choices=[x[4:] for x in __all__], type=str)
 
     return parser.parse_known_args()[0]
 
