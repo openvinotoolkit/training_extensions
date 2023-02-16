@@ -55,7 +55,7 @@ class TestBlurSegmentation:
         self.blur.blur_strength = 2
         fake_output = {"output": np.ones((2, 3, 4))}
         fake_metadata = {"original_shape": (2, 3, 4)}
-        returned_value = self.blur.postprocess(outputs=fake_output, metadata=fake_metadata)
+        returned_value = self.blur.postprocess(outputs=fake_output, meta=fake_metadata)
 
         assert type(returned_value).__module__ == np.__name__
         assert fake_metadata["feature_vector"] is None
