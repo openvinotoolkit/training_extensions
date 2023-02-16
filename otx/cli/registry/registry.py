@@ -17,6 +17,8 @@
 import copy
 import glob
 import os
+from pathlib import Path
+from typing import Optional
 
 import yaml
 
@@ -111,7 +113,21 @@ def find_and_parse_model_template(path_or_id):
         return path_or_id
 
     # 1. Find from path
-    if os.path.exists(path_or_id):
+    if is_template(path_or_id):
         return parse_model_template(path_or_id)
     # 2. Find from id or Name
     return Registry(get_otx_root_path()).get(path_or_id, skip_error=True)
+
+
+def is_template(template_path: Optional[str]) -> bool:
+    """A function that determines whether the corresponding template path is a template.
+
+    Args:
+        template_path (str): The path of the file you want to know if it is a template.
+
+    Returns:
+        bool: True if template_path is template file else False.
+    """
+    if template_path and Path(template_path).is_file() and "template" in Path(template_path).name:
+        return True
+    return False

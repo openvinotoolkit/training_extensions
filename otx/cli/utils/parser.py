@@ -191,17 +191,3 @@ def get_parser_and_hprams_data():
         parser.add_argument("template", nargs="?", default=None, help=template_help_str)
 
     return parser, hyper_parameters, params
-
-
-def is_template(template_path: Optional[str]) -> bool:
-    """A function that determines whether the corresponding template path is a template.
-
-    Args:
-        template_path (str): The path of the file you want to know if it is a template.
-
-    Returns:
-        bool: True if template_path is template file else False.
-    """
-    if template_path and Path(template_path).is_file() and "template" in Path(template_path).name:
-        return True
-    return False
