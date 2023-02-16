@@ -309,13 +309,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         type_hint = gen_param_help(hyper_parameters)
         updated_hyper_parameters = gen_params_dict_from_args(self.args, type_hint=type_hint)
         override_parameters(updated_hyper_parameters, hyper_parameters)
-
-        # (vinnamki) I added this line because these lines above looks like
-        # it parses out of the arguments, but I'm wondering if this is working.
-        hyper_parameters = create(hyper_parameters)
-        hyper_parameters.algo_backend.mem_cache_size = self.args.mem_cache_size
-
-        return hyper_parameters
+        return create(hyper_parameters)
 
     def get_dataset_config(self, subsets: List[str]) -> dict:
         """Returns dataset_config in a format suitable for each subset.

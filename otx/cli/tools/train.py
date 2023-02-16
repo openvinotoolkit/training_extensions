@@ -115,6 +115,7 @@ def get_args():
     parser.add_argument(
         "--mem-cache-size",
         action=MemSizeAction,
+        dest="params.algo_backend.mem_cache_size",
         type=str,
         required=False,
         default=0,

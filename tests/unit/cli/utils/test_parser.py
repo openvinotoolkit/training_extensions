@@ -215,6 +215,7 @@ def fxt_argparse():
     parser = ArgumentParser()
     parser.add_argument(
         "--mem-cache-size",
+        dest="params.algo_backend.mem_cache_size",
         action=MemSizeAction,
         type=str,
         required=False,
@@ -243,6 +244,6 @@ def fxt_argparse():
 def test_mem_size_parsing(fxt_argparse, mem_size_arg, expected):
     try:
         args = fxt_argparse.parse_args(["--mem-cache-size", mem_size_arg])
-        assert args.mem_cache_size == expected
+        assert getattr(args, "params.algo_backend.mem_cache_size") == expected
     except ValueError:
         assert expected is None
