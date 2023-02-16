@@ -384,7 +384,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
             if saliency_map is not None:
                 labels = list(self._labels)
-                if saliency_map.shape[0] == len(self._labels) + 1:
+                if saliency_map.shape[0] == len(labels) + 1:
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
 
