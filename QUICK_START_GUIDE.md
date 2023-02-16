@@ -71,7 +71,7 @@ Current version of OTX was tested under following environments
 
 ```bash
 # Install development prerequisite
-python -m pip install requirements/dev.txt
+python -m pip install -r requirements/dev.txt
 
 # Run tests
 tox -e pre-merge
