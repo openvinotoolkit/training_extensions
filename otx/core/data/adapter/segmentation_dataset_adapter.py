@@ -87,7 +87,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         # Remove background if in label_entities
         is_removed = self._remove_labels(["background"])
 
-        # Shift label id because datumaro always extract bg polygon with label 0
+        # Shift label id since datumaro always extracts bg polygon with label 0
         if is_removed is False:
             self.updated_label_id = {k + 1: v for k, v in self.updated_label_id.items()}
 
