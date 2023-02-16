@@ -146,6 +146,10 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
         self._manager.shutdown()
 
 
+class MemCacheHandlerError(Exception):
+    """Exception class for MemCacheHandler."""
+
+
 class MemCacheHandlerSingleton:
     """A singleton class to create, delete and get MemCacheHandlerBase."""
 
@@ -159,7 +163,7 @@ class MemCacheHandlerSingleton:
         """
         if not hasattr(cls, "instance"):
             cls_name = cls.__class__.__name__
-            raise RuntimeError(f"Before calling {cls_name}.get(), you should call {cls_name}.create() first.")
+            raise MemCacheHandlerError(f"Before calling {cls_name}.get(), you should call {cls_name}.create() first.")
 
         return cls.instance
 
@@ -181,7 +185,7 @@ class MemCacheHandlerSingleton:
         elif mode == "singleprocessing":
             cls.instance = MemCacheHandlerForSP(mem_size)
         else:
-            raise ValueError(f"{mode} is unknown mode.")
+            raise MemCacheHandlerError(f"{mode} is unknown mode.")
 
         return cls.instance
 

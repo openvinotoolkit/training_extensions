@@ -10,7 +10,7 @@ import numpy as np
 from otx.algorithms.common.utils.data import get_image
 from otx.api.utils.argument_checks import check_input_parameters_type
 
-from ..caching import MemCacheHandlerSingleton
+from ..caching import MemCacheHandlerError, MemCacheHandlerSingleton
 
 _CACHE_DIR = TemporaryDirectory(prefix="img-cache-")  # pylint: disable=consider-using-with
 
@@ -33,7 +33,12 @@ class LoadImageFromOTXDataset:
     @check_input_parameters_type()
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
-        self.mem_cache_handler = MemCacheHandlerSingleton.get()
+        try:
+            self.mem_cache_handler = MemCacheHandlerSingleton.get()
+        except MemCacheHandlerError:
+            # Create a dummy handler
+            MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=0)
+            self.mem_cache_handler = MemCacheHandlerSingleton.get()
 
     @staticmethod
     def _get_unique_key(results: Dict[str, Any]) -> Tuple:
