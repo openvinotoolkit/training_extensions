@@ -81,7 +81,7 @@ class BlurSegmentation(SegmentationModel):
         return layer_name
 
     @check_input_parameters_type()
-    def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):
         """BlurSegmentation.postprocess function."""
         predictions = outputs[self.output_blob_name].squeeze()
         soft_prediction = np.transpose(predictions, axes=(1, 2, 0))
@@ -90,17 +90,17 @@ class BlurSegmentation(SegmentationModel):
             soft_prediction=soft_prediction, soft_threshold=self.soft_threshold, blur_strength=self.blur_strength
         )
         hard_prediction = cv2.resize(
-            hard_prediction, metadata["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
+            hard_prediction, meta["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
         )
         soft_prediction = cv2.resize(
-            soft_prediction, metadata["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
+            soft_prediction, meta["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
         )
-        metadata["soft_prediction"] = soft_prediction
+        meta["soft_prediction"] = soft_prediction
 
         if "feature_vector" not in outputs:
             warnings.warn("Could not find Feature Vector in OpenVINO output. Please rerun export or retrain the model.")
-            metadata["feature_vector"] = None
+            meta["feature_vector"] = None
         else:
-            metadata["feature_vector"] = outputs["feature_vector"].reshape(-1)
+            meta["feature_vector"] = outputs["feature_vector"].reshape(-1)
 
         return hard_prediction
