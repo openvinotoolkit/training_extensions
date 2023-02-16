@@ -5,7 +5,7 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.transforms import MasksToPolygons
@@ -34,33 +34,30 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         unlabeled_data_roots: Optional[str] = None,
     ):
         super().__init__(task_type, train_data_roots, val_data_roots, test_data_roots, unlabeled_data_roots)
-        self.ignored_label = None
+        self.updated_label_id: Dict[int, int]
 
-    def remove_background_label(self):
+    def remove_labels(self, label_names: List):
         """Remove background label in label entity set."""
-        remove_bg = False
+        new_label_entities = []
         for i, entity in enumerate(self.label_entities):
-            if entity.name == "background":
-                del self.label_entities[i]
-                remove_bg = True
-                break
+            if entity.name not in label_names:
+                new_label_entities.append(entity)
 
-        if remove_bg is True:
-            for i, entity in enumerate(self.label_entities):
-                entity.id = ID(i)
+        self.label_entities = new_label_entities
+
+        for i, entity in enumerate(self.label_entities):
+            self.updated_label_id[int(entity.id)] = i
+            entity.id = ID(i)
 
     def set_voc_labels(self):
         """Set labels for common_semantic_segmentation dataset."""
         # Remove background & ignored label in VOC from datumaro
-        self.remove_background_label()
-        for entity in self.label_entities:
-            if entity.name == "ignored":
-                self.ignored_label = int(entity.id)
+        self.remove_labels(["background", "ignored"])
 
     def set_common_labels(self):
         """Set labels for common_semantic_segmentation dataset."""
         # Remove background if in label_entities
-        self.remove_background_label()
+        self.remove_labels(["background"])
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
@@ -86,11 +83,15 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                             # TODO: consider case -> didn't include the background information
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
-                                if d_polygon.label not in (0, self.ignored_label):
-                                    d_polygon.label -= 1
-                                    shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
-                                    if d_polygon.label not in used_labels:
-                                        used_labels.append(d_polygon.label)
+                                new_label = self.updated_label_id.get(d_polygon.label, None)
+                                if new_label:
+                                    d_polygon.label = new_label
+                                else:
+                                    continue
+
+                                shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
+                                if d_polygon.label not in used_labels:
+                                    used_labels.append(d_polygon.label)
 
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
