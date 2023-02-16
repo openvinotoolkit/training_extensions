@@ -21,7 +21,7 @@ import os
 import yaml
 
 from otx.api.entities.model_template import parse_model_template
-from otx.cli.utils.importing import get_backbone_list
+from otx.cli.utils.importing import get_backbone_list, get_otx_root_path
 
 
 class Registry:
@@ -68,11 +68,15 @@ class Registry:
             templates = [template for template in templates if str(template.task_type).lower() == task_type.lower()]
         return Registry(templates=templates)
 
-    def get(self, template_id):
-        """Returns a model template with specified template_id."""
+    def get(self, template_id, skip_error=False):
+        """Returns a model template with specified template_id or template.name."""
 
-        templates = [template for template in self.templates if template.model_template_id == template_id]
+        templates = [
+            template for template in self.templates if template_id in (template.model_template_id, template.name)
+        ]
         if not templates:
+            if skip_error:
+                return None
             raise ValueError(f"Could not find a template with {template_id} in registry.")
         return templates[0]
 
@@ -100,9 +104,14 @@ class Registry:
 def find_and_parse_model_template(path_or_id):
     """In first function attempts to read a model template from disk under assumption that a path is passed.
 
-    If the attempt is failed, it tries to find template in registry under assumption that an ID is passed.
+    If the attempt is failed, it tries to find template in registry under assumption that an ID or name is passed.
     """
+    # Return None Type
+    if not path_or_id:
+        return path_or_id
 
+    # 1. Find from path
     if os.path.exists(path_or_id):
         return parse_model_template(path_or_id)
-    return Registry(".").get(path_or_id)
+    # 2. Find from id or Name
+    return Registry(get_otx_root_path()).get(path_or_id, skip_error=True)
