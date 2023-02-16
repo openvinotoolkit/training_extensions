@@ -1,0 +1,40 @@
+{
+  "image_path": {
+    "1": "test/good/000.png",
+    "2": "test/good/001.png",
+    "3": "test/good/002.png",
+    "4": "test/good/003.png",
+    "5": "test/star/000.png",
+    "6": "test/star/001.png",
+    "7": "test/star/002.png",
+    "8": "test/star/003.png",
+    "9": "test/hexagon/000.png",
+    "10": "test/hexagon/001.png",
+    "11": "test/hexagon/002.png",
+    "12": "test/hexagon/003.png"
+  },
+  "label": {
+    "1": "good",
+    "2": "good",
+    "3": "good",
+    "4": "good",
+    "5": "star",
+    "6": "star",
+    "7": "star",
+    "8": "star",
+    "9": "hexagon",
+    "10": "hexagon",
+    "11": "hexagon",
+    "12": "hexagon"
+  },
+  "mask_path": {
+    "5": "ground_truth/star/000_mask.png",
+    "6": "ground_truth/star/001_mask.png",
+    "7": "ground_truth/star/002_mask.png",
+    "8": "ground_truth/star/003_mask.png",
+    "9": "ground_truth/hexagon/000_mask.png",
+    "10": "ground_truth/hexagon/001_mask.png",
+    "11": "ground_truth/hexagon/002_mask.png",
+    "12": "ground_truth/hexagon/003_mask.png"
+  }
+}
