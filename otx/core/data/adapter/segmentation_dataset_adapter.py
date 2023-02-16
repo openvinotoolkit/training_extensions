@@ -36,35 +36,6 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         super().__init__(task_type, train_data_roots, val_data_roots, test_data_roots, unlabeled_data_roots)
         self.updated_label_id: Dict[int, int] = {}
 
-    def remove_labels(self, label_names: List):
-        """Remove background label in label entity set."""
-        is_removed = False
-        new_label_entities = []
-        for i, entity in enumerate(self.label_entities):
-            if entity.name not in label_names:
-                new_label_entities.append(entity)
-            else:
-                is_removed = True
-
-        for i, entity in enumerate(self.label_entities):
-            self.updated_label_id[int(entity.id)] = i
-            entity.id = ID(i)
-
-        return is_removed
-
-    def set_voc_labels(self):
-        """Set labels for common_semantic_segmentation dataset."""
-        # Remove background & ignored label in VOC from datumaro
-        self.remove_labels(["background", "ignored"])
-
-    def set_common_labels(self):
-        """Set labels for common_semantic_segmentation dataset."""
-        # Remove background if in label_entities
-        is_removed = self.remove_labels(["background"])
-
-        if is_removed is False:
-            self.updated_label_id = {k + 1: v for k, v in self.updated_label_id.items()}
-
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
         # Prepare label information
@@ -105,3 +76,35 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)
+
+    def set_voc_labels(self):
+        """Set labels for common_semantic_segmentation dataset."""
+        # Remove background & ignored label in VOC from datumaro
+        self._remove_labels(["background", "ignored"])
+
+    def set_common_labels(self):
+        """Set labels for common_semantic_segmentation dataset."""
+        # Remove background if in label_entities
+        is_removed = self._remove_labels(["background"])
+
+        # Shift label id because datumaro always extract bg polygon with label 0
+        if is_removed is False:
+            self.updated_label_id = {k + 1: v for k, v in self.updated_label_id.items()}
+
+    def _remove_labels(self, label_names: List):
+        """Remove background label in label entity set."""
+        is_removed = False
+        new_label_entities = []
+        for i, entity in enumerate(self.label_entities):
+            if entity.name not in label_names:
+                new_label_entities.append(entity)
+            else:
+                is_removed = True
+
+        self.label_entities = new_label_entities
+
+        for i, entity in enumerate(self.label_entities):
+            self.updated_label_id[int(entity.id)] = i
+            entity.id = ID(i)
+
+        return is_removed
