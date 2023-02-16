@@ -163,18 +163,20 @@ The results will be saved in `./model` folder by default. It can be modified by 
 
 ```bash
 otx train --help
-usage: otx train [-h] [--template TEMPLATE] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS] [--unlabeled-file-list UNLABELED_FILE_LIST]
+usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]  [--unlabeled-file-list UNLABELED_FILE_LIST]
                  [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
                  [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE] [--data DATA]
-                 {params} ...
+                 {template} {params} ...
 
 positional arguments:
+  {template}            sub-command help
+     TEMPLATE           Path to the "template.yaml" file.
+
   {params}              sub-command help
     params              Hyper parameters defined in template file.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --template TEMPLATE
   --train-data-roots TRAIN_DATA_ROOTS
                         Comma-separated paths to training data folders.
   --val-data-roots VAL_DATA_ROOTS
