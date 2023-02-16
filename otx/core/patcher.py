@@ -59,7 +59,7 @@ class Patcher:
                 depth = len(self._patched[key])
             keep = len(self._patched[key]) - depth
             origin_fn = self._patched[key].pop(-depth)[0]
-            if self._patched[key] and len(self._patched[key]) > keep:
+            while self._patched[key] and len(self._patched[key]) > keep:
                 self._patched[key].pop()
             if not self._patched[key]:
                 self._patched.pop(key)
