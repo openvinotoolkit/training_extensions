@@ -85,7 +85,6 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
             for k in list(state_dict.keys()):
                 v = state_dict.pop(k)
                 if not prefix or k.startswith(prefix):
-                    print(k)
                     k = k.replace(prefix, "", 1)
                     if k.startswith("backbone"):
                         k = k.replace("backbone.", "", 1)
@@ -135,6 +134,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
+
         if backbone_type == "OTXMobileNetV3":
             for k in list(state_dict.keys()):
                 v = state_dict.pop(k)

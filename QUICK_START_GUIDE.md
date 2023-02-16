@@ -79,11 +79,13 @@ pytest tests/unit
 
 ## OTX CLI commands
 
-Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/tutorials/index.html) in our documentation with life-practical examples on specific datasets.
+Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/tutorials/index.html) in our documentation with life-practical examples on specific datasets for each task.
+
+> **_Note:_** To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to [explanation section](https://openvinotoolkit.github.io/training_extensions/explanation/index.html) in the documentation.
 
 ### Find
 
-`find` lists model templates and backbones available for the given task. Specify the task name with `--task` option. Use `--backbone BACKBONE` to find the backbone from supported frameworks.
+`otx find` lists model templates and backbones available for the given task. Specify the task name with `--task` option. Use `--backbone BACKBONE` to find the backbone from supported frameworks.
 
 ```bash
 (otx) ...$ otx find --help
@@ -97,9 +99,9 @@ optional arguments:
   --backbone BACKBONE [BACKBONE ...]
                         The currently supported options: ['otx', 'mmcls', 'mmdet', 'mmseg', 'torchvision', 'pytorchcv', 'omz.mmcls'].
 ```
+Example to find ready-to-use templates for the detection task:
 
 ```bash
-# Example to find templates for the detection task
 (otx) ...$ otx find --task detection
 +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 |    TASK   |                 ID                |  NAME |                                 BASE PATH                                 |
@@ -109,6 +111,23 @@ optional arguments:
 | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
 +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 ```
+Example to find supported torchvision backbones for the detection task:
+
+```bash
+(otx) ...$ otx find --task detection --backbone torchvision
++-------+--------------------------------+---------------+---------+
+| Index |         Backbone Type          | Required-Args | Options |
++-------+--------------------------------+---------------+---------+
+|   1   |      torchvision.alexnet       |               |         |
+|   2   |      torchvision.resnet18      |               |         |
+|   3   |      torchvision.resnet34      |               |         |
+|   4   |      torchvision.resnet50      |               |         |
+...
+|   33  | torchvision.shufflenet_v2_x1_0 |               |         |
+|   34  | torchvision.shufflenet_v2_x1_5 |               |         |
+|   35  | torchvision.shufflenet_v2_x2_0 |               |         |
++-------+--------------------------------+---------------+---------+
+```
 
 ### Building workspace folder
 
@@ -116,12 +135,16 @@ optional arguments:
 
 ```bash
 (otx) ...$ otx build --help
-usage: otx build [-h] [--template TEMPLATE] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--test-data-roots TEST_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]
+usage: otx build [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--test-data-roots TEST_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]
                  [--unlabeled-file-list UNLABELED_FILE_LIST] [--task TASK] [--train-type TRAIN_TYPE] [--work-dir WORK_DIR] [--model MODEL] [--backbone BACKBONE]
+                 [template]
+
+positional arguments:
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --template TEMPLATE
   --train-data-roots TRAIN_DATA_ROOTS
                         Comma-separated paths to training data folders.
   --val-data-roots VAL_DATA_ROOTS
@@ -132,23 +155,40 @@ optional arguments:
                         Comma-separated paths to unlabeled data folders
   --unlabeled-file-list UNLABELED_FILE_LIST
                         Comma-separated paths to unlabeled file list
-  --task TASK           The currently supported options: ('CLASSIFICATION', 'DETECTION', 'INSTANCE_SEGMENTATION', 'SEGMENTATION', 'ACTION_CLASSIFICATION', 'ACTION_DETECTION', 'ANOMALY_CLASSIFICATION',
-                        'ANOMALY_DETECTION', 'ANOMALY_SEGMENTATION').
+  --task TASK           The currently supported options: ('CLASSIFICATION', 'DETECTION', 'INSTANCE_SEGMENTATION', 'SEGMENTATION', 'ACTION_CLASSIFICATION', 'ACTION_DETECTION', 'ANOMALY_CLASSIFICATION', 'ANOMALY_DETECTION', 'ANOMALY_SEGMENTATION').
   --train-type TRAIN_TYPE
                         The currently supported options: dict_keys(['INCREMENTAL', 'SEMISUPERVISED', 'SELFSUPERVISED']).
   --work-dir WORK_DIR   Location where the workspace.
   --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
-  --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'. If there is an already created backbone configuration yaml file, enter the corresponding path.
+  --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'.
+                        If there is an already created backbone configuration yaml file, enter the corresponding path.
 ```
 
-This line will create an object detection `Custom_Object_Detection_Gen3_SSD` model template with ResNet backbone from [mmdetection](https://github.com/open-mmlab/mmdetection):
+For example, the following command line will create an object detection `Custom_Object_Detection_Gen3_ATSS` model template with ResNet backbone from [mmdetection](https://github.com/open-mmlab/mmdetection):
 
 ```bash
-(otx) ...$ otx build --template Custom_Object_Detection_Gen3_SSD --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
+(otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 ```
+If train dataset root  and validation dataset root are the same - pass the same path to both options. For example, you have standart COCO format for object detection:
+```
+coco_data_root
+  |---- annotations
+    |---- instances_train.json
+    |---- instances_val.json
+  |---- images
+    |---- train
+      |---- 000.jpg
+      ....
+  |---- val
+      |---- 000.jpg
+      ....
+```
+Then pass the path to `coco_data_root` to both root options: `--train-data-roots coco_data_root --val-data-roots coco_data_root`. However, if you store your training set and validation separately - provide paths to both accordingly.
 
-> **_Note:_** each task supports different dataset formats. To know more about which formats are supported by each task, refer to [explanation section](https://openvinotoolkit.github.io/training_extensions/explanation/index.html) in the documentation.
+OTX supports also auto-split functionality. If you don't have prepared validation set - Datumaro manager will run random auto-split and will save final dataset to `splitted_dataset` folder inside otx workspace folder. This split can be further used for training.
+
+> **_Note:_** Not all of the tasks suport auto-split feature. If the task isn't supported - unexpected behaviour or errors may appears. Please, refer to [simple auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) documentation.
 
 ### Training
 
@@ -157,21 +197,22 @@ This line will create an object detection `Custom_Object_Detection_Gen3_SSD` mod
 - `weights.pth` - a model snapshot
 - `label_schema.json` - a label schema used in training, created from a dataset
 
-The results will be saved in `./model` folder by default. It can be modified by `--save-model-to` option. These files can be used by other commands: `export`, `eval`, `demo`, etc.
+The results will be saved in `./model` folder by default. The output folder can be modified by `--save-model-to` option. These files can be used by other commands: `export`, `eval`, `demo`, etc.
 
-`otx train` receives `template` as a positional argument. Also, the path to train and val data root should be passed to the CLI to start training. The template name could be taken from the output of the `find` command above.
+`otx train` receives `template` as a positional argument. `template` can be a path to the specific `template.yaml` file, template name or template ID.  Also, the path to train and val data root should be passed to the CLI to start training.
+
+However, if you created a workspace with `otx build`, the training process can be started (in the workspace directory) just with `otx train` command without any additional options. OTX will fetch everything else automatically.
 
 ```bash
 otx train --help
-usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]  [--unlabeled-file-list UNLABELED_FILE_LIST]
+usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS] [--unlabeled-file-list UNLABELED_FILE_LIST]
                  [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
                  [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE] [--data DATA]
-                 {template} {params} ...
+                 [template] {params} ...
 
 positional arguments:
-  {template}            sub-command help
-     TEMPLATE           Path to the "template.yaml" file.
-
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
   {params}              sub-command help
     params              Hyper parameters defined in template file.
 
@@ -195,7 +236,7 @@ optional arguments:
   --enable-hpo          Execute hyper parameters optimization (HPO) before training.
   --hpo-time-ratio HPO_TIME_RATIO
                         Expected ratio of total time to run HPO to time taken for full fine-tuning.
-  --gpus GPUS           Comma-separated indices of GPU. If there are more than one available GPU, then model is trained with multi GPUs.
+  --gpus GPUS           Comma-separated indices of GPU.               If there are more than one available GPU, then model is trained with multi GPUs.
   --rdzv-endpoint RDZV_ENDPOINT
                         Rendezvous endpoint for multi-node training.
   --base-rank BASE_RANK
@@ -205,31 +246,26 @@ optional arguments:
   --data DATA           The data.yaml path want to use in train task.
 
 ```
-
-It is also possible to start training by just passing the path to dataset roots, then the auto-configuration will be enabled. If you created a workspace with `otx build`, the training process can be started (in the workspace directory) just with `otx train` command without any additional options.
-
+Example of the command line to start object detection training:
 ```bash
-# example of the command line to start object detection training
-(otx) ...$ otx train --template Custom_Object_Detection_Gen3_SSD  --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
+(otx) ...$ otx train SSD  --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 ```
 
-We also can modify model template-specific parameters through the command line, to print all the available parameters the following command can be executed:
+It is also possible to start training by ommiting template and just passing the paths to dataset roots, then the [auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) will be enabled. Based on the dataset OTX will choose task type and template with the best accuracy/speed trade-off.
+
+We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
 ```bash
-(otx) ...$ otx train <path/to/template.yaml> params --help
-# example for the object detection Custom_Object_Detection_Gen3_SSD template
-(otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml params --help
+(otx) ...$ otx train TEMPLATE params --help
 
 ```
 
-For example, that is how we can change the learning rate and the batch size:
+For example, that is how we can change the learning rate and the batch size for SSD model:
 
 ```bash
-(otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
+(otx) ...$ otx train SSD --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
 ```
-
-As can be noticed to run training is also possible with `otx train <path/to/template.yaml> ...` command instead of explicitly calling `--template <template_name> ...`.
 
 ### Exporting
 
@@ -239,11 +275,14 @@ With the `--help` command, you can list additional information, such as its para
 
 ```bash
 (otx) ...$ otx export --help
-usage: otx export [-h] [--template TEMPLATE] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO]
+usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [template]
+
+positional arguments:
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --template TEMPLATE
   --load-weights LOAD_WEIGHTS
                         Load model weights from previously saved checkpoint.
   --save-model-to SAVE_MODEL_TO
@@ -253,7 +292,7 @@ optional arguments:
 The command below performs exporting to the `outputs/openvino` path.
 
 ````bash
-(otx) ...$ otx export --template Custom_Object_Detection_Gen3_SSD --load-weights <path/to/weights.pth> --save-model-to outputs/openvino
+(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --save-model-to outputs/openvino
 ...
 
 The command results in `openvino.xml`, `openvino.bin` and `label_schema.json`
@@ -268,18 +307,18 @@ The command results in `openvino.xml`, `openvino.bin` and `label_schema.json`
 With the `--help` command, you can list additional information:
 
 ```bash
-(otx) ...$ otx optimize --help
-usage: otx optimize [-h] [--template TEMPLATE] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO]
-                    [--save-performance SAVE_PERFORMANCE] [--work-dir WORK_DIR]
-                    {params} ...
+usage: otx optimize [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [--save-performance SAVE_PERFORMANCE]
+                    [--work-dir WORK_DIR]
+                    [template] {params} ...
 
 positional arguments:
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
   {params}              sub-command help
     params              Hyper parameters defined in template file.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --template TEMPLATE
   --train-data-roots TRAIN_DATA_ROOTS
                         Comma-separated paths to training data folders.
   --val-data-roots VAL_DATA_ROOTS
@@ -296,14 +335,15 @@ optional arguments:
 Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
 
 ```bash
-(otx) ...$ otx optimize --template Custom_Object_Detection_Gen3_SSD --load-weights <path/to/weights.pth> --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> --save-model-to outputs/nncf
+(otx) ...$ otx optimize SSD --load-weights <path/to/trained/weights.pth> --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> --save-model-to outputs/nncf
 ```
 
 Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:
 
 ```bash
-(otx) ...$ otx optimize --template Custom_Object_Detection_Gen3_SSD --load-weights <path/to/openvino.xml> --val-data-roots <path/to/val/root> --save-model-to outputs/pot
+(otx) ...$ otx optimize SSD --load-weights <path/to/openvino.xml> --val-data-roots <path/to/val/root> --save-model-to outputs/pot
 ```
+Thus, to use POT pass the path to exported IR model, to use NNCF pass the path to the PyTorch .pth weights.
 
 ### Evaluation
 
@@ -313,15 +353,16 @@ With the `--help` command, you can list additional information, such as its para
 
 ```bash
 (otx) ...$ otx eval --help
-usage: otx eval [-h] [--template TEMPLATE] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-performance SAVE_PERFORMANCE] [--work-dir WORK_DIR] {params} ...
+usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-performance SAVE_PERFORMANCE] [--work-dir WORK_DIR] [template] {params} ...
 
 positional arguments:
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
   {params}              sub-command help
     params              Hyper parameters defined in template file.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --template TEMPLATE
   --test-data-roots TEST_DATA_ROOTS
                         Comma-separated paths to test data folders.
   --load-weights LOAD_WEIGHTS
@@ -333,7 +374,7 @@ optional arguments:
 
 The command below will evaluate the trained model on the provided dataset:
 
-(otx) ...$ otx eval --template Custom_Object_Detection_Gen3_SSD --test-data-roots <path/to/test/root> --load-weights <path/to/model_weghts> --save-performance outputs/performance.json
+(otx) ...$ otx eval Custom_Object_Detection_Gen3_SSD --test-data-roots <path/to/test/root> --load-weights <path/to/model_weghts> --save-performance outputs/performance.json
 
 > **_Note:_** it is possible to pass both PyTorch weights `.pth` or OpenVINO™ IR `openvino.xml` to `--load-weights` option.
 
@@ -347,15 +388,16 @@ The command below will evaluate the trained model on the provided dataset:
 
 ```bash
 (otx) ...$ otx demo --help
-usage: otx demo [-h] [--template TEMPLATE] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] {params} ...
+usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] [template] {params} ...
 
 positional arguments:
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
   {params}              sub-command help
     params              Hyper parameters defined in template file.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --template TEMPLATE
   -i INPUT, --input INPUT
                         Source of input data: images folder, image, webcam and video.
   --load-weights LOAD_WEIGHTS
@@ -364,41 +406,42 @@ optional arguments:
                         Width and Height space-separated values. Fits displayed images to window with specified Width and Height. This options applies to result visualisation only.
   --loop                Enable reading the input in a loop.
   --delay DELAY         Frame visualization time in ms.
-  --display-perf        This option enables writing performance metrics on displayed frame. These metrics take into account not only model inference time, but also frame reading, pre-processing and post-
-                        processing.
+  --display-perf        This option enables writing performance metrics on displayed frame. These metrics take into account not only model inference time, but also frame reading, pre-processing and post-processing.
 ```
 
 Command example of the demonstration:
 
 ```bash
-(otx) ...$ otx demo --template Custom_Object_Detection_Gen3_SSD --input <path/to/data/root> --load-weights <path/to/openvino.xml> --display-perf --delay 1000
+(otx) ...$ otx demo SSD --input INPUT --load-weights <path/to/openvino.xml> --display-perf --delay 1000
 ```
+Input can be a folder with images, a single image, webcam ID or a video.
 
 > **_Note:_** The inference results with a model will be displayed to the GUI window with a 1-second interval. If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
 
 ### Deployment
 
-`otx deploy` creates `openvino.zip` with a self-contained python package, a demo application, and an exported model.
+`otx deploy` creates `openvino.zip` with a self-contained python package, a demo application, and an exported model. As follows from the zip archive name, the deploy can be used only with the OpenVINO™ IR model.
 
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 
 ```bash
 (otx) ...$ otx deploy --help
-usage: otx deploy [-h] [--template TEMPLATE] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO]
+usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [template]
+
+positional arguments:
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --template TEMPLATE
   --load-weights LOAD_WEIGHTS
                         Load model weights from previously saved checkpoint.
   --save-model-to SAVE_MODEL_TO
                         Location where openvino.zip will be stored.
 ```
+Command example:
 
 ```bash
-(otx) ...$ otx deploy --template Custom_Object_Detection_Gen3_SSD -load-weights <path/to/openvino.xml> --save-model-to outputs/deploy
+(otx) ...$ otx deploy Custom_Object_Detection_Gen3_SSD --load-weights <path/to/openvino.xml> --save-model-to outputs/deploy
 ```
 
----
-
-\* Other names and brands may be claimed as the property of others.
