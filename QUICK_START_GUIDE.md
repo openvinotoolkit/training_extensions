@@ -109,6 +109,7 @@ optional arguments:
 | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
 +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 ```
+
 ### Building workspace folder
 
 `otx build` creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for a modifying backbone for the template.
@@ -249,7 +250,7 @@ optional arguments:
 
 The command below performs exporting to the `outputs/openvino` path.
 
-```bash
+````bash
 (otx) ...$ otx export --template Custom_Object_Detection_Gen3_SSD --load-weights <path/to/weights.pth> --save-model-to outputs/openvino
 ...
 
@@ -288,7 +289,7 @@ optional arguments:
   --save-performance SAVE_PERFORMANCE
                         Path to a json file where computed performance will be stored.
   --work-dir WORK_DIR   Location where the intermediate output of the task will be stored.
-```
+````
 
 Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
 
@@ -332,7 +333,7 @@ The command below will evaluate the trained model on the provided dataset:
 
 (otx) ...$ otx eval --template Custom_Object_Detection_Gen3_SSD --test-data-roots <path/to/test/root> --load-weights <path/to/model_weghts> --save-performance outputs/performance.json
 
-> **_Note:_**  it is possible to pass both PyTorch weights `.pth` or OpenVINO™ IR `openvino.xml` to `--load-weights` option.
+> **_Note:_** it is possible to pass both PyTorch weights `.pth` or OpenVINO™ IR `openvino.xml` to `--load-weights` option.
 
 ### Demonstrate
 
@@ -341,7 +342,6 @@ The command below will evaluate the trained model on the provided dataset:
 > **_Note:_** `otx demo` command requires GUI backend to your system for displaying inference results.
 >
 > **_Note:_** Only the OpenVINO™ IR model can be used for the `otx demo` command.
-
 
 ```bash
 (otx) ...$ otx demo --help
