@@ -27,6 +27,8 @@ def generate_toy_cnn_model(in_channels=3, mid_channels=3, out_channels=3):
     return nn.Sequential(
         nn.Conv2d(in_channels, mid_channels, (1,1)),
         nn.BatchNorm2d(mid_channels),
-        nn.AdaptiveAvgPool2d((1,1)),
-        nn.Linear(mid_channels, out_channels)
+        nn.AdaptiveAvgPool2d((1,1))
     )
+
+def generate_toy_head(in_features, out_features):
+    return nn.Linear(in_features, out_features)
