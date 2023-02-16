@@ -56,6 +56,7 @@ class TestCustomHierarchicalLinearClsHead:
         result = self.default_head.simple_test(self.default_input)
         assert result[0].shape[0] == self.num_classes
 
+    @e2e_pytest_unit
     def test_zero_classes(self, head_type) -> None:
         self.cls_heads_info["num_multiclass_heads"] = 0
         self.cls_heads_info["num_multilabel_classes"] = 0
