@@ -124,11 +124,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
 
         if test_data_roots:
-            test_data_candidates = self._detect_dataset_format(path=test_data_roots)
-            test_data_type = self._select_data_type(test_data_candidates)
-            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format=test_data_type)
+            self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
+            self.data_type = self._select_data_type(self.data_type_candidates)
+            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format=self.data_type)
             self.is_train_phase = False
-            self.data_type_candidates = test_data_candidates
 
         if unlabeled_data_roots is not None:
             dataset[Subset.UNLABELED] = DatumaroDataset.import_from(unlabeled_data_roots, format="image_dir")
