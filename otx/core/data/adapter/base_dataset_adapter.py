@@ -202,7 +202,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
     def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
-        return x1 != x2 and y1 != y2
+        return x1 < x2 and y1 < y2
 
     def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
         """Select specific type among candidates.
