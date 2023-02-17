@@ -150,8 +150,9 @@ class ClassificationInferenceTask(
             process_saliency_maps = inference_parameters.process_saliency_maps
             explain_predicted_classes = inference_parameters.explain_predicted_classes
 
-        self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback,
-                                         process_saliency_maps, explain_predicted_classes)
+        self._add_predictions_to_dataset(
+            prediction_results, dataset, update_progress_callback, process_saliency_maps, explain_predicted_classes
+        )
         return dataset
 
     def explain(
@@ -183,8 +184,14 @@ class ClassificationInferenceTask(
             process_saliency_maps = explain_parameters.process_saliency_maps
             explain_predicted_classes = explain_parameters.explain_predicted_classes
 
-        self._add_explanations_to_dataset(predictions, saliency_maps, dataset, update_progress_callback,
-                                           process_saliency_maps, explain_predicted_classes)
+        self._add_explanations_to_dataset(
+            predictions,
+            saliency_maps,
+            dataset,
+            update_progress_callback,
+            process_saliency_maps,
+            explain_predicted_classes,
+        )
         logger.info("Explain completed")
         return dataset
 
@@ -239,6 +246,7 @@ class ClassificationInferenceTask(
         )
         logger.info("Exporting completed")
 
+    # pylint: disable=too-many-locals
     def _get_item_labels(self, prediction_item, pos_thr):
         item_labels = []
 
@@ -262,7 +270,7 @@ class ClassificationInferenceTask(
                 item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
 
             if self._hierarchical_info["num_multilabel_classes"]:
-                head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"]:]
+                head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"] :]
                 for logit_idx, logit in enumerate(head_logits):
                     if logit > pos_thr:  # Assume logits already passed sigmoid
                         label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
@@ -284,8 +292,14 @@ class ClassificationInferenceTask(
         return item_labels
 
     # pylint: disable=too-many-branches, too-many-locals
-    def _add_predictions_to_dataset(self, prediction_results, dataset, update_progress_callback,
-                                    process_saliency_maps=False, explain_predicted_classes=True):
+    def _add_predictions_to_dataset(
+        self,
+        prediction_results,
+        dataset,
+        update_progress_callback,
+        process_saliency_maps=False,
+        explain_predicted_classes=True,
+    ):
         """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
 
         dataset_size = len(dataset)
@@ -325,8 +339,15 @@ class ClassificationInferenceTask(
                 )
             update_progress_callback(int(i / dataset_size * 100))
 
-    def _add_explanations_to_dataset(self, predictions, saliency_maps, dataset, update_progress_callback,
-                                      process_saliency_maps, explain_predicted_classes):
+    def _add_explanations_to_dataset(
+        self,
+        predictions,
+        saliency_maps,
+        dataset,
+        update_progress_callback,
+        process_saliency_maps,
+        explain_predicted_classes,
+    ):
         """Loop over dataset again and assign saliency maps."""
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item, saliency_map) in enumerate(zip(dataset, predictions, saliency_maps)):

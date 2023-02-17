@@ -164,8 +164,5 @@ class DetectionExplainer(DetectionStage):
         if isinstance(dataset, ImageTilingDataset):
             saliency_maps = [saliency_maps[i] for i in range(dataset.num_samples)]
 
-        outputs = dict(
-            detections=eval_predictions,
-            saliency_maps=saliency_maps
-        )
+        outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
         return outputs

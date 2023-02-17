@@ -21,12 +21,12 @@ import numpy as np
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.utils.vis_utils import get_actmap
 
 
@@ -202,8 +202,7 @@ def add_saliency_maps_to_dataset_item(
     explain_predicted_classes: bool = True,
     process_saliency_maps: bool = False,
 ):
-    """Add saliency maps(2d for class-ignore saliency map, 3d for class-wise saliency maps) to a single dataset item.
-    """
+    """Add saliency maps(2d for class-ignore saliency map, 3d for class-wise saliency maps) to a single dataset item."""
     if saliency_map.ndim == 2:
         # Single saliency map per image, support e.g. EigenCAM use case
         if process_saliency_maps:
@@ -235,7 +234,9 @@ def add_saliency_maps_to_dataset_item(
             label = labels[class_id]
             if label in explain_targets:
                 if process_saliency_maps:
-                    class_wise_saliency_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+                    class_wise_saliency_map = get_actmap(
+                        class_wise_saliency_map, (dataset_item.width, dataset_item.height)
+                    )
                 saliency_media = ResultMediaEntity(
                     name=label.name,
                     type="saliency_map",

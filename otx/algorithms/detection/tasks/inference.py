@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 import os
-from typing import Iterable, Optional, Tuple, List
+from typing import Iterable, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -108,7 +108,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         process_saliency_maps = False
         explain_predicted_classes = True
         if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress
+            update_progress_callback = inference_parameters.update_progress  # type: ignore
             process_saliency_maps = inference_parameters.process_saliency_maps
             explain_predicted_classes = inference_parameters.explain_predicted_classes
 
@@ -120,8 +120,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info(f"Confidence threshold {self.confidence_threshold}")
 
         prediction_results, _ = self._infer_detector(dataset, inference_parameters)
-        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold,
-                                         process_saliency_maps, explain_predicted_classes)
+        self._add_predictions_to_dataset(
+            prediction_results, dataset, self.confidence_threshold, process_saliency_maps, explain_predicted_classes
+        )
         logger.info("Inference completed")
         return dataset
 
@@ -138,14 +139,15 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         process_saliency_maps = False
         explain_predicted_classes = True
         if explain_parameters is not None:
-            update_progress_callback = explain_parameters.update_progress
+            update_progress_callback = explain_parameters.update_progress  # type: ignore
             process_saliency_maps = explain_parameters.process_saliency_maps
             explain_predicted_classes = explain_parameters.explain_predicted_classes
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
         detections, explain_results = self._explain_detector(dataset, explain_parameters)
-        self._add_explanations_to_dataset(detections, explain_results, dataset,
-                                          process_saliency_maps, explain_predicted_classes)
+        self._add_explanations_to_dataset(
+            detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
+        )
         logger.info("Explain completed")
         return dataset
 
@@ -374,8 +376,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
         return shapes
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0,
-                                    process_saliency_maps=False, explain_predicted_classes=True):
+    def _add_predictions_to_dataset(
+        self,
+        prediction_results,
+        dataset,
+        confidence_threshold=0.0,
+        process_saliency_maps=False,
+        explain_predicted_classes=True,
+    ):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             shapes = self._get_shapes(all_results, dataset_item.width, dataset_item.height, confidence_threshold)
@@ -386,7 +394,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                labels = list(self._labels)
+                labels = self._labels.copy()
                 if saliency_map.shape[0] == len(labels) + 1:
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
@@ -456,8 +464,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
-    def _add_explanations_to_dataset(self, detections, explain_results, dataset,
-                                     process_saliency_maps, explain_predicted_classes):
+    def _add_explanations_to_dataset(
+        self, detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
+    ):
         """Add saliency map to the dataset."""
         for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
             shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4)
