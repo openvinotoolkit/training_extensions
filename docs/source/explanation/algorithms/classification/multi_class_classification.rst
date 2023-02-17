@@ -60,15 +60,15 @@ Models
 
 We support the following ready-to-use model templates:
 
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFLOPs) | Model size (MB) |
-+==============================================================================================================================================================================================================================+========================+=====================+=================+
-| `Custom_Image_Classification_MobileNet-V3-large-1x <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml>`_             | MobileNet-V3-large-1x  | 0.44                | 4.29            |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Image_Classification_EfficinetNet-B0 <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml>`_                        | EfficientNet-B0        | 0.81                | 4.09            |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Image_Classification_EfficientNet-V2-S <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml>`_                    | EfficientNet-V2-S      | 5.76                | 20.23           |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
+| Template ID                                                                                                                                                                                                  | Name                  | Complexity (GFLOPs) | Model size (MB) |
++==============================================================================================================================================================================================================+=======================+=====================+=================+
+| `Custom_Image_Classification_MobileNet-V3-large-1x <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml>`_ | MobileNet-V3-large-1x | 0.44                | 4.29            |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
+| `Custom_Image_Classification_EfficinetNet-B0 <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml>`_            | EfficientNet-B0       | 0.81                | 4.09            |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
+| `Custom_Image_Classification_EfficientNet-V2-S <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml>`_        | EfficientNet-V2-S     | 5.76                | 20.23           |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
 
 `EfficientNet-V2-S <https://arxiv.org/abs/2104.00298>`_ has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. `MobileNet-V3-large-1x <https://arxiv.org/abs/1905.02244>`_ is the best choice when training time and computational cost are in priority, nevertheless, this template provides competitive accuracy as well.
 `EfficientNet-B0 <https://arxiv.org/abs/1905.11946>`_ consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.
@@ -104,7 +104,27 @@ To be added soon
 Self-supervised Learning
 ************************
 
-To be added soon
+Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
+General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
+However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.
+
+For these cases, OTX provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+We adapted `BYOL <https://arxiv.org/abs/2006.07733>`_ as our self-supervised method.
+Users only need a few more minutes to use these self-supervised learning recipes and can expect improved performance, especially in low-data regimes.
+
+Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
+The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
+In particular, the smaller the data, the greater the performance improvement can be expected.
+
+.. image:: ../../../../utils/images/multi_cls_selfsl_performance_CIFAR10.png
+  :width: 600
+
+.. image:: ../../../../utils/images/multi_cls_selfsl_performance_CIFAR100.png
+  :width: 600
+
+.. image:: ../../../../utils/images/multi_cls_selfsl_performance_Food-101.png
+  :width: 600
+
 
 ********************
 Incremental Learning
