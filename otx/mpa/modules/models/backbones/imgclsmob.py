@@ -30,6 +30,7 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 # import types
 
+
 def replace_activation(model, activation_cfg):
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
