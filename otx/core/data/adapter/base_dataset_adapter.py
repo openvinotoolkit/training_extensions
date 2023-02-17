@@ -152,7 +152,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 return v
             if subset == "test" and "val" in k:
                 return v
-                
+
         raise ValueError("Can't find proper dataset.")
 
     def _detect_dataset_format(self, path: str) -> str:
