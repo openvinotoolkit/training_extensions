@@ -7,6 +7,7 @@ import re
 from mmcv.runner import HOOKS, Hook
 
 
+# TODO [Jihwan] is it deprecated?
 @HOOKS.register_module()
 class FreezeLayers(Hook):
     def __init__(self, by_epoch=True, iters=0, open_layers=None, **kwargs):
