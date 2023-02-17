@@ -30,25 +30,6 @@ def map_class_names(src_classes, dst_classes):
     return src2dst
 
 
-def prob_extractor(model, data_loader):
-    if torch.cuda.is_available():
-        model = model.cuda()
-    with torch.no_grad():
-        model.eval()
-        probs = []
-        features = []
-        for i, data_batch in enumerate(data_loader):
-            img = data_batch["img"]
-            if torch.cuda.is_available():
-                img = img.cuda()
-            p, f = model.extract_prob(img)
-            probs.append(p)
-            features.append(f.detach().cpu().numpy())
-    probs = refine_results(probs)
-    features = refine_results(features)
-    return probs, features
-
-
 def refine_results(results):
     if isinstance(results[0], dict):
         tasks = results[0].keys()

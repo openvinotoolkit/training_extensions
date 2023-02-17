@@ -177,6 +177,9 @@ def setup_mpa_task_parameters(task_type, create_val=False, create_test=False):
         data_cfg.data.test.data_dir = "tests/assets/imagenet_dataset"
     else:
         data_cfg.data.test = None
+    dummy_dataset = generate_cls_dataset(number_of_images=1)
+    data_cfg.data.train.otx_dataset = dummy_dataset
+    data_cfg.data.train.labels = dummy_dataset.get_labels()
     data_cfg.data.train.data_classes = ["label_0", "label_1"]
     data_cfg.data.train.new_classes = ["label_0", "label_1", "label_3"]
 
