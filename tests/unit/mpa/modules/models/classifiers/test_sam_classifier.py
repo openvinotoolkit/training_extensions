@@ -1,41 +1,51 @@
-import numpy as np
-import pytest
-import torch
 from copy import deepcopy
 
-from otx.mpa.cls.inferrer import ClsInferrer
-from otx.mpa.modules.models.classifiers.sam_classifier import SAMImageClassifier, ImageClassifier
+import pytest
+import torch
+
+from otx.mpa.modules.models.classifiers.sam_classifier import (
+    ImageClassifier,
+    SAMImageClassifier,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
 
 
-class OTXMobileNetV3():
+class OTXMobileNetV3:
     pass
 
-class OTXEfficientNet():
+
+class OTXEfficientNet:
     pass
 
-class OTXEfficientNetV2():
+
+class OTXEfficientNetV2:
     pass
 
-class MockModule():
+
+class MockModule:
     def __init__(self, name):
         if name == "mobilenet":
             self.backbone = OTXMobileNetV3()
-            self._state_dict = {'some_prefix.classifier.4.weight': torch.rand(1,1),
-                                'some_prefix.classifier.4.bias': torch.rand(1),
-                                'some_prefix.act.weight': torch.rand(1),
-                                'some_prefix.someweights': torch.rand(2)}
+            self._state_dict = {
+                "some_prefix.classifier.4.weight": torch.rand(1, 1),
+                "some_prefix.classifier.4.bias": torch.rand(1),
+                "some_prefix.act.weight": torch.rand(1),
+                "some_prefix.someweights": torch.rand(2),
+            }
         elif name == "effnetv2":
             self.backbone = OTXEfficientNetV2()
-            self._state_dict = {'some_prefix.model.classifier.weight': torch.rand(1,1),
-                                'some_prefix.model.weight': torch.rand(1)}
+            self._state_dict = {
+                "some_prefix.model.classifier.weight": torch.rand(1, 1),
+                "some_prefix.model.weight": torch.rand(1),
+            }
         else:
             self.backbone = OTXEfficientNet()
-            self._state_dict = {'some_prefix.features.weight': torch.rand(1,1),
-                                'some_prefix.features.active.weight': torch.rand(1,1),
-                                'some_prefix.output.weight': torch.rand(1),
-                                'some_prefix.output.asl.weight': torch.rand(1)}
+            self._state_dict = {
+                "some_prefix.features.weight": torch.rand(1, 1),
+                "some_prefix.features.active.weight": torch.rand(1, 1),
+                "some_prefix.output.weight": torch.rand(1),
+                "some_prefix.output.asl.weight": torch.rand(1),
+            }
         self.multilabel = False
         self.hierarchical = False
         self.is_export = False
@@ -74,18 +84,18 @@ class TestSAMImageClassifier:
 
         for key in state_dict:
             if name == "mobilenet":
-                if 'classifier' in key:
-                    assert '.3.' in key
-                if 'someweights' in key:
-                    assert 'backbone.' in key
-                if 'act' in key:
-                    assert 'head.' in key
+                if "classifier" in key:
+                    assert ".3." in key
+                if "someweights" in key:
+                    assert "backbone." in key
+                if "act" in key:
+                    assert "head." in key
             elif name == "effnetv2":
-                assert 'classifier' not in key
+                assert "classifier" not in key
                 if "model" in key:
                     assert "backbone" in key
             else:
-                if "features" in key and not "active" in key:
+                if "features" in key and "active" not in key:
                     assert "backbone" in key
                 elif "active" in key:
                     assert key == "some_prefix.features.active.weight"
@@ -109,9 +119,10 @@ class TestSAMImageClassifier:
         self.module = MockModule(name)
         state_dict = self.module.state_dict()
         chkpt_dict = deepcopy(state_dict)
-        model_classes = [0,1,2]
-        chkpt_classes = [0,1]
-        self.classifier.load_state_dict_mixing_hook(self.module, model_classes, chkpt_classes,
-                                                    chkpt_dict, prefix="some_prefix.")
+        model_classes = [0, 1, 2]
+        chkpt_classes = [0, 1]
+        self.classifier.load_state_dict_mixing_hook(
+            self.module, model_classes, chkpt_classes, chkpt_dict, prefix="some_prefix."
+        )
 
         assert chkpt_dict.keys() == state_dict.keys()

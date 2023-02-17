@@ -1,13 +1,11 @@
-import numpy as np
 import pytest
 import torch
-from copy import deepcopy
 
-from otx.mpa.cls.inferrer import ClsInferrer
-from otx.mpa.modules.models.classifiers.sam_classifier import SAMImageClassifier
-from otx.mpa.modules.models.classifiers.task_incremental_classifier import TaskIncrementalLwF, ImageClassifier
+from otx.mpa.modules.models.classifiers.task_incremental_classifier import (
+    ImageClassifier,
+    TaskIncrementalLwF,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
 
 
 class TestTaskIncrementalLwF:

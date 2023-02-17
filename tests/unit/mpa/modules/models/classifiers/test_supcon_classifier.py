@@ -1,12 +1,11 @@
-import numpy as np
 import pytest
 import torch
-from copy import deepcopy
 
-from otx.mpa.cls.inferrer import ClsInferrer
-from otx.mpa.modules.models.classifiers.supcon_classifier import SupConClassifier, ImageClassifier
+from otx.mpa.modules.models.classifiers.supcon_classifier import (
+    ImageClassifier,
+    SupConClassifier,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
 
 
 class TestSupConClassifier:
