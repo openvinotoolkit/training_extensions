@@ -36,7 +36,6 @@ if is_mmdeploy_enabled():
 
     from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
 
-    # TODO: [Jihwan] why detector named function is here?
     @FUNCTION_REWRITER.register_rewriter(
         "otx.mpa.modules.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.extract_feat"
     )
