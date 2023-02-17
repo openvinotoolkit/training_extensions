@@ -6,7 +6,7 @@
 
 import json
 
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches
 import os
 from typing import Dict, List, Optional
 
@@ -58,10 +58,19 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
-        if self.data_type == "voc":
-            self.set_voc_labels()
 
-        if self.data_type == "common_semantic_segmentation":
+        if hasattr(self, "data_type_candidates"):
+            if self.data_type_candidates[0] == "voc":
+                self.set_voc_labels()
+
+            if self.data_type_candidates[0] == "common_semantic_segmentation":
+                self.set_common_labels()
+
+        else:
+            # For datasets used for self-sl.
+            # They are not included in any data type and `data_type_candidates` is not set,
+            # so they must be handled independently. But, setting `self.updated_label_id` is compatible
+            # with "common_semantic_segmentation", so we can use it.
             self.set_common_labels()
 
         for subset, subset_data in self.dataset.items():
@@ -161,7 +170,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         # Load pseudo masks
         img_dir = None
         total_labels = []
-        flag_create_mask = False
         for item in dataset[Subset.TRAINING]:
             img_path = item.media.path
             if img_dir is None:
@@ -173,7 +181,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
             if not os.path.isfile(pseudo_mask_path):
                 # Create pseudo mask
-                flag_create_mask = True
                 pseudo_mask = self.create_pseudo_masks(item.media.data, pseudo_mask_path)  # type: ignore
             else:
                 # Load created pseudo mask
@@ -192,12 +199,12 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
             item.annotations = annotations
 
         pseudo_mask_roots = train_data_roots.replace(img_dir, pseudo_mask_dir)  # type: ignore
-        if flag_create_mask:
+        if not os.path.isfile(os.path.join(pseudo_mask_roots, "dataset_meta.json")):
             # Save dataset_meta.json for newly created pseudo masks
-            # FIXME: Because background class is ignored when generating polygon at L58, meta is set with len(labels)-1.
+            # FIXME: Because background class is ignored when generating polygons, meta is set with len(labels)-1.
             # It must be considered to set the whole labels later.
             # (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
-            meta = {"label_map": {i: f"target{i+1}" for i in range(max(total_labels))}}
+            meta = {"label_map": {i + 1: f"target{i+1}" for i in range(max(total_labels))}}
             with open(os.path.join(pseudo_mask_roots, "dataset_meta.json"), "w", encoding="UTF-8") as f:
                 json.dump(meta, f, indent=4)
 
