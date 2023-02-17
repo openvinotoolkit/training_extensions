@@ -200,7 +200,14 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
+    def _is_normal_polygon(self, annotation: DatumaroAnnotationType.polygon) -> bool:
+        """To filter out the abnormal polygon."""
+        x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
+        y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]
+        return min(x_points) < max(x_points) and min(y_points) < max(y_points)
+
     def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
+        """To filter out the abrnormal bbox."""
         return x1 < x2 and y1 < y2
 
     def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
