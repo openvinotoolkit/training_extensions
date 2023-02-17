@@ -15,9 +15,9 @@
 # and limitations under the License.
 
 from .datasets import (
-    MPAClsDataset,
-    MPAHierarchicalClsDataset,
-    MPAMultilabelClsDataset,
+    OTXClsDataset,
+    OTXHierarchicalClsDataset,
+    OTXMultilabelClsDataset,
     SelfSLDataset,
 )
 from .pipelines import (
@@ -30,9 +30,9 @@ from .pipelines import (
 )
 
 __all__ = [
-    "MPAClsDataset",
-    "MPAMultilabelClsDataset",
-    "MPAHierarchicalClsDataset",
+    "OTXClsDataset",
+    "OTXMultilabelClsDataset",
+    "OTXHierarchicalClsDataset",
     "SelfSLDataset",
     "PostAug",
     "PILImageToNDArray",
