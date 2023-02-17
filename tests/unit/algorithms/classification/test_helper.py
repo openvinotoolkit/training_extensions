@@ -25,10 +25,10 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.mpa.utils.config_utils import MPAConfig
 
-DEFAULT_CLS_TEMPLATE = (
-    Path("otx") / "algorithms" / "classification" / "configs" / "mobilenet_v3_large_1_cls_incr" / "template.yaml"
-)
+DEFAULT_CLS_TEMPLATE_DIR = Path("otx") / "algorithms" / "classification" / "configs" / "mobilenet_v3_large_1_cls_incr"
+DEFAULT_CLS_TEMPLATE = DEFAULT_CLS_TEMPLATE_DIR / "template.yaml"
 
 
 def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):
@@ -154,4 +154,33 @@ def setup_configurable_parameters(template_dir, num_iters=10):
     model_template = parse_model_template(str(template_dir))
     hyper_parameters = create(model_template.hyper_parameters.data)
     hyper_parameters.learning_parameters.num_iters = num_iters
+
     return hyper_parameters, model_template
+
+
+def setup_mpa_task_parameters(task_type, create_val=False, create_test=False):
+    if task_type == "semisl":
+        recipie_path = "otx/recipes/stages/classification/semisl.yaml"
+    elif task_type == "incremental":
+        recipie_path = "otx/recipes/stages/classification/incremental.yaml"
+    recipie_cfg = MPAConfig.fromfile(recipie_path)
+    model_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "model.py")
+    model_cfg.model.multilabel = False
+    model_cfg.model.hierarchical = False
+    data_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "data_pipeline.py")
+    data_cfg.data.train.data_dir = "tests/assets/imagenet_dataset"
+    if create_val:
+        data_cfg.data.val.data_dir = "tests/assets/imagenet_dataset"
+    else:
+        data_cfg.data.val = None
+    if create_test:
+        data_cfg.data.test.data_dir = "tests/assets/imagenet_dataset"
+    else:
+        data_cfg.data.test = None
+    dummy_dataset = generate_cls_dataset(number_of_images=1)
+    data_cfg.data.train.otx_dataset = dummy_dataset
+    data_cfg.data.train.labels = dummy_dataset.get_labels()
+    data_cfg.data.train.data_classes = ["label_0", "label_1"]
+    data_cfg.data.train.new_classes = ["label_0", "label_1", "label_3"]
+
+    return model_cfg, data_cfg, recipie_cfg

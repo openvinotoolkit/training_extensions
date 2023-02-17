@@ -119,16 +119,31 @@ def get_extensions():
     return extensions
 
 
-REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
+REQUIRED_PACKAGES = get_requirements(requirement_files="api")
 EXTRAS_REQUIRE = {
-    "action": get_requirements(requirement_files="action"),
-    "anomaly": get_requirements(requirement_files="anomaly"),
-    "classification": get_requirements(requirement_files="classification"),
-    "detection": get_requirements(requirement_files="detection"),
-    "segmentation": get_requirements(requirement_files="segmentation"),
-    "mpa": get_requirements(requirement_files=["classification", "detection", "segmentation", "action"]),
-    "full": get_requirements(
-        requirement_files=[
+    "action": get_requirements(requirement_files=[
+            "base", "openvino", "action",
+        ]
+    ),
+    "anomaly": get_requirements(requirement_files=[
+            "base", "openvino", "anomaly",
+        ]
+    ),
+    "classification": get_requirements(requirement_files=[
+            "base", "openvino", "classification",
+        ]
+    ),
+    "detection": get_requirements(requirement_files=[
+            "base", "openvino", "detection",
+        ]
+    ),
+    "segmentation": get_requirements(requirement_files=[
+            "base", "openvino", "segmentation",
+        ]
+    ),
+    "full": get_requirements(requirement_files=[
+            "base",
+            "openvino",
             "anomaly",
             "classification",
             "detection",

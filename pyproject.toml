@@ -21,6 +21,8 @@ source = [
 omit = [
     "otx/algorithms/*/configs/**/*pipeline*.py",
     "otx/algorithms/*/configs/**/model*.py",
+    "otx/algorithms/*/configs/**/deployment.py",
+    "otx/algorithms/**/configs/**/backbones/*",
     "**/__init__.py",
     "otx/recipes/*",
 ]

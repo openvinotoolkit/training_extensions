@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from abc import ABCMeta
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
@@ -54,7 +55,7 @@ def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[La
 
 
 @DATASETS.register_module()
-class OTXSegDataset(CustomDataset):
+class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
     """Wrapper that allows using a OTX dataset to train mmsegmentation models.
 
     This wrapper is not based on the filesystem,
@@ -235,7 +236,7 @@ class OTXSegDataset(CustomDataset):
 
 
 @DATASETS.register_module()
-class MPASegDataset(OTXSegDataset):
+class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
     """Wrapper dataset that allows using a OTX dataset to train models."""
 
     def __init__(self, **kwargs):

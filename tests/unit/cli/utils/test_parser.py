@@ -170,31 +170,29 @@ def test_add_hyper_parameters_sub_parser(mocker):
 
 
 @e2e_pytest_unit
-def test_get_parser_and_hprams_data_with_template(mocker, tmp_dir):
+def test_get_parser_and_hprams_data_with_fake_template(mocker, tmp_dir):
     # prepare
     tmp_dir = Path(tmp_dir)
     fake_template_file = tmp_dir / "template.yaml"
     fake_template_file.write_text("fake")
-    mock_argv = ["otx train", str(fake_template_file), "--left-args"]
+    mock_argv = ["otx train", str(fake_template_file), "params", "--left-args"]
     mocker.patch("sys.argv", mock_argv)
     mock_template = mocker.patch.object(target_package, "find_and_parse_model_template")
-    mock_hyper_parameters = mocker.MagicMock()
-    mock_template.return_value.hyper_parameters.data = mock_hyper_parameters
 
     # run
     parser, hyper_parameters, params = get_parser_and_hprams_data()
 
     # check
     mock_template.assert_called_once()
-    assert hyper_parameters == mock_hyper_parameters
-    assert params == ["--left-args"]
+    assert hyper_parameters == {}
+    assert params == ["params", "--left-args"]
     assert isinstance(parser, ArgumentParser)
 
 
 @e2e_pytest_unit
 def test_get_parser_and_hprams_data(mocker):
     # prepare
-    mock_argv = ["otx train", "--left-args"]
+    mock_argv = ["otx train", "params", "--left-args"]
     mocker.patch("sys.argv", mock_argv)
 
     # run
@@ -202,5 +200,5 @@ def test_get_parser_and_hprams_data(mocker):
 
     # check
     assert hyper_parameters == {}
-    assert params == ["--left-args"]
+    assert params == ["params", "--left-args"]
     assert isinstance(parser, ArgumentParser)

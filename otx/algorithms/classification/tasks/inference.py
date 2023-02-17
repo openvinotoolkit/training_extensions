@@ -399,13 +399,13 @@ class ClassificationInferenceTask(
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = self._train_type.name
 
-        options_for_patch_datasets = {"type": "MPAClsDataset", "empty_label": self._empty_label}
+        options_for_patch_datasets = {"type": "OTXClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
         if self._multilabel:
-            options_for_patch_datasets["type"] = "MPAMultilabelClsDataset"
+            options_for_patch_datasets["type"] = "OTXMultilabelClsDataset"
             options_for_patch_evaluation["task"] = "multilabel"
         elif self._hierarchical:
-            options_for_patch_datasets["type"] = "MPAHierarchicalClsDataset"
+            options_for_patch_datasets["type"] = "OTXHierarchicalClsDataset"
             options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
             options_for_patch_evaluation["task"] = "hierarchical"
         elif self._selfsl:

@@ -5,7 +5,6 @@
       "params": {
         "preset": "mixed",
         "target_device": "ANY",
-        "use_fast_bias": false,
         "range_estimator": {
           "preset": "quantile"
         },
