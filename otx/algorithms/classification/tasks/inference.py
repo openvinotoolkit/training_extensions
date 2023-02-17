@@ -143,12 +143,15 @@ class ClassificationInferenceTask(
         )
 
         update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
+            process_saliency_maps = inference_parameters.process_saliency_maps
+            explain_predicted_classes = inference_parameters.explain_predicted_classes
 
         self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback,
-                                         inference_parameters.process_saliency_maps,
-                                         inference_parameters.explain_predicted_classes)
+                                         process_saliency_maps, explain_predicted_classes)
         return dataset
 
     def explain(
@@ -171,13 +174,18 @@ class ClassificationInferenceTask(
         logger.debug(f"result of run_task {stage_module} module = {results}")
         predictions = results["outputs"]["eval_predictions"]
         saliency_maps = results["outputs"]["saliency_maps"]
+
         update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
         if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress  # type: ignore
+            process_saliency_maps = explain_parameters.process_saliency_maps
+            explain_predicted_classes = explain_parameters.explain_predicted_classes
 
         self._add_explanations_to_dataset(predictions, saliency_maps, dataset, update_progress_callback,
-                                           explain_parameters.process_saliency_maps,
-                                           explain_parameters.explain_predicted_classes)
+                                           process_saliency_maps, explain_predicted_classes)
+        logger.info("Explain completed")
         return dataset
 
     @check_input_parameters_type()

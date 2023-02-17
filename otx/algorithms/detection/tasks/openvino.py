@@ -370,12 +370,16 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         """Infer function of OpenVINODetectionTask."""
         logger.info("Start OpenVINO inference")
 
-        if inference_parameters:
+        if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             add_saliency_map = not inference_parameters.is_evaluation
+            process_saliency_maps = inference_parameters.process_saliency_maps
+            explain_predicted_classes = inference_parameters.explain_predicted_classes
         else:
             update_progress_callback = default_progress_callback
             add_saliency_map = True
+            process_saliency_maps = False
+            explain_predicted_classes = True
 
         tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
 
@@ -419,8 +423,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     model=self.model,
                     labels=self.task_environment.get_labels(),
                     predicted_scored_labels=predicted_scored_labels,
-                    explain_predicted_classes=inference_parameters.explain_predicted_classes,
-                    process_saliency_maps=inference_parameters.process_saliency_maps,
+                    explain_predicted_classes=explain_predicted_classes,
+                    process_saliency_maps=process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100), None)
         logger.info("OpenVINO inference completed")
@@ -436,8 +440,13 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         logger.info("Start OpenVINO explain")
 
         update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
         if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress  # type: ignore
+            process_saliency_maps = explain_parameters.process_saliency_maps
+            explain_predicted_classes = explain_parameters.explain_predicted_classes
+
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
@@ -455,8 +464,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 model=self.model,
                 labels=self.task_environment.get_labels(),
                 predicted_scored_labels=predicted_scored_labels,
-                explain_predicted_classes=explain_parameters.explain_predicted_classes,
-                process_saliency_maps=explain_parameters.process_saliency_maps,
+                explain_predicted_classes=explain_predicted_classes,
+                process_saliency_maps=process_saliency_maps,
             )
         logger.info("OpenVINO explain completed")
         return dataset

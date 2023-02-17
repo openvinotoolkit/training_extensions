@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 import os
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, Optional, Tuple, List
 
 import cv2
 import numpy as np
@@ -104,10 +104,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         """Main infer function of OTX Detection."""
         logger.info("infer()")
 
-        if inference_parameters:
+        update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
+        if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-        else:
-            update_progress_callback = default_progress_callback
+            process_saliency_maps = inference_parameters.process_saliency_maps
+            explain_predicted_classes = inference_parameters.explain_predicted_classes
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
@@ -118,8 +121,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         prediction_results, _ = self._infer_detector(dataset, inference_parameters)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold,
-                                         inference_parameters.process_saliency_maps,
-                                         inference_parameters.explain_predicted_classes)
+                                         process_saliency_maps, explain_predicted_classes)
         logger.info("Inference completed")
         return dataset
 
@@ -132,17 +134,18 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         """Main explain function of OTX Detection."""
         logger.info("explain()")
 
-        if explain_parameters:
+        update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
+        if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress
-        else:
-            update_progress_callback = default_progress_callback
+            process_saliency_maps = explain_parameters.process_saliency_maps
+            explain_predicted_classes = explain_parameters.explain_predicted_classes
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
         detections, explain_results = self._explain_detector(dataset, explain_parameters)
         self._add_explanations_to_dataset(detections, explain_results, dataset,
-                                          explain_parameters.process_saliency_maps,
-                                          explain_parameters.explain_predicted_classes
-                                          )
+                                          process_saliency_maps, explain_predicted_classes)
         logger.info("Explain completed")
         return dataset
 
@@ -196,8 +199,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self,
         dataset: DatasetEntity,
         explain_parameters: Optional[InferenceParameters] = None,
-    ) -> Tuple[Iterable, float]:
-        """Run explain stage and return saliency maps."""
+    ) -> Tuple[List[List[np.array]], List[np.array]]:
+        """Run explain stage and return detections and saliency maps."""
 
         stage_module = "DetectionExplainer"
         self._data_cfg = self._init_test_data_cfg(dataset)
