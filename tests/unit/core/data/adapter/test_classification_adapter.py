@@ -34,30 +34,39 @@ class TestOTXClassificationDatasetAdapter:
         if "unlabeled" in data_root_dict:
             self.unlabeled_data_roots = os.path.join(self.root_path, data_root_dict["unlabeled"])
 
-        self.dataset_adapter = ClassificationDatasetAdapter(
+        self.train_dataset_adapter = ClassificationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
-            test_data_roots=self.test_data_roots,
             unlabeled_data_roots=self.unlabeled_data_roots,
+        )
+
+        self.test_dataset_adapter = ClassificationDatasetAdapter(
+            task_type=self.task_type,
+            test_data_roots=self.test_data_roots,
         )
 
     @e2e_pytest_unit
     def test_init(self):
-        assert Subset.TRAINING in self.dataset_adapter.dataset
-        assert Subset.VALIDATION in self.dataset_adapter.dataset
-        assert Subset.TESTING in self.dataset_adapter.dataset
+        assert Subset.TRAINING in self.train_dataset_adapter.dataset
+        assert Subset.VALIDATION in self.train_dataset_adapter.dataset
         if self.unlabeled_data_roots is not None:
-            assert Subset.UNLABELED in self.dataset_adapter.dataset
+            assert Subset.UNLABELED in self.train_dataset_adapter.dataset
+
+        assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     @e2e_pytest_unit
     def test_get_otx_dataset(self):
-        assert isinstance(self.dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
 
     @e2e_pytest_unit
     def test_get_label_schema(self):
-        _ = self.dataset_adapter.get_otx_dataset()
-        assert isinstance(self.dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        _ = self.train_dataset_adapter.get_otx_dataset()
+        assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+
+        _ = self.test_dataset_adapter.get_otx_dataset()
+        assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
     @e2e_pytest_unit
     def test_multilabel(self):
@@ -65,19 +74,25 @@ class TestOTXClassificationDatasetAdapter:
         val_data_roots = os.path.join(self.root_path, "tests/assets/datumaro_multilabel")
         test_data_roots = os.path.join(self.root_path, "tests/assets/datumaro_multilabel")
 
-        multilabel_dataset_adapter = ClassificationDatasetAdapter(
+        multilabel_train_dataset_adapter = ClassificationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
         )
 
-        assert Subset.TRAINING in multilabel_dataset_adapter.dataset
-        assert Subset.VALIDATION in multilabel_dataset_adapter.dataset
-        assert Subset.TESTING in multilabel_dataset_adapter.dataset
+        assert Subset.TRAINING in multilabel_train_dataset_adapter.dataset
+        assert Subset.VALIDATION in multilabel_train_dataset_adapter.dataset
 
-        assert isinstance(multilabel_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(multilabel_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(multilabel_train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(multilabel_train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+
+        multilabel_test_dataset_adapter = ClassificationDatasetAdapter(
+            task_type=self.task_type, test_data_roots=test_data_roots
+        )
+
+        assert Subset.TESTING in multilabel_test_dataset_adapter.dataset
+        assert isinstance(multilabel_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(multilabel_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
     @e2e_pytest_unit
     def test_hierarchical_label(self):
@@ -85,16 +100,22 @@ class TestOTXClassificationDatasetAdapter:
         val_data_roots = os.path.join(self.root_path, "tests/assets/datumaro_h-label")
         test_data_roots = os.path.join(self.root_path, "tests/assets/datumaro_h-label")
 
-        hlabel_dataset_adapter = ClassificationDatasetAdapter(
+        hlabel_train_dataset_adapter = ClassificationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
         )
 
-        assert Subset.TRAINING in hlabel_dataset_adapter.dataset
-        assert Subset.VALIDATION in hlabel_dataset_adapter.dataset
-        assert Subset.TESTING in hlabel_dataset_adapter.dataset
+        assert Subset.TRAINING in hlabel_train_dataset_adapter.dataset
+        assert Subset.VALIDATION in hlabel_train_dataset_adapter.dataset
 
-        assert isinstance(hlabel_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(hlabel_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(hlabel_train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(hlabel_train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+
+        hlabel_test_dataset_adapter = ClassificationDatasetAdapter(
+            task_type=self.task_type, test_data_roots=test_data_roots
+        )
+
+        assert Subset.TESTING in hlabel_test_dataset_adapter.dataset
+        assert isinstance(hlabel_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(hlabel_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)

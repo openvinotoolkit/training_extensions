@@ -33,22 +33,28 @@ class TestOTXSegmentationDatasetAdapter:
         if "unlabeled" in data_root_dict:
             self.unlabeled_data_roots = os.path.join(self.root_path, data_root_dict["unlabeled"])
 
-        self.dataset_adapter = SegmentationDatasetAdapter(
+        self.train_dataset_adapter = SegmentationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
-            test_data_roots=self.test_data_roots,
             unlabeled_data_roots=self.unlabeled_data_roots,
+        )
+
+        self.test_dataset_adapter = SegmentationDatasetAdapter(
+            task_type=self.task_type,
+            test_data_roots=self.test_data_roots,
         )
 
     @e2e_pytest_unit
     def test_init(self):
-        assert Subset.TRAINING in self.dataset_adapter.dataset
-        assert Subset.VALIDATION in self.dataset_adapter.dataset
-        assert Subset.TESTING in self.dataset_adapter.dataset
+        assert Subset.TRAINING in self.train_dataset_adapter.dataset
+        assert Subset.VALIDATION in self.train_dataset_adapter.dataset
         if self.unlabeled_data_roots is not None:
-            assert Subset.UNLABELED in self.dataset_adapter.dataset
+            assert Subset.UNLABELED in self.train_dataset_adapter.dataset
+
+        assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     @e2e_pytest_unit
     def test_get_otx_dataset(self):
-        assert isinstance(self.dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
