@@ -8,9 +8,12 @@ It is a more advanced version of object detection, as it doesn't only detect the
 Instance segmentation is commonly used in applications such as self-driving cars, robotics, and image-editing software.
 
 .. _instance_segmentation_image_example:
+|
 
 .. image:: ../../../../utils/images/instance_seg_example.png
   :width: 600
+
+|
 
 We solve this problem in the `MaskRCNN <https://arxiv.org/abs/1703.06870>`_ manner. The main idea of Mask R-CNN is to add a branch for predicting an object mask in parallel with the existing branch for bounding box regression and object classification.
 

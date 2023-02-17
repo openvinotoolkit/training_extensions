@@ -4,4 +4,22 @@ Release Notes
 .. toctree::
    :maxdepth: 2
 
-Notes about the release of the developed version can be found in https://github.com/openvinotoolkit/training_extensions/releases of the develop branch.
+***************
+v1.0.0 (1Q23)
+***************
+
+- Installation through PyPI
+  - Package will be renamed as OTX (OpenVINO Training eXtensions)
+- CLI update
+  - Update ``otx find`` command to find configurations of tasks/algorithms
+  - Introduce ``otx build`` command to customize task or model configurations
+  - Automatic algorihm selection for the ``otx train`` command using the given input dataset
+- Adaptation of `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ component as a dataset interface
+- Integrate hyper-parameter optimizations
+- Support action recognition task
+
+***************
+v1.1.0 (2Q23)
+***************
+
+- SDK/API update
