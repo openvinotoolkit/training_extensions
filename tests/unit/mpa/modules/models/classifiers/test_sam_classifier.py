@@ -1,0 +1,117 @@
+import numpy as np
+import pytest
+import torch
+from copy import deepcopy
+
+from otx.mpa.cls.inferrer import ClsInferrer
+from otx.mpa.modules.models.classifiers.sam_classifier import SAMImageClassifier, ImageClassifier
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
+
+
+class OTXMobileNetV3():
+    pass
+
+class OTXEfficientNet():
+    pass
+
+class OTXEfficientNetV2():
+    pass
+
+class MockModule():
+    def __init__(self, name):
+        if name == "mobilenet":
+            self.backbone = OTXMobileNetV3()
+            self._state_dict = {'some_prefix.classifier.4.weight': torch.rand(1,1),
+                                'some_prefix.classifier.4.bias': torch.rand(1),
+                                'some_prefix.act.weight': torch.rand(1),
+                                'some_prefix.someweights': torch.rand(2)}
+        elif name == "effnetv2":
+            self.backbone = OTXEfficientNetV2()
+            self._state_dict = {'some_prefix.model.classifier.weight': torch.rand(1,1),
+                                'some_prefix.model.weight': torch.rand(1)}
+        else:
+            self.backbone = OTXEfficientNet()
+            self._state_dict = {'some_prefix.features.weight': torch.rand(1,1),
+                                'some_prefix.features.active.weight': torch.rand(1,1),
+                                'some_prefix.output.weight': torch.rand(1),
+                                'some_prefix.output.asl.weight': torch.rand(1)}
+        self.multilabel = False
+        self.hierarchical = False
+        self.is_export = False
+
+    def state_dict(self):
+        return self._state_dict
+
+
+class TestSAMImageClassifier:
+    @pytest.fixture(autouse=True)
+    def setup(self, mocker) -> None:
+        mocker.patch.object(ImageClassifier, "__init__", return_value=None)
+        SAMImageClassifier._register_state_dict_hook = mocker.MagicMock()
+        SAMImageClassifier._register_load_state_dict_pre_hook = mocker.MagicMock()
+        self.classifier = SAMImageClassifier()
+
+    @e2e_pytest_unit
+    def test_forward_train(self, mocker):
+        img = torch.rand(1, 3, 224, 224)
+        gt_labels = torch.rand(1, 1)
+        self.classifier.extract_feat = mocker.MagicMock()
+        self.classifier.head = mocker.MagicMock()
+        self.classifier.augments = None
+        self.classifier.multilabel = False
+        self.classifier.hierarchical = False
+        losses = self.classifier.forward_train(img, gt_labels)
+
+        assert losses is not None
+
+    @pytest.mark.parametrize("name", ["mobilenet", "effnetv2", "effnet"])
+    @e2e_pytest_unit
+    def test_load_state_dict_pre_hook(self, name):
+        self.module = MockModule(name)
+        state_dict = self.module.state_dict()
+        self.classifier.load_state_dict_pre_hook(self.module, state_dict, prefix="some_prefix.")
+
+        for key in state_dict:
+            if name == "mobilenet":
+                if 'classifier' in key:
+                    assert '.3.' in key
+                if 'someweights' in key:
+                    assert 'backbone.' in key
+                if 'act' in key:
+                    assert 'head.' in key
+            elif name == "effnetv2":
+                assert 'classifier' not in key
+                if "model" in key:
+                    assert "backbone" in key
+            else:
+                if "features" in key and not "active" in key:
+                    assert "backbone" in key
+                elif "active" in key:
+                    assert key == "some_prefix.features.active.weight"
+                else:
+                    assert "head" in key or "fc" in key
+
+    @pytest.mark.parametrize("name", ["mobilenet", "effnetv2", "effnet"])
+    @e2e_pytest_unit
+    def test_state_dict_hook(self, name):
+        self.module = MockModule(name)
+        state_dict = self.module.state_dict()
+        state_dict_copy = deepcopy(state_dict)
+        self.classifier.load_state_dict_pre_hook(self.module, state_dict, prefix="some_prefix.")
+        # backward state dict
+        self.classifier.state_dict_hook(self.module, state_dict, prefix="some_prefix.")
+
+        assert state_dict.keys() == state_dict_copy.keys()
+
+    @pytest.mark.parametrize("name", ["mobilenet", "effnetv2", "effnet"])
+    def test_load_state_dict_mixing_hook(self, name):
+        self.module = MockModule(name)
+        state_dict = self.module.state_dict()
+        chkpt_dict = deepcopy(state_dict)
+        model_classes = [0,1,2]
+        chkpt_classes = [0,1]
+        self.classifier.load_state_dict_mixing_hook(self.module, model_classes, chkpt_classes,
+                                                    chkpt_dict, prefix="some_prefix.")
+
+        assert chkpt_dict.keys() == state_dict.keys()
