@@ -261,8 +261,7 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold, result_d
         exported_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        if result_dict:
-            result_dict[template.name] = str(exported_performance[k])
+        result_dict[template.name] = str(exported_performance[k])
         assert (
             exported_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
@@ -379,8 +378,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold, result
         deployed_performance = json.load(read_file)
 
     for k in exported_performance.keys():
-        if result_dict:
-            result_dict[template.name] = str(deployed_performance[k])
+        result_dict[template.name] = str(deployed_performance[k])
         assert (
             deployed_performance[k] >= exported_performance[k]
             or abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
@@ -465,8 +463,7 @@ def pot_eval_testing(template, root, otx_dir, args, result_dict={}):
         pot_performance = json.load(read_file)
 
     for k in pot_performance.keys():
-        if result_dict:
-            result_dict[template.name] = str(pot_performance[k])
+        result_dict[template.name] = str(pot_performance[k])
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
@@ -547,8 +544,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold, result_dict={}):
         evaluated_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        if result_dict:
-            result_dict[template.name] = str(evaluated_performance[k])
+        result_dict[template.name] = str(evaluated_performance[k])
         assert (
             evaluated_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
@@ -820,7 +816,6 @@ def otx_eval_compare(
     modified_criteria = model_criteria - (model_criteria * threshold)
     for k in trained_performance.keys():
         result_dict[template.name] = str(trained_performance[k])
-        print(f"trained_performance: {trained_performance[k]}, modified_criteria:{modified_criteria}")
         assert (
             trained_performance[k] >= modified_criteria
         ), f"Current model performance: ({trained_performance[k]}) < criteria: ({modified_criteria})."

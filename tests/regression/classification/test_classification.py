@@ -34,7 +34,7 @@ templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFI
 templates_ids = [template.model_template_id for template in templates]
 
 # Configurations for regression test.
-REGRESSION_TEST_EPOCHS = "1"
+REGRESSION_TEST_EPOCHS = "10"
 TASK_TYPE = "classification"
 
 result_dict = get_result_dict(TASK_TYPE)
