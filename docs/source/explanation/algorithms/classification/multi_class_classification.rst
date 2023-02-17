@@ -14,10 +14,22 @@ For the supervised training we use the following algorithms components:
 
 - ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model. However, for the class-incremental scenario we use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
 
-- Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting. Besides this we use `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11>`_ to create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.
+- ``Training technique``
+    - `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_: To add adaptability to the training pipeline.
+    - **Early stopping**: To prevent overfitting. Enter `--learning_parameters.enable_early_stopping=True` in CLI. It can be specified how many epochs (iterations) it will take as well.
+    - `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11>`_: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.
+    - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_. It enables using `--learning_parameters.enable_supcon=True` in CLI.
+      For three baseline datasets: CIFAR10, CIFAR100, and Food-101, using SupCon improves performance like the below table.
 
-
-To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
+        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+        | Model name            | CIFAR100        | cars      | flowers   | pets      | SVHN      |
+        +=======================+=================+===========+===========+===========+===========+
+        | MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
+        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+        | EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
+        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+        | EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
+        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 **************
 Dataset Format
