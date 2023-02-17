@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.classification.adapters.mmcls.data import MPAClsDataset
+from otx.algorithms.classification.adapters.mmcls.data import OTXClsDataset
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -77,19 +77,19 @@ def load_test_dataset():
     return DatasetEntity(items), labels
 
 
-class TestMPAClsDatasetInputParamsValidation:
+class TestOTXClsDatasetInputParamsValidation:
     @e2e_pytest_unit
     def test_otx_classification_dataset_init_params_validation(self):
         """
         <b>Description:</b>
-        Check MPAClsDataset object initialization parameters validation
+        Check OTXClsDataset object initialization parameters validation
 
         <b>Input data:</b>
-        MPAClsDataset object initialization parameters with unexpected type
+        OTXClsDataset object initialization parameters with unexpected type
 
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as
-        MPAClsDataset initialization parameter
+        OTXClsDataset initialization parameter
         """
         dataset, labels_list = load_test_dataset()
 
@@ -110,14 +110,14 @@ class TestMPAClsDatasetInputParamsValidation:
         check_value_error_exception_raised(
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
-            class_or_function=MPAClsDataset,
+            class_or_function=OTXClsDataset,
         )
 
     @e2e_pytest_unit
     def test_otx_classification_dataset_getitem_params_validation(self):
         """
         <b>Description:</b>
-        Check MPAClsDataset object "__getitem__" method input parameters validation
+        Check OTXClsDataset object "__getitem__" method input parameters validation
 
         <b>Input data:</b>
         "idx" non-integer parameter
@@ -127,6 +127,6 @@ class TestMPAClsDatasetInputParamsValidation:
         input parameter for "__getitem__" method
         """
         dataset, labels_list = load_test_dataset()
-        otx_classification_dataset = MPAClsDataset(otx_dataset=dataset, labels=labels_list)
+        otx_classification_dataset = OTXClsDataset(otx_dataset=dataset, labels=labels_list)
         with pytest.raises(ValueError):
             otx_classification_dataset.__getitem__(index="unexpected string")  # type: ignore

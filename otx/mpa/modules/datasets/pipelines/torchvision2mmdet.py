@@ -112,43 +112,6 @@ class NDArrayToTensor(ImageToTensor):
         return results
 
 
-# @PIPELINES.register_module()
-# class NormalizeTensor(Normalize):
-#     """MMDet adapter"""
-#
-#     def __call__(self, results):
-#         for key in results.get('img_fields', ['img']):
-#             img = results[key]
-#             img = F.normalize(img.float(), self.mean, self.std)
-#             if self.to_rgb:
-#                 img = img[[2, 1, 0]]
-#             results[key] = img
-#         results['img_norm_cfg'] = dict(
-#             mean=self.mean, std=self.std, to_rgb=self.to_rgb)
-#         return results
-#
-#
-# @PIPELINES.register_module()
-# class PadTensor(object):
-#     def __init__(self, size_divisor=32):
-#         self.size_divisor = float(size_divisor)
-#
-#     def __call__(self, results):
-#         for key in results.get('img_fields', ['img']):
-#             img = results[key]
-#             h = img.shape[1]
-#             w = img.shape[2]
-#             H = int(np.ceil(h/self.size_divisor)*self.size_divisor)
-#             W = int(np.ceil(w/self.size_divisor)*self.size_divisor)
-#             padding = (0, 0, W-w, H-h)
-#             # print(padding)
-#             img = F.pad(img, padding)
-#             results[key] = img
-#             results['pad_shape'] = img.shape
-#         results['pad_size_divisor'] = self.size_divisor
-#         return results
-
-
 @PIPELINES.register_module()
 class NDArrayToPILImage(object):
     def __init__(self, keys=["img"]):
