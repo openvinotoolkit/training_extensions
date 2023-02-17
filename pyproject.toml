@@ -23,6 +23,7 @@ omit = [
     "otx/algorithms/*/configs/**/model*.py",
     "otx/algorithms/*/configs/**/deployment.py",
     "otx/algorithms/**/configs/**/backbones/*",
+    "otx/algorithms/**/*sample*.py",
     "**/__init__.py",
     "otx/recipes/*",
 ]
