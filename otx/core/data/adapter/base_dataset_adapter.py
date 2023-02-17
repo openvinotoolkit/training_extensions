@@ -124,11 +124,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
 
         if test_data_roots:
-            test_data_candidates = self._detect_dataset_format(path=test_data_roots)
-            test_data_type = self._select_data_type(test_data_candidates)
-            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format=test_data_type)
+            self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
+            self.data_type = self._select_data_type(self.data_type_candidates)
+            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format=self.data_type)
             self.is_train_phase = False
-            self.data_type_candidates = test_data_candidates
 
         if unlabeled_data_roots is not None:
             dataset[Subset.UNLABELED] = DatumaroDataset.import_from(unlabeled_data_roots, format="image_dir")
@@ -189,6 +188,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
+    def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
+        return x1 != x2 and y1 != y2
+        
     def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
         """Select specific type among candidates.
 
@@ -214,17 +216,21 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.label_entities[annotation.label])]
         )
 
-    def _get_normalized_bbox_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
+    def _get_normalized_bbox_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Union[Annotation, None]:
         """Get bbox entity w/ normalization."""
-        return Annotation(
-            Rectangle(
-                x1=annotation.points[0] / width,
-                y1=annotation.points[1] / height,
-                x2=annotation.points[2] / width,
-                y2=annotation.points[3] / height,
-            ),
-            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
-        )
+        x1, y1, x2, y2 = annotation.points
+        if self._is_normal_bbox(x1, y1, x2, y2):
+            return Annotation(
+                Rectangle(
+                    x1=x1 / width,
+                    y1=y1 / height,
+                    x2=x2 / width,
+                    y2=y2 / height,
+                ),
+                labels=[ScoredLabel(label=self.label_entities[annotation.label])],
+            )
+        else:
+            return None
 
     def _get_original_bbox_entity(self, annotation: DatumaroAnnotation) -> Annotation:
         """Get bbox entity w/o normalization."""
