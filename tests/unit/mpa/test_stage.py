@@ -3,10 +3,18 @@ import os
 import mmcv
 import pytest
 
-from otx.mpa.stage import Stage
+from otx.mpa.stage import Stage, get_available_types
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
+
+@e2e_pytest_unit
+def test_get_available_types():
+    return_value = get_available_types()
+    assert isinstance(return_value, list)
 
 
 class TestStage:
+    @e2e_pytest_unit
     def test_init(self, mocker):
         fake_cfg = {
             "work_dir": "test_init",
@@ -15,9 +23,9 @@ class TestStage:
             "checkpoint_config": {"interval": 20},
             "seed": 0,
         }
-        fake_common_cfg = {"output_path": "./"}
+        fake_common_cfg = {"output_path": "/path/output"}
         mocker.patch.object(mmcv, "mkdir_or_exist")
-        stage = Stage("mpa_test", "", fake_cfg, fake_common_cfg, 0)
+        stage = Stage("mpa_test", "", fake_cfg, fake_common_cfg, 0, fake_kwargs=None)
 
         assert stage.cfg.get("runner", False)
         assert stage.cfg.runner.get("max_epochs", 5)
@@ -29,9 +37,10 @@ class TestStage:
         assert work_dir.find("test_init")
         assert work_dir.find("mpa_test")
 
+    @e2e_pytest_unit
     def test_init_with_distributed_enabled(self, mocker):
         fake_cfg = {"work_dir": "test_init_distributed"}
-        fake_common_cfg = {"output_path": "./"}
+        fake_common_cfg = {"output_path": "/path/output"}
         mocker.patch.object(mmcv, "mkdir_or_exist")
         mocker.patch("torch.distributed.is_initialized", returned_value=True)
         os.environ["LOCAL_RANK"] = "2"
@@ -39,6 +48,7 @@ class TestStage:
 
         assert stage.distributed is True
 
+    @e2e_pytest_unit
     def test_configure_data(self):
         _base_pipeline = [dict(type="LoadImageFromFile"), dict(type="MultiScaleFlipAug")]
         _transform = [
@@ -62,6 +72,7 @@ class TestStage:
         assert data_cfg.data.val.pipeline[1].img_scale == (224, 224)
         assert data_cfg.data.val.pipeline[1].transforms == _transform
 
+    @e2e_pytest_unit
     def test_configure_ckpt(self, mocker):
         cfg = mmcv.ConfigDict(load_from=None)
         mocker.patch.object(mmcv, "mkdir_or_exist")
@@ -72,6 +83,7 @@ class TestStage:
 
         assert cfg.load_from == "/path/to/load/ckpt"
 
+    @e2e_pytest_unit
     def test_configure_hook(self):
         cfg = mmcv.ConfigDict(
             custom_hook_options=dict(MockHook=dict(opt1="MockOpt1", opt2="MockOpt2")),
@@ -82,6 +94,7 @@ class TestStage:
         assert cfg.custom_hooks[0].opt1 == "MockOpt1"
         assert cfg.custom_hooks[0].opt2 == "MockOpt2"
 
+    @e2e_pytest_unit
     def test_configure_samples_per_gpu(self, mocker):
         cfg = mmcv.ConfigDict(data=dict(train_dataloader=dict(samples_per_gpu=2)))
         mock_otx_dataset = mocker.MagicMock()
@@ -93,6 +106,7 @@ class TestStage:
         assert "train_dataloader" in cfg.data
         assert cfg.data["train_dataloader"]["samples_per_gpu"] == 1
 
+    @e2e_pytest_unit
     def test_configure_compat_cfg(self):
         cfg = mmcv.ConfigDict(
             data=dict(
@@ -105,12 +119,14 @@ class TestStage:
         with pytest.raises(AttributeError):
             Stage.configure_compat_cfg(cfg)
 
+    @e2e_pytest_unit
     def test_configure_fp16_optimizer(self):
         cfg = mmcv.ConfigDict(fp16=dict(loss_scale=512.0), optimizer_config=dict(type="OptimizerHook"))
 
         Stage.configure_fp16_optimizer(cfg)
         assert cfg.optimizer_config.type == "Fp16OptimizerHook"
 
+    @e2e_pytest_unit
     def test_configure_unlabeled_dataloader(self, mocker):
         cfg = mmcv.ConfigDict(
             data=dict(
@@ -129,6 +145,7 @@ class TestStage:
         mock_build_ul_dataloader.assert_called_once()
         assert cfg.custom_hooks[0].type == "ComposedDataLoadersHook"
 
+    @e2e_pytest_unit
     def test_get_model_meta(self, mocker):
         cfg = dict(load_from="/foo/bar")
         from mmcv.runner import CheckpointLoader
@@ -142,12 +159,14 @@ class TestStage:
         mock_load_ckpt.assert_called_once()
         assert returned_value == {"model_meta": None}
 
+    @e2e_pytest_unit
     def test_get_data_cfg(self, mocker):
         cfg = mmcv.ConfigDict(data=dict(train=dict(dataset=dict(dataset="config"))))
         returned_value = Stage.get_data_cfg(cfg, "train")
 
         assert returned_value == "config"
 
+    @e2e_pytest_unit
     def test_get_data_classes(self, mocker):
         cfg = mmcv.ConfigDict()
         mocker.patch.object(Stage, "get_data_cfg", return_value={"data_classes": ["foo"]})
@@ -156,6 +175,7 @@ class TestStage:
 
         assert returned_value == ["foo"]
 
+    @e2e_pytest_unit
     def test_get_model_classes(self, mocker):
         cfg = mmcv.ConfigDict(model=dict())
         mocker.patch.object(Stage, "get_model_meta", return_value={"CLASSES": ["foo", "bar"]})
@@ -164,6 +184,7 @@ class TestStage:
 
         assert returned_value == ["foo", "bar"]
 
+    @e2e_pytest_unit
     def test_get_model_ckpt(self, mocker):
         from mmcv.runner import CheckpointLoader
 
@@ -177,6 +198,7 @@ class TestStage:
         mock_load_ckpt.assert_called_once()
         mock_save.assert_called_once()
 
+    @e2e_pytest_unit
     def test_read_label_schema(self, mocker):
         mocker.patch("os.path.exists", return_value=True)
         mocker.patch("builtins.open")
@@ -185,6 +207,7 @@ class TestStage:
 
         assert returned_value == ["foo"]
 
+    @e2e_pytest_unit
     def test_set_inference_progress_callback(self, mocker):
         mock_model = mocker.MagicMock()
         mock_model.register_forward_pre_hook()
@@ -196,6 +219,7 @@ class TestStage:
         mock_model.register_forward_pre_hook.assert_called_once()
         mock_model.register_forward_hook.assert_called_once()
 
+    @e2e_pytest_unit
     def test_build_model(self, mocker):
         mock_model_builder = mocker.patch.object(Stage, "MODEL_BUILDER")
         Stage.build_model(cfg=mmcv.Config())
