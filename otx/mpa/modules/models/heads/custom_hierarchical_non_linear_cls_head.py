@@ -93,7 +93,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
         return loss
 
     def forward_train(self, x, gt_label, **kwargs):
-        img_metas = kwargs.get("img_metas", False)
+        img_metas = kwargs.get("img_metas", None)
         gt_label = gt_label.type_as(x)
         cls_score = self.classifier(x)
 
@@ -127,11 +127,14 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
             ]
 
             # multilabel_loss is assumed to perform no batch averaging
-            valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)[
-                :, self.hierarchical_info["num_single_label_classes"] :
-            ]
-            valid_label_mask = valid_label_mask.to(x.device)
-            valid_label_mask = valid_label_mask[valid_batch_mask]
+            if img_metas is not None:
+                valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)[
+                    :, self.hierarchical_info["num_single_label_classes"] :
+                ]
+                valid_label_mask = valid_label_mask.to(x.device)
+                valid_label_mask = valid_label_mask[valid_batch_mask]
+            else:
+                valid_label_mask = None
             multilabel_loss = self.loss(head_logits, head_gt, multilabel=True, valid_label_mask=valid_label_mask)
             losses["loss"] += multilabel_loss.mean()
         return losses

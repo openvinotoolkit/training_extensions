@@ -31,7 +31,7 @@ logger = get_logger()
 
 # pylint: disable=too-many-instance-attributes
 @DATASETS.register_module()
-class MPAClsDataset(BaseDataset):
+class OTXClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
@@ -180,7 +180,7 @@ class MPAClsDataset(BaseDataset):
 
 
 @DATASETS.register_module()
-class MPAMultilabelClsDataset(MPAClsDataset):
+class OTXMultilabelClsDataset(OTXClsDataset):
     """Multi-label classification dataset class."""
 
     def get_indices(self, new_classes):
@@ -286,7 +286,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
 
 @DATASETS.register_module()
-class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
+class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
     """Hierarchical classification dataset class."""
 
     def __init__(self, **kwargs):

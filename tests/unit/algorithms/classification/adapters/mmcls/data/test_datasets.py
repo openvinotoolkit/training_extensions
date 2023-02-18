@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 
 from otx.algorithms.classification.adapters.mmcls.data import (
-    MPAClsDataset,
-    MPAHierarchicalClsDataset,
-    MPAMultilabelClsDataset,
+    OTXClsDataset,
+    OTXHierarchicalClsDataset,
+    OTXMultilabelClsDataset,
 )
 from otx.algorithms.classification.adapters.mmcls.data.datasets import SelfSLDataset
 from otx.algorithms.classification.utils import get_multihead_class_info
@@ -106,11 +106,11 @@ class TestOTXClsDataset:
 
     @pytest.mark.parametrize(
         "adapter_type",
-        [MPAClsDataset, MPAMultilabelClsDataset],
+        [OTXClsDataset, OTXMultilabelClsDataset],
     )
     @e2e_pytest_unit
     def test_create_dataset_adapter(self, adapter_type):
-        multilabel = adapter_type == MPAClsDataset
+        multilabel = adapter_type == OTXClsDataset
         self.task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, multilabel, False, self.dataset_len
         )
@@ -122,11 +122,11 @@ class TestOTXClsDataset:
 
     @pytest.mark.parametrize(
         "adapter_type",
-        [MPAClsDataset, MPAMultilabelClsDataset],
+        [OTXClsDataset, OTXMultilabelClsDataset],
     )
     @e2e_pytest_unit
     def test_metric_dataset_adapter(self, adapter_type):
-        multilabel = adapter_type == MPAMultilabelClsDataset
+        multilabel = adapter_type == OTXMultilabelClsDataset
         self.task_environment, self.dataset = init_environment(
             self.hyper_parameters, self.model_template, multilabel, False, self.dataset_len
         )
@@ -146,7 +146,7 @@ class TestOTXClsDataset:
             self.hyper_parameters, self.model_template, False, True, self.dataset_len
         )
         class_info = get_multihead_class_info(self.task_environment.label_schema)
-        dataset = MPAHierarchicalClsDataset(
+        dataset = OTXHierarchicalClsDataset(
             otx_dataset=self.dataset, labels=self.dataset.get_labels(), hierarchical_info=class_info
         )
         assert dataset.num_classes == len(self.dataset.get_labels())
@@ -160,7 +160,7 @@ class TestOTXClsDataset:
             self.hyper_parameters, self.model_template, False, True, self.dataset_len
         )
         class_info = get_multihead_class_info(self.task_environment.label_schema)
-        dataset = MPAHierarchicalClsDataset(
+        dataset = OTXHierarchicalClsDataset(
             otx_dataset=self.dataset, labels=self.dataset.get_labels(), hierarchical_info=class_info
         )
 

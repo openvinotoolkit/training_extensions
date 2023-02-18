@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from otx.mpa.cls.inferrer import ClsInferrer
@@ -25,15 +24,13 @@ class TestOTXClsInferrer:
         assert returned_value == {"outputs": fake_output}
 
     @e2e_pytest_unit
-    def test_infer(self, monkeypatch, mocker):
+    def test_infer(self, mocker):
         cfg = self.inferrer.configure(self.model_cfg, "", self.data_cfg, training=False)
         mocker.patch.object(ClsInferrer, "configure_samples_per_gpu")
         mocker.patch.object(ClsInferrer, "configure_compat_cfg")
         mock_infer_callback = mocker.patch.object(ClsInferrer, "set_inference_progress_callback")
         mocker.patch("otx.mpa.cls.inferrer.build_data_parallel")
         mock_build_model = mocker.patch.object(ClsInferrer, "build_model")
-        fake_output = np.random.rand(10, 10)
-        monkeypatch.setattr("otx.mpa.cls.inferrer.prob_extractor", lambda x, y: ({"pred": fake_output}, fake_output))
 
         returned_value = self.inferrer.infer(cfg)
         mock_infer_callback.assert_called_once()
