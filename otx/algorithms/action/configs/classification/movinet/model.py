@@ -1,4 +1,4 @@
-"""Model configuration of X3D model for Action Classification Task."""
+"""Model configuration of MoViNet model for Action Classification Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -17,28 +17,33 @@
 # pylint: disable=invalid-name
 
 num_classes = 400
-num_samples = 12
 model = dict(
     type="OTXRecognizer3D",
-    backbone=dict(type="X3D", gamma_w=1, gamma_b=2.25, gamma_d=2.2),
+    backbone=dict(type="OTXMoViNet", name="MoViNetA0", num_classes=num_classes),
     cls_head=dict(
-        type="X3DHead", in_channels=432, num_classes=num_classes, spatial_type="avg", dropout_ratio=0.5, fc1_bias=False
+        type="MoViNetHead",
+        in_channels=480,  # A0: 480, A1: 600, A2: 640, A3: 744, A4: 856, A5: 992
+        hidden_dim=2048,
+        num_classes=num_classes,
+        spatial_type="avg",
+        dropout_ratio=0.5,
     ),
     # model training and testing settings
     train_cfg=None,
     test_cfg=dict(average_clips="prob"),
 )
 
+
 evaluation = dict(interval=1, metrics=["top_k_accuracy", "mean_class_accuracy"], final_metric="mean_class_accuracy")
 
 optimizer = dict(
     type="AdamW",
-    lr=0.001,
+    lr=0.003,
     weight_decay=0.0001,
 )
 
 optimizer_config = dict(grad_clip=dict(max_norm=40.0, norm_type=2))
-lr_config = dict(policy="step", step=5)
+lr_config = dict(policy="CosineAnnealing", min_lr=0)
 total_epochs = 5
 
 # runtime settings
@@ -58,7 +63,4 @@ gpu_ids = range(0, 1)
 
 dist_params = dict(backend="nccl")
 resume_from = None
-load_from = (
-    "https://download.openmmlab.com/mmaction/recognition/x3d/facebook/"
-    "x3d_m_facebook_16x5x1_kinetics400_rgb_20201027-3f42382a.pth"
-)
+load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"
