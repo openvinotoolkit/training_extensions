@@ -2,6 +2,7 @@ import mmcv
 import pytest
 
 from otx.mpa.exporter_mixin import ExporterMixin
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 class TestExporterMixin:
@@ -21,6 +22,7 @@ class TestExporterMixin:
         mocker.patch.object(self.exporter, "configure", return_value=fake_config)
         mocker.patch("os.listdir")
 
+    @e2e_pytest_unit
     def test_run_with_error_raise(self):
         return_value = self.exporter.run({}, "", {}, mode="mock_mode")
 
@@ -28,6 +30,7 @@ class TestExporterMixin:
         assert return_value["outputs"] is None
         assert "msg" in return_value
 
+    @e2e_pytest_unit
     def test_run_without_deploy_cfg(self, mocker):
         def mock_naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
             pass
@@ -41,6 +44,7 @@ class TestExporterMixin:
         assert "msg" in return_value
         assert return_value["msg"] == ""
 
+    @e2e_pytest_unit
     def test_run_with_deploy_cfg(self, mocker):
         def mock_mmdeploy_export(output_dir, model_builder, precision, cfg, deploy_cfg, model_name="model"):
             pass
@@ -56,6 +60,7 @@ class TestExporterMixin:
         assert "msg" in return_value
         assert return_value["msg"] == ""
 
+    @e2e_pytest_unit
     def test_mmdeploy_export(self, mocker):
         from otx.mpa.deploy.apis import MMdeployExporter
 
