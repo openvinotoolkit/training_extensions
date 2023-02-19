@@ -99,7 +99,7 @@ if is_mmdeploy_enabled():
             feature_vector = FeatureVectorHook.func(x)
             saliency_map = ActivationMapHook.func(x[-1])
             return (*out, feature_vector, saliency_map)
-        
+
         return out
 
     @mark("custom_maskrcnn_forward", inputs=["input"], outputs=["dets", "labels", "masks", "feats", "saliencies"])

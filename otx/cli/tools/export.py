@@ -88,7 +88,6 @@ def main():
     task = task_class(task_environment=environment)
 
     exported_model = ModelEntity(None, environment.get_model_configuration())
-    # args.dump_features = True
 
     task.export(ExportType.OPENVINO, exported_model, args.dump_features)
 

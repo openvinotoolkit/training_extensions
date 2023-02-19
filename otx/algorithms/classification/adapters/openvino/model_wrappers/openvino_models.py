@@ -117,7 +117,7 @@ class OTXClassification(Classification):
             repr_vector = outputs["feature_vector"].reshape(-1)
         else:
             saliency_map, repr_vector = None, None
-        
+
         return probs, saliency_map, repr_vector, act_score
 
 

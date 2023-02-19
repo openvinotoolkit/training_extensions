@@ -92,7 +92,7 @@ if is_mmdeploy_enabled():
             cls_scores = outs[0]
             saliency_map = DetSaliencyMapHook(self).func(cls_scores, cls_scores_provided=True)
             return (*bbox_results, feature_vector, saliency_map)
-        
+
         return bbox_results
 
     @mark("custom_atss_forward", inputs=["input"], outputs=["dets", "labels", "feats", "saliencies"])
