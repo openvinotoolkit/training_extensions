@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from typing import List
 
 from datumaro.components.annotation import AnnotationType
@@ -37,9 +37,11 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     shapes = []
                     for ann in datumaro_item.annotations:
                         if self.task_type is TaskType.INSTANCE_SEGMENTATION and ann.type == AnnotationType.polygon:
-                            shapes.append(self._get_polygon_entity(ann, image.width, image.height))
+                            if self._is_normal_polygon(ann):
+                                shapes.append(self._get_polygon_entity(ann, image.width, image.height))
                         if self.task_type is TaskType.DETECTION and ann.type == AnnotationType.bbox:
-                            shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
+                            if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
+                                shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 
                         if ann.label not in used_labels:
                             used_labels.append(ann.label)

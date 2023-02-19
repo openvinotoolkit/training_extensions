@@ -1,10 +1,15 @@
+import copy
+
 import pytest
 
 from otx.mpa.cls.explainer import ClsExplainer
 from otx.mpa.cls.stage import ClsStage
 from otx.mpa.modules.hooks.recording_forward_hooks import ActivationMapHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters
+from tests.unit.algorithms.classification.test_helper import (
+    generate_cls_dataset,
+    setup_mpa_task_parameters,
+)
 
 
 class TestOTXClsExplainer:
@@ -28,8 +33,12 @@ class TestOTXClsExplainer:
         mocker.patch("otx.mpa.cls.explainer.build_data_parallel")
         mock_build_model = mocker.patch.object(ClsStage, "build_model")
         mocker.patch.object(ClsStage, "configure_samples_per_gpu")
+        data_cfg = copy.deepcopy(self.data_cfg)
+        dummy_dataset = generate_cls_dataset(number_of_images=1)
+        data_cfg.data.test["otx_dataset"] = dummy_dataset
+        data_cfg.data.test["labels"] = dummy_dataset.get_labels()
         self.explainer.cfg.merge_from_dict(self.model_cfg)
-        self.explainer.cfg.merge_from_dict(self.data_cfg)
+        self.explainer.cfg.merge_from_dict(data_cfg)
         self.explainer.explainer_hook = ActivationMapHook
         outputs = self.explainer.explain(self.explainer.cfg)
 

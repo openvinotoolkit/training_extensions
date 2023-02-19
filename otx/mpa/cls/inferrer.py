@@ -20,7 +20,6 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
     FeatureVectorHook,
     ReciproCAMHook,
 )
-from otx.mpa.modules.utils.task_adapt import prob_extractor
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
@@ -63,17 +62,7 @@ class ClsInferrer(ClsStage):
             dump_saliency_map=dump_saliency_map,
         )
 
-        if cfg.get("task_adapt", False) and self.extract_prob:
-            output_file_path = osp.join(cfg.work_dir, "pre_stage_res.npy")
-            np.save(output_file_path, outputs, allow_pickle=True)
-            return dict(pre_stage_res=output_file_path)
-        else:
-            # output_file_path = osp.join(cfg.work_dir, 'infer_result.npy')
-            # np.save(output_file_path, outputs, allow_pickle=True)
-            return dict(
-                # output_file_path=output_file_path,
-                outputs=outputs
-            )
+        return dict(outputs=outputs)
 
     def infer(self, cfg, model_builder=None, eval=False, dump_features=False, dump_saliency_map=False):
         # TODO: distributed inference
@@ -113,7 +102,6 @@ class ClsInferrer(ClsStage):
 
         # Model
         model = self.build_model(cfg, model_builder, fp16=cfg.get("fp16", False))
-        self.extract_prob = hasattr(model, "extract_prob")
         model.eval()
         feature_model = self._get_feature_module(model)
         model = build_data_parallel(model, cfg, distributed=False)
@@ -124,22 +112,16 @@ class ClsInferrer(ClsStage):
         eval_predictions = []
         feature_vectors = []
         saliency_maps = []
-        if cfg.get("task_adapt", False) and not eval and self.extract_prob:
-            old_prob, feats = prob_extractor(feature_model, test_dataloader)
-            data_infos = self.dataset.data_infos
-            # pre-stage for LwF
-            for i, data_info in enumerate(data_infos):
-                data_info["soft_label"] = {task: value[i] for task, value in old_prob.items()}
-            outputs = data_infos
-        else:
-            with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
-                with ReciproCAMHook(feature_model) if dump_saliency_map else nullcontext() as forward_explainer_hook:
-                    for data in test_dataloader:
-                        with torch.no_grad():
-                            result = model(return_loss=False, **data)
-                        eval_predictions.extend(result)
-                    feature_vectors = feature_vector_hook.records if dump_features else [None] * len(self.dataset)
-                    saliency_maps = forward_explainer_hook.records if dump_saliency_map else [None] * len(self.dataset)
+        with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
+            with ReciproCAMHook(feature_model) if dump_saliency_map else nullcontext() as forward_explainer_hook:
+                for data in test_dataloader:
+                    with torch.no_grad():
+                        result = model(return_loss=False, **data)
+                    eval_predictions.extend(result)
+                feature_vectors = feature_vector_hook.records if dump_features else [None] * len(self.dataset)
+                saliency_maps = forward_explainer_hook.records if dump_saliency_map else [None] * len(self.dataset)
+                if len(eval_predictions) == 0:
+                    eval_predictions = [None] * len(self.dataset)
 
         assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), (
             "Number of elements should be the same, however, number of outputs are "

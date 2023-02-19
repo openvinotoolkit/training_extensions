@@ -11,10 +11,9 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 CLASS_INC_DATASET = [
-    "MPAClsDataset",
-    "MPAMultilabelClsDataset",
+    "OTXClsDataset",
+    "OTXMultilabelClsDataset",
     "MPAHierarchicalClsDataset",
-    "ClsDirDataset",
     "ClsTVDataset",
 ]
 PSEUDO_LABEL_ENABLE_DATASET = ["ClassIncDataset", "ClsTVDataset"]

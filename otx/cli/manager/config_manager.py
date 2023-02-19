@@ -383,10 +383,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         # Create OTX-workspace
         # Check whether the workspace is existed or not
-        print(f"[*] Workspace Path: {self.workspace_root}")
-        print(f"[*] Load Model Template ID: {self.template.model_template_id}")
-        print(f"[*] Load Model Name: {self.template.name}")
-
         if self.check_workspace() and not self.rebuild:
             return
         if self.rebuild:
@@ -396,6 +392,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         elif not self.check_workspace():
             self.workspace_root = Path(set_workspace(task=self.task_type))
         self.workspace_root.mkdir(exist_ok=True, parents=True)
+        print(f"[*] Workspace Path: {self.workspace_root}")
+        print(f"[*] Load Model Template ID: {self.template.model_template_id}")
+        print(f"[*] Load Model Name: {self.template.name}")
 
         template_dir = Path(self.template.model_template_path).parent
 

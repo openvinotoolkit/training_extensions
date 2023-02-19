@@ -21,5 +21,9 @@ def test_get_dataset_adapter(task_name):
         task_type=task_type,
         train_data_roots=os.path.join(root_path, data_root["train"]),
         val_data_roots=os.path.join(root_path, data_root["val"]),
+    )
+
+    get_dataset_adapter(
+        task_type=task_type,
         test_data_roots=os.path.join(root_path, data_root["test"]),
     )

@@ -1,0 +1,5 @@
+TestToolsAnomalyDetection:
+  pot:
+    number_of_fakequantizers: 68
+  nncf:
+    number_of_fakequantizers: 55
