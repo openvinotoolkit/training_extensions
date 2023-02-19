@@ -48,11 +48,11 @@ class BalancedSampler(Sampler):
                 self.num_trials = int(self.data_length / self.num_cls)
         else:
             self.num_trials = int(self.data_length / self.num_cls)
-        self.num_samples = self.calculate_num_samples()
+        self.num_samples = self._calculate_num_samples()
 
         logger.info(f"This sampler will select balanced samples {self.num_trials} times")
 
-    def calculate_num_samples(self):
+    def _calculate_num_samples(self):
         num_samples = self.num_trials * self.num_cls * self.repeat
 
         if self.num_replicas > 1:
