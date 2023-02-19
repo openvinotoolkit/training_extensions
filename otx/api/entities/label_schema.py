@@ -21,25 +21,26 @@ from otx.api.entities.scored_label import ScoredLabel
 logger = logging.getLogger(__name__)
 
 
-def natural_sort_label_id(label: LabelEntity) -> List[int]:
+def natural_sort_label_id(target: Union[ID, LabelEntity]) -> List[int]:
     """Generates a natural sort key for a LabelEntity object based on its ID.
 
     Args:
-    label (LabelEntity): A LabelEntity object with an ID to be sorted.
+    target (Union[ID, LabelEntity]): The ID or LabelEntity object to be sorted.
 
     Returns:
     List[int]: A list of integers representing the numeric substrings in the ID
     in the order they appear.
 
     Example:
-
     origin_sorted_labels = sorted(labels, key=lambda x: x.id_)
     natural_sorted_labels = sorted(labels, key=lambda x: x.natural_sort_label_id)
 
     print(origin_sorted_labels) # Output: [LabelEntity(0), LabelEntity(1), LabelEntity(10), ... LabelEntity(2)]
     print(natural_sorted_labels) # Output: [LabelEntity(0), LabelEntity(1), LabelEntity(2), ... LabelEntity(10)]
     """
-    return [int(t) for t in re.split(r"(\d+)", label.id_) if t.isdigit()]
+    if isinstance(target, LabelEntity):
+        target = target.id_
+    return [int(t) for t in re.split(r"(\d+)", target) if t.isdigit()]
 
 
 class LabelGroupExistsException(ValueError):
