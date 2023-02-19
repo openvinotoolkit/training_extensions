@@ -302,7 +302,6 @@ class Stage(object):
         samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
 
         data_cfg = get_data_cfg(cfg, subset)
-
         dataset_len = len(data_cfg.otx_dataset)
 
         if distributed:
