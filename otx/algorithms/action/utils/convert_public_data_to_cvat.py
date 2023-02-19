@@ -162,7 +162,7 @@ def convert_public_dataset_to_datumaro(src_path: str, dst_path: str, ann_file: s
     with open(ann_file, "r", encoding="utf-8") as anns:
         pathlib.Path(osp.join(dst_path, phase)).mkdir(parents=True, exist_ok=True)
 
-        lines = anns.readlines()[:50]
+        lines = anns.readlines()
         for i, line in tqdm(enumerate(lines), total=len(lines)):
             if line[0] == "#":
                 continue
