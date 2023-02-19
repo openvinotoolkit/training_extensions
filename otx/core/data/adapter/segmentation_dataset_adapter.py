@@ -44,11 +44,10 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
-
-        if self.data_type_candidates[0] == "voc":
+        if self.data_type == "voc":
             self.set_voc_labels()
 
-        if self.data_type_candidates[0] == "common_semantic_segmentation":
+        if self.data_type == "common_semantic_segmentation":
             self.set_common_labels()
 
         for subset, subset_data in self.dataset.items():
