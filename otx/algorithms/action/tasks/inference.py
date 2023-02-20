@@ -307,7 +307,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             self._delete_scratch_space()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity):
+    def export(self, export_type: ExportType, output_model: ModelEntity, **kwargs):
         """Export function of OTX Action Task."""
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
