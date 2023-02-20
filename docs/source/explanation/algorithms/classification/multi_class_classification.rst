@@ -15,8 +15,8 @@ For the supervised training we use the following algorithms components:
 - ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model. However, for the class-incremental scenario we use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
 
 - ``Training technique``
-    - `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_: To add adaptability to the training pipeline.
-    - ``Early stopping``: To prevent overfitting. You can use early stopping like the below command.
+    - `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_: To add adaptability to the training pipeline and prevent overfitting.
+    - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.
       
       .. code-block::
 
