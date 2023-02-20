@@ -154,6 +154,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        if not dump_features:
+            raise NotImplementedError("Ommitting feature dumping is not implemented.")
 
         stage_module = "SegExporter"
         results = self._run_task(

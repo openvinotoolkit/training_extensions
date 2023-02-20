@@ -259,6 +259,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Exception: If export_type is not ExportType.OPENVINO
         """
         # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        if not dump_features:
+            raise NotImplementedError("Ommitting feature dumping is not implemented.")
+
         assert export_type == ExportType.OPENVINO, f"Incorrect export_type={export_type}"
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO

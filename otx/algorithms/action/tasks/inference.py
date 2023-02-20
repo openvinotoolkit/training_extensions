@@ -310,6 +310,9 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
         """Export function of OTX Action Task."""
         # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        if not dump_features:
+            raise NotImplementedError("Ommitting feature dumping is not implemented.")
+
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
