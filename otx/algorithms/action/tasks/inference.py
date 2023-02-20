@@ -307,8 +307,9 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             self._delete_scratch_space()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity, **kwargs):
+    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
         """Export function of OTX Action Task."""
+        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:

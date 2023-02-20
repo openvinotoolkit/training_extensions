@@ -147,7 +147,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity, **kwargs):
+    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
@@ -160,6 +160,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             stage_module,
             mode="train",
             export=True,
+            dump_features=dump_features,
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
