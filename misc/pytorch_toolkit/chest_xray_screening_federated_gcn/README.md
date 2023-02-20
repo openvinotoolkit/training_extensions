@@ -36,9 +36,7 @@ The overall performance of the proposed CNN-GNN is
 
 ## Model
 
-Download `.pth` checkpoint for CNN-GNN model trained on CheXpert dataset with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi34/high_low/weights.zip).
-
-Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public) as well.
+Download `.pth` checkpoint for CNN-GNN model trained on CheXpert dataset with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi8/high_low/weights.zip).
 
 Note: The ONNX and IR representation models accepts inputs of fixed size mentioned in configuration file. This needs to be updated based on the input size.
 
@@ -53,31 +51,32 @@ Note: The ONNX and IR representation models accepts inputs of fixed size mention
 
 
 ```
-radiology_compression/
+federated_chest_screening/
 	src/
        utils/
-        dataprep.py
+        dataloader.py
         downloader.py
-        downloader.py
-        evaluators.py
         exporter.py
-        generate.py
         get_config.py
         inference_utils.py
+        loss.py
+        metric.py
+        misc.py
         model.py
         train_utils.py
+        transformation.py
        export.py
        inference.py
        train.py
 	configs/
-       phase1_config.json
-       phase2_config.json
-       download_configs.json
+        download_configs.json
+        fl_with_gnn.json
+        fl_without_gnn.json
 	media/
 	tests/
-       test_export.py
-       test_inference.py
-       test_train.py
+        test_export.py
+        test_inference.py
+        test_train.py
 	init_venv.sh
 	README.md
 	requirements.txt
