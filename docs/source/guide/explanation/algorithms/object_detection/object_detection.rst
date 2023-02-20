@@ -40,27 +40,26 @@ In the table below the mAP on toy data sample from `COCO <https://cocodataset.or
 
 We sample 400 images that contains one of [person, car, bus] for labeled train images. And 4000 images for unlabeled images. For validation 100 images are selected from val2017
 
-+---------+-----------------------------------+
-| Dataset |        Sampled COCO dataset       |   
-+=========+=================+=================+
-|         |       SL        |      Semi-SL    |
-+---------+-----------------+-----------------+
-|   ATSS  |  Person: 69.70  |  Person: 69.44  |
-|         |  Car:    65.00  |  Car:    65.84  |
-|         |  Bus:    42.96  |  Bus:    50.7   |
-|         |  Mean:   59.20  |  Mean:   61.98  |
-+---------+-----------------+-----------------+
-|   SSD   |  Person: 39.24  |  Person: 38.52  |
-|         |  Car:    19.24  |  Car:    28.02  |
-|         |  Bus:    21.34  |  Bus:    26.28  |
-|         |  Mean:   26.60  |  Mean:   30.96  |
-+---------+-----------------+-----------------+
-|  YOLOX  |  Person: 65.64  | Person: 69.00   |
-|         |  Car:    64.44  |  Car:   65.66   |
-|         |  Bus:    60.68  |  Bus:   65.12   |
-|         |  Mean:   63.6   |  Mean:  66.58   |
-+---------+-----------------+-----------------+
-
++---------+--------------------------------------------+
+| Dataset |            Sampled COCO dataset            |   
++=========+=====================+======================+
+|         |          SL         |       Semi-SL        |
++---------+---------------------+----------------------+
+|  ATSS   |  | Person: 69.70    | | Person: 69.44      |
+|         |  | Car:    65.00    | | Car:    65.84      |
+|         |  | Bus:    42.96    | | Bus:    50.7       |
+|         |  | Mean:   59.20    | | Mean:   61.98      |
++---------+---------------------+----------------------+
+|   SSD   | | Person: 39.24     | | Person: 38.52      |
+|         | | Car:    19.24     | | Car:    28.02      |
+|         | | Bus:    21.34     | | Bus:    26.28      |
+|         | | Mean:   26.60     | | Mean:   30.96      |
++---------+---------------------+----------------------+
+|  YOLOX  | | Person: 65.64     | | Person: 69.00      |
+|         | | Car:    64.44     | | Car:   65.66       |
+|         | | Bus:    60.68     | | Bus:   65.12       |
+|         | | Mean:   63.6      | | Mean:  66.58       |
++---------+---------------------+----------------------+
 
 ************************
 Self-supervised Learning
