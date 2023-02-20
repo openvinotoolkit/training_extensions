@@ -122,9 +122,9 @@ def main():
     image_files = get_image_files(args.explain_data_roots)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)
     explain_parameters = InferenceParameters(
-            is_evaluation=False,
-            explainer=args.explain_algorithm,
-        )
+        is_evaluation=False,
+        explainer=args.explain_algorithm,
+    )
     explained_dataset = task.explain(
         dataset_to_explain.with_empty_annotations(),
         explain_parameters,

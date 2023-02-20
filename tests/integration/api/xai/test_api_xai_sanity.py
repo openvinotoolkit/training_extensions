@@ -38,11 +38,13 @@ torch.manual_seed(0)
 
 save_model_to = "/tmp/otx_xai/"
 
-assert_text_torch = "For the torch task the number of saliency maps should be equal to the number of all classes."
-assert_text_ov = "For the OV task the number of saliency maps should be equal to the number of predicted classes."
+assert_text_explain_all = "The number of saliency maps should be equal to the number of all classes."
+assert_text_explain_predicted = "The number of saliency maps should be equal to the number of predicted classes."
 
 
-def saliency_maps_check(predicted_dataset, task_labels, assert_text, only_predicted=False):
+def saliency_maps_check(
+    predicted_dataset, task_labels, raw_sal_map_shape, processed_saliency_maps=False, only_predicted=True
+):
     for data_point in predicted_dataset:
         saliency_map_counter = 0
         metadata_list = data_point.get_metadata()
@@ -50,15 +52,23 @@ def saliency_maps_check(predicted_dataset, task_labels, assert_text, only_predic
             if isinstance(metadata.data, ResultMediaEntity):
                 if metadata.data.type == "saliency_map":
                     saliency_map_counter += 1
-                    assert metadata.data.numpy.ndim == 3
-                    assert metadata.data.numpy.shape == (data_point.height, data_point.width, 3)
+                    if processed_saliency_maps:
+                        assert metadata.data.numpy.ndim == 3
+                        assert metadata.data.numpy.shape == (data_point.height, data_point.width, 3)
+                    else:
+                        assert metadata.data.numpy.ndim == 2
+                        assert metadata.data.numpy.shape == raw_sal_map_shape
         if only_predicted:
-            assert saliency_map_counter == len(data_point.annotation_scene.get_labels()), assert_text
+            assert saliency_map_counter == len(data_point.annotation_scene.get_labels()), assert_text_explain_predicted
         else:
-            assert saliency_map_counter == len(task_labels), assert_text
+            assert saliency_map_counter == len(task_labels), assert_text_explain_all
 
 
 class TestOVClsXAIAPI(ClassificationTaskAPIBase):
+    ref_raw_saliency_shapes = {
+        "EfficientNet-B0": (7, 7),
+    }
+
     @e2e_pytest_api
     @pytest.mark.parametrize(
         "multilabel,hierarchical",
@@ -81,13 +91,38 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
         task.train(dataset, output_model, train_parameters)
         save_model_data(output_model, save_model_to)
 
-        # Infer torch model
+        # Infer torch model (predict all classes with postprocessing)
         task = ClassificationInferenceTask(task_environment=task_environment)
-        predicted_dataset = task.infer(dataset.with_empty_annotations(), InferenceParameters)
+        inference_parameters = InferenceParameters(
+            is_evaluation=False,
+            process_saliency_maps=True,
+            explain_predicted_classes=False,
+        )
+        predicted_dataset = task.infer(dataset.with_empty_annotations(), inference_parameters)
+
+        # Check saliency maps torch task (predict all classes with postprocessing)
+        task_labels = output_model.configuration.get_label_schema().get_labels(include_empty=False)
+        saliency_maps_check(
+            predicted_dataset,
+            task_labels,
+            self.ref_raw_saliency_shapes[model_template.name],
+            processed_saliency_maps=True,
+            only_predicted=False,
+        )
+
+        # Infer torch model
+        task_environment, dataset = self.init_environment(
+            hyper_parameters, model_template, multilabel, hierarchical, 20
+        )
+        task = ClassificationInferenceTask(task_environment=task_environment)
+        inference_parameters = InferenceParameters(
+            is_evaluation=False,
+        )
+        predicted_dataset = task.infer(dataset.with_empty_annotations(), inference_parameters)
 
         # Check saliency maps torch task
         task_labels = output_model.configuration.get_label_schema().get_labels(include_empty=False)
-        saliency_maps_check(predicted_dataset, task_labels, assert_text_torch)
+        saliency_maps_check(predicted_dataset, task_labels, self.ref_raw_saliency_shapes[model_template.name])
 
         # Save OV IR model
         task._model_ckpt = osp.join(save_model_to, "weights.pth")
@@ -106,10 +141,16 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
         )
 
         # Check saliency maps OV task
-        saliency_maps_check(predicted_dataset_ov, task_labels, assert_text_ov, only_predicted=True)
+        saliency_maps_check(predicted_dataset_ov, task_labels, self.ref_raw_saliency_shapes[model_template.name])
 
 
 class TestOVDetXAIAPI(DetectionTaskAPIBase):
+    ref_raw_saliency_shapes = {
+        "ATSS": (4, 4),
+        "SSD": (13, 13),
+        "YOLOX": (13, 13),
+    }
+
     @e2e_pytest_api
     def test_inference_xai(self):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=2)
@@ -130,7 +171,7 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
 
         # Check saliency maps torch task
         task_labels = trained_model.configuration.get_label_schema().get_labels(include_empty=False)
-        saliency_maps_check(predicted_dataset, task_labels, assert_text_torch)
+        saliency_maps_check(predicted_dataset, task_labels, self.ref_raw_saliency_shapes[model_template.name])
 
         # Save OV IR model
         inference_task._model_ckpt = osp.join(save_model_to, "weights.pth")
@@ -149,4 +190,4 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
         )
 
         # Check saliency maps OV task
-        saliency_maps_check(predicted_dataset_ov, task_labels, assert_text_ov, only_predicted=True)
+        saliency_maps_check(predicted_dataset_ov, task_labels, self.ref_raw_saliency_shapes[model_template.name])
