@@ -6,6 +6,7 @@
 
 import copy
 import logging
+import re
 from enum import Enum
 from typing import Dict, List, Optional, Sequence, Union
 
@@ -18,6 +19,31 @@ from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 
 logger = logging.getLogger(__name__)
+
+
+def natural_sort_label_id(target: Union[ID, LabelEntity, ScoredLabel]) -> List:
+    """Generates a natural sort key for a LabelEntity object based on its ID.
+
+    Args:
+    target (Union[ID, LabelEntity]): The ID or LabelEntity or ScoredLabel object to be sorted.
+
+    Returns:
+    List[int]: A list of integers representing the numeric substrings in the ID
+    in the order they appear.
+
+    Example:
+    origin_sorted_labels = sorted(labels, key=lambda x: x.id_)
+    natural_sorted_labels = sorted(labels, key=lambda x: x.natural_sort_label_id)
+
+    print(origin_sorted_labels) # Output: [LabelEntity(0), LabelEntity(1), LabelEntity(10), ... LabelEntity(2)]
+    print(natural_sorted_labels) # Output: [LabelEntity(0), LabelEntity(1), LabelEntity(2), ... LabelEntity(10)]
+    """
+
+    if isinstance(target, (LabelEntity, ScoredLabel)):
+        target = target.id_
+    if isinstance(target, int):
+        return [target]
+    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", target)]
 
 
 class LabelGroupExistsException(ValueError):
@@ -61,7 +87,7 @@ class LabelGroup:
     ):
         self.id_ = ID(ObjectId()) if id is None else id
 
-        self.labels = sorted(labels, key=lambda x: x.id_)
+        self.labels = sorted(labels, key=natural_sort_label_id)
         self.name = name
         self.group_type = group_type
 
@@ -312,7 +338,7 @@ class LabelSchemaEntity:
             List[LabelEntity]: list of all labels in the label schema
         """
         labels = {label for group in self._groups for label in group.labels if include_empty or not label.is_empty}
-        return sorted(list(labels), key=lambda x: x.id_)
+        return sorted(list(labels), key=natural_sort_label_id)
 
     def get_groups(self, include_empty: bool = False) -> List[LabelGroup]:
         """Get the label groups in the label schema.
@@ -371,7 +397,7 @@ class LabelSchemaEntity:
         label_ids = {
             label.id_ for group in self._groups for label in group.labels if include_empty or not label.is_empty
         }
-        return sorted(list(label_ids))
+        return sorted(list(label_ids), key=natural_sort_label_id)
 
     def get_label_group_by_name(self, group_name: str) -> Optional[LabelGroup]:
         """Get the label group by the passed group_name.

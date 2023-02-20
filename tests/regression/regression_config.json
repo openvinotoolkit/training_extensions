@@ -62,9 +62,12 @@
         "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
-        },
-        "class_incr": {
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--input": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset/images/test"
+        }
+      },
+      "class_incr": {
+        "multi_class":{
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
@@ -77,35 +80,43 @@
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         }
+      },
+      "tiling": {
+        "multi_class": {
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--input": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset/images/test"
+        }
       }
     },
-    "semantic_segmentation": {
+    "segmentation": {
       "supervised": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added"
-        },
-        "class_incr": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--input": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl/test/images"
+        }
+      },
+      "class_incr": {
+        "multi_class":{
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl"
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added",
-          "--unlabeled-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
+          "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_semisl/unlabeled"
         }
       },
       "self_supervised": {
         "multi_class": {
-          "--train-data-roots": "will be added",
-          "--val-data-roots": "will be added",
-          "--test-data-roots": "will be added",
-          "--unlabeled-data-roots": "will be added"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl"
         }
       }
     },
@@ -114,20 +125,23 @@
         "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
-        },
-        "class_incr": {
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
+          "--input": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset/images/test"
+        }
+      },
+      "class_incr": {
+        "multi_class":{
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
         }
       },
-      "semi_supervised": {
-        "multi_class":{
+      "tiling": {
+        "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
-          "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
+          "--input": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset/images/test"
         }
       }
     },
@@ -149,193 +163,447 @@
         }
       }
     },
-    "anomaly": {
-      "classification": {
+    "anomaly_classification": {
         "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
         "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
         "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
-      },
-      "detection": {
-        "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-        "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-        "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
-      },
-      "segmentation": {
-        "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-        "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-        "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
-      }
+    },
+    "anomaly_detection": {
+      "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+      "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+      "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
+    },
+    "anomaly_segmentation": {
+      "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+      "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+      "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec"
     }
   },
   "regression_criteria": {
     "classification": {
       "supervised": {
         "multi_class": {
-          "EfficientNet-B0": 1.0,
-          "EfficientNet-V2-S": 1.0,
-          "MobileNet-V3-large-1x": 1.0,
-          "MobileNet-V3-large-0.75x": 1.0,
-          "MobileNet-V3-small": 1.0
+          "train":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "export":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "deploy":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "nncf":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "pot":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          }
         },
         "multi_label": {
-          "EfficientNet-B0": 1.0,
-          "EfficientNet-V2-S": 1.0,
-          "MobileNet-V3-large-1x": 1.0,
-          "MobileNet-V3-large-0.75x": 1.0,
-          "MobileNet-V3-small": 1.0
+          "train":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "export":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "deploy":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "nncf":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "pot":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          }
         },
         "h_label": {
-          "EfficientNet-B0": 1.0,
-          "EfficientNet-V2-S": 1.0,
-          "MobileNet-V3-large-1x": 1.0,
-          "MobileNet-V3-large-0.75x": 1.0,
-          "MobileNet-V3-small": 1.0
+          "train":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "export":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "deploy":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "nncf":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          },
+          "pot":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          }
         },
         "supcon": {
-          "EfficientNet-B0": 1.0,
-          "EfficientNet-V2-S": 1.0,
-          "MobileNet-V3-large-1x": 1.0,
-          "MobileNet-V3-large-0.75x": 1.0,
-          "MobileNet-V3-small": 1.0
+          "train":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          }
         }
       },
       "class_incr": {
         "multi_class": {
-          "EfficientNet-B0": 1.0,
-          "EfficientNet-V2-S": 1.0,
-          "MobileNet-V3-large-1x": 1.0,
-          "MobileNet-V3-large-0.75x": 1.0,
-          "MobileNet-V3-small": 1.0
+          "train":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          }
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "EfficientNet-B0": 1.0,
-          "EfficientNet-V2-S": 1.0,
-          "MobileNet-V3-large-1x": 1.0,
-          "MobileNet-V3-large-0.75x": 1.0,
-          "MobileNet-V3-small": 1.0
+          "train":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          }
         }
       },
       "self_supervised": {
         "multi_class": {
-          "EfficientNet-B0": 1.0,
-          "EfficientNet-V2-S": 1.0,
-          "MobileNet-V3-large-1x": 1.0,
-          "MobileNet-V3-large-0.75x": 1.0,
-          "MobileNet-V3-small": 1.0
+          "train":{
+            "EfficientNet-B0": 0.00,
+            "EfficientNet-V2-S": 0.00,
+            "MobileNet-V3-large-1x": 0.00
+          }
         }
       }
     },
     "detection": {
       "supervised": {
         "multi_class": {
-          "YOLOX": 1.0,
-          "ATSS": 1.0,
-          "SSD": 1.0,
-          "VFNet": 1.0
+          "train":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "export":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "deploy":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "nncf":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "pot":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          }
         }
       },
       "class_incr": {
         "multi_class": {
-          "YOLOX": 1.0,
-          "ATSS": 1.0,
-          "SSD": 1.0,
-          "VFNet": 1.0
+          "train":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          }
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "YOLOX": 1.0,
-          "ATSS": 1.0,
-          "SSD": 1.0,
-          "VFNet": 1.0
+          "train":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          }
+        }
+      },
+      "tiling": {
+        "multi_class": {
+          "train":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "export":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "deploy":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "nncf":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          },
+          "pot":{
+            "YOLOX": 0.00,
+            "ATSS": 0.00,
+            "SSD": 0.00
+          }
         }
       }
     },
-    "semantic_segmentation": {
+    "segmentation": {
       "supervised": {
         "multi_class": {
-          "Lite-HRNet-18": 1.0,
-          "Lite-HRNet-18-mod2": 1.0,
-          "Lite-HRNet-s-mod2": 1.0,
-          "Lite-HRNet-x-mod3": 1.0
+          "train":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          },
+          "export":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          },
+          "deploy":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          },
+          "nncf":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          },
+          "pot":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          }
         }
       },
       "class_incr": {
         "multi_class": {
-          "Lite-HRNet-18": 1.0,
-          "Lite-HRNet-18-mod2": 1.0,
-          "Lite-HRNet-s-mod2": 1.0,
-          "Lite-HRNet-x-mod3": 1.0
+          "train":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          }
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "Lite-HRNet-18": 1.0,
-          "Lite-HRNet-18-mod2": 1.0,
-          "Lite-HRNet-s-mod2": 1.0,
-          "Lite-HRNet-x-mod3": 1.0
+          "train":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          }
         }
       },
       "self_supervised": {
         "multi_class": {
-          "Lite-HRNet-18": 1.0,
-          "Lite-HRNet-18-mod2": 1.0,
-          "Lite-HRNet-s-mod2": 1.0,
-          "Lite-HRNet-x-mod3": 1.0
+          "train":{
+            "Lite-HRNet-18": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-x-mod3": 0.00
+          }
         }
       }
     },
     "instance_segmentation": {
       "supervised": {
         "multi_class": {
-          "MaskRCNN-EfficientNetB2B": 1.0,
-          "MaskRCNN-ResNet50": 1.0
+          "train":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "export":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "deploy":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "nncf":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "pot":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          }
         }
       },
       "class_incr": {
         "multi_class": {
-          "MaskRCNN-EfficientNetB2B": 1.0,
-          "MaskRCNN-ResNet50": 1.0
+          "train":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          }
         }
       },
-      "semi_supervised": {
+      "tiling": {
         "multi_class": {
-          "MaskRCNN-EfficientNetB2B": 1.0,
-          "MaskRCNN-ResNet50": 1.0
+          "train":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "export":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "deploy":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "nncf":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          },
+          "pot":{
+            "MaskRCNN-EfficientNetB2B": 0.00,
+            "MaskRCNN-ResNet50": 0.00
+          }
         }
       }
     },
     "action_classification": {
       "supervised": {
         "multi_class": {
-          "X3D": 1.0
+          "train":{
+            "X3D": 0.00
+          },
+          "export":{
+            "X3D": 0.00
+          },
+          "pot":{
+            "X3D": 0.00
+          }
         }
       }
     },
     "action_detection": {
       "supervised": {
         "multi_class": {
-          "X3D_FAST_RCNN": 1.0
+          "train":{
+            "X3D_FAST_RCNN": 0.00
+          }
         }
       }
     },
-    "anomaly": {
-      "classification": {
-        "DRAEM": 1.0,
-        "PADIM": 1.0,
-        "STFPM": 1.0
+    "anomaly_classification": {
+      "train":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
       },
-      "detection": {
-        "DRAEM": 1.0,
-        "PADIM": 1.0,
-        "STFPM": 1.0
+      "export":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
       },
-      "segmentation": {
-        "DRAEM": 1.0,
-        "PADIM": 1.0,
-        "STFPM": 1.0
+      "deploy":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "nncf":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "pot":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      }
+    },
+    "anomaly_detection": {
+      "train":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "export":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "deploy":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "nncf":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "pot":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      }
+    },
+    "anomaly_segmentation": {
+      "train":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "export":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "deploy":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "nncf":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
+      },
+      "pot":{
+        "DRAEM": 0.00,
+        "PADIM": 0.00,
+        "STFPM": 0.00
       }
     }
   }

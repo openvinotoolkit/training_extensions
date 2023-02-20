@@ -6,6 +6,7 @@ import copy
 import json
 import os
 from pathlib import Path
+from timeit import default_timer as timer
 
 import pytest
 
@@ -13,6 +14,7 @@ from otx.cli.registry import Registry
 from tests.regression.regression_test_helpers import (
     get_result_dict,
     load_regression_configuration,
+    REGRESSION_TEST_EPOCHS
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -29,302 +31,463 @@ from tests.test_suite.run_test_command import (
     pot_optimize_testing,
 )
 
+# Configurations for regression test.
+TASK_TYPE = "classification"
+TRAIN_TYPE = "supervised"
+LABEL_TYPE = "multi_class"
+
 otx_dir = os.getcwd()
-templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
+templates = Registry("otx/algorithms/classification").filter(task_type=TASK_TYPE.upper()).templates
 templates_ids = [template.model_template_id for template in templates]
 
-# Configurations for regression test.
-REGRESSION_TEST_EPOCHS = "10"
-TASK_TYPE = "classification"
-
 result_dict = get_result_dict(TASK_TYPE)
-result_dir = f"/tmp/regression_test_results_{TASK_TYPE}"
+result_dir = f"/tmp/regression_test_results/{TASK_TYPE}"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 
 # Multi-class Classification
-multi_class_regression_config = load_regression_configuration(otx_dir, "classification", "supervised", "multi_class")
+multi_class_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, LABEL_TYPE)
 multi_class_data_args = multi_class_regression_config["data_path"]
 multi_class_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
 
 class TestRegressionMultiClassClassification:
-    def setup(self):
-        self.label_type = "multi_class"
+    def setup_method(self):
+        self.label_type = LABEL_TYPE
+        self.acc_metric = "Top-1 acc."
+        self.train_time = "Train + val time (sec.)"
+        self.infer_time = "Infer time (sec.)"
+        
+        self.export_time = "Export time (sec.)"
+        self.export_eval_time = "Export eval time (sec.)"
+        
+        self.deploy_time = "Deploy time (sec.)"
+        self.deploy_eval_time = "Deploy eval time (sec.)"
+        
+        self.nncf_time = "NNCF time (sec.)"
+        self.nncf_eval_time = "NNCF eval time (sec.)"
+        
+        self.pot_time = "POT time (sec.)"
+        self.pot_eval_time = "POT eval time (sec.)"
+        
+        self.performance = {}
 
-    def teardown(self):
+    def teardown_method(self):
         with open(f"{result_dir}/result.json", "w") as result_file:
             json.dump(result_dict, result_file, indent=4)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, multi_class_data_args)
+        train_elapsed_time = timer() - train_start_time
+        
+        infer_start_time = timer()
         otx_eval_compare(
             template,
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            multi_class_regression_config["regression_criteria"],
-            result_dict["train"][TASK_TYPE][self.label_type]["supervised"],
+            multi_class_regression_config["regression_criteria"]["train"],
+            self.performance[template.name],
+            self.acc_metric
         )
+        infer_elapsed_time = timer() - infer_start_time
+        
+        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
+        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_semisl(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
-        config_semisl = load_regression_configuration(otx_dir, "classification", "semi_supervised", "multi_class")
+        config_semisl = load_regression_configuration(otx_dir, TASK_TYPE, "semi_supervised", LABEL_TYPE)
         args_semisl = config_semisl["data_path"]
 
-        args_semisl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl["train_params"] = [
+            "params", 
+            "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS,
+            "--algo_backend.train_type", "SEMISUPERVISED"
+        ]
+        train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+        train_elapsed_time = timer() - train_start_time
 
-        args_semisl.pop("train_params")
+        infer_start_time = timer()
         otx_eval_compare(
             template,
             tmp_dir_path,
             otx_dir,
             args_semisl,
-            config_semisl["regression_criteria"],
-            result_dict["train"][TASK_TYPE][self.label_type]["semi_supervised"],
+            config_semisl["regression_criteria"]["train"],
+            self.performance[template.name],
+            self.acc_metric
         )
+        infer_elapsed_time = timer() - infer_start_time
+        
+        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
+        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type]["semi_supervised"]["train"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
-        config_selfsl = load_regression_configuration(otx_dir, "classification", "self_supervised", "multi_class")
+        config_selfsl = load_regression_configuration(otx_dir, TASK_TYPE, "self_supervised", LABEL_TYPE)
         args_selfsl = config_selfsl["data_path"]
 
         args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         selfsl_train_args = copy.deepcopy(args_selfsl)
         selfsl_train_args["train_params"].extend(["--algo_backend.train_type", "SELFSUPERVISED"])
         # Self-supervised Training
+        train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, selfsl_train_args)
+        train_elapsed_time = timer() - train_start_time
 
         # Supervised Training
         template_work_dir = get_template_dir(template, tmp_dir_path)
-
         new_tmp_dir_path = tmp_dir_path / "test_supervised"
-        args_selfsl["--val-data-roots"] = "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test"
-        args_selfsl["--test-data-roots"] = "/storageserver/pvd_data/otx_data_archive/classification/cifar10_subset/test"
+        args_selfsl["--test-data-roots"] = multi_class_data_args["--test-data-roots"]
         args_selfsl["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, new_tmp_dir_path, otx_dir, args_selfsl)
-
+        
         # Evaluation with self + supervised training model
+        infer_start_time = timer()
         otx_eval_compare(
             template,
             new_tmp_dir_path,
             otx_dir,
             args_selfsl,
-            config_selfsl["regression_criteria"],
-            result_dict["train"][TASK_TYPE][self.label_type]["self_supervised"],
+            config_selfsl["regression_criteria"]["train"],
+            self.performance[template.name],
+            self.acc_metric
         )
+        infer_elapsed_time = timer() - infer_start_time
+        
+        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
+        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type]["self_supervised"]["train"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    def test_otx_export_eval_openvino(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+         
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        export_start_time = timer()
         otx_export_testing(template, tmp_dir_path)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        export_elapsed_time = timer() - export_start_time
+        
+        export_eval_start_time = timer()
         otx_eval_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            threshold=0.0,
-            result_dict=result_dict["export"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=multi_class_regression_config["regression_criteria"]["export"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        export_eval_elapsed_time = timer() - export_eval_start_time
+        
+        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
+        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_deploy_openvino(self, template, tmp_dir_path):
+    def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        deploy_start_time = timer()
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, multi_class_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_deployment(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        deploy_elapsed_time = timer() - deploy_start_time
+        
+        deploy_eval_start_time = timer()  
         otx_eval_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            threshold=0.0,
-            result_dict=result_dict["deploy"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=multi_class_regression_config["regression_criteria"]["deploy"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        deploy_eval_elapsed_time = timer() - deploy_eval_start_time
+        
+        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_optimize(self, template, tmp_dir_path):
+    def test_nncf_optimize_eval(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
+        nncf_start_time = timer()
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, multi_class_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
+        nncf_elapsed_time = timer() - nncf_start_time
+        
+        nncf_eval_start_time = timer()
         nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            threshold=0.001,
-            result_dict=result_dict["nncf"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=multi_class_regression_config["regression_criteria"]["nncf"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        nncf_eval_elapsed_time = timer() - nncf_eval_start_time
+        
+        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
+    def test_pot_optimize_eval(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        pot_start_time = timer()
         pot_optimize_testing(template, tmp_dir_path, otx_dir, multi_class_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        pot_elapsed_time = timer() - pot_start_time
+        
+        pot_eval_start_time = timer()
         pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            result_dict=result_dict["pot"][TASK_TYPE][self.label_type]["supervised"],
+            criteria=multi_class_regression_config["regression_criteria"]["nncf"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
-
+        pot_eval_elapsed_time = timer() - pot_eval_start_time
+        
+        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
+        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
 
 # Multi-label Classification
-multi_label_regression_config = load_regression_configuration(otx_dir, "classification", "supervised", "multi_label")
+multi_label_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, "multi_label")
 multi_label_data_args = multi_label_regression_config["data_path"]
 multi_label_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
 
 class TestRegressionMultiLabelClassification:
-    def setup(self):
+    def setup_method(self):
         self.label_type = "multi_label"
+        self.acc_metric = "Top-1 acc."
+        self.train_time = "Train + val time (sec.)"
+        self.infer_time = "Infer time (sec.)"
+        
+        self.export_time = "Export time (sec.)"
+        self.export_eval_time = "Export eval time (sec.)"
+        
+        self.deploy_time = "Deploy time (sec.)"
+        self.deploy_eval_time = "Deploy eval time (sec.)"
+        
+        self.nncf_time = "NNCF time (sec.)"
+        self.nncf_eval_time = "NNCF eval time (sec.)"
+        
+        self.pot_time = "POT time (sec.)"
+        self.pot_eval_time = "POT eval time (sec.)"
+        
+        self.performance = {}
 
-    def teardown(self):
+    def teardown_method(self):
         with open(f"{result_dir}/result.json", "w") as result_file:
             json.dump(result_dict, result_file, indent=4)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, multi_label_data_args)
+        train_elapsed_time = timer() - train_start_time
+        
+        infer_start_time = timer()
         otx_eval_compare(
             template,
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            multi_label_regression_config["regression_criteria"],
-            result_dict["train"][TASK_TYPE][self.label_type]["supervised"],
+            multi_label_regression_config["regression_criteria"]["train"],
+            self.performance[template.name],
+            self.acc_metric
         )
+        infer_elapsed_time = timer() - infer_start_time
+        
+        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
+        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    def test_otx_export_eval_openvino(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+         
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        export_start_time = timer()
         otx_export_testing(template, tmp_dir_path)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        export_elapsed_time = timer() - export_start_time
+        
+        export_eval_start_time = timer()
         otx_eval_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            threshold=0.0,
-            result_dict=result_dict["export"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=multi_label_regression_config["regression_criteria"]["export"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        export_eval_elapsed_time = timer() - export_eval_start_time
+        
+        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
+        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_deploy_openvino(self, template, tmp_dir_path):
+    def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        deploy_start_time = timer()
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, multi_label_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_deployment(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        deploy_elapsed_time = timer() - deploy_start_time
+        
+        deploy_eval_start_time = timer()  
         otx_eval_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            threshold=0.0,
-            result_dict=result_dict["deploy"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=multi_label_regression_config["regression_criteria"]["deploy"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        deploy_eval_elapsed_time = timer() - deploy_eval_start_time
+        
+        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_optimize(self, template, tmp_dir_path):
+    def test_nncf_optimize_eval(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
+        nncf_start_time = timer()
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, multi_label_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
+        nncf_elapsed_time = timer() - nncf_start_time
+        
+        nncf_eval_start_time = timer()
         nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            threshold=0.001,
-            result_dict=result_dict["nncf"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=multi_label_regression_config["regression_criteria"]["nncf"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        nncf_eval_elapsed_time = timer() - nncf_eval_start_time
+        
+        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
+    def test_pot_optimize_eval(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        pot_start_time = timer()
         pot_optimize_testing(template, tmp_dir_path, otx_dir, multi_label_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        pot_elapsed_time = timer() - pot_start_time
+        
+        pot_eval_start_time = timer()
         pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            result_dict=result_dict["pot"][TASK_TYPE][self.label_type]["supervised"],
+            criteria=multi_label_regression_config["regression_criteria"]["nncf"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
-
+        pot_eval_elapsed_time = timer() - pot_eval_start_time
+        
+        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
+        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
 
 # H-label Classification
-h_label_regression_config = load_regression_configuration(otx_dir, "classification", "supervised", "h_label")
+h_label_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, "h_label")
 h_label_data_args = h_label_regression_config["data_path"]
 h_label_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
-
 class TestRegressionHierarchicalLabelClassification:
-    def setup(self):
+    def setup_method(self):
         self.label_type = "h_label"
+        self.acc_metric = "Top-1 acc."
+        self.train_time = "Train + val time (sec.)"
+        self.infer_time = "Infer time (sec.)"
+        
+        self.export_time = "Export time (sec.)"
+        self.export_eval_time = "Export eval time (sec.)"
+        
+        self.deploy_time = "Deploy time (sec.)"
+        self.deploy_eval_time = "Deploy eval time (sec.)"
+        
+        self.nncf_time = "NNCF time (sec.)"
+        self.nncf_eval_time = "NNCF eval time (sec.)"
+        
+        self.pot_time = "POT time (sec.)"
+        self.pot_eval_time = "POT eval time (sec.)"
+        
+        self.performance = {}
 
-    def teardown(self):
+    def teardown_method(self):
         with open(f"{result_dir}/result.json", "w") as result_file:
             json.dump(result_dict, result_file, indent=4)
 
@@ -339,86 +502,169 @@ class TestRegressionHierarchicalLabelClassification:
             otx_dir,
             h_label_data_args,
             h_label_regression_config["regression_criteria"],
-            result_dict["train"][TASK_TYPE][self.label_type]["supervised"],
+            result_dict["train"][TASK_TYPE][self.label_type][TRAIN_TYPE],
         )
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    def test_otx_export_eval_openvino(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+         
         tmp_dir_path = tmp_dir_path / "h_label_cls"
+        export_start_time = timer()
         otx_export_testing(template, tmp_dir_path)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        export_elapsed_time = timer() - export_start_time
+        
+        export_eval_start_time = timer()
         otx_eval_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            threshold=0.0,
-            result_dict=result_dict["export"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=h_label_regression_config["regression_criteria"]["export"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        export_eval_elapsed_time = timer() - export_eval_start_time
+        
+        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
+        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_deploy_openvino(self, template, tmp_dir_path):
+    def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "h_label_cls"
+        deploy_start_time = timer()
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, h_label_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_deployment(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        deploy_elapsed_time = timer() - deploy_start_time
+        
+        deploy_eval_start_time = timer()  
         otx_eval_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            threshold=0.0,
-            result_dict=result_dict["deploy"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=h_label_regression_config["regression_criteria"]["deploy"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        deploy_eval_elapsed_time = timer() - deploy_eval_start_time
+        
+        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_optimize(self, template, tmp_dir_path):
+    def test_nncf_optimize_eval(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
+        nncf_start_time = timer()
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, h_label_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
+        nncf_elapsed_time = timer() - nncf_start_time
+        
+        nncf_eval_start_time = timer()
         nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            threshold=0.001,
-            result_dict=result_dict["nncf"][TASK_TYPE][self.label_type]["supervised"],
+            threshold=1.0,
+            criteria=h_label_regression_config["regression_criteria"]["nncf"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        nncf_eval_elapsed_time = timer() - nncf_eval_start_time
+        
+        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
+    def test_pot_optimize_eval(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
         tmp_dir_path = tmp_dir_path / "h_label_cls"
+        pot_start_time = timer()
         pot_optimize_testing(template, tmp_dir_path, otx_dir, h_label_data_args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        pot_elapsed_time = timer() - pot_start_time
+        
+        pot_eval_start_time = timer()
         pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            result_dict=result_dict["pot"][TASK_TYPE][self.label_type]["supervised"],
+            criteria=h_label_regression_config["regression_criteria"]["nncf"],
+            reg_threshold=0.10,
+            result_dict=self.performance[template.name],
+            acc_metric=self.acc_metric
         )
+        pot_eval_elapsed_time = timer() - pot_eval_start_time
+        
+        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
+        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
+
+class TestRegressionSupconClassification:
+    def setup_method(self):
+        self.label_type = "supcon"
+        self.acc_metric = "Top-1 acc."
+        self.train_time = "Train + val time (sec.)"
+        self.infer_time = "Infer time (sec.)"
+        
+        self.performance = {}
+
+
+    def teardown_method(self):
+        with open(f"{result_dir}/result.json", "w") as result_file:
+            json.dump(result_dict, result_file, indent=4)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
+        tmp_dir_path = tmp_dir_path / "supcon_cls"
+        config_supcon = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, self.label_type)
+        args_supcon = config_supcon["data_path"]
+        
+        args_supcon["train_params"] = [
+            "params", 
+            "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS,
+            "--learning_parameters.enable_supcon", "True"
+        ]
+        # Supcon
+        train_start_time = timer()
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_supcon)
+        train_elapsed_time = timer() - train_start_time
+       
+        # Evaluation with supcon + supervised training 
+        infer_start_time = timer()
+        otx_eval_compare(
+            template,
+            tmp_dir_path,
+            otx_dir,
+            args_supcon,
+            config_supcon["regression_criteria"]["train"],
+            self.performance[template.name],
+            self.acc_metric
+        )
+        infer_elapsed_time = timer() - infer_start_time
+        
+        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
+        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)

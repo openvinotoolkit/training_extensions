@@ -148,14 +148,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Checking for Rebuild status."""
         if self.args.task and str(self.template.task_type) != self.args.task.upper():
             raise NotImplementedError("Task Update is not yet supported.")
-        if not self.args.model and not self.args.train_type:
-            return False
         result = False
-        if self.template.name != self.args.model.upper():
+        if self.args.model and self.template.name != self.args.model.upper():
             print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
             result = True
         template_train_type = self._get_train_type(ignore_args=True)
-        if template_train_type != self.args.train_type.upper():
+        if self.args.train_type and template_train_type != self.args.train_type.upper():
             self.train_type = self.args.train_type.upper()
             print(f"[*] Rebuild train-type: {template_train_type} -> {self.train_type}")
             result = True

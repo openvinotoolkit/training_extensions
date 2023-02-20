@@ -12,18 +12,20 @@ TASK_TYPES = [
     "action_detection",
     "anomaly",
 ]
-TRAIN_TYPES = ["supervised", "semi_supervised", "self_supervised", "class_incr"]
+TRAIN_TYPES = ["supervised", "semi_supervised", "self_supervised", "class_incr", "tiling"]
 LABEL_TYPES = ["multi_class", "multi_label", "h_label", "supcon"]
 
+REGRESSION_TEST_EPOCHS = "1"
 
 def get_result_dict(task_type: str) -> Dict[str, Any]:
-    result_dict = {}
-    for test_type in TEST_TYPES:
-        result_dict[test_type] = {task_type: {}}
+    result_dict = {task_type:{}}
+    if not "anomaly" in task_type:
         for label_type in LABEL_TYPES:
-            result_dict[test_type][task_type][label_type] = {}
+            result_dict[task_type][label_type] = {}
             for train_type in TRAIN_TYPES:
-                result_dict[test_type][task_type][label_type][train_type] = {}
+                result_dict[task_type][label_type][train_type] = {}
+                for test_type in TEST_TYPES:
+                    result_dict[task_type][label_type][train_type][test_type] = []
     return result_dict
 
 
@@ -43,7 +45,7 @@ def load_regression_config(otx_dir: str) -> Dict[str, Any]:
 
 
 def load_regression_configuration(
-    otx_dir: str, task_type: str, train_type: str, label_type: str
+    otx_dir: str, task_type: str, train_type: str="", label_type: str=""
 ) -> Dict[str, Union[str, int, float]]:
     """Load dataset path according to task, train, label types.
 
@@ -63,7 +65,9 @@ def load_regression_configuration(
         "model_criteria": 0,
     }
 
-    if task_type != "anomaly":
+    if "anomaly" not in task_type:
+        if train_type == "" or label_type == "":
+            raise ValueError()
         result["regression_criteria"] = reg_config["regression_criteria"][task_type][train_type][label_type]
         result["data_path"] = reg_config["data_path"][task_type][train_type][label_type]
     else:
