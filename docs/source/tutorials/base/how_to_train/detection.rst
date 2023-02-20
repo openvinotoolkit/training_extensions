@@ -14,7 +14,7 @@ The process has been tested on the following configuration.
 
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
-- CUDA Toolkit 11.4 
+- CUDA Toolkit 11.4
 
 
 
@@ -28,7 +28,7 @@ You can follow the installation process from a :doc:`quick_start guide <../../..
 
 .. code-block::
 
-  python3 --version; pip3 --version; 
+  python3 --version; pip3 --version;
 
   Python 3.8.10
 
@@ -50,7 +50,7 @@ The following example creates a virtual environment in the ``det_venv`` folder f
 Dataset preparation
 ***************************
 
-1. Clone a repository with `WGISD dataset <https://github.com/thsant/wgisd>`_. 
+1. Clone a repository with `WGISD dataset <https://github.com/thsant/wgisd>`_.
 
 .. code-block::
 
@@ -60,7 +60,7 @@ Dataset preparation
   git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 
-This dataset contains images of grapevines with the annotation for different varieties of grapes. 
+This dataset contains images of grapevines with the annotation for different varieties of grapes.
 
 - ``CDY``	- Chardonnay
 - ``CFR``	- Cabernet Franc
@@ -70,10 +70,13 @@ This dataset contains images of grapevines with the annotation for different var
 
 It's a great example to start with. The model achieves high accuracy right from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
 
+|
+
 .. image:: ../../../../utils/images/wgisd_gt_sample.jpg
   :width: 600
   :alt: this image uploaded from this `source <https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg>`_
 
+|
 
 2. Check the file structure of downloaded repository, we will need the following files:
 
@@ -93,8 +96,8 @@ It's a great example to start with. The model achieves high accuracy right from 
 
 .. code-block::
 
-  {'data': 
-    {'train': 
+  {'data':
+    {'train':
       {'ann-files': '/home/<username>/training_extensions/data/wgisd/coco_annotations/train_bbox_instances.json',
        'data-roots': '/home/<username>/training_extensions/data/wgisd/data'},
     'val':
@@ -112,7 +115,7 @@ It's a great example to start with. The model achieves high accuracy right from 
 Training
 *********
 
-1. First of all, we need to choose which object detection model will we train. The list of supported templates for object detection is available with the command line below. 
+1. First of all, we need to choose which object detection model will we train. The list of supported templates for object detection is available with the command line below.
 
 .. note::
 
@@ -146,10 +149,10 @@ The following command line starts training of the medium object detection model 
 .. code-block::
 
   (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json 
+                            --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
                             --train-data-roots  data/wgisd/data
-                            --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                            --val-data-roots data/wgisd/data 
+                            --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
+                            --val-data-roots data/wgisd/data
                             --save-model-to outputs
                             --work-dir outputs/logs
                             --gpus 1
@@ -170,13 +173,13 @@ Looks much simpler, isn't it? You can also pass the ``data.yaml`` for the rest o
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations. More about template-specific parameters is in quick start [#TODO link].
 
-It can be done by manually updating parameters in the ``template.yaml`` file or via command line. 
+It can be done by manually updating parameters in the ``template.yaml`` file or via command line.
 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
 .. code-block::
 
-                            params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false 
+                            params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false
 
 
 5. The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``outputs`` folder, while training logs and tf_logs for `Tensorboard` visualization can be found in the ``outputs/logs`` dir.
@@ -199,7 +202,7 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100 an
 
 The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 15 minutes.
 
-After that we have the PyTorch object detection model trained with OTX, that we can use for evaliation, export, optimization and deployment. 
+After that we have the PyTorch object detection model trained with OTX, that we can use for evaliation, export, optimization and deployment.
 
 ***********
 Validation
@@ -217,19 +220,19 @@ The default metric is F1 measure.
 .. code-block::
 
   (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                            --test-data-roots data/wgisd/data 
+                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
+                            --test-data-roots data/wgisd/data
                             --load-weights outputs/weights.pth
                             --save-performance outputs/performance.json
-  
 
-If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter. 
-Note,  with ``data.yaml``, it runs evaluation on test JSON annotation file (not on validation JSON annotation file). 
+
+If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter.
+Note,  with ``data.yaml``, it runs evaluation on test JSON annotation file (not on validation JSON annotation file).
 
 .. code-block::
 
   (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml 
+                            --data data.yaml
                             --load-weights outputs/weights.pth
                             --save-performance outputs/performance.json
 
@@ -259,11 +262,11 @@ Please note, by default, the optimal confidence threshold is detected based on v
 .. code-block::
 
   (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml 
+                            --data data.yaml
                             --load-weights outputs/weights.pth
-                            params 
+                            params
                             --postprocessing.confidence_threshold 0.5
-                            --postprocessing.result_based_confidence_threshold false 
+                            --postprocessing.result_based_confidence_threshold false
 
   ...
 
@@ -273,7 +276,7 @@ Please note, by default, the optimal confidence threshold is detected based on v
 Export
 *********
 
-1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. 
+1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to run the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. That's how we can export the trained model ``outputs/weights.pth`` from the previous section and save the exported model to the ``outputs/openvino/`` folder.
@@ -295,11 +298,11 @@ It allows to run the model on the Intel hardware much more efficient, especially
 .. code-block::
 
   (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                            --test-data-roots data/wgisd/data 
+                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
+                            --test-data-roots data/wgisd/data
                             --load-weights outputs/openvino/openvino.xml
                             --save-performance outputs/openvino/performance.json
-  
+
   ...
   2023-01-10 06:24:50,382 | INFO : Start OpenVINO inference
   2023-01-10 06:24:54,943 | INFO : OpenVINO inference completed
@@ -332,11 +335,11 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
 .. code-block::
 
-  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml 
-                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json 
+  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
+                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
                                 --train-data-roots  data/wgisd/data
-                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                                --val-data-roots data/wgisd/data 
+                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
+                                --val-data-roots data/wgisd/data
                                 --load-weights outputs/weights.pth
                                 --save-model-to outputs/nncf
                                 --save-performance outputs/nncf/performance.json
@@ -355,11 +358,11 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
 .. code-block::
 
-  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml 
-                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json 
+  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
+                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
                                 --train-data-roots  data/wgisd/data
-                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json 
-                                --val-data-roots data/wgisd/data 
+                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
+                                --val-data-roots data/wgisd/data
                                 --load-weights outputs/openvino/openvino.xml
                                 --save-model-to outputs/pot
 

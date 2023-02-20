@@ -44,9 +44,10 @@ with the following command:
   tar -xzvf flower_photos.tgz
   cd ..
 
-
+|
 .. image:: ../../../../utils/images/flowers.jpg
   :width: 600
+|
 
 
 This dataset contains images of 5 different flower categories and is stored in the imagenet format which is supported by OTX:
