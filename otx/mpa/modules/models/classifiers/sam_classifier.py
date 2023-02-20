@@ -219,7 +219,6 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
                 param_names.append("head.fc.bias")
 
         for model_name in param_names:
-            model_name = prefix + model_name
             model_param = model_dict[model_name].clone()
             if backbone_type == "OTXMobileNetV3":
                 chkpt_name = "head." + model_name.replace("4", "3")

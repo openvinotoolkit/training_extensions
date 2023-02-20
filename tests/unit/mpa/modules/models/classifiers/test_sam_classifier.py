@@ -27,24 +27,24 @@ class MockModule:
         if name == "mobilenet":
             self.backbone = OTXMobileNetV3()
             self._state_dict = {
-                "some_prefix.classifier.4.weight": torch.rand(1, 1),
-                "some_prefix.classifier.4.bias": torch.rand(1),
-                "some_prefix.act.weight": torch.rand(1),
-                "some_prefix.someweights": torch.rand(2),
+                "classifier.4.weight": torch.rand(1, 1),
+                "classifier.4.bias": torch.rand(1),
+                "act.weight": torch.rand(1),
+                "someweights": torch.rand(2),
             }
         elif name == "effnetv2":
             self.backbone = OTXEfficientNetV2()
             self._state_dict = {
-                "some_prefix.model.classifier.weight": torch.rand(1, 1),
-                "some_prefix.model.weight": torch.rand(1),
+                "model.classifier.weight": torch.rand(1, 1),
+                "model.weight": torch.rand(1),
             }
-        else:
+        elif name == "effnet":
             self.backbone = OTXEfficientNet()
             self._state_dict = {
-                "some_prefix.features.weight": torch.rand(1, 1),
-                "some_prefix.features.active.weight": torch.rand(1, 1),
-                "some_prefix.output.weight": torch.rand(1),
-                "some_prefix.output.asl.weight": torch.rand(1),
+                "features.weight": torch.rand(1, 1),
+                "features.active.weight": torch.rand(1, 1),
+                "output.weight": torch.rand(1),
+                "output.asl.weight": torch.rand(1),
             }
         self.multilabel = False
         self.hierarchical = False
@@ -80,7 +80,7 @@ class TestSAMImageClassifier:
     def test_load_state_dict_pre_hook(self, name):
         self.module = MockModule(name)
         state_dict = self.module.state_dict()
-        self.classifier.load_state_dict_pre_hook(self.module, state_dict, prefix="some_prefix.")
+        self.classifier.load_state_dict_pre_hook(self.module, state_dict, prefix="")
 
         for key in state_dict:
             if name == "mobilenet":
@@ -98,7 +98,7 @@ class TestSAMImageClassifier:
                 if "features" in key and "active" not in key:
                     assert "backbone" in key
                 elif "active" in key:
-                    assert key == "some_prefix.features.active.weight"
+                    assert key == "features.active.weight"
                 else:
                     assert "head" in key or "fc" in key
 
@@ -108,9 +108,9 @@ class TestSAMImageClassifier:
         self.module = MockModule(name)
         state_dict = self.module.state_dict()
         state_dict_copy = deepcopy(state_dict)
-        self.classifier.load_state_dict_pre_hook(self.module, state_dict, prefix="some_prefix.")
+        self.classifier.load_state_dict_pre_hook(self.module, state_dict, prefix="")
         # backward state dict
-        self.classifier.state_dict_hook(self.module, state_dict, prefix="some_prefix.")
+        self.classifier.state_dict_hook(self.module, state_dict, prefix="")
 
         assert state_dict.keys() == state_dict_copy.keys()
 
@@ -122,7 +122,7 @@ class TestSAMImageClassifier:
         model_classes = [0, 1, 2]
         chkpt_classes = [0, 1]
         self.classifier.load_state_dict_mixing_hook(
-            self.module, model_classes, chkpt_classes, chkpt_dict, prefix="some_prefix."
+            self.module, model_classes, chkpt_classes, chkpt_dict, prefix=""
         )
 
         assert chkpt_dict.keys() == state_dict.keys()
