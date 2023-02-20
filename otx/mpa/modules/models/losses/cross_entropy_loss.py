@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import LOSSES
-from mmcls.models.losses import CrossEntropyLoss
 from mmcls.models.losses.utils import weight_reduce_loss
 
 

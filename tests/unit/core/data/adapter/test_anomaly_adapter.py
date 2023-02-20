@@ -31,22 +31,27 @@ class TestOTXAnomalyClassificationDatasetAdapter:
         self.val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
         self.test_data_roots: str = os.path.join(self.root_path, data_root_dict["test"])
 
-        self.dataset_adapter = AnomalyClassificationDatasetAdapter(
+        self.train_dataset_adapter = AnomalyClassificationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
+        )
+
+        self.test_dataset_adapter = AnomalyClassificationDatasetAdapter(
+            task_type=self.task_type,
             test_data_roots=self.test_data_roots,
         )
 
     @e2e_pytest_unit
     def test_init(self):
-        assert Subset.TRAINING in self.dataset_adapter.dataset
-        assert Subset.VALIDATION in self.dataset_adapter.dataset
-        assert Subset.TESTING in self.dataset_adapter.dataset
+        assert Subset.TRAINING in self.train_dataset_adapter.dataset
+        assert Subset.VALIDATION in self.train_dataset_adapter.dataset
+        assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     @e2e_pytest_unit
     def test_get_otx_dataset(self):
-        assert isinstance(self.dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
 
 
 class TestOTXAnomalyDetectionDatasetAdapter:
@@ -61,22 +66,27 @@ class TestOTXAnomalyDetectionDatasetAdapter:
         self.val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
         self.test_data_roots: str = os.path.join(self.root_path, data_root_dict["test"])
 
-        self.dataset_adapter = AnomalyDetectionDatasetAdapter(
+        self.train_dataset_adapter = AnomalyDetectionDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
+        )
+
+        self.test_dataset_adapter = AnomalyDetectionDatasetAdapter(
+            task_type=self.task_type,
             test_data_roots=self.test_data_roots,
         )
 
     @e2e_pytest_unit
     def test_init(self):
-        assert Subset.TRAINING in self.dataset_adapter.dataset
-        assert Subset.VALIDATION in self.dataset_adapter.dataset
-        assert Subset.TESTING in self.dataset_adapter.dataset
+        assert Subset.TRAINING in self.train_dataset_adapter.dataset
+        assert Subset.VALIDATION in self.train_dataset_adapter.dataset
+        assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     @e2e_pytest_unit
     def test_get_otx_dataset(self):
-        assert isinstance(self.dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
 
 
 class TestOTXAnomalySegmentationDatasetAdapter:
@@ -91,19 +101,24 @@ class TestOTXAnomalySegmentationDatasetAdapter:
         self.val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
         self.test_data_roots: str = os.path.join(self.root_path, data_root_dict["test"])
 
-        self.dataset_adapter = AnomalySegmentationDatasetAdapter(
+        self.train_dataset_adapter = AnomalySegmentationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
+        )
+
+        self.test_dataset_adapter = AnomalySegmentationDatasetAdapter(
+            task_type=self.task_type,
             test_data_roots=self.test_data_roots,
         )
 
     @e2e_pytest_unit
     def test_init(self):
-        assert Subset.TRAINING in self.dataset_adapter.dataset
-        assert Subset.VALIDATION in self.dataset_adapter.dataset
-        assert Subset.TESTING in self.dataset_adapter.dataset
+        assert Subset.TRAINING in self.train_dataset_adapter.dataset
+        assert Subset.VALIDATION in self.train_dataset_adapter.dataset
+        assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     @e2e_pytest_unit
     def test_get_otx_dataset(self):
-        assert isinstance(self.dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)

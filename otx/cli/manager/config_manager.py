@@ -148,14 +148,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Checking for Rebuild status."""
         if self.args.task and str(self.template.task_type) != self.args.task.upper():
             raise NotImplementedError("Task Update is not yet supported.")
-        if not self.args.model and not self.args.train_type:
-            return False
         result = False
-        if self.template.name != self.args.model.upper():
+        if self.args.model and self.template.name != self.args.model.upper():
             print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
             result = True
         template_train_type = self._get_train_type(ignore_args=True)
-        if template_train_type != self.args.train_type.upper():
+        if self.args.train_type and template_train_type != self.args.train_type.upper():
             self.train_type = self.args.train_type.upper()
             print(f"[*] Rebuild train-type: {template_train_type} -> {self.train_type}")
             result = True
@@ -303,11 +301,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Export the data configuration file to output_path."""
         Path(output_path).write_text(OmegaConf.to_yaml(data_cfg), encoding="utf-8")
 
-    def get_hyparams_config(self) -> ConfigurableParameters:
+    def get_hyparams_config(self, override_param: Optional[List] = None) -> ConfigurableParameters:
         """Separates the input params received from args and updates them.."""
         hyper_parameters = self.template.hyper_parameters.data
         type_hint = gen_param_help(hyper_parameters)
-        updated_hyper_parameters = gen_params_dict_from_args(self.args, type_hint=type_hint)
+        updated_hyper_parameters = gen_params_dict_from_args(
+            self.args, override_param=override_param, type_hint=type_hint
+        )
         override_parameters(updated_hyper_parameters, hyper_parameters)
         return create(hyper_parameters)
 

@@ -79,7 +79,7 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
             annotations.append({"id": int(i), "type": "label", "group": 0, "label_id": int(label)})
 
         multilabel_ann_format["items"].append(
-            {"id": str(file_id), "annotations": str(annotations), "image": {"path": str(filename)}}
+            {"id": str(file_id), "annotations": annotations, "image": {"path": str(filename)}}
         )
     print(f"Saving logfile to: {output}")
     with open(output, "w", encoding="utf-8") as out_file:
