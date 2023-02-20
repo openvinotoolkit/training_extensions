@@ -31,15 +31,17 @@ For the supervised training we use the following algorithms components:
     - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_. It enables using `--learning_parameters.enable_supcon=True` in CLI.
       The below table shows how much performance SupCon improved compared with baseline performance on three baseline datasets with 10 samples per class: CIFAR10, Eurosat-10, and Food-101.
 
-        +-----------------------+---------+------------+----------+
-        | Model name            | CIFAR10 | Eurosat-10 | Food-101 |
-        +=======================+=========+============+==========+
-        | MobileNet-V3-large-1x | +3.82   | +1.10      | -0.35    |
-        +-----------------------+---------+------------+----------+
-        | EfficientNet-B0       | +3.54   | +3.36      | +1.91    |
-        +-----------------------+---------+------------+----------+
-        | EfficientNet-V2-S     | +3.35   | +1.28      | +3.52    |
-        +-----------------------+---------+------------+----------+
+      +-----------------------+---------+---------+------------+---------+----------+---------+
+      | Model name            | CIFAR10 |         | Eurosat-10 |         | Food-101 |         |
+      +=======================+=========+=========+============+=========+==========+=========+
+      |                       | SL      | Self-SL | SL         | Self-SL | SL       | Self-SL |
+      +-----------------------+---------+---------+------------+---------+----------+---------+
+      | MobileNet-V3-large-1x | 55.06   | 58.88   | 77.60      | 78.70   | 34.83    | 34.38   |
+      +-----------------------+---------+---------+------------+---------+----------+---------+
+      | EfficientNet-B0       | 42.81   | 46.35   | 66.87      | 70.23   | 37.26    | 39.17   |
+      +-----------------------+---------+---------+------------+---------+----------+---------+
+      | EfficientNet-V2-S     | 59.78   | 63.13   | 81.84      | 83.12   | 51.32    | 54.84   |
+      +-----------------------+---------+---------+------------+---------+----------+---------+
 
       You can use SupCon training like the below command.
 
