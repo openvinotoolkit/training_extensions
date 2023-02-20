@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Action Classificaiton &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>Action Recognition &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -149,7 +149,7 @@
     <ul class="current">
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
-       Action Classificaiton
+       Action Recognition
       </a>
      </li>
      <li class="toctree-l3">
@@ -289,11 +289,6 @@
    Models
   </a>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#incremental-learning">
-   Incremental Learning
-  </a>
- </li>
 </ul>
 
 </nav>
@@ -315,16 +310,71 @@
               
               <div>
                 
-  <div class="section" id="action-classificaiton">
-<h1>Action Classificaiton<a class="headerlink" href="#action-classificaiton" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="action-recognition">
+<h1>Action Recognition<a class="headerlink" href="#action-recognition" title="Permalink to this headline">¶</a></h1>
+<p>Action recognition is a problem of identifying the action that is being performed in a video. The input to the algorithm is a sequence of video frames, and the output is a label indicating the action that is being performed.</p>
+<p>For supervised learning we use the following algorithms components:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: We use standard data augmentations for videos, including random resizing and random cropping, horizontal flipping. We randomly sample a segment of frames from each video during training.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: We use the Adam with weight decay fix (AdamW) optimizer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: We use a step learning rate schedule, where the learning rate is reduced by a factor of 10 after a fixed number of epochs. We also use the Linear Warmup technique to gradually increase the learning rate at the beginning of training.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use the Cross-Entropy Loss as the loss function.</p></li>
+</ul>
 <div class="section" id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
+<p>We support the popular action classification formats, such as <a class="reference external" href="https://developer.qualcomm.com/software/ai-datasets/jester">Jester</a>, <a class="reference external" href="https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/">HMDB51</a>, <a class="reference external" href="https://www.crcv.ucf.edu/data/UCF101.php">UCF101</a>. Specifically, these formats will be converted into our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/cvat_dataset/action_classification/train">internal representation</a> using the <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a> dataset handler.</p>
+<p>The names of the annotations files and the overall dataset structure should be the same as the original dataset.</p>
+<p>Refer to our tutorial for more information on how to train, validate, and optimize action classification models.</p>
 </div>
 <div class="section" id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="incremental-learning">
-<h2>Incremental Learning<a class="headerlink" href="#incremental-learning" title="Permalink to this headline">¶</a></h2>
+<p>We support <a class="reference external" href="https://arxiv.org/abs/2004.04730">X3D</a> for action classification. X3D is a deep learning model that was proposed in the paper “X3D: Expanding Architectures for Efficient Video Recognition” by Christoph Feichtenhofer. The model is an extension of the popular 2D convolutional neural network (CNN) architectures to the 3D domain, allowing it to efficiently process spatiotemporal information in videos.</p>
+<p>Currenly OTX supports X3D-S model with below template:</p>
+<table class="table">
+<colgroup>
+<col style="width: 76%" />
+<col style="width: 4%" />
+<col style="width: 9%" />
+<col style="width: 11%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Template ID</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Complexity (GFLOPs)</p></th>
+<th class="head"><p>Model size (MB)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/configs/classification/x3d/template.yaml">Custom_Action_Classificaiton_X3D</a></p></td>
+<td><p>X3D</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<p>In the table below the <strong>top-1 accuracy</strong> on some academic datasets are presented. Each model is trained with single Nvidia GeForce RTX3090.</p>
+<table class="table">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 21%" />
+<col style="width: 18%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model name</p></th>
+<th class="head"><p>Jester</p></th>
+<th class="head"><p>HMDB51</p></th>
+<th class="head"><p>UCF101</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>X3D-S</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+<td><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
