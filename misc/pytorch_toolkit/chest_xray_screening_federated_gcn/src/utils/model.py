@@ -24,22 +24,21 @@ class Fully_Connected_Layer(nn.Module):
         
         for cls in range(0,14):
             ftr_lyr.append(
-                            nn.Sequential(
-                                            nn.Linear(inp_dim, ftr_dim, bias=False), 
-                                            nn.BatchNorm1d(ftr_dim),
-                                            nn.ReLU(),
-                                            nn.Linear(ftr_dim, ftr_dim, bias=False), 
-                                            nn.BatchNorm1d(ftr_dim),    
-                                            nn.ReLU()
-                                        )
-                          )
-            
+                nn.Sequential(
+                    nn.Linear(inp_dim, ftr_dim, bias=False), 
+                    nn.BatchNorm1d(ftr_dim),
+                    nn.ReLU(),
+                    nn.Linear(ftr_dim, ftr_dim, bias=False), 
+                    nn.BatchNorm1d(ftr_dim),    
+                    nn.ReLU()
+                )
+            )
             cls_lyr.append(
-                            nn.Sequential(
-                                            nn.Linear(ftr_dim, 1, bias=False), 
-                                            nn.BatchNorm1d(1)
-                                        )
-                            )
+                nn.Sequential(
+                    nn.Linear(ftr_dim, 1, bias=False), 
+                    nn.BatchNorm1d(1)
+                )
+            )
             self.ftr_lyr=ftr_lyr
             self.cls_lyr=cls_lyr
 
@@ -47,18 +46,14 @@ class Fully_Connected_Layer(nn.Module):
         prd_lst=[]
         ftr_lst=[]
         for cls in range(0,14):
-            
             ftr=self.ftr_lyr[cls](x)
             ftr_lst.append(torch.unsqueeze(ftr, dim=1))
             prd=self.cls_lyr[cls](ftr)
             prd_lst.append(prd)
-            
-        
         prd=torch.cat(prd_lst, axis=1)
         return ftr_lst, prd
     
 ############## Conv 1st layer #######################
-
 class First_Conv(nn.Module):
     def __init__(self):
         super(First_Conv, self).__init__()
@@ -71,9 +66,7 @@ class First_Conv(nn.Module):
         x=self.convert_channels(x)
         return x
 
-
 ################## GNN Architecture Classes #############
-
 # This MLP will map the edge weight to the weights used to avg. the features from the neighbors
 class create_mlp(nn.Module):
     def __init__(self, in_chnl, out):
@@ -81,16 +74,13 @@ class create_mlp(nn.Module):
         
         self.lyr=nn.Sequential(
                                 nn.Linear(in_chnl, out, bias=True),
-                                #nn.BatchNorm1d(out),
                                 nn.Tanh()
                                     )
-        
     def forward(self, x):
         out=self.lyr(x)
         return out
 
 #######################################################################################
-
 # The Resdiual Block for the GNN
 class Res_Graph_Conv_Lyr(nn.Module):
     def __init__(self, in_chnls, base_chnls, mlp_model, aggr_md):
@@ -135,7 +125,6 @@ class GNN_Network(nn.Module):
         self.my_gcn=my_gcn
         self.dpth=depth
         
-    
     def forward(self, data):
         
         x, edge_index, edge_attr = data.x, data.edge_index, data.edge_attr
@@ -149,9 +138,7 @@ class GNN_Network(nn.Module):
         out=self.my_gcn[cnt](x, edge_index, edge_attr) # num_nodes by 1
         return out
 
-
 ############## Models specifically defined for inference #############
-
 
 #####Gnn model for inference, works without gnn dataloader
 
