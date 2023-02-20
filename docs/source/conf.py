@@ -58,11 +58,6 @@ exclude_patterns = []
 html_theme = "pydata_sphinx_theme"
 html_static_path = ['_static']
 html_logo = "_static/logos/otx-logo-mini.png"
-html_theme_options = {
-    "navbar_start": ["navbar-logo"],
-    "navbar_center": [],
-    "navbar_end": ["navbar-icon-links"]
-}
 html_css_files = [
     '_static/css/custom.css',
 ]
