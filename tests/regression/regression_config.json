@@ -527,83 +527,1163 @@
     },
     "anomaly_classification": {
       "train":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "export":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "deploy":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "nncf":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "pot":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       }
     },
     "anomaly_detection": {
       "train":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "export":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "deploy":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "nncf":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "pot":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       }
     },
     "anomaly_segmentation": {
       "train":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "export":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "deploy":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "nncf":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       },
       "pot":{
-        "DRAEM": 0.00,
-        "PADIM": 0.00,
-        "STFPM": 0.00
+          "bottle": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "cable": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "capsule": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "carpet": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "grid": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "hazelnut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "leather": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "metal_nut": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "pill": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "screw": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "tile": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "toothbrush": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "transistor": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "wood": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          },
+          "zipper": {
+            "DRAEM": 0.00,
+            "PADIM": 0.00,
+            "STFPM": 0.00
+          }
       }
     }
   }

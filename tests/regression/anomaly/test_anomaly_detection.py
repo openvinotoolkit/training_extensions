@@ -1,4 +1,4 @@
-"""Tests for Anomaly Classification with OTX CLI."""
+"""Tests for Anomaly Detection with OTX CLI."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -7,6 +7,7 @@ import pytest
 import json
 from pathlib import Path
 from timeit import default_timer as timer
+import random
 
 from otx.cli.registry import Registry
 from tests.test_suite.run_test_command import (
@@ -24,12 +25,14 @@ from tests.test_suite.run_test_command import (
 from tests.regression.regression_test_helpers import (
     load_regression_configuration,
     get_result_dict,
+    ANOMALY_DATASET_CATEGORIES
 )
 
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Configurations for regression test.
 TASK_TYPE = "anomaly_detection"
+SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 3)
 
 otx_dir = os.getcwd()
 templates = Registry("otx/algorithms/anomaly").filter(task_type=TASK_TYPE.upper()).templates
@@ -43,9 +46,9 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 anomaly_detection_regression_config = load_regression_configuration(otx_dir, TASK_TYPE)
 anomaly_detection_data_args = anomaly_detection_regression_config["data_path"]
 
-class TestRegressionAnomalyClassification:
+class TestRegressionAnomalyDetection:
     def setup_method(self):
-        self.acc_metric = "Top-1 acc."
+        self.acc_metric = "F-1 score"
         self.train_time = "Train + val time (sec.)"
         self.infer_time = "Infer time (sec.)"
         
@@ -66,34 +69,45 @@ class TestRegressionAnomalyClassification:
     def teardown_method(self):        
         with open(f"{result_dir}/result.json", "w") as result_file:
             json.dump(result_dict, result_file, indent=4)
-
+    
+    def _apply_category(self, data_dict, category):
+        return_dict = {}
+        for k, v in data_dict.items():
+            return_dict[k] = f"{v}/{category}"
+        return return_dict
+    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_train(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES) 
+    # ANOMALY_DATASET_CATEGORIES : all categories of MVTec dataset.
+    def test_otx_train(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
+        category_data_args =  self._apply_category(anomaly_detection_data_args, category)
         
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         train_start_time = timer()
-        otx_train_testing(template, tmp_dir_path, otx_dir, anomaly_detection_data_args)
+        otx_train_testing(template, tmp_dir_path, otx_dir, category_data_args)
         train_elapsed_time = timer() - train_start_time
         
         infer_start_time = timer()
         otx_eval_compare(
-            template, tmp_dir_path, otx_dir, anomaly_detection_data_args, 
-            anomaly_detection_regression_config["regression_criteria"]["train"], 
+            template, tmp_dir_path, otx_dir, category_data_args, 
+            anomaly_detection_regression_config["regression_criteria"]["train"][category], 
             self.performance[template.name],
             self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
-    
+
         self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
         self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
-        result_dict[TASK_TYPE]["train"].append(self.performance)
+        result_dict[TASK_TYPE]["train"][category].append(self.performance)
         
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export_eval_openvino(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES) 
+    def test_otx_export_eval_openvino(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
+        category_data_args =  self._apply_category(anomaly_detection_data_args, category)
          
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         export_start_time = timer()
@@ -105,9 +119,9 @@ class TestRegressionAnomalyClassification:
             template,
             tmp_dir_path,
             otx_dir,
-            anomaly_detection_data_args,
+            category_data_args,
             threshold=1.0,
-            criteria=anomaly_detection_regression_config["regression_criteria"]["export"],
+            criteria=anomaly_detection_regression_config["regression_criteria"]["export"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
             acc_metric=self.acc_metric
@@ -120,12 +134,14 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES) 
+    def test_otx_deploy_eval_deployment(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
+        category_data_args =  self._apply_category(anomaly_detection_data_args, category)
         
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         deploy_start_time = timer()
-        otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, anomaly_detection_data_args)
+        otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, category_data_args)
         deploy_elapsed_time = timer() - deploy_start_time
         
         deploy_eval_start_time = timer()  
@@ -133,9 +149,9 @@ class TestRegressionAnomalyClassification:
             template,
             tmp_dir_path,
             otx_dir,
-            anomaly_detection_data_args,
+            category_data_args,
             threshold=1.0,
-            criteria=anomaly_detection_regression_config["regression_criteria"]["deploy"],
+            criteria=anomaly_detection_regression_config["regression_criteria"]["deploy"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
             acc_metric=self.acc_metric
@@ -148,15 +164,17 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_optimize_eval(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES) 
+    def test_nncf_optimize_eval(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
+        category_data_args =  self._apply_category(anomaly_detection_data_args, category)
         
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
         nncf_start_time = timer()
-        nncf_optimize_testing(template, tmp_dir_path, otx_dir, anomaly_detection_data_args)
+        nncf_optimize_testing(template, tmp_dir_path, otx_dir, category_data_args)
         nncf_elapsed_time = timer() - nncf_start_time
         
         nncf_eval_start_time = timer()
@@ -164,9 +182,9 @@ class TestRegressionAnomalyClassification:
             template,
             tmp_dir_path,
             otx_dir,
-            anomaly_detection_data_args,
+            category_data_args,
             threshold=1.0,
-            criteria=anomaly_detection_regression_config["regression_criteria"]["nncf"],
+            criteria=anomaly_detection_regression_config["regression_criteria"]["nncf"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
             acc_metric=self.acc_metric
@@ -179,12 +197,14 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize_eval(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES) 
+    def test_pot_optimize_eval(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
+        category_data_args =  self._apply_category(anomaly_detection_data_args, category)
         
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         pot_start_time = timer()
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, anomaly_detection_data_args)
+        pot_optimize_testing(template, tmp_dir_path, otx_dir, category_data_args)
         pot_elapsed_time = timer() - pot_start_time
         
         pot_eval_start_time = timer()
@@ -192,8 +212,8 @@ class TestRegressionAnomalyClassification:
             template,
             tmp_dir_path,
             otx_dir,
-            anomaly_detection_data_args,
-            criteria=anomaly_detection_regression_config["regression_criteria"]["nncf"],
+            category_data_args,
+            criteria=anomaly_detection_regression_config["regression_criteria"]["pot"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
             acc_metric=self.acc_metric

@@ -17,6 +17,9 @@ LABEL_TYPES = ["multi_class", "multi_label", "h_label", "supcon"]
 
 REGRESSION_TEST_EPOCHS = "1"
 
+ANOMALY_DATASET_CATEGORIES = ["bottle", "cable", "capsule", "carpet", "grid", "hazelnut", "leather", "metal_nut",
+                              "pill", "screw", "tile", "toothbrush", "transistor", "wood", "zipper"]
+
 def get_result_dict(task_type: str) -> Dict[str, Any]:
     result_dict = {task_type:{}}
     if not "anomaly" in task_type:
@@ -26,6 +29,12 @@ def get_result_dict(task_type: str) -> Dict[str, Any]:
                 result_dict[task_type][label_type][train_type] = {}
                 for test_type in TEST_TYPES:
                     result_dict[task_type][label_type][train_type][test_type] = []
+    else:
+        for test_type in TEST_TYPES:
+            result_dict[task_type][test_type] = {}
+            for category in ANOMALY_DATASET_CATEGORIES:
+                result_dict[task_type][test_type][category] = []
+        
     return result_dict
 
 

@@ -146,7 +146,10 @@ class TestRegressionMultiClassClassification:
 
         args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         selfsl_train_args = copy.deepcopy(args_selfsl)
-        selfsl_train_args["train_params"].extend(["--algo_backend.train_type", "SELFSUPERVISED"])
+        selfsl_train_args["train_params"].extend([
+            "--learning_parameters.batch_size", "64",
+            "--algo_backend.train_type", "SELFSUPERVISED"
+        ])
         # Self-supervised Training
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, selfsl_train_args)
