@@ -10,7 +10,7 @@ def get_config(action, gnn=True, config_path=""):
     if action == 'download':
         with open(os.path.join(config_path, 'download_configs.json')) as f1:
             config = json.load(f1)
-    if action == 'loss':
+    elif action == 'loss':
         with open(os.path.join(config_path, 'loss_weights.json')) as f1:
             config = json.load(f1)
     else:
