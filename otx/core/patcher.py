@@ -104,18 +104,18 @@ class Patcher:
 
             if inspect.ismodule(obj_cls):
                 fn = obj_cls.keywords["__fn"]
-                obj_cls = fn = obj_cls.keywords["__obj_cls"]
                 fn_name = fn.__name__
+                #  obj_cls = fn = obj_cls.keywords["__obj_cls"]
             elif inspect.ismethod(obj_cls):
                 fn_name = obj_cls.__name__
-                obj_cls = obj_cls.__self__
+                #  obj_cls = obj_cls.__self__
             elif isinstance(obj_cls, (staticmethod, classmethod)):
                 obj_cls = obj_cls.__func__
                 fn_name = obj_cls.__name__
-                obj_cls = ".".join([obj_cls.__module__] + obj_cls.__qualname__.split(".")[:-1])
+                #  obj_cls = ".".join([obj_cls.__module__] + obj_cls.__qualname__.split(".")[:-1])
             else:
                 fn_name = obj_cls.__name__
-                obj_cls = ".".join([obj_cls.__module__] + obj_cls.__qualname__.split(".")[:-1])
+                #  obj_cls = ".".join([obj_cls.__module__] + obj_cls.__qualname__.split(".")[:-1])
 
         if isinstance(obj_cls, str):
             try:
