@@ -121,3 +121,15 @@ def compute_lcl_wt(epoch, cmb_wts, glbl_wt, prev_lcl_wt, device):
     wt=average_weights([prev_lcl_wt, glbl_wt], [lcl_wt, cmb_wt],device)
     return wt
     
+def save_model_weights(mx_nm, glbl_cnv_wt, glbl_backbone_wt, glbl_fc_wt, sit0_gnn_wt=None, sit1_gnn_wt=None, 
+                       sit2_gnn_wt=None,sit3_gnn_wt=None, sit4_gnn_wt=None):
+    torch.save({
+                'cnv_lyr_state_dict': glbl_cnv_wt,
+                'backbone_model_state_dict': glbl_backbone_wt,
+                'fc_layers_state_dict': glbl_fc_wt,
+                'sit0_gnn_model': sit0_gnn_wt,
+                'sit1_gnn_model': sit1_gnn_wt,
+                'sit2_gnn_model': sit2_gnn_wt,
+                'sit3_gnn_model': sit3_gnn_wt,
+                'sit4_gnn_model': sit4_gnn_wt,
+                }, mx_nm)
