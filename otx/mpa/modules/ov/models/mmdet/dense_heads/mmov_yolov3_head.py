@@ -5,6 +5,7 @@
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.yolo_head import YOLOV3Head
@@ -16,7 +17,7 @@ from ...mmov_model import MMOVModel
 class MMOVYOLOV3Head(YOLOV3Head):
     def __init__(
         self,
-        model_path_or_model,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,

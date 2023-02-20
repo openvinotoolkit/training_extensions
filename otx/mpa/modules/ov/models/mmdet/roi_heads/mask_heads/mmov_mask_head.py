@@ -5,6 +5,7 @@
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 from mmdet.models.builder import HEADS
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
@@ -15,7 +16,7 @@ from ....mmov_model import MMOVModel
 class MMOVMaskHead(FCNMaskHead):
     def __init__(
         self,
-        model_path_or_model,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Dict[str, Union[str, List[str]]] = {},
         outputs: Dict[str, Union[str, List[str]]] = {},

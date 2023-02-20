@@ -4,6 +4,7 @@
 
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
 from mmdet.models.builder import NECKS
 from mmdet.models.necks.yolo_neck import YOLOV3Neck
@@ -16,7 +17,7 @@ from ...parser_mixin import ParserMixin
 class MMOVYOLOV3Neck(YOLOV3Neck, ParserMixin):
     def __init__(
         self,
-        model_path_or_model,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
