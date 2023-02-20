@@ -35,7 +35,7 @@ def test_get_args(mocker):
     )
     mocker.patch.object(target_package, "add_hyper_parameters_sub_parser", return_value=argparse.ArgumentParser())
 
-    parsed_args = get_args()
+    parsed_args, _ = get_args()
 
     assert parsed_args.train_data_roots == "train/data/root"
     assert parsed_args.val_data_roots == "val/data/root"
@@ -77,7 +77,7 @@ def mock_args(mocker, tmp_path):
 
     mock_args.__contains__ = mock_contains
     mock_get_args = mocker.patch("otx.cli.tools.train.get_args")
-    mock_get_args.return_value = mock_args
+    mock_get_args.return_value = [mock_args, []]
 
     return mock_args
 

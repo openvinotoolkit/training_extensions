@@ -40,7 +40,7 @@ def get_args():
 
     It dynamically generates help for hyper-parameters which are specific to particular model template.
     """
-    parser, hyper_parameters, _ = get_parser_and_hprams_data()
+    parser, hyper_parameters, params = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--train-data-roots",
@@ -69,15 +69,16 @@ def get_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
+    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
 
-    return parser.parse_args()
+    return parser.parse_args(), override_param
 
 
 def main():
     """Main function that is used for model training."""
 
     # Dynamically create an argument parser based on override parameters.
-    args = get_args()
+    args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="train")
     # Auto-Configuration for model template
@@ -96,7 +97,7 @@ def main():
         raise RuntimeError(f"Optimization by NNCF is not available for template {args.template}")
 
     # Update Hyper Parameter Configs
-    hyper_parameters = config_manager.get_hyparams_config()
+    hyper_parameters = config_manager.get_hyparams_config(override_param)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.openvino if is_pot else template.entrypoints.nncf)
