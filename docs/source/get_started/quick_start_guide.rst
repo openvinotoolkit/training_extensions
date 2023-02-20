@@ -104,6 +104,7 @@ Building workspace folder
 
 
 For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
+Please refer to the advanced tutorial :doc:`Backbone Replacement <../tutorials/advanced/backbones>` in the documentation.
 
 .. code-block::
 

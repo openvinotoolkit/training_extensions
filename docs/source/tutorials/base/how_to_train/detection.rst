@@ -22,7 +22,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick_start guide <../../../get_started/quick_start>` to create a universal virtual environment for all tasks. On the other hand, you can create a task-specific environment following the process below.
+You can follow the installation process from a :doc:`quick_start guide <../../../get_started/quick_start_guide>` to create a universal virtual environment for all tasks. On the other hand, you can create a task-specific environment following the process below.
 
 1. Check your python version:
 
@@ -119,9 +119,9 @@ Training
 
 .. note::
 
-  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection>`.
+  The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/object_detection/object_detection>`.
 
-  To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
+  To modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for backbone replacement <../../advanced/backbones>`.
 
 .. code-block::
 

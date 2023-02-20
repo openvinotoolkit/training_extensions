@@ -13,14 +13,14 @@ Configs
    :members:
    :undoc-members:
 
-.. automodule:: otx.algorithms.anomaly.configs.draem
+.. automodule:: otx.algorithms.anomaly.configs.classification
    :members:
    :undoc-members:
 
-.. automodule:: otx.algorithms.anomaly.configs.padim
+.. automodule:: otx.algorithms.anomaly.configs.detection
    :members:
    :undoc-members:
 
-.. automodule:: otx.algorithms.anomaly.configs.stfpm
+.. automodule:: otx.algorithms.anomaly.configs.segmentation
    :members:
    :undoc-members:
