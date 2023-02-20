@@ -224,8 +224,52 @@
                 
   <div class="section" id="how-to-deploy-the-model">
 <h1>How to deploy the model<a class="headerlink" href="#how-to-deploy-the-model" title="Permalink to this headline">¶</a></h1>
-<p>&lt;Guidelines for writing&gt;</p>
-<p>This guide uses a real-world example to show how to deploy an OTX model after successful training.</p>
+<p>This guide shows, how to deploy a model trained in the <a class="reference internal" href="how_to_train/index.html"><span class="doc">previous stage</span></a>.
+As a result of this step, we’ll get the exported model together with the self-contained python package, a demo application to port and infer it outside of this repository.</p>
+<p>To be specific, this tutorial uses as an example the object detection ATSS model trained and exported in the previuos step and located in <code class="docutils literal notranslate"><span class="pre">outputs/openvino</span></code>.
+But it can be runned for any task in the same manner.</p>
+<ol class="arabic simple">
+<li><p>Activate the virtual environment created in the previous step.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">&lt;</span><span class="n">directory_for_environment</span><span class="o">&gt;/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">deploy</span></code> returns an <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code> archive with the following files:</p></li>
+</ol>
+<ul class="simple">
+<li><p>model</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">model.xml</span></code> and <code class="docutils literal notranslate"><span class="pre">model.bin</span></code> - model exported to the OpenVINO™ format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">config.json</span></code> - file containing the post-processing info and meta information about labels in the dataset</p></li>
+</ul>
+</li>
+<li><p>python</p>
+<ul>
+<li><p>model_wrappers (Optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">README.md</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LICENSE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo.py</span></code>- simple demo to visualize results of model inference</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> - minimal packages required to run the demo</p></li>
+</ul>
+</li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>We can deploy the model exported to IR, using the command below:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx deploy otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
+           --load-weights outputs/openvino/openvino.xml
+           --save-model-to outputs/deploy
+
+2023-01-20 09:30:40,938 | INFO : Loading OpenVINO OTXDetectionTask
+2023-01-20 09:30:41,736 | INFO : OpenVINO task initialization completed
+2023-01-20 09:30:41,737 | INFO : Deploying the model
+2023-01-20 09:30:41,753 | INFO : Deploying completed
+</pre></div>
+</div>
+<p>We also can deploy the quantized model, that was optimized with NNCF or POT, passing the path to this model in IR format to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
+<p>After that, we can use the resulting <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code> archive in other application.
+Refer to further tutorial <a class="reference internal" href="demo.html"><span class="doc">How to run the demo with exportable code</span></a> to visualize the model inference.</p>
 </div>
 
 

@@ -236,6 +236,11 @@
    Optimization
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#troubleshooting">
+   Troubleshooting
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -263,8 +268,8 @@
 On this page we show how to train, validate, export and optimize ATSS model on WGISD public dataset.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To learn how to deploy the trained model, refer to: <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model</span></a>.</p>
-<p>To learn how to run the demo and visualize results, refer to: <a class="reference internal" href="../demo.html"><span class="doc">How to run the demo with exportable code</span></a>.</p>
+<p>To learn how to deploy the trained model, refer to <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model</span></a>.</p>
+<p>To learn how to run the demo and visualize results, refer to <a class="reference internal" href="../demo.html"><span class="doc">How to run the demo with exportable code</span></a>.</p>
 </div>
 <p>The process has been tested on the following configuration.</p>
 <ul class="simple">
@@ -386,22 +391,22 @@ On this page we show how to train, validate, export and optimize ATSS model on W
 <li><p>To have a specific example in this tutorial, all commands will be run on the ATSS model. It’s a medium model, that achieves relatively high accuracy, while keeping the inference fast.</p></li>
 </ol>
 <p>The following command line starts training of the medium object detection model on the first GPU on WGISD dataset:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                          --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
-                          --train-data-roots  data/wgisd/data
-                          --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                          --val-data-roots data/wgisd/data
-                          --save-model-to outputs
-                          --work-dir outputs/logs
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                          --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                          --train-data-roots  data/wgisd/data \
+                          --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                          --val-data-roots data/wgisd/data \
+                          --save-model-to outputs \
+                          --work-dir outputs/logs \
                           --gpus 1
 </pre></div>
 </div>
 <p>To start multi-gpu training, list the indexes of GPUs you want to train on or omit <cite>gpus</cite> parameter, so training will run on all available GPUs.</p>
 <p>If you created <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> file in previous step, you can simplify the training by passing it in <code class="docutils literal notranslate"><span class="pre">--data</span></code> parameter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                          --data data.yaml
-                          --save-model-to outputs
-                          --work-dir outputs/logs
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                          --data data.yaml \
+                          --save-model-to outputs \
+                          --work-dir outputs/logs \
                           --gpus 1
 </pre></div>
 </div>
@@ -446,18 +451,18 @@ Please note, <code class="docutils literal notranslate"><span class="pre">label_
 <ol class="arabic simple" start="2">
 <li><p>That’s how we can evaluate the snapshot in <code class="docutils literal notranslate"><span class="pre">outputs</span></code> folder on WGISD dataset and save results to <code class="docutils literal notranslate"><span class="pre">outputs/performance</span></code>:</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                          --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                          --test-data-roots data/wgisd/data
-                          --load-weights outputs/weights.pth
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                          --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                          --test-data-roots data/wgisd/data \
+                          --load-weights outputs/weights.pth \
                           --save-performance outputs/performance.json
 </pre></div>
 </div>
 <p>If you created <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> file in previous step, you can simplify the training by passing it in <code class="docutils literal notranslate"><span class="pre">--data</span></code> parameter.
 Note,  with <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code>, it runs evaluation on test JSON annotation file (not on validation JSON annotation file).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                          --data data.yaml
-                          --load-weights outputs/weights.pth
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                          --data data.yaml \
+                          --load-weights outputs/weights.pth \
                           --save-performance outputs/performance.json
 </pre></div>
 </div>
@@ -479,13 +484,13 @@ Note,  with <code class="docutils literal notranslate"><span class="pre">data.ya
 <ol class="arabic simple" start="4">
 <li><p><code class="docutils literal notranslate"><span class="pre">Optional</span></code> Additionally, we can tune evaluation parameters such as confidence threshold via the command line. Read more about template-specific parameters for validation in quick start [#TODO link].</p></li>
 </ol>
-<p>For example, if there are too many False-Positive predictions (there we have a prediction, but don’t have annotated object for it) can suppress its number by increasing the confidence threshold as it is shown below.</p>
+<p>For example, if there are too many False-Positive predictions (there we have a prediction, but don’t have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.</p>
 <p>Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable <code class="docutils literal notranslate"><span class="pre">result_based_confidence_threshold</span></code> option.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                          --data data.yaml
-                          --load-weights outputs/weights.pth
-                          params
-                          --postprocessing.confidence_threshold 0.5
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                          --data data.yaml \
+                          --load-weights outputs/weights.pth \
+                          params \
+                          --postprocessing.confidence_threshold 0.5 \
                           --postprocessing.result_based_confidence_threshold false
 
 ...
@@ -497,12 +502,13 @@ Note,  with <code class="docutils literal notranslate"><span class="pre">data.ya
 <div class="section" id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">¶</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows to run the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
+Also, the resulting IR model is required to run POT optimization in the section below. IR model contains 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <ol class="arabic simple" start="2">
 <li><p>That’s how we can export the trained model <code class="docutils literal notranslate"><span class="pre">outputs/weights.pth</span></code> from the previous section and save the exported model to the <code class="docutils literal notranslate"><span class="pre">outputs/openvino/</span></code> folder.</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --load-weights outputs/weights.pth
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --load-weights outputs/weights.pth \
                             --save-model-to outputs/openvino/
 
 ...
@@ -514,11 +520,11 @@ It allows to run the model on the Intel hardware much more efficient, especially
 <ol class="arabic simple" start="3">
 <li><p>We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model, using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                          --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                          --test-data-roots data/wgisd/data
-                          --load-weights outputs/openvino/openvino.xml
-                          --save-performance outputs/openvino/performance.json
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                          --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                          --test-data-roots data/wgisd/data \
+                          --load-weights outputs/openvino/openvino.xml \
+                          --save-performance outputs/openvino/performance.json \
 
 ...
 2023-01-10 06:24:50,382 | INFO : Start OpenVINO inference
@@ -548,13 +554,13 @@ Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 <ol class="arabic simple" start="2">
 <li><p>Command example for optimizing a PyTorch model (<cite>.pth</cite>) with OpenVINO NNCF.</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                              --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
-                              --train-data-roots  data/wgisd/data
-                              --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                              --val-data-roots data/wgisd/data
-                              --load-weights outputs/weights.pth
-                              --save-model-to outputs/nncf
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                              --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                              --train-data-roots  data/wgisd/data \
+                              --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                              --val-data-roots data/wgisd/data \
+                              --load-weights outputs/weights.pth \
+                              --save-model-to outputs/nncf \
                               --save-performance outputs/nncf/performance.json
 
 ...
@@ -570,12 +576,12 @@ Performance(score: 0.5446735395189003, dashboard: (1 metric groups))
 <ol class="arabic simple" start="3">
 <li><p>Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT.</p></li>
 </ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                              --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
-                              --train-data-roots  data/wgisd/data
-                              --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                              --val-data-roots data/wgisd/data
-                              --load-weights outputs/openvino/openvino.xml
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                              --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                              --train-data-roots  data/wgisd/data \
+                              --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                              --val-data-roots data/wgisd/data \
+                              --load-weights outputs/openvino/openvino.xml \
                               --save-model-to outputs/pot
 
 ...
@@ -597,7 +603,26 @@ Please note, that POT will take some time without logging to optimize the model.
 <li><p>Finally, we can also evaluate the optimized model by passing it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> function.</p></li>
 </ol>
 <p>Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.</p>
-<p>The following tutorials provide further steps on how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.</p>
+<p>Following tutorials provides further steps how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.</p>
+</div>
+<div class="section" id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>If you have access to the Internet through the proxy server only, please use pip with proxy call as demonstrated by command below:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">proxy</span> <span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">usr_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;@&lt;</span><span class="n">proxyserver_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="c1">#&gt; &lt;pkg_name&gt;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>If you use Anaconda environment, you should consider that OpenVINO has limited <a class="reference external" href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html">Conda support</a> for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.</p></li>
+</ol>
+<p>So please use other tools to create the environment (like <code class="docutils literal notranslate"><span class="pre">venv</span></code> or <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>) and use <code class="docutils literal notranslate"><span class="pre">pip</span></code> as a package manager.</p>
+<ol class="arabic simple" start="3">
+<li><p>If you have problems when you try to use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> command, please update pip version by following command:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pip</span>
+</pre></div>
+</div>
 </div>
 </div>
 
