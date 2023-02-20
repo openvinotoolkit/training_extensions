@@ -200,3 +200,4 @@ def validate_model(model, config, run_type):
 def inference_model(config, run_type):
     model = load_inference_model(config, run_type)
     validate_model(model, config, run_type)
+    
