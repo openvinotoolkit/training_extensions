@@ -25,7 +25,7 @@ def sample_pil_image() -> Image:
     return Image.new("RGB", (256, 256), (255, 255, 255))
 
 
-def test_all_transforms_return_valid_image(sample_pil_image: Image) -> None:
+def test_all_transforms_return_valid_image(sample_pil_image: Image.Image) -> None:
     """Test all transforms return valid image."""
     for transform, v, max_v in rand_augment_pool:
         img, *extra = transform(sample_pil_image, v=v, max_v=max_v)
@@ -33,7 +33,7 @@ def test_all_transforms_return_valid_image(sample_pil_image: Image) -> None:
         assert img.size == sample_pil_image.size
 
 
-def test_cutoutabs_transform(sample_pil_image: Image) -> None:
+def test_cutoutabs_transform(sample_pil_image: Image.Image) -> None:
     """Test CutoutAbs transform."""
     img, (x0, y0, x1, y1), color = CutoutAbs(sample_pil_image, 2)
     assert isinstance(img, Image.Image)
@@ -67,7 +67,7 @@ class TestMPARandAugment:
         assert any(item.startswith("rand_mc_") for item in results.keys())
         assert "CutoutAbs" in results
 
-    def test_with_pil_image_input(self, sample_pil_image: Image) -> None:
+    def test_with_pil_image_input(self, sample_pil_image: Image.Image) -> None:
         """Test case with PIL.Image input."""
         transform = MPARandAugment(n=2, m=5, cutout=16)
         data = {"img": sample_pil_image}
