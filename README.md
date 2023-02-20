@@ -103,7 +103,7 @@ In order to get started with OpenVINO™ Training eXtensions see [the quick-star
 
 # Documentation
 
-Refer to our documentation(will be added soon) to read about explanation of the algorithms and additional features and also look into our dedicated tutorials covering all the functionality
+Refer to our documentation(will be released soon) to read about explanation of the algorithms, additional features and also look into our dedicated tutorials covering all the functionality
 
 ---
 
