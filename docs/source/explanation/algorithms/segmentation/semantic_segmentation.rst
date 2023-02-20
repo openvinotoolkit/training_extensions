@@ -25,7 +25,54 @@ For the supervised training we use the following algorithms components:
 
 - ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model.
 
-- Additionally, we use the **early stopping** to add adaptability to the training pipeline and prevent overfitting.
+- ``Training technique``
+    - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.
+
+      .. code-block::
+
+        $ otx train {TEMPLATE} ... \
+            params \
+            --learning_parameters.enable_early_stopping=True \      # is early stopping used
+            --learning_parameters.early_stop_start=3 \              # the number of epochs (iters) in which early stopping proceeds
+            --learning_parameters.early_stop_patience=8 \           # (for epoch runner) stop if the model don't improve within the number of epochs of patience
+            --learning_parameters.early_stop_iteration_patience=8 \ # (for iter runner) stop if the model don't improve within the number of iterations of patience
+
+    - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data.
+      More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with `DetCon loss <https://arxiv.org/abs/2103.10957>`_.
+      The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC with two classes (person, car) and three classes (person, car, bicycle).
+      The number of the subset datasets is 8, 16, and 24.
+
+      `two classes (person, car)`
+
+      +--------------------+-------+-------+-------+
+      | Model name         | #8    | #16   | #24   |
+      +====================+=======+=======+=======+
+      | Lite-HRNet-s-mod2  | +0.50 | +3.09 | +3.38 |
+      +--------------------+-------+-------+-------+
+      | Lite-HRNet-18-mod2 | +5.15 | +2.74 | +2.43 |
+      +--------------------+-------+-------+-------+
+      | Lite-HRNet-x-mod3  | +3.38 | +5.03 | +2.88 |
+      +--------------------+-------+-------+-------+
+
+      `three classes (person, car, bicycle)`
+
+      +--------------------+-------+-------+-------+
+      | Model name         | #8    | #16   | #24   |
+      +====================+=======+=======+=======+
+      | Lite-HRNet-s-mod2  | +3.53 | +0.42 | -1.84 |
+      +--------------------+-------+-------+-------+
+      | Lite-HRNet-18-mod2 | -2.80 | +3.63 | +1.75 |
+      +--------------------+-------+-------+-------+
+      | Lite-HRNet-x-mod3  | +1.12 | +3.60 | -0.15 |
+      +--------------------+-------+-------+-------+
+
+      You can use SupCon training like the below command.
+
+      .. code-block::
+
+        $ otx train {TEMPLATE} ... \
+            params \
+            --learning_parameters.enable_supcon=True
 
 **************
 Dataset Format
