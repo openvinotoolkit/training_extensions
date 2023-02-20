@@ -31,28 +31,6 @@ obtain its predictions, and after performing the *argmax* operation we choose ou
 
 After that, we can easily reconstruct the final predicted tree branch: ``Persian -> Cats -> Pets``.
 
-- ``Training technique``
-    - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_. It enables using `--learning_parameters.enable_supcon=True` in CLI.
-      The below table shows how much performance SupCon improved compared with baseline performance on two baseline datasets with 10 samples per class: CIFAR10 and CIFAR100.
-
-        +-----------------------+---------+----------+
-        | Model name            | CIFAR10 | CIFAR100 |
-        +=======================+=========+==========+
-        | MobileNet-V3-large-1x | +1.65   | +2.74    |
-        +-----------------------+---------+----------+
-        | EfficientNet-B0       | +0.62   | +0.19    |
-        +-----------------------+---------+----------+
-        | EfficientNet-V2-S     | +1.52   | +1.14    |
-        +-----------------------+---------+----------+
-
-      You can use SupCon training like the below command.
-
-      .. code-block::
-
-        $ otx train {TEMPLATE} ... \
-            params \
-            --learning_parameters.enable_supcon=True
-
 **************
 Dataset Format
 **************
