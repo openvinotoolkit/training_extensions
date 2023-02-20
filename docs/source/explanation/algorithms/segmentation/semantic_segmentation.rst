@@ -39,7 +39,7 @@ For the supervised training we use the following algorithms components:
 
     - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data.
       More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with `DetCon loss <https://arxiv.org/abs/2103.10957>`_.
-      The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC with two classes (person, car) and three classes (person, car, bicycle).
+      The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC 2012 with two classes (person, car) and three classes (person, car, bicycle).
       The number of the subset datasets is 8, 16, and 24.
 
       `two classes (person, car)`
@@ -156,7 +156,48 @@ For the `DIS5K <https://xuebinqin.github.io/dis/index.html>`_ we prepared random
 Self-supervised Learning
 ************************
 
-To be added soon
+Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
+General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
+However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.
+
+For these cases, OTX provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+We adapted `DetCon <https://arxiv.org/abs/2103.10957>`_ as our self-supervised method.
+It takes some time to use these self-supervised learning recipes, but you can expect improved performance, especially in small-data regimes.
+
+The below table shows how much performance (mDice) self-supervised methods improved compared with baseline performance on the subsets of Pascal VOC 2012 with two classes (person, car) and three classes (person, car, bicycle).
+The number of the subset datasets is 8, 16, and 24.
+
+`two classes (person, car)`
+
++--------------------+-------+-------+-------+
+| Model name         | #8    | #16   | #24   |
++====================+=======+=======+=======+
+| Lite-HRNet-s-mod2  | -2.62 | +0.04 | +1.85 |
++--------------------+-------+-------+-------+
+| Lite-HRNet-18-mod2 | -1.11 | -0.11 | +1.50 |
++--------------------+-------+-------+-------+
+| Lite-HRNet-x-mod3  | -1.54 | -1.02 | -1.99 |
++--------------------+-------+-------+-------+
+
+`three classes (person, car, bicycle)`
+
++--------------------+-------+-------+-------+
+| Model name         | #8    | #16   | #24   |
++====================+=======+=======+=======+
+| Lite-HRNet-s-mod2  | +5.25 | +1.88 | +1.06 |
++--------------------+-------+-------+-------+
+| Lite-HRNet-18-mod2 | -4.27 | +2.03 | +0.82 |
++--------------------+-------+-------+-------+
+| Lite-HRNet-x-mod3  | -0.70 | +1.52 | +2.21 |
++--------------------+-------+-------+-------+
+
+You can use Self-supervised learning like the below command.
+
+.. code-block::
+
+  $ otx train {TEMPLATE} ... \
+      params \
+      --algo_backend.train_type=SELFSUPERVISED
 
 ********************
 Incremental Learning
