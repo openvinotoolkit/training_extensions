@@ -9,7 +9,6 @@ from . import (
     composed_dataloaders_hook,
     early_stopping_hook,
     fp16_sam_optimizer_hook,
-    freeze_layers_hook,
     ib_loss_hook,
     logger_replace_hook,
     model_ema_hook,

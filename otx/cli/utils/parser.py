@@ -18,7 +18,7 @@ import argparse
 import sys
 from argparse import RawTextHelpFormatter
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from otx.api.entities.model_template import ModelTemplate, parse_model_template
 from otx.cli.registry import find_and_parse_model_template
@@ -62,12 +62,16 @@ def gen_param_help(hyper_parameters: Dict) -> Dict:
     return _gen_param_help("", hyper_parameters)
 
 
-def gen_params_dict_from_args(args, type_hint: Optional[dict] = None) -> Dict[str, dict]:
+def gen_params_dict_from_args(
+    args, override_param: Optional[List] = None, type_hint: Optional[dict] = None
+) -> Dict[str, dict]:
     """Generates hyper parameters dict from parsed command line arguments."""
 
     params_dict: Dict[str, dict] = {}
     for param_name in dir(args):
         if not param_name.startswith("params."):
+            continue
+        if override_param and param_name not in override_param:
             continue
 
         value_type = None
