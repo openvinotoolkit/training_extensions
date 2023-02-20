@@ -11,7 +11,7 @@ from torch_geometric.data import Data as Data_GNN
 from torch_geometric.data import DataLoader as DataLoader_GNN
 from .inference_utils import inference
 from .transformations import train_transform, test_transform
-from .misc import aggregate_local_weights, compute_lcl_wt
+from .misc import aggregate_local_weights, compute_lcl_wt, save_model_weights
 
 # Train 1 batch update
 def train_one_batch(sample, cnv_lyr, backbone_model, fc_layers, gnn_model, optim1, optim2, optim3, optim4, 
@@ -51,14 +51,11 @@ def train_one_batch(sample, cnv_lyr, backbone_model, fc_layers, gnn_model, optim
     optim3.zero_grad()
     if optim4 is not None:
         optim4.zero_grad()
-    
-    
+
     ### Compute Gradients
     loss.backward()
     
     ### Optimizer Gradients
-    #update weights through backprop using Adam 
-
     #if training is without gnn 
     if gnn_model is not None:
         optim1.step()
@@ -73,8 +70,6 @@ def train_one_batch(sample, cnv_lyr, backbone_model, fc_layers, gnn_model, optim
     
     optim3.step()
     optim4.step()
-    
-    
     return cnv_lyr, backbone_model, fc_layers, gnn_model, loss,  optim1, optim2, optim3, optim4
 
 
@@ -87,10 +82,7 @@ def train_end_to_end(lr, cnv_lyr, backbone_model, fc_layers, gnn_model,
     backbone_model.train()
     fc_layers.train()
     
-    
     ########## Optimizers and Schedulers #############
-    #print(total_batches)
-    # lr=10**(-5)
     
     # optimizer
     optim1 = torch.optim.Adam(cnv_lyr.parameters(), lr=lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
@@ -195,23 +187,6 @@ def initialize_model_weights(cnv_lyr, backbone_model, fc_layers, gnn_model):
     
     return cnv_wt, backbone_wt, fc_wt, gnn_wt
 
-
-
-
-def save_model_weights(mx_nm, glbl_cnv_wt, glbl_backbone_wt, glbl_fc_wt, sit0_gnn_wt=None, sit1_gnn_wt=None, 
-                       sit2_gnn_wt=None,sit3_gnn_wt=None, sit4_gnn_wt=None):
-    torch.save({
-                'cnv_lyr_state_dict': glbl_cnv_wt,
-                'backbone_model_state_dict': glbl_backbone_wt,
-                'fc_layers_state_dict': glbl_fc_wt,
-                'sit0_gnn_model': sit0_gnn_wt,
-                'sit1_gnn_model': sit1_gnn_wt,
-                'sit2_gnn_model': sit2_gnn_wt,
-                'sit3_gnn_model': sit3_gnn_wt,
-                'sit4_gnn_model': sit4_gnn_wt,
-                }, mx_nm)
-    
-    
 def instantiate_architecture(ftr_dim, model_name, gnn=False):
     # If gnn=True, then instantiate the GNN architecture
   
@@ -459,13 +434,9 @@ def trainer_without_GNN( avg_schedule, lr, b_sz, img_pth, split_npz, train_trans
     sit4_backbone_wt=copy.deepcopy(backbone_model.state_dict())
     sit4_fc_wt=copy.deepcopy(fc_layers.state_dict())
     
-        
-        
     ###### Now begin training
     max_val=0
     for epoch in range(0, max_epochs):
-        
-    
         
         ############ Perform the local trainings for each site #####
         ## Site 0
