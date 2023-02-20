@@ -7,7 +7,6 @@ Usecases
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
 
    adapters
    evaluation

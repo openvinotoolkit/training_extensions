@@ -7,7 +7,6 @@ Overall, these adapters could be categorized into ``config``, ``data``,
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
 
    config
    data

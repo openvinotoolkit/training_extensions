@@ -37,6 +37,6 @@ Guide
 
 .. toctree::
   :hidden:
-  :caption: Release Notes
+  :caption: Release Info
 
   release_notes/index

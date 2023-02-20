@@ -5,4 +5,4 @@ Quick Start Guide
    :maxdepth: 2
 
    installation
-   quick_start_guide
+   cli_commands

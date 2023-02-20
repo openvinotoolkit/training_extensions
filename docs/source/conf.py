@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information ----------------------------------------------------- #
 
 project = 'OpenVINO Training Extensions'
-copyright = '2022, OpenVINO Training Extensions Contributors'
+copyright = '2023, OpenVINO Training Extensions Contributors'
 author = 'OpenVINO Training Extensions Contributors'
 
 
