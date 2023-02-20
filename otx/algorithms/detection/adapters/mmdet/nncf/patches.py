@@ -66,21 +66,21 @@ def _should_wrap(obj_cls, fn_name, targets):
 def _wrap_mmdet_head(obj_cls):
     for fn_name in HEADS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, HEADS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
             # 'onnx_export' method calls 'forward' method which need to be traced
-            NNCF_PATCHER.patch(getattr(obj_cls, "forward"), nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, "forward"), nncf_trace_wrapper)
 
 
 def _wrap_mmdet_bbox_assigner(obj_cls):
     for fn_name in BBOX_ASSIGNERS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, BBOX_ASSIGNERS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
 def _wrap_mmdet_sampler(obj_cls):
     for fn_name in SAMPLERS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, SAMPLERS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
 # pylint: disable=invalid-name,unused-argument
