@@ -16,7 +16,7 @@ from ...parser_mixin import ParserMixin
 class MMOVYOLOV3Neck(YOLOV3Neck, ParserMixin):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model,
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -25,12 +25,12 @@ class MMOVYOLOV3Neck(YOLOV3Neck, ParserMixin):
     ):
         super(YOLOV3Neck, self).__init__()
 
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._init_weight = init_weight
 
         inputs, outputs = super().parse(
-            model_path=model_path,
+            model_path_or_model=model_path_or_model,
             weight_path=weight_path,
             inputs=inputs,
             outputs=outputs,
@@ -44,7 +44,7 @@ class MMOVYOLOV3Neck(YOLOV3Neck, ParserMixin):
                 self.add_module(
                     key,
                     MMOVModel(
-                        model_path,
+                        model_path_or_model,
                         weight_path,
                         inputs=input,
                         outputs=output,

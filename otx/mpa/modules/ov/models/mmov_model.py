@@ -4,6 +4,7 @@
 
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
 
 from .ov_model import OVModel
@@ -13,7 +14,7 @@ from .parser_mixin import ParserMixin
 class MMOVModel(OVModel, ParserMixin):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -23,7 +24,7 @@ class MMOVModel(OVModel, ParserMixin):
         parser = kwargs.pop("parser", None)
         parser_kwargs = kwargs.pop("parser_kwargs", {})
         inputs, outputs = super().parse(
-            model_path=model_path,
+            model_path_or_model=model_path_or_model,
             weight_path=weight_path,
             inputs=inputs,
             outputs=outputs,
@@ -32,7 +33,7 @@ class MMOVModel(OVModel, ParserMixin):
         )
 
         super().__init__(
-            model_path=model_path,
+            model_path_or_model=model_path_or_model,
             weight_path=weight_path,
             inputs=inputs,
             outputs=outputs,

@@ -20,7 +20,7 @@ logger = get_logger()
 class MMOVRPNHead(RPNHead):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model,
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -31,7 +31,7 @@ class MMOVRPNHead(RPNHead):
         *args,
         **kwargs,
     ):
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._inputs = deepcopy(inputs)
         self._outputs = deepcopy(outputs)
@@ -46,7 +46,7 @@ class MMOVRPNHead(RPNHead):
 
     def _init_layers(self):
         self.model = MMOVModel(
-            self._model_path,
+            self._model_path_or_model,
             self._weight_path,
             inputs=self._inputs,
             outputs=self._outputs,

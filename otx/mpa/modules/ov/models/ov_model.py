@@ -7,6 +7,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from typing import Callable, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
 from torch.nn import init
 
@@ -30,7 +31,7 @@ CONNECTION_SEPARATOR = "||"
 class OVModel(torch.nn.Module):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model] = None,
         weight_path: Optional[str] = None,
         inputs: Union[str, List[str]] = [],
         outputs: Union[str, List[str]] = [],
@@ -42,7 +43,7 @@ class OVModel(torch.nn.Module):
         verify_shape: bool = True,
     ):
         super().__init__()
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._remove_normalize = remove_normalize
         self._features_to_keep = features_to_keep
@@ -56,7 +57,7 @@ class OVModel(torch.nn.Module):
         self._feature_dict = OrderedDict()
 
         # build graph
-        graph = self.build_graph(model_path, weight_path)
+        graph = self.build_graph(model_path_or_model, weight_path)
         self._graph = graph
         if remove_normalize:
             graph.remove_normalize_nodes()
@@ -173,11 +174,13 @@ class OVModel(torch.nn.Module):
         return self._output_shapes
 
     @staticmethod
-    def build_graph(model_path, weight_path=None):
-        # TODO: reshape decompose ir graph
-        ov_model = load_ov_model(model_path, weight_path, False)
+    def build_graph(model_path_or_model, weight_path=None):
+        if not isinstance(model_path_or_model, ov.Model):
+            # TODO: reshape decompose ir graph
+            ov_model = load_ov_model(model_path_or_model, weight_path, False)
+        else:
+            ov_model = model_path_or_model
         graph = Graph.from_ov(ov_model)
-        graph.clean_up()
         return graph
 
     @staticmethod
