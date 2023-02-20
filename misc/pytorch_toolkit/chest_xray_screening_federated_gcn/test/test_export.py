@@ -1,7 +1,6 @@
 import unittest
 import os
 import sys
-sys.path.append(r'/storage/adityak/federated/')
 from src.utils.downloader import download_checkpoint
 from src.utils.exporter import Exporter
 from src.utils.get_config import get_config
