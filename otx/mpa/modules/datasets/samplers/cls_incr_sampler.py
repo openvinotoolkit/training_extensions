@@ -53,9 +53,9 @@ class ClsIncrSampler(Sampler):
             self.data_length = len(self.dataset)
             self.old_new_ratio = int(old_new_ratio)
 
-        self.num_samples = self.calcuate_num_samples()
+        self.num_samples = self._calcuate_num_samples()
 
-    def calcuate_num_samples(self):
+    def _calcuate_num_samples(self):
         num_samples = self.repeat * (1 + self.old_new_ratio) * int(self.data_length / (1 + self.old_new_ratio))
 
         if not self.drop_last:
