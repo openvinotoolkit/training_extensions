@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="_static/_static/css/custom.css" />
     
@@ -117,12 +117,12 @@
 
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
- <li class="toc-h1 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#">
-   OpenVINO Training Extensions – OTX
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#table-of-content">
+   Table of content
   </a>
  </li>
- <li class="toc-h1 nav-item toc-entry">
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#indices-and-tables">
    Indices and tables
   </a>
@@ -150,23 +150,76 @@
                 
   <div class="section" id="openvino-training-extensions-otx">
 <h1>OpenVINO Training Extensions – OTX<a class="headerlink" href="#openvino-training-extensions-otx" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<a class="reference internal image-reference" href="_images/otx-logo-black.png"><img alt="Logo" class="align-center" src="_images/otx-logo-black.png" style="width: 400px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>OpenVINO™ Training eXtensions (OTX) is a command-line interface (CLI) framework designed for low-code computer vision deep-learning model training. OTX lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OTX offers a diverse combination of model architectures, learning methods, and training types using PyTorch and OpenVINO™ toolkit. OTX provides so-called “model templates” for every supported task which have been tested on various datasets and are a turnkey solution for obtaining an average good model without the need to change any hyperparameters. Besides, it is possible to configure your own model based on torchvision, mmcv, pytorchcv and OpenVINO Model Zoo (OMZ). Moreover, OTX supports auto-configuration functionality to choose a suitable model template based on the dataset. We will further extend our functionality to make training as much simple as possible for obtaining accurate, fast and light models ready to integrate into your projects.</p>
+<p>To this end OTX supports the following computer vision tasks:</p>
+<ul class="simple">
+<li><p><strong>Classification</strong>, including multi-class, multi-label and hierarchical image classification tasks.</p></li>
+<li><p><strong>Object detection</strong> including rotated bounding box support</p></li>
+<li><p><strong>Semantic segmentation</strong></p></li>
+<li><p><strong>Instance segmentation</strong> including tiling algorithm support</p></li>
+<li><p><strong>Action recognition</strong> including action classification and detection</p></li>
+<li><p><strong>Anomaly recognition</strong> tasks including anomaly classification, detection and segmentation</p></li>
+</ul>
+<p>OTX also supports different <a class="reference internal" href="explanation/algorithms/index.html"><span class="doc">training types</span></a>:</p>
+<ul class="simple">
+<li><p><strong>Supervised</strong>, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks</p></li>
+<li><p><strong>Semi-supervised learning</strong></p></li>
+<li><p><strong>Self-supervised learning</strong></p></li>
+</ul>
+<p>Moving forward, OTX provides the <a class="reference internal" href="explanation/index.html"><span class="doc">following features</span></a>:</p>
+<ul class="simple">
+<li><p><strong>Distributed training</strong> to accelerate the training process when you have multiple GPUs</p></li>
+<li><p><strong>Half-precision training</strong> to save GPUs memory and use larger batch sizes</p></li>
+<li><p>Integrated, efficient <a class="reference internal" href="explanation/additional_features/hpo.html"><span class="doc">hyper-parameter optimization module</span></a> (HPO). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.</p></li>
+<li><p>OTX uses <strong>Datumaro</strong> as the backend to hadle datasets. Thanks to that, OTX supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.</p></li>
+<li><p><a class="reference internal" href="explanation/additional_features/auto_configuration.html"><span class="doc">Auto-configuration functionality</span></a>. OTX analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.</p></li>
+</ul>
+<div class="section" id="table-of-content">
+<h2>Table of content<a class="headerlink" href="#table-of-content" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="get_started/index.html">Get Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="explanation/index.html">Explanation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="release_notes/index.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started/index.html">Get Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="get_started/installation.html">Installation Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/quick_start_guide.html">Quick Start Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/base/index.html">Base tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/advanced/index.html">Advanced tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="explanation/index.html">Explanation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="explanation/algorithms/index.html">Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanation/additional_features/index.html">Additional Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/api/index.html">API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/cli/index.html">CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/algorithm/index.html">Algorithm</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes/index.html">Release Notes</a><ul class="simple">
+</ul>
+</li>
 </ul>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
+</div>
 </div>
 
 

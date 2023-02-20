@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
     
@@ -330,7 +330,13 @@
 <p>Semantic segmentation is a computer vision task in which an algorithm assigns a label or class to each pixel in an image.
 For example, semantic segmentation can be used to identify the boundaries of different objects in an image, such as cars, buildings, and trees.
 The output of semantic segmentation is typically an image where each pixel is colored with a different color or label depending on its class.</p>
-<a class="reference internal image-reference" href="../../../_images/semantic_seg_example.png" id="semantic-segmentation-image-example"><img alt="image uploaded from this `source &lt;https://arxiv.org/abs/1912.03183&gt;`_" id="semantic-segmentation-image-example" src="../../../_images/semantic_seg_example.png" style="width: 600px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<a class="reference internal image-reference" href="../../../_images/semantic_seg_example.png"><img alt="image uploaded from this `source &lt;https://arxiv.org/abs/1912.03183&gt;`_" src="../../../_images/semantic_seg_example.png" style="width: 600px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <p>We solve this task by utilizing <a class="reference external" href="https://arxiv.org/pdf/1411.4038.pdf">FCN Head</a> with implementation from <a class="reference external" href="https://mmsegmentation.readthedocs.io/en/latest/_modules/mmseg/models/decode_heads/fcn_head.html">MMSegmentation</a> on the multi-level image features obtained by the feature extractor backbone (<a class="reference external" href="https://arxiv.org/abs/2104.06403">Lite-HRNet</a>).
 For the supervised training we use the following algorithms components:</p>
 <ul class="simple" id="semantic-segmentation-supervised-pipeline">

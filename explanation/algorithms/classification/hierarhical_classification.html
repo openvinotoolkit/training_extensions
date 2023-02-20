@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
     
@@ -324,7 +324,13 @@ Specifically, we have a classifier that solves multi-class classification proble
 <p>To create a non-exclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.</p>
 <p>In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for <a class="reference internal" href="multi_class_classification.html"><span class="doc">Multi-class Classification</span></a> task.</p>
 <p>Assume we have a label tree as below:</p>
-<a class="reference internal image-reference" href="../../../_images/label_tree.png" id="hierarchical-image-example"><img alt="image uploaded from this `source &lt;https://towardsdatascience.com/https-medium-com-noa-weiss-the-hitchhikers-guide-to-hierarchical-classification-f8428ea1e076&gt;`_" id="hierarchical-image-example" src="../../../_images/label_tree.png" style="width: 600px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<a class="reference internal image-reference" href="../../../_images/label_tree.png"><img alt="image uploaded from this `source &lt;https://towardsdatascience.com/https-medium-com-noa-weiss-the-hitchhikers-guide-to-hierarchical-classification-f8428ea1e076&gt;`_" src="../../../_images/label_tree.png" style="width: 600px;" /></a>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <p>The goal of our algorithm is to return the right branch of this tree. For example: <code class="docutils literal notranslate"><span class="pre">Persian</span> <span class="pre">-&gt;</span> <span class="pre">Cats</span> <span class="pre">-&gt;</span> <span class="pre">Pets</span></code></p>
 <p>At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.</p>
 <p>Let’s say we forward an image with the label tree pictured above. On the first level, our corresponding classifier returns 3 predictions.</p>

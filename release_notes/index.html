@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="../_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="../_static/_static/css/custom.css" />
     
@@ -111,9 +111,24 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-0-0-1q23">
+   v1.0.0 (1Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-1-0-2q23">
+   v1.1.0 (2Q23)
+  </a>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -137,7 +152,26 @@
 <h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<p>Notes about the release of the developed version can be found in <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/releases">https://github.com/openvinotoolkit/training_extensions/releases</a> of the develop branch.</p>
+<div class="section" id="v1-0-0-1q23">
+<h2>v1.0.0 (1Q23)<a class="headerlink" href="#v1-0-0-1q23" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Installation through PyPI
+- Package will be renamed as OTX (OpenVINO Training eXtensions)</p></li>
+<li><p>CLI update
+- Update <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> command to find configurations of tasks/algorithms
+- Introduce <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> command to customize task or model configurations
+- Automatic algorihm selection for the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> command using the given input dataset</p></li>
+<li><p>Adaptation of <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a> component as a dataset interface</p></li>
+<li><p>Integrate hyper-parameter optimizations</p></li>
+<li><p>Support action recognition task</p></li>
+</ul>
+</div>
+<div class="section" id="v1-1-0-2q23">
+<h2>v1.1.0 (2Q23)<a class="headerlink" href="#v1-1-0-2q23" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>SDK/API update</p></li>
+</ul>
+</div>
 </div>
 
 
