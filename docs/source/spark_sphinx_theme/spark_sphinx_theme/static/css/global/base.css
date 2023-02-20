@@ -1,0 +1,80 @@
+body {
+    background-color: var(--spark-color-background);
+    color: var(--spark-color-text-base);
+}
+
+p {
+    color: var(--spark-color-text-base);
+}
+
+p>.rubric {
+    border-bottom: 1px solid var(--spark-color-border);
+}
+
+a {
+    color: var(--spark-color-link);
+}
+
+a:hover {
+    color: var(--spark-color-link-hover);
+}
+
+a.headerlink {
+    color: var(--spark-color-warning);
+}
+
+a.headerlink::before {
+    color: var(--spark-color-text-muted);
+}
+
+
+/* a.headerlink.github::before {
+    content: var(--pst-icon-github);
+}
+
+a.headerlink.gitlab::before {
+    content: var(--pst-icon-gitlab);
+} */
+
+
+/* .heading-style {
+    font-family: var(--spark-font-family-heading);
+} */
+
+
+/* small,
+.text_small {
+    font-size: var(--spark-font-size-milli);
+} */
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--spark-color-border);
+}
+
+pre,
+code,
+kbd,
+samp {
+    font-family: var(--spark-font-family-monospace);
+}
+
+kbd {
+    background-color: var(--spark-color-on-background);
+    color: var(--spark-color-text-muted);
+}
+
+kbd:not(.compound) {
+    border: 1px solid var(--spark-color-border);
+    box-shadow: 1px 1px 1px var(--spark-color-shadow);
+}
+
+code {
+    color: var(--spark-color-text-base);
+}
+
+pre {
+    background-color: var(--spark-color-surface);
+    color: var(--spark-color-text-base);
+    border: 1px solid var(--spark-color-border);
+}

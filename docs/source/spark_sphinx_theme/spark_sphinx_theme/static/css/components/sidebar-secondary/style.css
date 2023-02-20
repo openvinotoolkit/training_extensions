@@ -1,0 +1,22 @@
+.bd-sidebar-secondary {
+    /* top: var(--pst-header-height); */
+    /* max-height: calc(100vh - var(--pst-header-height));
+    font-size: var(--pst-sidebar-font-size-mobile); */
+    /* width: var(--pst-sidebar-secondary); */
+    background-color: var(--spark-color-background);
+}
+
+
+/* .nav-link {
+    font-size: var(--pst-sidebar-font-size-mobile);
+    font-size: var(--pst-sidebar-font-size);
+} */
+
+.onthispage {
+    color: var(--spark-color-text-base);
+    /* font-weight: var(--pst-sidebar-header-font-weight); */
+}
+
+.toc-item {
+    border-left: 1px solid var(--spark-color-border);
+}

@@ -1,0 +1,64 @@
+html {
+    font-size: var(--spark-font-size-100);
+}
+
+body {
+    font-family: var(--spark-font-intel-one-text);
+    font-weight: normal;
+    line-height: var(--spark-line-height-text);
+    letter-spacing: var(--spark-letter-spacing-zero);
+}
+
+h6 {
+    font-size: var(--spark-font-size-200);
+    font-family: var(--spark-font-intel-one-display);
+    font-weight: normal;
+    line-height: var(--spark-line-height-heading);
+    letter-spacing: var(--spark-letter-spacing-zero);
+    color: var(--spark-color-text-base);
+}
+
+h5 {
+    font-size: var(--spark-font-size-300);
+    font-family: var(--spark-font-intel-one-display);
+    font-weight: normal;
+    line-height: var(--spark-line-height-heading);
+    letter-spacing: var(--spark-letter-spacing-zero);
+    color: var(--spark-color-text-base);
+}
+
+h4 {
+    font-size: var(--spark-font-size-400);
+    font-family: var(--spark-font-intel-one-display);
+    font-weight: normal;
+    line-height: var(--spark-line-height-heading);
+    letter-spacing: var(--spark-letter-spacing-zero);
+    color: var(--spark-color-text-base);
+}
+
+h3 {
+    font-size: var(--spark-font-size-500);
+    font-family: var(--spark-font-intel-one-display);
+    font-weight: normal;
+    line-height: var(--spark-line-height-heading);
+    letter-spacing: var(--spark-letter-spacing-zero);
+    color: var(--spark-color-primary);
+}
+
+h2 {
+    font-size: var(--spark-font-size-600);
+    font-family: var(--spark-font-intel-one-display);
+    font-weight: normal;
+    line-height: var(--spark-line-height-heading);
+    letter-spacing: var(--spark-letter-spacing-zero);
+    color: var(--spark-color-primary);
+}
+
+h1 {
+    font-size: var(--spark-font-size-700);
+    font-family: var(--spark-font-intel-one-display);
+    font-weight: normal;
+    line-height: var(--spark-line-height-heading);
+    letter-spacing: var(--spark-letter-spacing-zero);
+    color: var(--spark-color-primary);
+}

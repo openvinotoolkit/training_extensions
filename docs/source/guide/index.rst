@@ -6,7 +6,7 @@ Guide
   :hidden:
   :caption: Get Started
 
-  get-started/installation
+  get-started/introduction
   get-started/quick_start_guide
 
 
@@ -25,6 +25,7 @@ Guide
   explanation/algorithms/index
   explanation/additional_features/index
 
+
 .. toctree::
   :hidden:
   :caption: Reference
@@ -32,6 +33,7 @@ Guide
   reference/api/index
   reference/cli/index
   reference/algorithm/index
+
 
 .. toctree::
   :hidden:
