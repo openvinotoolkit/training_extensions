@@ -469,6 +469,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     ):
         """Add saliency map to the dataset."""
         for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
+            labels = self._labels.copy()
+            if saliency_map.shape[0] == len(labels) + 1:
+                # Include the background as the last category
+                labels.append(LabelEntity("background", Domain.DETECTION))
+
             shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4)
             predicted_scored_labels = []
             for shape in shapes:
@@ -478,7 +483,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
                 model=self._task_environment.model,
-                labels=self._labels,
+                labels=labels,
                 predicted_scored_labels=predicted_scored_labels,
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,

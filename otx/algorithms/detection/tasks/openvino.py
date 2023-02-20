@@ -408,7 +408,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
             if add_saliency_map and saliency_map is not None:
-                labels = list(self.task_environment.get_labels())
+                labels = self.task_environment.get_labels().copy()
                 if saliency_map.shape[0] == len(labels) + 1:
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
@@ -421,7 +421,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
                     model=self.model,
-                    labels=self.task_environment.get_labels(),
+                    labels=labels,
                     predicted_scored_labels=predicted_scored_labels,
                     explain_predicted_classes=explain_predicted_classes,
                     process_saliency_maps=process_saliency_maps,
@@ -454,6 +454,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             update_progress_callback(int(i / dataset_size * 100), None)
             _, saliency_map = features
 
+            labels = self.task_environment.get_labels().copy()
+            if saliency_map.shape[0] == len(labels) + 1:
+                # Include the background as the last category
+                labels.append(LabelEntity("background", Domain.DETECTION))
+
             predicted_scored_labels = []
             for bbox in predicted_scene.annotations:
                 predicted_scored_labels += bbox.get_labels()
@@ -462,7 +467,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 dataset_item=dataset_item,
                 saliency_map=np.copy(saliency_map),
                 model=self.model,
-                labels=self.task_environment.get_labels(),
+                labels=labels,
                 predicted_scored_labels=predicted_scored_labels,
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,
