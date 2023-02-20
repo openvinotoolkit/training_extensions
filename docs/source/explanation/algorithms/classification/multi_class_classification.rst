@@ -16,20 +16,38 @@ For the supervised training we use the following algorithms components:
 
 - ``Training technique``
     - `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_: To add adaptability to the training pipeline.
-    - **Early stopping**: To prevent overfitting. Enter `--learning_parameters.enable_early_stopping=True` in CLI. It can be specified how many epochs (iterations) it will take as well.
+    - ``Early stopping``: To prevent overfitting. You can use early stopping like the below command.
+      
+      .. code-block::
+
+        $ otx train {TEMPLATE} ... \
+            params \
+            --learning_parameters.enable_early_stopping=True \      # is early stopping used
+            --learning_parameters.early_stop_start=3 \              # the number of epochs (iters) in which early stopping proceeds
+            --learning_parameters.early_stop_patience=8 \           # (for epoch runner) stop if the model don't improve within the number of epochs of patience
+            --learning_parameters.early_stop_iteration_patience=8 \ # (for iter runner) stop if the model don't improve within the number of iterations of patience
+
     - `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11>`_: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.
     - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_. It enables using `--learning_parameters.enable_supcon=True` in CLI.
-      For three baseline datasets: CIFAR10, CIFAR100, and Food-101, using SupCon improves performance like the below table.
+      The below table shows how much performance SupCon improved compared with baseline performance on three baseline datasets with 10 samples per class: CIFAR10, Eurosat-10, and Food-101.
 
-        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
-        | Model name            | CIFAR100        | cars      | flowers   | pets      | SVHN      |
-        +=======================+=================+===========+===========+===========+===========+
-        | MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
-        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
-        | EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
-        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
-        | EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
-        +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+        +-----------------------+---------+------------+----------+
+        | Model name            | CIFAR10 | Eurosat-10 | Food-101 |
+        +=======================+=========+============+==========+
+        | MobileNet-V3-large-1x | +3.82   | +1.10      | -0.35    |
+        +-----------------------+---------+------------+----------+
+        | EfficientNet-B0       | +3.54   | +3.36      | +1.91    |
+        +-----------------------+---------+------------+----------+
+        | EfficientNet-V2-S     | +3.35   | +1.28      | +3.52    |
+        +-----------------------+---------+------------+----------+
+
+      You can use SupCon training like the below command.
+
+      .. code-block::
+
+        $ otx train {TEMPLATE} ... \
+            params \
+            --learning_parameters.enable_supcon=True
 
 **************
 Dataset Format
