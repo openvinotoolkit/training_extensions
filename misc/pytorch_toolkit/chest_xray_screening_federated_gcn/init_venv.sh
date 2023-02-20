@@ -15,7 +15,7 @@ if [ -e venv ]; then
   echo "$ . venv/bin/activate"
 fi
 
-virtualenv ${venv_dir} -p python3 --prompt="(compression)"
+virtualenv ${venv_dir} -p python3 --prompt="(federated_gnn)"
 
 . ${venv_dir}/bin/activate
 
