@@ -303,11 +303,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Export the data configuration file to output_path."""
         Path(output_path).write_text(OmegaConf.to_yaml(data_cfg), encoding="utf-8")
 
-    def get_hyparams_config(self) -> ConfigurableParameters:
+    def get_hyparams_config(self, override_param: Optional[List] = None) -> ConfigurableParameters:
         """Separates the input params received from args and updates them.."""
         hyper_parameters = self.template.hyper_parameters.data
         type_hint = gen_param_help(hyper_parameters)
-        updated_hyper_parameters = gen_params_dict_from_args(self.args, type_hint=type_hint)
+        updated_hyper_parameters = gen_params_dict_from_args(
+            self.args, override_param=override_param, type_hint=type_hint
+        )
         override_parameters(updated_hyper_parameters, hyper_parameters)
         return create(hyper_parameters)
 
