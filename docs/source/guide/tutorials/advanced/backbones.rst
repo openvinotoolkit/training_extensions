@@ -32,7 +32,7 @@ The following libraries are currently available for backbone replacement.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick start guide <../../get_started/installation>` to create a universal virtual environment for OTX.
+You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OTX.
 
 *****************************
 Backbone replacement tutorial
@@ -134,7 +134,7 @@ Backbone replacement tutorial
 
       (otx) ...$ otx build --backbone backbone.yaml
 
-4. After that, you can use any other OTX command with new model. :doc:`quick start guide <../../get_started/installation>`
+4. After that, you can use any other OTX command with new model. :doc:`quick start guide <../../get_started/quick_start_guide/installation>`
 
 You can use the backbones provided by mmdet, mmseg, torchvision, and omz.mmcls in the same way as above.
 

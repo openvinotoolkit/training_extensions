@@ -29,7 +29,7 @@ You can press ``Q`` to stop inference during the demo running.
 
 The model inference on your custom image will look like this:
 
-.. image:: ../../../utils/images/wgisd_pr_sample.jpg
+.. image:: ../../../../utils/images/wgisd_pr_sample.jpg
   :width: 600
   :alt: this image shows the inference results on the WGISD dataset
 
@@ -84,7 +84,7 @@ For visual purposes, we can also update the color of ``Chardonnay`` class from y
 
 The result will be the following:
 
-.. image:: ../../../utils/images/wgisd_pr2_sample.jpg
+.. image:: ../../../../utils/images/wgisd_pr2_sample.jpg
   :width: 600
   :alt: this image shows the inference results on the WGISD dataset
 

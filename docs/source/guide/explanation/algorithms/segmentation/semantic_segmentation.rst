@@ -13,6 +13,7 @@ The output of semantic segmentation is typically an image where each pixel is co
   :alt: image uploaded from this `source <https://arxiv.org/abs/1912.03183>`_
 
 |
+
 We solve this task by utilizing `FCN Head <https://arxiv.org/pdf/1411.4038.pdf>`_ with implementation from `MMSegmentation <https://mmsegmentation.readthedocs.io/en/latest/_modules/mmseg/models/decode_heads/fcn_head.html>`_ on the multi-level image features obtained by the feature extractor backbone (`Lite-HRNet <https://arxiv.org/abs/2104.06403>`_).
 For the supervised training we use the following algorithms components:
 

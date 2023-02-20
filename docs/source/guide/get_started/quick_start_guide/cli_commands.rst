@@ -1,11 +1,11 @@
 OTX CLI commands
 =================
 
-Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have :doc:`dedicated tutorials <../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
+Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
 
 .. note::
 
-    To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../explanation/index>` in the documentation.
+    To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../../explanation/index>` in the documentation.
 
 *****
 Find
@@ -100,7 +100,7 @@ Building workspace folder
 
 
 For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
-Please refer to the advanced tutorial :doc:`Backbone Replacement <../tutorials/advanced/backbones>` in the documentation.
+Please refer to the advanced tutorial :doc:`Backbone Replacement <../../tutorials/advanced/backbones>` in the documentation.
 
 .. code-block::
 
@@ -135,7 +135,7 @@ OTX supports also auto-split functionality. If you don't have a prepared validat
 
 .. note::
 
-    Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` documentation.
+    Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` documentation.
 
 
 *********
@@ -206,7 +206,7 @@ Example of the command line to start object detection training:
 
 
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset OTX will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset OTX will choose the task type and template with the best accuracy/speed trade-off.
 
 We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 

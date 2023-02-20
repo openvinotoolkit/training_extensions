@@ -12,10 +12,8 @@ Guide
 
 .. toctree::
   :hidden:
-  :caption: Tutorials
 
-  tutorials/base/index
-  tutorials/advanced/index
+  tutorials/index
 
 
 .. toctree::
@@ -37,6 +35,5 @@ Guide
 
 .. toctree::
   :hidden:
-  :caption: Release Info
 
   release_notes/index

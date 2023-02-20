@@ -28,7 +28,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick start guide <../../../get_started/installation>` to create a universal virtual environment for OTX.
+You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OTX.
 
 ***************************
 Dataset preparation
@@ -45,10 +45,9 @@ with the following command:
   cd ..
 
 |
-.. image:: ../../../../utils/images/flowers.jpg
+.. image:: ../../../../../utils/images/flowers.jpg
   :width: 600
 |
-
 
 This dataset contains images of 5 different flower categories and is stored in the imagenet format which is supported by OTX:
 

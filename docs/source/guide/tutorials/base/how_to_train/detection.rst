@@ -22,7 +22,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick_start guide <../../../get_started/quick_start_guide>` to create a universal virtual environment for all tasks. On the other hand, you can create a task-specific environment following the process below.
+You can follow the installation process from a :doc:`quick_start guide <../../../get_started/quick_start_guide/installation>` to create a universal virtual environment for all tasks. On the other hand, you can create a task-specific environment following the process below.
 
 1. Check your python version:
 
@@ -72,7 +72,7 @@ It's a great example to start with. The model achieves high accuracy right from 
 
 |
 
-.. image:: ../../../../utils/images/wgisd_gt_sample.jpg
+.. image:: ../../../../../utils/images/wgisd_gt_sample.jpg
   :width: 600
   :alt: this image uploaded from this `source <https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg>`_
 
