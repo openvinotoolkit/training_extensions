@@ -1,6 +1,4 @@
 from torchvision import transforms
-################# Data Augmentation and Transforms #####################
-
 # Training Transformations/ Data Augmentation
 train_transform=transforms.Compose([
                                     transforms.Resize(350),
