@@ -28,7 +28,6 @@ class TestMMOVBackbone:
         filter = ov.opset10.constant(np.random.normal(size=(1, 24, 64, 64)), ov.Type.f32)
         mul = ov.opset10.matmul(param, filter, False, False)
         result = ov.opset10.result(mul, name="cls_seg_out")
-        params.append(param)
         results.append(result)
 
         ov_model = ov.Model(results, params, "seg_head")

@@ -3,6 +3,8 @@
 #
 
 import math
+import os
+import tempfile
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Callable, List, Optional, Union
@@ -175,11 +177,18 @@ class OVModel(torch.nn.Module):
 
     @staticmethod
     def build_graph(model_path_or_model, weight_path=None):
-        if not isinstance(model_path_or_model, ov.Model):
+        with tempfile.TemporaryDirectory() as tempdir:
+            if isinstance(model_path_or_model, ov.Model):
+                assert weight_path is None, "if openvino model is given 'weight_path' must be None"
+                ov.serialize(
+                    model_path_or_model,
+                    os.path.join(tempdir, "model.xml"),
+                    os.path.join(tempdir, "model.bin"),
+                )
+                model_path_or_model = os.path.join(tempdir, "model.xml")
+                weight_path = os.path.join(tempdir, "model.bin")
             # TODO: reshape decompose ir graph
             ov_model = load_ov_model(model_path_or_model, weight_path, False)
-        else:
-            ov_model = model_path_or_model
         graph = Graph.from_ov(ov_model)
         return graph
 
