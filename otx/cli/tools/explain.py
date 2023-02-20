@@ -124,6 +124,7 @@ def main():
     explain_parameters = InferenceParameters(
         is_evaluation=False,
         explainer=args.explain_algorithm,
+        explain_predicted_classes=False,
     )
     explained_dataset = task.explain(
         dataset_to_explain.with_empty_annotations(),
