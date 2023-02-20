@@ -117,9 +117,7 @@ class TestMaskCompose:
         """Test invalid transform type raises error."""
         with pytest.raises(TypeError):
             transform = [{"Dummy Transform": "So dummy"}]
-            pipeline = MaskCompose(
-                transforms=[transform], prob=1.0, keep_original=False
-            )
+            pipeline = MaskCompose(transforms=[transform], prob=1.0, keep_original=False)
             del pipeline  # This is to silence the pylint's unused variable warning.
 
     def test_prob_zero(self, data: dict[str, np.ndarray]) -> None:

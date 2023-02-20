@@ -51,12 +51,8 @@ class TestOpsFabric:
 
     def test_enhance_increasing_level_to_arg(self, ops_fabric: OpsFabric) -> None:
         """Test enhance_increasing_level_to_arg function."""
-        assert ops_fabric._enhance_increasing_level_to_arg(0, ops_fabric.hparams) == (
-            1.0,
-        )
-        assert ops_fabric._enhance_increasing_level_to_arg(5, ops_fabric.hparams) == (
-            1.0 + 5 / 10 * 0.9,
-        )
+        assert ops_fabric._enhance_increasing_level_to_arg(0, ops_fabric.hparams) == (1.0,)
+        assert ops_fabric._enhance_increasing_level_to_arg(5, ops_fabric.hparams) == (1.0 + 5 / 10 * 0.9,)
 
     def test_shear_level_to_arg(self, ops_fabric: OpsFabric) -> None:
         """Test shear_level_to_arg function."""
@@ -66,27 +62,17 @@ class TestOpsFabric:
     def test_translate_rel_level_to_arg(self, ops_fabric: OpsFabric) -> None:
         """Test translate_rel_level_to_arg function."""
         assert ops_fabric._translate_rel_level_to_arg(0, ops_fabric.hparams) == (0,)
-        assert ops_fabric._translate_rel_level_to_arg(5, {"translate_pct": 0.5}) == (
-            5 / 10 * 0.5,
-        )
+        assert ops_fabric._translate_rel_level_to_arg(5, {"translate_pct": 0.5}) == (5 / 10 * 0.5,)
 
     def test_posterize_increasing_level_to_arg(self, ops_fabric: OpsFabric) -> None:
         """Test posterize_increasing_level_to_arg function."""
-        assert ops_fabric._posterize_increasing_level_to_arg(0, ops_fabric.hparams) == (
-            4,
-        )
-        assert ops_fabric._posterize_increasing_level_to_arg(5, ops_fabric.hparams) == (
-            4 - int(5 / 10 * 4),
-        )
+        assert ops_fabric._posterize_increasing_level_to_arg(0, ops_fabric.hparams) == (4,)
+        assert ops_fabric._posterize_increasing_level_to_arg(5, ops_fabric.hparams) == (4 - int(5 / 10 * 4),)
 
     def test_solarize_increasing_level_to_arg(self, ops_fabric: OpsFabric) -> None:
         """Test solarize_increasing_level_to_arg function."""
-        assert ops_fabric._solarize_increasing_level_to_arg(0, ops_fabric.hparams) == (
-            0,
-        )
-        assert ops_fabric._solarize_increasing_level_to_arg(5, ops_fabric.hparams) == (
-            256 - int(5 / 10 * 256),
-        )
+        assert ops_fabric._solarize_increasing_level_to_arg(0, ops_fabric.hparams) == (0,)
+        assert ops_fabric._solarize_increasing_level_to_arg(5, ops_fabric.hparams) == (256 - int(5 / 10 * 256),)
 
     def test_call(self, ops_fabric: OpsFabric) -> None:
         """Test __call__ function."""
@@ -107,9 +93,7 @@ class TestAugMixAugment:
         aug_mix_augment = AugMixAugment(config_str="augmix-m5-w3")
 
         img = Image.new("RGB", (224, 224), color=(255, 0, 0))
-        mixing_weights = np.float32(
-            np.random.dirichlet([aug_mix_augment.alpha] * aug_mix_augment.width)
-        )
+        mixing_weights = np.float32(np.random.dirichlet([aug_mix_augment.alpha] * aug_mix_augment.width))
         m = np.float32(np.random.beta(aug_mix_augment.alpha, aug_mix_augment.alpha))
 
         mixed_img = aug_mix_augment._apply_basic(img, mixing_weights, m)

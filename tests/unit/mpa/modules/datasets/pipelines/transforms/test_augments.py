@@ -41,9 +41,7 @@ class TestAugment:
             ("translate_y_rel", {"pct": 0.5}),
         ],
     )
-    def test_augmentation_function(
-        self, image: Image.Image, augmentation_str: str, args: dict[str, Any]
-    ) -> None:
+    def test_augmentation_function(self, image: Image.Image, augmentation_str: str, args: dict[str, Any]) -> None:
         """Test that the augmentation functions returns an Image object."""
         augmentation_func = getattr(Augments, augmentation_str)
         result = augmentation_func(image, **args)

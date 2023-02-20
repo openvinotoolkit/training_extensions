@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import random
-
 import numpy as np
 import pytest
 from PIL import Image

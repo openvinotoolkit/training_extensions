@@ -8,10 +8,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 import torch
-from mmdet.datasets import PIPELINES
 from PIL import Image, ImageFilter
 from torch import Tensor
-from torchvision import transforms as T
 
 from otx.mpa.modules.datasets.pipelines.torchvision2mmdet import (
     BranchImage,
@@ -47,10 +45,7 @@ class TestColorJitter:
     def test_repr(self) -> None:
         """Test __repr__ method of ColorJitter."""
         transform = ColorJitter(brightness=0.2)
-        assert (
-            str(transform)
-            == "ColorJitter(brightness=[0.8, 1.2], contrast=None, saturation=None, hue=None)"
-        )
+        assert str(transform) == "ColorJitter(brightness=[0.8, 1.2], contrast=None, saturation=None, hue=None)"
 
 
 class TestRandomGrayscale:
@@ -68,9 +63,7 @@ class TestRandomGrayscale:
 class TestRandomErasing:
     def test_random_erasing(self, image_tensor: Tensor) -> None:
         """Test random erasing."""
-        transform = RandomErasing(
-            p=1.0, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False
-        )
+        transform = RandomErasing(p=1.0, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False)
 
         data = {"img": image_tensor}
         transformed_data = transform(data)
@@ -96,9 +89,7 @@ class TestRandomGaussianBlur:
 
         # Test that the output image is blurred
         blur_radius = (pipeline.sigma_min + pipeline.sigma_max) / 2
-        blurred_image = inputs["img"].filter(
-            ImageFilter.GaussianBlur(radius=blur_radius)
-        )
+        blurred_image = inputs["img"].filter(ImageFilter.GaussianBlur(radius=blur_radius))
         assert np.array_equal(np.array(outputs["img"]), np.array(blurred_image))
 
     def test_repr(self) -> None:
@@ -131,9 +122,7 @@ class TestRandomApply:
 
 
 class TestNDArrayToTensor:
-    def test_ndarray_to_tensor_with_single_channel_image(
-        self, data: dict[str, np.ndarray]
-    ) -> None:
+    def test_ndarray_to_tensor_with_single_channel_image(self, data: dict[str, np.ndarray]) -> None:
         """Test NDArrayToTensor with a single channel image."""
         pipeline = NDArrayToTensor(keys=["img"])
         output = pipeline(data)
