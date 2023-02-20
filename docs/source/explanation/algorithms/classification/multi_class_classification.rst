@@ -60,15 +60,15 @@ Models
 
 We support the following ready-to-use model templates:
 
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFLOPs) | Model size (MB) |
-+==============================================================================================================================================================================================================================+========================+=====================+=================+
-| `Custom_Image_Classification_MobileNet-V3-large-1x <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml>`_             | MobileNet-V3-large-1x  | 0.44                | 4.29            |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Image_Classification_EfficinetNet-B0 <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml>`_                        | EfficientNet-B0        | 0.81                | 4.09            |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Image_Classification_EfficientNet-V2-S <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml>`_                    | EfficientNet-V2-S      | 5.76                | 20.23           |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
+| Template ID                                                                                                                                                                                                  | Name                  | Complexity (GFLOPs) | Model size (MB) |
++==============================================================================================================================================================================================================+=======================+=====================+=================+
+| `Custom_Image_Classification_MobileNet-V3-large-1x <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml>`_ | MobileNet-V3-large-1x | 0.44                | 4.29            |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
+| `Custom_Image_Classification_EfficinetNet-B0 <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml>`_            | EfficientNet-B0       | 0.81                | 4.09            |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
+| `Custom_Image_Classification_EfficientNet-V2-S <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml>`_        | EfficientNet-V2-S     | 5.76                | 20.23           |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------+---------------------+-----------------+
 
 `EfficientNet-V2-S <https://arxiv.org/abs/2104.00298>`_ has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. `MobileNet-V3-large-1x <https://arxiv.org/abs/1905.02244>`_ is the best choice when training time and computational cost are in priority, nevertheless, this template provides competitive accuracy as well.
 `EfficientNet-B0 <https://arxiv.org/abs/1905.11946>`_ consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.
@@ -98,7 +98,60 @@ In the table below the top-1 accuracy on some academic datasets using our :ref:`
 Semi-supervised Learning
 ************************
 
-To be added soon
+Semi-SL (Semi supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.
+
+`FixMatch <https://arxiv.org/abs/2001.07685>`_ is a specific implementation of Semi-SL that has been shown to be effective in various applications. FixMatch introduces pseudo-labeling, which is the process of generating labels for the unlabeled data and treating them as if they were labeled data. Pseudo-labeling is based on the idea that the model's prediction for the unlabeled data is likely to be correct, which can improve the model's accuracy and reduce the need for labeled data.
+
+In FixMatch, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, FixMatch uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.
+
+Overall, Semi-SL and FixMatch are powerful techniques for improving the performance of machine learning models with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.
+
+.. _mcl_cls_semi_supervised_pipeline:
+
+- ``Pseudo-labeling and FixMatch``: A specific implementation of Semi-SL that combines the use of pseudo-labeling with a consistency loss, strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.
+
+- ``Adaptable Threshold``: A novel addition to our solution that calculates a class-wise threshold for pseudo-labeling, which can solve the issue of imbalanced data and produce high-quality pseudo-labels that improve the overall score.
+
+- ``Unlabeled Warm Up Loss``: A technique for preventing the initial unstable learning of pseudo-labeling by increasing the coefficient of the unlabeled loss from 0 to 1.
+
+- ``Exponential Moving Average (EMA)``: A technique for maintaining a moving average of the model's parameters, which can improve the generalization performance of the model.
+
+- ``Other solutions``: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, etc.).
+
+Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` how to train semi supervised learning. Based on MobileNet-V3-large-1x, it takes about 3 times longer than conventional supervised learning.
+
+In the table below the top-1 accuracy on some academic datasets using our :ref:`Semi-SL pipeline <_mcl_cls_semi_supervised_pipeline>` is presented. Same as the supervised setting except for an image for unlabeled and an additional batch size.
+
+4 images per class (+ unlabeled image for Semi-SL)
+
++-----------------------+---------+---------+-------+---------+--------+---------+
+|        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
++=======================+=========+=========+=======+=========+========+=========+
+|         Model         |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
++-----------------------+---------+---------+-------+---------+--------+---------+
+| MobileNet-V3-large-1x |  40.75  |  43.13  | 23.32 |  27.85  |  68.2  |  71.84  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|   EfficientNet-B0     |  42.24  |  44.23  | 28.09 |  32.96  | 68.58  |  70.79  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|  EfficientNet-V2-S    |  36.03  |  39.66  | 16.81 |  20.28  | 65.99  |  69.61  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+
+10 images per class (+ unlabeled image for Semi-SL)
+
++-----------------------+---------+---------+-------+---------+--------+---------+
+|        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
++=======================+=========+=========+=======+=========+========+=========+
+|         Model         |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
++-----------------------+---------+---------+-------+---------+--------+---------+
+| MobileNet-V3-large-1x |  50.77  |  52.16  | 38.73 |  48.36  | 73.33  |  77.04  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|   EfficientNet-B0     |  52.69  |  58.35  | 46.04 |  61.79  | 74.56  |  80.14  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|  EfficientNet-V2-S    |  48.84  |   55    | 26.16 |  47.99  |  74.6  |  80.92  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+
+.. note::
+    This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm, some model results may not be as expected.
 
 ************************
 Self-supervised Learning
