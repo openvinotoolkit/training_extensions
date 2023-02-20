@@ -1,7 +1,7 @@
 """Utility functions for attr package.
 
 This module contains utility functions to use with the attr package, concerning for instance parameter validation
-or serialization. They are used within the otx_config_helper or the configuration elements.
+or serialization. They are used within the cfg_helper or the configuration elements.
 """
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

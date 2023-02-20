@@ -120,6 +120,7 @@ def get_args():
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
+    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
     if not hyper_parameters and "params" in params:
         if "params" in params:
             params = params[params.index("params") :]
@@ -131,12 +132,12 @@ def get_args():
                         f"{param}",
                         dest=f"params.{param[2:]}",
                     )
-    return parser.parse_args()
+    return parser.parse_args(), override_param
 
 
 def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
-    args = get_args()
+    args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="train")
     # Auto-Configuration for model template
@@ -157,7 +158,7 @@ def main():  # pylint: disable=too-many-branches
     task_class = get_impl_class(template.entrypoints.base)
 
     # Update Hyper Parameter Configs
-    hyper_parameters = config_manager.get_hyparams_config()
+    hyper_parameters = config_manager.get_hyparams_config(override_param=override_param)
 
     environment = TaskEnvironment(
         model=None,
