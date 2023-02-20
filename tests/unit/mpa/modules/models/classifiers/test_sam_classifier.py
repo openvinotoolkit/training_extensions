@@ -121,8 +121,6 @@ class TestSAMImageClassifier:
         chkpt_dict = deepcopy(state_dict)
         model_classes = [0, 1, 2]
         chkpt_classes = [0, 1]
-        self.classifier.load_state_dict_mixing_hook(
-            self.module, model_classes, chkpt_classes, chkpt_dict, prefix=""
-        )
+        self.classifier.load_state_dict_mixing_hook(self.module, model_classes, chkpt_classes, chkpt_dict, prefix="")
 
         assert chkpt_dict.keys() == state_dict.keys()
