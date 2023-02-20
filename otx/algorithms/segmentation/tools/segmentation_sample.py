@@ -192,7 +192,6 @@ def main(args):
     task_impl_path = model_template.entrypoints.base
     task_cls = get_task_class(task_impl_path)
     task = task_cls(task_environment=environment)
-    task.freeze = False
 
     logger.info("Train model")
     initial_model = ModelEntity(
