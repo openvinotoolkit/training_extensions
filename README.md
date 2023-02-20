@@ -97,13 +97,13 @@ Moving forward, OTX provides the following features:
 
 # Quick start guide
 
-In order to get started with OpenVINO™ Training eXtensions see [the quick-start guide](https://openvinotoolkit.github.io/training_extensions/get_started/index.html).
+In order to get started with OpenVINO™ Training eXtensions see [the quick-start guide](QUICK_START_GUIDE.md).
 
 ---
 
 # Documentation
 
-Refer to our [documentation](https://openvinotoolkit.github.io/training_extensions/index.html) to read about explanation of the algorithms, additional features and also look into our dedicated tutorials covering all the functionality
+Refer to our documentation(will be released soon) to read about explanation of the algorithms, additional features and also look into our dedicated tutorials covering all the functionality
 
 ---
 

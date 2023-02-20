@@ -40,7 +40,7 @@ ESC_BUTTON = 27
 
 def get_args():
     """Parses command line arguments."""
-    parser, hyper_parameters, _ = get_parser_and_hprams_data()
+    parser, hyper_parameters, params = get_parser_and_hprams_data()
 
     parser.add_argument(
         "-i",
@@ -73,8 +73,9 @@ def get_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
+    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
 
-    return parser.parse_args()
+    return parser.parse_args(), override_param
 
 
 def get_predictions(task, frame):
@@ -103,14 +104,14 @@ def main():
     """Main function that is used for model demonstration."""
 
     # Dynamically create an argument parser based on override parameters.
-    args = get_args()
+    args, override_param = get_args()
 
     config_manager = ConfigManager(args, mode="eval")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
     # Update Hyper Parameter Configs
-    hyper_parameters = config_manager.get_hyparams_config()
+    hyper_parameters = config_manager.get_hyparams_config(override_param)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     template = config_manager.template

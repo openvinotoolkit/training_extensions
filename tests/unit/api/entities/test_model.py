@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from otx.api.configuration import ConfigurableParameters, otx_config_helper
+from otx.api.configuration import ConfigurableParameters, cfg_helper
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -256,7 +256,7 @@ class TestModelEntity:
         dummy_template = __get_path_to_file("./dummy_template.yaml")
         model_template = parse_model_template(dummy_template)
         hyper_parameters = model_template.hyper_parameters.data
-        params = otx_config_helper.create(hyper_parameters)
+        params = cfg_helper.create(hyper_parameters)
         labels_schema = LabelSchemaEntity.from_labels(labels_list)
         environment = TaskEnvironment(
             model=None,
