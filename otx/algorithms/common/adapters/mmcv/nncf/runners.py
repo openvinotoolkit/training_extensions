@@ -38,7 +38,11 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):  # pylint: disable=too-many-in
     def __init__(self, *args, nncf_config, nncf_meta=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.nncf_config = nncf_config
+
+        if nncf_meta is None:
+            nncf_meta = NNCFMetaState()
         self.nncf_meta = nncf_meta
+
         self.compression_ctrl = None
         self._target_metric_name = nncf_config["target_metric_name"]
         self._train_data_loader = None
@@ -136,14 +140,16 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):  # pylint: disable=too-many-in
         """validation_fn.
 
         Return the target metric value on the validation dataset.
-        Evaluation is assumed to be already done at this point since EvalHook was called.
         This method is used in NNCF-based accuracy-aware training.
         """
+
+        # make sure evaluation hook is in a 'should_evaluate' state
+        interval_bak = self._eval_hook.interval
+        self._eval_hook.interval = 1
+        self._eval_hook._do_evaluate(self)  # pylint: disable=protected-access
+        self._eval_hook.interval = interval_bak
         # Get metric from runner's attributes that set in EvalHook.evaluate() function
         all_metrics = getattr(self, "all_metrics", {})
-        if len(all_metrics) == 0:
-            self._eval_hook._do_evaluate(self)  # pylint: disable=protected-access
-            all_metrics = getattr(self, "all_metrics", {})
         metric = all_metrics.get(self._target_metric_name, None)
         if metric is None:
             raise RuntimeError(f"Could not find the {self._target_metric_name} key")

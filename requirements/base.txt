@@ -1,22 +1,13 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Base Requirements.                                                          #
-attrs>=21.2.0
+# Base Algo Requirements.                                                          #
 natsort>=6.0.0
 nbmake
-networkx>=2.6,<=2.8.0
-numpy>=1.21.0,<=1.23.4  # np.bool was removed in 1.24.0 which was used in openvino runtime
-omegaconf==2.1.*
-opencv-python==4.5.*
 prettytable
-protobuf<3.21.0
-pymongo==3.12.0
+protobuf>=3.20.0
 pyyaml
-# Torch version is set to 1.9.0 as mmdet
-# (https://github.com/openvinotoolkit/mmdetection/blob/ote/requirements/build.txt#L4) does not support higher version
-torch>=1.8.1, <=1.9.0
-torchvision>=0.9.1, <=0.10.1
-scikit-learn==0.24.*
-Shapely>=1.7.1,<=1.8.0
-hpopt==0.3.0
 imagesize==1.4.1
-datumaro==0.4.0.1
+datumaro==1.0.0rc1
+psutil
+scipy>=1.8
+bayesian-optimization>=1.2.0
+tensorboard>=2.11.0

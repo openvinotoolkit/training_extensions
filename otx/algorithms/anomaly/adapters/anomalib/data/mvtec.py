@@ -81,15 +81,9 @@ class OtxMvtecDataset:
     def __init__(
         self,
         path: Union[str, Path],
-        split_ratio: float = 0.5,
-        seed: int = 0,
-        create_validation_set: bool = True,
         task_type: TaskType = TaskType.ANOMALY_CLASSIFICATION,
     ):
         self.path = path if isinstance(path, Path) else Path(path)
-        self.split_ratio = split_ratio
-        self.seed = seed
-        self.create_validation_set = create_validation_set
         self.task_type = task_type
 
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
@@ -119,12 +113,7 @@ class OtxMvtecDataset:
             DataFrame: Final list of samples comprising all the required
                 information to create the OTX Dataset.
         """
-        samples = make_mvtec_dataset(
-            path=self.path,
-            split_ratio=self.split_ratio,
-            seed=self.seed,
-            create_validation_set=self.create_validation_set,
-        )
+        samples = make_mvtec_dataset(root=self.path)
 
         # Set the OTX SDK Splits
         samples = samples.rename(columns={"split": "subset"})

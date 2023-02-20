@@ -25,9 +25,11 @@ from typing import Dict, List, Optional, Union
 
 import torch
 from anomalib.models import AnomalyModule, get_model
+from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
+    PostProcessingConfigurationCallback,
 )
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import Trainer
@@ -88,7 +90,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
         # Hyperparameters.
-        self.project_path: str = output_path if output_path is not None else tempfile.mkdtemp(prefix="otx-anomalib")
+        self._work_dir_is_temp = False
+        if output_path is None:
+            output_path = tempfile.mkdtemp(prefix="otx-anomalib")
+            self._work_dir_is_temp = True
+        self.project_path: str = output_path
         self.config = self.get_config()
 
         # Set default model attributes.
@@ -188,13 +194,17 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         inference = AnomalyInferenceCallback(dataset, self.labels, self.task_type)
         normalize = MinMaxNormalizationCallback()
         metrics_configuration = MetricsConfigurationCallback(
-            adaptive_threshold=config.metrics.threshold.adaptive,
-            default_image_threshold=config.metrics.threshold.image_default,
-            default_pixel_threshold=config.metrics.threshold.pixel_default,
-            image_metric_names=config.metrics.image,
-            pixel_metric_names=config.metrics.pixel,
+            task=config.dataset.task,
+            image_metrics=config.metrics.image,
+            pixel_metrics=config.metrics.get("pixel"),
         )
-        callbacks = [progress, normalize, inference, metrics_configuration]
+        post_processing_configuration = PostProcessingConfigurationCallback(
+            normalization_method=NormalizationMethod.MIN_MAX,
+            threshold_method=ThresholdMethod.ADAPTIVE,
+            manual_image_threshold=config.metrics.threshold.manual_image,
+            manual_pixel_threshold=config.metrics.threshold.manual_pixel,
+        )
+        callbacks = [progress, normalize, inference, metrics_configuration, post_processing_configuration]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
@@ -337,8 +347,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def unload(self) -> None:
         """Unload the task."""
-        if os.path.exists(self.config.project.path):
-            shutil.rmtree(self.config.project.path, ignore_errors=False)
+        self.cleanup()
 
         if self._is_docker():
             logger.warning("Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
@@ -351,3 +360,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "Done unloading. Torch is still occupying %f bytes of GPU memory",
                 torch.cuda.memory_allocated(),
             )
+
+    def cleanup(self) -> None:
+        """Clean up work directory."""
+        if self._work_dir_is_temp and os.path.exists(self.config.project.path):
+            shutil.rmtree(self.config.project.path, ignore_errors=False)

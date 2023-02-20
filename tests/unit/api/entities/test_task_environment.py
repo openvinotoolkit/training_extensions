@@ -17,15 +17,15 @@ from pathlib import Path
 import pytest
 import yaml
 
-from otx.api.configuration import ConfigurableParameters, otx_config_helper
+from otx.api.configuration import ConfigurableParameters, cfg_helper
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.task_environment import TaskEnvironment
+from tests.test_helpers import ConfigExample
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
-from tests.unit.api.test_helpers import ConfigExample
 
 
 def __get_path_to_file(filename: str):
@@ -54,7 +54,7 @@ def environment():
     dummy_template = __get_path_to_file("./dummy_template.yaml")
     model_template = parse_model_template(dummy_template)
     hyper_parameters = model_template.hyper_parameters.data
-    params = otx_config_helper.create(hyper_parameters)
+    params = cfg_helper.create(hyper_parameters)
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
     environment = TaskEnvironment(
         model=None,

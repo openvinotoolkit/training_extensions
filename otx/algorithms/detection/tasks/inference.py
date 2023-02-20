@@ -19,6 +19,7 @@ from typing import Iterable, Optional, Tuple
 
 import cv2
 import numpy as np
+import pycocotools.mask as mask_util
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -223,8 +224,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def unload(self):
         """Unload the task."""
-        if self._work_dir_is_temp:
-            self._delete_scratch_space()
+        self.cleanup()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -245,31 +245,50 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
-            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
-        else:
-            bin_file = outputs.get("bin")
-            xml_file = outputs.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
-                output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
-                output_model.set_data("openvino.xml", f.read())
-            output_model.set_data(
-                "confidence_threshold",
-                np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
-            )
-            output_model.set_data("config.json", config_to_bytes(self._hyperparams))
-            output_model.precision = [ModelPrecision.FP32]
-            output_model.optimization_methods = self._optimization_methods
-            output_model.set_data(
-                "label_schema.json",
-                label_schema_to_bytes(self._task_environment.label_schema),
-            )
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+        if xml_file is None or bin_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
+        output_model.set_data(
+            "confidence_threshold",
+            np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
+        )
+        output_model.set_data("config.json", config_to_bytes(self._hyperparams))
+        output_model.precision = [ModelPrecision.FP32]
+        output_model.optimization_methods = self._optimization_methods
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self._task_environment.label_schema),
+        )
         logger.info("Exporting completed")
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
+        # Update tiling parameters if tiling is enabled
+        if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            logger.info("Tiling Enabled")
+            tiling_params = ConfigDict(
+                tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
+            )
+            configs.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        train=tiling_params,
+                        val=tiling_params,
+                        test=tiling_params,
+                    )
+                )
+            )
+            configs.update(dict(evaluation=dict(iou_thr=[0.5])))
+
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 
@@ -285,6 +304,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         logger.info(f"train type = {self._train_type}")
 
+        # Incremental Learning Recipe is the default for Detection
         if self._train_type in RECIPE_TRAIN_TYPE:
             recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
@@ -294,7 +314,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
 
-        options_for_patch_datasets = {"type": "MPADetDataset"}
+        options_for_patch_datasets = {"type": "OTXDetDataset"}
         patch_default_config(self._recipe_cfg)
         patch_runner(self._recipe_cfg)
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
@@ -393,6 +413,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         shapes = []
         for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
             for mask, probability in zip(masks, boxes[:, 4]):
+                if isinstance(mask, dict):
+                    mask = mask_util.decode(mask)
                 mask = mask.astype(np.uint8)
                 probability = float(probability)
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)

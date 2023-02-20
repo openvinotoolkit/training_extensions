@@ -10,8 +10,16 @@ from otx.mpa.modules.utils.task_adapt import map_cat_and_cls_as_order, map_class
 
 
 @DATASETS.register_module()
-class TaskAdaptEvalDataset(object):
-    """Dataset wrapper for task-adative evaluation."""
+class TaskAdaptEvalDataset:
+    """Dataset wrapper for task-adaptive evaluation.
+
+    Attributes:
+        model_classes:
+        **kwargs:
+
+    Notes:
+        TODO[Eugene/Jaeguk]: check if this class is still valid in OTX
+    """
 
     def __init__(self, model_classes, **kwargs):
         dataset_cfg = kwargs.copy()

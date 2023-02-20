@@ -61,7 +61,7 @@ def build_data_parallel(
     :param distributed: Enable distributed training mode.
     :return:
     """
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and config.get("gpu_ids", []):
         if distributed:
             model = model.cuda()
             # put model on gpus
@@ -78,5 +78,9 @@ def build_data_parallel(
             model = model.cuda(config.gpu_ids[0])
             model = MMDataParallel(model, device_ids=config.gpu_ids)
     else:
-        model = MMDataParallel(model, device_ids=[-1])
+        # temporarily disable cuda for cpu data parallel
+        bak = torch.cuda.is_available
+        setattr(torch.cuda, "is_available", lambda: False)
+        model = MMDataParallel(model, device_ids=[])
+        torch.cuda.is_available = bak
     return model

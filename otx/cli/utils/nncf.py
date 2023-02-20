@@ -17,7 +17,7 @@
 import torch
 
 
-def is_checkpoint_nncf(path):
+def is_checkpoint_nncf(path: str) -> bool:
     """Check if checkpoint is NNCF checkpoint.
 
     The function uses metadata stored in a checkpoint to check if the
@@ -28,7 +28,7 @@ def is_checkpoint_nncf(path):
     return is_nncf
 
 
-def get_number_of_fakequantizers_in_xml(path_to_xml: str):
+def get_number_of_fakequantizers_in_xml(path_to_xml: str) -> int:
     """Return number of FakeQuantize layers.
 
     Return number of FakeQuantize layers in the model by parsing file without loading model.

@@ -21,10 +21,12 @@ from attr import attrs
 from otx.api.configuration import ConfigurableEnum, ConfigurableParameters
 from otx.api.configuration.elements import (
     ParameterGroup,
+    add_parameter_group,
     configurable_boolean,
     configurable_float,
     configurable_integer,
     selectable,
+    string_attribute,
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
@@ -284,6 +286,7 @@ class BaseConfig(ConfigurableParameters):
     class BaseTilingParameters(ParameterGroup):
         """BaseTilingParameters for OTX Algorithms."""
 
+        header = string_attribute("Tiling Parameters")
         enable_tiling = configurable_boolean(
             default_value=False,
             header="Enable tiling",
@@ -326,3 +329,5 @@ class BaseConfig(ConfigurableParameters):
             max_value=10000,
             affects_outcome_of=ModelLifecycle.NONE,
         )
+
+    tiling_parameters = add_parameter_group(BaseTilingParameters)

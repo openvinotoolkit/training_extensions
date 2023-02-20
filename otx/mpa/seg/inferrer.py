@@ -69,11 +69,9 @@ class SegInferrer(SegStage):
             src_data_cfg = Stage.get_data_cfg(cfg, "train")
         else:
             src_data_cfg = cfg.data[input_source]
-        # data_cfg.ann_file = src_data_cfg.ann_file
-        # data_cfg.img_prefix = src_data_cfg.img_prefix
+
         if "classes" in src_data_cfg:
             data_cfg.classes = src_data_cfg.classes
-            data_cfg.new_classes = []
 
         data_cfg = Config(
             ConfigDict(

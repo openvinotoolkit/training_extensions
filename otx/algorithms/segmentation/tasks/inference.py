@@ -24,7 +24,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_data_pipeline,
     patch_default_config,
     patch_runner,
-    remove_from_configs_by_type,
 )
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
@@ -88,7 +87,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
-        self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
 
@@ -144,8 +142,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
     def unload(self):
         """Unload the task."""
-        if self._work_dir_is_temp:
-            self._delete_scratch_space()
+        self.cleanup()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -165,20 +162,19 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
-            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
-            # output_model.model_status = ModelStatus.FAILED
-        else:
-            bin_file = outputs.get("bin")
-            xml_file = outputs.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
-                output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
-                output_model.set_data("openvino.xml", f.read())
-            output_model.precision = [ModelPrecision.FP32]
-            output_model.optimization_methods = self._optimization_methods
-            output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+        if xml_file is None or bin_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
+        output_model.precision = [ModelPrecision.FP32]
+        output_model.optimization_methods = self._optimization_methods
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
 
     def _init_recipe(self):
@@ -188,7 +184,12 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info(f"train type = {self._train_type}")
 
         if self._train_type in RECIPE_TRAIN_TYPE:
-            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
+            if self._train_type == TrainType.INCREMENTAL and self._hyperparams.learning_parameters.enable_supcon:
+                recipe = os.path.join(recipe_root, "supcon.py")
+                if "supcon" not in self._model_dir:
+                    self._model_dir = os.path.join(self._model_dir, "supcon")
+            else:
+                recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
             raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
 
@@ -208,8 +209,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         if self._recipe_cfg.get("evaluation", None):
             self.metric = self._recipe_cfg.evaluation.metric
 
-        if not self.freeze:
-            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
+        if self._recipe_cfg.get("override_configs", None):
+            self.override_configs.update(self._recipe_cfg.override_configs)
+
         logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):

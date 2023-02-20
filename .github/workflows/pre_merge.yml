@@ -1,15 +1,16 @@
 name: Pre-Merge Checks
 
 on:
-  pull_request:
+  push:
     branches:
-      - feature/otx
-    workflow_dispatch: # run on request (no need for PR)
+      - develop
+  pull_request:
     types:
       - opened
       - reopened
       - synchronize
       - ready_for_review
+  workflow_dispatch: # run on request (no need for PR)
 
 # This is what will cancel the workflow concurrency
 concurrency:
@@ -18,27 +19,31 @@ concurrency:
 
 jobs:
   Code-Quality-Checks:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
       - name: Install dependencies
-        run: python -m pip install tox
+        run: python -m pip install -r requirements/dev.txt
       - name: Code Quality Checks
-        run: tox -re pre-commit
-  Pre-Merge-Tests:
+        run: tox -e pre-commit
+  Pre-Merge-Unit-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Code-Quality-Checks
-    timeout-minutes: 1440
+    timeout-minutes: 120
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: python -m pip install tox
-      - name: Pre-Merge Tests
-        run: tox -re pre-merge
-      - name: Upload coverage report
+        run: python -m pip install -r requirements/dev.txt
+      - name: Unit-testing
+        run: tox -e pre-merge -- tests/unit
+      - name: Upload coverage reports to Codecov
         run: |
           # If the workflow is triggered from PR then it gets the commit id from the PR.
           # else it uses the commit id of the latest commit. This is because the commit
@@ -51,5 +56,19 @@ jobs:
           else
             COMMIT_ID=${{ github.sha }}
           fi
-          pip install codacy-coverage
-          python-codacy-coverage -r .tox/coverage.xml -c $COMMIT_ID
+          # current version of codecov-action does not support uploading reports through the proxy
+          # so we use the latest version of codecov uploader binary
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -Z true -U $HTTP_PROXY -f .tox/coverage.xml
+  Pre-Merge-Integration-Test:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Pre-Merge-Unit-Test
+    timeout-minutes: 360
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Integration-testing
+        run: tox -e pre-merge -- tests/integration/cli

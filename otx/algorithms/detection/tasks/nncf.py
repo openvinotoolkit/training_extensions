@@ -32,6 +32,7 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
+from .train import DetectionTrainTask
 
 logger = get_logger()
 
@@ -76,7 +77,7 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disabl
     ):
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        val_preds, _ = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
+        val_preds, val_map = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
@@ -100,6 +101,14 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disabl
             self.confidence_threshold = best_confidence_threshold
         else:
             metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
+
+        performance = metric.get_performance()
+        logger.info(f"Final model performance: {str(performance)}")
+        performance.dashboard_metrics.extend(
+            # pylint: disable-next=protected-access
+            DetectionTrainTask._generate_training_metrics(self._learning_curves, val_map)
+        )
+        output_model.performance = performance
 
     def _save_model_post_hook(self, modelinfo):
         config = modelinfo["meta"]["config"]

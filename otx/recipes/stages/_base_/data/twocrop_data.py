@@ -1,6 +1,6 @@
 _base_ = ["./pipelines/twocrop_pipeline.py"]
 
-__dataset_type = "ClsDirDataset"
+__dataset_type = "OTXClsDataset"
 
 __train_pipeline = {{_base_.train_pipeline}}
 __test_pipeline = {{_base_.test_pipeline}}

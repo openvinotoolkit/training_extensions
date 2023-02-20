@@ -38,6 +38,7 @@ class TensorNormalize(object):
         return results
 
 
+# TODO [Jihwan]: Can be removed by mmcls.dataset.pipelines.auto_augment L398, Roate class
 @PIPELINES.register_module()
 class RandomRotate(object):
     """Random rotate

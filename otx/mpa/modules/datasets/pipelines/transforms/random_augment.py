@@ -143,7 +143,7 @@ rand_augment_pool = [
     (TranslateY, 0.3, 0),
 ]
 
-
+# TODO: [Jihwan]: Can be removed by mmcls.datasets.pipeline.auto_augment Line 95 RandAugment class
 @PIPELINES.register_module()
 class MPARandAugment(object):
     def __init__(self, n, m, cutout=16):

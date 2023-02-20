@@ -31,6 +31,7 @@ from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
+from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.model import (  # ModelStatus
     ModelEntity,
     ModelFormat,
@@ -96,11 +97,16 @@ class ClassificationInferenceTask(
         ) == len(
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
+        if self._multilabel:
+            logger.info("Classification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
+        if not self._multilabel and not self._hierarchical:
+            logger.info("Classification mode: multiclass")
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
@@ -185,10 +191,8 @@ class ClassificationInferenceTask(
 
     def unload(self):
         """Unload function of OTX Classification Task."""
-
         logger.info("called unload()")
-        if self._work_dir_is_temp:
-            self._delete_scratch_space()
+        self.cleanup()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -205,16 +209,16 @@ class ClassificationInferenceTask(
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
-            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
-        else:
-            bin_file = outputs.get("bin")
-            xml_file = outputs.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
-                output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
-                output_model.set_data("openvino.xml", f.read())
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+        if xml_file is None or bin_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
         output_model.precision = [ModelPrecision.FP32]
         output_model.set_data(
             "label_schema.json",
@@ -227,9 +231,9 @@ class ClassificationInferenceTask(
         """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
 
         dataset_size = len(dataset)
+        pos_thr = 0.5
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             item_labels = []
-            pos_thr = 0.5
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
                 logger.info("Nan in prediction_item.")
@@ -254,11 +258,7 @@ class ClassificationInferenceTask(
                     item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
 
                 if self._hierarchical_info["num_multilabel_classes"]:
-                    logits_begin, logits_end = (
-                        self._hierarchical_info["num_single_label_classes"],
-                        -1,
-                    )
-                    head_logits = prediction_item[logits_begin:logits_end]
+                    head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"] :]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
                             label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
@@ -279,6 +279,16 @@ class ClassificationInferenceTask(
                 item_labels.append(cls_label)
 
             dataset_item.append_labels(item_labels)
+
+            probs = TensorEntity(name="probabilities", numpy=prediction_item.reshape(-1))
+            dataset_item.append_metadata_item(probs, model=self._task_environment.model)
+
+            top_idxs = np.argpartition(prediction_item, -2)[-2:]
+            top_probs = prediction_item[top_idxs]
+            active_score_media = FloatMetadata(
+                name="active_score", value=top_probs[1] - top_probs[0], float_type=FloatType.ACTIVE_SCORE
+            )
+            dataset_item.append_metadata_item(active_score_media, model=self._task_environment.model)
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
@@ -318,14 +328,14 @@ class ClassificationInferenceTask(
                 ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
             )
 
-        if params.enable_early_stopping:
-            early_stop = ConfigDict(
-                start=int(params.early_stop_start),
-                patience=int(params.early_stop_patience),
-                iteration_patience=int(params.early_stop_iteration_patience),
-            )
-        else:
-            early_stop = False
+        early_stop = False
+        if self._recipe_cfg is not None:
+            if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
+                early_stop = ConfigDict(
+                    start=int(params.early_stop_start),
+                    patience=int(params.early_stop_patience),
+                    iteration_patience=int(params.early_stop_iteration_patience),
+                )
 
         if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
             runner = ConfigDict(max_iters=int(params.num_iters))
@@ -389,13 +399,13 @@ class ClassificationInferenceTask(
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = self._train_type.name
 
-        options_for_patch_datasets = {"type": "MPAClsDataset", "empty_label": self._empty_label}
+        options_for_patch_datasets = {"type": "OTXClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
         if self._multilabel:
-            options_for_patch_datasets["type"] = "MPAMultilabelClsDataset"
+            options_for_patch_datasets["type"] = "OTXMultilabelClsDataset"
             options_for_patch_evaluation["task"] = "multilabel"
         elif self._hierarchical:
-            options_for_patch_datasets["type"] = "MPAHierarchicalClsDataset"
+            options_for_patch_datasets["type"] = "OTXHierarchicalClsDataset"
             options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
             options_for_patch_evaluation["task"] = "hierarchical"
         elif self._selfsl:

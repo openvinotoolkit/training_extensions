@@ -7,13 +7,13 @@ from functools import partial
 from typing import Optional, Union
 
 import torch
+from mmcv.parallel import DataContainer
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 from mmdet.utils import get_root_logger
 
 from otx.algorithms.common.adapters.mmcv.nncf.runners import NNCF_META_KEY
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_keys,
     get_configs_by_pairs,
     remove_from_configs_by_type,
 )
@@ -43,7 +43,7 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
     from mmdet.datasets.pipelines import Compose
     from nncf.torch.dynamic_graph.io_handling import nncf_model_input
 
-    from otx.algorithms.common.adapters.mmcv.nncf import (
+    from otx.algorithms.common.adapters.mmcv.nncf.utils import (
         get_fake_input,
         model_eval,
         wrap_nncf_model,
@@ -53,14 +53,18 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
         build_dataset,
     )
 
-    if cfg_options is not None:
-        config.merge_from_dict(cfg_options)
     if checkpoint is None:
         # load model in this function not in runner
-        checkpoint = config.load_from
-    assert checkpoint is not None
+        checkpoint = config.get("load_from")
+    assert checkpoint is not None, "checkpoint is not given. NNCF model must be initialized with pretrained model"
 
-    model = build_detector(config, train_cfg=train_cfg, test_cfg=test_cfg, from_scratch=True)
+    model = build_detector(
+        config,
+        train_cfg=train_cfg,
+        test_cfg=test_cfg,
+        cfg_options=cfg_options,
+        from_scratch=True,
+    )
     model = model.to(device)
 
     state_dict = CheckpointLoader.load_checkpoint(checkpoint, map_location=device)
@@ -80,13 +84,6 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
         if "state_dict" in state_dict:
             state_to_build_nncf = state_dict["state_dict"]
 
-        # This data and state dict will be used to build NNCF graph later
-        # when loading NNCF model
-        # because some models run their subcomponents based on intermediate outputs
-        # resulting differently and partially traced NNCF graph
-        datasets = get_configs_by_keys(config.data.train, "otx_dataset")
-        data_to_build_nncf = datasets[0][0].numpy
-
         init_dataloader = build_dataloader(
             build_dataset(
                 config,
@@ -98,6 +95,19 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
             dataloader_builder=mmdet_build_dataloader,
             distributed=distributed,
         )
+
+        # This data and state dict will be used to build NNCF graph later
+        # when loading NNCF model
+        # because some models run their subcomponents based on intermediate outputs
+        # resulting differently and partially traced NNCF graph
+        data_to_build_nncf = next(iter(init_dataloader))["img"]
+        if isinstance(data_to_build_nncf, DataContainer):
+            data_to_build_nncf = data_to_build_nncf.data[0]
+        data_to_build_nncf = data_to_build_nncf.cpu().numpy()
+        if len(data_to_build_nncf.shape) == 4:
+            data_to_build_nncf = data_to_build_nncf[0]
+        if data_to_build_nncf.shape[0] == 3:
+            data_to_build_nncf = data_to_build_nncf.transpose(1, 2, 0)
 
         val_dataloader = None
         if is_acc_aware:
@@ -149,12 +159,18 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
 
     def dummy_forward_fn(model):
         def _get_fake_data_for_forward(nncf_config):
-            input_size = nncf_config.get("input_info").get("sample_size")
-            assert len(input_size) == 4 and input_size[0] == 1
-            H, W, C = input_size[2], input_size[3], input_size[1]  # pylint: disable=invalid-name
             device = next(model.parameters()).device
+
+            if nncf_config.get("input_info", None) and nncf_config.get("input_info").get("sample_size", None):
+                input_size = nncf_config.get("input_info").get("sample_size")
+                assert len(input_size) == 4 and input_size[0] == 1
+                H, W, C = input_size[2], input_size[3], input_size[1]  # pylint: disable=invalid-name
+                shape = tuple([H, W, C])
+            else:
+                shape = (128, 128, 3)
+
             with no_nncf_trace():
-                return get_fake_input_fn(shape=tuple([H, W, C]), device=device)
+                return get_fake_input_fn(shape=shape, device=device)
 
         fake_data = _get_fake_data_for_forward(config.nncf_config)
         img, img_metas = fake_data["img"], fake_data["img_metas"]
@@ -195,10 +211,14 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
             compression_ctrl=compression_ctrl,
         )
     )
+    # TODO: move this to OTX task when MPA is absorbed into OTX
     remove_from_configs_by_type(custom_hooks, "CancelInterfaceHook")
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
+    remove_from_configs_by_type(custom_hooks, "LazyEarlyStoppingHook")
+    remove_from_configs_by_type(custom_hooks, "EarlyStoppingHook")
     remove_from_configs_by_type(custom_hooks, "EMAHook")
     remove_from_configs_by_type(custom_hooks, "CustomModelEMAHook")
+    config.custom_hooks = custom_hooks
 
     for hook in get_configs_by_pairs(custom_hooks, dict(type="OTXProgressHook")):
         time_monitor = hook.get("time_monitor", None)

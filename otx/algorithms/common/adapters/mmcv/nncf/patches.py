@@ -5,11 +5,11 @@
 
 from copy import deepcopy
 
-from otx.algorithms.common.adapters.nncf.patchers import (
+from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
+    is_nncf_enabled,
     no_nncf_trace_wrapper,
 )
-from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled
 
 if is_nncf_enabled():
     from nncf.torch.nncf_network import NNCFNetwork
@@ -23,6 +23,9 @@ if is_nncf_enabled():
 
 # pylint: disable-next=unused-argument,invalid-name
 def _evaluation_wrapper(self, fn, runner, *args, **kwargs):
+    # TODO: move this patch to upper level (mmcv)
+    # as this is not only nncf required feature.
+    # one example is ReduceLROnPlateauLrUpdaterHook
     out = fn(runner, *args, **kwargs)
     setattr(runner, "all_metrics", deepcopy(runner.log_buffer.output))
     return out

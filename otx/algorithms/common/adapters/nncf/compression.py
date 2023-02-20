@@ -29,7 +29,8 @@ class NNCFMetaState:
             out += "data_to_build='<data>', "
         if self.compression_ctrl is not None:
             out += "compression_ctrl='<data>', "
-        out = out[:-2]
+        if out[-2:] == ", ":
+            out = out[:-2]
         out += ")"
         return out
 

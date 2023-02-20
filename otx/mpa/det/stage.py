@@ -287,18 +287,6 @@ class DetectionStage(Stage):
                 priority=48,
             ),
         )
-        # FIXME: is this hook deprecated?
-        #  update_or_add_custom_hook(
-        #      cfg,
-        #      ConfigDict(
-        #          type="SyncRandomSizeHook",
-        #          ratio_range=(10, 20),
-        #          img_scale=(640, 640),
-        #          interval=1,
-        #          priority=48,
-        #          device="cuda" if torch.cuda.is_available() else "cpu",
-        #      ),
-        #  )
         update_or_add_custom_hook(
             cfg,
             ConfigDict(

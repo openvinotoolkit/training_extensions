@@ -17,30 +17,68 @@ and build models with new backbone replacements.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import argparse
-import os
+from pathlib import Path
 
-from otx.cli.builder import Builder
-from otx.cli.utils.importing import get_otx_root_path
+from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME, ConfigManager
+from otx.cli.utils.parser import get_parser_and_hprams_data
 
-SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
-SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
+SUPPORTED_TASKS = (
+    "CLASSIFICATION",
+    "DETECTION",
+    "INSTANCE_SEGMENTATION",
+    "SEGMENTATION",
+    "ACTION_CLASSIFICATION",
+    "ACTION_DETECTION",
+    "ANOMALY_CLASSIFICATION",
+    "ANOMALY_DETECTION",
+    "ANOMALY_SEGMENTATION",
+)
 
 
-def parse_args():
+def get_args():
     """Parses command line arguments."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
+    parser, _, _ = get_parser_and_hprams_data()
+
+    parser.add_argument(
+        "--train-data-roots",
+        help="Comma-separated paths to training data folders.",
+    )
+    parser.add_argument(
+        "--val-data-roots",
+        help="Comma-separated paths to validation data folders.",
+    )
+    parser.add_argument(
+        "--test-data-roots",
+        help="Comma-separated paths to test data folders.",
+    )
+    parser.add_argument(
+        "--unlabeled-data-roots",
+        help="Comma-separated paths to unlabeled data folders",
+    )
+    parser.add_argument(
+        "--unlabeled-file-list",
+        help="Comma-separated paths to unlabeled file list",
+    )
+    parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.", default="")
     parser.add_argument(
         "--train-type",
-        help=f"The currently supported options: {SUPPORTED_TRAIN_TYPE}.",
+        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}.",
         type=str,
         default="incremental",
     )
-    parser.add_argument("--workspace-root", help="The path to use as the workspace.")
-    parser.add_argument("--model", help="Input OTX model config file (e.g model.py).", default=None)
-    parser.add_argument("--backbone", help="Enter the backbone configuration file path or available backbone type.")
-    parser.add_argument("--save-backbone-to", help="Enter where to save the backbone configuration file.", default=None)
+    parser.add_argument(
+        "--work-dir",
+        help="Location where the workspace.",
+        default=None,
+    )
+    parser.add_argument(
+        "--model", help="Enter the name of the model you want to use. (Ex. EfficientNet-B0).", default=""
+    )
+    parser.add_argument(
+        "--backbone",
+        help="Available Backbone Type can be found using 'otx find --backbone {framework}'.\n"
+        "If there is an already created backbone configuration yaml file, enter the corresponding path.",
+    )
 
     return parser.parse_args()
 
@@ -48,36 +86,39 @@ def parse_args():
 def main():
     """Main function for model or backbone or task building."""
 
-    args = parse_args()
+    args = get_args()
+    config_manager = ConfigManager(args, mode="build")
+    if args.task:
+        config_manager.task_type = args.task.upper()
+    if args.work_dir:
+        config_manager.workspace_root = Path(args.work_dir)
 
-    builder = Builder()
+    # Auto-Configuration for model template
+    config_manager.configure_template(model=args.model)
 
-    # Build with task_type -> Create User workspace
-    otx_root = get_otx_root_path()
+    config_manager.build_workspace(new_workspace_path=args.work_dir)
 
-    if args.task and args.task.upper() in SUPPORTED_TASKS:
-        builder.build_task_config(
-            task_type=args.task,
-            model_type=args.model,
-            train_type=args.train_type.lower(),
-            workspace_path=args.workspace_root,
-            otx_root=otx_root,
-        )
+    # Auto-Configuration for Dataset configuration
+    config_manager.configure_data_config()
 
     # Build Backbone related
     if args.backbone:
+        from otx.cli.builder import Builder
+
+        builder = Builder()
         missing_args = []
         if not args.backbone.endswith((".yml", ".yaml", ".json")):
-            if args.save_backbone_to is None:
-                args.save_backbone_to = (
-                    os.path.join(args.workspace_root, "backbone.yaml") if args.workspace_root else "./backbone.yaml"
-                )
-            missing_args = builder.build_backbone_config(args.backbone, args.save_backbone_to)
-            args.backbone = args.save_backbone_to
-        if args.model:
-            if missing_args:
-                raise ValueError("The selected backbone has inputs that the user must enter.")
-            builder.merge_backbone(args.model, args.backbone)
+            backbone_config_file = str(config_manager.workspace_root / "backbone.yaml")
+            missing_args = builder.build_backbone_config(args.backbone, backbone_config_file)
+        if missing_args:
+            print(
+                f"[!] {args.backbone} backbone has inputs that the user must enter.\n"
+                f"[!] Edit {backbone_config_file} and run 'otx build --backbone backbone.yaml'."
+            )
+        else:
+            builder.merge_backbone(config_manager.workspace_root / "model.py", backbone_config_file)
+
+    return dict(retcode=0, task_type=args.task)
 
 
 if __name__ == "__main__":

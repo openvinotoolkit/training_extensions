@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .dataset import MPADetDataset
+from .dataset import ImageTilingDataset, OTXDetDataset
 from .pipelines import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset
 
-__all__ = ["MPADetDataset", "LoadAnnotationFromOTXDataset", "LoadImageFromOTXDataset"]
+__all__ = ["OTXDetDataset", "LoadAnnotationFromOTXDataset", "LoadImageFromOTXDataset", "ImageTilingDataset"]

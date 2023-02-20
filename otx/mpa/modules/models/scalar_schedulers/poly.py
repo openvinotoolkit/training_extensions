@@ -10,7 +10,19 @@ from .base import BaseScalarScheduler
 
 @SCALAR_SCHEDULERS.register_module()
 class PolyScalarScheduler(BaseScalarScheduler):
-    def __init__(self, start_scale, end_scale, num_iters, power=1.2, by_epoch=False):
+    """The learning rate changes over time according to a polynomial schedule.
+
+    Args:
+        start_scale (float): The initial learning rate scale.
+        end_scale (float): The final learning rate scale.
+        num_iters (int): The number of iterations to reach the final learning rate.
+        power (float): The power of the polynomial schedule.
+        by_epoch (bool): Whether to use epoch as the unit of iteration.
+    """
+
+    def __init__(
+        self, start_scale: float, end_scale: float, num_iters: int, power: float = 1.2, by_epoch: bool = False
+    ):
         super(PolyScalarScheduler, self).__init__()
 
         self._start_s = start_scale

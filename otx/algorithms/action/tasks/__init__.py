@@ -15,9 +15,11 @@
 # and limitations under the License.
 
 from .inference import ActionInferenceTask
+from .openvino import ActionOpenVINOTask
 from .train import ActionTrainTask
 
 __all__ = [
     "ActionInferenceTask",
+    "ActionOpenVINOTask",
     "ActionTrainTask",
 ]

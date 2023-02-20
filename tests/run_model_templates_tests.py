@@ -4,14 +4,13 @@ import os
 import sys
 from subprocess import run
 
-from ote_cli.utils.tests import collect_env_vars
+from tests.test_suite.run_test_command import collect_env_vars
 
 ALGO_ROOT_DIR = "external"
 ALGO_DIRS = [
     os.path.join(ALGO_ROOT_DIR, d) for d in os.listdir(ALGO_ROOT_DIR) if os.path.isdir(os.path.join(ALGO_ROOT_DIR, d))
 ]
 IMPORTANT_DIRS = [
-    "data/",
     "ote_cli/",
     "ote_sdk/",
     "tests/",

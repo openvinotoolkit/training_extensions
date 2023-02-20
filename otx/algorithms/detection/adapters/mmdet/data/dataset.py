@@ -14,19 +14,21 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import tempfile
 from collections import OrderedDict
 from copy import copy
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import numpy as np
+from mmcv import Config
 from mmcv.utils import print_log
-from mmdet.core import PolygonMasks, eval_map, eval_recalls
-from mmdet.datasets.builder import DATASETS
+from mmdet.core import PolygonMasks, eval_map
+from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
-from otx.algorithms.detection.adapters.mmdet.evaluation import CustomMAE, eval_segm
+from otx.algorithms.detection.adapters.mmdet.evaluation import eval_segm
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
@@ -35,6 +37,8 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.api.utils.shape_factory import ShapeFactory
+
+from .tiling import Tile
 
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
@@ -98,7 +102,7 @@ def get_annotation_mmdet_format(
 
 
 @DATASETS.register_module()
-class MPADetDataset(CustomDataset):
+class OTXDetDataset(CustomDataset):
     """Wrapper that allows using a OTX dataset to train mmdetection models.
 
     This wrapper is not based on the filesystem,
@@ -179,7 +183,7 @@ class MPADetDataset(CustomDataset):
         # even if we need only checking aspect ratio of the image; due to it
         # this implementation of dataset does not uses such tricks as skipping images with wrong aspect ratios or
         # small image size, since otherwise reading the whole dataset during initialization will be required.
-        self.data_infos = MPADetDataset._DataInfoProxy(otx_dataset, labels)
+        self.data_infos = OTXDetDataset._DataInfoProxy(otx_dataset, labels)
 
         self.proposals = None  # Attribute expected by mmdet but not used for OTX datasets
 
@@ -270,7 +274,7 @@ class MPADetDataset(CustomDataset):
                 Default: None.
         """
         metrics = metric if isinstance(metric, list) else [metric]
-        allowed_metrics = ["mAP", "recall", "mIoU", "mae", "mae%"]
+        allowed_metrics = ["mAP"]
         eval_results = OrderedDict()
         for metric in metrics:  # pylint: disable=redefined-argument-from-local
             if metric not in allowed_metrics:
@@ -303,53 +307,109 @@ class MPADetDataset(CustomDataset):
                     mean_aps.append(mean_ap)
                     eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
                 eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
-            elif metric == "recall":
-                gt_bboxes = [ann["bboxes"] for ann in annotations]
-                recalls = eval_recalls(gt_bboxes, results, proposal_nums, iou_thr, logger=logger)
-                for i, num in enumerate(proposal_nums):
-                    for j, iou in enumerate(iou_thrs):
-                        eval_results[f"recall@{num}@{iou}"] = recalls[i, j]
-                if recalls.shape[1] > 1:
-                    ar = recalls.mean(axis=1)
-                    for i, num in enumerate(proposal_nums):
-                        eval_results[f"AR@{num}"] = ar[i]
-            elif metric == "mIoU":
-                assert isinstance(results[0], tuple), "Result format not supported"
-                mean_mious = []
-                for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
-                    print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-                    mean_iou, _ = eval_segm(
-                        results,
-                        annotations,
-                        iou_thr=iou_thr,
-                        dataset=self.CLASSES,
-                        logger=logger,
-                        metric=metric,
-                    )
-                    mean_mious.append(mean_iou)
-                    eval_results[f"mIoU{int(iou_thr * 100):02d}"] = round(mean_iou, 3)
-                eval_results["mIoU"] = sum(mean_mious) / len(mean_mious)
-            elif metric == "mae":
-                mae = CustomMAE(
-                    self.otx_dataset,
-                    results,
-                    annotations,
-                    vary_confidence_threshold=True,
-                    labels=self.CLASSES,
-                )
-                eval_results["MAE best score"] = float(f"{mae.mae.value:.3f}")
-                eval_results["MAE conf thres"] = float(f"{mae.best_confidence_threshold.value:.3f}")
-                print(f"MAE best score = {mae.mae.value:.3f}")
-                print(f"MAE conf thres = {mae.best_confidence_threshold.value:.3f}")
-                for class_name, score_metric in mae.mae_per_label.items():
-                    eval_results[f"MAE:{class_name}"] = float(f"{score_metric.value:.3f}")
-                    print(f"MAE:{class_name} = {score_metric.value:.3f}")
-
-                eval_results["Relative MAE best score"] = float(f"{mae.relative_mae.value:.3f}")
-                print(f"Relative MAE best score = {mae.relative_mae.value:.3f}")
-                for class_name, score_metric in mae.relative_mae_per_label.items():
-                    eval_results[f"Relative MAE:{class_name}"] = float(f"{score_metric.value:.3f}")
-                    print(f"Relative MAE:{class_name} = {score_metric.value:.3f}")
-                eval_results["mae"] = eval_results["MAE best score"]
-                eval_results["mae%"] = eval_results["Relative MAE best score"]
         return eval_results
+
+
+# pylint: disable=too-many-arguments
+@DATASETS.register_module()
+class ImageTilingDataset:
+    """A wrapper of tiling dataset.
+
+    Suitable for training small object dataset. This wrapper composed of `Tile`
+    that crops an image into tiles and merges tile-level predictions to
+    image-level prediction for evaluation.
+
+    Args:
+        dataset (Config): The dataset to be tiled.
+        pipeline (List): Sequence of transform object or
+            config dict to be composed.
+        tile_size (int): the length of side of each tile
+        min_area_ratio (float, optional): The minimum overlap area ratio
+            between a tiled image and its annotations. Ground-truth box is
+            discarded if the overlap area is less than this value.
+            Defaults to 0.8.
+        overlap_ratio (float, optional): ratio of each tile to overlap with
+            each of the tiles in its 4-neighborhood. Defaults to 0.2.
+        iou_threshold (float, optional): IoU threshold to be used to suppress
+            boxes in tiles' overlap areas. Defaults to 0.45.
+        max_per_img (int, optional): if there are more than max_per_img bboxes
+            after NMS, only top max_per_img will be kept. Defaults to 200.
+    """
+
+    def __init__(
+        self,
+        dataset: Config,
+        pipeline: List[dict],
+        tile_size: int,
+        min_area_ratio=0.8,
+        overlap_ratio=0.2,
+        iou_threshold=0.45,
+        max_per_img=200,
+        filter_empty_gt=True,
+        test_mode=False,
+    ):
+        self.dataset = build_dataset(dataset)
+        self.CLASSES = self.dataset.CLASSES
+        self.tmp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
+
+        self.tile_dataset = Tile(
+            self.dataset,
+            pipeline,
+            tmp_dir=self.tmp_dir,
+            tile_size=tile_size,
+            overlap=overlap_ratio,
+            min_area_ratio=min_area_ratio,
+            iou_threshold=iou_threshold,
+            max_per_img=max_per_img,
+            filter_empty_gt=False if test_mode else filter_empty_gt,
+        )
+        self.flag = np.zeros(len(self), dtype=np.uint8)
+        self.pipeline = Compose(pipeline)
+        self.test_mode = test_mode
+        self.num_samples = len(self.dataset)  # number of original samples
+        self.merged_results: Union[List[Tuple[np.ndarray, list]], List[np.ndarray]] = []
+
+    def __len__(self) -> int:
+        """Get the length of the dataset."""
+        return len(self.tile_dataset)
+
+    def __getitem__(self, idx: int) -> Dict:
+        """Get training/test tile.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Training/test data (with annotation if `test_mode` is set
+            True).
+        """
+        return self.pipeline(self.tile_dataset[idx])
+
+    def evaluate(self, results, **kwargs) -> Dict[str, float]:
+        """Evaluation on Tile dataset.
+
+        Args:
+            results (list[list | tuple]): Testing results of the dataset.
+
+        Returns:
+            dict[str, float]: evaluation metric.
+        """
+        self.merged_results = self.tile_dataset.merge(results)
+        return self.dataset.evaluate(self.merged_results, **kwargs)
+
+    def merge(self, results) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
+        """Merge tile-level results to image-level results.
+
+        Args:
+            results: tile-level results.
+
+        Returns:
+            merged_results (list[list | tuple]): Merged results of the dataset.
+        """
+        self.merged_results = self.tile_dataset.merge(results)
+        return self.merged_results
+
+    def __del__(self):
+        """Delete the temporary directory when the object is deleted."""
+        if getattr(self, "tmp_dir", False):
+            self.tmp_dir.cleanup()

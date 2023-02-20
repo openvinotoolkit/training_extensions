@@ -109,11 +109,7 @@ def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
     main_iters = int(hyperparams.learning_parameters.num_iters)
     total_iterations = fixed_iters + warmup_iters + main_iters
 
-    freeze_layer_config = get_configs_by_pairs(config.custom_hooks, dict(type="FreezeLayers"))
-    assert len(freeze_layer_config) == 1
-    freeze_layer_config = freeze_layer_config[0]
     # false positive (mypy)
-    freeze_layer_config.iters = fixed_iters  # type: ignore[attr-defined]
     if config.lr_config.get("policy", None) == "customstep":
         config.lr_config.fixed_iters = fixed_iters
     config.find_unused_parameters = fixed_iters > 0

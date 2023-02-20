@@ -12,21 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
+import tempfile
 from copy import deepcopy
 from typing import Any, Dict, List
 
 import numpy as np
 from mmcv.utils import build_from_cfg
 from mmseg.datasets.builder import PIPELINES
-from mmseg.datasets.pipelines import Compose, to_tensor
+from mmseg.datasets.pipelines import Compose
 from PIL import Image
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
 
+from otx.algorithms.common.utils.data import get_image
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 from .dataset import get_annotation_mmseg_format
+
+_CACHE_DIR = tempfile.TemporaryDirectory(prefix="img-cache-")  # pylint: disable=consider-using-with
 
 
 @PIPELINES.register_module()
@@ -48,8 +51,8 @@ class LoadImageFromOTXDataset:
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function LoadImageFromOTXDataset."""
-        dataset_item = results["dataset_item"]
-        img = dataset_item.numpy
+        # Get image (possibly from cache)
+        img = get_image(results, _CACHE_DIR.name, to_float32=self.to_float32)
         shape = img.shape
 
         assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
@@ -68,9 +71,6 @@ class LoadImageFromOTXDataset:
             mean=np.zeros(num_channels, dtype=np.float32), std=np.ones(num_channels, dtype=np.float32), to_rgb=False
         )
         results["img_fields"] = ["img"]
-
-        if self.to_float32:
-            results["img"] = results["img"].astype(np.float32)
 
         return results
 
@@ -106,33 +106,42 @@ class LoadAnnotationFromOTXDataset:
 class TwoCropTransform:
     """TwoCropTransform to combine two pipelines.
 
-    :param view0: Pipeline for online network.
-    :param view1: Pipeline for target network.
+    Through `TwoCropTransformHook`, how frequently both pipelines (view0 + view1) is applied can be set.
+
+    Args:
+        view0 (list): Pipeline for online network.
+        view1 (list): Pipeline for target network.
     """
 
     def __init__(self, view0: List, view1: List):
         self.view0 = Compose([build_from_cfg(p, PIPELINES) for p in view0])
         self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
+        self.is_both = True
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of TwoCropTransform.
 
-        :param results: Inputs to be transformed.
-        """
-        results1 = self.view0(deepcopy(results))
-        results2 = self.view1(deepcopy(results))
+        Args:
+            results (dict): Inputs to be transformed.
 
-        results = deepcopy(results1)
-        results["img"] = to_tensor(
-            np.ascontiguousarray(np.stack((results1["img"], results2["img"]), axis=0).transpose(0, 3, 1, 2))
-        )
-        results["gt_semantic_seg"] = to_tensor(
-            np.ascontiguousarray(
-                np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0).transpose(0, 1, 2)
-            )
-        )
-        results["flip"] = [results1["flip"], results2["flip"]]
+        Returns:
+            dict: Dictionary that includes stuffs for training.
+                  They have different shape or attribute depending on `self.is_both`.
+        """
+        if self.is_both:
+            results1 = self.view0(deepcopy(results))
+            results2 = self.view1(deepcopy(results))
+
+            results = deepcopy(results1)
+            results["img"] = np.stack((results1["img"], results2["img"]), axis=0)
+            results["gt_semantic_seg"] = np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0)
+            results["flip"] = [results1["flip"], results2["flip"]]
+
+        else:
+            results = self.view0(results)
+
+        results["is_both"] = self.is_both
 
         return results
 
@@ -148,7 +157,11 @@ class RandomResizedCrop(T.RandomResizedCrop):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of RandomResizedCrop.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img and related information.
         """
         img = results["img"]
         i, j, height, width = self.get_params(img, self.scale, self.ratio)
@@ -175,7 +188,8 @@ class RandomColorJitter(T.ColorJitter):
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
 
-    :param p: Probability for transformation.
+    Args:
+        p (float): Probability for transformation. Defaults to 0.8.
     """
 
     def __init__(self, p: float = 0.8, **kwargs):
@@ -186,7 +200,11 @@ class RandomColorJitter(T.ColorJitter):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of ColorJitter.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         if np.random.random() < self.p:
             results["img"] = self.forward(results["img"])
@@ -204,7 +222,11 @@ class RandomGrayscale(T.RandomGrayscale):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of RandomGrayscale.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         results["img"] = self.forward(results["img"])
         return results
@@ -217,7 +239,8 @@ class RandomGaussianBlur(T.GaussianBlur):
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
 
-    :param p: Probability for transformation.
+    Args:
+        p (float): Probability for transformation. Defaults to 0.1.
     """
 
     def __init__(self, p: float = 0.1, **kwargs):
@@ -228,7 +251,11 @@ class RandomGaussianBlur(T.GaussianBlur):
     def __call__(self, results: Dict[str, Any]):
         """Callback function of GaussianBlur.
 
-        :param results: Inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         if np.random.random() < self.p:
             results["img"] = self.forward(results["img"])
@@ -239,8 +266,9 @@ class RandomGaussianBlur(T.GaussianBlur):
 class RandomSolarization:
     """Random Solarization augmentation.
 
-    :param threshold: Threshold for solarization, defaults to 128.
-    :param p: Probability for transformation.
+    Args:
+        threshold (int): Threshold for solarization. Defaults to 128.
+        p (float): Probability for transformation. Defaults to 0.2.
     """
 
     def __init__(self, threshold: int = 128, p: float = 0.2):
@@ -251,7 +279,11 @@ class RandomSolarization:
     def __call__(self, results: Dict[str, Any]):
         """Callback function of Solarization.
 
-        :param results: inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         if np.random.random() < self.p:
             img = results["img"]
@@ -269,7 +301,8 @@ class RandomSolarization:
 class NDArrayToPILImage:
     """Convert image from numpy to PIL.
 
-    :param keys: Keys to be transformed.
+    Args:
+        keys (list): Keys to be transformed.
     """
 
     def __init__(self, keys: List[str]):
@@ -278,7 +311,11 @@ class NDArrayToPILImage:
     def __call__(self, results: Dict[str, Any]):
         """Callback function of NDArrayToPILImage.
 
-        :param results: inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         for key in self.keys:
             img = results[key]
@@ -296,7 +333,8 @@ class NDArrayToPILImage:
 class PILImageToNDArray:
     """Convert image from PIL to numpy.
 
-    :param keys: Keys to be transformed.
+    Args:
+        keys (list): Keys to be transformed.
     """
 
     def __init__(self, keys: List[str]):
@@ -305,7 +343,11 @@ class PILImageToNDArray:
     def __call__(self, results: Dict[str, Any]):
         """Callback function of PILImageToNDArray.
 
-        :param results: inputs to be transformed.
+        Args:
+            results (dict): Inputs to be transformed.
+
+        Returns:
+            dict: Dictionary that includes transformed img.
         """
         for key in self.keys:
             img = results[key]

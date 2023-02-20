@@ -42,8 +42,8 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from tests.test_helpers import generate_random_annotated_image
 from tests.test_suite.e2e_test_system import e2e_pytest_api
-from tests.unit.api.test_helpers import generate_random_annotated_image
 
 DEFAULT_SEG_TEMPLATE_DIR = osp.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
 
@@ -204,7 +204,7 @@ class TestMPASegAPI:
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
 
         # Test stopping after some time
@@ -241,7 +241,7 @@ class TestMPASegAPI:
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
         output_model = ModelEntity(
             dataset,
@@ -266,7 +266,7 @@ class TestMPASegAPI:
             assert isinstance(progress, int)
             inference_progress_curve.append(progress)
 
-        inference_parameters = InferenceParameters
+        inference_parameters = InferenceParameters()
         inference_parameters.update_progress = progress_callback
         task.infer(dataset.with_empty_annotations(), inference_parameters)
 
@@ -287,7 +287,7 @@ class TestMPASegAPI:
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
-        train_parameters = TrainParameters
+        train_parameters = TrainParameters()
         train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
             dataset,

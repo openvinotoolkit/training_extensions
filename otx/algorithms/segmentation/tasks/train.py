@@ -15,15 +15,13 @@
 # and limitations under the License.
 
 import io
-from typing import DefaultDict, List, Optional
+from typing import List, Optional
 
 import torch
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -47,6 +45,8 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.mpa.utils.logger import get_logger
+
+from .inference import SegmentationInferenceTask
 
 logger = get_logger()
 
@@ -117,7 +117,6 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True

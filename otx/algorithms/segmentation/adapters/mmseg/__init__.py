@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .data import MPASegDataset
-from .models import DetConB, DetConLoss, SelfSLMLP
+from .models import DetConB, DetConLoss, SelfSLMLP, SupConDetConB
 
 # fmt: off
 # isort: off
@@ -16,4 +16,4 @@ get_root_logger().propagate = False
 # fmt: off
 # isort: on
 
-__all__ = ["MPASegDataset", "DetConLoss", "SelfSLMLP", "DetConB"]
+__all__ = ["MPASegDataset", "DetConLoss", "SelfSLMLP", "DetConB", "SupConDetConB"]

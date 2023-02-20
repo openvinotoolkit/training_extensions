@@ -15,6 +15,7 @@ from datumaro.components.annotation import Annotation as DatumaroAnnotation
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.annotation import Categories as DatumaroCategories
 from datumaro.components.dataset import Dataset as DatumaroDataset
+from datumaro.components.dataset import DatasetSubset as DatumaroDatasetSubset
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -102,35 +103,32 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             raise ValueError("At least 1 data_root is needed to train/test.")
 
         # Construct dataset for training, validation, testing, unlabeled
-        if train_data_roots:
+        if train_data_roots is not None:
             # Find self.data_type and task_type
-            data_type_candidates = self._detect_dataset_format(path=train_data_roots)
-            self.data_type = self._select_data_type(data_type_candidates)
+            self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
+            self.data_type = self._select_data_type(self.data_type_candidates)
 
-            datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
+            train_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
             # Prepare subsets by using Datumaro dataset
-            for k, v in datumaro_dataset.subsets().items():
-                if "train" in k or "default" in k:
-                    dataset[Subset.TRAINING] = v
-                elif "val" in k:
-                    dataset[Subset.VALIDATION] = v
+            dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
             self.is_train_phase = True
 
             # If validation is manually defined --> set the validation data according to user's input
             if val_data_roots:
                 val_data_candidates = self._detect_dataset_format(path=val_data_roots)
                 val_data_type = self._select_data_type(val_data_candidates)
-                dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
+                val_dataset = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
+                dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
+            else:
+                if "val" in train_dataset.subsets():
+                    dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
 
-            if Subset.VALIDATION not in dataset:
-                # TODO: auto_split
-                pass
-
-        if test_data_roots:
-            test_data_candidates = self._detect_dataset_format(path=test_data_roots)
-            test_data_type = self._select_data_type(test_data_candidates)
-            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format=test_data_type)
+        if test_data_roots is not None and train_data_roots is None:
+            self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
+            self.data_type = self._select_data_type(self.data_type_candidates)
+            test_dataset = DatumaroDataset.import_from(test_data_roots, format=self.data_type)
+            dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
             self.is_train_phase = False
 
         if unlabeled_data_roots is not None:
@@ -146,6 +144,16 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
         return self._generate_default_label_schema(self.label_entities)
+
+    def _get_subset_data(self, subset: str, dataset: DatumaroDataset) -> DatumaroDatasetSubset:
+        """Get subset dataset according to subset."""
+        for k, v in dataset.subsets().items():
+            if subset in k or "default" in k:
+                return v
+            if subset == "test" and "val" in k:
+                return v
+
+        raise ValueError("Can't find proper dataset.")
 
     def _detect_dataset_format(self, path: str) -> str:
         """Detect dataset format (ImageNet, COCO, ...)."""
@@ -192,6 +200,16 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
+    def _is_normal_polygon(self, annotation: DatumaroAnnotationType.polygon) -> bool:
+        """To filter out the abnormal polygon."""
+        x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
+        y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]
+        return min(x_points) < max(x_points) and min(y_points) < max(y_points)
+
+    def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
+        """To filter out the abrnormal bbox."""
+        return x1 < x2 and y1 < y2
+
     def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
         """Select specific type among candidates.
 
@@ -219,12 +237,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _get_normalized_bbox_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
         """Get bbox entity w/ normalization."""
+        x1, y1, x2, y2 = annotation.points
         return Annotation(
             Rectangle(
-                x1=annotation.points[0] / width,
-                y1=annotation.points[1] / height,
-                x2=annotation.points[2] / width,
-                y2=annotation.points[3] / height,
+                x1=x1 / width,
+                y1=y1 / height,
+                x2=x2 / width,
+                y2=y2 / height,
             ),
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
@@ -250,5 +269,20 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                     for i in range(0, len(annotation.points), 2)
                 ]
             ),
-            labels=[ScoredLabel(label=self.label_entities[annotation.label - 1])],
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
+
+    def remove_unused_label_entities(self, used_labels: List):
+        """Remove unused label from label entities.
+
+        Because label entities will be used to make Label Schema,
+        If there is unused label in Label Schema, it will hurts the model performance.
+        So, remove the unused label from label entities.
+
+        Args:
+            used_labels (List): list for index of used label
+        """
+        clean_label_entities = []
+        for used_label in used_labels:
+            clean_label_entities.append(self.label_entities[used_label])
+        self.label_entities = clean_label_entities
