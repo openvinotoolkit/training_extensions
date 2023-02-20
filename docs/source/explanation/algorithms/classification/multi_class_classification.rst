@@ -155,6 +155,14 @@ In particular, the smaller the data, the greater the performance improvement can
 .. image:: ../../../../utils/images/multi_cls_selfsl_performance_Food-101.png
   :width: 600
 
+You can use Self-supervised learning like the below command.
+
+.. code-block::
+
+  $ otx train {TEMPLATE} ... \
+      params \
+      --algo_backend.train_type=SELFSUPERVISED
+
 
 ********************
 Incremental Learning
