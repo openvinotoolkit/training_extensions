@@ -127,7 +127,7 @@ In the table below the top-1 accuracy on some academic datasets using our pipeli
 +-----------------------+---------+---------+-------+---------+--------+---------+
 |        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
 +=======================+=========+=========+=======+=========+========+=========+
-|         Model         |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
+|                       |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
 +-----------------------+---------+---------+-------+---------+--------+---------+
 | MobileNet-V3-large-1x |  40.75  |  43.13  | 23.32 |  27.85  |  68.2  |  71.84  |
 +-----------------------+---------+---------+-------+---------+--------+---------+
@@ -141,7 +141,7 @@ In the table below the top-1 accuracy on some academic datasets using our pipeli
 +-----------------------+---------+---------+-------+---------+--------+---------+
 |        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
 +=======================+=========+=========+=======+=========+========+=========+
-|         Model         |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
+|                       |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
 +-----------------------+---------+---------+-------+---------+--------+---------+
 | MobileNet-V3-large-1x |  50.77  |  52.16  | 38.73 |  48.36  | 73.33  |  77.04  |
 +-----------------------+---------+---------+-------+---------+--------+---------+
@@ -151,7 +151,7 @@ In the table below the top-1 accuracy on some academic datasets using our pipeli
 +-----------------------+---------+---------+-------+---------+--------+---------+
 
 .. note::
-    This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm, some model results may not be as expected.
+    This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm, Some models may require larger datasets for better results.
 
 ************************
 Self-supervised Learning
