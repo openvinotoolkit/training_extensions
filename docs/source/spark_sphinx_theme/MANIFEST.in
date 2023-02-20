@@ -1,4 +1,0 @@
-include spark_sphinx_theme/theme.conf
-recursive-include spark_sphinx_theme *.html *.rst
-recursive-include spark_sphinx_theme/templates *.html
-recursive-include spark_sphinx_theme/static *.js *.png *.css *.svg *.ttf

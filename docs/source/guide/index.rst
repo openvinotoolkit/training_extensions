@@ -7,7 +7,7 @@ Guide
   :caption: Get Started
 
   get_started/introduction
-  get_started/quick_start_guide
+  get_started/quick_start_guide/index
 
 
 .. toctree::

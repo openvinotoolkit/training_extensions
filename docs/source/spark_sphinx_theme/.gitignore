@@ -1,7 +1,0 @@
-.idea
-.vscode
-__pycache__
-build
-dist
-*.egg-info
-example/_build

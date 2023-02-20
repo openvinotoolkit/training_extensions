@@ -1,7 +1,0 @@
-[data-theme=light] {
-    --spark-text-disabled-color: var(--spark-color-theme-light-gray600, #8b8e97);
-}
-
-[data-theme=dark] {
-    --spark-text-disabled-color: var(--spark-color-theme-dark-gray600, #8e9099);
-}
