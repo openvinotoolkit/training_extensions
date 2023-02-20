@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modify used backbones &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>Backbone Replacement &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -176,7 +176,7 @@
    </li>
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     Modify used backbones
+     Backbone Replacement
     </a>
    </li>
    <li class="toctree-l2">
@@ -200,9 +200,29 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#currently-supported-backbones">
+   Currently supported backbones
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setup-virtual-environment">
+   Setup virtual environment
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#backbone-replacement-tutorial">
+   Backbone replacement tutorial
+  </a>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -222,10 +242,180 @@
               
               <div>
                 
-  <div class="section" id="modify-used-backbones">
-<h1>Modify used backbones<a class="headerlink" href="#modify-used-backbones" title="Permalink to this headline">¶</a></h1>
-<p>&lt;Guidelines for writing&gt;</p>
-<p>This tutorial explains how to modify hyper-parameters and configurations, as well as how to utilize public backbones.</p>
+  <div class="section" id="backbone-replacement">
+<h1>Backbone Replacement<a class="headerlink" href="#backbone-replacement" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial explains how to utilize public backbones.</p>
+<p>The process has been tested on the following configuration.</p>
+<ul class="simple">
+<li><p>Ubuntu 20.04</p></li>
+<li><p>NVIDIA GeForce RTX 3090</p></li>
+<li><p>Intel(R) Core(TM) i9-11900</p></li>
+<li><p>CUDA Toolkit 11.1, python 3.9</p></li>
+</ul>
+<div class="section" id="currently-supported-backbones">
+<h2>Currently supported backbones<a class="headerlink" href="#currently-supported-backbones" title="Permalink to this headline">¶</a></h2>
+<p>The following libraries are currently available for backbone replacement.</p>
+<table class="table">
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 18%" />
+<col style="width: 15%" />
+<col style="width: 15%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Task</p></th>
+<th class="head"><p>mmdet</p></th>
+<th class="head"><p>mmseg</p></th>
+<th class="head"><p>torchvision</p></th>
+<th class="head"><p>pytorchcv</p></th>
+<th class="head"><p>omz.mmcls</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Classification</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+</tr>
+<tr class="row-odd"><td><p>Detection</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Segmentation</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Instance-Segmentation</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="setup-virtual-environment">
+<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>You can follow the installation process from a <a class="reference internal" href="../../get_started/installation.html"><span class="doc">quick start guide</span></a> to create a universal virtual environment for OTX.</p>
+</div>
+<div class="section" id="backbone-replacement-tutorial">
+<h2>Backbone replacement tutorial<a class="headerlink" href="#backbone-replacement-tutorial" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>First, we need to configure the workspace for the backbone replacement.</p></li>
+</ol>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can use the OTX workspace to swap out backbones, train, set up configurations, and more.
+Workspaces are created automatically on otx build or otx train.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --task classification
+
+[*] Workspace Path: otx-workspace-CLASSIFICATION
+[*] Load Model Template ID: Custom_Image_Classification_EfficinetNet-B0
+[*] Load Model Name: EfficientNet-B0
+[*]     - Updated: otx-workspace-CLASSIFICATION/model.py
+[*]     - Updated: otx-workspace-CLASSIFICATION/data_pipeline.py
+[*]     - Updated: otx-workspace-CLASSIFICATION/deployment.py
+[*]     - Updated: otx-workspace-CLASSIFICATION/hpo_config.yaml
+[*]     - Updated: otx-workspace-CLASSIFICATION/model_hierarchical.py
+[*]     - Updated: otx-workspace-CLASSIFICATION/model_multilabel.py
+[*]     - Updated: otx-workspace-CLASSIFICATION/compression_config.json
+[*] Update data configuration file to: otx-workspace-CLASSIFICATION/data.yaml
+
+(otx) ...$ cd otx-workspace-CLASSIFICATION
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Next, we can find the backbone we want to replace via otx find.</p></li>
+</ol>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We can use otx find to find templates and available backbones.
+Each backbone may have a required argument. If option exists, we provide the first option as default.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --backbone mmdet
+
++-------+-------------------------+---------------+-------------------------------+
+| Index |      Backbone Type      | Required-Args |            Options            |
++-------+-------------------------+---------------+-------------------------------+
+|   1   |       mmdet.RegNet      |      arch     | regnetx_400mf, regnetx_800mf, |
+|       |                         |               | regnetx_1.6gf, regnetx_3.2gf, |
+|       |                         |               | regnetx_4.0gf, regnetx_6.4gf, |
+|       |                         |               |  regnetx_8.0gf, regnetx_12gf  |
+|   2   |       mmdet.ResNet      |     depth     |      18, 34, 50, 101, 152     |
+|   3   |     mmdet.ResNetV1d     |     depth     |      18, 34, 50, 101, 152     |
+|   4   |      mmdet.ResNeXt      |     depth     |          50, 101, 152         |
+|   5   |       mmdet.SSDVGG      |   input_size  |            300, 512           |
+|       |                         |     depth     |           11, 16, 19          |
+|   6   |       mmdet.HRNet       |     extra     |                               |
+|   7   |      mmdet.Res2Net      |     depth     |          50, 101, 152         |
+|   8   |  mmdet.DetectoRS_ResNet |     depth     |          50, 101, 152         |
+|   9   | mmdet.DetectoRS_ResNeXt |     depth     |          50, 101, 152         |
+|   10  |      mmdet.Darknet      |               |                               |
+|   11  |      mmdet.ResNeSt      |     depth     |       50, 101, 152, 200       |
+|   12  |     mmdet.CSPDarknet    |               |                               |
++-------+-------------------------+---------------+-------------------------------+
+</pre></div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>We need to run the command below to replace the backbone.</p></li>
+</ol>
+<blockquote>
+<div><p>In this example, we’ll replace the classification model using the default EfficientNet with mmdet.ResNet (use Backbone Type).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --backbone mmdet.RegNet
+
+[*] Backbone Config: mmdet.RegNet
+[*] mmdet.RegNet requires the argument : [&#39;arch&#39;]
+[*] Please refer to /venv/lib/python3.9/site-packages/mmdet/models/backbones/regnet.py
+[*] &#39;arch&#39; can choose between: [&#39;regnetx_400mf&#39;, &#39;regnetx_800mf&#39;, &#39;regnetx_1.6gf&#39;, &#39;regnetx_3.2gf&#39;, &#39;regnetx_4.0gf&#39;, &#39;regnetx_6.4gf&#39;, &#39;regnetx_8.0gf&#39;, &#39;regnetx_12gf&#39;]
+[*] &#39;arch&#39; default value: regnetx_400mf
+[*] Save backbone configuration: otx-workspace-CLASSIFICATION/backbone.yaml
+[*] Update model.py with backbone.yaml
+        Target Model: SAMImageClassifier
+        Target Backbone: mmdet.RegNet
+        Backbone config: {&#39;arch&#39;: &#39;regnetx_400mf&#39;, &#39;avg_down&#39;: False, &#39;base_channels&#39;: 32, &#39;conv_cfg&#39;: None, &#39;dcn&#39;: None, &#39;deep_stem&#39;: False, &#39;dilations&#39;: (1, 1, 1, 1), &#39;frozen_stages&#39;: -1, &#39;in_channels&#39;: 3, &#39;init_cfg&#39;: None, &#39;norm_cfg&#39;: {&#39;requires_grad&#39;: True, &#39;type&#39;: &#39;BN&#39;}, &#39;norm_eval&#39;: True, &#39;out_indices&#39;: (0, 1, 2, 3), &#39;plugins&#39;: None, &#39;pretrained&#39;: None, &#39;stage_with_dcn&#39;: (False, False, False, False), &#39;stem_channels&#39;: 32, &#39;strides&#39;: (2, 2, 2, 2), &#39;style&#39;: &#39;pytorch&#39;, &#39;type&#39;: &#39;mmdet.RegNet&#39;, &#39;with_cp&#39;: False, &#39;zero_init_residual&#39;: True}
+[*] Save model configuration: model.py
+</pre></div>
+</div>
+<p>Then we get model.py, which has been changed to mmdet.ResNet.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you get a log like the one below, Follow the steps below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[!] mmseg.HRNet backbone has inputs that the user must enter.
+[!] Edit backbone.yaml and run &#39;otx build --backbone backbone.yaml&#39;.
+</pre></div>
+</div>
+<p>Please modify the available configuration file directly (backbone.yaml).</p>
+<p>You can then update the model with the command below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --backbone backbone.yaml
+</pre></div>
+</div>
+</div>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li><p>After that, you can use any other OTX command with new model. <a class="reference internal" href="../../get_started/installation.html"><span class="doc">quick start guide</span></a></p></li>
+</ol>
+<p>You can use the backbones provided by mmdet, mmseg, torchvision, and omz.mmcls in the same way as above.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Depending on your backbone, your data may require multiple hyperparameter optimizations. Custom models, except for TEMPLATE, are not yet guaranteed to be accurate.</p>
+</div>
+</div>
 </div>
 
 

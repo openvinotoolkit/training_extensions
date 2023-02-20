@@ -278,7 +278,8 @@ optional arguments:
                         If there is an already created backbone configuration yaml file, enter the corresponding path.
 </pre></div>
 </div>
-<p>For example, the following command line will create an object detection <code class="docutils literal notranslate"><span class="pre">Custom_Object_Detection_Gen3_ATSS</span></code> model template with ResNet backbone from <a class="reference external" href="https://github.com/open-mmlab/mmdetection">mmdetection</a>:</p>
+<p>For example, the following command line will create an object detection <code class="docutils literal notranslate"><span class="pre">Custom_Object_Detection_Gen3_ATSS</span></code> model template with ResNet backbone from <a class="reference external" href="https://github.com/open-mmlab/mmdetection">mmdetection</a>:
+Please refer to the advanced tutorial <a class="reference internal" href="../tutorials/advanced/backbones.html"><span class="doc">Backbone Replacement</span></a> in the documentation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --backbone mmdet.ResNet --train-data-roots &lt;path/to/train/root&gt; --val-data-roots &lt;path/to/val/root&gt;
 </pre></div>
 </div>
