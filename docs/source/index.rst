@@ -1,9 +1,9 @@
-OpenVINO Training Extensions -- OTX
-===================================
+OpenVINO Training Extensions
+============================
 
 |
 
-.. image:: ../utils/images/otx-logo-black.png
+.. image:: ../utils/images/otx-logo.png
    :align: center
    :alt: Logo
    :width: 400
@@ -41,14 +41,9 @@ Table of content
 ****************
 
 .. toctree::
-   :maxdepth: 2
-   :titlesonly:
+   :hidden:
 
-   get_started/index
-   tutorials/index
-   explanation/index
-   reference/index
-   release_notes/index
+   guide/index
 
 
 ******************
