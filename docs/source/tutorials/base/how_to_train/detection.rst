@@ -6,9 +6,9 @@ On this page we show how to train, validate, export and optimize ATSS model on W
 
 .. note::
 
-  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+  To learn how to deploy the trained model, refer to :doc:`../deploy`.
 
-  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
+  To learn how to run the demo and visualize results, refer to :doc:`../demo`.
 
 The process has been tested on the following configuration.
 
@@ -148,13 +148,13 @@ The following command line starts training of the medium object detection model 
 
 .. code-block::
 
-  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
-                            --train-data-roots  data/wgisd/data
-                            --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                            --val-data-roots data/wgisd/data
-                            --save-model-to outputs
-                            --work-dir outputs/logs
+  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                            --train-data-roots  data/wgisd/data \
+                            --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                            --val-data-roots data/wgisd/data \
+                            --save-model-to outputs \
+                            --work-dir outputs/logs \
                             --gpus 1
 
 To start multi-gpu training, list the indexes of GPUs you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
@@ -163,10 +163,10 @@ If you created ``data.yaml`` file in previous step, you can simplify the trainin
 
 .. code-block::
 
-  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml
-                            --save-model-to outputs
-                            --work-dir outputs/logs
+  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --data data.yaml \
+                            --save-model-to outputs \
+                            --work-dir outputs/logs \
                             --gpus 1
 
 Looks much simpler, isn't it? You can also pass the ``data.yaml`` for the rest of the OTX CLI commands (eval, export, optimize) that require annotation paths.
@@ -219,10 +219,10 @@ The default metric is F1 measure.
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                            --test-data-roots data/wgisd/data
-                            --load-weights outputs/weights.pth
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                            --test-data-roots data/wgisd/data \
+                            --load-weights outputs/weights.pth \
                             --save-performance outputs/performance.json
 
 
@@ -231,9 +231,9 @@ Note,  with ``data.yaml``, it runs evaluation on test JSON annotation file (not 
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml
-                            --load-weights outputs/weights.pth
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --data data.yaml \
+                            --load-weights outputs/weights.pth \
                             --save-performance outputs/performance.json
 
 We will get this validation output:
@@ -255,17 +255,17 @@ We will get this validation output:
 
 4. ``Optional`` Additionally, we can tune evaluation parameters such as confidence threshold via the command line. Read more about template-specific parameters for validation in quick start [#TODO link].
 
-For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it) can suppress its number by increasing the confidence threshold as it is shown below.
+For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.
 
 Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --data data.yaml
-                            --load-weights outputs/weights.pth
-                            params
-                            --postprocessing.confidence_threshold 0.5
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --data data.yaml \
+                            --load-weights outputs/weights.pth \
+                            params \
+                            --postprocessing.confidence_threshold 0.5 \
                             --postprocessing.result_based_confidence_threshold false
 
   ...
@@ -277,14 +277,15 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows to run the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
+Also, the resulting IR model is required to run POT optimization in the section below. IR model contains 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. That's how we can export the trained model ``outputs/weights.pth`` from the previous section and save the exported model to the ``outputs/openvino/`` folder.
 
 .. code-block::
 
-  (detection) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                              --load-weights outputs/weights.pth
+  (detection) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                              --load-weights outputs/weights.pth \
                               --save-model-to outputs/openvino/
 
   ...
@@ -297,11 +298,11 @@ It allows to run the model on the Intel hardware much more efficient, especially
 
 .. code-block::
 
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                            --test-data-roots data/wgisd/data
-                            --load-weights outputs/openvino/openvino.xml
-                            --save-performance outputs/openvino/performance.json
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                            --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                            --test-data-roots data/wgisd/data \
+                            --load-weights outputs/openvino/openvino.xml \
+                            --save-performance outputs/openvino/performance.json \
 
   ...
   2023-01-10 06:24:50,382 | INFO : Start OpenVINO inference
@@ -335,13 +336,13 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
 .. code-block::
 
-  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
-                                --train-data-roots  data/wgisd/data
-                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                                --val-data-roots data/wgisd/data
-                                --load-weights outputs/weights.pth
-                                --save-model-to outputs/nncf
+  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                                --train-data-roots  data/wgisd/data \
+                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                                --val-data-roots data/wgisd/data \
+                                --load-weights outputs/weights.pth \
+                                --save-model-to outputs/nncf \
                                 --save-performance outputs/nncf/performance.json
 
   ...
@@ -358,12 +359,12 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
 .. code-block::
 
-  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json
-                                --train-data-roots  data/wgisd/data
-                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json
-                                --val-data-roots data/wgisd/data
-                                --load-weights outputs/openvino/openvino.xml
+  (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+                                --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
+                                --train-data-roots  data/wgisd/data \
+                                --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
+                                --val-data-roots data/wgisd/data \
+                                --load-weights outputs/openvino/openvino.xml \
                                 --save-model-to outputs/pot
 
   ...
@@ -385,4 +386,25 @@ Please note, that POT will take some time without logging to optimize the model.
 
 Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.
 
-The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
+Following tutorials provides further steps how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
+
+***************
+Troubleshooting
+***************
+
+1. If you have access to the Internet through the proxy server only, please use pip with proxy call as demonstrated by command below:
+
+.. code-block::
+
+    python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
+
+
+2. If you use Anaconda environment, you should consider that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.
+
+So please use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.
+
+3. If you have problems when you try to use ``pip install`` command, please update pip version by following command:
+
+.. code-block::
+
+    python -m pip install --upgrade pip
