@@ -23,21 +23,12 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 class TestOTXCLIBuilder:
     """Check Builder's function is working well.
 
-    1. Check "Builder.build_task_config" function that create otx-workspace is working well.
-    <Steps>
-        1. Create Classification custom workspace
-        2. Raising Error of building workspace with already created path
-        3. Update hparam.yaml with train_type="selfsl"
-        4. Raising ValueError with wrong train_type
-        5. Build workspace with model_type argments
-        6. Raise ValueError when build workspace with wrong model_type argments
-
-    2. Check "Builder.build_backbone_config" function that generate backbone configuration file is working well
+    1. Check "Builder.build_backbone_config" function that generate backbone configuration file is working well
     <Steps>
         1. Generate backbone config file (mmcls.MMOVBackbone)
         2. Raise ValueError with wrong output_path
 
-    3. Check "Builder.merge_backbone" function that update model config with new backbone is working well
+    2. Check "Builder.merge_backbone" function that update model config with new backbone is working well
     <Steps>
         1. Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)
         2. Raise ValueError with wrong model_config_path
@@ -51,99 +42,6 @@ class TestOTXCLIBuilder:
         self.otx_builder = Builder()
         self.otx_root = get_otx_root_path()
         self.tmp_dir_path = tmp_dir_path if isinstance(tmp_dir_path, Path) else Path(tmp_dir_path)
-
-    # TODO: [CVS-101239] Add test case for cover default root workspace build
-    @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    def test_builder_build_task_config_workspace_path(self) -> None:
-        """Create Classification custom workspace."""
-        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
-        inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
-        self.otx_builder.build_task_config(**inputs)
-        assert workspace_path.exists()
-        assert (workspace_path / "configuration.yaml").exists()
-        assert (workspace_path / "template.yaml").exists()
-        assert (workspace_path / "model.py").exists()
-        assert (workspace_path / "data_pipeline.py").exists()
-
-    @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    def test_builder_build_task_config_reuse_same_path(self) -> None:
-        """Raising Error of building workspace with already created path."""
-        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_create_workspace"
-        inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
-        with pytest.raises(FileExistsError):
-            self.otx_builder.build_task_config(**inputs)
-
-    @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    def test_builder_build_task_config_normal_train_type(self) -> None:
-        """Update hparam.yaml with train_type="selfsl"."""
-        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_check_update_hparams"
-        train_type = "selfsl"
-        inputs = {
-            "task_type": "classification",
-            "train_type": train_type,
-            "workspace_path": workspace_path,
-            "otx_root": self.otx_root,
-        }
-        self.otx_builder.build_task_config(**inputs)
-        assert workspace_path.exists()
-        assert (workspace_path / "configuration.yaml").exists()
-        assert (workspace_path / "template.yaml").exists()
-        template = MPAConfig.fromfile(str(workspace_path / "template.yaml"))
-        expected_template_train_type = {"default_value": "SELFSUPERVISED"}
-        assert template.hyper_parameters.parameter_overrides.algo_backend.train_type == expected_template_train_type
-        model_dir = workspace_path / train_type
-        assert model_dir.exists()
-        assert (model_dir / "model.py").exists()
-        assert (model_dir / "data_pipeline.py").exists()
-
-    @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    def test_builder_build_task_config_abnormal_train_type(self) -> None:
-        """Raising ValueError with wrong train_type."""
-        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_abnormal_train_type"
-        train_type = "unexpected"
-        inputs = {
-            "task_type": "classification",
-            "train_type": train_type,
-            "workspace_path": workspace_path,
-            "otx_root": self.otx_root,
-        }
-        with pytest.raises(ValueError):
-            self.otx_builder.build_task_config(**inputs)
-
-    @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    def test_builder_build_task_config_normal_model_type(self) -> None:
-        """Build workspace with model_type argments."""
-        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_normal_model_type"
-        model_type = "yolox"
-        inputs = {
-            "task_type": "detection",
-            "model_type": model_type,
-            "workspace_path": workspace_path,
-            "otx_root": self.otx_root,
-        }
-        self.otx_builder.build_task_config(**inputs)
-        assert (workspace_path / "template.yaml").exists()
-        template = MPAConfig.fromfile(str(workspace_path / "template.yaml"))
-        assert template.name.lower() == model_type
-
-    @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    def test_builder_build_task_config_abnormal_model_type(self) -> None:
-        """Raise ValueError when build workspace with wrong model_type argments."""
-        workspace_path = self.tmp_dir_path / "test_builder_build_task_config_abnormal_model_type"
-        inputs = {
-            "task_type": "detection",
-            "model_type": "unexpected",
-            "workspace_path": workspace_path,
-            "otx_root": self.otx_root,
-        }
-        with pytest.raises(ValueError):
-            self.otx_builder.build_task_config(**inputs)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone_type", ["mmcls.MMOVBackbone"])
@@ -164,28 +62,6 @@ class TestOTXCLIBuilder:
             self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
 
     @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    @pytest.mark.parametrize("backbone_type", ["mmcls.ResNet"])
-    def test_builder_merge_backbone_update_model_config(self, backbone_type: str) -> None:
-        """Update model config with mmcls.ResNet backbone (default model.backbone: otx.OTXEfficientNet)."""
-        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
-        inputs = {"task_type": "classification", "workspace_path": workspace_path, "otx_root": self.otx_root}
-        self.otx_builder.build_task_config(**inputs)
-        tmp_model_path = workspace_path / "model.py"
-        assert tmp_model_path.exists()
-        pre_model_config = MPAConfig.fromfile(str(tmp_model_path))
-        assert pre_model_config.model.backbone.type == "otx.OTXEfficientNet"
-
-        tmp_backbone_path = workspace_path / "backbone.yaml"
-        self.otx_builder.build_backbone_config(backbone_type, tmp_backbone_path)
-        assert tmp_backbone_path.exists()
-
-        self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
-        assert tmp_model_path.exists()
-        updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
-        assert updated_model_config.model.backbone.type == backbone_type
-
-    @e2e_pytest_unit
     def test_builder_merge_backbone_abnormal_model_path(self) -> None:
         """Raise ValueError with wrong model_config_path."""
         workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
@@ -202,18 +78,36 @@ class TestOTXCLIBuilder:
             self.otx_builder.merge_backbone(tmp_model_path, "unexpected")
 
     @e2e_pytest_unit
-    @pytest.mark.skip("Due to refactoring, this test function will be moved.")
-    def test_builder_merge_backbone_without_out_indices(self) -> None:
+    def test_builder_merge_backbone(self, mocker) -> None:
         """Update model config without backbone's out_indices."""
-        workspace_path = self.tmp_dir_path / "test_builder_merge_backbone"
-        tmp_model_path = workspace_path / "model.py"
-        tmp_backbone_path = workspace_path / "backbone.yaml"
-        backbone_config = mmcv.load(str(tmp_backbone_path))
-        assert backbone_config["backbone"].pop("out_indices") == (3,)
-        mmcv.dump(backbone_config, str(tmp_backbone_path))
-        self.otx_builder.merge_backbone(tmp_model_path, tmp_backbone_path)
-        updated_model_config = MPAConfig.fromfile(str(tmp_model_path))
-        assert "out_indices" in updated_model_config.model.backbone
+        mocker.patch("otx.cli.builder.builder.Path.exists", return_value=True)
+        mock_backbone_config = {
+            "backbone": {"type": "torchvision.resnet18", "use_out_indices": True, "out_indices": [0, 1, 2]}
+        }
+        mock_mmcv_load = mocker.patch("otx.cli.builder.builder.mmcv.load", return_value=mock_backbone_config)
+        mock_model_config = mocker.MagicMock()
+        mock_model_config.model.backbone = {"out_indices"}
+        mock_config_from_file = mocker.patch(
+            "otx.cli.builder.builder.MPAConfig.fromfile", return_value=mock_model_config
+        )
+        mock_get_backbone_registry = mocker.patch(
+            "otx.cli.builder.builder.get_backbone_registry", return_value=(None, ["otx"])
+        )
+        mock_backbone = mocker.MagicMock()
+        mock_build_from_cfg = mocker.patch("otx.cli.builder.builder.build_from_cfg", return_value=mock_backbone)
+        mock_get_backbone_out_channels = mocker.patch(
+            "otx.cli.builder.builder.get_backbone_out_channels", return_value=[0, 1, 2]
+        )
+        mock_update_channels = mocker.patch("otx.cli.builder.builder.update_channels", return_value=None)
+
+        Builder().merge_backbone("fake_model_path", "fake_backbone_path")
+
+        mock_mmcv_load.assert_called_once()
+        mock_config_from_file.assert_called_once()
+        mock_get_backbone_registry.assert_called_once()
+        mock_build_from_cfg.assert_called_once()
+        mock_get_backbone_out_channels.assert_called_once()
+        mock_update_channels.assert_called_once()
 
 
 class MockBackbone(nn.Module):
