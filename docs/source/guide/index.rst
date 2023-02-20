@@ -6,8 +6,8 @@ Guide
   :hidden:
   :caption: Get Started
 
-  get-started/introduction
-  get-started/quick_start_guide
+  get_started/introduction
+  get_started/quick_start_guide
 
 
 .. toctree::
