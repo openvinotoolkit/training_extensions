@@ -45,11 +45,15 @@ class TestInferenceParameters:
         infer_params = InferenceParameters()
 
         assert dataclasses.is_dataclass(infer_params)
-        assert len(dataclasses.fields(infer_params)) == 3
+        assert len(dataclasses.fields(infer_params)) == 5
         assert dataclasses.fields(infer_params)[0].name == "is_evaluation"
         assert dataclasses.fields(infer_params)[1].name == "update_progress"
         assert dataclasses.fields(infer_params)[2].name == "explainer"
+        assert dataclasses.fields(infer_params)[3].name == "process_saliency_maps"
+        assert dataclasses.fields(infer_params)[4].name == "explain_predicted_classes"
         assert type(infer_params.is_evaluation) is bool
+        assert type(infer_params.process_saliency_maps) is bool
+        assert type(infer_params.explain_predicted_classes) is bool
         assert callable(infer_params.update_progress)
         assert type(infer_params.explainer) is str
         with pytest.raises(AttributeError):

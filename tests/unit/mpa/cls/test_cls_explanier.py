@@ -43,4 +43,4 @@ class TestOTXClsExplainer:
         outputs = self.explainer.explain(self.explainer.cfg)
 
         mock_build_model.assert_called_once()
-        assert outputs == {"saliency_maps": []}
+        assert outputs == {"saliency_maps": [], "eval_predictions": []}
