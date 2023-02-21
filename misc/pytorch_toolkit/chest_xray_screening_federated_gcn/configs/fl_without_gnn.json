@@ -1,38 +1,38 @@
 {
     "train": {
-        "data": "/storage/adityak/chest_x_ray/",
-        "split_npz": "/storage/adityak/split.npz",
+        "data": "dataset/data/",
+        "split_npz": "dataset/split.npz",
         "batch_size": 12,
         "epochs": 1,
         "gpu": "True",
         "lr": 1e-5,
-        "checkpoint": "/storage/adityak/wt_without_gnn/best_weight_0.65908386103622_19.pt",
-        "savepath": "/storage/adityak/wt_without_gnn/",
+        "checkpoint": "model_weights/without_gnn/checkpoint.zip",
+        "savepath": "model_weights/without_gnn/",
         "backbone":"resnet",
         "gnn":"False"
     },
     "inference": {
-        "data": "/storage/adityak/chest_x_ray/",
-        "split_npz": "/storage/adityak/split.npz",
+        "data": "dataset/data/",
+        "split_npz": "dataset/split.npz",
         "batch_size": 1,
         "gpu": "True",
         "gnn":"False",
-        "model_file": "/storage/adityak/wt_without_gnn/best_weight_0.65908386103622_19.pt",
-        "checkpoint": "/storage/adityak/wt_without_gnn/modeltry.pt",
+        "model_file": "model_weights/without_gnn/checkpoint.zip",
+        "checkpoint": "model_weights/without_gnn/model.pt",
         "backbone":"resnet",
         "max_samples":10
     },
     "export": {
-        "checkpoint": "/storage/adityak/wt_without_gnn/best_weight_0.65908386103622_19.pt",
+        "checkpoint": "model_weights/without_gnn/checkpoint.zip",
         "backbone":"resnet",
-        "split_path":"/storage/adityak/split.npz",
+        "split_path":"dataset/split.npz",
         "input_shape": [
             1,
             1,
             320,
             320
         ],
-        "model_name_onnx": "modeltry.onnx",
-        "model_name": "modeltry"
+        "model_name_onnx": "model.onnx",
+        "model_name": "model"
     }
 }
