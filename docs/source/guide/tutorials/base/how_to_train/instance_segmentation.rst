@@ -26,7 +26,8 @@ You can follow the installation process from a :doc:`quick_start guide <../../..
 Dataset preparation
 ***************************
 
-1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_ provided by OTX.
+1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_ 
+provided by OTX.
 
 This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.
 
@@ -43,7 +44,8 @@ This allows us to look at the structure of the dataset used in instance-segmenta
 
 |
 
-2. Check the file structure of downloaded repository, we will need the following files:
+2. Check the file structure of downloaded repository,
+we will need the following files:
 
 .. code-block::
 
@@ -84,7 +86,8 @@ The list of supported templates for instance segmentation is available with the 
   | INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B | MaskRCNN-EfficientNetB2B | otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml |
   +-----------------------+----------------------------------------------------------------+--------------------------+-----------------------------------------------------------------------------------------------+
 
-2. We need to create an OTX-workspace first.
+2. We need to create 
+an OTX-workspace first.
 
 Let's prepare an OTX instance segmentation workspase running the following command:
 
@@ -125,7 +128,9 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery config
 
   For more information, see :doc:`quick start guide <../../../get_started/quick_start_guide/cli_commands>`
 
-3. Next, we need to create train/validation sets.
+3. Next, we need to create 
+train/validation sets. 
+
 To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. The content of the ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` for dataset should have absolute paths and will be similar to that:
 
 .. note::
@@ -146,7 +151,8 @@ To simplify the command line functions calling, we may create a ``data.yaml`` fi
 
 ``Ann-files`` contains a path to the annotation, while ``data-roots`` is a path to the folder, where images are stored.
 
-4. To start training we need to call ``otx train``
+4. To start training we need 
+to call ``otx train``
 command in our worspace:
 
 .. code-block::
@@ -235,7 +241,9 @@ The output of ``./outputs/performance.json`` consists of dict with target metric
 Export
 *********
 
-1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
+1. ``otx export`` exports a trained Pytorch `.pth` model to the 
+OpenVINO™ Intermediate Representation (IR) format.
+
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
