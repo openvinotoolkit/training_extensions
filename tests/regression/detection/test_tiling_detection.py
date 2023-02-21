@@ -99,7 +99,7 @@ class TestRegressionTilingDetection:
         self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
         self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
-        
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_eval_openvino(self, template, tmp_dir_path):

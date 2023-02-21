@@ -265,8 +265,8 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold=0.0, crit
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
         
     for k in trained_performance.keys():
-        if acc_metric in result_dict.keys() and template.name in criteria.keys():
-            result_dict[f"{acc_metric}"] = round(exported_performance[k], 3)
+        if template.name in criteria.keys():
+            result_dict[k] = round(exported_performance[k], 3)
             assert (
                 exported_performance[k] >= modified_criteria
             ), f"Current exported model performance: ({exported_performance[k]}) < criteria: ({modified_criteria})."
@@ -391,8 +391,8 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0, cr
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in exported_performance.keys():
-        if acc_metric in result_dict.keys() and template.name in criteria.keys():
-            result_dict[f"{acc_metric}"] = round(deployed_performance[k], 3)
+        if template.name in criteria.keys():
+            result_dict[k] = round(deployed_performance[k], 3)
             assert (
                 exported_performance[k] >= modified_criteria
             ), f"Current deployed model performance: ({deployed_performance[k]}) < criteria: ({modified_criteria})."
@@ -484,8 +484,8 @@ def pot_eval_testing(template, root, otx_dir, args, criteria={}, reg_threshold=0
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
     
     for k in pot_performance.keys():
-        if acc_metric in result_dict.keys() and template.name in criteria.keys():
-            result_dict[f"{acc_metric}"] = round(pot_performance[k], 3)
+        if template.name in criteria.keys():
+            result_dict[k] = round(pot_performance[k], 3)
             assert (
                 pot_performance[k] >= modified_criteria
             ), f"Current POT model performance: ({pot_performance[k]}) < criteria: ({modified_criteria})."
@@ -573,8 +573,8 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria={
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in trained_performance.keys():
-        if acc_metric in result_dict.keys() and template.name in criteria.keys():
-            result_dict[f"{acc_metric}"] = round(evaluated_performance[k], 3)
+        if template.name in criteria.keys():
+            result_dict[k] = round(evaluated_performance[k], 3)
             assert (
                 evaluated_performance[k] >= modified_criteria
             ), f"Current nncf model performance: ({evaluated_performance[k]}) < criteria: ({modified_criteria})."
@@ -849,12 +849,12 @@ def otx_eval_compare(
     model_criteria = criteria[template.name]
     modified_criteria = model_criteria - (model_criteria * threshold)
     for k in trained_performance.keys():
-        result_dict[f"{acc_metric}"] = round(trained_performance[k], 3)
+        result_dict[k] = round(trained_performance[k], 3)
         assert (
             trained_performance[k] >= modified_criteria
         ), f"Current model performance: ({trained_performance[k]}) < criteria: ({modified_criteria})."
     
-    result_dict["Model size (GB)"] = round(
+    result_dict["Model size (MB)"] = round(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")/1e+6, 2
     )
 

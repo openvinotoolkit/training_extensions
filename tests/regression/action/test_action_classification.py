@@ -13,6 +13,7 @@ from otx.cli.registry import Registry
 from tests.regression.regression_test_helpers import (
     get_result_dict,
     load_regression_configuration,
+    REGRESSION_TEST_EPOCHS
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -25,7 +26,6 @@ from tests.test_suite.run_test_command import (
 )
 
 # Configurations for regression test.
-REGRESSION_TEST_EPOCHS = "1"
 TASK_TYPE = "action_classification"
 TRAIN_TYPE = "supervised"
 LABEL_TYPE = "multi_class"
@@ -137,7 +137,7 @@ class TestRegressionActionClassification:
             tmp_dir_path,
             otx_dir,
             action_cls_data_args,
-            criteria=action_cls_regression_config["regression_criteria"]["nncf"],
+            criteria=action_cls_regression_config["regression_criteria"]["pot"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
             acc_metric=self.acc_metric

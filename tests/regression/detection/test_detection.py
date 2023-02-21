@@ -10,6 +10,7 @@ from timeit import default_timer as timer
 
 from otx.cli.registry import Registry
 from tests.test_suite.run_test_command import (
+    get_template_dir,
     nncf_eval_testing,
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
@@ -97,6 +98,38 @@ class TestRegressionDetection:
         self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
         self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
+    
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_cls_incr(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+        
+        sl_template_work_dir = get_template_dir(template, tmp_dir_path / TASK_TYPE)
+        
+        tmp_dir_path = tmp_dir_path / "det_incr"
+        config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
+        args_cls_incr = config_cls_incr["data_path"]
+        args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        
+        train_start_time = timer()
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_cls_incr)
+        train_elapsed_time = timer() - train_start_time
+        
+        infer_start_time = timer()
+        otx_eval_compare(
+            template,
+            tmp_dir_path,
+            otx_dir,
+            args_cls_incr,
+            config_cls_incr["regression_criteria"]["train"],
+            self.performance[template.name],
+            self.acc_metric
+        )
+        infer_elapsed_time = timer() - infer_start_time
+        
+        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
+        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

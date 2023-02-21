@@ -73,7 +73,12 @@ class TestRegressionAnomalySegmentation:
     def _apply_category(self, data_dict, category):
         return_dict = {}
         for k, v in data_dict.items():
-            return_dict[k] = f"{v}/{category}"
+            if "train" in k:
+                return_dict[k] = f"{v}/{category}/train"
+            if "val" in k or "test" in k:
+                return_dict[k] = f"{v}/{category}/test"
+            else:
+                return_dict[k] = v
         return return_dict
     
     @e2e_pytest_component
@@ -130,7 +135,7 @@ class TestRegressionAnomalySegmentation:
         
         self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
         self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
-        result_dict[TASK_TYPE]["export"].append(self.performance)
+        result_dict[TASK_TYPE]["export"][category].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -160,7 +165,7 @@ class TestRegressionAnomalySegmentation:
         
         self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
         self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
-        result_dict[TASK_TYPE]["deploy"].append(self.performance)
+        result_dict[TASK_TYPE]["deploy"][category].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -193,7 +198,7 @@ class TestRegressionAnomalySegmentation:
         
         self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
         self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
-        result_dict[TASK_TYPE]["nncf"].append(self.performance)
+        result_dict[TASK_TYPE]["nncf"][category].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -222,4 +227,4 @@ class TestRegressionAnomalySegmentation:
         
         self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
         self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
-        result_dict[TASK_TYPE]["pot"].append(self.performance)
+        result_dict[TASK_TYPE]["pot"][category].append(self.performance)
