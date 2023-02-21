@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information ----------------------------------------------------- #
 
 project = 'OpenVINO Training Extensions'
-copyright = '2022, OpenVINO Training Extensions Contributors'
+copyright = '2023, OpenVINO Training Extensions Contributors'
 author = 'OpenVINO Training Extensions Contributors'
 
 
@@ -57,12 +57,15 @@ exclude_patterns = []
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_theme = "pydata_sphinx_theme"
 html_static_path = ['_static']
-html_logo = "_static/logos/otx-logo-black-mini.png"
+
 html_theme_options = {
-    "navbar_start": ["navbar-logo"],
-    "navbar_center": [],
-    "navbar_end": ["navbar-icon-links"]
+   "navbar_center": [],
+   "logo": {
+      "image_light": '_static/logos/otx-logo-black-mini.png',
+      "image_dark": '_static/logos/otx-logo-black-mini.png',
+   }
 }
+
 html_css_files = [
     '_static/css/custom.css',
 ]
