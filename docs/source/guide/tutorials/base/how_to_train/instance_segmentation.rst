@@ -108,7 +108,7 @@ Let's prepare an OTX instance segmentation workspase running the following comma
 It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
 .. note::
-  Using ``otx train`` with TEMPLATE allows you to run the training directly without creating a workspace.
+  Using ``otx train`` with TEMPLATE allows you to run the training directly without ``otx build``.
 
   However, this requires ``--train-data-roots`` and ``--val-data-roots`` in the command.
 
