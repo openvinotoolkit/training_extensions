@@ -63,6 +63,8 @@ federated_chest_screening/
         metric.py
         misc.py
         model.py
+        train_utils_cnn.py
+        train_utils_gnn.py
         train_utils.py
         transformation.py
        export.py
