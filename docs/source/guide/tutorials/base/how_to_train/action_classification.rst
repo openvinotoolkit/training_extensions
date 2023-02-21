@@ -77,33 +77,32 @@ python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
 
 The resulting folder structure will be as follows:
 .. code-block::
-hmdb51
-├── rawframes
-├── videos
-├── annotations
-└── CVAT
-    ├── train (3570 videos)
-    │    ├── Video_0
-    │    │   ├── annotations.xml
-    │    │   └── images [101 frames]
-    │    ├── Video_1
-    │    │   ├── annotations.xml
-    │    │   └── images [105 frames]
-    │    └── Video_2
-    │        ├── annotations.xml
-    │        └── images [64 frames]
-    │
-    └── valid (1530 videos)
-        ├── Video_0
-        │   ├── annotations.xml
-        │   └── images [85 frames]
-        ├── Video_1
-        │   ├── annotations.xml
-        │   └── images [89 frames]
-        └── Video_2
-            ├── annotations.xml
-            └── images [60 frames]
-|
+    hmdb51
+    ├── rawframes
+    ├── videos
+    ├── annotations
+    └── CVAT
+        ├── train (3570 videos)
+        │    ├── Video_0
+        │    │   ├── annotations.xml
+        │    │   └── images [101 frames]
+        │    ├── Video_1
+        │    │   ├── annotations.xml
+        │    │   └── images [105 frames]
+        │    └── Video_2
+        │        ├── annotations.xml
+        │        └── images [64 frames]
+        │
+        └── valid (1530 videos)
+            ├── Video_0
+            │   ├── annotations.xml
+            │   └── images [85 frames]
+            ├── Video_1
+            │   ├── annotations.xml
+            │   └── images [89 frames]
+            └── Video_2
+                ├── annotations.xml
+                └── images [60 frames]
 
 *********
 Training
@@ -159,7 +158,6 @@ It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessery config
     unlabeled:
       file-list: null
       data-roots: null
-|
 
 4. To begin training, simply run ``otx train `` from within the workspace directory:
 
