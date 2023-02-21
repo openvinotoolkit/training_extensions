@@ -78,7 +78,9 @@ The list of supported templates for semantic segmentation is available with the 
   | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3  | otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml  |
   +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
 
-Note that we do not attach OCR head for supported models in default. We remain the suffix '_OCR' in ID just for backward compatibility.
+.. note::
+
+    We do not attach OCR head for supported models in default. We remain the suffix '_OCR' in ID just for backward compatibility.
 To have a specific example in this tutorial, all commands will be run on the :ref:`Lite-HRNet-18-mod2 <semantic_segmentation_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
 2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the semantic segmentation.
