@@ -91,12 +91,16 @@ if is_mmdeploy_enabled():
     def custom_mask_rcnn__simple_test(ctx, self, img, img_metas, proposals=None, **kwargs):
         assert self.with_bbox, "Bbox head must be implemented."
         x = self.extract_feat(img)
-        feature_vector = FeatureVectorHook.func(x)
-        saliency_map = ActivationMapHook.func(x[-1])
         if proposals is None:
             proposals, _ = self.rpn_head.simple_test_rpn(x, img_metas)
         out = self.roi_head.simple_test(x, proposals, img_metas, rescale=False)
-        return (*out, feature_vector, saliency_map)
+
+        if ctx.cfg["dump_features"]:
+            feature_vector = FeatureVectorHook.func(x)
+            saliency_map = ActivationMapHook.func(x[-1])
+            return (*out, feature_vector, saliency_map)
+
+        return out
 
     @mark("custom_maskrcnn_forward", inputs=["input"], outputs=["dets", "labels", "masks", "feats", "saliencies"])
     def __forward_impl(ctx, self, img, img_metas, **kwargs):

@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import tempfile
+import warnings
 from typing import Any, Dict, Optional, Tuple, Union
 from zipfile import ZipFile
 
@@ -78,8 +79,6 @@ try:
     from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
     from openvino.model_zoo.model_api.models import Model
 except ImportError:
-    import warnings
-
     warnings.warn("ModelAPI was not found.")
 
 logger = logging.getLogger(__name__)
@@ -239,18 +238,25 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             probs_meta = TensorEntity(name="probabilities", numpy=probs.reshape(-1))
             dataset_item.append_metadata_item(probs_meta, model=self.model)
 
-            feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
-            dataset_item.append_metadata_item(feature_vec_media, model=self.model)
             if dump_features:
-                add_saliency_maps_to_dataset_item(
-                    dataset_item=dataset_item,
-                    saliency_map=saliency_map,
-                    model=self.model,
-                    labels=self.task_environment.get_labels(),
-                    predicted_scored_labels=item_labels,
-                    explain_predicted_classes=explain_predicted_classes,
-                    process_saliency_maps=process_saliency_maps,
-                )
+                if saliency_map is not None and repr_vector is not None:
+                    feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
+                    dataset_item.append_metadata_item(feature_vec_media, model=self.model)
+
+                    add_saliency_maps_to_dataset_item(
+                        dataset_item=dataset_item,
+                        saliency_map=saliency_map,
+                        model=self.model,
+                        labels=self.task_environment.get_labels(),
+                        predicted_scored_labels=item_labels,
+                        explain_predicted_classes=explain_predicted_classes,
+                        process_saliency_maps=process_saliency_maps,
+                    )
+                else:
+                    warnings.warn(
+                        "Could not find Feature Vector and Saliency Map in OpenVINO output. "
+                        "Please rerun OpenVINO export or retrain the model."
+                    )
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 

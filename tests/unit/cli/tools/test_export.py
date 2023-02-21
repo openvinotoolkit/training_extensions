@@ -65,7 +65,7 @@ def test_main(mocker, mock_args, mock_task, mock_config_manager, tmp_dir):
     mocker.patch.object(target_package, "read_label_schema")
     mocker.patch.object(target_package, "read_binary")
 
-    def mock_export_side_effect(export_type, output_model):
+    def mock_export_side_effect(export_type, output_model, dump_features):
         output_model.set_data("fake.xml", b"fake")
 
     mock_task.export.side_effect = mock_export_side_effect
