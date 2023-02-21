@@ -225,7 +225,7 @@ def trainer_with_GNN(lr, b_sz, img_pth, split_npz, train_transform, test_transfo
     backbone_model = backbone_model.to(device)
     gnn_model = gnn_model.to(device)
 
-    #####################################################################################
+   
     ############## Initialize Data Loaders #################
     
     trn_loader0, val_loader0, criterion0, edge_index0, edge_attr0=initialize_training(0, img_pth, split_npz, 
