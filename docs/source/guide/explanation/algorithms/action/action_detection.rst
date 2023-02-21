@@ -24,7 +24,7 @@ If you have your dataset in those formats, then you can simply run OTX using one
 
 .. code-block:: 
 
-    $ otx train --template otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml --train-data-root <path_to_data_root/train> --val-data-root <path_to_data_root/val>
+    $ otx train otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml --train-data-root <path_to_data_root/train> --val-data-root <path_to_data_root/val>
 
 ******
 Models
@@ -43,5 +43,5 @@ In the table below the **mAP** on some academic datasets are presented. Each mod
 +----------------+-------+-----------+
 | Model name     | JHMDB | UCF101-24 |
 +================+=======+===========+
-| x3d_fast_rcnn  | N/A   | N/A       |
+| x3d_fast_rcnn  | 92.14 |   80.7    |
 +----------------+-------+-----------+
