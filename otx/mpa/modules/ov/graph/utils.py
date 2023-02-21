@@ -23,14 +23,6 @@ def get_constant_input_nodes(graph: Graph, node: Operation) -> List[Operation]:
     return found
 
 
-def get_nodes_by_types(graph, types):
-    found = []
-    for node in graph.topological_srt():
-        if node.type in types:
-            found.append(node)
-    return found
-
-
 def handle_merging_into_batchnorm(graph, type_patterns=[["Multiply", "Add"]], type_mappings=[{"gamma": 0, "beta": 1}]):
 
     assert len(type_patterns) == len(type_mappings)
@@ -204,8 +196,8 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["C
 
         gamma = torch.ones([channel_dim])
         gamma = constant_cls(
-            gamma,
             batchnorm.name + "/gamma",
+            data=gamma,
             shape=((channel_dim,),),
             is_parameter=True,
         )
@@ -214,22 +206,22 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["C
         else:
             beta = torch.zeros([channel_dim])
         beta = constant_cls(
-            beta,
             batchnorm.name + "/beta",
+            data=beta,
             shape=((channel_dim,),),
             is_parameter=True,
         )
         running_mean = torch.zeros([channel_dim])
         running_mean = constant_cls(
-            running_mean,
             batchnorm.name + "/running_mean",
+            data=running_mean,
             shape=((channel_dim,),),
             is_parameter=False,
         )
         running_variance = torch.ones([channel_dim])
         running_variance = constant_cls(
-            running_variance,
             batchnorm.name + "/running_variance",
+            data=running_variance,
             shape=((channel_dim,),),
             is_parameter=False,
         )
