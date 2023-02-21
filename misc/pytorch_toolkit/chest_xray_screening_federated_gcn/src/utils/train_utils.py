@@ -243,7 +243,7 @@ def trainer_with_GNN(lr, b_sz, img_pth, split_npz, train_transform, test_transfo
     trn_loader4, val_loader4, criterion4, edge_index4, edge_attr4=initialize_training(4, img_pth, split_npz, 
                                                               train_transform, test_transform, b_sz, device=device)
     
-    #########################################################################################
+    
     ### Initialize local and global model weights with the Imagenet pre-trained weights for backbone 
     #and identical model weights for the other layers.
 
