@@ -4,6 +4,7 @@
 
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
 
 #  from mmdet.models.necks.ssd_neck import SSDNeck
@@ -134,7 +135,7 @@ class L2Norm(nn.Module):
 class MMOVSSDNeck(SSDNeck):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -155,7 +156,7 @@ class MMOVSSDNeck(SSDNeck):
             l2_norm_scale=l2_norm_scale,
         )
 
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._init_weight = init_weight
 
@@ -165,7 +166,7 @@ class MMOVSSDNeck(SSDNeck):
             if input and output:
                 self.extra_layers.append(
                     MMOVModel(
-                        model_path,
+                        model_path_or_model,
                         weight_path,
                         inputs=input,
                         outputs=output,
@@ -182,7 +183,7 @@ class MMOVSSDNeck(SSDNeck):
         if "l2_norm" in inputs and "l2_norm" in outputs:
             for input, output in zip(inputs["l2_norm"], outputs["l2_norm"]):
                 self.l2_norm = MMOVModel(
-                    model_path,
+                    model_path_or_model,
                     weight_path,
                     inputs=input,
                     outputs=output,
