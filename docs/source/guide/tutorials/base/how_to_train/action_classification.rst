@@ -9,8 +9,6 @@ This live example shows how to easily train, validate, optimize and export class
 
   For information on deploying  the trained model, please refer to the :doc:`../deploy` documentation.
 
-  For information how to run the demo and visualize results, refer to: :doc:`../demo` documentation.
-
 The process has been tested on the following configuration.
 
 - Ubuntu 20.04
@@ -164,7 +162,7 @@ It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessery config
       file-list: null
       data-roots: null
 
-4. To begin training, simply run ``otx train `` from within the workspace directory:
+4. To begin training, simply run ``otx train`` from within the workspace directory:
 
 .. code-block::
 
