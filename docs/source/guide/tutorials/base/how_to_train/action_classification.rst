@@ -132,7 +132,7 @@ All commands will be run on the X3D model. It's a light model, that achieves com
 
 .. code-block::
 
-  (otx) ...$ otx build --task action_classification
+  (otx) ...$ otx build --task action_classification --train-data-roots data/hmdb51/CVAT/train/ --val-data-roots data/hmdb51/CVAT/valid
   [*] Workspace Path: otx-workspace-ACTION_CLASSIFICATION
   [*] Load Model Template ID: Custom_Action_Classificaiton_X3D
   [*] Load Model Name: X3D
@@ -142,27 +142,10 @@ All commands will be run on the X3D model. It's a light model, that achieves com
 
   (otx) ...$ cd ./otx-workspace-ACTION_CLASSIFICATION
 
-It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessery configs for X3D, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessery configs for X3D, prepared ``data.yaml`` to simplify CLI commands.
 
-3. Update ``otx-workspace-ACTION_CLASSIFICATION/data.yaml`` file with the path to the CVAT converted HMDB51 dataset.
 
-.. code-block::
-
-  data:
-    train:
-      ann-files: null
-      data-roots: ../data/hmdb51/CVAT/train
-    val:
-      ann-files: null
-      data-roots: ../data/hmdb51/CVAT/valid
-    test:
-      ann-files: null
-      data-roots: null
-    unlabeled:
-      file-list: null
-      data-roots: null
-
-4. To begin training, simply run ``otx train`` from within the workspace directory:
+3. To begin training, simply run ``otx train`` from **within the workspace directory**:
 
 .. code-block::
 
@@ -215,12 +198,12 @@ Export
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
-and save the exported model to the ``openvino_model`` folder.
+and save the exported model to the ``openvino_models`` folder.
 
 .. code-block::
 
   (otx) ...$ otx export --load-weights models/weights.pth \
-                        --save-model-to openvino_model
+                        --save-model-to openvino_models
 
   ...
   2023-02-21 22:54:32,518 - mmaction - INFO - Model architecture: X3D
@@ -241,8 +224,8 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
-                      --load-weights openvino_model/openvino.xml \
-                      --save-performance openvino_model/performance.json
+                      --load-weights openvino_models/openvino.xml \
+                      --save-performance openvino_models/performance.json
 
   ...
 
@@ -262,7 +245,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
+  (otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
                           --save-model-to pot_model
 
   ...
