@@ -6,7 +6,7 @@ Algorithms
 OTX supports different training types to solve a variety of computer vision problems. This section provides what exactly we utilize inside our algorithms providing an end-to-end solution to solve real-life computer vision problems.
 
 
-To this end we support:
+To this end, we support:
 
 - **Supervised training**. This is the most common approach for computer vision tasks such as object detection and image classification. Supervised learning involves training a model on a labeled dataset of images. The model learns to associate specific features in the images with the corresponding labels.
 
