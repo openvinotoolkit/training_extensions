@@ -80,7 +80,6 @@ class create_mlp(nn.Module):
         out=self.lyr(x)
         return out
 
-#######################################################################################
 # The Resdiual Block for the GNN
 class Res_Graph_Conv_Lyr(nn.Module):
     def __init__(self, in_chnls, base_chnls, mlp_model, aggr_md):
