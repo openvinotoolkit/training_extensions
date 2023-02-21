@@ -238,26 +238,34 @@ def test_get_image_files_empty_dir(tmp_dir):
 
 
 @e2e_pytest_unit
-def test_save_saliency_output(tmp_dir):
+@pytest.mark.parametrize(
+    "process_saliency_maps",
+    [True, False],
+    ids=["w_post_processing", "wo_post_processing"],
+)
+def test_save_saliency_output(tmp_dir, process_saliency_maps):
     # prepare
     img = np.array([[100 for _ in range(3)] for _ in range(3)])
-    saliency_map = np.zeros([3, 3])
+    saliency_map = np.zeros([3, 3], dtype=np.uint8)
     weight = 0.3
 
     # run
-    save_saliency_output(img, saliency_map, tmp_dir, "fake", weight=weight)
+    save_saliency_output(process_saliency_maps, img, saliency_map, tmp_dir, "fake", weight=weight)
 
     # check
-    saliency_map_file = Path(tmp_dir) / "fake_saliency_map.png"
-    overlay_img = Path(tmp_dir) / "fake_overlay_img.png"
+    if process_saliency_maps:
+        saliency_map_file = Path(tmp_dir) / "fake_saliency_map.png"
+    else:
+        saliency_map_file = Path(tmp_dir) / "fake_saliency_map.tiff"
     assert saliency_map_file.exists()
-    assert overlay_img.exists()
-
     saved_saliency = cv2.imread(str(saliency_map_file))
-    saved_overlay = cv2.imread(str(overlay_img))
-
     assert (saved_saliency == saliency_map).all()
-    assert (saved_overlay == np.array([[100 * weight for _ in range(3)] for _ in range(3)])).all()
+
+    if process_saliency_maps:
+        overlay_img = Path(tmp_dir) / "fake_overlay_img.png"
+        assert overlay_img.exists()
+        saved_overlay = cv2.imread(str(overlay_img))
+        assert (saved_overlay == np.array([[100 * weight for _ in range(3)] for _ in range(3)])).all()
 
 
 @e2e_pytest_unit

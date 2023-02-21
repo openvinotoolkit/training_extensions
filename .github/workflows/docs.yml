@@ -15,15 +15,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: |
-          python -m pip install -r requirements/base.txt
-          python -m pip install -r requirements/anomaly.txt
-          python -m pip install -r requirements/openvino.txt
-          python -m pip install -r requirements/docs.txt
+        run: python -m pip install -r requirements/dev.txt
       - name: Build-Docs
-        run: |
-          cd docs
-          make html
+        run: tox -e build-doc
       - name: Create gh-pages branch
         run: |
           echo SOURCE_NAME=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT

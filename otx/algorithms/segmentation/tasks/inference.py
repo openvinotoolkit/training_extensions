@@ -24,6 +24,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_data_pipeline,
     patch_default_config,
     patch_runner,
+    remove_from_configs_by_type,
 )
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
@@ -87,6 +88,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
+        self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
 
@@ -145,19 +147,26 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity):
+    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        if not dump_features:
+            logger.warning(
+                "Ommitting feature dumping is not implemented."
+                "The saliency maps and representation vector outputs will be dumped in the exported model."
+            )
 
         stage_module = "SegExporter"
         results = self._run_task(
             stage_module,
             mode="train",
             export=True,
+            dump_features=dump_features,
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
@@ -212,6 +221,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         if self._recipe_cfg.get("override_configs", None):
             self.override_configs.update(self._recipe_cfg.override_configs)
 
+        if not self.freeze:
+            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
         logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):

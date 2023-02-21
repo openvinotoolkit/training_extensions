@@ -148,9 +148,11 @@ class DetectionExplainer(DetectionStage):
         self.set_inference_progress_callback(model, cfg)
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
+        eval_predictions = []
         with self.explainer_hook(feature_model) as saliency_hook:
             for data in test_dataloader:
-                _ = model(return_loss=False, rescale=True, **data)
+                result = model(return_loss=False, rescale=True, **data)
+                eval_predictions.extend(result)
             saliency_maps = saliency_hook.records
 
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
@@ -162,5 +164,5 @@ class DetectionExplainer(DetectionStage):
         if isinstance(dataset, ImageTilingDataset):
             saliency_maps = [saliency_maps[i] for i in range(dataset.num_samples)]
 
-        outputs = dict(saliency_maps=saliency_maps)
+        outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
         return outputs

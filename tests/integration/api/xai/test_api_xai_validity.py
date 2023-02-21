@@ -20,8 +20,6 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
-torch.manual_seed(0)
-
 templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates
 templates_cls_ids = [template.model_template_id for template in templates_cls]
 
@@ -31,9 +29,9 @@ templates_det_ids = [template.model_template_id for template in templates_det]
 
 class TestExplainMethods:
     ref_saliency_vals_cls = {
-        "EfficientNet-B0": np.array([238, 164, 140, 128, 141, 173, 239], dtype=np.uint8),
-        "MobileNet-V3-large-1x": np.array([109, 183, 171, 195, 172, 207, 37], dtype=np.uint8),
-        "EfficientNet-V2-S": np.array([89, 221, 233, 233, 242, 230, 155], dtype=np.uint8),
+        "EfficientNet-B0": np.array([153, 102, 188, 189, 199, 159, 170], dtype=np.uint8),
+        "MobileNet-V3-large-1x": np.array([140, 82, 87, 81, 79, 117, 254], dtype=np.uint8),
+        "EfficientNet-V2-S": np.array([92, 197, 220, 227, 222, 196, 77], dtype=np.uint8),
     }
 
     ref_saliency_shapes = {
@@ -43,14 +41,16 @@ class TestExplainMethods:
     }
 
     ref_saliency_vals_det = {
-        "ATSS": np.array([16, 4, 134, 79], dtype=np.uint8),
-        "SSD": np.array([255, 198, 179, 211, 211, 123, 154, 176, 199, 127, 139, 251, 146], dtype=np.uint8),
-        "YOLOX": np.array([174, 134, 203, 218, 38, 124, 81, 54, 106, 147, 132, 138, 172], dtype=np.uint8),
+        "ATSS": np.array([80, 213, 255, 124], dtype=np.uint8),
+        "YOLOX": np.array([99, 38, 42, 57, 50, 71, 75, 81, 75, 61, 70, 5, 177], dtype=np.uint8),
+        "SSD": np.array([191, 133, 160, 60, 63, 50, 51, 51, 57, 54, 83, 71, 148], dtype=np.uint8),
     }
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_cls, ids=templates_cls_ids)
     def test_saliency_map_cls(self, template):
+        torch.manual_seed(0)
+
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
         cfg_path = os.path.join(base_dir, "model.py")
         cfg = MPAConfig.fromfile(cfg_path)
@@ -59,7 +59,8 @@ class TestExplainMethods:
         model = build_classifier(cfg.model)
         model = model.eval()
 
-        img = torch.rand(2, 3, 224, 224) - 0.5
+        # img = torch.rand(2, 3, 224, 224) - 0.5
+        img = torch.ones(2, 3, 224, 224) - 0.5
         data = {"img_metas": {}, "img": img}
 
         with ReciproCAMHook(model) as rcam_hook:
@@ -75,6 +76,8 @@ class TestExplainMethods:
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_det, ids=templates_det_ids)
     def test_saliency_map_det(self, template):
+        torch.manual_seed(0)
+
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
         cfg_path = os.path.join(base_dir, "model.py")
         cfg = MPAConfig.fromfile(cfg_path)
@@ -82,7 +85,8 @@ class TestExplainMethods:
         model = build_detector(cfg.model)
         model = model.eval()
 
-        img = torch.rand(2, 3, 416, 416) - 0.5
+        # img = torch.rand(2, 3, 416, 416) - 0.5
+        img = torch.ones(2, 3, 416, 416) - 0.5
         img_metas = [
             {
                 "img_shape": (416, 416, 3),
