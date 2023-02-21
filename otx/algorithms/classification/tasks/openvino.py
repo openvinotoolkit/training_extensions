@@ -219,15 +219,20 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         """Infer function of ClassificationOpenVINOTask."""
 
         update_progress_callback = default_progress_callback
+        dump_features = False
+        process_saliency_maps = False
+        explain_predicted_classes = True
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
-        dump_features = False
-        if inference_parameters is not None:
             dump_features = not inference_parameters.is_evaluation
+            process_saliency_maps = inference_parameters.process_saliency_maps
+            explain_predicted_classes = inference_parameters.explain_predicted_classes
+
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, probs, saliency_map, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
-            dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
+            item_labels = predicted_scene.annotations[0].get_labels()
+            dataset_item.append_labels(item_labels)
             active_score_media = FloatMetadata(name="active_score", value=act_score, float_type=FloatType.ACTIVE_SCORE)
             dataset_item.append_metadata_item(active_score_media, model=self.model)
 
@@ -242,8 +247,9 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                     saliency_map=saliency_map,
                     model=self.model,
                     labels=self.task_environment.get_labels(),
-                    task="cls",
-                    predicted_scene=predicted_scene,
+                    predicted_scored_labels=item_labels,
+                    explain_predicted_classes=explain_predicted_classes,
+                    process_saliency_maps=process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
@@ -257,19 +263,26 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         """Explain function of ClassificationOpenVINOTask."""
 
         update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
         if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress  # type: ignore
+            process_saliency_maps = explain_parameters.process_saliency_maps
+            explain_predicted_classes = explain_parameters.explain_predicted_classes
+
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, _, saliency_map, _, _ = self.inferencer.predict(dataset_item.numpy)
-            dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
+            item_labels = predicted_scene.annotations[0].get_labels()
+            dataset_item.append_labels(item_labels)
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=saliency_map,
+                saliency_map=np.copy(saliency_map),
                 model=self.model,
                 labels=self.task_environment.get_labels(),
-                task="cls",
-                predicted_scene=predicted_scene,
+                predicted_scored_labels=item_labels,
+                explain_predicted_classes=explain_predicted_classes,
+                process_saliency_maps=process_saliency_maps,
             )
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
