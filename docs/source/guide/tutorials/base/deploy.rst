@@ -4,7 +4,8 @@ How to deploy the model and use deployed demo
 This guide shows, how to deploy a model trained in the :doc:`previous stage <how_to_train/index>` and visualize it outside of this repository.
 As a result of this step, we'll get the exported model together with the self-contained python package and a demo application to visualize results in other environment without long installation process.
 
-To learn fow to use CLI demo inside this tutorial with more features, refer to :doc:`demo`.
+.. NOTE::
+    To learn how to use CLI demo inside this tutorial with more features, refer to :doc:`demo`.
 
 To be specific, this tutorial uses as an example the object detection ATSS model trained and exported in the previuos step and located in ``outputs/openvino``.
 But it can be runned for any task in the same manner.
@@ -13,13 +14,15 @@ But it can be runned for any task in the same manner.
 Deployment
 **********
 
-1. Activate the virtual environment created in the previous step.
+1. Activate the virtual environment 
+created in the previous step.
 
 .. code-block::
 
     source .otx/bin/activate
 
-2. ``otx deploy`` returns an ``openvino.zip`` archive with the following files:
+2. ``otx deploy`` returns an ``openvino.zip`` 
+archive with the following files:
 
 - model
 
@@ -35,7 +38,8 @@ Deployment
   - ``requirements.txt`` - minimal packages required to run the demo
 
 
-3. We can deploy the model exported to IR, using the command below:
+3. We can deploy the model exported to IR, 
+using the command below:
 
 .. code-block::
 
@@ -59,13 +63,15 @@ Demonstrarion
 Using ported demo, we're able to run model in demonstration mode outside of this repository, using only ported ``.zip`` archive with minimum required packages. 
 The demo allows to apply our model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.
 
-1. Unzip the ``openvino.zip`` archive.
+1. Unzip the ``openvino.zip``
+archive.
 
 .. code-block::
 
     unzip  outputs/deploy/openvino.zip -d outputs/deploy/
 
-2. To run the demo in exportable code, we can use a brand-new virtual environment, where we need to install a minimalistic set of packages required for inference only.
+2. To run the demo in exportable code, we can use a brand-new virtual environment, 
+where we need to install a minimalistic set of packages required for inference only.
 
 .. code-block::
 
@@ -74,7 +80,8 @@ The demo allows to apply our model on the custom data or the online footage from
     python -m pip install -r outputs/deploy/requirements.txt
 
 
-3. The following line will run the demo on your input source, using the model in the ``model`` folder. You can pass as ``input`` a single image, a folder of images, a video file, or a web camera id.
+3. The following line will run the demo on your input source, 
+using the model in the ``model`` folder. You can pass as ``input`` a single image, a folder of images, a video file, or a web camera id.
 
 .. code-block::
 
@@ -85,7 +92,7 @@ You can press ``Q`` to stop inference during the demo running.
 
 The model inference on your custom image will look like this:
 
-.. image:: ../../../utils/images/wgisd_pr_sample.jpg
+.. image:: ../../../../utils/images/wgisd_pr_sample.jpg
   :width: 600
   :alt: this image shows the inference results on the WGISD dataset
 
@@ -97,7 +104,8 @@ The model inference on your custom image will look like this:
 
 To learn how to run the demo on Windows and MacOS, please refer to the ``outputs/deploy/python/README.md`` file in exportable code.
 
-4. To run a demo on a web camera, we need to know its ID. We can check a list of camera devices by running this command line on Linux system:
+4. To run a demo on a web camera, we need to know its ID. 
+We can check a list of camera devices by running this command line on Linux system:
 
 .. code-block::
 
@@ -113,7 +121,8 @@ The output will look like this:
 
 After that, we can use this ``/dev/video0`` as a camera ID for ``--input``.
 
-5. We can also change ``config.json`` that specifies the confidence threshold and color for each class visualization, but any changes should be made with caution. 
+5. We can also change ``config.json`` that specifies the confidence threshold and 
+color for each class visualization, but any changes should be made with caution. 
 
 For example, in our image of the winery we see, that a lot of objects weren't detected.
 The original confidence threshold was chosen based on the validation split results to maximize the final F1 metric, balancing precision and recall values. So, visual results can be not suitable enough for a user.
@@ -140,7 +149,7 @@ For visual purposes, we can also update the color of ``Chardonnay`` class from y
 
 The result will be the following:
 
-.. image:: ../../../utils/images/wgisd_pr2_sample.jpg
+.. image:: ../../../../utils/images/wgisd_pr2_sample.jpg
   :width: 600
   :alt: this image shows the inference results on the WGISD dataset
 
@@ -151,7 +160,8 @@ Congratulations! Now you have learned how to use base OTX functionality. For the
 Troubleshooting
 ***************
 
-1. If you have access to the Internet through the proxy server only, please use pip with a proxy call as demonstrated by the command below:
+1. If you have access to the Internet through the proxy server only,
+please use pip with a proxy call as demonstrated by the command below:
 
 .. code-block::
 
@@ -159,10 +169,10 @@ Troubleshooting
 
 
 2. If you use Anaconda environment, you should consider that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.
-
 So please use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.
 
-3. If you have problems when you try to use ``pip install`` command, please update the pip version by the following command:
+3. If you have problems when you try to use ``pip install`` command,
+please update the pip version by the following command:
 
 .. code-block::
    
