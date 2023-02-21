@@ -1145,6 +1145,270 @@
 <h1>mmclassification<a class="headerlink" href="#mmclassification" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.algorithms.classification.adapters.mmcls"></span><p>Adapters of classification - mmcls.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.classification.adapters.mmcls.</span></span><span class="sig-name descname"><span class="pre">BYOL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neck</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_momentum</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.996</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implementation of ‘Bootstrap Your Own Latent: A New Approach to     Self-Supervised Learning (<a class="reference external" href="https://arxiv.org/abs/2006.07733">https://arxiv.org/abs/2006.07733</a>)’.</p>
+<dl>
+<dt>Args:</dt><dd><p>backbone (dict): Config dict for module of backbone ConvNet.
+neck (dict): Config dict for module of deep features to compact feature vectors.</p>
+<blockquote>
+<div><p>Default: None.</p>
+</div></blockquote>
+<p>head (dict): Config dict for module of loss functions. Default: None.
+pretrained (str, optional): Path to pre-trained weights. Default: None.
+base_momentum (float): The base momentum coefficient for the target network.</p>
+<blockquote>
+<div><p>Default: 0.996.</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward computation during training.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>img1 (Tensor): Input of two concatenated images of shape (N, C, H, W).</dt><dd><p>Typically these should be mean centered and std scaled.</p>
+</dd>
+<dt>img2 (Tensor): Input of two concatenated images of shape (N, C, H, W).</dt><dd><p>Typically these should be mean centered and std scaled.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>dict[str, Tensor]: A dictionary of loss components.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.init_weights">
+<span class="sig-name descname"><span class="pre">init_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.init_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the weights of model.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>pretrained (str, optional): Path to pre-trained weights.</dt><dd><p>Default: None.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.momentum_update">
+<span class="sig-name descname"><span class="pre">momentum_update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.momentum_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Momentum update of the target network.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.state_dict_hook">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">state_dict_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.state_dict_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save only online backbone as output state_dict.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.train_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>The iteration step during training.</p>
+<p>This method defines an iteration step during training, except for the
+back propagation and optimizer updating, which are done in an optimizer
+hook. Note that in some complicated cases or models, the whole process
+including back propagation and optimizer updating are also defined in
+this method, such as GAN.</p>
+<dl>
+<dt>Args:</dt><dd><p>data (dict): The output of dataloader.
+optimizer (<code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.optim.Optimizer</span></code> | dict): The optimizer of</p>
+<blockquote>
+<div><p>runner is passed to <code class="docutils literal notranslate"><span class="pre">train_step()</span></code>. This argument is unused
+and reserved.</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>dict: It should contain at least 3 keys: <code class="docutils literal notranslate"><span class="pre">loss</span></code>, <code class="docutils literal notranslate"><span class="pre">log_vars</span></code>,</dt><dd><p><code class="docutils literal notranslate"><span class="pre">num_samples</span></code>.
+<code class="docutils literal notranslate"><span class="pre">loss</span></code> is a tensor for back propagation, which can be a
+weighted sum of multiple losses.
+<code class="docutils literal notranslate"><span class="pre">log_vars</span></code> contains all the variables to be sent to the
+logger.
+<code class="docutils literal notranslate"><span class="pre">num_samples</span></code> indicates the batch size (when the model is
+DDP, it means the batch size on each GPU), which is used for
+averaging the logs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.val_step">
+<span class="sig-name descname"><span class="pre">val_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.val_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable validation step during self-supervised learning.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.ConstrastiveHead">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.classification.adapters.mmcls.</span></span><span class="sig-name descname"><span class="pre">ConstrastiveHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_average</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.ConstrastiveHead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Head for contrastive learning.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>predictor (dict): configurations for predictor.
+size_average (bool): whether averaging loss using batch size. Default value is True.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.ConstrastiveHead.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.ConstrastiveHead.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward head.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>inputs (Tensor): NxC input features.
+targets (Tensor): NxC target features.</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict[str, Tensor]: A dictionary of loss components.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.ConstrastiveHead.init_weights">
+<span class="sig-name descname"><span class="pre">init_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_linear</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'normal'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.ConstrastiveHead.init_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize predictor weights.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>init_linear (str): Option to initialize weights. Default: ‘normal’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.ConstrastiveHead.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.ConstrastiveHead.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.OTXClsDataset">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.classification.adapters.mmcls.</span></span><span class="sig-name descname"><span class="pre">OTXClsDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">empty_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.OTXClsDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multi-class classification dataset class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.OTXClsDataset.class_accuracy">
+<span class="sig-name descname"><span class="pre">class_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_labels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.OTXClsDataset.class_accuracy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return per-class accuracy.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.OTXClsDataset.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'accuracy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.OTXClsDataset.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the dataset with new metric class_accuracy.</p>
+<dl>
+<dt>Args:</dt><dd><p>results (list): Testing results of the dataset.
+metric (str | list[str]): Metrics to be evaluated.</p>
+<blockquote>
+<div><p>Default value is <cite>accuracy</cite>.
+‘accuracy’, ‘precision’, ‘recall’, ‘f1_score’, ‘support’, ‘class_accuracy’</p>
+</div></blockquote>
+<dl class="simple">
+<dt>metric_options (dict, optional): Options for calculating metrics.</dt><dd><p>Allowed keys are ‘topk’, ‘thrs’ and ‘average_mode’.
+Defaults to None.</p>
+</dd>
+<dt>logger (logging.Logger | str, optional): Logger used for printing</dt><dd><p>related information during evaluation. Defaults to None.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>dict: evaluation results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.OTXClsDataset.get_gt_labels">
+<span class="sig-name descname"><span class="pre">get_gt_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.OTXClsDataset.get_gt_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all ground-truth labels (categories).</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>list[int]: categories for all images.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.OTXClsDataset.get_indices">
+<span class="sig-name descname"><span class="pre">get_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.OTXClsDataset.get_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get indices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.OTXClsDataset.load_annotations">
+<span class="sig-name descname"><span class="pre">load_annotations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.OTXClsDataset.load_annotations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load annotations.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.SelfSLDataset">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.classification.adapters.mmcls.</span></span><span class="sig-name descname"><span class="pre">SelfSLDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.SelfSLDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>SelfSL dataset that training with two pipelines and no label.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.SelfSLDataset.CLASSES">
+<span class="sig-name descname"><span class="pre">CLASSES</span></span><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.SelfSLDataset.CLASSES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.SelfSLMLP">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.classification.adapters.mmcls.</span></span><span class="sig-name descname"><span class="pre">SelfSLMLP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hid_channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN1d'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_conv</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_avg_pool</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.SelfSLMLP" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SelfSLMLP neck: fc/conv-bn-relu-fc/conv.</p>
+<dl>
+<dt>Args:</dt><dd><p>in_channels (int): The number of feature output channels from backbone.
+hid_channels (int): The number of channels for a hidden layer.
+out_channels (int): The number of output channels of SelfSLMLP.
+norm_cfg (dict): Normalize configuration. Default: dict(type=”BN1d”).
+use_conv (bool): Whether using conv instead of fc. Default: False.
+with_avg_pool (bool): Whether using average pooling before passing MLP.</p>
+<blockquote>
+<div><p>Default: True.</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.SelfSLMLP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.SelfSLMLP.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward SelfSLMLP.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>x (Tensor, tuple, list): Inputs to pass MLP.</dt><dd><p>If a type of the inputs is tuple or list, just use the last index.</p>
+</dd>
+</dl>
+</dd>
+<dt>Return:</dt><dd><p>Tensor: Features passed SelfSLMLP.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.SelfSLMLP.init_weights">
+<span class="sig-name descname"><span class="pre">init_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_linear</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'normal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.SelfSLMLP.init_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize SelfSLMLP weights.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>init_linear (str): Option to initialize weights. Default: “normal”.
+std (float): Standard deviation for normal initialization. Default: 0.01.
+bias (float): Bias for normal initialization. Default: 0.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.SelfSLMLP.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.SelfSLMLP.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 

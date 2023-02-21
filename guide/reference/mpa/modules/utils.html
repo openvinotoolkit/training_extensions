@@ -1145,6 +1145,51 @@
 <h1>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.modules.utils"></span><span class="target" id="module-otx.mpa.modules.utils.distance_utils"></span><dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.utils.distance_utils.get_dist_info">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.utils.distance_utils.</span></span><span class="sig-name descname"><span class="pre">get_dist_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.utils.distance_utils.get_dist_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.utils.seg_utils"></span><dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.utils.seg_utils.get_valid_label_mask_per_batch">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.utils.seg_utils.</span></span><span class="sig-name descname"><span class="pre">get_valid_label_mask_per_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.utils.seg_utils.get_valid_label_mask_per_batch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.utils.task_adapt"></span><dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.utils.task_adapt.extract_anchor_ratio">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.utils.task_adapt.</span></span><span class="sig-name descname"><span class="pre">extract_anchor_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_ratios</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.utils.task_adapt.extract_anchor_ratio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.utils.task_adapt.map_cat_and_cls_as_order">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.utils.task_adapt.</span></span><span class="sig-name descname"><span class="pre">map_cat_and_cls_as_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.utils.task_adapt.map_cat_and_cls_as_order" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.utils.task_adapt.map_class_names">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.utils.task_adapt.</span></span><span class="sig-name descname"><span class="pre">map_class_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_classes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.utils.task_adapt.map_class_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes src to dst index mapping</p>
+<p>src2dst[src_idx] = dst_idx
+#  according to class name matching, -1 for non-matched ones
+assert(len(src2dst) == len(src_classes))
+ex)</p>
+<blockquote>
+<div><p>src_classes = [‘person’, ‘car’, ‘tree’]
+dst_classes = [‘tree’, ‘person’, ‘sky’, ‘ball’]
+-&gt; Returns src2dst = [1, -1, 0]</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.utils.task_adapt.refine_results">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.utils.task_adapt.</span></span><span class="sig-name descname"><span class="pre">refine_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.utils.task_adapt.refine_results" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.utils.task_adapt.unwrap_dataset">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.utils.task_adapt.</span></span><span class="sig-name descname"><span class="pre">unwrap_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.utils.task_adapt.unwrap_dataset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 

@@ -1145,7 +1145,332 @@
 <h1>Graph<a class="headerlink" href="#graph" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.modules.ov.graph"></span><span class="target" id="module-otx.mpa.modules.ov.graph.graph"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.graph.</span></span><span class="sig-name descname"><span class="pre">Graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.add_edge">
+<span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_from</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_to</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_port</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_port</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.add_edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an edge between u and v.</p>
+<p>The nodes u and v will be automatically added if they are
+not already in the graph.</p>
+<p>Edge attributes can be specified with keywords or by directly
+accessing the edge’s attribute dictionary. See examples below.</p>
+<dl class="simple">
+<dt>u_for_edge, v_for_edge<span class="classifier">nodes</span></dt><dd><p>Nodes can be, for example, strings or numbers.
+Nodes must be hashable (and not None) Python objects.</p>
+</dd>
+<dt>key<span class="classifier">hashable identifier, optional (default=lowest unused integer)</span></dt><dd><p>Used to distinguish multiedges between a pair of nodes.</p>
+</dd>
+<dt>attr<span class="classifier">keyword arguments, optional</span></dt><dd><p>Edge data (or labels or objects) can be assigned using
+keyword arguments.</p>
+</dd>
+</dl>
+<p>The edge key assigned to the edge.</p>
+<p>add_edges_from : add a collection of edges</p>
+<p>To replace/update edge data, use the optional key argument
+to identify a unique edge.  Otherwise a new edge will be created.</p>
+<p>NetworkX algorithms designed for weighted graphs cannot use
+multigraphs directly because it is not clear how to handle
+multiedge weights.  Convert to Graph using edge attribute
+‘weight’ to enable weighted graph algorithms.</p>
+<p>Default keys are generated using the method <cite>new_edge_key()</cite>.
+This method can be overridden by subclassing the base class and
+providing a custom <cite>new_edge_key()</cite> method.</p>
+<p>The following all add the edge e=(1, 2) to graph G:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># explicit two-node form</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># single edge as tuple of two nodes</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>  <span class="c1"># add edges from iterable container</span>
+<span class="go">[2]</span>
+</pre></div>
 </div>
+<p>Associate data to edges using keywords:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># update data for key=0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">342.7</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For non-string attribute keys, use subscript notation.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ekey</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">5</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.adjlist_outer_dict_factory">
+<span class="sig-name descname"><span class="pre">adjlist_outer_dict_factory</span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.adjlist_outer_dict_factory" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#otx.mpa.modules.ov.graph.graph.SortedDictHelper" title="otx.mpa.modules.ov.graph.graph.SortedDictHelper"><code class="xref py py-class docutils literal notranslate"><span class="pre">otx.mpa.modules.ov.graph.graph.SortedDictHelper</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.bfs">
+<span class="sig-name descname"><span class="pre">bfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth_limit</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.bfs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.clean_up">
+<span class="sig-name descname"><span class="pre">clean_up</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodes_to_keep</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_sub_components</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.clean_up" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.from_ov">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">from_ov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ov_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">openvino._pyopenvino.Model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.mpa.modules.ov.graph.graph.Graph" title="otx.mpa.modules.ov.graph.graph.Graph"><span class="pre">otx.mpa.modules.ov.graph.graph.Graph</span></a></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.from_ov" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.get_edge_data">
+<span class="sig-name descname"><span class="pre">get_edge_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_from</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_to</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.get_edge_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the attribute dictionary associated with edge (u, v,
+key).</p>
+<p>If a key is not provided, returns a dictionary mapping edge keys
+to attribute dictionaries for each edge between u and v.</p>
+<p>This is identical to <cite>G[u][v][key]</cite> except the default is returned
+instead of an exception is the edge doesn’t exist.</p>
+<p>u, v : nodes</p>
+<dl class="simple">
+<dt>default<span class="classifier">any Python object (default=None)</span></dt><dd><p>Value to return if the specific edge (u, v, key) is not
+found, OR if there are no edges between u and v and no key
+is specified.</p>
+</dd>
+<dt>key<span class="classifier">hashable identifier, optional (default=None)</span></dt><dd><p>Return data only for the edge with specified key, as an
+attribute dictionary (rather than a dictionary mapping keys
+to attribute dictionaries).</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>edge_dict<span class="classifier">dictionary</span></dt><dd><p>The edge attribute dictionary, OR a dictionary mapping edge
+keys to attribute dictionaries for each of those edges if no
+specific key is provided (even if there’s only one edge
+between u and v).</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">()</span>  <span class="c1"># or MultiDiGraph</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">key</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;a&quot;</span><span class="p">]</span>  <span class="c1"># key=&#39;a&#39;</span>
+<span class="go">{&#39;weight&#39;: 7}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">]</span>  <span class="c1"># key=&#39;a&#39;</span>
+<span class="go">{&#39;weight&#39;: 7}</span>
+</pre></div>
+</div>
+<p>Warning: we protect the graph data structure by making
+<cite>G.edges</cite> and <cite>G[1][2]</cite> read-only dict-like structures.
+However, you can assign values to attributes in e.g.
+<cite>G.edges[1, 2, ‘a’]</cite> or <cite>G[1][2][‘a’]</cite> using an additional
+bracket as shown next. You need to specify all edge info
+to assign to the edge data associated with an edge.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span>
+<span class="go">10</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">()</span>  <span class="c1"># or MultiDiGraph</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nx</span><span class="o">.</span><span class="n">add_path</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">{0: {&#39;weight&#39;: 5}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># tuple form</span>
+<span class="go">{0: {&#39;weight&#39;: 5}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># edge not in graph, returns None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># edge not in graph, return default</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># specific key gives back</span>
+<span class="go">{&#39;weight&#39;: 5}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.get_nodes_by_type_pattern">
+<span class="sig-name descname"><span class="pre">get_nodes_by_type_pattern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.get_nodes_by_type_pattern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.get_nodes_by_types">
+<span class="sig-name descname"><span class="pre">get_nodes_by_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">types</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.get_nodes_by_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.has_path">
+<span class="sig-name descname"><span class="pre">has_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_from</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_to</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.has_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.predecessors">
+<span class="sig-name descname"><span class="pre">predecessors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_edge_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.predecessors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator over predecessor nodes of n.</p>
+<p>A predecessor of n is a node m such that there exists a directed
+edge from m to n.</p>
+<dl class="simple">
+<dt>n<span class="classifier">node</span></dt><dd><p>A node in the graph</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>NetworkXError</dt><dd><p>If n is not in the graph.</p>
+</dd>
+</dl>
+<p>successors</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.remove_node">
+<span class="sig-name descname"><span class="pre">remove_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_connect</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.remove_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove node n.</p>
+<p>Removes the node n and all adjacent edges.
+Attempting to remove a non-existent node will raise an exception.</p>
+<dl class="simple">
+<dt>n<span class="classifier">node</span></dt><dd><p>A node in the graph</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>NetworkXError</dt><dd><p>If n is not in the graph.</p>
+</dd>
+</dl>
+<p>remove_nodes_from</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">path_graph</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># or DiGraph, MultiGraph, MultiDiGraph, etc</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+<span class="go">[(0, 1), (1, 2)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+<span class="go">[]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.remove_normalize_nodes">
+<span class="sig-name descname"><span class="pre">remove_normalize_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.remove_normalize_nodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.replace_node">
+<span class="sig-name descname"><span class="pre">replace_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.replace_node" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.successors">
+<span class="sig-name descname"><span class="pre">successors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_edge_data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">,</span> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.successors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator over successor nodes of n.</p>
+<p>A successor of n is a node m such that there exists a directed
+edge from n to m.</p>
+<dl class="simple">
+<dt>n<span class="classifier">node</span></dt><dd><p>A node in the graph</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>NetworkXError</dt><dd><p>If n is not in the graph.</p>
+</dd>
+</dl>
+<p>predecessors</p>
+<p>neighbors() and successors() are the same.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.Graph.topological_sort">
+<span class="sig-name descname"><span class="pre">topological_sort</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.Graph.topological_sort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.NOOP">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.graph.</span></span><span class="sig-name descname"><span class="pre">NOOP</span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.NOOP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.graph.</span></span><span class="sig-name descname"><span class="pre">SortedDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sort_key</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict.fromkeys">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">fromkeys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict.fromkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new dictionary with keys from iterable and values set to value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">items</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict.items" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">keys</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict.keys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">k</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">d</span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">v,</span> <span class="pre">remove</span> <span class="pre">specified</span> <span class="pre">key</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">the</span> <span class="pre">corresponding</span> <span class="pre">value.</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>If key is not found, d is returned if given, otherwise KeyError is raised</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict.popitem">
+<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict.popitem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove and return a (key, value) pair as a 2-tuple.</p>
+<p>Pairs are returned in LIFO (last-in, first-out) order.
+Raises KeyError if the dict is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDict.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">an</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">values</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDict.values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDictHelper">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.graph.</span></span><span class="sig-name descname"><span class="pre">SortedDictHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sort_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDictHelper" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDictItemsView">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.graph.</span></span><span class="sig-name descname"><span class="pre">SortedDictItemsView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDictItemsView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDictKeysView">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.graph.</span></span><span class="sig-name descname"><span class="pre">SortedDictKeysView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDictKeysView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.graph.SortedDictValuesView">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.graph.</span></span><span class="sig-name descname"><span class="pre">SortedDictValuesView</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.graph.SortedDictValuesView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.ov.graph.utils"></span><dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.utils.get_constant_input_nodes">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.utils.</span></span><span class="sig-name descname"><span class="pre">get_constant_input_nodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.mpa.modules.ov.graph.graph.Graph" title="otx.mpa.modules.ov.graph.graph.Graph"><span class="pre">otx.mpa.modules.ov.graph.graph.Graph</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ops.html#otx.mpa.modules.ov.ops.op.Operation" title="otx.mpa.modules.ov.ops.op.Operation"><span class="pre">otx.mpa.modules.ov.ops.op.Operation</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.graph.utils.get_constant_input_nodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.utils.handle_merging_into_batchnorm">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.utils.</span></span><span class="sig-name descname"><span class="pre">handle_merging_into_batchnorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_patterns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[['Multiply',</span> <span class="pre">'Add']]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_mappings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[{'gamma':</span> <span class="pre">0,</span> <span class="pre">'beta':</span> <span class="pre">1}]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.utils.handle_merging_into_batchnorm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.utils.handle_paired_batchnorm">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.utils.</span></span><span class="sig-name descname"><span class="pre">handle_paired_batchnorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">types</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">['Convolution',</span> <span class="pre">'GroupConvolution']</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.utils.handle_paired_batchnorm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.ov.graph.utils.handle_reshape">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.graph.utils.</span></span><span class="sig-name descname"><span class="pre">handle_reshape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.graph.utils.handle_reshape" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.ov.graph.parsers"></span></div>
 
 
               </div>

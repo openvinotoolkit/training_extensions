@@ -1145,7 +1145,58 @@
 <h1>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-</div>
+<span class="target" id="module-otx.mpa.modules.datasets"></span><span class="target" id="module-otx.mpa.modules.datasets.composed_dataloader"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.CDLIterator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.composed_dataloader.</span></span><span class="sig-name descname"><span class="pre">CDLIterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cdl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.CDLIterator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.composed_dataloader.</span></span><span class="sig-name descname"><span class="pre">ComposedDL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loaders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">DummySampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cdl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>dummy sampler class to relay set_epoch() call to the
+list of data loaders in the CDL</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler.set_epoch">
+<span class="sig-name descname"><span class="pre">set_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler.set_epoch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL.sampler">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">sampler</span></span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.sampler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.datasets.task_adapt_dataset"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.task_adapt_dataset.AdaptClassLabels">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.task_adapt_dataset.</span></span><span class="sig-name descname"><span class="pre">AdaptClassLabels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_classes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.task_adapt_dataset.AdaptClassLabels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data processor for task-adative annotation loading.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.task_adapt_dataset.</span></span><span class="sig-name descname"><span class="pre">TaskAdaptEvalDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dataset wrapper for task-adaptive evaluation.</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>model_classes:
+<a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs:</p>
+</dd>
+<dt>Notes:</dt><dd><p>TODO[Eugene/Jaeguk]: check if this class is still valid in OTX</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.datasets.pipelines"></span><span class="target" id="module-otx.mpa.modules.datasets.samplers"></span></div>
 
 
               </div>

@@ -1145,6 +1145,63 @@
 <h1>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.utils"></span><span class="target" id="module-otx.mpa.utils.config_utils"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.utils.config_utils.MPAConfig">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">MPAConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.MPAConfig" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.utils.config_utils.MPAConfig.fromfile">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">fromfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_predefined_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">import_custom_modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.MPAConfig.fromfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.config_utils.add_custom_hook_if_not_exists">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">add_custom_hook_if_not_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.ConfigDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.add_custom_hook_if_not_exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.config_utils.copy_config">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">copy_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.copy_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.config_utils.recursively_update_cfg">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">recursively_update_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">mmcv.utils.config.Config</span><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_dict</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.recursively_update_cfg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.config_utils.remove_custom_hook">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">remove_custom_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.remove_custom_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove hook cfg if hook_type is in custom_hook</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.config_utils.update_or_add_custom_hook">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">update_or_add_custom_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.ConfigDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.update_or_add_custom_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update hook cfg if same type is in custom_hook or append it</p>
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.utils.convert_keys"></span><span class="target" id="module-otx.mpa.utils.ext_loader"></span><dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.ext_loader.load_ext">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.ext_loader.</span></span><span class="sig-name descname"><span class="pre">load_ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.ext_loader.load_ext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.utils.file"></span><span class="target" id="module-otx.mpa.utils.mo_wrapper"></span><dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.mo_wrapper.check_requirements">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.mo_wrapper.</span></span><span class="sig-name descname"><span class="pre">check_requirements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">framework</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'onnx'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.mo_wrapper.check_requirements" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.mo_wrapper.check_requirements_with_version">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.mo_wrapper.</span></span><span class="sig-name descname"><span class="pre">check_requirements_with_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.mo_wrapper.check_requirements_with_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.utils.mo_wrapper.generate_ir">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.mo_wrapper.</span></span><span class="sig-name descname"><span class="pre">generate_ir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_xml</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">mo_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.mo_wrapper.generate_ir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 

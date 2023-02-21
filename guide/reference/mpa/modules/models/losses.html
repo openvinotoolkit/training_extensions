@@ -1145,6 +1145,465 @@
 <h1>Losses<a class="headerlink" href="#losses" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.modules.models.losses"></span><span class="target" id="module-otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.AsymmetricAngularLossWithIgnore">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.</span></span><span class="sig-name descname"><span class="pre">AsymmetricAngularLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma_pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_neg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.AsymmetricAngularLossWithIgnore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asymmetric angular loss
+Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>gamma_pos (float): positive focusing parameter.</dt><dd><p>Defaults to 0.0.</p>
+</dd>
+<dt>gamma_neg (float): Negative focusing parameter. We</dt><dd><p>usually set gamma_neg &gt; gamma_pos. Defaults to 1.0.</p>
+</dd>
+</dl>
+<p>k (float): positive balance parameter. Defaults to 0.8.
+clip (float): Probability margin. Defaults to 0.05.
+reduction (str): The method used to reduce the loss into</p>
+<blockquote>
+<div><p>a scalar.</p>
+</div></blockquote>
+<p>loss_weight (float): Weight of loss. Defaults to 1.0.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.AsymmetricAngularLossWithIgnore.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.AsymmetricAngularLossWithIgnore.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>asymmetric angular loss</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.AsymmetricAngularLossWithIgnore.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.AsymmetricAngularLossWithIgnore.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.asymmetric_angular_loss_with_ignore">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.</span></span><span class="sig-name descname"><span class="pre">asymmetric_angular_loss_with_ignore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_neg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore.asymmetric_angular_loss_with_ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>asymmetric angular loss
+Args:</p>
+<blockquote>
+<div><p>pred (torch.Tensor): The prediction with shape (N, <a href="#id1"><span class="problematic" id="id2">*</span></a>).
+target (torch.Tensor): The ground truth label of the prediction with</p>
+<blockquote>
+<div><p>shape (N, <a href="#id3"><span class="problematic" id="id4">*</span></a>).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>weight (torch.Tensor, optional): Sample-wise loss weight with shape</dt><dd><p>(N, ). Dafaults to None.</p>
+</dd>
+</dl>
+<p>gamma_pos (float): positive focusing parameter. Defaults to 0.0.
+gamma_neg (float): Negative focusing parameter. We usually set</p>
+<blockquote>
+<div><p>gamma_neg &gt; gamma_pos. Defaults to 1.0.</p>
+</div></blockquote>
+<p>k (float): positive balance parameter. Defaults to 0.8.
+clip (float, optional): Probability margin. Defaults to 0.05.
+reduction (str): The method used to reduce the loss.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Options are “none”, “mean” and “sum”. If reduction is ‘none’ , loss</dt><dd><p>is same shape as pred and label. Defaults to ‘mean’.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>avg_factor (int, optional): Average factor that is used to average</dt><dd><p>the loss. Defaults to None.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor: Loss.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.asymmetric_loss_with_ignore"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.AsymmetricLossWithIgnore">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.</span></span><span class="sig-name descname"><span class="pre">AsymmetricLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma_pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_neg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.AsymmetricLossWithIgnore" title="Permalink to this definition">¶</a></dt>
+<dd><p>asymmetric loss
+Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>gamma_pos (float): positive focusing parameter.</dt><dd><p>Defaults to 0.0.</p>
+</dd>
+<dt>gamma_neg (float): Negative focusing parameter. We</dt><dd><p>usually set gamma_neg &gt; gamma_pos. Defaults to 4.0.</p>
+</dd>
+</dl>
+<p>clip (float, optional): Probability margin. Defaults to 0.05.
+reduction (str): The method used to reduce the loss into</p>
+<blockquote>
+<div><p>a scalar.</p>
+</div></blockquote>
+<p>loss_weight (float): Weight of loss. Defaults to 1.0.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.AsymmetricLossWithIgnore.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.AsymmetricLossWithIgnore.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>asymmetric loss</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.AsymmetricLossWithIgnore.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.AsymmetricLossWithIgnore.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.asymmetric_loss_with_ignore">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.</span></span><span class="sig-name descname"><span class="pre">asymmetric_loss_with_ignore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_pos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_neg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.asymmetric_loss_with_ignore.asymmetric_loss_with_ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>asymmetric loss
+Please refer to the <a class="reference external" href="https://arxiv.org/abs/2009.14119">paper</a> for
+details.
+Args:</p>
+<blockquote>
+<div><p>pred (torch.Tensor): The prediction with shape (N, <a href="#id5"><span class="problematic" id="id6">*</span></a>).
+target (torch.Tensor): The ground truth label of the prediction with</p>
+<blockquote>
+<div><p>shape (N, <a href="#id7"><span class="problematic" id="id8">*</span></a>).</p>
+</div></blockquote>
+<dl class="simple">
+<dt>weight (torch.Tensor, optional): Sample-wise loss weight with shape</dt><dd><p>(N, ). Dafaults to None.</p>
+</dd>
+</dl>
+<p>gamma_pos (float): positive focusing parameter. Defaults to 0.0.
+gamma_neg (float): Negative focusing parameter. We usually set</p>
+<blockquote>
+<div><p>gamma_neg &gt; gamma_pos. Defaults to 4.0.</p>
+</div></blockquote>
+<p>clip (float, optional): Probability margin. Defaults to 0.05.
+reduction (str): The method used to reduce the loss.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Options are “none”, “mean” and “sum”. If reduction is ‘none’ , loss</dt><dd><p>is same shape as pred and label. Defaults to ‘mean’.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>avg_factor (int, optional): Average factor that is used to average</dt><dd><p>the loss. Defaults to None.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor: Loss.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.barlowtwins_loss"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.barlowtwins_loss.BarlowTwinsLoss">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.barlowtwins_loss.</span></span><span class="sig-name descname"><span class="pre">BarlowTwinsLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">off_diag_penality</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.barlowtwins_loss.BarlowTwinsLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Barlow Twins Loss: <a class="reference external" href="https://arxiv.org/abs/2103.03230">https://arxiv.org/abs/2103.03230</a>.
+Self-Supervised Learning via Redundancy Reduction
+Code adapted from <a class="reference external" href="https://github.com/facebookresearch/barlowtwins">https://github.com/facebookresearch/barlowtwins</a>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.barlowtwins_loss.BarlowTwinsLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feats1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.barlowtwins_loss.BarlowTwinsLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Barlow Twins Loss and, if labels are not none,
+also the Cross-Entropy loss.
+Args:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>feats1, feats2: vectors of shape [bsz, …]. Corresponding to</dt><dd><p>two views of the same samples</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>A floating point number describing the Barlow Twins loss</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.barlowtwins_loss.BarlowTwinsLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.barlowtwins_loss.BarlowTwinsLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.barlowtwins_loss.off_diagonal">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.barlowtwins_loss.</span></span><span class="sig-name descname"><span class="pre">off_diagonal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.barlowtwins_loss.off_diagonal" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a tensor containing all the elements outside the diagonal of x</p>
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.base_pixel_loss"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.base_pixel_loss.</span></span><span class="sig-name descname"><span class="pre">BasePixelLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pr_product</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf_penalty_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_reweighting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_reg_weight">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">last_reg_weight</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_reg_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_scale">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">last_scale</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_scale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_border_reweighting">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">with_border_reweighting</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_border_reweighting" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_pr_product">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">with_pr_product</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_pr_product" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_regularization">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">with_regularization</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_regularization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.entropy">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.base_pixel_loss.</span></span><span class="sig-name descname"><span class="pre">entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.entropy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.base_weighted_loss"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.base_weighted_loss.</span></span><span class="sig-name descname"><span class="pre">BaseWeightedLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">255</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_jitter_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_jitter_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for loss.</p>
+<p>All subclass should overwrite the <code class="docutils literal notranslate"><span class="pre">_forward()</span></code> method which returns the
+normal loss without loss weights.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>loss_weight (float or dict): Factor scalar multiplied on the loss.</dt><dd><p>Default: 1.0.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.epoch_size">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">epoch_size</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.epoch_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt><a href="#id9"><span class="problematic" id="id10">*</span></a>args: The positional arguments for the corresponding</dt><dd><p>loss.</p>
+</dd>
+<dt><a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs: The keyword arguments for the corresponding</dt><dd><p>loss.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>torch.Tensor: The calculated loss.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.iter">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">iter</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.iter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.last_loss_weight">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">last_loss_weight</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.last_loss_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.set_step_params">
+<span class="sig-name descname"><span class="pre">set_step_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_iter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.set_step_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.with_loss_jitter">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">with_loss_jitter</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.with_loss_jitter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.</span></span><span class="sig-name descname"><span class="pre">CrossEntropyLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore" title="Permalink to this definition">¶</a></dt>
+<dd><p>CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.</p>
+<dl>
+<dt>Args:</dt><dd><p>model_classes (list[str]): Model classes
+bg_aware (bool, optional): Whether to enable BG-aware loss</p>
+<blockquote>
+<div><p>‘background’ class would be added the start of model classes/label schema</p>
+</div></blockquote>
+<dl class="simple">
+<dt>reduction (str, optional): . Defaults to ‘mean’.</dt><dd><p>Options are “none”, “mean” and “sum”.</p>
+</dd>
+</dl>
+<p>loss_weight (float, optional): Weight of the loss. Defaults to 1.0.</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.name">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.cross_entropy_loss"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_entropy_loss.</span></span><span class="sig-name descname"><span class="pre">CrossEntropyLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_score</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss.cross_entropy">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_entropy_loss.</span></span><span class="sig-name descname"><span class="pre">cross_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss.cross_entropy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.cross_focal_loss"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_focal_loss.</span></span><span class="sig-name descname"><span class="pre">CrossSigmoidFocalLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_sigmoid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_vfl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.cross_sigmoid_focal_loss">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_focal_loss.</span></span><span class="sig-name descname"><span class="pre">cross_sigmoid_focal_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_vfl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.cross_sigmoid_focal_loss" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p>inputs: inputs Tensor (N * C)</p></li>
+<li><p>targets: targets Tensor (N), if use_vfl, then Tensor (N * C)</p></li>
+<li><p>weights: weights Tensor (N), consists of (binarized label schema * weights)</p></li>
+<li><p>num_classes: number of classes for training</p></li>
+<li><p>alpha: focal loss alpha</p></li>
+<li><p>gamma: focal loss gamma</p></li>
+<li><p>reduction: default = mean</p></li>
+<li><p>avg_factor: average factors</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.ib_loss"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.ib_loss.IBLoss">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.ib_loss.</span></span><span class="sig-name descname"><span class="pre">IBLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.ib_loss.IBLoss.cur_epoch">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">cur_epoch</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss.cur_epoch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.ib_loss.IBLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.ib_loss.IBLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.ib_loss.IBLoss.update_weight">
+<span class="sig-name descname"><span class="pre">update_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_num_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss.update_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.l2sp_loss"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.l2sp_loss.</span></span><span class="sig-name descname"><span class="pre">L2SPLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_ckpt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward function.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor: The calculated loss</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.mpa_pixel_base"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.mpa_pixel_base.</span></span><span class="sig-name descname"><span class="pre">MPABasePixelLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.losses.utils"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.utils.LossEqualizer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.utils.</span></span><span class="sig-name descname"><span class="pre">LossEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.utils.LossEqualizer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.utils.LossEqualizer.reweight">
+<span class="sig-name descname"><span class="pre">reweight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">losses</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.utils.LossEqualizer.reweight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 

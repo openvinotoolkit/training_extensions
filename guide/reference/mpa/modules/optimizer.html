@@ -1145,6 +1145,56 @@
 <h1>Optimizer<a class="headerlink" href="#optimizer" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.modules.optimizer"></span><span class="target" id="module-otx.mpa.modules.optimizer.lars"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.optimizer.lars.LARS">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.optimizer.lars.</span></span><span class="sig-name descname"><span class="pre">LARS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">params</span></em>, <em class="sig-param"><span class="pre">lr=&lt;required</span> <span class="pre">parameter&gt;</span></em>, <em class="sig-param"><span class="pre">momentum=0</span></em>, <em class="sig-param"><span class="pre">dampening=0</span></em>, <em class="sig-param"><span class="pre">weight_decay=0</span></em>, <em class="sig-param"><span class="pre">eta=0.001</span></em>, <em class="sig-param"><span class="pre">nesterov=False</span></em>, <em class="sig-param"><span class="pre">mode=None</span></em>, <em class="sig-param"><span class="pre">exclude_bn_from_weight_decay=False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.optimizer.lars.LARS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements layer-wise adaptive rate scaling for SGD.</p>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt>params (iterable): iterable of parameters to optimize or dicts defining</dt><dd><p>parameter groups</p>
+</dd>
+</dl>
+<p>lr (float): base learning rate (gamma_0)
+momentum (float, optional): momentum factor (default: 0) (“m”)
+weight_decay (float, optional): weight decay (L2 penalty) (default: 0)</p>
+<blockquote>
+<div><p>(“beta”)</p>
+</div></blockquote>
+<p>dampening (float, optional): dampening for momentum (default: 0)
+eta (float, optional): LARS coefficient
+nesterov (bool, optional): enables Nesterov momentum (default: False)</p>
+</dd>
+</dl>
+<p>Based on Algorithm 1 of the following paper by You, Gitman, and Ginsburg.
+Large Batch Training of Convolutional Networks:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://arxiv.org/abs/1708.03888">https://arxiv.org/abs/1708.03888</a></p>
+</div></blockquote>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">LARS</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                 <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_fn</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.optimizer.lars.LARS.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">closure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.optimizer.lars.LARS.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a single optimization step.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>closure (callable, optional): A closure that reevaluates the model</dt><dd><p>and returns the loss.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

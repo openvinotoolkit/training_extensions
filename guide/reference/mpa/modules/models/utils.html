@@ -1145,6 +1145,182 @@
 <h1>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.modules.models.utils"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.AngularPWConv">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">AngularPWConv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.AngularPWConv" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.AngularPWConv.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.AngularPWConv.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.AngularPWConv.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.utils.AngularPWConv.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.AsymmetricPositionAttentionModule">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">AsymmetricPositionAttentionModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psp_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">3,</span> <span class="pre">6,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.AsymmetricPositionAttentionModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference: <a class="reference external" href="https://github.com/MendelXu/ANN">https://github.com/MendelXu/ANN</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.AsymmetricPositionAttentionModule.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.AsymmetricPositionAttentionModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.AsymmetricPositionAttentionModule.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.utils.AsymmetricPositionAttentionModule.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.IterativeAggregator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">IterativeAggregator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_concat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.IterativeAggregator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Based on: <a class="reference external" href="https://github.com/HRNet/Lite-HRNet">https://github.com/HRNet/Lite-HRNet</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.IterativeAggregator.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.IterativeAggregator.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.IterativeAggregator.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.utils.IterativeAggregator.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.IterativeConcatAggregator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">IterativeConcatAggregator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.IterativeConcatAggregator" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.IterativeConcatAggregator.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.IterativeConcatAggregator.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.IterativeConcatAggregator.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.utils.IterativeConcatAggregator.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.LocalAttentionModule">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">LocalAttentionModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.LocalAttentionModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference: <a class="reference external" href="https://github.com/lxtGH/GALD-DGCNet">https://github.com/lxtGH/GALD-DGCNet</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.LocalAttentionModule.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.LocalAttentionModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.LocalAttentionModule.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.utils.LocalAttentionModule.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.PSPModule">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">PSPModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">3,</span> <span class="pre">6,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.PSPModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference: <a class="reference external" href="https://github.com/MendelXu/ANN">https://github.com/MendelXu/ANN</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.PSPModule.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.PSPModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.PSPModule.methods">
+<span class="sig-name descname"><span class="pre">methods</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'avg':</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.pooling.AdaptiveAvgPool2d'&gt;,</span> <span class="pre">'max':</span> <span class="pre">&lt;class</span> <span class="pre">'torch.nn.modules.pooling.AdaptiveMaxPool2d'&gt;}</span></em><a class="headerlink" href="#otx.mpa.modules.models.utils.PSPModule.methods" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.PSPModule.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.utils.PSPModule.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.channel_shuffle">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">channel_shuffle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.channel_shuffle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Channel Shuffle operation.</p>
+<p>This function enables cross-group information flow for multiple groups
+convolution layers.</p>
+<dl>
+<dt>Args:</dt><dd><p>x (Tensor): The input tensor.
+groups (int): The number of groups to divide the input tensor</p>
+<blockquote>
+<div><p>in the channel dimension.</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt><dd><p>Tensor: The output tensor after channel shuffle operation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.utils.normalize">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.utils.</span></span><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.utils.normalize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 

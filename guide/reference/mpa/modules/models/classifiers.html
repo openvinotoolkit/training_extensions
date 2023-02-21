@@ -1145,6 +1145,137 @@
 <h1>Classifiers<a class="headerlink" href="#classifiers" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.modules.models.classifiers"></span><span class="target" id="module-otx.mpa.modules.models.classifiers.sam_classifier"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.classifiers.sam_classifier.</span></span><span class="sig-name descname"><span class="pre">SAMImageClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>SAM-enabled ImageClassifier</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.extract_feat">
+<span class="sig-name descname"><span class="pre">extract_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.extract_feat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directly extract features from the backbone + neck
+Overriding for OpenVINO export with features</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.forward_train">
+<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_label</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.forward_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward computation during training.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>img (Tensor): of shape (N, C, H, W) encoding input images.</dt><dd><p>Typically these should be mean centered and std scaled.</p>
+</dd>
+<dt>gt_label (Tensor): It should be of shape (N, 1) encoding the</dt><dd><p>ground-truth label of input images for single label task. It
+shoulf be of shape (N, C) encoding the ground-truth label
+of input images for multi-labels task.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>dict[str, Tensor]: a dictionary of loss components</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.load_state_dict_mixing_hook">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">load_state_dict_mixing_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chkpt_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chkpt_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.load_state_dict_mixing_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify input state_dict according to class name matching before weight loading</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.load_state_dict_pre_hook">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">load_state_dict_pre_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.load_state_dict_pre_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirect input state_dict to model for OTX model compatibility</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.state_dict_hook">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">state_dict_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.state_dict_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirect model as output state_dict for OTX model compatibility</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.sam_image_classifier__extract_feat">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.classifiers.sam_classifier.</span></span><span class="sig-name descname"><span class="pre">sam_image_classifier__extract_feat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.sam_image_classifier__extract_feat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier.sam_image_classifier__simple_test">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.classifiers.sam_classifier.</span></span><span class="sig-name descname"><span class="pre">sam_image_classifier__simple_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier.sam_image_classifier__simple_test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.classifiers.sam_classifier_mixin"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier_mixin.SAMClassifierMixin">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.classifiers.sam_classifier_mixin.</span></span><span class="sig-name descname"><span class="pre">SAMClassifierMixin</span></span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier_mixin.SAMClassifierMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>SAM-enabled BaseClassifier mix-in</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.sam_classifier_mixin.SAMClassifierMixin.train_step">
+<span class="sig-name descname"><span class="pre">train_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.sam_classifier_mixin.SAMClassifierMixin.train_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.classifiers.semisl_classifier"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.semisl_classifier.SemiSLClassifier">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.classifiers.semisl_classifier.</span></span><span class="sig-name descname"><span class="pre">SemiSLClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.semisl_classifier.SemiSLClassifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Semi-SL Classifier
+This classifier supports unlabeled data by overriding forward_train</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.semisl_classifier.SemiSLClassifier.forward_train">
+<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.semisl_classifier.SemiSLClassifier.forward_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data is transmitted as a classifier training function</p>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt>imgs (list[Tensor]): List of tensors of shape (1, C, H, W)</dt><dd><p>Typically these should be mean centered and std scaled.</p>
+</dd>
+</dl>
+<p>kwargs (keyword arguments): Specific to concrete implementation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.semisl_classifier.SemiSLClassifier.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.classifiers.semisl_classifier.SemiSLClassifier.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.classifiers.supcon_classifier"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.supcon_classifier.SupConClassifier">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.classifiers.supcon_classifier.</span></span><span class="sig-name descname"><span class="pre">SupConClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neck</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.supcon_classifier.SupConClassifier" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.supcon_classifier.SupConClassifier.forward_train">
+<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_label</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.classifiers.supcon_classifier.SupConClassifier.forward_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward computation during training.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>img (Tensor): of shape (N, C, H, W) encoding input images.</dt><dd><p>Typically these should be mean centered and std scaled.</p>
+</dd>
+<dt>gt_label (Tensor): It should be of shape (N, 1) encoding the</dt><dd><p>ground-truth label of input images for single label task. It
+should be of shape (N, C) encoding the ground-truth label
+of input images for multi-labels task.</p>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt><dd><p>dict[str, Tensor]: a dictionary of loss components</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.classifiers.supcon_classifier.SupConClassifier.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.classifiers.supcon_classifier.SupConClassifier.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 

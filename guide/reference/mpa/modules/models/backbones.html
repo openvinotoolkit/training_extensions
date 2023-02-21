@@ -1145,6 +1145,305 @@
 <h1>Backbones<a class="headerlink" href="#backbones" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.mpa.modules.models.backbones"></span><span class="target" id="module-otx.mpa.modules.models.backbones.imgclsmob"></span><dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.imgclsmob.generate_backbones">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.imgclsmob.</span></span><span class="sig-name descname"><span class="pre">generate_backbones</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.imgclsmob.generate_backbones" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.imgclsmob.replace_activation">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.imgclsmob.</span></span><span class="sig-name descname"><span class="pre">replace_activation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.imgclsmob.replace_activation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.imgclsmob.replace_norm">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.imgclsmob.</span></span><span class="sig-name descname"><span class="pre">replace_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.imgclsmob.replace_norm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.models.backbones.litehrnet"></span><p>Modified from: <a class="reference external" href="https://github.com/HRNet/Lite-HRNet">https://github.com/HRNet/Lite-HRNet</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">ConditionalChannelWeighting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_cp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weighting_module_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'v1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbour_weighting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dw_ksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.CrossResolutionWeighting">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">CrossResolutionWeighting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">({'type':</span> <span class="pre">'ReLU'},</span> <span class="pre">{'type':</span> <span class="pre">'Sigmoid'})</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.CrossResolutionWeighting" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.CrossResolutionWeighting.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.CrossResolutionWeighting.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.CrossResolutionWeighting.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.CrossResolutionWeighting.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRModule">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">LiteHRModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_branches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiscale_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_fuse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_cp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weighting_module_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'v1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbour_weighting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRModule" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRModule.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRModule.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRModule.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRNet">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">LiteHRNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_cp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_init_residual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRNet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lite-HRNet backbone.</p>
+<p><a class="reference external" href="https://arxiv.org/abs/1904.04514">High-Resolution Representations for Labeling Pixels and Regions</a></p>
+<dl>
+<dt>Args:</dt><dd><p>extra (dict): detailed configuration for each stage of HRNet.
+in_channels (int): Number of input image channels. Default: 3.
+conv_cfg (dict): dictionary to construct and config conv layer.
+norm_cfg (dict): dictionary to construct and config norm layer.
+norm_eval (bool): Whether to set norm layers to eval mode, namely,</p>
+<blockquote>
+<div><p>freeze running stats (mean and var). Note: Effect on Batch Norm
+and its variants only. Default: False</p>
+</div></blockquote>
+<dl class="simple">
+<dt>with_cp (bool): Use checkpoint or not. Using checkpoint will save some</dt><dd><p>memory while slowing down the training speed.</p>
+</dd>
+<dt>zero_init_residual (bool): whether to use zero init for last norm layer</dt><dd><p>in resblocks to let them behave as identity.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.init_weights">
+<span class="sig-name descname"><span class="pre">init_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.init_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the weights in backbone.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>pretrained (str, optional): Path to pre-trained weights.</dt><dd><p>Defaults to None.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the model into training mode.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.LiteHRNet.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.NeighbourSupport">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">NeighbourSupport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.NeighbourSupport" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.NeighbourSupport.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.NeighbourSupport.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.NeighbourSupport.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.NeighbourSupport.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.ShuffleUnit">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">ShuffleUnit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'ReLU'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_cp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.ShuffleUnit" title="Permalink to this definition">¶</a></dt>
+<dd><p>InvertedResidual block for ShuffleNetV2 backbone.</p>
+<dl>
+<dt>Args:</dt><dd><p>in_channels (int): The input channels of the block.
+out_channels (int): The output channels of the block.
+stride (int): Stride of the 3x3 convolution layer. Default: 1
+conv_cfg (dict): Config dict for convolution layer.</p>
+<blockquote>
+<div><p>Default: None, which means using conv2d.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>norm_cfg (dict): Config dict for normalization layer.</dt><dd><p>Default: dict(type=’BN’).</p>
+</dd>
+<dt>act_cfg (dict): Config dict for activation layer.</dt><dd><p>Default: dict(type=’ReLU’).</p>
+</dd>
+<dt>with_cp (bool): Use checkpoint or not. Using checkpoint will save some</dt><dd><p>memory while slowing down the training speed. Default: False.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.ShuffleUnit.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.ShuffleUnit.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.ShuffleUnit.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.ShuffleUnit.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.SpatialWeighting">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">SpatialWeighting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">({'type':</span> <span class="pre">'ReLU'},</span> <span class="pre">{'type':</span> <span class="pre">'Sigmoid'})</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.SpatialWeighting" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.SpatialWeighting.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.SpatialWeighting.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.SpatialWeighting.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.SpatialWeighting.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.SpatialWeightingV2">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">SpatialWeightingV2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.SpatialWeightingV2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The original repo: <a class="reference external" href="https://github.com/DeLightCMU/PSA">https://github.com/DeLightCMU/PSA</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.SpatialWeightingV2.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.SpatialWeightingV2.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.SpatialWeightingV2.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.SpatialWeightingV2.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.Stem">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">Stem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stem_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_cp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(2,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.Stem" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.Stem.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.Stem.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.Stem.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.Stem.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.StemV2">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">StemV2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stem_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_cp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_stages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(2,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.StemV2" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.StemV2.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.StemV2.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.StemV2.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.StemV2.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 
