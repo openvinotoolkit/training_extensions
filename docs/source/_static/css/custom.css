@@ -5,8 +5,8 @@
   --pst-header-height: 60px;
   /* smaller then heading font sizes*/
   --pst-font-size-milli: 12px;
-  --pst-sidebar-font-size: .9em;
-  --pst-sidebar-caption-font-size: .9em;
+  --pst-sidebar-font-size: 0.9em;
+  --pst-sidebar-caption-font-size: 0.9em;
   /*****************************************************************************
   * Color
   *
@@ -37,12 +37,12 @@
   * Icon
   **/
   /* font awesome icons*/
-  --pst-icon-check-circle: '\f058';
-  --pst-icon-info-circle: '\f05a';
-  --pst-icon-exclamation-triangle: '\f071';
-  --pst-icon-exclamation-circle: '\f06a';
-  --pst-icon-times-circle: '\f057';
-  --pst-icon-lightbulb: '\f0eb';
+  --pst-icon-check-circle: "\f058";
+  --pst-icon-info-circle: "\f05a";
+  --pst-icon-exclamation-triangle: "\f071";
+  --pst-icon-exclamation-circle: "\f06a";
+  --pst-icon-times-circle: "\f057";
+  --pst-icon-lightbulb: "\f0eb";
   /*****************************************************************************
   * Admonitions
   **/
