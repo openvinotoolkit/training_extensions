@@ -22,15 +22,15 @@ OTX supports the following anomaly task types:
 
 Anomaly Classification
 ----------------------
-Anomaly classification is the task of predicting normal and abnormal images on image-level. As noted above, a model is trained on normal images only. During the testing phase, the model predicts an anomaly score indicating the likelihood of an image being abnormal. The threshold for anomaly classification is either set by the user or adaptively tuned by OTX. An image is classified as abnormal if the anomaly score is above the threshold.
+Anomaly classification is the task of predicting normal and abnormal images at the image level. As noted above, a model is trained on only normal images. During the testing phase, the model predicts an anomaly score indicating the likelihood of an image being abnormal. The threshold for anomaly classification is either set by the user or adaptively tuned by OTX. An image is classified as abnormal if the anomaly score is above the threshold.
 
 Anomaly Detection
 -----------------
-Anomaly detection is the task of predicting normal and abnormal images on box-level. Similar to anomaly classification, a model is trained on normal images only. During the testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a bounding box around the anomaly.
+Anomaly detection is the task of predicting normal and abnormal images at box level. Similar to anomaly classification, a model is trained on normal images only. During the testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a bounding box around the anomaly.
 
 Anomaly Segmentation
 --------------------
-Anomaly segmentation task performs a pixel-level localization of anomalies. Similar to anomaly classification and detection, a model is trained on normal images only. During the validation/testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a mask around the anomaly.
+The anomaly segmentation task locates anomalies at the pixel level. Similar to anomaly classification and detection, a model is trained on only normal images. During the validation and testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a mask around the anomaly.
 
 
 .. _fig-anomaly-tasks:
@@ -40,11 +40,11 @@ Anomaly segmentation task performs a pixel-level localization of anomalies. Simi
    :align: center
    :alt: Anomaly Task Types
 
-   Anomaly task types. (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task. (c) A box-level prediction of an anomaly by anomaly detection task. (d) A pixel-level prediction of an anomaly by anomaly segmentation task.
+   Anomaly task types (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task (c) A box-level prediction of an anomaly by an anomaly detection task (d) A pixel-level prediction of an anomaly by anomaly segmentation task
 
 Dataset Format
 **************
-Anomaly tasks in OTX currently support the MVTec AD dataset format, one of the most popular datasets for anomaly detection.
+At the moment, OTX anomaly tasks support the MVTec AD dataset format, which is one of the most popular formats for detecting anomalies. 
 
 .. code-block::
 
@@ -77,11 +77,11 @@ Future OTX releases will support other benchmark datasets such as Amazon's `Visu
 
 Models
 ******
-As mentioned above, , the goal In visual anomaly detection is to learn a representation of normal behavior in the data, and then identify instances that deviate from this normal behavior. OTX supports several deep learning approaches to this task, including the following:
+As mentioned above, the goal of visual anomaly detection is to learn a representation of normal behaviour in the data and then identify instances that deviate from this normal behaviour. OTX supports several deep learning approaches to this task, including the following:
 
 Clustering-based Models
 -----------------------
-These models initially extracts features from a CNN or transformer and subsequently use clustering algorithms to learn normality. The anomaly score is then calculated as the distance between the input image and the cluster center. OTX currently supports `PADIM <https://arxiv.org/pdf/2011.08785.pdf>`_.
+These models initially extract features from a CNN or transformer and subsequently use clustering algorithms to learn normality. The anomaly score is then calculated as the distance between the input image and the cluster center. OTX currently supports `PADIM <https://arxiv.org/pdf/2011.08785.pdf>`_.
 
 PADIM
 ^^^^^
@@ -91,11 +91,11 @@ PADIM
    :align: center
    :alt: Anomaly Task Types
 
-Padim is a clustering based. The model uses a patch-based mechanism that extracts patches from the input image and then uses a CNN to extract features from the patches. To eliminate the redundant information from the extracted features, the model randomly selects a subset of the features to reduce the dimensionality of the features. A multi-variate gaussian distribution is fitted for each patch embedding. This means each patch of the set of training images has a corresponding multi-variate gaussian distribution. To predict the anomaly score, Mahalanobis distance is calculated to score each patch position of the test image. The matrices of Mahalanobis distances constitute the anomaly map, with higher scores indicating anomalous regions.
+Padim is a clustering based anomaly detection approach. The model uses a patch-based mechanism that extracts patches from the input image and then uses a CNN to extract features from the patches. To eliminate the redundant information from the extracted features, the model randomly selects a subset of the features to reduce the dimensionality of the features. A multi-variate Gaussian distribution is fitted for each patch embedding. This means each patch of the set of training images has a corresponding multivariate Gaussian distribution. To predict the anomaly score, Mahalanobis distance is calculated to score each patch position of the test image. The matrices of Mahalanobis distances constitute the anomaly map, with higher scores indicating anomalous regions.
 
 Knowledge Distillation-based Models
 -----------------------------------
-Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behaviour of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OTX currently supports `STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection <https://arxiv.org/pdf/2103.04257.pdf>`_.
+Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behavior of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OTX currently supports `STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection <https://arxiv.org/pdf/2103.04257.pdf>`_.
 
 STFPM
 ^^^^^
@@ -105,7 +105,7 @@ STFPM
    :align: center
    :alt: Anomaly Task Types
 
-The STFPM algorithm is composed of a pre-trained teacher network and a student network with the same architecture. The student network learns the distribution of anomaly-free images by matching the features to their corresponding features in the teacher network. Multiple-scale feature matching is utilised to enable the student network during training to receive a mixture of multi-level knowledge from the feature pyramid, thereby enabling the detection of anomalies of various sizes. To compute the anomaly scores during the inference, the student network's feature pyramid is compared to the teacher network's feature pyramid. The anomaly score is computed as the sum of the L2 distances between the student and teacher feature pyramids. This distance is then used to compute the anomaly map and the anomaly score.
+The STFPM algorithm is composed of a pre-trained teacher network and a student network with the same architecture. The student network learns the distribution of anomaly-free images by matching the features to their corresponding features in the teacher network. Multiple-scale feature matching is utilized to enable the student network during training to receive a mixture of multi-level knowledge from the feature pyramid, thereby enabling the detection of anomalies of various sizes. To compute the anomaly scores during the inference, the student network's feature pyramid is compared to the teacher network's feature pyramid. The anomaly score is computed as the sum of the L2 distances between the student and teacher feature pyramids. This distance is then used to compute the anomaly map and the anomaly score.
 
 
 Reconstruction-based Models
