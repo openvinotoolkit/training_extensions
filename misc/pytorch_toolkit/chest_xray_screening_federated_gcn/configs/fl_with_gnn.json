@@ -6,7 +6,7 @@
         "epochs": 1,
         "gpu": "True",
         "lr": 1e-5,
-        "checkpoint": "model_weights/with_gnn/checkpoint.zip",
+        "checkpoint": "model_weights/with_gnn/model_weights_w_gnn.pt",
         "savepath": "model_weights/with_gnn/",
         "backbone":"resnet",
         "gnn":"True"
@@ -17,13 +17,13 @@
         "batch_size": 1,
         "gpu": "True",
         "gnn":"True",
-        "model_file": "model_weights/with_gnn/checkpoint.zip",
-        "checkpoint": "model_weights/with_gnn/model.onnx",
+        "model_file": "model_weights/with_gnn/model_weights_w_gnn.pt",
+        "checkpoint": "model_weights/with_gnn/model_weights_w_gnn.pt",
         "backbone":"resnet",
         "max_samples":10
     },
     "export": {
-        "checkpoint": "model_weights/with_gnn/checkpoint.zip",
+        "checkpoint": "model_weights/with_gnn/model_weights_w_gnn.pt",
         "backbone":"resnet",
         "split_path":"dataset/split.npz",
         "input_shape": [
@@ -32,7 +32,7 @@
             320,
             320
         ],
-        "model_name_onnx": "model.onnx",
-        "model_name": "model"
+        "model_name_onnx": "model_weights_w_gnn.onnx",
+        "model_name": "model_weights_w_gnn"
     }
 }
