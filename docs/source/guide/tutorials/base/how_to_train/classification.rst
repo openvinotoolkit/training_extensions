@@ -117,7 +117,7 @@ command in our worspace:
 
 That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
-The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 8 minutes.
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 8 minutes.
 
 After that, we have the PyTorch classification model trained with OTX, which we can use for evaluation, export, optimization and deployment.
 
@@ -214,7 +214,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
   2023-02-04 00:06:16,936 | INFO : Evaluation completed
   Performance(score: 0.9591280653950953, dashboard: (3 metric groups))
 
-The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
+The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
 
 3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.
