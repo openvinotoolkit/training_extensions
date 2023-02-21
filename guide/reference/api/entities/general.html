@@ -2251,9 +2251,9 @@ file_path (Optional[str]): Path to image file.</p>
 <span class="target" id="module-otx.api.entities.inference_parameters"></span><p>This module implements the AnalyseParameters entity.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.inference_parameters.</span></span><span class="sig-name descname"><span class="pre">InferenceParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">is_evaluation:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">update_progress:</span> <span class="pre">Callable[[int,</span> <span class="pre">Optional[float]],</span> <span class="pre">Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">default_progress_callback&gt;,</span> <span class="pre">explainer:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.inference_parameters.</span></span><span class="sig-name descname"><span class="pre">InferenceParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">is_evaluation:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">update_progress:</span> <span class="pre">Callable[[int,</span> <span class="pre">Optional[float]],</span> <span class="pre">Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">default_progress_callback&gt;,</span> <span class="pre">explainer:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">process_saliency_maps:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">explain_predicted_classes:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inference parameters.</p>
-<dl class="simple">
+<dl>
 <dt>Attributes:</dt><dd><dl class="simple">
 <dt>is_evaluation: Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if the output dataset is intended</dt><dd><p>to be used for evaluation purposes. In this scenario, any
 postprocessing filtering (such as thresholding and NMS)
@@ -2265,8 +2265,18 @@ as NMS.</p>
 <dt>explainer: Explain algorithm to be used in explanation mode.</dt><dd><p>Will be converted automatically to lowercase.</p>
 </dd>
 </dl>
+<p>process_saliency_maps: Process saliency map to input image resolution and apply colormap
+explain_predicted_classes: If set to True, provide explanations only for predicted classes.</p>
+<blockquote>
+<div><p>Otherwise, explain all classes.</p>
+</div></blockquote>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters.explain_predicted_classes">
+<span class="sig-name descname"><span class="pre">explain_predicted_classes</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters.explain_predicted_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters.explainer">
 <span class="sig-name descname"><span class="pre">explainer</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">''</span></em><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters.explainer" title="Permalink to this definition">¶</a></dt>
@@ -2275,6 +2285,11 @@ as NMS.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters.is_evaluation">
 <span class="sig-name descname"><span class="pre">is_evaluation</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters.is_evaluation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters.process_saliency_maps">
+<span class="sig-name descname"><span class="pre">process_saliency_maps</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters.process_saliency_maps" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
