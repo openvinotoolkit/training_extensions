@@ -33,7 +33,7 @@ To create a universal virtual environment for OTX, please follow the installatio
 Dataset preparation
 ***************************
 
-Accoring to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
+According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
 .. code-block::
     training_extensions
     ├── data
@@ -65,7 +65,6 @@ Accoring to the `documentation <https://mmaction2.readthedocs.io/en/latest/suppo
     |
 
 Once you have the dataset structured properly, you can convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
-
 .. code-block::
   python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
   --task action_classification \
