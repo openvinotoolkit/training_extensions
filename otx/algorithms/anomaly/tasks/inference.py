@@ -260,7 +260,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         # TODO: add dumping saliency maps and representation vectors according to dump_features flag
         if not dump_features:
-            raise NotImplementedError("Ommitting feature dumping is not implemented.")
+            logger.warning(
+                "Ommitting feature dumping is not implemented."
+                "The saliency maps and representation vector outputs will be dumped in the exported model."
+            )
 
         assert export_type == ExportType.OPENVINO, f"Incorrect export_type={export_type}"
         output_model.model_format = ModelFormat.OPENVINO

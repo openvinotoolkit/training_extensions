@@ -156,7 +156,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         output_model.optimization_type = ModelOptimizationType.MO
         # TODO: add dumping saliency maps and representation vectors according to dump_features flag
         if not dump_features:
-            raise NotImplementedError("Ommitting feature dumping is not implemented.")
+            logger.warning(
+                "Ommitting feature dumping is not implemented. The saliency maps and representation vector outputs will be dumped in exported model."
+            )
 
         stage_module = "SegExporter"
         results = self._run_task(

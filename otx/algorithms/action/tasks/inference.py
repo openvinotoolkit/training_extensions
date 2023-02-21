@@ -311,7 +311,10 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         """Export function of OTX Action Task."""
         # TODO: add dumping saliency maps and representation vectors according to dump_features flag
         if not dump_features:
-            raise NotImplementedError("Ommitting feature dumping is not implemented.")
+            logger.warning(
+                "Ommitting feature dumping is not implemented."
+                "The saliency maps and representation vector outputs will be dumped in the exported model."
+            )
 
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
