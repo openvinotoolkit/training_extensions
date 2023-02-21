@@ -1,7 +1,7 @@
 Backbone Replacement
 ================================
 
-This tutorial explains how to utilize public backbones.
+This tutorial describes an example of how to find an available backbone and how it can be replaced in OTX.
 
 The process has been tested on the following configuration.
 
@@ -43,7 +43,7 @@ Backbone replacement tutorial
   .. note::
 
     You can use the OTX workspace to swap out backbones, train, set up configurations, and more.
-    Workspaces are created automatically on otx build or otx train.
+    Workspaces are created automatically on ``otx build`` or ``otx train``.
 
   .. code-block::
 
@@ -63,12 +63,13 @@ Backbone replacement tutorial
 
     (otx) ...$ cd otx-workspace-CLASSIFICATION
 
-2. Next, we can find the backbone we want to replace via otx find.
+2. Next, we can find the backbone
+we want to replace via ``otx find``.
 
   .. note::
 
-    We can use otx find to find templates and available backbones.
-    Each backbone may have a required argument. If option exists, we provide the first option as default.
+    We can use ``otx find`` to find templates and available backbones.
+    Each backbone may have a required argument. If the backbone has options for required arguments, ``otx build`` provide the first option as default.
 
   .. code-block::
 
@@ -97,7 +98,8 @@ Backbone replacement tutorial
 
 3. We need to run the command below to replace the backbone.
 
-  In this example, we'll replace the classification model using the default EfficientNet with mmdet.ResNet (use Backbone Type).
+  In this example, we'll replace the classification model using the default EfficientNet with mmdet.ResNet.
+  You can use the ``Backbone Type`` in the table output from ``otx find --backbone`` to use a different backbone.
 
   .. code-block::
 
