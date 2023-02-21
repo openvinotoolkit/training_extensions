@@ -72,6 +72,7 @@ federated_chest_screening/
         download_configs.json
         fl_with_gnn.json
         fl_without_gnn.json
+        loss_weights.json
 	media/
 	tests/
         test_export.py
