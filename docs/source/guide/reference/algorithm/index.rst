@@ -11,6 +11,7 @@ semi and self-supervised learning.
 .. toctree::
    :maxdepth: 1
 
+   action/index
    anomaly/index
    classification/index
    detection/index

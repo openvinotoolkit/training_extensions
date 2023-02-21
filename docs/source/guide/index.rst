@@ -30,8 +30,10 @@ Guide
   :caption: Reference
 
   reference/api/index
-  reference/cli/index
   reference/algorithm/index
+  reference/core/data
+  reference/hpo/hpo
+  reference/mpa/index
 
 
 .. toctree::
