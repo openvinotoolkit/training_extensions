@@ -178,7 +178,7 @@ and save the exported model to the ``openvino_model`` folder.
   2023-02-02 03:23:03,064 | INFO : Exporting completed
 
 
-3. We can check the mDice score of the IR model and the consistency between the exported model and the PyTorch model,
+3. We can check the ``mDice`` score of the IR model and the consistency between the exported model and the PyTorch model,
 using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
 
 .. code-block::
