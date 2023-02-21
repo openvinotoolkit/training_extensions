@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Action Recognition &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>Action Classification &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -170,6 +170,11 @@
       </label>
       <ul>
        <li class="toctree-l4">
+        <a class="reference internal" href="../../../tutorials/base/how_to_train/action_classification.html">
+         Action Classification model
+        </a>
+       </li>
+       <li class="toctree-l4">
         <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html">
          Classification  model
         </a>
@@ -293,7 +298,7 @@
     <ul class="current">
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
-       Action Recognition
+       Action Classification
       </a>
      </li>
      <li class="toctree-l3">
@@ -1156,9 +1161,9 @@
               
               <div>
                 
-  <div class="section" id="action-recognition">
-<h1>Action Recognition<a class="headerlink" href="#action-recognition" title="Permalink to this headline">¶</a></h1>
-<p>Action recognition is a problem of identifying the action that is being performed in a video. The input to the algorithm is a sequence of video frames, and the output is a label indicating the action that is being performed.</p>
+  <div class="section" id="action-classification">
+<h1>Action Classification<a class="headerlink" href="#action-classification" title="Permalink to this headline">¶</a></h1>
+<p>Action classification is a problem of identifying the action that is being performed in a video. The input to the algorithm is a sequence of video frames, and the output is a label indicating the action that is being performed.</p>
 <p>For supervised learning we use the following algorithms components:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: We use standard data augmentations for videos, including random resizing and random cropping, horizontal flipping. We randomly sample a segment of frames from each video during training.</p></li>

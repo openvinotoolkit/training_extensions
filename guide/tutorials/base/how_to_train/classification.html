@@ -42,7 +42,7 @@
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="next" title="Object Detection model" href="detection.html" />
-    <link rel="prev" title="How to train, validate, export and optimize the model" href="index.html" />
+    <link rel="prev" title="Action Classification model" href="action_classification.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -169,6 +169,11 @@
        </i>
       </label>
       <ul class="current">
+       <li class="toctree-l4">
+        <a class="reference internal" href="action_classification.html">
+         Action Classification model
+        </a>
+       </li>
        <li class="toctree-l4 current active">
         <a class="current reference internal" href="#">
          Classification  model
@@ -293,7 +298,7 @@
     <ul>
      <li class="toctree-l3">
       <a class="reference internal" href="../../../explanation/algorithms/action/action_classification.html">
-       Action Recognition
+       Action Classification
       </a>
      </li>
      <li class="toctree-l3">
@@ -1273,7 +1278,7 @@ command in our worspace:</p>
 </pre></div>
 </div>
 <p>That’s it! The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code>, which are needed as input for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  etc.</p>
-<p>The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 8 minutes.</p>
+<p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 8 minutes.</p>
 <p>After that, we have the PyTorch classification model trained with OTX, which we can use for evaluation, export, optimization and deployment.</p>
 </div>
 <div class="section" id="validation">
@@ -1347,7 +1352,7 @@ INFO:nncf:Loaded 983/983 parameters
 Performance(score: 0.9591280653950953, dashboard: (3 metric groups))
 </pre></div>
 </div>
-<p>The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.</p>
+<p>The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.</p>
 <p>3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
@@ -1372,7 +1377,7 @@ The examples are provided with an object detection model, but it is easy to appl
               
               <div class='prev-next-bottom'>
                 
-    <a class='left-prev' id="prev-link" href="index.html" title="previous page">How to train, validate, export and optimize the model</a>
+    <a class='left-prev' id="prev-link" href="action_classification.html" title="previous page">Action Classification model</a>
     <a class='right-next' id="next-link" href="detection.html" title="next page">Object Detection model</a>
 
               </div>
