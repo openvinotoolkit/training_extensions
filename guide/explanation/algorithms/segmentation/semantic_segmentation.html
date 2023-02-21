@@ -1151,6 +1151,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#supervised-contrastive-learning">
+   Supervised Contrastive Learning
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#incremental-learning">
    Incremental Learning
   </a>
@@ -1193,137 +1198,11 @@ For the supervised training we use the following algorithms components:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: For scheduling training process we use <strong>ReduceLROnPlataeu</strong> with linear learning rate warmup for 100 iterations. This method monitors a target metric (in our case we use metric on the validation set) and if no improvement is seen for a ‘patience’ number of epochs, the learning rate is reduced.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use standart <a class="reference external" href="https://en.wikipedia.org/wiki/Cross_entropy">Cross Entropy Loss</a>  to train a model.</p></li>
 <li><dl>
-<dt><code class="docutils literal notranslate"><span class="pre">Training</span> <span class="pre">technique</span></code></dt><dd><ul>
+<dt><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">training</span> <span class="pre">techniques</span></code></dt><dd><ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">Early</span> <span class="pre">stopping</span></code>: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train {TEMPLATE} ... \
     params \
-    --learning_parameters.enable_early_stopping=True \      # is early stopping used
-    --learning_parameters.early_stop_start=3 \              # the number of epochs (iters) in which early stopping proceeds
-    --learning_parameters.early_stop_patience=8 \           # (for epoch runner) stop if the model don&#39;t improve within the number of epochs of patience
-    --learning_parameters.early_stop_iteration_patience=8 \ # (for iter runner) stop if the model don&#39;t improve within the number of iterations of patience
-</pre></div>
-</div>
-</li>
-<li><p><a class="reference external" href="https://arxiv.org/abs/2004.11362">Supervised Contrastive Learning (SupCon)</a>: To enhance the performance of the algorithm in case when we have a small number of data.
-More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with <a class="reference external" href="https://arxiv.org/abs/2103.10957">DetCon loss</a>.
-The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC 2012 with two classes (person, car) and three classes (person, car, bicycle).
-The number of the subset datasets is 8, 16, and 24.</p>
-<p><cite>two classes (person, car)</cite></p>
-<table class="table">
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 11%" />
-<col style="width: 12%" />
-<col style="width: 11%" />
-<col style="width: 12%" />
-<col style="width: 11%" />
-<col style="width: 12%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Model name</p></th>
-<th class="head"><p>#8</p></th>
-<th class="head"></th>
-<th class="head"><p>#16</p></th>
-<th class="head"></th>
-<th class="head"><p>#24</p></th>
-<th class="head"></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-</tr>
-<tr class="row-odd"><td><p>Lite-HRNet-s-mod2</p></td>
-<td><p>60.36</p></td>
-<td><p>60.86</p></td>
-<td><p>63.75</p></td>
-<td><p>66.84</p></td>
-<td><p>66.43</p></td>
-<td><p>69.81</p></td>
-</tr>
-<tr class="row-even"><td><p>Lite-HRNet-18-mod2</p></td>
-<td><p>59.28</p></td>
-<td><p>64.43</p></td>
-<td><p>65.57</p></td>
-<td><p>68.41</p></td>
-<td><p>68.82</p></td>
-<td><p>71.25</p></td>
-</tr>
-<tr class="row-odd"><td><p>Lite-HRNet-x-mod3</p></td>
-<td><p>59.98</p></td>
-<td><p>63.36</p></td>
-<td><p>63.60</p></td>
-<td><p>68.63</p></td>
-<td><p>68.33</p></td>
-<td><p>71.21</p></td>
-</tr>
-</tbody>
-</table>
-<p><cite>three classes (person, car, bicycle)</cite></p>
-<table class="table">
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 11%" />
-<col style="width: 12%" />
-<col style="width: 11%" />
-<col style="width: 12%" />
-<col style="width: 11%" />
-<col style="width: 12%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Model name</p></th>
-<th class="head"><p>#8</p></th>
-<th class="head"></th>
-<th class="head"><p>#16</p></th>
-<th class="head"></th>
-<th class="head"><p>#24</p></th>
-<th class="head"></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-</tr>
-<tr class="row-odd"><td><p>Lite-HRNet-s-mod2</p></td>
-<td><p>48.30</p></td>
-<td><p>51.83</p></td>
-<td><p>57.08</p></td>
-<td><p>59.26</p></td>
-<td><p>62.40</p></td>
-<td><p>63.39</p></td>
-</tr>
-<tr class="row-even"><td><p>Lite-HRNet-18-mod2</p></td>
-<td><p>53.47</p></td>
-<td><p>54.90</p></td>
-<td><p>56.69</p></td>
-<td><p>60.32</p></td>
-<td><p>62.81</p></td>
-<td><p>64.56</p></td>
-</tr>
-<tr class="row-odd"><td><p>Lite-HRNet-x-mod3</p></td>
-<td><p>53.71</p></td>
-<td><p>54.83</p></td>
-<td><p>58.43</p></td>
-<td><p>62.03</p></td>
-<td><p>64.72</p></td>
-<td><p>64.57</p></td>
-</tr>
-</tbody>
-</table>
-<p>You can use SupCon training like the below command.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train {TEMPLATE} ... \
-    params \
-    --learning_parameters.enable_supcon=True
+    --learning_parameters.enable_early_stopping=True
 </pre></div>
 </div>
 </li>
@@ -1476,8 +1355,13 @@ However, in real-world industries, it is difficult to apply because of small dat
 We adapted <a class="reference external" href="https://arxiv.org/abs/2103.10957">DetCon</a> as our self-supervised method.
 It takes some time to use these self-supervised learning recipes, but you can expect improved performance, especially in small-data regimes.</p>
 <p>The below table shows how much performance (mDice) self-supervised methods improved compared with baseline performance on the subsets of Pascal VOC 2012 with three classes (person, car, bicycle).
-The number of the subset datasets is 8, 16, and 24.</p>
-<p><cite>three classes (person, car, bicycle)</cite></p>
+To get the below performance, we had two steps:</p>
+<ul class="simple">
+<li><p>Train the models using only images containing at less one class of the three classes without label information to get pretrained weights for a few epochs.</p></li>
+<li><p>Fine-tune the models with pretrained weights using subset datasets and get performance.</p></li>
+</ul>
+<p>We additionally obtained baseline performance from supervised learning using subset datasets for the comparison.
+Each subset dataset has 8, 16, and 24 images, respectively.</p>
 <table class="table">
 <colgroup>
 <col style="width: 29%" />
@@ -1533,11 +1417,104 @@ The number of the subset datasets is 8, 16, and 24.</p>
 </tr>
 </tbody>
 </table>
-<p>You can use Self-supervised learning like the below command.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train {TEMPLATE} ... \
+<p>Unlike other tasks, two things are considered to use self-supervised learning:</p>
+<ul class="simple">
+<li><p><cite>–train-data-root</cite> must be set to a directory only containing images, not ground truths.
+DetCon uses pseudo masks created in <cite>detcon_mask</cite> directory for training. If they are not created yet, they will be created first.</p></li>
+<li><p><cite>–val-data-root</cite> is not needed.</p></li>
+</ul>
+<p>To enable self-supervised training, the command below can be executed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
+    --train-data-root=tests/assets/common_semantic_segmentation_dataset/train/images \
     params \
     --algo_backend.train_type=SELFSUPERVISED
 </pre></div>
+</div>
+<p>After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
+    --train-data-root=tests/assets/common_semantic_segmentation_dataset/train \
+    --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+    --load-weights={PATH/PRETRAINED/WEIGHTS}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SL stands for Supervised Learning.</p>
+</div>
+</div>
+<div class="section" id="supervised-contrastive-learning">
+<h2>Supervised Contrastive Learning<a class="headerlink" href="#supervised-contrastive-learning" title="Permalink to this headline">¶</a></h2>
+<p>To enhance the performance of the algorithm in case when we have a small number of data, <a class="reference external" href="https://arxiv.org/abs/2004.11362">Supervised Contrastive Learning (SupCon)</a> can be used.
+More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with <a class="reference external" href="https://arxiv.org/abs/2103.10957">DetCon loss</a>.
+The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC 2012 with three classes (person, car, bicycle).
+Each subset dataset has 8, 16, and 24 images, respectively.</p>
+<table class="table">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model name</p></th>
+<th class="head"><p>#8</p></th>
+<th class="head"></th>
+<th class="head"><p>#16</p></th>
+<th class="head"></th>
+<th class="head"><p>#24</p></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p>SL</p></td>
+<td><p>SupCon</p></td>
+<td><p>SL</p></td>
+<td><p>SupCon</p></td>
+<td><p>SL</p></td>
+<td><p>SupCon</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lite-HRNet-s-mod2</p></td>
+<td><p>48.30</p></td>
+<td><p>51.83</p></td>
+<td><p>57.08</p></td>
+<td><p>59.26</p></td>
+<td><p>62.40</p></td>
+<td><p>63.39</p></td>
+</tr>
+<tr class="row-even"><td><p>Lite-HRNet-18-mod2</p></td>
+<td><p>53.47</p></td>
+<td><p>54.90</p></td>
+<td><p>56.69</p></td>
+<td><p>60.32</p></td>
+<td><p>62.81</p></td>
+<td><p>64.56</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lite-HRNet-x-mod3</p></td>
+<td><p>53.71</p></td>
+<td><p>54.83</p></td>
+<td><p>58.43</p></td>
+<td><p>62.03</p></td>
+<td><p>64.72</p></td>
+<td><p>64.57</p></td>
+</tr>
+</tbody>
+</table>
+<p>The SupCon training can be launched by adding additional option to template parameters like the below.
+It can be launched only with supervised (incremental) training type.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
+    --train-data-root=tests/assets/common_semantic_segmentation_dataset/train \
+    --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+    params \
+    --learning_parameters.enable_supcon=True
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>SL stands for Supervised Learning.</p>
 </div>
 </div>
 <div class="section" id="incremental-learning">
