@@ -34,7 +34,9 @@ Dataset preparation
 ***************************
 
 According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
+
 .. code-block::
+
     training_extensions
     ├── data
     │   ├── hmdb51
@@ -65,7 +67,9 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
     |
 
 Once you have the dataset structured properly, you can convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
+
 .. code-block::
+
   python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
   --task action_classification \
   --src_path ./data/hmdb51/rawframes \
@@ -74,7 +78,9 @@ Once you have the dataset structured properly, you can convert it to the `CVAT <
   --label_map ./data/hmdb51/label_map.txt
 
 The resulting folder structure will be as follows:
+
 .. code-block::
+
     hmdb51
     ├── rawframes
     ├── videos
@@ -143,6 +149,7 @@ It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessery config
 3. Update ``otx-workspace-ACTION_CLASSIFICATION/data.yaml`` file with the path to the CVAT converted HMDB51 dataset.
 
 .. code-block::
+
   data:
     train:
       ann-files: null
@@ -165,7 +172,7 @@ It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessery config
 
 That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
-The training time highly relies on the hardware characteristics, for example on single Nvidia GeForce RTX 3090 the training took about 8 minutes.
+The training time highly relies on the hardware characteristics, for example on single NVIDIA GeForce RTX 3090 the training took about 10 minutes.
 
 After that, we have the PyTorch action classification model trained with OTX, which we can use for evaluation, export, optimization and deployment.
 
@@ -185,7 +192,7 @@ and save performance results in ``performance.json`` file:
 
 .. code-block::
 
-  (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT2/valid \
+  (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                       --load-weights models/weights.pth \
                       --save-performance performance.json
 
@@ -195,12 +202,12 @@ We will get a similar to this validation output:
 
   ...
 
-  2023-02-21 22:53:29,815 - mmaction - INFO - Model architecture: X3D
-  2023-02-21 22:53:31,638 - mmaction - INFO - Inference completed
-  2023-02-21 22:53:31,638 - mmaction - INFO - called evaluate()
-  2023-02-21 22:53:31,642 - mmaction - INFO - Final model performance: Performance(score: 1.0, dashboard: (3 metric groups))
-  2023-02-21 22:53:31,643 - mmaction - INFO - Evaluation completed
-  Performance(score: 1.0, dashboard: (3 metric groups))
+    2023-02-22 00:08:45,156 - mmaction - INFO - Model architecture: X3D
+    2023-02-22 00:08:56,766 - mmaction - INFO - Inference completed
+    2023-02-22 00:08:56,766 - mmaction - INFO - called evaluate()
+    2023-02-22 00:08:59,469 - mmaction - INFO - Final model performance: Performance(score: 0.6646406490691239, dashboard: (3 metric groups))
+    2023-02-22 00:08:59,470 - mmaction - INFO - Evaluation completed
+    Performance(score: 0.6646406490691239, dashboard: (3 metric groups))
 
 *********
 Export
@@ -235,13 +242,13 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
 .. code-block::
 
-  (otx) ...$ otx eval --test-data-roots ../data/hmdb51/valid \
+  (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                       --load-weights openvino_model/openvino.xml \
                       --save-performance openvino_model/performance.json
 
   ...
 
-  Performance(score: 1.0, dashboard: (3 metric groups))
+  Performance(score: 0.6357698983041397, dashboard: (3 metric groups))
 
 
 *************
@@ -262,7 +269,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
   ...
 
-  Performance(score: 1.0, dashboard: (3 metric groups))
+  Performance(score: 0.6252587703095486, dashboard: (3 metric groups))
 
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
