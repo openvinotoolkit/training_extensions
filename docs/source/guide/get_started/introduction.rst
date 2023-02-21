@@ -12,16 +12,16 @@ To this end OTX supports the following computer vision tasks:
 - **Action recognition** including action classification and detection
 - **Anomaly recognition** tasks including anomaly classification, detection and segmentation
 
-OTX also supports different :doc:`training types <explanation/algorithms/index>`:
+OTX also supports different :doc:`training types <../explanation/algorithms/index>`:
 
 - **Supervised**, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks
 - **Semi-supervised learning**
 - **Self-supervised learning**
 
-Moving forward, OTX provides the :doc:`following features <explanation/index>`:
+Moving forward, OTX provides the :doc:`following features <../explanation/index>`:
 
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Half-precision training** to save GPUs memory and use larger batch sizes
-- Integrated, efficient :doc:`hyper-parameter optimization module <explanation/additional_features/hpo>` (HPO). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
+- Integrated, efficient :doc:`hyper-parameter optimization module <../explanation/additional_features/hpo>` (HPO). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 - OTX uses **Datumaro** as the backend to hadle datasets. Thanks to that, OTX supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
-- :doc:`Auto-configuration functionality <explanation/additional_features/auto_configuration>`. OTX analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- :doc:`Auto-configuration functionality <../explanation/additional_features/auto_configuration>`. OTX analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
