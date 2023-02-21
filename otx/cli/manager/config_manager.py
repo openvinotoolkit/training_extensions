@@ -320,7 +320,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         Returns:
             dict: dataset_config
         """
-        dataset_config = {"task_type": self.task_type}
+        dataset_config = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
             if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
                 dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})

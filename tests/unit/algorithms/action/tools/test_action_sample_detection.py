@@ -12,6 +12,7 @@ from otx.algorithms.action.tools.sample_detection import (
     main,
     parse_args,
 )
+from otx.algorithms.common.configs.training_base import TrainType
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import LabelSchemaEntity
@@ -49,6 +50,7 @@ def test_load_test_dataset() -> None:
 
     class MockTemplate:
         task_type = TaskType.ACTION_DETECTION
+        train_type = TrainType.INCREMENTAL.value
 
     dataset, label_schema = load_test_dataset(MockTemplate())
     isinstance(dataset, DatasetEntity)

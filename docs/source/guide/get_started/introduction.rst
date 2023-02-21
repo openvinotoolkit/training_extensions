@@ -1,10 +1,11 @@
+.. raw:: html
+
+   <div style="margin-bottom:30px;">
+   <img src="../../_static/logos/otx-logo-black.png" alt="Logo" width="200" style="display:block;margin:auto;">
+   </div>
+
 Introduction
 ============
-
-.. image:: ../../_static/logos/otx-logo-black.png
-   :align: center
-   :alt: Logo
-   :width: 400
 
 OpenVINO™ Training eXtensions (OTX) is a command-line interface (CLI) framework designed for low-code computer vision deep-learning model training. OTX lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OTX offers a diverse combination of model architectures, learning methods, and training types using PyTorch and OpenVINO™ toolkit. OTX provides so-called "model templates" for every supported task which have been tested on various datasets and are a turnkey solution for obtaining an average good model without the need to change any hyperparameters. Besides, it is possible to configure your own model based on torchvision, mmcv, pytorchcv and OpenVINO Model Zoo (OMZ). Moreover, OTX supports auto-configuration functionality to choose a suitable model template based on the dataset. We will further extend our functionality to make training as much simple as possible for obtaining accurate, fast and light models ready to integrate into your projects.
 

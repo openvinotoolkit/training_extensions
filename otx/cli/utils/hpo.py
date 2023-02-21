@@ -696,6 +696,7 @@ class Trainer:
     def _prepare_dataset_adapter(self):
         dataset_adapter = get_dataset_adapter(
             self._task.task_type,
+            self._model_template.hyper_parameters.parameter_overrides["algo_backend"]["train_type"]["default_value"],
             train_data_roots=self._data_roots["train_subset"]["data_root"],
             val_data_roots=self._data_roots["val_subset"]["data_root"] if "val_subset" in self._data_roots else None,
             unlabeled_data_roots=self._data_roots["unlabeled_subset"]["data_root"]
