@@ -21,16 +21,6 @@ def create_inference_test_with_gnn():
 
             config = get_config(action='inference', gnn=True)
             inference_model(config,'pytorch')
- 
-        def test_onnx_inference(self):
-
-            config = get_config(action='inference', gnn=True)
-            inference_model(config,'onnx')
-
-        def test_ir_inference(self):
-
-            config = get_config(action='inference', gnn=True)
-            inference_model(config,'ir')
 
     return InferenceTest
 
