@@ -40,7 +40,7 @@ The following example creates a virtual environment in the ``det_venv`` folder f
 
   sudo apt-get install python3-venv
   # create virtual env
-  bash ./otx/algorithms/detection/init_venv.sh det_venv
+  bash ./external/mmdetection/submodule/init_venv.sh det_venv
   # activate virtual env
   source det_venv/bin/activate
 
@@ -54,6 +54,7 @@ Dataset preparation
 
 .. code-block::
 
+  mkdir data
   cd data
   git clone https://github.com/thsant/wgisd.git
   cd wgisd
@@ -109,7 +110,7 @@ It's a great example to start with. The model achieves high accuracy right from 
     }
   }
 
-``Ann-files`` contains a path to the annotation, while ``data-roots`` is a path to the folder, where images are stored.
+``ann-files`` contains a path to the annotation, while ``data-roots`` is a path to the folder, where images are stored.
 
 *********
 Training

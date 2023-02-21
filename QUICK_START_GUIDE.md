@@ -79,9 +79,9 @@ pytest tests/unit
 
 ## OTX CLI commands
 
-Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/tutorials/index.html) in our documentation with life-practical examples on specific datasets for each task.
+Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/guide/tutorials/index.html) in our documentation with life-practical examples on specific datasets for each task.
 
-> **_Note:_** To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to [explanation section](https://openvinotoolkit.github.io/training_extensions/explanation/index.html) in the documentation.
+> **_Note:_** To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to [explanation section](https://openvinotoolkit.github.io/training_extensions/guide/explanation/algorithms/index.html) in the documentation.
 
 ### Find
 
@@ -298,9 +298,9 @@ optional arguments:
 
 The command below performs exporting to the `outputs/openvino` path.
 
-````bash
+```bash
 (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --save-model-to outputs/openvino
-...
+```
 
 The command results in `openvino.xml`, `openvino.bin` and `label_schema.json`
 

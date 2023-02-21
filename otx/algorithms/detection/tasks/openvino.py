@@ -338,7 +338,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
     def load_inferencer(
         self,
-    ) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer]:
+    ) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer, OpenVINORotatedRectInferencer]:
         """load_inferencer function of OpenVINO Detection Task."""
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
