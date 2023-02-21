@@ -215,7 +215,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
   2023-02-21 18:09:58,508 | INFO : mDice after evaluation: 0.9659400544959128
   Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
 
-The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-10980XE it took about 15 minutes.
+The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 15 minutes.
 
 3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.
