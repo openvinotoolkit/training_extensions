@@ -34,7 +34,6 @@ Dataset preparation
 ***************************
 
 Accoring to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
-.. code-block::
     training_extensions
     ├── data
     │   ├── hmdb51
@@ -67,15 +66,14 @@ Accoring to the `documentation <https://mmaction2.readthedocs.io/en/latest/suppo
 Once you have the dataset structured properly, you can convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
 
 .. code-block::
-    python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
-    --task action_classification \
-    --src_path ./data/hmdb51/rawframes \
-    --dst_path ./data/hmdb51/CVAT/train \
-    --ann_file ./data/hmdb51/hmdb51_train_split_1_rawframes.txt \
-    --label_map ./data/hmdb51/label_map.txt
+  python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
+  --task action_classification \
+  --src_path ./data/hmdb51/rawframes \
+  --dst_path ./data/hmdb51/CVAT/train \
+  --ann_file ./data/hmdb51/hmdb51_train_split_1_rawframes.txt \
+  --label_map ./data/hmdb51/label_map.txt
 
 The resulting folder structure will be as follows:
-.. code-block::
     hmdb51
     ├── rawframes
     ├── videos
