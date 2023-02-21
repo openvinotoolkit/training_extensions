@@ -354,6 +354,50 @@ The command below will evaluate the trained model on the provided dataset:
 
 
 ***********
+Explanation
+***********
+
+``otx explain`` runs the explanation of a model on the specific dataset.
+
+With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
+
+.. code-block::
+
+    (otx) ...$ otx explain --help
+    usage: otx explain [-h] [--explain-data-roots EXPLAIN_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-explanation-to SAVE_EXPLANATION] [template] {params} ...
+
+    positional arguments:
+      template              Enter the path or ID or name of the template file.
+                            This can be omitted if you have train-data-roots or run inside a workspace.
+      {params}              sub-command help
+        params              Hyper parameters defined in template file.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --explain-data-roots EXPLAIN_DATA_ROOTS
+                            Comma-separated paths to explain data folders.
+      --save-explanation-to SAVE_EXPLANATION
+                            Output path for explanation images.
+      --load-weights LOAD_WEIGHTS
+                            Load model weights from previously saved checkpoint.
+      --explain-algorithm LOAD_WEIGHTS
+                            Explain algorithm name, currently support "activationmap", "eigencam", "classwisesaliencymap". For Openvino task, default method will be selected.
+      --overlay-weight WEIGHT
+                            Weight of the saliency map when overlaying the saliency map.
+
+
+The command below will explain the trained model on the provided dataset:
+
+.. code-block::
+
+    (otx) ...$ otx explain Custom_Object_Detection_Gen3_SSD --explain-data-roots <path/to/explain/root> --load-weights <path/to/model_weghts> --save-explanation-to <path/to/output/root>
+
+.. note::
+
+    it is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
+
+
+***********
 Demonstrate
 ************
 
