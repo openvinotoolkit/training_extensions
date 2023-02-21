@@ -35,7 +35,7 @@ Anomaly segmentation task performs a pixel-level localization of anomalies. Simi
 
 .. _fig-anomaly-tasks:
 
-.. figure:: ../../../../_static/images/anomaly_tasks.png
+.. figure:: ../../../../../utils/images/anomaly_tasks.png
    :width: 600
    :align: center
    :alt: Anomaly Task Types
@@ -86,7 +86,7 @@ These models initially extracts features from a CNN or transformer and subsequen
 PADIM
 ^^^^^
 
-.. figure:: ../../../../_static/images/padim.png
+.. figure:: ../../../../../utils/images/padim.png
    :width: 600
    :align: center
    :alt: Anomaly Task Types
@@ -100,7 +100,7 @@ Knowledge distillation is a deep learning technique in which a smaller model (st
 STFPM
 ^^^^^
 
-.. figure:: ../../../../_static/images/stfpm.png
+.. figure:: ../../../../../utils/images/stfpm.png
    :width: 600
    :align: center
    :alt: Anomaly Task Types
