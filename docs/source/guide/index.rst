@@ -12,7 +12,7 @@ Guide
 
 .. toctree::
   :hidden:
-  :caption: ' '
+  :caption: Tutorials
 
   tutorials/index
 
@@ -36,6 +36,6 @@ Guide
 
 .. toctree::
   :hidden:
-  :caption: ' '
+  :caption: Release Notes
 
   release_notes/index
