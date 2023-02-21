@@ -10,7 +10,7 @@ from .dataloader import construct_dataset
 from torch.utils.data import DataLoader
 from .transformations import test_transform
 from openvino.inference_engine import IECore
-import torchvision.transforms as transforms
+from torchvision import transforms
 from .misc import aggregate_local_weights
 import os
 import onnxruntime
@@ -22,25 +22,25 @@ def to_numpy(tensor):
 ################# To be used for inference during training ####################
 def inference(cnv_lyr, backbone_model, fc_layers, gnn_model, val_loader,
               criterion, device,edge_index=None, edge_attr=None):
-    
+
     tot_loss=0
     # tot_auc=0
     gt_lst=[]
     pred_lst=[]
-    
+
     cnv_lyr.eval()
-    backbone_model.eval() 
+    backbone_model.eval()
     fc_layers.eval()
     if gnn_model is not None:
         gnn_model.eval()
-    
+
     with torch.no_grad():
         for count, sample in enumerate(val_loader):
             img=sample['img']
             gt=sample['gt']
             img=img.to(device)
             gt=gt.to(device)
-          
+
             img_3chnl=cnv_lyr(img)
             gap_ftr=backbone_model(img_3chnl)
             ftr_lst, prd=fc_layers(gap_ftr)
@@ -49,43 +49,43 @@ def inference(cnv_lyr, backbone_model, fc_layers, gnn_model, val_loader,
                 data_lst=[]
                 for k in range(0, ftr_lst.shape[0]):
                     data_lst.append(Data_GNN(x=ftr_lst[k,:,:], edge_index=edge_index,
-                                             edge_attr=edge_attr, y=torch.unsqueeze(gt[k,:], dim=1))) 
-                
+                                             edge_attr=edge_attr, y=torch.unsqueeze(gt[k,:], dim=1)))
+
                 loader = DataLoader_GNN(data_lst, batch_size=ftr_lst.shape[0])
                 loader=next(iter(loader)).to(device)
                 gt=loader.y
-                prd_final=gnn_model(loader)    
+                prd_final=gnn_model(loader)
             else:
                 prd_final=prd
             ########Forward Pass #############################################
             loss=criterion(prd_final, gt)
             # Apply the sigmoid
             prd_final=F.sigmoid(prd_final)
-            
+
             gt_lst.append(gt.cpu().numpy())
             pred_lst.append(prd_final.cpu().numpy())
             tot_loss=tot_loss+loss.cpu().numpy()
             del loss, gt, prd_final, prd
-            
+
     gt_lst=np.concatenate(gt_lst, axis=1)
     pred_lst=np.concatenate(pred_lst, axis=1)
-    
+
     gt_lst=np.transpose(gt_lst)
     pred_lst=np.transpose(pred_lst)
-    
+
     # Now compute and display the average
     count=count+1 # since it began from 0
     avg_loss=tot_loss/count
-    
+
     # sens_lst, spec_lst, acc_lst, auc_lst=compute_performance(pred_lst, gt_lst)
     _, _, _, auc_lst=compute_performance(pred_lst, gt_lst)
     avg_auc=np.mean(auc_lst)
-    
+
     print ("\n Val_Loss:  {:.4f},  Avg. AUC: {:.4f}".format(avg_loss, avg_auc))
-    metric=avg_auc # this will be monitored for Early Stopping
-    
+    metric=avg_auc 
+
     cnv_lyr.train()
-    backbone_model.train() 
+    backbone_model.train()
     fc_layers.train()
     if gnn_model is not None:
         gnn_model.train()
@@ -125,8 +125,8 @@ def load_inference_model(config, run_type):
         model_bin = split_text + ".bin"
         model_temp = ie.read_network(model_xml, model_bin)
         model = ie.load_network(network=model_temp, device_name='CPU')
-
     return model
+
 def validate_model(model, config, run_type):
     # GPU transfer - Only pytorch models needs to be transfered.
     max_samples = config['max_samples']
@@ -170,21 +170,21 @@ def validate_model(model, config, run_type):
                 prd_final = prd_final.squeeze(0)
                 gt=gt.cpu()
             loss=criterion(prd_final, gt)
-            
+
             # Apply the sigmoid
             prd_final=F.sigmoid(prd_final)
-            
+
             gt_lst.append(gt.cpu().numpy())
             pred_lst.append(prd_final.cpu().numpy())
-            
-            
+
+
             tot_loss=tot_loss+loss.cpu().numpy()
-           
+
             del loss, gt, prd_final
             if count==max_samples:
                 break
-            
-    
+
+
     gt_lst=np.concatenate(gt_lst, axis=1)
     pred_lst=np.concatenate(pred_lst, axis=1)
     gt_lst=np.transpose(gt_lst)
@@ -200,4 +200,3 @@ def validate_model(model, config, run_type):
 def inference_model(config, run_type):
     model = load_inference_model(config, run_type)
     validate_model(model, config, run_type)
-    

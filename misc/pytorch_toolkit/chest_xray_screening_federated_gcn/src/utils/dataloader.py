@@ -27,7 +27,7 @@ class construct_dataset(data.Dataset):
         self.gt=gt
         self.transforms=transforms
         self.data_pth=data_pth
-        
+
     def __getitem__(self, index):
         """Take the index of item and returns the image and its labels"""
         img_nm=self.img_names[index]
@@ -43,7 +43,7 @@ class construct_dataset(data.Dataset):
         else:
             pass
         sample={'img': image, 'gt': gt, 'img_nm': img_nm}
-        return sample 
+        return sample
 
     def __len__(self):
         #print(self.img_pths.shape[0])
