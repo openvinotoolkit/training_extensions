@@ -40,7 +40,7 @@ def inference(cnv_lyr, backbone_model, fc_layers, gnn_model, val_loader,
             gt=sample['gt']
             img=img.to(device)
             gt=gt.to(device)
-            ##############################################################
+          
             img_3chnl=cnv_lyr(img)
             gap_ftr=backbone_model(img_3chnl)
             ftr_lst, prd=fc_layers(gap_ftr)
