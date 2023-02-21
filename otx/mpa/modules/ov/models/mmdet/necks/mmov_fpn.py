@@ -4,6 +4,7 @@
 
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch.nn as nn
 from mmdet.models.builder import NECKS
 from mmdet.models.necks.fpn import FPN
@@ -15,7 +16,7 @@ from ...mmov_model import MMOVModel
 class MMOVFPN(FPN):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -40,7 +41,7 @@ class MMOVFPN(FPN):
         for input, output in zip(inputs["laterals"], outputs["laterals"]):
             self.lateral_convs.append(
                 MMOVModel(
-                    model_path,
+                    model_path_or_model,
                     weight_path,
                     inputs=input,
                     outputs=output,
@@ -57,7 +58,7 @@ class MMOVFPN(FPN):
             if input and output:
                 self.fpn_convs.append(
                     MMOVModel(
-                        model_path,
+                        model_path_or_model,
                         weight_path,
                         inputs=input,
                         outputs=output,

@@ -81,12 +81,22 @@ class ClsExplainer(ClsStage):
         # InferenceProgressCallback (Time Monitor enable into Infer task)
         self.set_inference_progress_callback(model, cfg)
 
+        eval_predictions = []
         with self.explainer_hook(feature_model) as forward_explainer_hook:
             # do inference and record intermediate fmap
             for data in explain_data_loader:
                 with torch.no_grad():
-                    _ = model(return_loss=False, **data)
+                    result = model(return_loss=False, **data)
+                eval_predictions.extend(result)
             saliency_maps = forward_explainer_hook.records
 
-        outputs = dict(saliency_maps=saliency_maps)
+        assert len(eval_predictions) == len(saliency_maps), (
+            "Number of elements should be the same, however, number of outputs are "
+            f"{len(eval_predictions)}, and {len(saliency_maps)}"
+        )
+
+        outputs = dict(
+            eval_predictions=eval_predictions,
+            saliency_maps=saliency_maps,
+        )
         return outputs

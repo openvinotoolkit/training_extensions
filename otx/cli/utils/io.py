@@ -199,19 +199,25 @@ def get_image_files(root_dir: str) -> Optional[List[Tuple[str, str]]]:
 
 
 def save_saliency_output(
+    process_saliency_maps: bool,
     img: np.array,
     saliency_map: np.array,
     save_dir: str,
     fname: str,
     weight: float = 0.3,
 ) -> None:
-    """Receives img and saliency map, then convert to colormap image and save images."""
-    overlay = img * weight + saliency_map * (1 - weight)
-    overlay[overlay > 255] = 255
-    overlay = overlay.astype(np.uint8)
+    """Saves processed saliency map (with image overlay) or raw saliency map."""
+    if process_saliency_maps:
+        # Saves processed saliency map
+        overlay = img * weight + saliency_map * (1 - weight)
+        overlay[overlay > 255] = 255
+        overlay = overlay.astype(np.uint8)
 
-    cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", saliency_map)
-    cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
+        cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", saliency_map)
+        cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
+    else:
+        # Saves raw, low-resolution saliency map
+        cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.tiff", saliency_map)
 
 
 def get_explain_dataset_from_filelist(image_files: list):

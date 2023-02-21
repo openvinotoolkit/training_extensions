@@ -3,7 +3,7 @@
 #
 
 import inspect
-from typing import List
+from typing import Dict, List, Optional, Union
 
 import torch
 
@@ -11,7 +11,11 @@ from ..op import Operation
 
 
 class OperationModule(torch.nn.Module):
-    def __init__(self, op: Operation, dependent_ops: List[Operation]):
+    def __init__(
+        self,
+        op: Operation,
+        dependent_ops: Union[List[Optional[Operation]], Dict[str, Optional[Operation]]],
+    ):
         super().__init__()
 
         self.op = op
@@ -43,7 +47,7 @@ class OperationModule(torch.nn.Module):
                 inputs[key] = val
         if kwargs:
             for key, val in kwargs.items():
-                if key in inputs:
+                if inputs[key] is not None:
                     raise ValueError(f"duplicated key {key}")
                 inputs[key] = val
 

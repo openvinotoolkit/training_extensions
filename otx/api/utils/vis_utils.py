@@ -30,5 +30,4 @@ def get_actmap(
 
     saliency_map = cv2.resize(saliency_map, output_res)
     saliency_map = cv2.applyColorMap(saliency_map, cv2.COLORMAP_JET)
-    saliency_map = cv2.cvtColor(saliency_map, cv2.COLOR_BGR2RGB)
     return saliency_map
