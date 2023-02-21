@@ -244,6 +244,9 @@ It can be launched only with supervised (incremental) training type.
       params \
       --learning_parameters.enable_supcon=True
 
+.. note::
+    SL stands for Supervised Learning.
+
 
 ********************
 Incremental Learning

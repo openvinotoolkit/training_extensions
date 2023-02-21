@@ -171,6 +171,9 @@ After self-supervised training, pretrained weights can be use for supervised (in
       --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
       --load-weights={PATH/PRETRAINED/WEIGHTS}
 
+.. note::
+    SL stands for Supervised Learning.
+
 *******************************
 Supervised Contrastive Learning
 *******************************
@@ -202,6 +205,9 @@ It can be launched only with supervised (incremental) training type.
       --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
       params \
       --learning_parameters.enable_supcon=True
+
+.. note::
+    SL stands for Supervised Learning.
 
 ********************
 Incremental Learning
