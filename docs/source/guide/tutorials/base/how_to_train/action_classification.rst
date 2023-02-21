@@ -34,6 +34,7 @@ Dataset preparation
 ***************************
 
 Accoring to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
+.. code-block::
     training_extensions
     ├── data
     │   ├── hmdb51
@@ -74,6 +75,7 @@ Once you have the dataset structured properly, you can convert it to the `CVAT <
   --label_map ./data/hmdb51/label_map.txt
 
 The resulting folder structure will be as follows:
+.. code-block::
     hmdb51
     ├── rawframes
     ├── videos
