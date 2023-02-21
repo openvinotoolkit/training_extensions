@@ -38,12 +38,7 @@ def _create_dummy_config() -> Config:
         optimizer=dict(),
         lr_config=dict(policy="ReduceLROnPlateau", warmup_iters=80, fixed_iters=100),
         evaluation=dict(interval=1, metric=["mIoU", "mDice"]),
-        custom_hooks=[
-            dict(
-                type="FreezeLayers",
-                iters=0,
-            )
-        ],
+        custom_hooks=[],
         params_config=dict(iters=0),
     )
 

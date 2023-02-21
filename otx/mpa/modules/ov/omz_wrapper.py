@@ -7,6 +7,7 @@ import os
 import shutil
 import string
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -144,16 +145,7 @@ def _run_pre_convert(reporter, model, output_dir, args):
     return success
 
 
-def get_model_configuration(model_name):
-    model_configurations = load_models(_common.MODEL_ROOT, {})
-    for i, model in enumerate(model_configurations):
-        if model.name == model_name:
-            update_model(model)
-            return model
-    return None
-
-
-def update_model(model):
+def _update_model(model):
     m = hashlib.sha256()
     for file in model.files:
         url = file.source.url
@@ -162,6 +154,23 @@ def update_model(model):
             m.update(bytes(etag, "utf-8"))
     model.subdirectory_ori = model.subdirectory
     model.subdirectory = Path(m.hexdigest())
+
+    # FIXME: a bug from openvino-dev==2022.3.0
+    # It has been fixed on master branch.
+    # After upgrading openvino-dev, we can remove this temporary patch
+    if getattr(model, "conversion_to_onnx_args") and not [
+        arg for arg in model.conversion_to_onnx_args if arg.startswith("--model-path")
+    ]:
+        model.conversion_to_onnx_args.append("--model-path=")
+
+
+def get_model_configuration(model_name):
+    model_configurations = load_models(_common.MODEL_ROOT, {})
+    for i, model in enumerate(model_configurations):
+        if model.name == model_name:
+            _update_model(model)
+            return model
+    return None
 
 
 def download_model(model, download_dir=MPA_OMZ_CACHE, precisions={"FP32"}, force=False):
@@ -329,7 +338,18 @@ def convert_model(
                 reporter.print(flush=True)
 
                 if not reporter.job_context.subprocess(mo_cmd):
-                    return False
+                    # NOTE: mo returns non zero return code (245) even though it successfully generate IR
+                    cur_time = time.time()
+                    time_threshold = 5
+                    xml_path = output_dir / model.subdirectory / model_precision / f"{model.name}.xml"
+                    bin_path = output_dir / model.subdirectory / model_precision / f"{model.name}.bin"
+                    if not (
+                        os.path.exists(xml_path)
+                        and os.path.exists(bin_path)
+                        and os.path.getmtime(xml_path) - cur_time < time_threshold
+                        and os.path.getmtime(bin_path) - cur_time < time_threshold
+                    ):
+                        return False
 
             reporter.print()
 

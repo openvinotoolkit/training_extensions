@@ -17,7 +17,7 @@ from .op import Attribute, Operation
 class PadV1Attribute(Attribute):
     pad_mode: str
 
-    def __post__init__(self):
+    def __post_init__(self):
         super().__post_init__()
         valid_pad_mode = ["constant", "edge", "reflect", "symmetric"]
         if self.pad_mode not in valid_pad_mode:
@@ -122,29 +122,22 @@ class GatherV0(Operation[GatherV0Attribute]):
         if indices.dim() != input.dim():
             if indices.dim() != 0:
                 while indices.dim() - 1 < axis:
-                    indices = indices.unsqueeze(0)
+                    indices = indices.unsqueeze(batch_dims)
             while indices.dim() < input.dim():
                 indices = indices.unsqueeze(-1)
 
-            assert indices.squeeze().dim() <= 1
-
             repeat = []
-            for i, j in enumerate(input.shape):
-                if i < axis:
-                    repeat.append(j)
-                elif i == axis:
+            for i, (j, k) in enumerate(zip(input.shape, indices.shape)):
+                if i == axis:
                     repeat.append(1)
                 else:
-                    repeat.append(j)
+                    assert j % k == 0
+                    repeat.append(j // k)
             indices = indices.repeat(repeat)
         output = torch.gather(input=input, dim=axis, index=indices.type(torch.int64))
 
         if squeeze_axis:
             output = output.squeeze(axis)
-        else:
-            output_shape = torch.tensor(output.shape)
-            output_target_shape = torch.cat((output_shape[:axis], indices_shape, output_shape[axis + 1 :]))
-            output = output.reshape(*output_target_shape)
 
         return output
 
@@ -291,6 +284,7 @@ class ShuffleChannelsV0(Operation[ShuffleChannelsV0Attribute]):
 
     def forward(self, input):
         #  n, c, h, w = input.shape
+        assert input.dim() == 4
         origin_shape = input.shape
         origin_dim = input.dim()
         assert origin_shape[self.attrs.axis] % self.attrs.group == 0
@@ -324,7 +318,7 @@ class ShuffleChannelsV0(Operation[ShuffleChannelsV0Attribute]):
 class BroadcastV3Attribute(Attribute):
     mode: str = field(default="numpy")
 
-    def __post__init__(self):
+    def __post_init__(self):
         super().__post_init__()
         valid_mode = ["numpy", "explicit", "bidirectional"]
         if self.mode not in valid_mode:
@@ -339,12 +333,20 @@ class BroadcastV3(Operation[BroadcastV3Attribute]):
 
     def forward(self, input, target_shape, axes_mapping=None):
         if self.attrs.mode == "numpy":
-            raise NotImplementedError
             return input.expand(*target_shape)
         if self.attrs.mode == "bidirectional":
             return torch.ones(*target_shape, device=input.device) * input
         else:
-            raise NotImplementedError
+            assert axes_mapping is not None
+            prev = -1
+            for axes in axes_mapping:
+                prev += 1
+                while axes - prev > 0:
+                    input = input.unsqueeze(axes - 1)
+                    prev += 1
+            while input.dim() < len(target_shape):
+                input = input.unsqueeze(-1)
+            return input.expand(*target_shape)
 
 
 @dataclass
@@ -359,6 +361,7 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
     ATTRIBUTE_FACTORY = ScatterNDUpdateV3Attribute
 
     def forward(self, input, indicies, updates):
+        # TODO: need to verify
         if updates.numel() == 1:
             raise NotImplementedError
 
@@ -387,22 +390,18 @@ class ScatterUpdateV3(Operation[ScatterUpdateV3Attribute]):
     ATTRIBUTE_FACTORY = ScatterUpdateV3Attribute
 
     def forward(self, input, indicies, updates, axis):
-        # TODO
+        # TODO: need to verify
         axis = axis.item()
 
         if input.dtype != updates.dtype:
             updates = updates.type(input.dtype)
 
-        if axis == 0:
-            if indicies.dim() == 0:
-                input[indicies] = updates
-                output = input
-            elif indicies.dim() == 1:
-                output = torch.scatter(input, axis, indicies, updates)
-            else:
-                raise NotImplementedError
-        else:
-            raise NotImplementedError
+        if indicies.dim() == 0:
+            assert axis == 0
+            output = input
+            output[indicies] = updates
+
+        output = torch.scatter(input, axis, indicies, updates)
 
         return output
 

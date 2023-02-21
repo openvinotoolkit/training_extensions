@@ -27,7 +27,12 @@ class Patcher:
         force: bool = True,
     ):
         """Do monkey patch."""
-        obj_cls, fn_name = self.import_obj(obj_cls)
+        if isinstance(obj_cls, (tuple, list)):
+            assert len(obj_cls) == 2
+            obj_cls, fn_name = obj_cls
+            assert getattr(obj_cls, fn_name)
+        else:
+            obj_cls, fn_name = self.import_obj(obj_cls)
 
         # wrap only if function does exist
         n_args = len(inspect.getfullargspec(obj_cls.__getattribute__)[0])
@@ -59,7 +64,7 @@ class Patcher:
                 depth = len(self._patched[key])
             keep = len(self._patched[key]) - depth
             origin_fn = self._patched[key].pop(-depth)[0]
-            if self._patched[key] and len(self._patched[key]) > keep:
+            while self._patched[key] and len(self._patched[key]) > keep:
                 self._patched[key].pop()
             if not self._patched[key]:
                 self._patched.pop(key)
@@ -104,8 +109,8 @@ class Patcher:
 
             if inspect.ismodule(obj_cls):
                 fn = obj_cls.keywords["__fn"]
-                obj_cls = fn = obj_cls.keywords["__obj_cls"]
                 fn_name = fn.__name__
+                obj_cls = fn = obj_cls.keywords["__obj_cls"]
             elif inspect.ismethod(obj_cls):
                 fn_name = obj_cls.__name__
                 obj_cls = obj_cls.__self__

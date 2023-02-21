@@ -52,7 +52,6 @@ class IMedia2DEntity(IMediaEntity, metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @property
-    @abc.abstractmethod
     def path(self) -> Optional[str]:
         """Returns the path of the 2D Media object."""
         raise NotImplementedError

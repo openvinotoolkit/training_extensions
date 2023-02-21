@@ -1,10 +1,10 @@
 name: Code Scanning
 
 on:
-  push:
-    branches:
-      - develop
   workflow_dispatch: # run on request (no need for PR)
+  schedule:
+    # every UTC 6PM from Mon to Fri
+    - cron: "0 18 * * 1-5"
 
 jobs:
   Snyk-scan:

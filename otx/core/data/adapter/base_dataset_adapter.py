@@ -103,7 +103,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             raise ValueError("At least 1 data_root is needed to train/test.")
 
         # Construct dataset for training, validation, testing, unlabeled
-        if train_data_roots:
+        if train_data_roots is not None:
             # Find self.data_type and task_type
             self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
@@ -121,15 +121,15 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 val_dataset = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
             else:
-                dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
+                if "val" in train_dataset.subsets():
+                    dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
 
-        if test_data_roots:
+        if test_data_roots is not None and train_data_roots is None:
             self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
             test_dataset = DatumaroDataset.import_from(test_data_roots, format=self.data_type)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
-            if train_data_roots is None:
-                self.is_train_phase = False
+            self.is_train_phase = False
 
         if unlabeled_data_roots is not None:
             dataset[Subset.UNLABELED] = DatumaroDataset.import_from(unlabeled_data_roots, format="image_dir")
@@ -148,12 +148,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     def _get_subset_data(self, subset: str, dataset: DatumaroDataset) -> DatumaroDatasetSubset:
         """Get subset dataset according to subset."""
         for k, v in dataset.subsets().items():
-            if subset == "train":
-                if "default" in k:
-                    return v
-
-            if subset in k:
+            if subset in k or "default" in k:
                 return v
+            if subset == "test" and "val" in k:
+                return v
+
         raise ValueError("Can't find proper dataset.")
 
     def _detect_dataset_format(self, path: str) -> str:
@@ -201,7 +200,14 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
+    def _is_normal_polygon(self, annotation: DatumaroAnnotationType.polygon) -> bool:
+        """To filter out the abnormal polygon."""
+        x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
+        y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]
+        return min(x_points) < max(x_points) and min(y_points) < max(y_points)
+
     def _is_normal_bbox(self, x1: float, y1: float, x2: float, y2: float) -> bool:
+        """To filter out the abrnormal bbox."""
         return x1 < x2 and y1 < y2
 
     def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:

@@ -5,6 +5,7 @@
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
 from mmdet.models.builder import HEADS
 from mmdet.models.roi_heads.bbox_heads.bbox_head import BBoxHead
@@ -16,7 +17,7 @@ from ....mmov_model import MMOVModel
 class MMOVBBoxHead(BBoxHead):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Dict[str, Union[str, List[str]]] = {},
         outputs: Dict[str, Union[str, List[str]]] = {},
@@ -26,7 +27,7 @@ class MMOVBBoxHead(BBoxHead):
         *args,
         **kwargs,
     ):
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._inputs = deepcopy(inputs)
         self._outputs = deepcopy(outputs)
@@ -40,7 +41,7 @@ class MMOVBBoxHead(BBoxHead):
 
         if "extractor" in inputs and "extractor" in outputs:
             self.extractor = MMOVModel(
-                self._model_path,
+                self._model_path_or_model,
                 inputs=inputs["extractor"],
                 outputs=outputs["extractor"],
                 remove_normalize=False,
@@ -53,7 +54,7 @@ class MMOVBBoxHead(BBoxHead):
         if self.with_cls:
             assert "fc_cls" in inputs and "fc_cls" in outputs
             self.fc_cls = MMOVModel(
-                self._model_path,
+                self._model_path_or_model,
                 inputs=inputs["fc_cls"],
                 outputs=outputs["fc_cls"],
                 remove_normalize=False,
@@ -66,7 +67,7 @@ class MMOVBBoxHead(BBoxHead):
         if self.with_reg:
             assert "fc_reg" in inputs and "fc_reg" in outputs
             self.fc_reg = MMOVModel(
-                self._model_path,
+                self._model_path_or_model,
                 inputs=inputs["fc_reg"],
                 outputs=outputs["fc_reg"],
                 remove_normalize=False,
