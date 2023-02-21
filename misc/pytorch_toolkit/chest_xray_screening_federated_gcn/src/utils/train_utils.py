@@ -269,7 +269,7 @@ def trainer_with_GNN(lr, b_sz, img_pth, split_npz, train_transform, test_transfo
         sit3_gnn_wt=checkpoint['sit3_gnn_model']
         sit4_gnn_wt=checkpoint['sit4_gnn_model']
     
-    ##########################################################################################
+    
     ################ Begin Actual Training ############
     max_val=0
     for epoch in range(0, max_epochs):
