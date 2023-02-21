@@ -94,7 +94,6 @@ class Res_Graph_Conv_Lyr(nn.Module):
         h=F.relu(h)
         return x+h
     
-########################################################################################
 
 ############### The Graph Convolution Network ############################
 class GNN_Network(nn.Module):
