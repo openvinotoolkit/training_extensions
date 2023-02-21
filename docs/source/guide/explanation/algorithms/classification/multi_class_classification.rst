@@ -14,7 +14,7 @@ For the supervised training we use the following algorithms components:
 
 - ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model. However, for the class-incremental scenario we use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
 
-- ``Training technique``
+- ``Additional training techniques``
     - `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_: To add adaptability to the training pipeline and prevent overfitting.
     - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.
       
@@ -22,34 +22,9 @@ For the supervised training we use the following algorithms components:
 
         $ otx train {TEMPLATE} ... \
             params \
-            --learning_parameters.enable_early_stopping=True \      # is early stopping used
-            --learning_parameters.early_stop_start=3 \              # the number of epochs (iters) in which early stopping proceeds
-            --learning_parameters.early_stop_patience=8 \           # (for epoch runner) stop if the model don't improve within the number of epochs of patience
-            --learning_parameters.early_stop_iteration_patience=8 \ # (for iter runner) stop if the model don't improve within the number of iterations of patience
+            --learning_parameters.enable_early_stopping=True
 
     - `Balanced Sampler <https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11>`_: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.
-    - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_. It enables using `--learning_parameters.enable_supcon=True` in CLI.
-      The below table shows how much performance SupCon improved compared with baseline performance on three baseline datasets with 10 samples per class: CIFAR10, Eurosat-10, and Food-101.
-
-      +-----------------------+---------+---------+------------+---------+----------+---------+
-      | Model name            | CIFAR10 |         | Eurosat-10 |         | Food-101 |         |
-      +=======================+=========+=========+============+=========+==========+=========+
-      |                       | SL      | SupCon  | SL         | SupCon  | SL       | SupCon  |
-      +-----------------------+---------+---------+------------+---------+----------+---------+
-      | MobileNet-V3-large-1x | 55.06   | 58.88   | 77.60      | 78.70   | 34.83    | 34.38   |
-      +-----------------------+---------+---------+------------+---------+----------+---------+
-      | EfficientNet-B0       | 42.81   | 46.35   | 66.87      | 70.23   | 37.26    | 39.17   |
-      +-----------------------+---------+---------+------------+---------+----------+---------+
-      | EfficientNet-V2-S     | 59.78   | 63.13   | 81.84      | 83.12   | 51.32    | 54.84   |
-      +-----------------------+---------+---------+------------+---------+----------+---------+
-
-      You can use SupCon training like the below command.
-
-      .. code-block::
-
-        $ otx train {TEMPLATE} ... \
-            params \
-            --learning_parameters.enable_supcon=True
 
 **************
 Dataset Format
@@ -200,7 +175,15 @@ Users only need a few more minutes to use these self-supervised learning recipes
 
 Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
 The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
+We created subset datasets by sampling images to check performance from small to large datasets.
 In particular, the smaller the data, the greater the performance improvement can be expected.
+To get the below performance, we had two steps:
+
+- Train the models using only images without label information to get pretrained weights for a few epochs.
+- Fine-tune the models with pretrained weights using subset datasets and get performance.
+
+We additionally obtained baseline performance from supervised learning using subset datasets for the comparison.
+Each subset dataset has 500, 1000, 5000, 10000, and the whole images, respectively.
 
 .. image:: ../../../../../utils/images/multi_cls_selfsl_performance_CIFAR10.png
   :width: 600
@@ -211,13 +194,55 @@ In particular, the smaller the data, the greater the performance improvement can
 .. image:: ../../../../../utils/images/multi_cls_selfsl_performance_Food-101.png
   :width: 600
 
-You can use Self-supervised learning like the below command.
+To enable self-supervised training, the command below can be executed.
+Unlike other tasks, `--val-data-root` is not needed.
 
 .. code-block::
 
-  $ otx train {TEMPLATE} ... \
+  $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
+      --train-data-root=tests/assets/imagenet_dataset_class_incremental \
       params \
       --algo_backend.train_type=SELFSUPERVISED
+
+After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:
+
+.. code-block::
+
+  $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
+      --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
+      --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
+      --load-weights={PATH/PRETRAINED/WEIGHTS}
+
+*******************************
+Supervised Contrastive Learning
+*******************************
+
+To enhance the performance of the algorithm in case when we have a small number of data, `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_ can be used.
+More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
+The below table shows how much performance SupCon improved compared with baseline performance on three baseline datasets with 10 samples per class: CIFAR10, Eurosat-10, and Food-101.
+
++-----------------------+---------+---------+------------+---------+----------+---------+
+| Model name            | CIFAR10 |         | Eurosat-10 |         | Food-101 |         |
++=======================+=========+=========+============+=========+==========+=========+
+|                       | SL      | SupCon  | SL         | SupCon  | SL       | SupCon  |
++-----------------------+---------+---------+------------+---------+----------+---------+
+| MobileNet-V3-large-1x | 55.06   | 58.88   | 77.60      | 78.70   | 34.83    | 34.38   |
++-----------------------+---------+---------+------------+---------+----------+---------+
+| EfficientNet-B0       | 42.81   | 46.35   | 66.87      | 70.23   | 37.26    | 39.17   |
++-----------------------+---------+---------+------------+---------+----------+---------+
+| EfficientNet-V2-S     | 59.78   | 63.13   | 81.84      | 83.12   | 51.32    | 54.84   |
++-----------------------+---------+---------+------------+---------+----------+---------+
+
+The SupCon training can be launched by adding additional option to template parameters like the below.
+It can be launched only with supervised (incremental) training type.
+
+.. code-block::
+
+  $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
+      --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
+      --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
+      params \
+      --learning_parameters.enable_supcon=True
 
 
 ********************
