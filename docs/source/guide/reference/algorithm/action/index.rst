@@ -1,5 +1,5 @@
-Segmentation
-============
+Action
+=========
 
 .. toctree::
    :maxdepth: 3
