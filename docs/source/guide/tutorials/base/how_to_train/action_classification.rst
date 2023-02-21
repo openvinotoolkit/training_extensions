@@ -68,7 +68,7 @@ Once you have the dataset structured properly, you can convert it to the `CVAT <
 
 .. code-block::
 
-  python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
+  (otx) ...$ python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
   --task action_classification \
   --src_path ./data/hmdb51/rawframes \
   --dst_path ./data/hmdb51/CVAT/train \
