@@ -19,4 +19,4 @@ NNCF tends to provide better quality in terms of preserving accuracy as it uses 
 
 The main recommendation is to start with post-training compression and use NNCF compression during training if you are not satisfied with the results.
 
-Please, refer to our :doc:`dedicated tutorials <../../../tutorials/base/how_to_train/index>` on how to optimize your model using POT or NNCF.
+Please, refer to our :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` on how to optimize your model using POT or NNCF.

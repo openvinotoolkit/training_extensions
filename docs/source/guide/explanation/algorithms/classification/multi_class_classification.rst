@@ -201,13 +201,13 @@ Below is graphs of performance improvement for three baseline datasets: CIFAR10,
 The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
 In particular, the smaller the data, the greater the performance improvement can be expected.
 
-.. image:: ../../../../utils/images/multi_cls_selfsl_performance_CIFAR10.png
+.. image:: ../../../../../utils/images/multi_cls_selfsl_performance_CIFAR10.png
   :width: 600
 
-.. image:: ../../../../utils/images/multi_cls_selfsl_performance_CIFAR100.png
+.. image:: ../../../../../utils/images/multi_cls_selfsl_performance_CIFAR100.png
   :width: 600
 
-.. image:: ../../../../utils/images/multi_cls_selfsl_performance_Food-101.png
+.. image:: ../../../../../utils/images/multi_cls_selfsl_performance_Food-101.png
   :width: 600
 
 You can use Self-supervised learning like the below command.

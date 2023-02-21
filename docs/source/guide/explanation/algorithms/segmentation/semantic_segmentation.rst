@@ -6,9 +6,9 @@ For example, semantic segmentation can be used to identify the boundaries of dif
 The output of semantic segmentation is typically an image where each pixel is colored with a different color or label depending on its class.
 
 .. _semantic_segmentation_image_example:
-|
 
-.. image:: ../../../../utils/images/semantic_seg_example.png
+
+.. image:: ../../../../../utils/images/semantic_seg_example.png
   :width: 600
   :alt: image uploaded from this `source <https://arxiv.org/abs/1912.03183>`_
 
@@ -106,11 +106,11 @@ We support the following ready-to-use model templates:
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFLOPs) | Model size (MB) |
 +==============================================================================================================================================================================================================================+========================+=====================+=================+
-| `Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml>`_                      | Lite-HRNet-s-mod2      | 1.44                | 3.2             |
+| `Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml>`_                          | Lite-HRNet-s-mod2      | 1.44                | 3.2             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml>`_                    | Lite-HRNet-18-mod2     | 2.82                | 4.3             |
+| `Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml>`_                        | Lite-HRNet-18-mod2     | 2.82                | 4.3             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml>`_                      | Lite-HRNet-x-mod3      | 9.20                | 5.7             |
+| `Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml>`_                          | Lite-HRNet-x-mod3      | 9.20                | 5.7             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 
 All of these models are members of the same `Lite-HRNet <https://arxiv.org/abs/2104.06403>`_ backbones family. They differ in the trade-off between accuracy and inference/training speed. ``Lite-HRNet-x-mod3`` is the template with heavy-size architecture for accurate predictions but it requires long training.

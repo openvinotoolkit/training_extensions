@@ -15,12 +15,12 @@ In this fashion, we train different classifiers, one - for each label group. We 
 Assume we have a label tree as below:
 
 .. _hierarchical_image_example:
-|
 
-.. image:: ../../../../utils/images/label_tree.png
+
+.. image:: ../../../../../utils/images/label_tree.png
   :width: 600
   :alt: image uploaded from this `source <https://towardsdatascience.com/https-medium-com-noa-weiss-the-hitchhikers-guide-to-hierarchical-classification-f8428ea1e076>`_
-|
+
 
 The goal of our algorithm is to return the right branch of this tree. For example: ``Persian -> Cats -> Pets``
 
