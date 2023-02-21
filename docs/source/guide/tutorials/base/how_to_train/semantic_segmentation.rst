@@ -127,7 +127,7 @@ model on a specific dataset.
 The eval function receives test annotation information and model snapshot, trained in the previous step.
 Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
 
-``otx eval`` will output a mDice score for semantic segmentation.
+``otx eval`` will output a ``mDice`` score for semantic segmentation.
 
 2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument '--test-data-roots'.
 By running this example command, the performance results evaluated by our splitted validation dataset are saved in ``performance.json`` file:
