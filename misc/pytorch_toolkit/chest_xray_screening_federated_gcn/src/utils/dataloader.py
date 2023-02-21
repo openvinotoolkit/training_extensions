@@ -3,8 +3,6 @@ from PIL import Image
 import torch
 import numpy as np
 
-################ Dataloader #########################
-
 class construct_dataset(data.Dataset):
     def __init__(self, data_pth, split_npz, site, transforms, tn_vl_idx):
         # site [0,4] or -999 which means global
@@ -50,4 +48,3 @@ class construct_dataset(data.Dataset):
     def __len__(self):
         #print(self.img_pths.shape[0])
         return self.img_names.shape[0]
-

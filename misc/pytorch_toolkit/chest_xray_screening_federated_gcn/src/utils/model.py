@@ -11,13 +11,10 @@ from torchvision import models
 ''' Instead of creating an instance of the models within the constructor, 
  We will pass the initial layer for 1 to 3 channel, the backbone model 
  and the FC layers part separately as input arguments. 
- 
- This will allow us to simply load the weights for each CNN model separately, 
- may be useful when updating only part of the network
  '''
 class Fully_Connected_Layer(nn.Module):
     def __init__(self, inp_dim, ftr_dim):
-        super(Fully_Connected_Layer, self).__init__()
+        super().__init__()
         
         ftr_lyr=nn.ModuleList()
         cls_lyr=nn.ModuleList()
@@ -56,7 +53,7 @@ class Fully_Connected_Layer(nn.Module):
 ############## Conv 1st layer #######################
 class First_Conv(nn.Module):
     def __init__(self):
-        super(First_Conv, self).__init__()
+        super().__init__()
         
         # Convert 1 channel to 3 channel also can be made unique for each site
         self.convert_channels=nn.Sequential(nn.Conv2d(1,3,1,1, bias=False), 
@@ -70,7 +67,7 @@ class First_Conv(nn.Module):
 # This MLP will map the edge weight to the weights used to avg. the features from the neighbors
 class create_mlp(nn.Module):
     def __init__(self, in_chnl, out):
-        super(create_mlp, self).__init__() 
+        super().__init__() 
         
         self.lyr=nn.Sequential(
                                 nn.Linear(in_chnl, out, bias=True),
@@ -83,7 +80,7 @@ class create_mlp(nn.Module):
 # The Resdiual Block for the GNN
 class Res_Graph_Conv_Lyr(nn.Module):
     def __init__(self, in_chnls, base_chnls, mlp_model, aggr_md):
-        super(Res_Graph_Conv_Lyr, self).__init__() 
+        super().__init__() 
         
         self.GNN_lyr=NNConv(in_chnls, base_chnls, mlp_model, aggr=aggr_md)
         self.bn=GNN_BatchNorm(base_chnls)
@@ -98,7 +95,7 @@ class Res_Graph_Conv_Lyr(nn.Module):
 ############### The Graph Convolution Network ############################
 class GNN_Network(nn.Module):
     def __init__(self, in_chnls, base_chnls, grwth_rate, depth, aggr_md, ftr_dim):
-        super(GNN_Network, self).__init__()
+        super().__init__()
         
         my_gcn=nn.ModuleList()
         
@@ -142,7 +139,7 @@ class GNN_Network(nn.Module):
 
 class GNN_Network_infer(nn.Module):
     def __init__(self, in_chnls, base_chnls, grwth_rate, depth, aggr_md, ftr_dim):
-        super(GNN_Network_infer, self).__init__()
+        super().__init__()
         
         my_gcn=nn.ModuleList()
         # Base channels is actually the fraction of inp.
@@ -179,7 +176,7 @@ class GNN_Network_infer(nn.Module):
 ########Combined model for inference and export###########
 class Infer_model(nn.Module):
     def __init__(self, backbone,split_path, gnn=True):
-        super(Infer_model, self).__init__()
+        super().__init__()
         self.gnn = gnn
         if backbone=='densenet':
             inp_dim=1024

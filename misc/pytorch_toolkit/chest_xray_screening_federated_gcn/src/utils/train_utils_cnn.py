@@ -12,18 +12,16 @@ def lcl_train(lr, trn_loader, val_loader, criterion, cnv_lyr1, backbone_model,fc
     n_batches = 4000
     ###### Compute the Validation accuracy #######
     prev_val=inference(cnv_lyr1, backbone_model, fc_layers, None, val_loader, criterion, device)
-    
     ######## Train the entire network in an end-to-end manner ###
     train_end_to_end(lr, cnv_lyr1, backbone_model, fc_layers, None, trn_loader, None, n_batches, criterion, device)
-    
     
     cnv_lyr1_wt=copy.deepcopy(cnv_lyr1.state_dict())
     backbone_wt=copy.deepcopy(backbone_model.state_dict())
     fc_wt=copy.deepcopy(fc_layers.state_dict())
     return prev_val, cnv_lyr1_wt,backbone_wt, fc_wt
 
-def trainer_without_GNN( avg_schedule, lr, b_sz, img_pth, split_npz, train_transform,
-                         test_transform, max_epochs, backbone, device, checkpoint='', savepath=''):
+def trainer_without_GNN( avg_schedule, lr, b_sz, img_pth, split_npz, train_transforms,
+                         test_transforms, max_epochs, backbone, device, checkpoint='', savepath=''):
 
     cnv_lyr1, backbone_model, fc_layers = instantiate_architecture(ftr_dim=512, model_name=backbone)
     cnv_lyr1 = cnv_lyr1.to(device)
@@ -31,7 +29,6 @@ def trainer_without_GNN( avg_schedule, lr, b_sz, img_pth, split_npz, train_trans
     fc_layers = fc_layers.to(device)
     if checkpoint!='':
         checkpoint=torch.load(checkpoint)
-        ######The wights saved for model without gnn have cnv_lyr1_state_dict instead of cnv_lyr_state_dict.......but for trial weights for with gnn are used here
         cnv_wt=checkpoint['cnv_lyr_state_dict']
         backbone_wt=checkpoint['backbone_model_state_dict']
         fc_wt=checkpoint['fc_layers_state_dict']
@@ -41,34 +38,34 @@ def trainer_without_GNN( avg_schedule, lr, b_sz, img_pth, split_npz, train_trans
 
     ### Dataloaders and model weights for each site
     # Site-0
-    data_trn0=construct_dataset(img_pth, split_npz, site=0, transforms=train_transform, tn_vl_idx=0)
+    data_trn0=construct_dataset(img_pth, split_npz, site=0, transforms=train_transforms, tn_vl_idx=0)
     trn_loader0=DataLoader(data_trn0,b_sz, shuffle=True, num_workers=1, pin_memory=False, drop_last=True)
-    data_val0=construct_dataset(img_pth, split_npz, site=0, transforms=test_transform, tn_vl_idx=1)
+    data_val0=construct_dataset(img_pth, split_npz, site=0, transforms=test_transforms, tn_vl_idx=1)
     val_loader0=DataLoader(data_val0, b_sz, shuffle=False, num_workers=1, pin_memory=False, drop_last=True)
     
     # Site-1
-    data_trn1=construct_dataset(img_pth, split_npz, site=1, transforms=train_transform, tn_vl_idx=0)
+    data_trn1=construct_dataset(img_pth, split_npz, site=1, transforms=train_transforms, tn_vl_idx=0)
     trn_loader1=DataLoader(data_trn1,b_sz, shuffle=True, num_workers=1, pin_memory=False, drop_last=True)
-    data_val1=construct_dataset(img_pth, split_npz, site=1, transforms=test_transform, tn_vl_idx=1)
+    data_val1=construct_dataset(img_pth, split_npz, site=1, transforms=test_transforms, tn_vl_idx=1)
     val_loader1=DataLoader(data_val1, b_sz, shuffle=False, num_workers=1, pin_memory=False, drop_last=True)
     
     # Site-2
-    data_trn2=construct_dataset(img_pth, split_npz, site=2, transforms=train_transform, tn_vl_idx=0)
+    data_trn2=construct_dataset(img_pth, split_npz, site=2, transforms=train_transforms, tn_vl_idx=0)
     trn_loader2=DataLoader(data_trn2,b_sz, shuffle=True, num_workers=1, pin_memory=False, drop_last=True)
-    data_val2=construct_dataset(img_pth, split_npz, site=2, transforms=test_transform, tn_vl_idx=1)
+    data_val2=construct_dataset(img_pth, split_npz, site=2, transforms=test_transforms, tn_vl_idx=1)
     val_loader2=DataLoader(data_val2, b_sz, shuffle=False, num_workers=1, pin_memory=False, drop_last=True)
     
     # Site-3
-    data_trn3=construct_dataset(img_pth, split_npz, site=3, transforms=train_transform, tn_vl_idx=0)
+    data_trn3=construct_dataset(img_pth, split_npz, site=3, transforms=train_transforms, tn_vl_idx=0)
     trn_loader3=DataLoader(data_trn3,b_sz, shuffle=True, num_workers=1, pin_memory=False, drop_last=True)
-    data_val3=construct_dataset(img_pth, split_npz, site=3, transforms=test_transform, tn_vl_idx=1)
+    data_val3=construct_dataset(img_pth, split_npz, site=3, transforms=test_transforms, tn_vl_idx=1)
     val_loader3=DataLoader(data_val3, b_sz, shuffle=False, num_workers=1, pin_memory=False, drop_last=True)
     
     
     # Site-4
-    data_trn4=construct_dataset(img_pth, split_npz, site=4, transforms=train_transform, tn_vl_idx=0)
+    data_trn4=construct_dataset(img_pth, split_npz, site=4, transforms=train_transforms, tn_vl_idx=0)
     trn_loader4=DataLoader(data_trn4,b_sz, shuffle=True, num_workers=1, pin_memory=False, drop_last=True)
-    data_val4=construct_dataset(img_pth, split_npz, site=4, transforms=test_transform, tn_vl_idx=1)
+    data_val4=construct_dataset(img_pth, split_npz, site=4, transforms=test_transforms, tn_vl_idx=1)
     val_loader4=DataLoader(data_val4, b_sz, shuffle=False, num_workers=1, pin_memory=False, drop_last=True)
     
     
@@ -281,7 +278,6 @@ def trainer_without_GNN( avg_schedule, lr, b_sz, img_pth, split_npz, train_trans
             'backbone_model_state_dict': sit4_backbone_wt,
             'fc_layers_state_dict': sit4_fc_wt,
             }, savepath+'final_site4_weights.pth')
-    return 
 
 def train_model(config):
     if torch.cuda.is_available() and config['gpu']=='True':

@@ -5,7 +5,7 @@ from .get_config import get_config
 ############# Define the Weighted Loss. The weights are different for each class ########
 class Custom_Loss(nn.Module):
     def __init__(self, site, device=torch.device('cpu')):
-        super(Custom_Loss, self).__init__()
+        super().__init__()
 
         config = get_config(action='loss')
         wts_pos = np.array(config[str(site)]['wts_pos'])

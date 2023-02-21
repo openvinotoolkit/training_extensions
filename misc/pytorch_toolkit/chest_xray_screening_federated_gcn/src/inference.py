@@ -36,8 +36,8 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', type=str, help='Want GPU ?', required=False, default='False')
     parser.add_argument('--model_file', type=str, required=False,
                         help='Path of model weights saved for running inference with pytorch')
-    parser.add_argument('--checkpoint', type=str,
-                        required=False, help='Path of onnx model file to load for inference. Required if run type is onnx or ir')
+    parser.add_argument('--checkpoint', type=str,required=False,
+                        help='Path of onnx model file to load for inference. Required if run type is onnx or ir')
     parser.add_argument('--gnn', type=str, help='using gnn or not?',
                         required=False, default='False')
     parser.add_argument('--backbone', type=str, required=False, default='resnet',
