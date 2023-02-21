@@ -57,9 +57,11 @@
   <div id="navbar-start">
     
     
+
 <a class="navbar-brand" href="../../../index.html">
-<p class="title">OpenVINO Training Extensions</p>
+  <img src="../../../_static/otx-logo-black-mini.png" class="logo" alt="logo">
 </a>
+
 
     
   </div>
@@ -671,7 +673,7 @@
   <div class="section" id="algorithms">
 <h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">¶</a></h1>
 <p id="algo-section-ref">OTX supports different training types to solve a variety of computer vision problems. This section provides what exactly we utilize inside our algorithms providing an end-to-end solution to solve real-life computer vision problems.</p>
-<p>To this end we support:</p>
+<p>To this end, we support:</p>
 <ul class="simple">
 <li><p><strong>Supervised training</strong>. This is the most common approach for computer vision tasks such as object detection and image classification. Supervised learning involves training a model on a labeled dataset of images. The model learns to associate specific features in the images with the corresponding labels.</p></li>
 <li><p><strong>Incremental learning</strong>. This learning approach lets the model train on new data as it becomes available, rather than retraining the entire model on the whole dataset every time new data is added. OTX supports also the class incremental approach for all tasks. In this approach, the model is first trained on a set of classes, and then incrementally updated with new classes of data, while keeping the previously learned classes’ knowledge. The class incremental approach is particularly useful in situations where the number of classes is not fixed and new classes may be added over time.</p></li>
