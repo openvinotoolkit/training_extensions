@@ -11,6 +11,6 @@ To be specific, this tutorial uses as an example of the ATSS model trained throu
 
 .. code-block::
 
-    source <directory_for_environment>/bin/activate
+    source .otx/bin/activate
 
 2. ``otx explain`` returns saliency maps at the path specified by ``--save-explanation-to``.
