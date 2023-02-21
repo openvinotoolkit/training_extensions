@@ -1,4 +1,5 @@
-from utils.train_utils import train_model
+from utils.train_utils_cnn import train_model
+from utils.train_utils_gnn import train_model as train_model_gnn
 import argparse
 def main(args):
     config = {
@@ -13,7 +14,10 @@ def main(args):
         'checkpoint': args.checkpoint,
         'savepath': args.savepath,
     }
-    train_model(config)
+    if args.gnn == 'True':
+        train_model_gnn(config)
+    else:
+        train_model(config)
 
 if __name__ == '__main__':
 

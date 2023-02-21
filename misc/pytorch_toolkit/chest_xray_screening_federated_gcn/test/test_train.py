@@ -1,10 +1,9 @@
 import unittest
 import os
-import sys
-from ..src.utils.train_utils import train_model
 from ..src.utils.downloader import download_checkpoint, download_data
 from ..src.utils.get_config import get_config
-from ..src.utils.train_utils import train_model
+from ..src.utils.train_utils_cnn import train_model
+from ..src.utils.train_utils_gnn import train_model as train_model_gnn
 
 def create_train_test_for_without_gnn():
     class TrainerTest(unittest.TestCase):
@@ -37,7 +36,7 @@ def create_train_test_for_with_gnn():
         def test_trainer(self):
             if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint(gnn=True)
-            train_model(self.config)
+            train_model_gnn(self.config)
 
         def test_config(self):
             self.config = get_config(action='train', gnn=True)

@@ -6,6 +6,7 @@ from .dataloader import construct_dataset
 from torch.utils.data import DataLoader
 from .loss import Custom_Loss
 from .misc import compute_lcl_wt, aggregate_local_weights
+from .transformations import train_transform, test_transform
 
 def lcl_train(lr, trn_loader, val_loader, criterion, cnv_lyr1, backbone_model,fc_layers, device):
     n_batches = 4000
@@ -281,3 +282,14 @@ def trainer_without_GNN( avg_schedule, lr, b_sz, img_pth, split_npz, train_trans
             'fc_layers_state_dict': sit4_fc_wt,
             }, savepath+'final_site4_weights.pth')
     return 
+
+def train_model(config):
+    if torch.cuda.is_available() and config['gpu']=='True':
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+    avg_schedule = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    trainer_without_GNN(avg_schedule, config['lr'], config['batch_size'], config['data'],
+                        config['split_npz'], train_transform, test_transform, config['epochs'],
+                        config['backbone'], device, config['checkpoint'], config['savepath'])
+                        

@@ -157,20 +157,3 @@ def instantiate_architecture(ftr_dim, model_name, gnn=False):
         return cnv_lyr, backbone_model, fc_layers, gnn_model
     
     return cnv_lyr, backbone_model, fc_layers
-
-def train_model(config):
-    if torch.cuda.is_available() and config['gpu']=='True':
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
-    if config['gnn']=="True":
-        trainer_with_GNN(config['lr'],config['batch_size'], config['data'], config['split_npz'],
-                         train_transform, test_transform, config['epochs'], config['backbone'],
-                         device, config['checkpoint'], config['savepath'] )
-    else:
-        avg_schedule = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-        trainer_without_GNN(avg_schedule, config['lr'], config['batch_size'], config['data'],
-                            config['split_npz'], train_transform, test_transform, config['epochs'],
-                            config['backbone'], device, config['checkpoint'], config['savepath'])
-
-
