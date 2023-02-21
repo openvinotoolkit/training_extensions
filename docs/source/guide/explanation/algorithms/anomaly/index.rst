@@ -12,7 +12,7 @@ Task Types
 **********
 OTX supports the following anomaly task types:
 
-* Anomaly Classification - (Image-level localization)
+* Anomaly Classification - (Image-level detection)
 * Anomaly Detection - (Box-level localization)
 * Anomaly Segmentation - (Pixel-level localization)
 
