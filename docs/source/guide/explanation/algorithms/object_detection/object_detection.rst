@@ -17,14 +17,12 @@ To be added soon
 Semi-supervised Learning
 ************************
 
-Semi-SL (Semi supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.
-
-`Unbiased Teacher model <https://arxiv.org/abs/2102.09480>`_ is a specific implementation of Semi-SL for object detection. Unbiased teacher detach student model and teacher model to prevent teacher from being polluted by noisy pseudo labels. In the early stage, teacher model trained by supervised loss. This stage is called burn-in stage. After burn-in the student model is trained using both psudo labeled data from teacher model and labeled data. And the teacher model is updated using
+For Semi-SL task solving we use `Unbiased Teacher model <https://arxiv.org/abs/2102.09480>`_, which is a specific implementation of Semi-SL for object detection. Unbiased teacher detach the student model and the teacher model to prevent teacher from being polluted by noisy pseudo-labels. In the early stage, the teacher model is trained by supervised loss. This stage is called a burn-in stage. After the burn-in, the student model is trained using both pseudo-labeled data from the teacher model and labeled data. And the teacher model is updated using
 EMA.
 
-In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, Our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.
+In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.
 
-Overall, OTX Semi-SL are powerful techniques for improving the performance of machine learning models with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.
+Overall, OTX utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.
 
 .. _od_semi_supervised_pipeline:
 
@@ -32,7 +30,7 @@ Overall, OTX Semi-SL are powerful techniques for improving the performance of ma
 
 - ``Weak & Strong augmentation``: For teacher model weak augmentations(random flip) are applied to input image. For student model strong augmentations(colorjtter, grayscale, goussian blur, random erasing) are applied.
 
-- ``Other solutions``: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, etc.).
+- ``Additional training techniques``: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, Early stopping, LR conditioning.).
 
 Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` how to train semi supervised learning. 
 
