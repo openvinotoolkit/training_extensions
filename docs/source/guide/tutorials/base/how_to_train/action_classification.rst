@@ -64,7 +64,7 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
     │   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
     |
 
-Once you have the dataset structured properly, you can convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
+Once you have the dataset structured properly, copy mmaction2/data folder which has hmdb51 dataset to training_extensions/data. And you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
 
 .. code-block::
 
