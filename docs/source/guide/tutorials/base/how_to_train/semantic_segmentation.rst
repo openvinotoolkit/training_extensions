@@ -21,13 +21,13 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-To create a virtual environment for semantic segmentation, please follow the installation process from the :doc:`quick start guide <../../../get_started/installation>`.
+To create a virtual environment for semantic segmentation, please follow the installation process from the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`.
 
 ***************************
 Dataset preparation
 ***************************
 
-Download and prepare the VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>_ with the following command:
+Download and prepare `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ with the following command:
 
 .. code-block::
 
@@ -36,10 +36,10 @@ Download and prepare the VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC
   tar -xvf VOCtrainval_11-May-2012.tar
   cd ..
 
-.. image:: ../../../../utils/images/voc_example.png
+.. image:: ../../../../../utils/images/voc_example.png
   :width: 600
 
-The dataset contains a set of RGB images with 20 semantic labels such as aero plane, bicycle, bird, etc. The images are stored in the following format:
+The dataset contains a set of RGB images with 20 semantic labels such as aeroplane, bicycle, bird, car, person, etc. The images are stored in the following format:
 
 .. code-block::
 
@@ -227,7 +227,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
   ...
 
-  Performance(score: 0.9577656675749319, dashboard: (3 metric groups))
+  Performance(score: 0.9577656675749319, dashboard: (1 metric groups))
 
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
