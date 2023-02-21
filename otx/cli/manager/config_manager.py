@@ -290,7 +290,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 dataset=datum_dataset, output_dir=str(dst_dir_path), data_format=self.data_format, save_media=True
             )
 
-        if "unlabeled" in data_config["data"] and "data-roots" in data_config["data"]["unlabeled"]:
+        if data_config["data"]["unlabeled"]["data-roots"] is not None:
             data_config["data"]["unlabeled"]["data-roots"] = str(
                 Path(data_config["data"]["unlabeled"]["data-roots"]).absolute()
             )
