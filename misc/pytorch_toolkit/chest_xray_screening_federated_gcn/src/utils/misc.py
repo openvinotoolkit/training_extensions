@@ -90,7 +90,7 @@ def compute_adjacency_matrix(adj_type, site, split_npz='/storage/aneesh/split.np
 def average_weights(w, cmb_wt, device):
 
     cmb_wt=np.array(cmb_wt)
-    cmb_wt=cmb_wt.astype(np.float)
+    cmb_wt=cmb_wt.astype(float)
     cmb_wt=cmb_wt/np.sum(cmb_wt)
     wts = torch.tensor(cmb_wt).to(device)
     wts=wts.float()

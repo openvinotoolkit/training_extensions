@@ -143,7 +143,7 @@ class GNN_Network(nn.Module):
 #####Gnn model for inference, works without gnn dataloader
 
 class GNN_Network_infer(nn.Module):
-    def __init__(self, in_chnls, base_chnls, grwth_rate, depth, aggr_md, ftr_dim, edge_index, edge_attr):
+    def __init__(self, in_chnls, base_chnls, grwth_rate, depth, aggr_md, ftr_dim):
         super(GNN_Network_infer, self).__init__()
         
         my_gcn=nn.ModuleList()
@@ -167,16 +167,15 @@ class GNN_Network_infer(nn.Module):
         
         self.my_gcn=my_gcn
         self.dpth=depth
-        self.edge_index, self.edge_attr= edge_index, edge_attr
     
-    def forward(self, x):
+    def forward(self, x, edge_index, edge_attr):
         cnt=0
-        x=self.my_gcn[cnt](x, self.edge_index, self.edge_attr)
+        x=self.my_gcn[cnt](x, edge_index, edge_attr)
         for k in range(0, self.dpth):
             cnt=cnt+1
-            x=self.my_gcn[cnt](x, self.edge_index, self.edge_attr)
+            x=self.my_gcn[cnt](x, edge_index, edge_attr)
         cnt=cnt+1
-        out=self.my_gcn[cnt](x, self.edge_index, self.edge_attr) 
+        out=self.my_gcn[cnt](x, edge_index, edge_attr) 
         return out
 
 ########Combined model for inference and export###########
@@ -202,7 +201,7 @@ class Infer_model(nn.Module):
         fc_layers=Fully_Connected_Layer(inp_dim, ftr_dim=512)
         self.edge_index, self.edge_attr= compute_adjacency_matrix('confusion_matrix', -999, split_path)
         if gnn is True:
-            gnn_model=GNN_Network_infer(in_chnls=512, base_chnls=1, grwth_rate=1, depth=1, aggr_md='mean', ftr_dim=4,edge_index=self.edge_index, edge_attr=self.edge_attr)
+            gnn_model=GNN_Network_infer(in_chnls=512, base_chnls=1, grwth_rate=1, depth=1, aggr_md='mean', ftr_dim=4)
         self.cnv_lyr=cnv_lyr
         self.backbone_model=backbone_model
         self.fc_layers = fc_layers
@@ -218,7 +217,10 @@ class Infer_model(nn.Module):
         ftr_list=torch.cat(ftr_list, dim=1)
         ftr_list = ftr_list[0]
         if self.gnn==True:
-            prd=self.gnn_model(x=ftr_list)   
+            if x.is_cuda:
+                self.edge_attr=self.edge_attr.cuda()
+                self.edge_index=self.edge_index.cuda()
+            prd=self.gnn_model(ftr_list, self.edge_index, self.edge_attr)   
             prd=prd.transpose(1,0) 
         return prd
     

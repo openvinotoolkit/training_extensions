@@ -1,10 +1,10 @@
 import unittest
 import os
 import sys
-from src.utils.train_utils import train_model
-from src.utils.downloader import download_checkpoint, download_data
-from src.utils.get_config import get_config
-from src.utils.train_utils import train_model
+from ..src.utils.train_utils import train_model
+from ..src.utils.downloader import download_checkpoint, download_data
+from ..src.utils.get_config import get_config
+from ..src.utils.train_utils import train_model
 
 def create_train_test_for_without_gnn():
     class TrainerTest(unittest.TestCase):

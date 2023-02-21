@@ -1,9 +1,9 @@
 import unittest
 import os
 import sys
-from src.utils.downloader import download_checkpoint
-from src.utils.exporter import Exporter
-from src.utils.get_config import get_config
+from ..src.utils.downloader import download_checkpoint
+from ..src.utils.exporter import Exporter
+from ..src.utils.get_config import get_config
 
 def create_export_test_with_gnn():
     class ExportTest(unittest.TestCase):

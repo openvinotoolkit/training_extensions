@@ -57,7 +57,7 @@ def train_one_batch(sample, cnv_lyr, backbone_model, fc_layers, gnn_model, optim
     
     ### Optimizer Gradients
     #if training is without gnn 
-    if gnn_model is not None:
+    if gnn_model is None:
         optim1.step()
         optim2.step()
         optim3.step()
