@@ -1,10 +1,123 @@
-Anomaly Recognition
-===================
+Anomaly Detection
+=================
 
-.. toctree::
-   :maxdepth: 1
+Introduction
+************
+The datasets from real-world applications such as industrial, medical, and security are extremely unbalanced, with an abundance of normal images and a severe lack of abnormal samples. A second issue is that the definition and type of abnormality are constantly evolving, making it difficult to train a supervised model once and use it permanently.  An alternative approach is to train a model using only normal samples to learn normality.  During the validation or testing phases, a deviation from this would indicate an anomaly. The process of identifying such deviations or anomalies in data is known as anomaly detection.
+
+This section examines the solutions for anomaly detection offered by the OpenVINO Training Extensions library.
 
 
-   anomaly_classification
-   anomaly_detection
-   anomaly_segmentation
+Task Types
+**********
+OTX supports the following anomaly task types:
+
+* Anomaly Classification - (Image-level localization)
+* Anomaly Detection - (Box-level localization)
+* Anomaly Segmentation - (Pixel-level localization)
+
+.. note::
+   Only normal images are used to train all anomaly detection algorithms. The distinction between the tasks is the way in which the testing phase predicts or localises anomalies. In anomaly classification, for instance, anomalies are predicted at the image level; in anomaly detection, anomalies are localised using a bounding box; and in anomaly segmentation, anomalies are localised using a mask.
+
+
+Anomaly Classification
+----------------------
+Anomaly classification is the task of predicting normal and abnormal images on image-level. As noted above, a model is trained on normal images only. During the testing phase, the model predicts an anomaly score indicating the likelihood of an image being abnormal. The threshold for anomaly classification is either set by the user or adaptively tuned by OTX. An image is classified as abnormal if the anomaly score is above the threshold.
+
+Anomaly Detection
+-----------------
+Anomaly detection is the task of predicting normal and abnormal images on box-level. Similar to anomaly classification, a model is trained on normal images only. During the testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a bounding box around the anomaly.
+
+Anomaly Segmentation
+--------------------
+Anomaly segmentation task performs a pixel-level localization of anomalies. Similar to anomaly classification and detection, a model is trained on normal images only. During the validation/testing phase, the model outputs an anomaly heatmap showing the likelihood of each pixel being abnormal. After post-processing the heatmap, the model predicts a mask around the anomaly.
+
+
+.. _fig-anomaly-tasks:
+
+.. figure:: ../../../../_static/images/anomaly_tasks.png
+   :width: 600
+   :align: center
+   :alt: Anomaly Task Types
+
+   Anomaly task types. (a) A normal image used during training. (b) An image-level prediction of an anomaly by anomaly classification task. (c) A box-level prediction of an anomaly by anomaly detection task. (d) A pixel-level prediction of an anomaly by anomaly segmentation task.
+
+Dataset Format
+**************
+Anomaly tasks in OTX currently support the MVTec AD dataset format, one of the most popular datasets for anomaly detection.
+
+.. code-block::
+
+   MVTec/<category>
+   ├── ground_truth
+   │   ├── <sub_category_1>
+   │   │   ├── 000_mask.png
+   │   │   └── ...
+   │   ├── ...
+   │   └── <sub_category_n>
+   │       ├── 000_mask.png
+   │       └── ...
+   ├── test
+   │   ├── <sub_category_1>
+   │   │   ├── 000.png
+   │   │   └── ...
+   │   ├── ...
+   │   ├── contamination
+   │   │   ├── 000.png
+   │   │   └── ...
+   │   └── good
+   │       ├── 000.png
+   │       └── ...
+   └── train
+      └── good
+         ├── 000.png
+         └── ...
+
+Future OTX releases will support other benchmark datasets such as Amazon's `Visual Anomaly (VisA) <https://github.com/amazon-science/spot-diff#data-download>`_ dataset. Meanwhile, you can use the `MVTec AD dataset <https://www.mvtec.com/company/research/datasets/mvtec-ad/>`_ to train and test anomaly detection models, or use MVTec dataset structure to train and test anomaly detection models on your own dataset.
+
+Models
+******
+As mentioned above, , the goal In visual anomaly detection is to learn a representation of normal behavior in the data, and then identify instances that deviate from this normal behavior. OTX supports several deep learning approaches to this task, including the following:
+
+Clustering-based Models
+-----------------------
+These models initially extracts features from a CNN or transformer and subsequently use clustering algorithms to learn normality. The anomaly score is then calculated as the distance between the input image and the cluster center. OTX currently supports `PADIM <https://arxiv.org/pdf/2011.08785.pdf>`_.
+
+PADIM
+^^^^^
+
+.. figure:: ../../../../_static/images/padim.png
+   :width: 600
+   :align: center
+   :alt: Anomaly Task Types
+
+Padim is a clustering based. The model uses a patch-based mechanism that extracts patches from the input image and then uses a CNN to extract features from the patches. To eliminate the redundant information from the extracted features, the model randomly selects a subset of the features to reduce the dimensionality of the features. A multi-variate gaussian distribution is fitted for each patch embedding. This means each patch of the set of training images has a corresponding multi-variate gaussian distribution. To predict the anomaly score, Mahalanobis distance is calculated to score each patch position of the test image. The matrices of Mahalanobis distances constitute the anomaly map, with higher scores indicating anomalous regions.
+
+Knowledge Distillation-based Models
+-----------------------------------
+Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behaviour of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OTX currently supports `STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection <https://arxiv.org/pdf/2103.04257.pdf>`_.
+
+STFPM
+^^^^^
+
+.. figure:: ../../../../_static/images/stfpm.png
+   :width: 600
+   :align: center
+   :alt: Anomaly Task Types
+
+The STFPM algorithm is composed of a pre-trained teacher network and a student network with the same architecture. The student network learns the distribution of anomaly-free images by matching the features to their corresponding features in the teacher network. Multiple-scale feature matching is utilised to enable the student network during training to receive a mixture of multi-level knowledge from the feature pyramid, thereby enabling the detection of anomalies of various sizes. To compute the anomaly scores during the inference, the student network's feature pyramid is compared to the teacher network's feature pyramid. The anomaly score is computed as the sum of the L2 distances between the student and teacher feature pyramids. This distance is then used to compute the anomaly map and the anomaly score.
+
+
+Reconstruction-based Models
+---------------------------
+These models initially extract features from a CNN or transformer and subsequently reconstruct the input image. The anomaly score is then calculated as the distance between the input image and the reconstructed image. OTX currently supports `DRÆM – A discriminatively trained reconstruction embedding for surface anomaly detection <https://arxiv.org/pdf/2108.07610v2.pdf>`_.
+
+DRÆM
+^^^^
+
+.. figure:: ../../../../../utils/images/draem.png
+   :width: 600
+   :align: center
+   :alt: Anomaly Task Types
+
+A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork and a discriminative subnetwork. DRAEM is trained on simulated anomaly images, which are produced by combining normal input images from the training set with a random Perlin noise mask extracted from an unrelated source of image data. The reconstructive subnetwork is an autoencoder trained to reconstruct the original input images from the augmented images. Combining L2 loss and structural similarity loss, the reconstructive submodel is trained. The input of the discriminative subnetwork is the channel-by-channel concatenation of the (augmented) input image and the output of the reconstructive subnetwork. The output of the discriminative subnetwork is an anomaly map containing the predicted anomaly scores for each pixel.
