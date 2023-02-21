@@ -4,6 +4,8 @@
 
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
+import openvino.runtime as ov
+
 from otx.mpa.utils.logger import get_logger
 
 from ..graph.parsers.builder import PARSERS
@@ -15,7 +17,7 @@ logger = get_logger()
 class ParserMixin:
     def parse(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -28,7 +30,7 @@ class ParserMixin:
             parser = PARSERS.get(parser)
 
         if not inputs or not outputs:
-            graph = OVModel.build_graph(model_path, weight_path)
+            graph = OVModel.build_graph(model_path_or_model, weight_path)
             parsed = parser(graph, **kwargs)
 
             if not isinstance(parsed, dict) or ("inputs" not in parsed and "outputs" not in parsed):

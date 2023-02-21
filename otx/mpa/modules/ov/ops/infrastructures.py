@@ -181,7 +181,11 @@ class ConstantV0(Operation[ConstantV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = ConstantV0Attribute
 
-    def __init__(self, data, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        data = kwargs.pop("data", None)
+        if data is None:
+            raise KeyError("data is not provided")
+        assert isinstance(data, torch.Tensor)
         kwargs["element_type"] = ConvertV0.convert_torch_type(data.dtype)
         super().__init__(*args, **kwargs)
         if self.attrs.is_parameter:
@@ -234,4 +238,4 @@ class ConstantV0(Operation[ConstantV0Attribute]):
             is_parameter = True
         attrs["is_parameter"] = is_parameter
 
-        return cls(data, name=op_name, **attrs)
+        return cls(name=op_name, data=data, **attrs)

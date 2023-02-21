@@ -5,6 +5,7 @@
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
@@ -15,7 +16,7 @@ from ...mmov_model import MMOVModel
 class MMOVDecodeHead(BaseDecodeHead):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model] = None,
         weight_path: Optional[str] = None,
         inputs: Dict[str, Union[str, List[str]]] = {},
         outputs: Dict[str, Union[str, List[str]]] = {},
@@ -24,7 +25,7 @@ class MMOVDecodeHead(BaseDecodeHead):
         *args,
         **kwargs,
     ):
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._inputs = deepcopy(inputs)
         self._outputs = deepcopy(outputs)
@@ -42,7 +43,7 @@ class MMOVDecodeHead(BaseDecodeHead):
 
         if "extractor" in inputs and "extractor" in outputs:
             self.extractor = MMOVModel(
-                self._model_path,
+                self._model_path_or_model,
                 self._weight_path,
                 inputs=inputs["extractor"],
                 outputs=outputs["extractor"],
@@ -55,7 +56,7 @@ class MMOVDecodeHead(BaseDecodeHead):
 
         assert "cls_seg" in inputs and "cls_seg" in outputs
         self.conv_seg = MMOVModel(
-            self._model_path,
+            self._model_path_or_model,
             self._weight_path,
             inputs=inputs["cls_seg"],
             outputs=outputs["cls_seg"],

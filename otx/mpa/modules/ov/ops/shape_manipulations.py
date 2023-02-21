@@ -33,7 +33,7 @@ class SqueezeV0(Operation[SqueezeV0Attribute]):
         dims = dims.detach().cpu().tolist()
         for i, dim in enumerate(dims):
             if dim < 0:
-                dims[i] = max_dim - dim
+                dims[i] = max_dim + dim
 
         output = input
         for dim in sorted(dims, reverse=True):
@@ -58,11 +58,12 @@ class UnsqueezeV0(Operation[UnsqueezeV0Attribute]):
         if dims.dim() == 0:
             dims = torch.unsqueeze(dims, 0)
 
+        max_dim = input.dim()
         dims = dims.detach().cpu().tolist()
         if len(dims) > 1:
             for i, dim in enumerate(dims):
                 if dim < 0:
-                    raise NotImplementedError
+                    dims[i] = max_dim + dim
 
         output = input
         for dim in sorted(dims, reverse=True):
@@ -83,18 +84,15 @@ class ReshapeV1(Operation[ReshapeV1Attribute]):
     ATTRIBUTE_FACTORY = ReshapeV1Attribute
 
     def forward(self, input, shape):
-        if not self.attrs.special_zero and sum(shape == 0):
-            raise NotImplementedError
-
         target_shape = shape.detach().cpu().tolist()
         origin_shape = list(input.shape)
         for i, (origin_dim, target_dim) in enumerate(zip(origin_shape, target_shape)):
-            if target_dim == 0:
+            if target_dim == 0 and self.attrs.special_zero:
                 target_shape[i] = origin_dim
             elif target_dim == -1:
                 break
         for i, (origin_dim, target_dim) in enumerate(zip(origin_shape[::-1], target_shape[::-1])):
-            if target_dim == 0:
+            if target_dim == 0 and self.attrs.special_zero:
                 target_shape[i] = origin_dim
             elif target_dim == -1:
                 break

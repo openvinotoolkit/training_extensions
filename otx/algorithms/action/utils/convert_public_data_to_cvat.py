@@ -32,16 +32,17 @@ root
 # and limitations under the License.
 
 # pylint: disable=too-many-locals, c-extension-no-member, invalid-name, too-many-statements
-
+import argparse
 import csv
 import os
 import os.path as osp
 import pathlib
 import shutil
-import sys
+from typing import List
 
 import cv2
 from lxml import etree
+from tqdm import tqdm
 
 
 def generate_default_cvat_xml_fields(i, video_path, frame_list):
@@ -130,44 +131,147 @@ def generate_default_cvat_xml_fields(i, video_path, frame_list):
 
 
 # classification
-def convert_jester_dataset_to_datumaro(src_path, dst_path):
-    """Convert Jester dataset to multi-video CVAT (Datumaro) format."""
-    # Prepare dst_path
-    frames_dir_path = osp.join(src_path, "rawframes")
+def convert_action_cls_dataset_to_datumaro(src_path: str, dst_path: str, ann_file: str, label_map=None):
+    """Convert a public dataset to multi-video CVAT (Datumaro) format.
 
-    phases = ["train", "val", "test"]
-    for phase in phases:
-        label_list = []
-        txt_path = osp.join(src_path, f"{phase}_list_rawframes.txt")
-        with open(txt_path, "r", encoding="utf-8") as txt:
-            pathlib.Path(osp.join(dst_path, phase)).mkdir(parents=True, exist_ok=True)
+    Supported datasets are: Jester, HMDB51, UCF101
 
-            for i, line in enumerate(txt.readlines()):
-                if line[0] == "#":
-                    continue
-                video_dir, _, class_idx = line[:-1].split(" ")
+    Args:
+        src_path (str): The path to the directory containing the video files as rawframe folder.
+        dst_path (str): The path to the directory where the multi-video CVAT (Datumaro) format dataset will be saved.
+        ann_file (str): The path to the file containing the annotations for the videos.
+        label_map (optional): The path to the file containing the mapping between class IDs and class names.
 
-                video_path = osp.join(frames_dir_path, video_dir)
-                video_name = video_path.split("/")[-1]
-                frame_list = os.listdir(video_path)
-                frame_list.sort()
+    Returns:
+        None
 
-                shutil.copytree(
-                    video_path,
-                    osp.join(
-                        dst_path,
-                        phase,
-                        f"{video_name}/images",
-                    ),
+    Examples:
+        src_path = "./data/hmdb51/rawframes"
+        dst_path = "./data/hmdb51/CVAT/train"
+        ann_file = "./data/hmdb51/hmdb51_train_split_1_rawframes.txt"
+        label_map = "./data/hmdb51/label_map.txt"
+        convert_public_dataset_to_datumaro(src_path, dst_path, ann_file, label_map=label_map)
+    """
+
+    # Load the annotations file. Annotation is supposed as whitespace separated format: Video_name num_frames class_idx
+    # Ex) kiss/American_History_X_kiss_h_cm_np2_le_goo_40 69 22
+    with open(ann_file, "r", encoding="utf-8") as anns:
+        pathlib.Path(osp.join(dst_path)).mkdir(parents=True, exist_ok=True)
+
+        lines = anns.readlines()
+        for i, line in tqdm(enumerate(lines), total=len(lines)):
+            if line[0] == "#":
+                continue
+
+            # Parse the video directory and class ID from the annotations file
+            video_dir, _, class_idx = line[:-1].split(" ")
+
+            if label_map is not None:
+                # Load label mapping file : brush_hair\ncarwheel\ncatch, ...
+                with open(label_map, "r", encoding="utf-8") as f:
+                    label_names = f.read().splitlines()
+                label_mapping_dict = {str(idx): label_name for idx, label_name in enumerate(label_names)}
+                class_name = label_mapping_dict[class_idx]
+            else:
+                class_name = class_idx
+
+            # Prepare the output directories and file names
+            video_path = osp.join(src_path, video_dir)
+            video_name = f"Video_{i}"
+            images_dir = osp.join(dst_path, f"{video_name}/images")
+
+            # List the frames in the video and sort them
+            frame_list = os.listdir(video_path)
+            frame_list.sort()
+
+            # Generate default CVAT XML fields for the video annotation
+            annotations, img_shape, labels = generate_default_cvat_xml_fields(i, video_path, frame_list)
+
+            # Add the video label to the annotations
+            label = etree.Element("label")
+            labels.append(label)
+
+            name = etree.Element("name")
+            name.text = class_name
+            label.append(name)
+
+            attributes = etree.Element("attributes")
+            attributes.text = ""
+            label.append(attributes)
+
+            # Copy the video frames to the output directory and create the image tags in the annotations
+            for j, frame in enumerate(frame_list):
+                if not osp.exists(images_dir):
+                    os.makedirs(images_dir, exist_ok=True)
+
+                image_name = f"{j+1:05d}.jpg"
+                shutil.copy(osp.join(video_path, frame), osp.join(images_dir, image_name))
+                image = etree.Element(
+                    "image", id=str(j), name=image_name, width=str(img_shape[1]), height=str(img_shape[0])
                 )
+                tag = etree.Element("tag", label=class_name, source="manual")
+                tag.text = ""
+                image.append(tag)
+                annotations.append(image)
 
-                annotations, img_shape, labels = generate_default_cvat_xml_fields(i, video_path, frame_list)
+            et = etree.ElementTree(annotations)
+            et.write(
+                osp.join(dst_path, f"{video_name}/annotations.xml"),
+                pretty_print=True,
+                xml_declaration=True,
+                encoding="utf-8",
+            )
 
-                if class_idx not in label_list:
-                    label_list.append(class_idx)
+
+def convert_ava_dataset_to_datumaro(src_path: str, dst_path: str, ann_file: str):
+    """Convert AVA dataset to multi-video CVAT (Datumaro) format.
+
+    Args:
+        src_path (str): The path to the directory containing the video files as rawframe folder.
+        dst_path (str): The path to the directory where the multi-video CVAT (Datumaro) format dataset will be saved.
+        ann_file (str): The path to the file containing the annotations for the videos.
+
+    Returns:
+        None
+
+    Examples:
+        src_path = "./data/ava_dataset/frames"
+        dst_path = "./data/ava_dataset/CVAT/train"
+        ann_file = "./data/ava_dataset/annotations/train.csv"
+        convert_ava_dataset_to_datumaro(src_path, dst_path, ann_file)
+    """
+
+    video_dict = {}
+    video_idx = 0
+    annot_info = read_ava_csv(ann_file)
+    video_dirs = os.listdir(src_path)
+    video_dirs.sort()
+    for video_dir in video_dirs:
+        if video_dir not in annot_info:
+            continue
+        video_path = osp.join(src_path, video_dir)
+        frame_list = os.listdir(video_path)
+        frame_list.sort()
+        if video_dir not in video_dict:
+            annotations, _, labels = generate_default_cvat_xml_fields(video_idx, video_path, frame_list)
+            label_list: List[str] = []
+            video_dict[video_dir] = {"annotations": annotations, "labels": labels, "label_list": label_list}
+        for frame in frame_list:
+            frame_idx = int(frame.split(".")[0].split("_")[-1])
+            if frame_idx in annot_info[video_dir]:
+                annots = annot_info[video_dir][frame_idx]
+            else:
+                annots = [[0, 0, 0, 0, "EmptyFrame"]]
+
+            for annot in annots:
+                bboxes = annot[:4]
+                class_idx = annot[4]
+                track = etree.Element("track", id=str(video_idx), label=str(class_idx))
+                if class_idx not in video_dict[video_dir]["label_list"]:
+                    video_dict[video_dir]["label_list"].append(class_idx)
 
                     label = etree.Element("label")
-                    labels.append(label)
+                    video_dict[video_dir]["labels"].append(label)
 
                     name = etree.Element("name")
                     name.text = str(class_idx)
@@ -176,98 +280,32 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
                     attributes = etree.Element("attributes")
                     attributes.text = ""
                     label.append(attributes)
-
-                for j, frame in enumerate(frame_list):
-                    image = etree.Element(
-                        "image", id=str(j), name=str(frame), width=str(img_shape[1]), height=str(img_shape[0])
-                    )
-                    tag = etree.Element("tag", label=str(class_idx), source="manual")
-                    tag.text = ""
-                    image.append(tag)
-                    annotations.append(image)
-
-                et = etree.ElementTree(annotations)
-                et.write(
-                    osp.join(dst_path, phase, f"{video_name}/annotations.xml"),
-                    pretty_print=True,
-                    xml_declaration=True,
-                    encoding="utf-8",
+                box = etree.Element(
+                    "box",
+                    frame=str(frame_idx),
+                    outside="0",  # not used
+                    occluded="0",  # not used
+                    xtl=str(bboxes[0]),
+                    ytl=str(bboxes[1]),
+                    xbr=str(bboxes[2]),
+                    ybr=str(bboxes[3]),
+                    z_order="0",
+                    label=str(class_idx),
                 )
+                box.text = ""
+                track.append(box)
+                video_dict[video_dir]["annotations"].append(track)
 
-
-def convert_ava_dataset_to_datumaro(src_path, dst_path):
-    """Convert AVA dataset to multi-video CVAT (Datumaro) format."""
-    # Prepare dst_path
-    frames_dir_path = osp.join(src_path, "frames")
-
-    phases = ["train", "valid"]
-    for phase in phases:
-        video_dict = {}
-        video_idx = 0
-        csv_path = osp.join(src_path, f"annotations/{phase}.csv")
-        annot_info = read_ava_csv(csv_path)
-        video_dirs = os.listdir(frames_dir_path)
-        video_dirs.sort()
-        for video_dir in video_dirs:
-            if video_dir not in annot_info:
-                continue
-            video_path = osp.join(frames_dir_path, video_dir)
-            frame_list = os.listdir(video_path)
-            frame_list.sort()
-            if video_dir not in video_dict:
-                annotations, _, labels = generate_default_cvat_xml_fields(video_idx, video_path, frame_list)
-                label_list = []
-                video_dict[video_dir] = {"annotations": annotations, "labels": labels, "label_list": label_list}
-            for frame in frame_list:
-                frame_idx = int(frame.split(".")[0].split("_")[-1])
-                if frame_idx in annot_info[video_dir]:
-                    annots = annot_info[video_dir][frame_idx]
-                else:
-                    annots = [[0, 0, 0, 0, "EmptyFrame"]]
-
-                for annot in annots:
-                    bboxes = annot[:4]
-                    class_idx = annot[4]
-                    track = etree.Element("track", id=str(video_idx), label=str(class_idx))
-                    if class_idx not in video_dict[video_dir]["label_list"]:
-                        video_dict[video_dir]["label_list"].append(class_idx)
-
-                        label = etree.Element("label")
-                        video_dict[video_dir]["labels"].append(label)
-
-                        name = etree.Element("name")
-                        name.text = str(class_idx)
-                        label.append(name)
-
-                        attributes = etree.Element("attributes")
-                        attributes.text = ""
-                        label.append(attributes)
-                    box = etree.Element(
-                        "box",
-                        frame=str(frame_idx),
-                        outside="0",  # not used
-                        occluded="0",  # not used
-                        xtl=str(bboxes[0]),
-                        ytl=str(bboxes[1]),
-                        xbr=str(bboxes[2]),
-                        ybr=str(bboxes[3]),
-                        z_order="0",
-                        label=str(class_idx),
-                    )
-                    box.text = ""
-                    track.append(box)
-                    video_dict[video_dir]["annotations"].append(track)
-
-        for (video_dir, info) in video_dict.items():
-            video_path = osp.join(frames_dir_path, video_dir)
-            shutil.copytree(video_path, osp.join(dst_path, phase, f"{video_dir}/images"), copy_function=rename_and_copy)
-            et = etree.ElementTree(info["annotations"])
-            et.write(
-                osp.join(dst_path, phase, f"{video_dir}/annotations.xml"),
-                pretty_print=True,
-                xml_declaration=True,
-                encoding="utf-8",
-            )
+    for (video_dir, info) in video_dict.items():
+        video_path = osp.join(src_path, video_dir)
+        shutil.copytree(video_path, osp.join(dst_path, f"{video_dir}/images"), copy_function=rename_and_copy)
+        et = etree.ElementTree(info["annotations"])
+        et.write(
+            osp.join(dst_path, f"{video_dir}/annotations.xml"),
+            pretty_print=True,
+            xml_declaration=True,
+            encoding="utf-8",
+        )
 
 
 def rename_and_copy(_src, _dst):
@@ -302,18 +340,25 @@ def read_ava_csv(csv_path):
     return annot_info
 
 
-def main(src_path, dst_path, task):
+def parse_args():
+    """Parses command line arguments."""
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--task", required=True, type=str)
+    parser.add_argument("--src_path", required=True, type=str)
+    parser.add_argument("--dst_path", required=True, type=str)
+    parser.add_argument("--ann_file", required=True, type=str)
+    parser.add_argument("--label_map", type=str, default=None)
+    return parser.parse_args()
+
+
+def main():
     """Main function."""
-    if task == "cls":
-        convert_jester_dataset_to_datumaro(src_path, dst_path)
-    else:
-        convert_ava_dataset_to_datumaro(src_path, dst_path)
+    args = parse_args()
+    if args.task == "action_classification":
+        convert_action_cls_dataset_to_datumaro(args.src_path, args.dst_path, args.ann_file, args.label_map)
+    elif args.task == "action_detection":
+        convert_ava_dataset_to_datumaro(args.src_path, args.dst_path, args.ann_file)
 
 
 if __name__ == "__main__":
-    try:
-        src, dst, data_type = sys.argv[1:4]
-    except Exception as e:
-        print("Usage: python convert_public_data_to_cvat.py data_src data_dst data_type(cls or det)")
-        raise Exception from e
-    main(src, dst, data_type)
+    main()
