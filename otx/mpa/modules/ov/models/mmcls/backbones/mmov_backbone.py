@@ -21,3 +21,7 @@ class MMOVBackbone(MMOVModel):
         if output is None:
             raise ValueError("Parser can not determine input and output of model. " "Please provide them explicitly")
         return output
+
+    def init_weights(self, pretrained=None):
+        # TODO
+        pass
