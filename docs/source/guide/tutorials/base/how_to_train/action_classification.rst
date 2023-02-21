@@ -35,45 +35,44 @@ Dataset preparation
 
 Accoring to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
 .. code-block::
-training_extensions
-├── data
-│   ├── hmdb51
-│   │   ├── hmdb51_{train,val}_split_{1,2,3}_rawframes.txt
-│   │   ├── hmdb51_{train,val}_split_{1,2,3}_videos.txt
-│   │   ├── annotations
-│   │   ├── videos
-│   │   │   ├── brush_hair
-│   │   │   │   ├── April_09_brush_hair_u_nm_np1_ba_goo_0.avi
-│   │   │   ├── wave
-│   │   │   │   ├── 20060723sfjffbartsinger_wave_f_cm_np1_ba_med_0.avi
-│   │   ├── rawframes
-│   │   │   ├── brush_hair
-│   │   │   │   ├── April_09_brush_hair_u_nm_np1_ba_goo_0
-│   │   │   │   │   ├── img_00001.jpg
-│   │   │   │   │   ├── img_00002.jpg
-│   │   │   │   │   ├── ...
-│   │   │   │   │   ├── flow_x_00001.jpg
-│   │   │   │   │   ├── flow_x_00002.jpg
-│   │   │   │   │   ├── ...
-│   │   │   │   │   ├── flow_y_00001.jpg
-│   │   │   │   │   ├── flow_y_00002.jpg
-│   │   │   ├── ...
-│   │   │   ├── wave
-│   │   │   │   ├── 20060723sfjffbartsinger_wave_f_cm_np1_ba_med_0
-│   │   │   │   ├── ...
-│   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
-|
+    training_extensions
+    ├── data
+    │   ├── hmdb51
+    │   │   ├── hmdb51_{train,val}_split_{1,2,3}_rawframes.txt
+    │   │   ├── hmdb51_{train,val}_split_{1,2,3}_videos.txt
+    │   │   ├── annotations
+    │   │   ├── videos
+    │   │   │   ├── brush_hair
+    │   │   │   │   ├── April_09_brush_hair_u_nm_np1_ba_goo_0.avi
+    │   │   │   ├── wave
+    │   │   │   │   ├── 20060723sfjffbartsinger_wave_f_cm_np1_ba_med_0.avi
+    │   │   ├── rawframes
+    │   │   │   ├── brush_hair
+    │   │   │   │   ├── April_09_brush_hair_u_nm_np1_ba_goo_0
+    │   │   │   │   │   ├── img_00001.jpg
+    │   │   │   │   │   ├── img_00002.jpg
+    │   │   │   │   │   ├── ...
+    │   │   │   │   │   ├── flow_x_00001.jpg
+    │   │   │   │   │   ├── flow_x_00002.jpg
+    │   │   │   │   │   ├── ...
+    │   │   │   │   │   ├── flow_y_00001.jpg
+    │   │   │   │   │   ├── flow_y_00002.jpg
+    │   │   │   ├── ...
+    │   │   │   ├── wave
+    │   │   │   │   ├── 20060723sfjffbartsinger_wave_f_cm_np1_ba_med_0
+    │   │   │   │   ├── ...
+    │   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
+    |
 
 Once you have the dataset structured properly, you can convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
 
 .. code-block::
-python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
---task action_classification \
---src_path ./data/hmdb51/rawframes \
---dst_path ./data/hmdb51/CVAT/train \
---ann_file ./data/hmdb51/hmdb51_train_split_1_rawframes.txt \
---label_map ./data/hmdb51/label_map.txt
-|
+    python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
+    --task action_classification \
+    --src_path ./data/hmdb51/rawframes \
+    --dst_path ./data/hmdb51/CVAT/train \
+    --ann_file ./data/hmdb51/hmdb51_train_split_1_rawframes.txt \
+    --label_map ./data/hmdb51/label_map.txt
 
 The resulting folder structure will be as follows:
 .. code-block::
