@@ -8,5 +8,5 @@ Modules
    datasets
    hooks
    optimizer
-   ov
+   ov/index
    utils
