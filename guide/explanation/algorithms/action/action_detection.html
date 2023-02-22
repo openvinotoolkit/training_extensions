@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
     
@@ -1140,11 +1140,6 @@
    Models
   </a>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#incremental-learning">
-   Incremental Learning
-  </a>
- </li>
 </ul>
 
 </nav>
@@ -1168,14 +1163,68 @@
                 
   <div class="section" id="action-detection">
 <h1>Action Detection<a class="headerlink" href="#action-detection" title="Permalink to this headline">¶</a></h1>
+<p>Sptio-Temporal action detection is the problem of localizing actor(spatial detection) and action(temporal detection). We solve this problem by combining 3D action classification backbone and 2D object detection model. We can combine these two model by several ways. Currently we support the simplest way. The other ways will be supported in near future.</p>
+<p>X3D + Fast-RCNN architecture comes from <a class="reference external" href="https://arxiv.org/abs/2004.04730">X3D paper</a>. This model requires pre-computed actor proposals. Actor pre-proposals can be obtained from <a class="reference external" href="https://cocodataset.org/#home">COCO</a> pre-trained 2D object detector(e.g. <a class="reference external" href="https://arxiv.org/abs/1506.01497">Faster-RCNN</a>, <a class="reference external" href="https://arxiv.org/abs/1912.02424">ATSS</a>). If custom dataset requires finetuning of 2d object detector please refer <a class="reference external" href="../object_detection/object_detection.rst">otx.algorithms.detection</a>. Region-of-interest(RoI) features are extracted at the last feature map of X3D by extending a 2D proposal at a key frame into a 3D RoI by replicating it along the temporal axis. The RoI features fed into roi head of Fast-RCNN.</p>
+<p>For better transfer learning we use following algorithms components:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: We use only random crop and random flip for training pipeline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: We use <a class="reference external" href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD</a> optimizer with the weight decay set to <strong>1e-4</strong> and momentum set to <strong>0.9</strong>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">functions</span></code>: For the multi label case binary cross entropy loss are used. In the other case, <a class="reference external" href="https://en.wikipedia.org/wiki/Cross_entropy">Cross Entropy Loss</a> are used for the categories classification.</p></li>
+</ul>
 <div class="section" id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
+<p>For the dataset handling inside OTX, we use <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Dataset Management Framework (Datumaro)</a>. Since current Datumaro do not support <a class="reference external" href="http://research.google.com/ava/">AVA dataset</a> format, therefore conversion to <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">CVAT dataset format</a> is needed. Currently we offer conversion code from AVA dataset format to CVAT dataset format. Please refer
+<a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py">otx/algorithms/action/utils/convert_public_data_to_cvat.py</a></p>
+<p>If you have your dataset in those formats, then you can simply run OTX using one line of code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml --train-data-root &lt;path_to_data_root/train&gt; --val-data-root &lt;path_to_data_root/val&gt;
+</pre></div>
+</div>
 </div>
 <div class="section" id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="incremental-learning">
-<h2>Incremental Learning<a class="headerlink" href="#incremental-learning" title="Permalink to this headline">¶</a></h2>
+<p>We support the following ready-to-use model templates for transfer learning:</p>
+<table class="table">
+<colgroup>
+<col style="width: 75%" />
+<col style="width: 6%" />
+<col style="width: 9%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Template ID</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Complexity (GFLOPs)</p></th>
+<th class="head"><p>Model size (MB)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml">Custom_Action_Detection_X3D_FAST_RCNN</a></p></td>
+<td><p>x3d_fast_rcnn</p></td>
+<td><p>13.04</p></td>
+<td><p>8.32</p></td>
+</tr>
+</tbody>
+</table>
+<p>In the table below the <strong>mAP</strong> on some academic datasets are presented. Each model is trained using <a class="reference external" href="https://www.deepmind.com/open-source/kinetics">Kinetics-400</a> pre-trained weight with single Nvidia GeForce RTX3090.</p>
+<table class="table">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 21%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model name</p></th>
+<th class="head"><p>JHMDB</p></th>
+<th class="head"><p>UCF101-24</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>x3d_fast_rcnn</p></td>
+<td><p>92.14</p></td>
+<td><p>80.7</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
