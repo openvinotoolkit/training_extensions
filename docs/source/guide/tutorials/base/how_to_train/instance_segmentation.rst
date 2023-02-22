@@ -118,7 +118,7 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery config
 
   .. code-block::
 
-    (otx) ...$ otx train MaskRCNN-ResNet50 \
+    (otx) ...$ otx train Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 \
                       --train-data-roots data/car_tree_bug \
                       --val-data-roots data/car_tree_bug \
                       params --learning_parameters.num_iters 8
