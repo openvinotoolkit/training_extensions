@@ -65,8 +65,8 @@ Moving forward, OpenVINO™ Training Extensions provides the following features:
 
 ### v1.0.0 (1Q23)
 
-- Installation through PyPI
-  - Package will be renamed as OpenVINO™ Training Extensions
+- Package Installation via PyPI
+  - OpenVINO™ Training Extensions installation will be supported via PyPI
 - CLI update
   - Update `find` command to find configurations of tasks/algorithms
   - Introduce `build` command to customize task or model configurations
