@@ -10,18 +10,6 @@ backend and in the standard pytest hooks:
 to add to pytest functionality required for algo backends reallife training tests.
 """
 
-try:
-    import e2e.fixtures
-    from e2e import config  # noqa
-    from e2e.conftest_utils import *  # noqa
-    from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption  # noqa
-    from e2e.utils import get_plugins_from_packages
-
-    _pytest_plugins_from_e2e = get_plugins_from_packages([e2e])
-except ImportError:
-    _e2e_pytest_addoption = None
-    _pytest_plugins_from_e2e = []
-
 
 def get_pytest_plugins_from_otx():
     """
@@ -31,7 +19,7 @@ def get_pytest_plugins_from_otx():
     import tests.test_suite.fixtures  # noqa
 
     pytest_plugins_from_otx_api = ["tests.test_suite.fixtures"]
-    pytest_plugins = list(_pytest_plugins_from_e2e) + pytest_plugins_from_otx_api
+    pytest_plugins = pytest_plugins_from_otx_api
     return pytest_plugins
 
 
@@ -40,8 +28,6 @@ def otx_pytest_addoption_insertion(parser):
     The function should be called in the standard pytest hook pytest_addoption
     to add the options required for reallife training tests.
     """
-    if _e2e_pytest_addoption:
-        _e2e_pytest_addoption(parser)
 
     parser.addoption(
         "--dataset-definitions",

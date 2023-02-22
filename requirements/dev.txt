@@ -1,5 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Development Requirements.                                                   #
+e2e-test-framework[pytest62,np121] @ http://pypi.sclab.intel.com:8000/packages/e2e_test_framework-1.318.20230216140111-py3-none-any.whl
 tox==4.4.5
 pre-commit==2.20.0
 pylint
