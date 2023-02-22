@@ -259,7 +259,7 @@ Example of the command line to start object detection training:
 
 ```
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the [auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) will be enabled. Based on the dataset OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the [auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
 We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
