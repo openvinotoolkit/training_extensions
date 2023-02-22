@@ -5,7 +5,7 @@ Installation
 Prerequisites
 **************
 
-The current version of OTX was tested under the following environment:
+The current version of OpenVINO™ Training Extensions was tested under the following environment:
 
 - Ubuntu 20.04
 - Python 3.8.x
@@ -16,7 +16,7 @@ The current version of OTX was tested under the following environment:
         If using CUDA, make sure you are using a proper driver version. To do so, use ``ls -la /usr/local | grep cuda``. If necessary, `install CUDA 11.7 <https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local>`_ (requires 'sudo' permission) and select it with ``export CUDA_HOME=/usr/local/cuda-11.7``.
 
 **********************
-Install OTX for users
+Install OpenVINO™ Training Extensions for users
 **********************
 
 1. Clone the training_extensions
@@ -55,7 +55,7 @@ Example install command for torch==1.13.1+cu117:
     pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu117
 
 4. Then, install
-OTX package
+OpenVINO™ Training Extensions package
 
 Install from a local source in development mode:
 
@@ -73,7 +73,7 @@ Or, you can install from PyPI:
 `otx` command line functionality.
 
 ***************************
-Install OTX for developers
+Install OpenVINO™ Training Extensions for developers
 ***************************
 
 Install ``tox`` and create a development environment:

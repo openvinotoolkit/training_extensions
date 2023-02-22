@@ -25,7 +25,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-To create a universal virtual environment for OTX, please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`.
+To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`.
 
 ***************************
 Dataset preparation
@@ -114,7 +114,7 @@ Training
 
 .. note::
 
-  OTX is supporting only X3D model template now, other architecture will be supported in near future.
+  OpenVINO™ Training Extensions is supporting only X3D model template now, other architecture will be supported in near future.
 
 .. code-block::
 
@@ -128,7 +128,7 @@ Training
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2. Prepare an OTX workspace for the action classification task by running the following command:
+2. Prepare an OpenVINO™ Training Extensions workspace for the action classification task by running the following command:
 
 .. code-block::
 
@@ -155,7 +155,7 @@ That's it! The training will return artifacts: ``weights.pth`` and ``label_schem
 
 The training time highly relies on the hardware characteristics, for example on single NVIDIA GeForce RTX 3090 the training took about 10 minutes.
 
-After that, we have the PyTorch action classification model trained with OTX, which we can use for evaluation, export, optimization and deployment.
+After that, we have the PyTorch action classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation
