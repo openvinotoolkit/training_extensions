@@ -191,7 +191,7 @@ coco_data_root
 
 Then pass the path to `coco_data_root` to both root options: `--train-data-roots coco_data_root --val-data-roots coco_data_root`. However, if you store your training set and validation separately - provide paths to both accordingly.
 
-OpenVINO™ Training Extensions supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to `splitted_dataset` folder inside the otx workspace folder. This split can be further used for training.
+OpenVINO™ Training Extensions supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to `splitted_dataset` folder inside the workspace folder. This split can be further used for training.
 
 > **_Note:_** Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to [simple auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) documentation.
 
