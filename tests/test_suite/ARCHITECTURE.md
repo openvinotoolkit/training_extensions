@@ -856,7 +856,7 @@ most of information required to connect the test suite with a concrete algo back
 All the methods of the interface class are abstract methods without parameters that return
 structures making this connection.
 
-Example of such implementation is the class `DefaultOpenVINO™ Training ExtensionsTestCreationParametersInterface` that
+Example of such implementation is the class `DefaultOTXTestCreationParametersInterface` that
 contains implementation of almost all the test parameter class methods for mmdetection algo backend
 (mmdetection is chosen due to historical reasons).
 Nevertheless, although these methods are implemented for mmdetection, most of them may
