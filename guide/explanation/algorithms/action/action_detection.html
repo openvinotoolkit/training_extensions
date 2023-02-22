@@ -377,11 +377,6 @@
        Object Detection
       </a>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../object_detection/rotated_object_detection.html">
-       Object Detection With Rotated Bounding Boxes
-      </a>
-     </li>
     </ul>
    </li>
   </ul>
@@ -409,11 +404,6 @@
    <li class="toctree-l2">
     <a class="reference internal" href="../../additional_features/auto_configuration.html">
      Auto-configuration
-    </a>
-   </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../../additional_features/xai.html">
-     Explainable AI
     </a>
    </li>
   </ul>
@@ -1174,7 +1164,7 @@
   <div class="section" id="action-detection">
 <h1>Action Detection<a class="headerlink" href="#action-detection" title="Permalink to this headline">¶</a></h1>
 <p>Sptio-Temporal action detection is the problem of localizing actor(spatial detection) and action(temporal detection). We solve this problem by combining 3D action classification backbone and 2D object detection model. We can combine these two model by several ways. Currently we support the simplest way. The other ways will be supported in near future.</p>
-<p>X3D + Fast-RCNN architecture comes from <a class="reference external" href="https://arxiv.org/abs/2004.04730">X3D paper</a>. This model requires pre-computed actor proposals. Actor pre-proposals can be obtained from <a class="reference external" href="https://cocodataset.org/#home">COCO</a> pre-trained 2D object detector(e.g. <a class="reference external" href="https://arxiv.org/abs/1506.01497">Faster-RCNN</a>, <a class="reference external" href="https://arxiv.org/abs/1912.02424">ATSS</a>). If custom dataset requires finetuning of 2d object detector please refer <a class="reference external" href="../object_detection/object_detection.rst">otx.algorithms.detection</a>. Region-of-interest(RoI) features are extracted at the last feature map of X3D by extending a 2D proposal at a key frame into a 3D RoI by replicating it along the temporal axis. The RoI features fed into roi head of Fast-RCNN.</p>
+<p>X3D + Fast-RCNN architecture comes from <a class="reference external" href="https://arxiv.org/abs/2004.04730">X3D paper</a>. This model requires pre-computed actor proposals. Actor pre-proposals can be obtained from <a class="reference external" href="https://cocodataset.org/#home">COCO</a> pre-trained 2D object detector(e.g. <a class="reference external" href="https://arxiv.org/abs/1506.01497">Faster-RCNN</a>, <a class="reference external" href="https://arxiv.org/abs/1912.02424">ATSS</a>). If custom dataset requires finetuning of 2d object detector please refer <a class="reference internal" href="../object_detection/object_detection.html"><span class="doc">otx.algorithms.detection</span></a>. Region-of-interest(RoI) features are extracted at the last feature map of X3D by extending a 2D proposal at a key frame into a 3D RoI by replicating it along the temporal axis. The RoI features fed into roi head of Fast-RCNN.</p>
 <p>For better transfer learning we use following algorithms components:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: We use only random crop and random flip for training pipeline</p></li>
