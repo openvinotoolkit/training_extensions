@@ -280,5 +280,9 @@ class TestIExportTask:
         )
         model_entity = ModelEntity(configuration=configuration, train_dataset=dataset)
         with pytest.raises(NotImplementedError):
-            IExportTask().export(export_type=ExportType.OPENVINO, output_model=model_entity,
-                                 precision=ModelPrecision.FP32, dump_features=False)
+            IExportTask().export(
+                export_type=ExportType.OPENVINO,
+                output_model=model_entity,
+                precision=ModelPrecision.FP32,
+                dump_features=False,
+            )
