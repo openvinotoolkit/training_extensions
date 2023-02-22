@@ -36,7 +36,7 @@ The overall performance of the proposed CNN-GNN is
 
 ## Model
 
-Download `.pth` checkpoint for CNN-GNN model trained on CheXpert dataset with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi8/high_low/weights.zip).
+Download `.pth` checkpoint for CNN-GNN model trained on CheXpert dataset with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi8/model_weights_w_gnn.zip).
 
 Note: The ONNX and IR representation models accepts inputs of fixed size mentioned in configuration file. This needs to be updated based on the input size.
 
