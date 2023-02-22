@@ -229,7 +229,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
         if self._train_type == TrainType.SEMISUPERVISED and stage_module == "SegExporter":
             stage_module = "SemiSLSegExporter"
-        elif self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer", "SegExporter"]:
+        elif self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
             stage_module = module_prefix[self._train_type] + stage_module
 
         return stage_module
