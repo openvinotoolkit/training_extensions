@@ -9,7 +9,6 @@ This section consists of an algorithms explanation and describes additional feat
 3. Available templates and models.
 4. Incremental learning approach.
 5. Semi-supervised and Self-supervised algorithms.
-6. Additional algorithm-specific features such as a tiling method for Instance Segmentation and Rotated Object Detection.
 
 :ref:`Additional Features <features_section_ref>` section consists of:
 
