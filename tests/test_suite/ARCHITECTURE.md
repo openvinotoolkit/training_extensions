@@ -1258,7 +1258,7 @@ As an example of the test parameters class see
   `external/deep-object-reid/tests/test_otx_training.py`
   -- the latter is more interesting, since deep-object-reid algo backend is different w.r.t. the
   mmdetection algo backend, and we implemented the default test case parameter class
-  `DefaultOpenVINO™ Training ExtensionsTestCreationParametersInterface` mostly for mmdetection.
+  `DefaultOTXTestCreationParametersInterface` mostly for mmdetection.
 
 Note that test class class itself contains mostly a boilerplate code that connects test suite with
 pytest.
