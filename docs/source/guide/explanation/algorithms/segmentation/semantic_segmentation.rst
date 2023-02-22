@@ -40,7 +40,7 @@ For the supervised training we use the following algorithms components:
 Dataset Format
 **************
 
-For the dataset handling inside OTX we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
+For the dataset handling inside OpenVINO™ Training Extensions we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
 
 At this end we support `ADE20K <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`__, `Pascal VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data formats.
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
@@ -122,7 +122,7 @@ Self-supervised learning can be one of the solutions if the user has a small dat
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.
 
-For these cases, OTX provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted `DetCon <https://arxiv.org/abs/2103.10957>`_ as our self-supervised method.
 It takes some time to use these self-supervised learning recipes, but you can expect improved performance, especially in small-data regimes.
 

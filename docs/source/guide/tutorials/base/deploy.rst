@@ -37,7 +37,7 @@ But it can be runned for any task in the same manner.
                --load-weights outputs/openvino/openvino.xml
                --save-model-to outputs/deploy
 
-    2023-01-20 09:30:40,938 | INFO : Loading OpenVINO OTXDetectionTask
+    2023-01-20 09:30:40,938 | INFO : Loading OpenVINO OpenVINO™ Training ExtensionsDetectionTask
     2023-01-20 09:30:41,736 | INFO : OpenVINO task initialization completed
     2023-01-20 09:30:41,737 | INFO : Deploying the model
     2023-01-20 09:30:41,753 | INFO : Deploying completed

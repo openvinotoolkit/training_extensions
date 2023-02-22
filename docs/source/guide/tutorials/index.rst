@@ -1,7 +1,7 @@
 Tutorials
 =========
 
-This section reveals how to use ``OTX CLI``, both base and advanced features.
+This section reveals how to use ``OpenVINO™ Training Extensions CLI``, both base and advanced features.
 
 It provides end-to-end solutions from installation to model deployment and demo visualization on specific example for each of the supported tasks.
 
