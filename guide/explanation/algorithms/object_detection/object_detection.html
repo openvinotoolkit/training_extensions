@@ -1188,7 +1188,84 @@
 </div>
 <div class="section" id="semi-supervised-learning">
 <h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this headline">¶</a></h2>
-<p>To be added soon</p>
+<p>For Semi-SL task solving we use <a class="reference external" href="https://arxiv.org/abs/2102.09480">Unbiased Teacher model</a>, which is a specific implementation of Semi-SL for object detection. Unbiased teacher detach the student model and the teacher model to prevent teacher from being polluted by noisy pseudo-labels. In the early stage, the teacher model is trained by supervised loss. This stage is called a burn-in stage. After the burn-in, the student model is trained using both pseudo-labeled data from the teacher model and labeled data. And the teacher model is updated using
+EMA.</p>
+<p>In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.</p>
+<p>Overall, OTX utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.</p>
+<ul class="simple" id="od-semi-supervised-pipeline">
+<li><p><code class="docutils literal notranslate"><span class="pre">Pseudo-labeling</span></code>: A specific implementation of Semi-SL that combines the use of pseudo-labeling with a consistency loss, strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Weak</span> <span class="pre">&amp;</span> <span class="pre">Strong</span> <span class="pre">augmentation</span></code>: For teacher model weak augmentations(random flip) are applied to input image. For student model strong augmentations(colorjtter, grayscale, goussian blur, random erasing) are applied.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">training</span> <span class="pre">techniques</span></code>: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, Early stopping, LR conditioning.).</p></li>
+</ul>
+<p>Please, refer to the <a class="reference internal" href="../../../tutorials/advanced/semi_sl.html"><span class="doc">tutorial</span></a> how to train semi supervised learning.</p>
+<p>In the table below the mAP on toy data sample from <a class="reference external" href="https://cocodataset.org/#home">COCO</a> dataset using our pipeline is presented.</p>
+<p>We sample 400 images that contains one of [person, car, bus] for labeled train images. And 4000 images for unlabeled images. For validation 100 images are selected from val2017</p>
+<table class="table">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 40%" />
+<col style="width: 42%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Dataset</p></th>
+<th class="head" colspan="2"><p>Sampled COCO dataset</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p>SL</p></td>
+<td><p>Semi-SL</p></td>
+</tr>
+<tr class="row-odd"><td><p>ATSS</p></td>
+<td><div class="line-block">
+<div class="line">Person: 69.70</div>
+<div class="line">Car:    65.00</div>
+<div class="line">Bus:    42.96</div>
+<div class="line">Mean:   59.20</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Person: 69.44</div>
+<div class="line">Car:    65.84</div>
+<div class="line">Bus:    50.7</div>
+<div class="line">Mean:   61.98</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>SSD</p></td>
+<td><div class="line-block">
+<div class="line">Person: 39.24</div>
+<div class="line">Car:    19.24</div>
+<div class="line">Bus:    21.34</div>
+<div class="line">Mean:   26.60</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Person: 38.52</div>
+<div class="line">Car:    28.02</div>
+<div class="line">Bus:    26.28</div>
+<div class="line">Mean:   30.96</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>YOLOX</p></td>
+<td><div class="line-block">
+<div class="line">Person: 65.64</div>
+<div class="line">Car:    64.44</div>
+<div class="line">Bus:    60.68</div>
+<div class="line">Mean:   63.6</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line">Person: 69.00</div>
+<div class="line">Car:   65.66</div>
+<div class="line">Bus:   65.12</div>
+<div class="line">Mean:  66.58</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="self-supervised-learning">
 <h2>Self-supervised Learning<a class="headerlink" href="#self-supervised-learning" title="Permalink to this headline">¶</a></h2>
