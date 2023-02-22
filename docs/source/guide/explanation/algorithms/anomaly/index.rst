@@ -10,7 +10,7 @@ This section examines the solutions for anomaly detection offered by the OpenVIN
 
 Task Types
 **********
-OpenVINO Trainign Extensions supports the following anomaly task types:
+OpenVINO Training Extensions supports the following anomaly task types:
 
 * Anomaly Classification - (Image-level detection)
 * Anomaly Detection - (Box-level localization)
