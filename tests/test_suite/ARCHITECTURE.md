@@ -253,7 +253,7 @@ action. For each instance of a test action an instance of the class `OTXTestStag
 It's constructor has declaration
 
 ```python
-def __init__(self, action: BaseOpenVINO™ Training ExtensionsTestAction, stages_storage: OpenVINO™ Training ExtensionsTestStagesStorageInterface):
+def __init__(self, action: BaseOTXTestAction, stages_storage: OTXTestStagesStorageInterface):
 ```
 
 - The `action` parameter here is the instance of action that is wrapped.
