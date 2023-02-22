@@ -10,9 +10,9 @@ Semi-supervised learning will soon be available for multi-label classification a
 
 If you want to learn more about the algorithms used in semi-supervised learning, please refer to the explanation section below:
 
-- :doc:`Multi-class Classification <../../explanation/algorithms/classification/multi_class_classification>`
-- :doc:`Object Detection <../../explanation/algorithms/object_detection/object_detection>`
-- :doc:`Semantic Segmentation <../../explanation/algorithms/segmentation/semantic_segmentation>`
+- `Multi-class Classification <../../explanation/algorithms/classification/multi_class_classification.html#semi-supervised-learning>`__
+- `Object Detection <../../explanation/algorithms/object_detection/object_detection.html#semi-supervised-learning>`__
+- `Semantic Segmentation <../../explanation/algorithms/segmentation/semantic_segmentation.html#semi-supervised-learning>`__
 
 In this tutorial, we use the MobileNet-V3-large-1x model for multi-class classification to cite an example of semi-supervised learning.
 
@@ -89,18 +89,8 @@ In the train log, you can check that the train type is set to **SEMISUPERVISED**
   ...
 
 
-After training ends, a trained model is saved in ``models`` sub-directory in workspace ``otx-workspace-CLASSIFICATION``.
+After training ends, a trained model is saved in the ``models`` sub-directory in the workspace ``otx-workspace-CLASSIFICATION``.
 
-
-3. In the same manner with :doc:`the normal validation <../base/how_to_train/classification#validation>`, 
-we can evaluate the trained model in ``models`` folder with auto-splitted validation dataset 
-and save results to ``performance.json`` by the following command:
-
-.. code-block::
-
-  (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
-                      --load-weights models/weights.pth \
-                      --save-performance performance.json
 
 ***************************
 Enable via ``otx train``
@@ -129,14 +119,23 @@ In the train log, you can check that the train type is set to **SEMISUPERVISED**
   ...
 
 
-After training ends, a trained model is saved in ``otx-workspace-CLASSIFICATION/models`` since OTX generates a workspace named ``otx-workspace-CLASSIFICATION`` in default.
+After training ends, a trained model is saved in the ``models`` sub-directory in the workspace named ``otx-workspace-CLASSIFICATION`` by default.
 
-2. We can evaluate the trained model with auto-splitted validation dataset in the workspace and 
-save results to ``otx-workspace-CLASSIFICATION/performance.json`` by the following command:
+
+***************************
+Validation
+***************************
+
+In the same manner with `the normal validation <../base/how_to_train/classification.html#validation>`__,
+we can evaluate the trained model with auto-splitted validation dataset in the workspace and 
+save results to ``performance.json`` by the following command:
+
 
 .. code-block::
 
+  (otx) ...$ cd ./otx-workspace-CLASSIFICATION
+  
   (otx) ...$ otx eval otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
-                      --test-data-roots otx-workspace-CLASSIFICATION/splitted_dataset/val \
-                      --load-weights otx-workspace-CLASSIFICATION/models/weights.pth \
-                      --save-performance otx-workspace-CLASSIFICATION/performance.json
+                      --test-data-roots splitted_dataset/val \
+                      --load-weights models/weights.pth \
+                      --save-performance performance.json
