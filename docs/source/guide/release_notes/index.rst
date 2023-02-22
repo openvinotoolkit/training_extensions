@@ -9,7 +9,7 @@ v1.0.0 (1Q23)
 ***************
 
 - Installation through PyPI
-  - Package will be renamed as OpenVINO™ Training Extensions (OpenVINO Training eXtensions)
+  - Package will be renamed as OpenVINO™ Training Extensions
 - CLI update
   - Update ``otx find`` command to find configurations of tasks/algorithms
   - Introduce ``otx build`` command to customize task or model configurations
