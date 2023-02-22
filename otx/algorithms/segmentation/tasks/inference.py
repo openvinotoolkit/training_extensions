@@ -227,7 +227,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
     def _update_stage_module(self, stage_module: str):
         module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
-        if self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
+        if self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer", "SegExporter"]:
             stage_module = module_prefix[self._train_type] + stage_module
 
         return stage_module
