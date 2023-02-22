@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - releases/v1.0.0
   workflow_dispatch: # run on request (no need for PR)
 
 jobs:
