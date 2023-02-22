@@ -14,7 +14,7 @@ If you want to learn more about the algorithms used in semi-supervised learning,
 - :doc:`Object Detection <../../explanation/algorithms/object_detection/object_detection>`
 - :doc:`Semantic Segmentation <../../explanation/algorithms/segmentation/semantic_segmentation>`
 
-In this tutorial, we use MobileNet-V3-large-1x model in multi-class classification to cite an example for semi-supervised learning.
+In this tutorial, we use the MobileNet-V3-large-1x model for multi-class classification to cite an example of semi-supervised learning.
 
 The process has been tested on the following configuration.
 
