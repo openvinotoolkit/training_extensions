@@ -20,7 +20,7 @@ Dataset Format
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_. Since current Datumaro do not support `AVA dataset <http://research.google.com/ava/>`_ format, therefore conversion to `CVAT dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ is needed. Currently we offer conversion code from AVA dataset format to CVAT dataset format. Please refer
 `otx/algorithms/action/utils/convert_public_data_to_cvat.py <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py>`_
 
-If you have your dataset in those formats, then you can simply run OpenVINO™ Training Extensions using one line of code:
+If you have your dataset in those formats, then you can simply run using one line of code:
 
 .. code-block:: 
 
