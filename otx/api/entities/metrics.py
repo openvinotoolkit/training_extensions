@@ -279,9 +279,7 @@ class CurveMetric(MetricEntity):
 
     def __repr__(self):
         """Returns the string representation of the object."""
-        return (
-            f"CurveMetric with {len(self.xs)} data points"
-        )
+        return f"CurveMetric with {len(self.xs)} data points"
 
     @staticmethod
     def type():
