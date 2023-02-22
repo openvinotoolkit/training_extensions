@@ -225,7 +225,9 @@ For example, that is how we can change the learning rate and the batch size for 
 
 As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the `--gpus` argument. The model will then be trained using distributed data parallel with the GPUs you have specified.
 
-Please note that multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We'll cover them in the near future.
+.. note::
+
+    Multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We'll add support for them in the near future.
 
 **********
 Exporting
