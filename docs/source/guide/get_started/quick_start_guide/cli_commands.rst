@@ -386,7 +386,7 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Weight of the saliency map when overlaying the saliency map.
 
 
-The command below will generate saliency maps of the trained model on the provided dataset and saves the resulting images to ``save-explanation-to`` path:
+The command below will generate saliency maps (heatmaps with areas of focus) of the trained model on the provided dataset and saves the resulting images to ``save-explanation-to`` path:
 
 .. code-block::
 

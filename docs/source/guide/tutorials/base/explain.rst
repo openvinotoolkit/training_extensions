@@ -13,4 +13,4 @@ To be specific, this tutorial uses as an example of the ATSS model trained throu
 
     source .otx/bin/activate
 
-2. ``otx explain`` returns saliency maps at the path specified by ``--save-explanation-to``.
+2. ``otx explain`` returns saliency maps (heatmaps with areas of focus) at the path specified by ``--save-explanation-to``.
