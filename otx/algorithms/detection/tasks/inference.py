@@ -361,10 +361,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _update_stage_module(self, stage_module):
         module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
-        if self._train_type in module_prefix and stage_module in [
+        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "DetectionExporter":
+            stage_module = "SemiSLDetectionExporter"
+        elif self._train_type in module_prefix and stage_module in [
             "DetectionTrainer",
             "DetectionInferrer",
-            "DetectionExporter",
         ]:
             stage_module = module_prefix[self._train_type] + stage_module
         return stage_module

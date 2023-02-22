@@ -2,11 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
-from mmcv.runner import wrap_fp16_model
-
-from otx.mpa.deploy.utils import sync_batchnorm_2_batchnorm
-from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.registry import STAGES
 from otx.mpa.seg.exporter import SegExporter
 from otx.mpa.utils.logger import get_logger
