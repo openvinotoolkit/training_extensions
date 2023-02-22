@@ -15,96 +15,29 @@ Key features of OpenVINO™ Training Extensions include:
 
 - **Scalability** : OpenVINO™ Training Extensions offers both sequential and parallel methods, making it scalable for different training environments. If you have multiple GPUs, you can take advantage of all available GPU resources to accelerate HPO.
 
-**************
-Simpe HPO Exapmle
-**************
-
-This exapmle provides a step-by-step guide on how to use Hyper-Parameter Optimization (HPO) for classification tasks. In this example, we will optimize the learning rate and batch size using HPO.
-
-=========================
-1. Build workspace
-=========================
-
-First, let's build a workspace. You can do this by running the following command:
-
-.. code-block::
-
-    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
-
-    [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
-    [*] Load Model Name: MobileNet-V3-large-1x
-    [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x/data.yaml
-
-    (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
-
-.. note::
-
-    This is copied from :doc:`../../tutorials/base/how_to_train/classification`.
-    You can find more detail explanation from it.
-
-=========================
-2. Set hpo_config.yaml
-=========================
-
-Before running HPO, you can configure HPO using the hpo_config.yaml file. This file contains all the information that the HPO module needs, including the hyperparameters that you want to optimize. The file is located in the workspace you have made and comes with default values.
-
-Here's the default hpo_config.yaml:
-
-.. code-block::
-
-    metric: accuracy
-    search_algorithm: asha
-    hp_space:
-      learning_parameters.learning_rate:
-        param_type: qloguniform
-        range:
-          - 0.0007
-          - 0.07
-          - 0.0001
-      learning_parameters.batch_size:
-        param_type: qloguniform
-        range:
-          - 32
-          - 128
-          - 2
-
-Although this default configuration can be used for HPO, the search space for the learning rate is too wide. Therefore, we will modify the configuration file slightly to make the search space more reasonable. You can easily modify the configuration file to optimize different hyperparameters.
-
-Here's the updated hpo_config.yaml:
-
-.. code-block::
-
-  ...
-    ...
-    ...
-      learning_parameters.learning_rate:
-        param_type: quniform
-        range: 
-          - 0.001
-          - 0.01
-          - 0.001
-    ...
-    ...
-    ...
-
-By modifying the hpo_config.yaml file, you can easily change the search space or hyperparameters that will be optimized during the HPO process.
-
-=========================
-3. Run OpenVINO™ Training Extensions
-=========================
-
-Now it's time to run OpenVINO™ Training Extensions. You can enable HPO by adding the argument **--enable-hpo**. By default, HPO will use four times the time allocated to training. However, if you are short on time, you can reduce the time for HPO as training by adding the argument   **--hpo-time-ratio** and setting it to 2. This means that HPO will use twice the time allocated to training.
-
-Here's an example command:
+You can run HPO by just adding **--enable-hpo** argument as below.
 
 .. code-block::
 
     $ otx train \
         ... \
-        --enable-hpo \
-        --hpo-time-ratio 2
+        --enable-hpo
 
-With this command, HPO is automatically set to use twice the time allocated for training. You can easily adjust the HPO time allocation by modifying the value of the **--hpo-time-ratio** argument.
+==================================
+Algorithm
+==================================
+
+If you have abundant GPU resources, it's better to run HPO in parallel.
+In that case, `ASHA <https://arxiv.org/pdf/1810.05934.pdf>`_ is a good choice.
+Currently, OpenVINO™ Training Extensions uses the ASHA algorithm.
+
+Asynchronous Successive Halving Algorithm (ASHA) is a hyperparameter optimization algorithm that is based on Successive Halving Algorithm (SHA) but is designed to be more efficient in a parallel computing environment. It is used to efficiently search for the best hyperparameters for machine learning models.
+
+ASHA involves running multiple trials in parallel and evaluating them based on their validation metrics. It starts by running many trials for a short time, with only the best-performing trials advancing to the next round. In each subsequent round, the number of trials is reduced, and the amount of time spent on each trial is increased. This process is repeated until only one trial remains.
+
+ASHA is designed to be more efficient than SHA in parallel computing environments because it allows for asynchronous training of the trials. This means that each trial can be trained independently of the others, and they do not have to wait for all the other trials to complete before advancing to the next round. This reduces the amount of time it takes to complete the optimization process.
+
+ASHA also includes a technique called Hyperband, which is used to determine how much time to allocate to each trial in each round. Hyperband allocates more time to the best-performing trials, with the amount of time allocated decreasing as the performance of the trials decreases. This technique helps to reduce the overall amount of training time required to find the best hyperparameters.
 
 **************
 How to configure hyper-parameter optimization
