@@ -22,10 +22,31 @@ Simpe HPO Exapmle
 This exapmle provides a step-by-step guide on how to use Hyper-Parameter Optimization (HPO) for classification tasks. In this example, we will optimize the learning rate and batch size using HPO.
 
 =========================
-1. Set hpo_config.yaml
+1. Build workspace
 =========================
 
-Before running HPO, you can configure HPO using the hpo_config.yaml file. This file contains all the information that the HPO module needs, including the hyperparameters that you want to optimize. The file is located in the same directory as the `template.yaml` file and comes with default values.
+First, let's build a workspace. You can do this by running the following command:
+
+.. code-block::
+
+    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
+
+    [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
+    [*] Load Model Name: MobileNet-V3-large-1x
+    [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x/data.yaml
+
+    (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
+
+.. note::
+
+    This is copied from :doc:`../../tutorials/base/how_to_train/classification`.
+    You can find more detail explanation from it.
+
+=========================
+2. Set hpo_config.yaml
+=========================
+
+Before running HPO, you can configure HPO using the hpo_config.yaml file. This file contains all the information that the HPO module needs, including the hyperparameters that you want to optimize. The file is located in the workspace you have made and comes with default values.
 
 Here's the default hpo_config.yaml:
 
@@ -69,7 +90,7 @@ Here's the updated hpo_config.yaml:
 By modifying the hpo_config.yaml file, you can easily change the search space or hyperparameters that will be optimized during the HPO process.
 
 =========================
-2. Run OpenVINO™ Training Extensions
+3. Run OpenVINO™ Training Extensions
 =========================
 
 Now it's time to run OpenVINO™ Training Extensions. You can enable HPO by adding the argument **--enable-hpo**. By default, HPO will use four times the time allocated to training. However, if you are short on time, you can reduce the time for HPO as training by adding the argument   **--hpo-time-ratio** and setting it to 2. This means that HPO will use twice the time allocated to training.
