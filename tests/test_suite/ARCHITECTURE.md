@@ -1,9 +1,9 @@
-# OTX API test suite architecture
+# OpenVINO™ Training Extensions API test suite architecture
 
 ## I. General description
 
 The folder `otx_sdk/otx_sdk/test_suite/` contains `otx_sdk.test_suite` library that
-simplifies creation of training tests for OTX algo backend.
+simplifies creation of training tests for OpenVINO™ Training Extensions algo backend.
 
 The training tests are tests that may run in some unified manner such stages as
 
@@ -12,7 +12,7 @@ The training tests are tests that may run in some unified manner such stages as
 - export or optimization of the trained model,
 - and evaluation of exported/optimized model.
 
-Typically each OTX algo backend contains test file `test_otx_training.py` that allows to run the
+Typically each OpenVINO™ Training Extensions algo backend contains test file `test_otx_training.py` that allows to run the
 training tests.
 
 Note that there are a lot of dependencies between different stages of training tests: most of them
@@ -38,7 +38,7 @@ We suppose that each test executes one test stage (also called test action).
 ## II. General architecture overview
 
 Here and below we will write paths to test suite library files relatively with the folder
-`otx_sdk/otx_sdk` of OTX git repository, so path to this file is referred as
+`otx_sdk/otx_sdk` of OpenVINO™ Training Extensions git repository, so path to this file is referred as
 `test_suite/ARCHITECTURE.md`.
 
 When we run some test that uses `test_suite` library (typically `test_otx_training.py` in some of
@@ -78,7 +78,7 @@ the algo backends) the callstack of the test looks as follows:
   Also it makes validation of the results of the wrapped test action if this is required.
 
 - Instance of a test action class.
-  The class makes the real actions that should be done for a test using calls of OTX interfaces.
+  The class makes the real actions that should be done for a test using calls of OpenVINO™ Training Extensions interfaces.
 
 The next sections will describe the corresponding classes from the bottom to the top.
 
@@ -106,7 +106,7 @@ for mmdetection algo backend:
 
 Note that these test actions are implementation for mmdetection algo backend due to historical
 reasons.
-But since the actions make operations using OTX interface, most of test actions code may be
+But since the actions make operations using OpenVINO™ Training Extensions interface, most of test actions code may be
 re-used for all algo backends.
 
 One of obvious exceptions is the training action -- it uses real datasets for a concrete algo
@@ -180,10 +180,10 @@ kwargs = {
 
 Please, note that `test_suite/training_tests_actions.py` contains reference code of actions for
 mmdetection algo backend. This is done due to historical reasons and due to fact that mmdetection is
-the first algo backend used in OTX.
+the first algo backend used in OpenVINO™ Training Extensions.
 
 As we stated above, fortunately, most of test actions may be re-used for other algo backends, since
-to make some test action the same OTX calls should be done.
+to make some test action the same OpenVINO™ Training Extensions calls should be done.
 
 But if for an algo backend some specific test action should be done, an additional test action class
 could be also implemented for the algo backend (typically, in the file `test_otx_training.py` in the
@@ -223,7 +223,7 @@ To implement your own test action you should do as follows:
    required
 4. Set in the class the field `_depends_stages_names` to the list of `str` values of the names of
    test actions which results will be used in this test
-5. Implement a protected method of the class which makes the real work by calling OTX operations
+5. Implement a protected method of the class which makes the real work by calling OpenVINO™ Training Extensions operations
    NB: the method should receive the parameter `data_collector: DataCollector` and use it to
    store some results of the action to the CI database
    (see how the class `DataCollector` is used in several actions in
@@ -554,16 +554,16 @@ One of the most important question is when a test may re-use results of another 
 We can consider this from the following point of view.
 We suppose that the test suite indeed do not make several independent tests, but make a set of
 actions with several "test cases".
-Since the test suite works with OTX, each "test case" is considered as a situation that could be
-happened during some process of work with OTX, and the process may include different actions.
+Since the test suite works with OpenVINO™ Training Extensions, each "test case" is considered as a situation that could be
+happened during some process of work with OpenVINO™ Training Extensions, and the process may include different actions.
 
-Since OTX is focused on training a neural network and making some operations on the trained model,
+Since OpenVINO™ Training Extensions is focused on training a neural network and making some operations on the trained model,
 we defined the test case by the parameters that define training process
 (at least they defines it as much as it is possible for such stochastic process).
 
 Usually the parameters defining the training process are:
 
-1. a model - typically it is a name of OTX template to be used
+1. a model - typically it is a name of OpenVINO™ Training Extensions template to be used
 2. a dataset - typically it is a dataset name that should be used
    (we use known pre-defined names for the datasets on our CI)
 3. other training parameters:
@@ -591,7 +591,7 @@ following:
 - An instance of the test case class is created once for each of the group of tests stated above
   -- so, the instance of test case class is created for each "test case" described above.
 
-As stated above, the instance of test case class is kept inside cache in OTX Test Helper class, it
+As stated above, the instance of test case class is kept inside cache in OpenVINO™ Training Extensions Test Helper class, it
 allows to use the results of the previous tests of the same test case in the current test.
 
 ### V.2 Base interface of a test case class, creation of a test case class
@@ -827,7 +827,7 @@ previous section relates to all pytest-based code.
 But we would like to describe some important points related to `OTXTestHelper` and the test suite as
 a whole:
 
-- typically for one OTX task type for all training tests there is only one test class with only only
+- typically for one OpenVINO™ Training Extensions task type for all training tests there is only one test class with only only
   one test method that has a lot of combination of test parameters values
 - the method `get_list_of_tests` of `OTXTestHelper` returns this triplet
   `argnames, argvalues, ids` that is used later in `pytest_generate_tests`-related pytest magic to
@@ -889,7 +889,7 @@ def test_case_class(self) -> Type[OTXTestCaseInterface]:
 The method returns a class that will be used as a Test Case class for training tests.
 Note that it should return a class itself (not an instance of the class).
 
-Typically OTX Test Case class should be generated by the function
+Typically OpenVINO™ Training Extensions Test Case class should be generated by the function
 `generate_otx_integration_test_case_class` and the only parameter of the function is the list of all
 test action classes that should be used in the training tests for the algo backend.
 
@@ -1059,7 +1059,7 @@ def short_test_parameters_names_for_generating_id(self) -> OrderedDict:
 ```
 
 This method returns an `OrderedDict` that is used to generate the `ids` part of the triplet
-`argnames, argvalues, ids` that is returned by the OTX test helper method `get_list_of_tests` for
+`argnames, argvalues, ids` that is returned by the OpenVINO™ Training Extensions test helper method `get_list_of_tests` for
 the training test parametrization.
 
 The returned OrderedDict has the following structure
@@ -1430,7 +1430,7 @@ in the file `tests/conftest.py` of the algo backend.
                 return 'integration'
   ```
 - the fixture `otx_templates_root_dir_fx` -- it should return the absolute
-  path of the folder where OTX model templates are stored for this algo backend, usually it uses
+  path of the folder where OpenVINO™ Training Extensions model templates are stored for this algo backend, usually it uses
   something like `osp.dirname(osp.dirname(osp.realpath(__file__)))` to get the absolute path to the
   root of the algo backend and then using knowledge of algo backend structures point to the template
   path
