@@ -602,7 +602,7 @@ the function has the declaration
 
 ```python
 def generate_otx_integration_test_case_class(
-    test_actions_classes: List[Type[BaseOpenVINO™ Training ExtensionsTestAction]],
+    test_actions_classes: List[Type[BaseOTXTestAction]],
 ) -> Type:
 ```
 
