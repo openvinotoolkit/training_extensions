@@ -7,3 +7,4 @@ Base tutorial
    how_to_train/index
    deploy
    demo
+   explain
