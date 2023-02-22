@@ -1,7 +1,7 @@
 Action Detection  model
 ================================
 
-This live example shows how to easily train, validate, optimize and export spatio-temporal action detection model on the subset of `JHMDB <http://jhmdb.is.tue.mpg.de/>`_.  
+This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of `JHMDB <http://jhmdb.is.tue.mpg.de/>`_.  
 
 .. note::
 
@@ -24,7 +24,7 @@ You can follow the installation process from a :doc:`quick start guide <../../..
 Dataset preparation
 ***************************
 
-Although we offer conversion codes from `ava dataset format <https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md>`_ to `cvat dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ from `this code <../../../../../../otx/algorithms/action/utils/convert_convert_data_to_cvat.py>`_, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from `this link <https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link>`_.
+Although we offer conversion codes from `ava dataset format <https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md>`_ to `cvat dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ from `this code <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py>`_, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from `this link <https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link>`_.
 
 If you download data from link and extract to training_extensions/data folder(you should make data folder at first), you can see the structure below.
 
@@ -99,9 +99,9 @@ command in our worspace:
 
 That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
-The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 70 minutes.
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 70 minutes.
 
-After that, we have the PyTorch action detection model trained with OTX, which we can use for evaluation, export, optimization and deployment.
+After that, we have the PyTorch action detection model trained with OTX.
 
 ***********
 Validation
