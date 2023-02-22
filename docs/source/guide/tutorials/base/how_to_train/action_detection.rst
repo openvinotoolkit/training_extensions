@@ -88,7 +88,7 @@ Let's prepare an OpenVINO™ Training Extensions action detection workspace runn
 
   (otx) ...$ cd ./otx-workspace-ACTION_DETECTION
 
-It will create **otx-workspace-ACTION_DETECTION** with all necessery configs for X3D_FAST_RCNN, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+It will create **otx-workspace-ACTION_DETECTION** with all necessary configs for X3D_FAST_RCNN, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
 3. To start training we need to call ``otx train``
 command in our worspace:
