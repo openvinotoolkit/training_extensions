@@ -223,6 +223,9 @@ For example, that is how we can change the learning rate and the batch size for 
     (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
 
 
+As you can see from the arguments, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the `--gpus` argument. The model will then be trained using distributed data parallel with the GPUs you have specified.
+
+Please note that multi-GPU training is currently not supported for the action task and semi/self-supervised learning. However, it is supported for all other tasks.
 
 **********
 Exporting
