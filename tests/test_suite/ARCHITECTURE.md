@@ -883,7 +883,7 @@ Let's consider all the methods of the abstract test parameters interface class o
 
 ```python
 @abstractmethod
-def test_case_class(self) -> Type[OpenVINO™ Training ExtensionsTestCaseInterface]:
+def test_case_class(self) -> Type[OTXTestCaseInterface]:
 ```
 
 The method returns a class that will be used as a Test Case class for training tests.
