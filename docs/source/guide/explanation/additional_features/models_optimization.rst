@@ -1,7 +1,7 @@
 Models Optimization
 ===================
 
-OTX provides two types of optimization algorithms: `Post-training Optimization Tool (POT) <https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction>`_ and `Neural Network Compression Framework (NNCF) <https://github.com/openvinotoolkit/nncf>`_.
+OpenVINO™ Training Extensions provides two types of optimization algorithms: `Post-training Optimization Tool (POT) <https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction>`_ and `Neural Network Compression Framework (NNCF) <https://github.com/openvinotoolkit/nncf>`_.
 
 Post-training Optimization is designed to optimize the inference of models by applying post-training methods that do not require model retraining or fine-tuning. If you want more details about how POT works and to be more familiar with model optimization methods, please refer to `documentation <https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction>`_.
 

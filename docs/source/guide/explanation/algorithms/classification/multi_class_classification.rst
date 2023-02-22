@@ -111,7 +111,7 @@ We use `FixMatch <https://arxiv.org/abs/2001.07685>`_ as a core algorithm for Se
 
 In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.
 
-Overall, OTX utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.
+Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.
 
 .. _mcl_cls_semi_supervised_pipeline:
 
@@ -169,7 +169,7 @@ Self-supervised learning can be one of the solutions if the user has a small dat
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.
 
-For these cases, OTX provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted `BYOL <https://arxiv.org/abs/2006.07733>`_ as our self-supervised method.
 Users only need a few more minutes to use these self-supervised learning recipes and can expect improved performance, especially in low-data regimes.
 
