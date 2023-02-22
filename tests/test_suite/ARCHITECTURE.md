@@ -843,7 +843,7 @@ a whole:
 The constructor of the class `OTXTestHelper` has the following declaration
 
 ```python
-def __init__(self, test_creation_parameters: OpenVINO™ Training ExtensionsTestCreationParametersInterface):
+def __init__(self, test_creation_parameters: OTXTestCreationParametersInterface):
 ```
 
 As you can see it receives as the only parameter the class that is derived from
