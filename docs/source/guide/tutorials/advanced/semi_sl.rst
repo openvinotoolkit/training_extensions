@@ -34,9 +34,9 @@ The process has been tested on the following configuration:
 
   To learn how to optimize the trained model (.xml) with OpenVINO™ POT, refer to `classification optimization <../base/how_to_train/classification.html#optimization>`__.
 
-  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+  To learn how to deploy the trained model, refer to :doc:`deploy <../base/deploy>`.
 
-  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
+  To learn how to run the demo and visualize results, refer to :doc:`demo <../base/demo>`.
 
   This tutorial explains how to train a model in semi-supervised learning mode and how to evaluate the resulting model.
 
@@ -45,7 +45,7 @@ The process has been tested on the following configuration:
 Dataset preparation
 ***************************
 
-We use the same dataset, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_, as we do in :doc:`Classification Tutorial <../base/how_to_train/classification>`.
+We use the same dataset, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_, as we do in :doc:`classification tutorial <../base/how_to_train/classification>`.
 
 Since it is assumed that we have additional unlabeled images,
 we make a use of ``tests/assets/imagenet_dataset`` for this purpose as an example.
@@ -61,6 +61,10 @@ We should put the path where unlabeled data are contained. It also provides us `
 .. note::
 
   OpenVINO™ Training Extensions automatically search for all image files with JPG, JPEG, and PNG formats in the root path specified using the ``--unlabeled-data-roots`` option, even if there are other file formats present. The image files which are located in sub-folders will be also collected for building unlabeled dataset.
+
+  In this tutorial, we make use of auto-split functionality for the multi-class classification, which makes train/validation splits for the given dataset.
+  
+  For the details about auto-split, please refer to :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>`.
 
 .. code-block::
 
@@ -107,7 +111,7 @@ Enable via ``otx train``
 ***************************
 
 1. To enable semi-supervised learning directly via ``otx train``, we need to add arguments ``--unlabeled-data-roots`` and ``--algo_backend.train_type`` 
-which is one of template-specific parameters (The details are provided in :doc:`quick start guide <../../get_started/quick_start_guide/cli_commands#Training>`.)
+which is one of template-specific parameters (The details are provided in `quick start guide <../../get_started/quick_start_guide/cli_commands.html#training>`__.)
 
 .. code-block::
 
