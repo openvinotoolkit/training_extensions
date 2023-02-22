@@ -215,8 +215,13 @@ class ClassificationInferenceTask(
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity,
-               precision: ModelPrecision = ModelPrecision.FP32, dump_features: bool = False):
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = False,
+    ):
         """Export function of OTX Classification Task."""
 
         logger.info("Exporting the model")
@@ -226,9 +231,13 @@ class ClassificationInferenceTask(
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = "ClsExporter"
-        results = self._run_task(stage_module, mode="train", export=True,
-                                 enable_fp16=(precision == ModelPrecision.FP16),
-                                 dump_features=dump_features)
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            export=True,
+            enable_fp16=(precision == ModelPrecision.FP16),
+            dump_features=dump_features,
+        )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:

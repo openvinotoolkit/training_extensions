@@ -247,8 +247,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             opset_version=11,
         )
 
-    def export(self, export_type: ExportType, output_model: ModelEntity,
-               precision: ModelPrecision = ModelPrecision.FP32, dump_features: bool = True) -> None:
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = True,
+    ) -> None:
         """Export model to OpenVINO IR.
 
         Args:
