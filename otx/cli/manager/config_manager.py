@@ -24,6 +24,7 @@ DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
     "DETECTION": "Custom_Object_Detection_Gen3_ATSS",
     "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
+    "ROTATED_DETECTION": "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50",
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
     "ACTION_CLASSIFICATION": "Custom_Action_Classificaiton_X3D",
     "ACTION_DETECTION": "Custom_Action_Detection_X3D_FAST_RCNN",
@@ -49,6 +50,7 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
     "ANOMALY_DETECTION": ["mvtec"],
     "ANOMALY_SEGMENTATION": ["mvtec"],
     "INSTANCE_SEGMENTATION": ["coco", "voc"],
+    "ROTATED_DETECTION": ["coco", "voc"],
 }
 
 TASK_TYPE_TO_SUB_DIR_NAME = {
