@@ -161,7 +161,7 @@ class TestResultMediaEntity:
         result_media = ResultMediaEntity(**initialization_params)
         assert repr(result_media) == (
             f"ResultMediaEntity(name=ResultMedia name, type=Test ResultMedia, annotation_scene={annotation_scene}, "
-            f"numpy={numpy}, roi={roi}, label={label})"
+            f"roi={roi}, label={label})"
         )
 
     @pytest.mark.priority_medium
