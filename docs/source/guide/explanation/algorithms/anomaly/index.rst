@@ -104,6 +104,10 @@ PADIM
 
 Padim is a clustering based anomaly detection approach. The model uses a patch-based mechanism that extracts patches from the input image and then uses a CNN to extract features from the patches. To eliminate the redundant information from the extracted features, the model randomly selects a subset of the features to reduce the dimensionality of the features. A multi-variate Gaussian distribution is fitted for each patch embedding. This means each patch of the set of training images has a corresponding multivariate Gaussian distribution. To predict the anomaly score, Mahalanobis distance is calculated to score each patch position of the test image. The matrices of Mahalanobis distances constitute the anomaly map, with higher scores indicating anomalous regions.
 
+.. note::
+
+   The PADiM model uses a pre-trained backbone to extract features. So, there is no training involved. Due to this, it reports loss as ``nan`` during training.
+
 Knowledge Distillation-based Models
 -----------------------------------
 Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behavior of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OpenVINO Training Extensions currently supports `STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection <https://arxiv.org/pdf/2103.04257.pdf>`_.
@@ -118,6 +122,22 @@ STFPM
 
 The STFPM algorithm is composed of a pre-trained teacher network and a student network with the same architecture. The student network learns the distribution of anomaly-free images by matching the features to their corresponding features in the teacher network. Multiple-scale feature matching is utilized to enable the student network during training to receive a mixture of multi-level knowledge from the feature pyramid, thereby enabling the detection of anomalies of various sizes. To compute the anomaly scores during the inference, the student network's feature pyramid is compared to the teacher network's feature pyramid. The anomaly score is computed as the sum of the L2 distances between the student and teacher feature pyramids. This distance is then used to compute the anomaly map and the anomaly score.
 
+Training Parameters
+~~~~~~~~~~~~~~~~~~~~
+
+Since STFPM trains the student network, we use the following parameters for its training:
+
+- ``Backbone``: The default backbone is ``ResNet18``. You can also use ``Wide ResNet50``.
+- ``Loss``: Loss is computed as the mean squared error between the student and teacher feature pyramids. The default loss is ``MSE`` and cannot be changed.
+- ``Optimizer``: The default optimizer is ``SGD`` and cannot be changed. It uses the following parameters that can be changed from the UI.
+   - ``Learning Rate``: The default learning rate is ``0.4``.
+   - ``Momentum``: The default momentum is ``0.9``.
+   - ``Weight Decay``: The default weight decay is ``0.0001``.
+
+- ``Aditional Techniques``:
+   - ``Early Stopping``: Early stopping is used to stop the training process when the validation loss stops improving. The default value of the early stopping patience is ``10``.
+
+For more information on STFPM's training. We invite you to read Anomalib's `STFPM documentation<https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/stfpm.html>`_.
 
 Reconstruction-based Models
 ---------------------------
