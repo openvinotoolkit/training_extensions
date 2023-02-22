@@ -9,4 +9,3 @@ Additional Features
    models_optimization
    hpo
    auto_configuration
-   xai
