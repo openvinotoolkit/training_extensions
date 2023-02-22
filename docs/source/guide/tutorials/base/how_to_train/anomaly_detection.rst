@@ -1,7 +1,13 @@
-Anomaly Detection model
+Anomaly Detection Tutorial
 ================================
 
-This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications.
+This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications. Read :doc:`../../../explanation/algorithms/anomaly/index` for more information about the Anomaly tasks.
+
+.. note::
+
+    To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+
+    To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
 
 The process has been tested with the following configuration:
 
@@ -15,51 +21,95 @@ The process has been tested with the following configuration:
 Setup the Virtual environment
 *****************************
 
-To create a universal virtual environment for OTX, please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`. 
+To create a universal virtual environment for Training Extensions, please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`. 
 
-Alternatively, if you want to only train anomaly models then you can just use ``pip install -e .[anomaly]``
+Alternatively, if you want to only train anomaly models then you can create a task specific environment.
+
+1. Ensure that you have python 3 installed on your system. You can check this by running.
+
+    .. code-block:: bash
+
+        python3 --version
+
+    It should give a similar result::
+
+        Python 3.8.16
+
+2. Create a virtual environment and activate it.
+
+    .. code-block:: bash
+
+        python3 -m venv anomaly_env
+        source anomaly_env/bin/activate
+
+3. Install the prerequisites for Training Extensions.
+
+    Install PyTorch according to your system environment. Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
+
+    .. note::
+
+        Currently, only torch==1.13.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
+
+    Example install command for torch==1.13.1+cu111:
+
+    .. code-block::
+
+        pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu111
+
+4. Then, install the task specific OpenVINO™ Training Extensions package you can then use::
+
+    pip install -e .[anomaly]
 
 **************************
 Dataset Preparation
 **************************
 
-Since the anomaly tasks in OTX depend on `Anomalib <https://github.com/openvinotoolkit/anomalib>`_, let's use a `Toy Dataset <https://openvinotoolkit.github.io/anomalib/data/hazelnut_toy.html>`_ from Anomalib to demonstrate the process.
+For this example we will use the `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_ dataset.
 
-You can download and extract the dataset by running the following commands:
+You can download the dataset from the link above. We will use the ``bottle`` category for this tutorial.
 
-.. code-block:: bash
-
-    wget https://openvinotoolkit.github.io/anomalib/_downloads/3f2af1d7748194b18c2177a34c03a2c4/hazelnut_toy.zip
-    unzip hazelnut_toy.zip
-    mv hazelnut_toy data/anomaly
-
-The last command moves the dataset to the ``data/anomaly`` directory.
-
-This is how it should look like in your file system:
+This is how it might look like in your file system:
 
 .. code-block:: bash
 
-    data/anomaly/hazelnut_toy/
-    ├── colour
-    │   ├── 00.jpg
-    │   ├── 01.jpg
-    │   ...
-    ├── crack
-    │   ├── 01.jpg
-    │   ...
-    ├── good
-    │   ├── 00.jpg
-    │   ├── 01.jpg
-    │   ...
-    ├── LICENSE
-    └── mask
-        ├── colour
-        │   ├── 00.jpg
-        │   ├── 01.jpg
-        │   ...
-        └── crack
-            ├── 01.jpg
-            ├── 02.jpg
+    datasets/MVTec/bottle
+    ├── ground_truth
+    │   ├── broken_large
+    │   │   ├── 000_mask.png
+    │   │   ├── 001_mask.png
+    │   │   ├── 002_mask.png
+    │   │   ...
+    │   ├── broken_small
+    │   │   ├── 000_mask.png
+    │   │   ├── 001_mask.png
+    │   │   ...
+    │   └── contamination
+    │       ├── 000_mask.png
+    │       ├── 001_mask.png
+    │       ...
+    ├── license.txt
+    ├── readme.txt
+    ├── test
+    │   ├── broken_large
+    │   │   ├── 000.png
+    │   │   ├── 001.png
+    │   │   ...
+    │   ├── broken_small
+    │   │   ├── 000.png
+    │   │   ├── 001.png
+    │   │   ...
+    │   ├── contamination
+    │   │   ├── 000.png
+    │   │   ├── 001.png
+    │   │   ...
+    │   └── good
+    │       ├── 000.png
+    │       ├── 001.png
+    │       ...
+    └── train
+        └── good
+            ├── 000.png
+            ├── 001.png
             ...
 
 ***************************
@@ -87,7 +137,9 @@ Let's proceed with PADIM for this example.
 
 .. code-block:: bash
 
-    otx train ote_anomaly_detection_padim --train-data-roots data/anomaly/hazelnut_toy --val-data-roots data/anomaly/hazelnut_toy
+    otx train ote_anomaly_detection_padim \
+        --train-data-roots datasets/MVTec/bottle/train \
+        --val-data-roots datasets/MVTec/bottle/test
 
 This will start training and generate artifacts for commands such as ``export`` and ``optimize``. You will notice the ``otx-workspace-ANOMALY_DETECTION`` directory in your current working directory. This is where all the artifacts are stored.
 
@@ -100,13 +152,20 @@ Now that we have trained the model, let's see how it performs on the a specific 
 .. code-block:: bash
 
     otx eval ote_anomaly_detection_padim \
-        --test-data-roots data/anomaly/hazelnut_toy \
+        --test-data-roots datasets/MVTec/bottle/test \
         --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
         --save-performance otx-workspace-ANOMALY_DETECTION/performance.json
 
 You should see an output similar to the following::
 
-    MultiScorePerformance(score: 0.9032258064516128, primary_metric: None, additional_metrics: (1 metrics), dashboard: (1 metric groups))
+    MultiScorePerformance(score: 0.6356589147286821, primary_metric: ScoreMetric(name=`f-measure`, score=`0.6356589147286821`), additional_metrics: (1 metrics), dashboard: (2 metric groups))
+
+
+The primary metric here is the f-measure computed against the ground-truth bounding boxes. It is also called the local score. In addition, f-measure is also used to compute the global score. The global score is computed based on global label of the image. That is, the image is anomalous if it contains at least one anomaly. This global score is stored as an additional metric.
+
+.. note::
+
+    All tasks use the f-measure as the primary metric for computing global scores. In case of classification tasks, accuracy is also added to the dashboard metrics. For detection tasks, f-measure is also used for computing the local (bounding boxes) scores. And, for the segmentation tasks, the  Dice Average score is used as the local (segmentation masks) scores.
 
 ******
 Export
@@ -141,13 +200,13 @@ Now that we have the exported model, let's check its performance using ``otx eva
 .. code-block:: bash
 
     otx eval ote_anomaly_detection_padim \
-        --test-data-roots data/anomaly/hazelnut_toy \
+        --test-data-roots datasets/MVTec/bottle/test \
         --load-weights otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml \
         --save-performance otx-workspace-ANOMALY_DETECTION/openvino_models/performance.json
 
 This gives the following results::
 
-    MultiScorePerformance(score: 0.8974358974358974, primary_metric: None, additional_metrics: (1 metrics), dashboard: (1 metric groups))
+    MultiScorePerformance(score: 0.6511627906976744, primary_metric: ScoreMetric(name=`f-measure`, score=`0.6511627906976744`), additional_metrics: (1 metrics), dashboard: (2 metric groups))
 
 ************
 Optimization
@@ -156,31 +215,42 @@ Optimization
 Anomaly tasks can be optimized either in POT or NNCF format. For more information refer to the :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section.
 
 
-----------------
-POT Optimization
-----------------
+1. Let's start with POT optimization.
 
-Let's start with POT optimization.
+    .. code-block:: bash
 
-.. code-block:: bash
+        otx optimize ote_anomaly_detection_padim \
+            --train-data-roots datasets/MVTec/bottle/train \
+            --load-weights otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml \
+            --save-model-to otx-workspace-ANOMALY_DETECTION/pot_model
 
-    otx optimize ote_anomaly_detection_padim \
-        --train-data-roots data/anomaly/hazelnut_toy/ \
-        --load-weights otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml \
-        --save-model-to otx-workspace-ANOMALY_DETECTION/pot_model
+    This generates the following files that can be used to run :doc:`otx demo <../demo>`.
 
------------------
-NNCF Optimization
------------------
+    - image_threshold
+    - pixel_threshold
+    - label_schema.json
+    - max
+    - min
+    - openvino.bin
+    - openvino.xml
 
-To perform NNCF optimization, pass the torch ``pth`` weights to the ``opitmize`` command.
+2. To perform NNCF optimization, pass the torch ``pth`` weights to the ``opitmize`` command.
 
-.. code-block:: bash
+    .. code-block:: bash
 
-    otx optimize ote_anomaly_detection_padim \
-        --train-data-roots data/anomaly/hazelnut_toy/ \
-        --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-        --save-model-to otx-workspace-ANOMALY_DETECTION/nncf_model
+        otx optimize ote_anomaly_detection_padim \
+            --train-data-roots datasets/MVTec/bottle/train \
+            --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
+            --save-model-to otx-workspace-ANOMALY_DETECTION/nncf_model
+
+    Similar to POT optimization, this generates the following files.
+
+    - image_threshold
+    - pixel_threshold
+    - label_schema.json
+    - max
+    - min
+    - weights.pth
 
 
 *******************************
@@ -188,3 +258,9 @@ Segmentation and Classification
 *******************************
 
 While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models. To see what tasks are available, you can pass ``anomaly_segmentation`` and ``anomaly_classification`` to ``otx find`` mentioned in the `Training`_ section. You can then use the same commands to train, evaluate, export and optimize the models.
+
+.. note::
+
+    The Segmentation and Detection tasks also require that the ``ground_truth`` masks be present to ensure that the localization metrics are computed correctly.
+    The ``ground_truth`` masks are not required for the Classification task.
+

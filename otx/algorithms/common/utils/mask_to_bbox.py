@@ -34,12 +34,12 @@ def mask_to_border(mask):
     h, w = mask.shape
     border = np.zeros((h, w))
 
-    contours = find_contours(mask, 128)
+    contours = find_contours(mask, 0.5)  # since the input range is [0, 1], the threshold is 0.5
     for contour in contours:
         for c in contour:
             x = int(c[0])
             y = int(c[1])
-            border[x][y] = 255
+            border[x][y] = 1  # since the input is binary, the value is 1
 
     return border
 
@@ -56,6 +56,7 @@ def mask2bbox(mask):
     bboxes: List[int] = []
 
     mask = mask_to_border(mask)
+    print(np.unique(mask))
     lbl = label(mask)
     props = regionprops(lbl)
     for prop in props:
