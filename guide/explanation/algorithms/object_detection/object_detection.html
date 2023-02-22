@@ -127,7 +127,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../get_started/quick_start_guide/cli_commands.html">
-     OTX CLI commands
+     OpenVINO™ Training Extensions CLI commands
     </a>
    </li>
   </ul>
@@ -240,7 +240,7 @@
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../../tutorials/advanced/api_tutorial.html">
-       Utilize OTX APIs in your project
+       Utilize OpenVINO™ Training Extensions APIs in your project
       </a>
      </li>
     </ul>
@@ -1201,7 +1201,7 @@
 <p>For Semi-SL task solving we use <a class="reference external" href="https://arxiv.org/abs/2102.09480">Unbiased Teacher model</a>, which is a specific implementation of Semi-SL for object detection. Unbiased teacher detach the student model and the teacher model to prevent teacher from being polluted by noisy pseudo-labels. In the early stage, the teacher model is trained by supervised loss. This stage is called a burn-in stage. After the burn-in, the student model is trained using both pseudo-labeled data from the teacher model and labeled data. And the teacher model is updated using
 EMA.</p>
 <p>In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.</p>
-<p>Overall, OTX utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.</p>
+<p>Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.</p>
 <ul class="simple" id="od-semi-supervised-pipeline">
 <li><p><code class="docutils literal notranslate"><span class="pre">Pseudo-labeling</span></code>: A specific implementation of Semi-SL that combines the use of pseudo-labeling with a consistency loss, strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Weak</span> <span class="pre">&amp;</span> <span class="pre">Strong</span> <span class="pre">augmentation</span></code>: For teacher model weak augmentations(random flip) are applied to input image. For student model strong augmentations(colorjtter, grayscale, goussian blur, random erasing) are applied.</p></li>

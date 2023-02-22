@@ -83,13 +83,13 @@ The list of supported templates for semantic segmentation is available with the 
     We do not attach OCR head for supported models in default. We remain the suffix '_OCR' in ID just for backward compatibility.
 To have a specific example in this tutorial, all commands will be run on the :ref:`Lite-HRNet-18-mod2 <semantic_segmentation_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the semantic segmentation.
+2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the semantic segmentation.
 
-Let's prepare an OTX semantic segmentation workspase running the following command:
+Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspase running the following command:
 
 .. note::
 
-  Currently, OTX supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in argument '--val-data-roots' when using other supported segmentation dataset. About dataset formats for semantic segmentation, please refer to the :doc:`explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
+  Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in argument '--val-data-roots' when using other supported segmentation dataset. About dataset formats for semantic segmentation, please refer to the :doc:`explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
 
 .. code-block::
 
@@ -115,7 +115,7 @@ command in our worspace:
 
 That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
-After that, we have the PyTorch model trained with OTX, which we can use for evaluation, export, optimization and deployment.
+After that, we have the PyTorch model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation

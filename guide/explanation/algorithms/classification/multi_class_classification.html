@@ -127,7 +127,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../get_started/quick_start_guide/cli_commands.html">
-     OTX CLI commands
+     OpenVINO™ Training Extensions CLI commands
     </a>
    </li>
   </ul>
@@ -240,7 +240,7 @@
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../../tutorials/advanced/api_tutorial.html">
-       Utilize OTX APIs in your project
+       Utilize OpenVINO™ Training Extensions APIs in your project
       </a>
      </li>
     </ul>
@@ -1339,7 +1339,7 @@ Please, refer to the <a class="reference internal" href="../../../tutorials/adva
 <p>Semi-SL (Semi supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.</p>
 <p>We use <a class="reference external" href="https://arxiv.org/abs/2001.07685">FixMatch</a> as a core algorithm for Semi-SL task solving. It is a specific implementation of Semi-SL that has been shown to be effective in various applications. FixMatch introduces pseudo-labeling, which is the process of generating labels for the unlabeled data and treating them as if they were labeled data. Pseudo-labeling is based on the idea that the model’s prediction for the unlabeled data is likely to be correct, which can improve the model’s accuracy and reduce the need for labeled data.</p>
 <p>In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.</p>
-<p>Overall, OTX utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.</p>
+<p>Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.</p>
 <ul class="simple" id="mcl-cls-semi-supervised-pipeline">
 <li><p><code class="docutils literal notranslate"><span class="pre">Pseudo-labeling</span> <span class="pre">(FixMatch)</span></code>: A specific implementation of Semi-SL that combines the use of pseudo-labeling with a consistency loss, strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Adaptable</span> <span class="pre">Threshold</span></code>: A novel addition to our solution that calculates a class-wise threshold for pseudo-labeling, which can solve the issue of imbalanced data and produce high-quality pseudo-labels that improve the overall score.</p></li>
@@ -1476,7 +1476,7 @@ Training time depends on the number of images and can be up to several times lon
 <p>Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.</p>
-<p>For these cases, OTX provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+<p>For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted <a class="reference external" href="https://arxiv.org/abs/2006.07733">BYOL</a> as our self-supervised method.
 Users only need a few more minutes to use these self-supervised learning recipes and can expect improved performance, especially in low-data regimes.</p>
 <p>Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.

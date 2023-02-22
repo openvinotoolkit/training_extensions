@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Utilize OTX APIs in your project &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>Utilize OpenVINO™ Training Extensions APIs in your project &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -127,7 +127,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../get_started/quick_start_guide/cli_commands.html">
-     OTX CLI commands
+     OpenVINO™ Training Extensions CLI commands
     </a>
    </li>
   </ul>
@@ -240,7 +240,7 @@
      </li>
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
-       Utilize OTX APIs in your project
+       Utilize OpenVINO™ Training Extensions APIs in your project
       </a>
      </li>
     </ul>
@@ -1191,14 +1191,14 @@
               
               <div>
                 
-  <div class="section" id="utilize-otx-apis-in-your-project">
-<h1>Utilize OTX APIs in your project<a class="headerlink" href="#utilize-otx-apis-in-your-project" title="Permalink to this headline">¶</a></h1>
-<p>Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OTX models into their projects.
+  <div class="section" id="utilize-openvino-training-extensions-apis-in-your-project">
+<h1>Utilize OpenVINO™ Training Extensions APIs in your project<a class="headerlink" href="#utilize-openvino-training-extensions-apis-in-your-project" title="Permalink to this headline">¶</a></h1>
+<p>Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OpenVINO™ Training Extensions models into their projects.
 This tutorial intends to show how to create a dataset, model and use all of the CLI functionality through APIs.</p>
 <p>For demonstration purposes we will use the Object Detection SSD model with <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a> public dataset as we did for the <a class="reference internal" href="../base/how_to_train/detection.html"><span class="doc">CLI tutorial</span></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To start with we need to <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/QUICK_START_GUIDE.md#setup-openvino-training-extensions">install OTX</a>.</p>
+<p>To start with we need to <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/QUICK_START_GUIDE.md#setup-openvino-training-extensions">install OpenVINO™ Training Extensions</a>.</p>
 </div>
 <div class="section" id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">¶</a></h2>
@@ -1211,11 +1211,11 @@ with <a class="reference external" href="https://github.com/thsant/wgisd">WGISD 
 </pre></div>
 </div>
 <p>2. We need to rename annotations to
-be distinguished by OTX Datumaro manager:</p>
+be distinguished by OpenVINO™ Training Extensions Datumaro manager:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mv</span> <span class="n">data</span> <span class="n">images</span> <span class="o">&amp;&amp;</span> <span class="n">mv</span> <span class="n">coco_annotations</span> <span class="n">annotations</span> <span class="o">&amp;&amp;</span> <span class="n">mv</span> <span class="n">annotations</span><span class="o">/</span><span class="n">train_bbox_instances</span><span class="o">.</span><span class="n">json</span> <span class="n">instances_train</span><span class="o">.</span><span class="n">json</span>  <span class="o">&amp;&amp;</span> <span class="n">mv</span> <span class="n">annotations</span><span class="o">/</span><span class="n">test_bbox_instances</span><span class="o">.</span><span class="n">json</span> <span class="n">instances_val</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
-<p>Now it is all set to use this dataset inside OTX</p>
+<p>Now it is all set to use this dataset inside OpenVINO™ Training Extensions</p>
 </div>
 <div class="section" id="model-template-and-dataset-loading">
 <h2>Model template and dataset loading<a class="headerlink" href="#model-template-and-dataset-loading" title="Permalink to this headline">¶</a></h2>
@@ -1401,7 +1401,7 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
 <div class="section" id="load-the-model-and-use-it-for-any-data">
 <h2>Load the model and use it for any data<a class="headerlink" href="#load-the-model-and-use-it-for-any-data" title="Permalink to this headline">¶</a></h2>
 <p>Let’s assume, that we have already trained the model and we want to use it in our project. Below simple steps are presented on how to load the model and infer it on custom images.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to the trained OTX weights, can be PyTorch .pth or OpenVINO™ IR .xml</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to the trained OpenVINO™ Training Extensions weights, can be PyTorch .pth or OpenVINO™ IR .xml</span>
 <span class="n">weights_path</span> <span class="o">=</span> <span class="s2">&quot;path/to/trained/weights&quot;</span>
 
 <span class="c1"># create new environment</span>
@@ -1454,7 +1454,7 @@ We can convert these steps to function and use it in a loop with multiple images
     <span class="n">img</span> <span class="o">=</span> <span class="n">draw_predictions</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">fit_to_size</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>That’s it. Now, we can use OTX APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extension.</p>
+<p>That’s it. Now, we can use OpenVINO™ Training Extensions APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extension.</p>
 </div>
 </div>
 

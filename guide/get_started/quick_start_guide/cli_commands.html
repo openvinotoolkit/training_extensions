@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OTX CLI commands &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>OpenVINO™ Training Extensions CLI commands &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -127,7 +127,7 @@
    </li>
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     OTX CLI commands
+     OpenVINO™ Training Extensions CLI commands
     </a>
    </li>
   </ul>
@@ -240,7 +240,7 @@
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../tutorials/advanced/api_tutorial.html">
-       Utilize OTX APIs in your project
+       Utilize OpenVINO™ Training Extensions APIs in your project
       </a>
      </li>
     </ul>
@@ -1201,9 +1201,9 @@
               
               <div>
                 
-  <div class="section" id="otx-cli-commands">
-<h1>OTX CLI commands<a class="headerlink" href="#otx-cli-commands" title="Permalink to this headline">¶</a></h1>
-<p>Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have <a class="reference internal" href="../../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> in our documentation with life-practical examples on specific datasets for each task.</p>
+  <div class="section" id="openvino-training-extensions-cli-commands">
+<h1>OpenVINO™ Training Extensions CLI commands<a class="headerlink" href="#openvino-training-extensions-cli-commands" title="Permalink to this headline">¶</a></h1>
+<p>Below, all possible OpenVINO™ Training Extensions CLI commands are presented with some general examples of how to run specific functionality. We also have <a class="reference internal" href="../../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> in our documentation with life-practical examples on specific datasets for each task.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to <a class="reference internal" href="../../explanation/index.html"><span class="doc">explanation section</span></a> in the documentation.</p>
@@ -1308,7 +1308,7 @@ Please refer to the advanced tutorial <a class="reference internal" href="../../
 </pre></div>
 </div>
 <p>However, if you store your training set and validation separately - provide paths to both accordingly.
-OTX supports also auto-split functionality. If you don’t have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to <code class="docutils literal notranslate"><span class="pre">splitted_dataset</span></code> folder inside the otx workspace folder. This split can be further used for training.</p>
+OpenVINO™ Training Extensions supports also auto-split functionality. If you don’t have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to <code class="docutils literal notranslate"><span class="pre">splitted_dataset</span></code> folder inside the workspace folder. This split can be further used for training.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Not all of the tasks support the auto-split feature. If the task isn’t supported - unexpected behavior or errors may appear. Please, refer to <a class="reference internal" href="../../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> documentation.</p>
@@ -1323,7 +1323,7 @@ OTX supports also auto-split functionality. If you don’t have a prepared valid
 </ul>
 <p>The results will be saved in <code class="docutils literal notranslate"><span class="pre">./model</span></code> folder by default. The output folder can be modified by <code class="docutils literal notranslate"><span class="pre">--save-model-to</span></code> option. These files can be used by other commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>, <code class="docutils literal notranslate"><span class="pre">demo</span></code>, etc.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> receives <code class="docutils literal notranslate"><span class="pre">template</span></code> as a positional argument. <code class="docutils literal notranslate"><span class="pre">template</span></code> can be a path to the specific <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.</p>
-<p>However, if you created a workspace with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>, the training process can be started (in the workspace directory) just with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> command without any additional options. OTX will fetch everything else automatically.</p>
+<p>However, if you created a workspace with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>, the training process can be started (in the workspace directory) just with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> command without any additional options. OpenVINO™ Training Extensions will fetch everything else automatically.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="o">--</span><span class="n">help</span>
 <span class="n">usage</span><span class="p">:</span> <span class="n">otx</span> <span class="n">train</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">UNLABELED_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="nb">list</span> <span class="n">UNLABELED_FILE_LIST</span><span class="p">]</span>
                 <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">resume</span><span class="o">-</span><span class="kn">from</span> <span class="nn">RESUME_FROM</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">SAVE_MODEL_TO</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">work</span><span class="o">-</span><span class="nb">dir</span> <span class="n">WORK_DIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">hpo</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">hpo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">ratio</span> <span class="n">HPO_TIME_RATIO</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">gpus</span> <span class="n">GPUS</span><span class="p">]</span>
@@ -1370,7 +1370,7 @@ OTX supports also auto-split functionality. If you don’t have a prepared valid
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train SSD  --train-data-roots &lt;path/to/train/root&gt; --val-data-roots &lt;path/to/val/root&gt;
 </pre></div>
 </div>
-<p>It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the <a class="reference internal" href="../../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> will be enabled. Based on the dataset OTX will choose the task type and template with the best accuracy/speed trade-off.</p>
+<p>It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the <a class="reference internal" href="../../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.</p>
 <p>We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train TEMPLATE params --help
 </pre></div>

@@ -127,7 +127,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../get_started/quick_start_guide/cli_commands.html">
-     OTX CLI commands
+     OpenVINO™ Training Extensions CLI commands
     </a>
    </li>
   </ul>
@@ -240,7 +240,7 @@
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../tutorials/advanced/api_tutorial.html">
-       Utilize OTX APIs in your project
+       Utilize OpenVINO™ Training Extensions APIs in your project
       </a>
      </li>
     </ul>
@@ -1159,7 +1159,7 @@
   <div class="section" id="auto-configuration">
 <h1>Auto-configuration<a class="headerlink" href="#auto-configuration" title="Permalink to this headline">¶</a></h1>
 <p>Auto-configuration for a deep learning framework means the automatic finding of the most appropriate settings for the training parameters, based on the dataset and the specific task at hand.
-Auto-configuration can help to save time, it eases the process of interaction with OTX CLI and gives a better baseline for the given dataset.</p>
+Auto-configuration can help to save time, it eases the process of interaction with OpenVINO™ Training Extensions CLI and gives a better baseline for the given dataset.</p>
 <p>At this end, we developed a simple auto-configuration functionality to ease the process of training and validation utilizing our framework.
 Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifying anything else:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train --train-data-root &lt;path_to_data_root&gt;
@@ -1167,12 +1167,12 @@ Basically, to start the training and obtain a good baseline with the best trade-
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>OTX supports also <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> mode with the auto-configuration feature. We can build OTX workspace with the following CLI command:</p>
+<p>OpenVINO™ Training Extensions supports also <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> mode with the auto-configuration feature. We can build OpenVINO™ Training Extensions workspace with the following CLI command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx build --train-data-root &lt;path_to_data_root&gt;
 </pre></div>
 </div>
 </div>
-<p>Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OTX will handle it on its own.
+<p>Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OpenVINO™ Training Extensions will handle it on its own.
 It will recognize the task by analyzing the dataset and if there is no splits for the validation - Datumaro will do a random auto-split, saving this split to the workspace. It could be used with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> or <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1193,7 +1193,7 @@ It will recognize the task by analyzing the dataset and if there is no splits fo
 <li><p>anomaly segmentation: <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad">MVTec</a></p></li>
 <li><p>instance segmentation: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>, <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/">Pascal-VOC</a></p></li>
 </ul>
-<p>If we have a dataset format occluded with other tasks, for example <code class="docutils literal notranslate"><span class="pre">COCO</span></code> format, we should directly emphasize the task type and use <cite>otx build</cite> first with an additional CLI option. If not, OTX automatically chooses the task type that you might don’t intend:</p>
+<p>If we have a dataset format occluded with other tasks, for example <code class="docutils literal notranslate"><span class="pre">COCO</span></code> format, we should directly emphasize the task type and use <cite>otx build</cite> first with an additional CLI option. If not, OpenVINO™ Training Extensions automatically chooses the task type that you might don’t intend:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx build --train-data-root &lt;path_to_data_root&gt; --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
 </pre></div>
 </div>

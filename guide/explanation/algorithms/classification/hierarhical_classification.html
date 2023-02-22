@@ -127,7 +127,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../get_started/quick_start_guide/cli_commands.html">
-     OTX CLI commands
+     OpenVINO™ Training Extensions CLI commands
     </a>
    </li>
   </ul>
@@ -240,7 +240,7 @@
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../../tutorials/advanced/api_tutorial.html">
-       Utilize OTX APIs in your project
+       Utilize OpenVINO™ Training Extensions APIs in your project
       </a>
      </li>
     </ul>
@@ -1196,7 +1196,7 @@ obtain its predictions, and after performing the <em>argmax</em> operation we ch
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">¶</a></h2>
 <p id="hierarchical-dataset">For hierarchical image classification, we created our custom dataset format that is supported by <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>.
 An example of the annotations format and dataset structure can be found in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_h-label">sample</a>.</p>
-<p>To use OTX with this format is required to pass images dataset root paths directly to the CLI command:</p>
+<p>To use OpenVINO™ Training Extensions with this format is required to pass images dataset root paths directly to the CLI command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx {train, optimize} --template &lt;model_template&gt; --train-data-root &lt;path_to_train_data_root&gt; --val-data-root &lt;path_to_val_data_root&gt;
 $ otx eval --template &lt;model_template&gt; --test-data-roots &lt;path_to_test_data_root&gt; --load-weights &lt;path_to_model_weights&gt;
 </pre></div>

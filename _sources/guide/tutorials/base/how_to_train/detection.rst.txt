@@ -169,7 +169,7 @@ If you created ``data.yaml`` file in previous step, you can simplify the trainin
                             --work-dir outputs/logs \
                             --gpus 1
 
-Looks much simpler, isn't it? You can also pass the ``data.yaml`` for the rest of the OTX CLI commands (eval, export, optimize) that require annotation paths.
+Looks much simpler, isn't it? You can also pass the ``data.yaml`` for the rest of the OpenVINO™ Training Extensions CLI commands (eval, export, optimize) that require annotation paths.
 
 4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations. More about template-specific parameters is in quick start [#TODO link].
 
@@ -202,7 +202,7 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100 an
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 15 minutes.
 
-After that we have the PyTorch object detection model trained with OTX, that we can use for evaliation, export, optimization and deployment.
+After that we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, that we can use for evaliation, export, optimization and deployment.
 
 ***********
 Validation
