@@ -14,6 +14,7 @@ The process has been tested on the following configuration.
 
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
+- Intel(R) Core(TM) i9-11900
 - CUDA Toolkit 11.4
 
 *************************
@@ -26,7 +27,7 @@ You can follow the installation process from a :doc:`quick_start guide <../../..
 Dataset preparation
 ***************************
 
-1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_ 
+1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https:/github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_ 
 provided by OTX.
 
 This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.
@@ -35,7 +36,7 @@ This dataset contains images of simple car, tree, bug with the annotation for in
 - ``tree``	- Tree Shape Illustration
 - ``bug``	- Bug Shape Illustration
 
-This allows us to look at the structure of the dataset used in instance-segmentation, and can be a good starting point for how to start an instance segmentation task with OTX.
+This allows us to look at the structure of the dataset used in instance-segmentation, and can be a good starting point for how to start an instance-segmentation task with OTX.
 
 |
 
@@ -44,8 +45,8 @@ This allows us to look at the structure of the dataset used in instance-segmenta
 
 |
 
-2. Check the file structure of downloaded repository,
-we will need the following files:
+2. Check the file structure of downloaded dataset,
+we will need the following file structure:
 
 .. code-block::
 
@@ -108,7 +109,7 @@ Let's prepare an OTX instance segmentation workspase running the following comma
 
   (otx) ...$ cd ./otx-workspace-INSTANCE_SEGMENTATION
 
-It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery configs for MaskRCNN-ResNet50, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
 .. note::
   Using ``otx train`` with TEMPLATE allows you to run the training directly without ``otx build``.
@@ -118,20 +119,24 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery config
   .. code-block::
 
     (otx) ...$ otx train MaskRCNN-ResNet50 \
-                      --train-data-roots  /home/<username>/training_extensions/tests/assets/car_tree_bug \
-                      --val-data-roots /home/<username>/training_extensions/tests/assets/car_tree_bug \
+                      --train-data-roots data/car_tree_bug \
+                      --val-data-roots data/car_tree_bug \
                       params --learning_parameters.num_iters 8
 
   The above command also creates an ``otx-workspace-INSTANCE_SEGMENTATION``, just like running build. This also updates ``data.yaml`` with data-specific commands.
 
   For more information, see :doc:`quick start guide <../../../get_started/quick_start_guide/cli_commands>`
 
-3. Next, we need to create 
-train/validation sets. 
+3. Next, we need to update 
+train/validation set configuration in ``data.yaml``. 
 
-To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. The content of the ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` for dataset should have absolute paths and will be similar to that:
+To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. 
+The content of the ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` for dataset should have absolute paths and will be similar to that:
 
 .. note::
+
+  When a workspace is created, ``data.yaml`` is always generated.
+
   You can modify the required arguments in ``data.yaml`` or use the command to provide the required arguments.
 
 .. code-block::
@@ -139,15 +144,13 @@ To simplify the command line functions calling, we may create a ``data.yaml`` fi
   {'data':
     {
     'train':
-      {'data-roots': '/home/<username>/training_extensions/tests/assets/car_tree_bug'},
+      {'data-roots': 'otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug'},
     'val':
-      {'data-roots': '/home/<username>/training_extensions/tests/assets/car_tree_bug'},
+      {'data-roots': 'otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug'},
     'test':
-      {'data-roots': '/home/<username>/training_extensions/tests/assets/car_tree_bug'}
+      {'data-roots': 'otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug'}
     }
   }
-
-``Ann-files`` contains a path to the annotation, while ``data-roots`` is a path to the folder, where images are stored.
 
 4. To start training we need 
 to call ``otx train``
@@ -204,7 +207,7 @@ and save performance results in ``performance.json`` file:
 
 .. code-block::
 
-  (otx) ...$ otx eval --test-data-roots /home/<username>/training_extensions/tests/assets/car_tree_bug \
+  (otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
                       --load-weights models/weights.pth \
                       --save-performance performance.json
 
@@ -262,11 +265,11 @@ and save the exported model to the ``openvino_model`` folder.
   2023-02-21 22:38:21,940 | INFO : Exporting completed
 
 3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
-using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
+You can use ``otx train`` directly without ``otx build``. It will be required to add ``--train-data-roots`` and ``--val-data-roots`` in the command line
 
 .. code-block::
 
-  (otx) ...$ otx eval --test-data-roots /home/<username>/training_extensions/tests/assets/car_tree_bug \
+  (otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
                       --load-weights openvino_model/openvino.xml \
                       --save-performance openvino_model/performance.json
 
@@ -305,7 +308,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
   2023-02-21 22:45:36,014 | INFO : Evaluation completed
   Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
 
-The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
+The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-11900 it took about 1 minutes.
 
 3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.
