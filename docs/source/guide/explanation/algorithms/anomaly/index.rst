@@ -10,7 +10,7 @@ This section examines the solutions for anomaly detection offered by the OpenVIN
 
 Task Types
 **********
-OTX supports the following anomaly task types:
+OpenVINO Trainign Extensions supports the following anomaly task types:
 
 * Anomaly Classification - (Image-level detection)
 * Anomaly Detection - (Box-level localization)
@@ -22,7 +22,7 @@ OTX supports the following anomaly task types:
 
 Anomaly Classification
 ----------------------
-Anomaly classification is the task of predicting normal and abnormal images at the image level. As noted above, a model is trained on only normal images. During the testing phase, the model predicts an anomaly score indicating the likelihood of an image being abnormal. The threshold for anomaly classification is either set by the user or adaptively tuned by OTX. An image is classified as abnormal if the anomaly score is above the threshold.
+Anomaly classification is the task of predicting normal and abnormal images at the image level. As noted above, a model is trained on only normal images. During the testing phase, the model predicts an anomaly score indicating the likelihood of an image being abnormal. The threshold for anomaly classification is either set by the user or adaptively tuned by the algo backend. An image is classified as abnormal if the anomaly score is above the threshold.
 
 Anomaly Detection
 -----------------
@@ -44,7 +44,7 @@ The anomaly segmentation task locates anomalies at the pixel level. Similar to a
 
 Dataset Format
 **************
-At the moment, OTX anomaly tasks support the MVTec AD dataset format, which is one of the most popular formats for detecting anomalies. 
+At the moment, the anomaly tasks support the MVTec AD dataset format, which is one of the most popular formats for detecting anomalies. 
 
 .. code-block::
 
@@ -73,15 +73,15 @@ At the moment, OTX anomaly tasks support the MVTec AD dataset format, which is o
          ├── 000.png
          └── ...
 
-Future OTX releases will support other benchmark datasets such as Amazon's `Visual Anomaly (VisA) <https://github.com/amazon-science/spot-diff#data-download>`_ dataset. Meanwhile, you can use the `MVTec AD dataset <https://www.mvtec.com/company/research/datasets/mvtec-ad/>`_ to train and test anomaly detection models, or use MVTec dataset structure to train and test anomaly detection models on your own dataset.
+Future releases of OpenVINO Training Extensions will support other benchmark datasets such as Amazon's `Visual Anomaly (VisA) <https://github.com/amazon-science/spot-diff#data-download>`_ dataset. Meanwhile, you can use the `MVTec AD dataset <https://www.mvtec.com/company/research/datasets/mvtec-ad/>`_ to train and test anomaly detection models, or use MVTec dataset structure to train and test anomaly detection models on your own dataset.
 
 Models
 ******
-As mentioned above, the goal of visual anomaly detection is to learn a representation of normal behaviour in the data and then identify instances that deviate from this normal behaviour. OTX supports several deep learning approaches to this task, including the following:
+As mentioned above, the goal of visual anomaly detection is to learn a representation of normal behaviour in the data and then identify instances that deviate from this normal behaviour. OpenVINO Training Extensions supports several deep learning approaches to this task, including the following:
 
 Clustering-based Models
 -----------------------
-These models initially extract features from a CNN or transformer and subsequently use clustering algorithms to learn normality. The anomaly score is then calculated as the distance between the input image and the cluster center. OTX currently supports `PADIM <https://arxiv.org/pdf/2011.08785.pdf>`_.
+These models initially extract features from a CNN or transformer and subsequently use clustering algorithms to learn normality. The anomaly score is then calculated as the distance between the input image and the cluster center. OpenVINO Training Extensions currently supports `PADIM <https://arxiv.org/pdf/2011.08785.pdf>`_.
 
 PADIM
 ^^^^^
@@ -95,7 +95,7 @@ Padim is a clustering based anomaly detection approach. The model uses a patch-b
 
 Knowledge Distillation-based Models
 -----------------------------------
-Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behavior of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OTX currently supports `STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection <https://arxiv.org/pdf/2103.04257.pdf>`_.
+Knowledge distillation is a deep learning technique in which a smaller model (student) is trained to imitate the behavior of a larger and more complex model (teacher). This technique is predicated on the notion that the knowledge contained in a large and complex model can be transferred to a smaller and simpler model, resulting in a model with comparable performance that is both more efficient and faster. OpenVINO Training Extensions currently supports `STFPM: Student-Teacher Feature Pyramid Matching for Unsupervised Anomaly Detection <https://arxiv.org/pdf/2103.04257.pdf>`_.
 
 STFPM
 ^^^^^
@@ -110,7 +110,7 @@ The STFPM algorithm is composed of a pre-trained teacher network and a student n
 
 Reconstruction-based Models
 ---------------------------
-These models initially extract features from a CNN or transformer and subsequently reconstruct the input image. The anomaly score is then calculated as the distance between the input image and the reconstructed image. OTX currently supports `DRÆM – A discriminatively trained reconstruction embedding for surface anomaly detection <https://arxiv.org/pdf/2108.07610v2.pdf>`_.
+These models initially extract features from a CNN or transformer and subsequently reconstruct the input image. The anomaly score is then calculated as the distance between the input image and the reconstructed image. OpenVINO Training Extensions currently supports `DRÆM – A discriminatively trained reconstruction embedding for surface anomaly detection <https://arxiv.org/pdf/2108.07610v2.pdf>`_.
 
 DRÆM
 ^^^^
