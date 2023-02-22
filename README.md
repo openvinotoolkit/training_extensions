@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/openvinotoolkit/training_extensions/develop/docs/source/_static/logos/otx-logo-black.png" width="200px">
 
-# OpenVINO™ Training eXtensions
+# OpenVINO™ Training Extensions
 
 ---
 
@@ -19,10 +19,10 @@
 
 ## Overview
 
-OpenVINO™ Training eXtensions (OTX) is a command-line interface (CLI) framework designed for low-code computer vision deep-learning model training. OTX lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OTX offers a diverse combination of model architectures, learning methods, and training types using PyTorch and [OpenVINO™
-toolkit](https://software.intel.com/en-us/openvino-toolkit). OTX provides so-called "model templates" for every supported task which have been tested on various datasets and are a turnkey solution for obtaining an average good model without the need to change any hyperparameters. Besides, it is possible to configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [mmcv](https://github.com/open-mmlab/mmcv), [pytorchcv](https://github.com/osmr/imgclsmob) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo). Moreover, OTX supports auto-configuration functionality to choose a suitable model template based on the dataset. We will further extend our functionality to make training as much simple as possible for obtaining accurate, fast and light models ready to integrate into your projects.
+OpenVINO™ Training Extensions is a command-line interface (CLI) framework designed for low-code computer vision deep-learning model training. OpenVINO™ Training Extensions lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers a diverse combination of model architectures, learning methods, and training types using PyTorch and [OpenVINO™
+toolkit](https://software.intel.com/en-us/openvino-toolkit). OpenVINO™ Training Extensions provides so-called "model templates" for every supported task which have been tested on various datasets and are a turnkey solution for obtaining an average good model without the need to change any hyperparameters. Besides, it is possible to configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [mmcv](https://github.com/open-mmlab/mmcv), [pytorchcv](https://github.com/osmr/imgclsmob) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo). Moreover, OpenVINO™ Training Extensions supports auto-configuration functionality to choose a suitable model template based on the dataset. We will further extend our functionality to make training as much simple as possible for obtaining accurate, fast and light models ready to integrate into your projects.
 
-To this end OTX supports the following computer vision tasks:
+To this end OpenVINO™ Training Extensions supports the following computer vision tasks:
 
 - **Classification**, including multi-class, multi-label and hierarchical image classification tasks.
 - **Object detection** including rotated bounding box support
@@ -31,23 +31,23 @@ To this end OTX supports the following computer vision tasks:
 - **Action recognition** including action classification and detection
 - **Anomaly recognition tasks** including anomaly classification, detection and segmentation
 
-OTX also supports different training types:
+OpenVINO™ Training Extensions also supports different training types:
 
 - **Supervised**, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks
 - **Semi-supervised learning**
 - **Self-supervised learning**
 
-Moving forward, OTX provides the following features:
+Moving forward, OpenVINO™ Training Extensions provides the following features:
 
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Half-precision training** to save GPUs memory and use larger batch sizes
 - Integrated, efficient **hyper-parameter optimization module (HPO)**. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
-- OTX uses **[Datumaro](https://github.com/openvinotoolkit/datumaro)** as the backend to hadle datasets. Thanks to that, OTX supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
-- **Auto-configuration functionality**. OTX analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- OpenVINO™ Training Extensions uses **[Datumaro](https://github.com/openvinotoolkit/datumaro)** as the backend to hadle datasets. Thanks to that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
+- **Auto-configuration functionality**. OpenVINO™ Training Extensions analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 
 ---
 
-## OTX CLI Commands
+## OpenVINO™ Training Extensions CLI Commands
 
 - `otx find` helps you quickly find the best pre-configured models templates as well as a list of supported backbones
 - `otx build` creates the workspace folder with all necessary components to start training. It can help you configure your own model with any supported backbone and even prepare a custom split for your dataset
@@ -66,7 +66,7 @@ Moving forward, OTX provides the following features:
 ### v1.0.0 (1Q23)
 
 - Installation through PyPI
-  - Package will be renamed as OTX (OpenVINO Training eXtensions)
+  - Package will be renamed as OpenVINO™ Training Extensions (OpenVINO Training eXtensions)
 - CLI update
   - Update `find` command to find configurations of tasks/algorithms
   - Introduce `build` command to customize task or model configurations
@@ -84,9 +84,9 @@ Moving forward, OTX provides the following features:
 ## Repository
 
 - Components
-  - [OTX API](otx/api)
-  - [OTX CLI](otx/cli)
-  - [OTX Algorithms](otx/algorithms)
+  - [OpenVINO™ Training Extensions API](otx/api)
+  - [OpenVINO™ Training Extensions CLI](otx/cli)
+  - [OpenVINO™ Training Extensions Algorithms](otx/algorithms)
 - Branches
   - [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
     - Mainly maintained branch for releasing new features in the future
@@ -97,7 +97,7 @@ Moving forward, OTX provides the following features:
 
 # Quick start guide
 
-In order to get started with OpenVINO™ Training eXtensions see [the quick-start guide](QUICK_START_GUIDE.md).
+In order to get started with OpenVINO™ Training Extensions, see [the quick-start guide](QUICK_START_GUIDE.md).
 
 ---
 

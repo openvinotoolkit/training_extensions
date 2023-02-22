@@ -62,7 +62,7 @@
 
    > **_Note_**: About to getting tokens that used in the command above, you need to have proper permission to this repository. Please contact the repo admin to discuss futher.
 
-   > **_Note_**: If there is no docker image for the OTX CI on the host machine, this script will pull it from the registry and that will take some time to complete pull operation. It can lead an error on starting runner instance because of the expiring of the given token's validity. In this case, you should re-run the start-runner script again with refreshed token.
+   > **_Note_**: If there is no docker image for the OpenVINO™ Training Extensions CI on the host machine, this script will pull it from the registry and that will take some time to complete pull operation. It can lead an error on starting runner instance because of the expiring of the given token's validity. In this case, you should re-run the start-runner script again with refreshed token.
 
 1. Stop the runner and running container
 

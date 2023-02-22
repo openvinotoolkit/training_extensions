@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-The current version of OTX was tested under the following environment:
+The current version of OpenVINO™ Training Extensions was tested under the following environment:
 
 - Ubuntu 20.04
 - Python 3.8.x
@@ -12,7 +12,7 @@ The current version of OTX was tested under the following environment:
 
 ## Setup OpenVINO™ Training Extensions
 
-### Install OTX for users
+### Install OpenVINO™ Training Extensions for users
 
 1. Clone the training_extensions repository with the following commands:
 
@@ -44,7 +44,7 @@ The current version of OTX was tested under the following environment:
    pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu117
    ```
 
-1. Then, install OTX package
+1. Then, install OpenVINO™ Training Extensions package
 
    ```bash
    # Install from a local source in development mode
@@ -55,9 +55,9 @@ The current version of OTX was tested under the following environment:
    ```
 
 1. Once the package is installed in the virtual environment, you can use full
-   `otx` command line functionality as described in [OTX CLI commands](#otx-cli-commands).
+   `otx` command line functionality as described in [CLI commands](#otx-cli-commands).
 
-### Install OTX for developers
+### Install OpenVINO™ Training Extensions for developers
 
 #### Development environment
 
@@ -77,7 +77,7 @@ source venv/otx/bin/activate
 pytest tests/unit
 ```
 
-## OTX CLI commands
+## OpenVINO™ Training Extensions CLI commands
 
 Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/tutorials/index.html) in our documentation with life-practical examples on specific datasets for each task.
 
@@ -191,7 +191,7 @@ coco_data_root
 
 Then pass the path to `coco_data_root` to both root options: `--train-data-roots coco_data_root --val-data-roots coco_data_root`. However, if you store your training set and validation separately - provide paths to both accordingly.
 
-OTX supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to `splitted_dataset` folder inside the otx workspace folder. This split can be further used for training.
+OpenVINO™ Training Extensions supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to `splitted_dataset` folder inside the otx workspace folder. This split can be further used for training.
 
 > **_Note:_** Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to [simple auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) documentation.
 
@@ -206,7 +206,7 @@ The results will be saved in `./model` folder by default. The output folder can 
 
 `otx train` receives `template` as a positional argument. `template` can be a path to the specific `template.yaml` file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.
 
-However, if you created a workspace with `otx build`, the training process can be started (in the workspace directory) just with `otx train` command without any additional options. OTX will fetch everything else automatically.
+However, if you created a workspace with `otx build`, the training process can be started (in the workspace directory) just with `otx train` command without any additional options. OpenVINO™ Training Extensions will fetch everything else automatically.
 
 ```bash
 otx train --help
@@ -259,7 +259,7 @@ Example of the command line to start object detection training:
 
 ```
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the [auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) will be enabled. Based on the dataset OTX will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the [auto-configuration](https://openvinotoolkit.github.io/training_extensions/explanation/additional_features/auto_configuration.html) will be enabled. Based on the dataset OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
 We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
