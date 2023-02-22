@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## \[v1.0.0\]
 
 > _**notes**_
-> OpenVINO Training Extension which version 1.0.0 has been updated to include functional and security updates. Users should update to the latest version.
+> OpenVINO™ Training Extensions which version 1.0.0 has been updated to include functional and security updates. Users should update to the latest version.
 
 ### New features
 
