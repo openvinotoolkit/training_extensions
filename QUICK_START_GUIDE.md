@@ -79,7 +79,7 @@ pytest tests/unit
 
 ## OpenVINO™ Training Extensions CLI commands
 
-Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/tutorials/index.html) in our documentation with life-practical examples on specific datasets for each task.
+Below, all possible CLI commands are presented with some general examples of how to run specific functionality. We also have [dedicated tutorials](https://openvinotoolkit.github.io/training_extensions/tutorials/index.html) in our documentation with life-practical examples on specific datasets for each task.
 
 > **_Note:_** To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to [explanation section](https://openvinotoolkit.github.io/training_extensions/explanation/index.html) in the documentation.
 
