@@ -47,7 +47,7 @@ Dataset preparation
 
 We use the same dataset, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_, as we do in :doc:`Classification Tutorial <../base/how_to_train/classification>`.
 
-Since it is assumed that we have a bunch of unlabeled data, which is not annotated but only image files exist in semi-supervised learning,
+Since it is assumed that we have additional unlabeled images,
 we make a use of ``tests/assets/imagenet_dataset`` for this purpose as an example.
 
 
