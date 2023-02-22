@@ -150,7 +150,7 @@ class TestResultMediaEntity:
         result_media = ResultMediaEntity(**initialization_params)
         assert repr(result_media) == (
             f"ResultMediaEntity(name=ResultMedia name, type=Test ResultMedia, annotation_scene={annotation_scene}, "
-            f"numpy={numpy}, roi={result_media.roi}, label=None)"
+            f"roi={result_media.roi}, label=None)"
         )
         # Checking __repr__ method for ResultMediaEntity class object initialized with specified optional parameters
         initialization_params = self.optional_result_media_parameters()
