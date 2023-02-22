@@ -357,14 +357,14 @@ The command below will evaluate the trained model on the provided dataset:
 Explanation
 ***********
 
-``otx explain`` runs the explanation of a model on the specific dataset.
+``otx explain`` runs the explanation algorithm of a model on the specific dataset. It helps explain model's decision-making process in a way that is easily understood by humans.
 
 With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
 
 .. code-block::
 
     (otx) ...$ otx explain --help
-    usage: otx explain [-h] [--explain-data-roots EXPLAIN_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-explanation-to SAVE_EXPLANATION] [template] {params} ...
+    usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -376,21 +376,21 @@ With the ``--help`` command, you can list additional information, such as its pa
       -h, --help            show this help message and exit
       --explain-data-roots EXPLAIN_DATA_ROOTS
                             Comma-separated paths to explain data folders.
-      --save-explanation-to SAVE_EXPLANATION
+      --save-explanation-to SAVE_EXPLANATION_TO
                             Output path for explanation images.
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
-      --explain-algorithm LOAD_WEIGHTS
-                            Explain algorithm name, currently support "activationmap", "eigencam", "classwisesaliencymap". For Openvino task, default method will be selected.
-      --overlay-weight WEIGHT
+      --explain-algorithm EXPLAIN_ALGORITHM
+                            Explain algorithm name, currently support ['activationmap', 'eigencam', 'classwisesaliencymap']. For Openvino task, default method will be selected.
+      --overlay-weight OVERLAY_WEIGHT
                             Weight of the saliency map when overlaying the saliency map.
 
 
-The command below will explain the trained model on the provided dataset:
+The command below will generate saliency maps of the trained model on the provided dataset and saves the resulting images to ``save-explanation-to`` path:
 
 .. code-block::
 
-    (otx) ...$ otx explain Custom_Object_Detection_Gen3_SSD --explain-data-roots <path/to/explain/root> --load-weights <path/to/model_weghts> --save-explanation-to <path/to/output/root>
+    (otx) ...$ otx explain Custom_Object_Detection_Gen3_SSD --explain-data-roots <path/to/explain/root> --load-weights <path/to/model_weghts> --save-explanation-to <path/to/output/root> --explain-algorithm classwisesaliencymap --overlay-weight 0.5
 
 .. note::
 
