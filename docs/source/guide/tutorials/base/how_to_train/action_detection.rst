@@ -73,7 +73,7 @@ To have a specific example in this tutorial, all commands will be run on the X3D
 2. Next, we need to create workspace
 for various tasks we provide.
 
-Let's prepare an OpenVINO™ Training Extensions action detection workspase running the following command:
+Let's prepare an OpenVINO™ Training Extensions action detection workspace running the following command:
 
 .. code-block::
 
