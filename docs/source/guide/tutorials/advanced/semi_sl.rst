@@ -8,7 +8,7 @@ OTX now offers semi-supervised learning, which combines labeled and unlabeled da
 
 Semi-supervised learning will soon be available for multi-label classification and instance segmentation as well.
 
-If want to learn more about the algorithms used in semi-supervised learning, please refer to the explanation section below.
+If you want to learn more about the algorithms used in semi-supervised learning, please refer to the explanation section below:
 
 - :doc:`Multi-class Classification <../../explanation/algorithms/classification/multi_class_classification>`
 - :doc:`Object Detection <../../explanation/algorithms/object_detection/object_detection>`
