@@ -116,7 +116,7 @@ algo backends.
 
 Note that each test action class MUST have the following properties:
 
-- it MUST be derived from the base class `BaseOpenVINO™ Training ExtensionsTestAction`;
+- it MUST be derived from the base class `BaseOTXTestAction`;
 - it MUST override the static field `_name` -- the name of the action, it will be used as a unique
   identifier of the test action and it should be unique for the algo backend;
 - if validation of the results of the action is required, it MUST override the static field
