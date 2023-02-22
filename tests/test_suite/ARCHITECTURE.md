@@ -711,7 +711,7 @@ The constructor works as follows:
   - call constructor of the current action as
     `cur_action = action_cls(**cur_params)`
   - wraps the current action with the class `OTXTestStage` as follows:
-    `cur_stage = OpenVINO™ Training ExtensionsTestStage(action=cur_action, stages_storage=self)`
+    `cur_stage = OTXTestStage(action=cur_action, stages_storage=self)`
   - store the current stage instance as
     `self._stages[cur_name] = cur_stage`
 
