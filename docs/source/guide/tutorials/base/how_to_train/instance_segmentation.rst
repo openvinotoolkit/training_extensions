@@ -27,7 +27,7 @@ You can follow the installation process from a :doc:`quick_start guide <../../..
 Dataset preparation
 ***************************
 
-1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https:/github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_ 
+1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https:/github.com/openvinotoolkit/training_Extensionss/tree/develop/tests/assets/car_tree_bug>`_ 
 provided by OTX.
 
 This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.
@@ -88,9 +88,9 @@ The list of supported templates for instance segmentation is available with the 
   +-----------------------+----------------------------------------------------------------+--------------------------+-----------------------------------------------------------------------------------------------+
 
 2. We need to create 
-OpenVINO™ Training eXtensions workspace first.
+OpenVINO™ Training Extensions workspace first.
 
-Let's prepare an OpenVINO™ Training eXtensions instance segmentation workspase running the following command:
+Let's prepare an OpenVINO™ Training Extensions instance segmentation workspase running the following command:
 
 .. code-block::
 
@@ -164,7 +164,7 @@ command in our worspace:
 .. warning::
   Since this is a very small dataset, we adjusted ``num_iters`` to avoid overfitting in this tutorial.
 
-  In other general datasets, OpenVINO™ Training eXtensions ends training at the right time without adjusting ``num_iters``.
+  In other general datasets, OpenVINO™ Training Extensions ends training at the right time without adjusting ``num_iters``.
 
 .. note::
 
@@ -188,7 +188,7 @@ command in our worspace:
   2023-02-21 22:35:07,909 | INFO : Evaluation completed
   Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
 
-After that we have the PyTorch instance segmentation model trained with OpenVINO™ Training eXtensions, that we can use for evaliation, export, optimization and deployment.
+After that we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, that we can use for evaliation, export, optimization and deployment.
 
 ***********
 Validation
