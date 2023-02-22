@@ -16,7 +16,7 @@ If you want to learn more about the algorithms used in semi-supervised learning,
 
 In this tutorial, we use the MobileNet-V3-large-1x model for multi-class classification to cite an example of semi-supervised learning.
 
-The process has been tested on the following configuration.
+The process has been tested on the following configuration:
 
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
