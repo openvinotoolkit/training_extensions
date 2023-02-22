@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anomaly Classification model &#8212; OpenVINO Training Extensions  documentation</title>
+    <title>Anomaly Detection Tutorial &#8212; OpenVINO Training Extensions  documentation</title>
     
   <link href="../../../../_static/css/theme.css" rel="stylesheet" />
   <link href="../../../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
     
@@ -201,7 +201,7 @@
        </li>
        <li class="toctree-l4 current active">
         <a class="current reference internal" href="#">
-         Anomaly Classification model
+         Anomaly Detection Tutorial
         </a>
        </li>
       </ul>
@@ -1129,9 +1129,49 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setup-the-virtual-environment">
+   Setup the Virtual environment
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataset-preparation">
+   Dataset Preparation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#training">
+   Training
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#evaluation">
+   Evaluation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#export">
+   Export
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#optimization">
+   Optimization
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#segmentation-and-classification">
+   Segmentation and Classification
+  </a>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -1151,9 +1191,240 @@
               
               <div>
                 
-  <div class="section" id="anomaly-classification-model">
-<h1>Anomaly Classification model<a class="headerlink" href="#anomaly-classification-model" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications.</p>
+  <div class="section" id="anomaly-detection-tutorial">
+<h1>Anomaly Detection Tutorial<a class="headerlink" href="#anomaly-detection-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications. Read <a class="reference internal" href="../../../explanation/algorithms/anomaly/index.html"><span class="doc">Anomaly Recognition</span></a> for more information about the Anomaly tasks.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To learn how to deploy the trained model, refer to: <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model</span></a>.</p>
+<p>To learn how to run the demo and visualize results, refer to: <a class="reference internal" href="../demo.html"><span class="doc">How to run the demo with exportable code</span></a>.</p>
+</div>
+<p>The process has been tested with the following configuration:</p>
+<ul class="simple">
+<li><p>Ubuntu 20.04</p></li>
+<li><p>NVIDIA GeForce RTX 3090</p></li>
+<li><p>Intel(R) Core(TM) i9-10980XE</p></li>
+<li><p>CUDA Toolkit 11.1</p></li>
+</ul>
+<div class="section" id="setup-the-virtual-environment">
+<h2>Setup the Virtual environment<a class="headerlink" href="#setup-the-virtual-environment" title="Permalink to this headline">¶</a></h2>
+<p>To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a>.</p>
+<p>Alternatively, if you want to only train anomaly models then you can create a task specific environment.</p>
+<ol class="arabic">
+<li><p>Ensure that you have python 3 installed on your system. You can check this by running.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>--version
+</pre></div>
+</div>
+<p>It should give a similar result:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="mf">3.8.16</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Create a virtual environment and activate it.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>anomaly_env
+<span class="nb">source</span><span class="w"> </span>anomaly_env/bin/activate
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Install the prerequisites for OpenVINO™ Training Extensions.</p>
+<blockquote>
+<div><p>Install PyTorch according to your system environment. Refer to the <a class="reference external" href="https://pytorch.org/get-started/previous-versions/">official installation guide</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, only torch==1.13.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)</p>
+</div>
+<p>Example install command for torch==1.13.1+cu111:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.13.1</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.14.1</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu111</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Then, install the task specific OpenVINO™ Training Extensions package you can then use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span><span class="p">[</span><span class="n">anomaly</span><span class="p">]</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="dataset-preparation">
+<h2>Dataset Preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">¶</a></h2>
+<p>For this example we will use the <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad">MVTec</a> dataset.</p>
+<p>You can download the dataset from the link above. We will use the <code class="docutils literal notranslate"><span class="pre">bottle</span></code> category for this tutorial.</p>
+<p>This is how it might look like in your file system:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>datasets/MVTec/bottle
+├──<span class="w"> </span>ground_truth
+│<span class="w">   </span>├──<span class="w"> </span>broken_large
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span>000_mask.png
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span>001_mask.png
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span>002_mask.png
+│<span class="w">   </span>│<span class="w">   </span>...
+│<span class="w">   </span>├──<span class="w"> </span>broken_small
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span>000_mask.png
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span>001_mask.png
+│<span class="w">   </span>│<span class="w">   </span>...
+│<span class="w">   </span>└──<span class="w"> </span>contamination
+│<span class="w">       </span>├──<span class="w"> </span>000_mask.png
+│<span class="w">       </span>├──<span class="w"> </span>001_mask.png
+│<span class="w">       </span>...
+├──<span class="w"> </span>license.txt
+├──<span class="w"> </span>readme.txt
+├──<span class="w"> </span><span class="nb">test</span>
+│<span class="w">   </span>├──<span class="w"> </span>broken_large
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">000</span>.png
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">001</span>.png
+│<span class="w">   </span>│<span class="w">   </span>...
+│<span class="w">   </span>├──<span class="w"> </span>broken_small
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">000</span>.png
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">001</span>.png
+│<span class="w">   </span>│<span class="w">   </span>...
+│<span class="w">   </span>├──<span class="w"> </span>contamination
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">000</span>.png
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span><span class="m">001</span>.png
+│<span class="w">   </span>│<span class="w">   </span>...
+│<span class="w">   </span>└──<span class="w"> </span>good
+│<span class="w">       </span>├──<span class="w"> </span><span class="m">000</span>.png
+│<span class="w">       </span>├──<span class="w"> </span><span class="m">001</span>.png
+│<span class="w">       </span>...
+└──<span class="w"> </span>train
+<span class="w">    </span>└──<span class="w"> </span>good
+<span class="w">        </span>├──<span class="w"> </span><span class="m">000</span>.png
+<span class="w">        </span>├──<span class="w"> </span><span class="m">001</span>.png
+<span class="w">        </span>...
+</pre></div>
+</div>
+</div>
+<div class="section" id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h2>
+<p>For this example let’s look at the anomaly detection tasks</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>anomaly_detection
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+-----------------------------+-------+--------------------------------------------------------------+</span>
+<span class="o">|</span>        <span class="n">TASK</span>       <span class="o">|</span>              <span class="n">ID</span>             <span class="o">|</span>  <span class="n">NAME</span> <span class="o">|</span>                          <span class="n">BASE</span> <span class="n">PATH</span>                           <span class="o">|</span>
+<span class="o">+-------------------+-----------------------------+-------+--------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">ANOMALY_DETECTION</span> <span class="o">|</span> <span class="n">ote_anomaly_detection_stfpm</span> <span class="o">|</span> <span class="n">STFPM</span> <span class="o">|</span> <span class="n">otx</span><span class="o">/</span><span class="n">algorithms</span><span class="o">/</span><span class="n">anomaly</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">detection</span><span class="o">/</span><span class="n">stfpm</span><span class="o">/</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">ANOMALY_DETECTION</span> <span class="o">|</span> <span class="n">ote_anomaly_detection_padim</span> <span class="o">|</span> <span class="n">PADIM</span> <span class="o">|</span> <span class="n">otx</span><span class="o">/</span><span class="n">algorithms</span><span class="o">/</span><span class="n">anomaly</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">detection</span><span class="o">/</span><span class="n">padim</span><span class="o">/</span><span class="n">template</span><span class="o">.</span><span class="n">yaml</span> <span class="o">|</span>
+<span class="o">+-------------------+-----------------------------+-------+--------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p>You can see two anomaly detection models, STFPM and PADIM. For more detail on each model, refer to Anomalib’s <a class="reference external" href="https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/stfpm.html">STFPM</a> and <a class="reference external" href="https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/padim.html">PADIM</a> documentation.</p>
+<p>Let’s proceed with PADIM for this example.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>train<span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train-data-roots<span class="w"> </span>datasets/MVTec/bottle/train<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--val-data-roots<span class="w"> </span>datasets/MVTec/bottle/test
+</pre></div>
+</div>
+<p>This will start training and generate artifacts for commands such as <code class="docutils literal notranslate"><span class="pre">export</span></code> and <code class="docutils literal notranslate"><span class="pre">optimize</span></code>. You will notice the <code class="docutils literal notranslate"><span class="pre">otx-workspace-ANOMALY_DETECTION</span></code> directory in your current working directory. This is where all the artifacts are stored.</p>
+</div>
+<div class="section" id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have trained the model, let’s see how it performs on the a specific dataset. In this example we will use the same dataset to generate evaluation metrics. To perform evaluation you need to run the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--test-data-roots<span class="w"> </span>datasets/MVTec/bottle/test<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--load-weights<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/models/weights.pth<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save-performance<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/performance.json
+</pre></div>
+</div>
+<p>You should see an output similar to the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MultiScorePerformance(score: 0.6356589147286821, primary_metric: ScoreMetric(name=`f-measure`, score=`0.6356589147286821`), additional_metrics: (1 metrics), dashboard: (2 metric groups))
+</pre></div>
+</div>
+<p>The primary metric here is the f-measure computed against the ground-truth bounding boxes. It is also called the local score. In addition, f-measure is also used to compute the global score. The global score is computed based on global label of the image. That is, the image is anomalous if it contains at least one anomaly. This global score is stored as an additional metric.</p>
+<p>All task types report Image-level F-measure as the primary metric. In addition, both localization tasks (anomaly detection and anomaly segmentation) also report localization performance (F-measure for anomaly detection and Dice-coefficient for anomaly segmentation).</p>
+</div>
+<div class="section" id="export">
+<h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">¶</a></h2>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
+It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+<p>2. We can run the below command line to export the trained model
+and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_models</span></code> folder.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">export</span> <span class="n">ote_anomaly_detection_padim</span> \
+    <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span> \
+    <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">openvino_models</span>
+</pre></div>
+</div>
+<p>You will see the outputs similar to the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">16</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">207</span> <span class="o">-</span> <span class="n">otx</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">anomaly</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">inference</span> <span class="o">-</span> <span class="n">Initializing</span> <span class="n">the</span> <span class="n">task</span> <span class="n">environment</span><span class="o">.</span>
+<span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">16</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">632</span> <span class="o">-</span> <span class="n">otx</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">anomaly</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">train</span> <span class="o">-</span> <span class="n">Loaded</span> <span class="n">model</span> <span class="n">weights</span> <span class="kn">from</span> <span class="nn">Task</span> <span class="n">Environment</span>
+<span class="p">[</span><span class="n">WARNING</span><span class="p">]</span> <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">16</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">639</span> <span class="o">-</span> <span class="n">otx</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">anomaly</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">inference</span> <span class="o">-</span> <span class="n">Ommitting</span> <span class="n">feature</span> <span class="n">dumping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">implemented</span><span class="o">.</span><span class="n">The</span> <span class="n">saliency</span> <span class="n">maps</span> <span class="ow">and</span> <span class="n">representation</span> <span class="n">vector</span> <span class="n">outputs</span> <span class="n">will</span> <span class="n">be</span> <span class="n">dumped</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">exported</span> <span class="n">model</span><span class="o">.</span>
+<span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">16</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">43</span><span class="p">,</span><span class="mi">640</span> <span class="o">-</span> <span class="n">otx</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">anomaly</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">inference</span> <span class="o">-</span> <span class="n">Exporting</span> <span class="n">the</span> <span class="n">OpenVINO</span> <span class="n">model</span><span class="o">.</span>
+<span class="p">[</span> <span class="n">INFO</span> <span class="p">]</span> <span class="n">The</span> <span class="n">model</span> <span class="n">was</span> <span class="n">converted</span> <span class="n">to</span> <span class="n">IR</span> <span class="n">v11</span><span class="p">,</span> <span class="n">the</span> <span class="n">latest</span> <span class="n">model</span> <span class="nb">format</span> <span class="n">that</span> <span class="n">corresponds</span> <span class="n">to</span> <span class="n">the</span> <span class="n">source</span> <span class="n">DL</span> <span class="n">framework</span> <span class="nb">input</span><span class="o">/</span><span class="n">output</span> <span class="nb">format</span><span class="o">.</span> <span class="n">While</span> <span class="n">IR</span> <span class="n">v11</span> <span class="ow">is</span> <span class="n">backwards</span> <span class="n">compatible</span> <span class="k">with</span> <span class="n">OpenVINO</span> <span class="n">Inference</span> <span class="n">Engine</span> <span class="n">API</span> <span class="n">v1</span><span class="mf">.0</span><span class="p">,</span> <span class="n">please</span> <span class="n">use</span> <span class="n">API</span> <span class="n">v2</span><span class="mf">.0</span> <span class="p">(</span><span class="k">as</span> <span class="n">of</span> <span class="mf">2022.1</span><span class="p">)</span> <span class="n">to</span> <span class="n">take</span> <span class="n">advantage</span> <span class="n">of</span> <span class="n">the</span> <span class="n">latest</span> <span class="n">improvements</span> <span class="ow">in</span> <span class="n">IR</span> <span class="n">v11</span><span class="o">.</span>
+<span class="n">Find</span> <span class="n">more</span> <span class="n">information</span> <span class="n">about</span> <span class="n">API</span> <span class="n">v2</span><span class="mf">.0</span> <span class="ow">and</span> <span class="n">IR</span> <span class="n">v11</span> <span class="n">at</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">docs</span><span class="o">.</span><span class="n">openvino</span><span class="o">.</span><span class="n">ai</span><span class="o">/</span><span class="n">latest</span><span class="o">/</span><span class="n">openvino_2_0_transition_guide</span><span class="o">.</span><span class="n">html</span>
+<span class="p">[</span> <span class="n">SUCCESS</span> <span class="p">]</span> <span class="n">Generated</span> <span class="n">IR</span> <span class="n">version</span> <span class="mi">11</span> <span class="n">model</span><span class="o">.</span>
+<span class="p">[</span> <span class="n">SUCCESS</span> <span class="p">]</span> <span class="n">XML</span> <span class="n">file</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">otx</span><span class="o">-</span><span class="n">anomaliba3imqkmo</span><span class="o">/</span><span class="n">onnx_model</span><span class="o">.</span><span class="n">xml</span>
+<span class="p">[</span> <span class="n">SUCCESS</span> <span class="p">]</span> <span class="n">BIN</span> <span class="n">file</span><span class="p">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">otx</span><span class="o">-</span><span class="n">anomaliba3imqkmo</span><span class="o">/</span><span class="n">onnx_model</span><span class="o">.</span><span class="n">bin</span>
+</pre></div>
+</div>
+<p>Now that we have the exported model, let’s check its performance using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--test-data-roots<span class="w"> </span>datasets/MVTec/bottle/test<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--load-weights<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save-performance<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/openvino_models/performance.json
+</pre></div>
+</div>
+<p>This gives the following results:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MultiScorePerformance(score: 0.6511627906976744, primary_metric: ScoreMetric(name=`f-measure`, score=`0.6511627906976744`), additional_metrics: (1 metrics), dashboard: (2 metric groups))
+</pre></div>
+</div>
+</div>
+<div class="section" id="optimization">
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h2>
+<p>Anomaly tasks can be optimized either in POT or NNCF format. For more information refer to the <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section.</p>
+<ol class="arabic">
+<li><p>Let’s start with POT optimization.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>optimize<span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train-data-roots<span class="w"> </span>datasets/MVTec/bottle/train<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--load-weights<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save-model-to<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/pot_model
+</pre></div>
+</div>
+<p>This generates the following files that can be used to run <a class="reference internal" href="../demo.html"><span class="doc">otx demo</span></a>.</p>
+<ul class="simple">
+<li><p>image_threshold</p></li>
+<li><p>pixel_threshold</p></li>
+<li><p>label_schema.json</p></li>
+<li><p>max</p></li>
+<li><p>min</p></li>
+<li><p>openvino.bin</p></li>
+<li><p>openvino.xml</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>To perform NNCF optimization, pass the torch <code class="docutils literal notranslate"><span class="pre">pth</span></code> weights to the <code class="docutils literal notranslate"><span class="pre">opitmize</span></code> command.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>optimize<span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train-data-roots<span class="w"> </span>datasets/MVTec/bottle/train<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--load-weights<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/models/weights.pth<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save-model-to<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/nncf_model
+</pre></div>
+</div>
+<p>Similar to POT optimization, this generates the following files.</p>
+<ul class="simple">
+<li><p>image_threshold</p></li>
+<li><p>pixel_threshold</p></li>
+<li><p>label_schema.json</p></li>
+<li><p>max</p></li>
+<li><p>min</p></li>
+<li><p>weights.pth</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="segmentation-and-classification">
+<h2>Segmentation and Classification<a class="headerlink" href="#segmentation-and-classification" title="Permalink to this headline">¶</a></h2>
+<p>While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models. To see what tasks are available, you can pass <code class="docutils literal notranslate"><span class="pre">anomaly_segmentation</span></code> and <code class="docutils literal notranslate"><span class="pre">anomaly_classification</span></code> to <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> mentioned in the <a class="reference internal" href="#training">Training</a> section. You can then use the same commands to train, evaluate, export and optimize the models.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Segmentation and Detection tasks also require that the <code class="docutils literal notranslate"><span class="pre">ground_truth</span></code> masks be present to ensure that the localization metrics are computed correctly.
+The <code class="docutils literal notranslate"><span class="pre">ground_truth</span></code> masks are not required for the Classification task.</p>
+</div>
+</div>
 </div>
 
 
