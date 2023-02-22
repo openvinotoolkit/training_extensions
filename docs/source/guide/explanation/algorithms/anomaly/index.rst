@@ -132,3 +132,8 @@ DRÆM
    :alt: Anomaly Task Types
 
 A reconstruction-based algorithm, DRAEM consists of a reconstructive subnetwork and a discriminative subnetwork. DRAEM is trained on simulated anomaly images, which are produced by combining normal input images from the training set with a random Perlin noise mask extracted from an unrelated source of image data. The reconstructive subnetwork is an autoencoder trained to reconstruct the original input images from the augmented images. Combining L2 loss and structural similarity loss, the reconstructive submodel is trained. The input of the discriminative subnetwork is the channel-by-channel concatenation of the (augmented) input image and the output of the reconstructive subnetwork. The output of the discriminative subnetwork is an anomaly map containing the predicted anomaly scores for each pixel.
+
+- ``Optimizer``: Both the reconstructive subnetwork and the discriminative subnetwork are trained using the Adam optimizer.
+- ``Loss``: The reconstructive subnetwork is trained using reconstruction loss which consists of a combination of L2 loss and Structural Similarity (SSIM) loss between the reconstructions and the original images. The discriminative subnetwork is trained using focal loss, computed between the pixel-level predictions and the ground truth masks of the augmented images.
+- ``Additional Training Techniques``:
+     - ``Early Stopping``: Early stopping is used to prevent overfitting. The early stopping patience can be configured by the user. By default, early stopping is enabled with a patience of 20 epochs.
