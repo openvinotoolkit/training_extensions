@@ -21,7 +21,7 @@ The process has been tested with the following configuration:
 Setup the Virtual environment
 *****************************
 
-To create a universal virtual environment for Training Extensions, please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`. 
+To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`. 
 
 Alternatively, if you want to only train anomaly models then you can create a task specific environment.
 
@@ -42,7 +42,7 @@ Alternatively, if you want to only train anomaly models then you can create a ta
         python3 -m venv anomaly_env
         source anomaly_env/bin/activate
 
-3. Install the prerequisites for Training Extensions.
+3. Install the prerequisites for OpenVINO™ Training Extensions.
 
     Install PyTorch according to your system environment. Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
 
