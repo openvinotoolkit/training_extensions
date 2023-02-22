@@ -165,7 +165,7 @@ The primary metric here is the f-measure computed against the ground-truth bound
 
 .. note::
 
-    All tasks use the f-measure as the primary metric for computing global scores. In case of classification tasks, accuracy is also added to the dashboard metrics. For detection tasks, f-measure is also used for computing the local (bounding boxes) scores. And, for the segmentation tasks, the  Dice Average score is used as the local (segmentation masks) scores.
+All task types report Image-level F-measure as the primary metric. In addition, both localization tasks (anomaly detection and anomaly segmentation) also report localization performance (F-measure for anomaly detection and Dice-coefficient for anomaly segmentation).
 
 ******
 Export
