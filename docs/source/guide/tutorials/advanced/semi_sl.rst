@@ -4,7 +4,7 @@ Use Semi-Supervised Learning
 
 This tutorial provides instructions on how to use semi-supervised learning with OTX.
 
-OTX now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.
+OTX now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy in case when we have small amount of annotated data. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.
 
 Semi-supervised learning will soon be available for multi-label classification and instance segmentation as well.
 
