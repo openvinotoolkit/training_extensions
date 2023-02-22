@@ -1281,7 +1281,7 @@ The test case class should be implemented as follows:
 
 - The test class should have a static field `helper` defined as follows:
   ```python
-  helper = OpenVINO™ Training ExtensionsTestHelper(<test parameters class>())
+  helper = OTXTestHelper(<test parameters class>())
   ```
 - The test class should have the following implementation of the method `get_list_of_tests`
   ```python
