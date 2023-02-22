@@ -4,7 +4,7 @@ Use Semi-Supervised Learning
 
 This tutorial provides an example on how to use semi-supervised learning with OpenVINO™ Training Extensions on the specific dataset.
 
-OTX now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy in case when we have small amount of annotated data. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.
+OpenVINO™ Training Extensions now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy in case when we have small amount of annotated data. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.
 
 Semi-supervised learning will soon be available for multi-label classification and instance segmentation as well.
 
@@ -26,7 +26,17 @@ The process has been tested on the following configuration:
 
 .. note::
   
-  Currently, semi-supervised learning models trained in OTX cannot be exported or optimized. However, we will support for this functionality in the near future.
+  Currently, models trained by semi-supervised learning cannot be optimized with OpenVINO™ NNCF.
+  
+  However, we will support for this functionality in the near future.
+
+  To learn how to export the trained model, refer to `classification export <../base/how_to_train/classification.html#export>`__.
+
+  To learn how to optimize the trained model (.xml) with OpenVINO™ POT, refer to `classification optimization <../base/how_to_train/classification.html#optimization>`__.
+
+  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+
+  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
 
   This tutorial explains how to train a model in semi-supervised learning mode and how to evaluate the resulting model.
 
@@ -45,12 +55,12 @@ we make a use of ``tests/assets/imagenet_dataset`` temporarily.
 Enable via ``otx build``
 ***************************
 
-1. To enable semi-supervsied learning via ``otx build``, we need to add arguments ``--unlabeled-data-roots`` and ``--train-type``. OTX receives the root path where unlabeled images are by ``--unlabeled-data-roots``.
-We should put the path where unlabeled data are contained. OTX also provides us ``--train-type`` to select the type of training scheme. All we have to do for that is specifying it as **SEMISUPERVISED**.
+1. To enable semi-supervsied learning via ``otx build``, we need to add arguments ``--unlabeled-data-roots`` and ``--train-type``. OpenVINO™ Training Extensions receives the root path where unlabeled images are by ``--unlabeled-data-roots``.
+We should put the path where unlabeled data are contained. It also provides us ``--train-type`` to select the type of training scheme. All we have to do for that is specifying it as **SEMISUPERVISED**.
 
 .. note::
 
-  OTX automatically search for all image files with JPG, JPEG, and PNG formats in the root path specified using the ``--unlabeled-data-roots`` option, even if there are other file formats present. The image files which are located in sub-folders will be also collected for building unlabeled dataset.
+  OpenVINO™ Training Extensions automatically search for all image files with JPG, JPEG, and PNG formats in the root path specified using the ``--unlabeled-data-roots`` option, even if there are other file formats present. The image files which are located in sub-folders will be also collected for building unlabeled dataset.
 
 .. code-block::
 
