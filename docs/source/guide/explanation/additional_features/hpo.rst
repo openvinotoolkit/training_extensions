@@ -1,4 +1,4 @@
-Hyperparameters Oprimization
+Hyperparameters Optimization
 ============================
 
 Coming soon...

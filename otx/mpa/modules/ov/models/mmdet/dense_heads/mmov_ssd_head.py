@@ -5,6 +5,7 @@
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
 from mmdet.core import build_anchor_generator
 from mmdet.models.builder import HEADS
@@ -17,7 +18,7 @@ from ...mmov_model import MMOVModel
 class MMOVSSDHead(SSDHead):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -30,7 +31,7 @@ class MMOVSSDHead(SSDHead):
         **kwargs,
     ):
 
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._inputs = deepcopy(inputs)
         self._outputs = deepcopy(outputs)
@@ -55,7 +56,7 @@ class MMOVSSDHead(SSDHead):
         ) in zip(self._inputs["cls_convs"], self._outputs["cls_convs"]):
             self.cls_convs.append(
                 MMOVModel(
-                    self._model_path,
+                    self._model_path_or_model,
                     self._weight_path,
                     inputs=inputs,
                     outputs=outputs,
@@ -73,7 +74,7 @@ class MMOVSSDHead(SSDHead):
         ) in zip(self._inputs["reg_convs"], self._outputs["reg_convs"]):
             self.reg_convs.append(
                 MMOVModel(
-                    self._model_path,
+                    self._model_path_or_model,
                     self._weight_path,
                     inputs=inputs,
                     outputs=outputs,

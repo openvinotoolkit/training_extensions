@@ -28,7 +28,7 @@ class Registry:
             if cls_name is None:
                 cls_name = obj.__name__
             if self._add_name_as_attr:
-                setattr(obj, self.REGISTERED_NAME_ATTR, name)
+                setattr(obj, self.REGISTERED_NAME_ATTR, cls_name)
             self._register(obj, cls_name)
             return obj
 

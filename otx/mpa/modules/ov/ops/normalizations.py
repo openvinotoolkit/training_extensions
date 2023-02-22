@@ -130,26 +130,24 @@ class NormalizeL2V0(Operation[NormalizeL2V0Attribute]):
         eps = self.attrs.eps
         eps_mode = self.attrs.eps_mode
 
+        if isinstance(axes, torch.Tensor):
+            axes = axes.detach().cpu().tolist()
+        if not isinstance(axes, (list, tuple)):
+            axes = [axes]
+
         # normalization layer convert to FP32 in FP16 training
         input_float = input.float()
-        if axes.numel() == 0:
-            norm = input_float
-        elif axes.numel() == 1:
-            axes = axes.item()
-            norm = input_float.pow(2).sum(axes, keepdim=True).sqrt()
-        elif axes.numel() == input_float.dim():
-            norm = input_float.pow(2).sum().sqrt()
+        if axes:
+            norm = input_float.pow(2).sum(axes, keepdim=True)
         else:
-            raise ValueError
+            norm = input_float
 
         if eps_mode == "add":
             norm = norm + eps
         elif eps_mode == "max":
-            norm = max(norm, eps)
-        else:
-            raise ValueError
+            norm = torch.clamp(norm, max=eps)
 
-        return (input_float / norm).type_as(input)
+        return (input_float / norm.sqrt()).type_as(input)
 
 
 @dataclass

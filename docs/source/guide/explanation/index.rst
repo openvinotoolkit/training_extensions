@@ -1,7 +1,7 @@
 Explanation
 ===========
 
-This section consists of an algorithms explanation and describes additional features that are supported by OTX.
+This section consists of an algorithms explanation and describes additional features that are supported by OpenVINO™ Training Extensions.
 :ref:`Algorithms <algo_section_ref>` section includes a description of all supported algorithms:
 
 1. Explanation of the task and main supervised training pipeline.

@@ -254,6 +254,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
             if self.args.val_data_roots:
                 data_yaml["data"]["val"]["data-roots"] = self.args.val_data_roots
+            if self.args.unlabeled_data_roots:
+                data_yaml["data"]["unlabeled"]["data-roots"] = self.args.unlabeled_data_roots
         elif self.mode == "test":
             if self.args.test_data_roots:
                 data_yaml["data"]["test"]["data-roots"] = self.args.test_data_roots
@@ -288,6 +290,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 dataset=datum_dataset, output_dir=str(dst_dir_path), data_format=self.data_format, save_media=True
             )
 
+        if data_config["data"]["unlabeled"]["data-roots"] is not None:
+            data_config["data"]["unlabeled"]["data-roots"] = str(
+                Path(data_config["data"]["unlabeled"]["data-roots"]).absolute()
+            )
+
     def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
         data_config: Dict[str, Dict[str, Any]] = {"data": {}}
@@ -320,7 +327,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         Returns:
             dict: dataset_config
         """
-        dataset_config = {"task_type": self.task_type}
+        dataset_config = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
             if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
                 dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})

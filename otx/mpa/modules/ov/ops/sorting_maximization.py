@@ -80,3 +80,28 @@ class NonMaxSuppressionV5(Operation[NonMaxSuppressionV5Attribute]):
         soft_nms_sigma=0,
     ):
         raise NotImplementedError
+
+
+@dataclass
+class NonMaxSuppressionV9Attribute(Attribute):
+    box_encoding: str = field(default="corner")
+    sort_result_descending: bool = field(default=True)
+    output_type: str = field(default="i64")
+
+
+@OPS.register()
+class NonMaxSuppressionV9(Operation[NonMaxSuppressionV9Attribute]):
+    TYPE = "NonMaxSuppression"
+    VERSION = 9
+    ATTRIBUTE_FACTORY = NonMaxSuppressionV9Attribute
+
+    def forward(
+        self,
+        boxes,
+        scores,
+        max_output_boxes_per_class,
+        iou_threshold=0,
+        score_threshold=0,
+        soft_nms_sigma=0,
+    ):
+        raise NotImplementedError

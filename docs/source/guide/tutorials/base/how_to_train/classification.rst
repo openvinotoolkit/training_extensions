@@ -28,7 +28,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OTX.
+You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 ***************************
 Dataset preparation
@@ -49,7 +49,7 @@ with the following command:
   :width: 600
 |
 
-This dataset contains images of 5 different flower categories and is stored in the imagenet format which is supported by OTX:
+This dataset contains images of 5 different flower categories and is stored in the imagenet format which is supported by OpenVINO™ Training Extensions:
 
 .. code-block::
 
@@ -88,13 +88,13 @@ The list of supported templates for classification is available with the command
 
 To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classificaiton_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OTX supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance.
+2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance.
 
-Let's prepare an OTX classification workspase running the following command:
+Let's prepare an OpenVINO™ Training Extensions classification workspase running the following command:
 
 .. note::
 
-  Currently, OTX supports auto-split only for multi-class classificaiton. For the multi-label and hierarchical tasks we need to prepare data splits in advance.
+  Currently, OpenVINO™ Training Extensions supports auto-split only for multi-class classificaiton. For the multi-label and hierarchical tasks we need to prepare data splits in advance.
 
 .. code-block::
 
@@ -117,9 +117,9 @@ command in our worspace:
 
 That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
-The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 8 minutes.
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 8 minutes.
 
-After that, we have the PyTorch classification model trained with OTX, which we can use for evaluation, export, optimization and deployment.
+After that, we have the PyTorch classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation
@@ -214,7 +214,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
   2023-02-04 00:06:16,936 | INFO : Evaluation completed
   Performance(score: 0.9591280653950953, dashboard: (3 metric groups))
 
-The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
+The optimization time relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 and Intel(R) Core(TM) i9-10980XE it took about 10 minutes.
 
 3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.

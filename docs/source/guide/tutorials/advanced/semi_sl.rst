@@ -2,7 +2,7 @@
 Use Semi-Supervised Learning
 ############################
 
-This tutorial provides an example on how to use semi-supervised learning with OTX on the specific dataset.
+This tutorial provides an example on how to use semi-supervised learning with OpenVINO™ Training Extensions on the specific dataset.
 
 OTX now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy in case when we have small amount of annotated data. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.
 

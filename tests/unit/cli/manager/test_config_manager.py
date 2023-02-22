@@ -59,6 +59,7 @@ class TestConfigManager:
         args.train_data_roots = "path/to/data/train"
         args.val_data_roots = "path/to/data/val"
         args.test_data_roots = "path/to/data/test"
+        args.unlabeled_data_roots = None
         args.mode = "train"
         config_manager = ConfigManager(args)
         assert config_manager._get_arg_data_yaml() == {
@@ -76,6 +77,17 @@ class TestConfigManager:
                 "val": {"ann-files": None, "data-roots": None},
                 "test": {"ann-files": None, "data-roots": "path/to/data/test"},
                 "unlabeled": {"file-list": None, "data-roots": None},
+            }
+        }
+
+        args.unlabeled_data_roots = "path/to/data/unlabeled"
+        config_manager = ConfigManager(args)
+        assert config_manager._get_arg_data_yaml() == {
+            "data": {
+                "train": {"ann-files": None, "data-roots": "path/to/data/train"},
+                "val": {"ann-files": None, "data-roots": "path/to/data/val"},
+                "test": {"ann-files": None, "data-roots": None},
+                "unlabeled": {"file-list": None, "data-roots": "path/to/data/unlabeled"},
             }
         }
 

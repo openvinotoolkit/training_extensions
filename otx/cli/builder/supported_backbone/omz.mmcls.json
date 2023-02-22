@@ -1,9 +1,9 @@
 {
   "backbones": {
     "mmcls.MMOVBackbone": {
-      "required": ["model_path"],
+      "required": ["model_path_or_model"],
       "options": {
-        "model_path": [
+        "model_path_or_model": [
           "omz://alexnet",
           "omz://caffenet",
           "omz://densenet-121",

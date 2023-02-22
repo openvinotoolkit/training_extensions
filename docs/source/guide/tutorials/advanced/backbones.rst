@@ -1,7 +1,7 @@
 Backbone Replacement
 ================================
 
-This tutorial describes an example of how to find an available backbone and how it can be replaced in OTX.
+This tutorial describes an example of how to find an available backbone and how it can be replaced in OpenVINO™ Training Extensions.
 
 The process has been tested on the following configuration.
 
@@ -32,7 +32,7 @@ The following libraries are currently available for backbone replacement.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OTX.
+You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 *****************************
 Backbone replacement tutorial
@@ -42,7 +42,7 @@ Backbone replacement tutorial
 
   .. note::
 
-    You can use the OTX workspace to swap out backbones, train, set up configurations, and more.
+    You can use the OpenVINO™ Training Extensions workspace to swap out backbones, train, set up configurations, and more.
     Workspaces are created automatically on ``otx build`` or ``otx train``.
 
   .. code-block::
@@ -136,7 +136,7 @@ we want to replace via ``otx find``.
 
       (otx) ...$ otx build --backbone backbone.yaml
 
-4. After that, you can use any other OTX command with new model. :doc:`quick start guide <../../get_started/quick_start_guide/installation>`
+4. After that, you can use any other OpenVINO™ Training Extensions command with new model. :doc:`quick start guide <../../get_started/quick_start_guide/installation>`
 
 You can use the backbones provided by mmdet, mmseg, torchvision, and omz.mmcls in the same way as above.
 

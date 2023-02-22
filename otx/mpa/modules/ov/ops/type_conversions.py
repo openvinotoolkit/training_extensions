@@ -56,6 +56,8 @@ class ConvertV0(Operation[ConvertV0Attribute]):
 
     @staticmethod
     def convert_torch_type(torch_type):
+        if torch_type not in _torch_to_ov:
+            raise NotImplementedError
         return _torch_to_ov[torch_type][-1]
 
     def forward(self, input):

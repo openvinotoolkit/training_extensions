@@ -27,6 +27,9 @@ class ReduceMeanV1(Operation[ReduceMeanV1Attribute]):
         if not axes:
             return input
 
+        if not isinstance(axes, (list, tuple)):
+            axes = [axes]
+
         return torch.mean(input=input, dim=axes, keepdim=self.attrs.keep_dims)
 
 
@@ -42,10 +45,13 @@ class ReduceProdV1(Operation[ReduceProdV1Attribute]):
     ATTRIBUTE_FACTORY = ReduceProdV1Attribute
 
     def forward(self, input, axes):
-        if not axes.dim():
-            axes = axes.unsqueeze(0)
-        if not len(axes):
+        if isinstance(axes, torch.Tensor):
+            axes = axes.tolist()
+        if not axes:
             return input
+
+        if not isinstance(axes, (list, tuple)):
+            axes = [axes]
 
         output = input
         for ax in axes:
@@ -68,19 +74,21 @@ class ReduceMinV1(Operation[ReduceMinV1Attribute]):
     ATTRIBUTE_FACTORY = ReduceMinV1Attribute
 
     def forward(self, input, axes):
-        raise NotImplementedError
-        #  if not axes.dim():
-        #      axes = axes.unsqueeze(0)
-        #  if not len(axes):
-        #      return input
-        #
-        #  output = input
-        #  for ax in axes:
-        #      output = torch.min(input=output, dim=ax, keepdim=True)[0]
-        #  if not self.attrs.keep_dims:
-        #      output = torch.squeeze(output)
-        #
-        #  return output
+        if isinstance(axes, torch.Tensor):
+            axes = axes.tolist()
+        if not axes:
+            return input
+
+        if not isinstance(axes, (list, tuple)):
+            axes = [axes]
+
+        output = input
+        for ax in axes:
+            output = torch.min(input=output, dim=ax, keepdim=True)[0]
+        if not self.attrs.keep_dims:
+            output = torch.squeeze(output)
+
+        return output
 
 
 @dataclass

@@ -89,7 +89,7 @@ The result will be the following:
   :alt: this image shows the inference results on the WGISD dataset
 
 
-Congratulations! Now you have learned how to use base OTX functionality. For the advanced features, please refer to the next section called :doc:`../advanced/index`.
+Congratulations! Now you have learned how to use base OpenVINO™ Training Extensions functionality. For the advanced features, please refer to the next section called :doc:`../advanced/index`.
 
 ***************
 Troubleshooting

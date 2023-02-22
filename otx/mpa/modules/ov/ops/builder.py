@@ -21,7 +21,7 @@ class OperationRegistry(Registry):
             layer_version = obj.VERSION
             assert layer_type != "" and layer_version >= 0
             if self._add_name_as_attr:
-                setattr(obj, self.REGISTERED_NAME_ATTR, name)
+                setattr(obj, self.REGISTERED_NAME_ATTR, layer_name)
             self._register(obj, layer_name, layer_type, layer_version)
             return obj
 
@@ -40,9 +40,9 @@ class OperationRegistry(Registry):
 
     def get_by_type_version(self, type, version):
         if type not in self._registry_dict_by_type:
-            raise KeyError(f"{type} is not registered in {self._name}")
+            raise KeyError(f"type {type} is not registered in {self._name}")
         if version not in self._registry_dict_by_type[type]:
-            raise KeyError(f"{version} is not registered in {type} of {self._name}")
+            raise KeyError(f"version {version} is not registered in {type} of {self._name}")
         return self._registry_dict_by_type[type][version]
 
 

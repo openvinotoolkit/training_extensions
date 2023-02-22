@@ -27,64 +27,20 @@ For the supervised training we use the following algorithms components:
 
 - ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model.
 
-- ``Training technique``
+- ``Additional training techniques``
     - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.
 
       .. code-block::
 
         $ otx train {TEMPLATE} ... \
             params \
-            --learning_parameters.enable_early_stopping=True \      # is early stopping used
-            --learning_parameters.early_stop_start=3 \              # the number of epochs (iters) in which early stopping proceeds
-            --learning_parameters.early_stop_patience=8 \           # (for epoch runner) stop if the model don't improve within the number of epochs of patience
-            --learning_parameters.early_stop_iteration_patience=8 \ # (for iter runner) stop if the model don't improve within the number of iterations of patience
-
-    - `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_: To enhance the performance of the algorithm in case when we have a small number of data.
-      More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with `DetCon loss <https://arxiv.org/abs/2103.10957>`_.
-      The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC 2012 with two classes (person, car) and three classes (person, car, bicycle).
-      The number of the subset datasets is 8, 16, and 24.
-
-      `two classes (person, car)`
-
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Model name         | #8    |        | #16   |        | #24   |        |
-      +====================+=======+========+=======+========+=======+========+
-      |                    | SL    | SupCon | SL    | SupCon | SL    | SupCon |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Lite-HRNet-s-mod2  | 60.36 | 60.86  | 63.75 | 66.84  | 66.43 | 69.81  |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Lite-HRNet-18-mod2 | 59.28 | 64.43  | 65.57 | 68.41  | 68.82 | 71.25  |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Lite-HRNet-x-mod3  | 59.98 | 63.36  | 63.60 | 68.63  | 68.33 | 71.21  |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-
-      `three classes (person, car, bicycle)`
-
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Model name         | #8    |        | #16   |        | #24   |        |
-      +====================+=======+========+=======+========+=======+========+
-      |                    | SL    | SupCon | SL    | SupCon | SL    | SupCon |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Lite-HRNet-s-mod2  | 48.30 | 51.83  | 57.08 | 59.26  | 62.40 | 63.39  |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Lite-HRNet-18-mod2 | 53.47 | 54.90  | 56.69 | 60.32  | 62.81 | 64.56  |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-      | Lite-HRNet-x-mod3  | 53.71 | 54.83  | 58.43 | 62.03  | 64.72 | 64.57  |
-      +--------------------+-------+--------+-------+--------+-------+--------+
-
-      You can use SupCon training like the below command.
-
-      .. code-block::
-
-        $ otx train {TEMPLATE} ... \
-            params \
-            --learning_parameters.enable_supcon=True
+            --learning_parameters.enable_early_stopping=True
 
 **************
 Dataset Format
 **************
 
-For the dataset handling inside OTX we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
+For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
 
 At this end we support `ADE20K <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`__, `Pascal VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data formats.
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
@@ -166,14 +122,18 @@ Self-supervised learning can be one of the solutions if the user has a small dat
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.
 
-For these cases, OTX provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted `DetCon <https://arxiv.org/abs/2103.10957>`_ as our self-supervised method.
 It takes some time to use these self-supervised learning recipes, but you can expect improved performance, especially in small-data regimes.
 
 The below table shows how much performance (mDice) self-supervised methods improved compared with baseline performance on the subsets of Pascal VOC 2012 with three classes (person, car, bicycle).
-The number of the subset datasets is 8, 16, and 24.
+To get the below performance, we had two steps:
 
-`three classes (person, car, bicycle)`
+- Train the models using only images containing at less one class of the three classes without label information to get pretrained weights for a few epochs.
+- Fine-tune the models with pretrained weights using subset datasets and get performance.
+
+We additionally obtained baseline performance from supervised learning using subset datasets for the comparison.
+Each subset dataset has 8, 16, and 24 images, respectively.
 
 +--------------------+-------+---------+-------+---------+-------+---------+
 | Model name         | #8    |         | #16   |         | #24   |         |
@@ -187,13 +147,67 @@ The number of the subset datasets is 8, 16, and 24.
 | Lite-HRNet-x-mod3  | 50.23 | 50.93   | 60.09 | 61.61   | 62.66 | 64.87   |
 +--------------------+-------+---------+-------+---------+-------+---------+
 
-You can use Self-supervised learning like the below command.
+Unlike other tasks, two things are considered to use self-supervised learning:
+
+- `--train-data-root` must be set to a directory only containing images, not ground truths.
+  DetCon uses pseudo masks created in `detcon_mask` directory for training. If they are not created yet, they will be created first.
+- `--val-data-root` is not needed.
+
+To enable self-supervised training, the command below can be executed:
 
 .. code-block::
 
-  $ otx train {TEMPLATE} ... \
+  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
+      --train-data-root=tests/assets/common_semantic_segmentation_dataset/train/images \
       params \
       --algo_backend.train_type=SELFSUPERVISED
+
+After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:
+
+.. code-block::
+
+  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
+      --train-data-root=tests/assets/common_semantic_segmentation_dataset/train \
+      --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+      --load-weights={PATH/PRETRAINED/WEIGHTS}
+
+.. note::
+    SL stands for Supervised Learning.
+
+*******************************
+Supervised Contrastive Learning
+*******************************
+
+To enhance the performance of the algorithm in case when we have a small number of data, `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_ can be used.
+More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with `DetCon loss <https://arxiv.org/abs/2103.10957>`_.
+The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC 2012 with three classes (person, car, bicycle).
+Each subset dataset has 8, 16, and 24 images, respectively.
+
++--------------------+-------+--------+-------+--------+-------+--------+
+| Model name         | #8    |        | #16   |        | #24   |        |
++====================+=======+========+=======+========+=======+========+
+|                    | SL    | SupCon | SL    | SupCon | SL    | SupCon |
++--------------------+-------+--------+-------+--------+-------+--------+
+| Lite-HRNet-s-mod2  | 48.30 | 51.83  | 57.08 | 59.26  | 62.40 | 63.39  |
++--------------------+-------+--------+-------+--------+-------+--------+
+| Lite-HRNet-18-mod2 | 53.47 | 54.90  | 56.69 | 60.32  | 62.81 | 64.56  |
++--------------------+-------+--------+-------+--------+-------+--------+
+| Lite-HRNet-x-mod3  | 53.71 | 54.83  | 58.43 | 62.03  | 64.72 | 64.57  |
++--------------------+-------+--------+-------+--------+-------+--------+
+
+The SupCon training can be launched by adding additional option to template parameters like the below.
+It can be launched only with supervised (incremental) training type.
+
+.. code-block::
+
+  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
+      --train-data-root=tests/assets/common_semantic_segmentation_dataset/train \
+      --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+      params \
+      --learning_parameters.enable_supcon=True
+
+.. note::
+    SL stands for Supervised Learning.
 
 ********************
 Incremental Learning
