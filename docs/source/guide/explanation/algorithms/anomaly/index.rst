@@ -17,7 +17,7 @@ OpenVINO Trainign Extensions supports the following anomaly task types:
 * Anomaly Segmentation - (Pixel-level localization)
 
 .. note::
-   Only normal images are used to train all anomaly detection algorithms. The distinction between the tasks is the way in which the testing phase predicts or localises anomalies. In anomaly classification, for instance, anomalies are predicted at the image level; in anomaly detection, anomalies are localised using a bounding box; and in anomaly segmentation, anomalies are localised using a mask.
+   All anomaly task types are only trained on normal images. The different task types use the same models for generating the raw predictions, but differ in the post-processing that is applied to the raw predictions to localize the anomalous regions. Anomaly detection generates bounding-box predictions, while anomaly segmentation generates pixel-mask predictions. Anomaly classification does not perform localization of the anomalous regions within the image, but just outputs a normal vs. anomalous label for the entire image.
 
 
 Anomaly Classification
