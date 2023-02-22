@@ -107,7 +107,7 @@ Enable via ``otx train``
 ***************************
 
 1. To enable semi-supervised learning directly via ``otx train``, we need to add arguments ``--unlabeled-data-roots`` and ``--algo_backend.train_type`` 
-which is one of template-specific parameters (The details are provided in :doc:`quick start guide <../../get_started/quick_start_guide/installation>`.)
+which is one of template-specific parameters (The details are provided in :doc:`quick start guide <../../get_started/quick_start_guide/cli_commands#Training>`.)
 
 .. code-block::
 
