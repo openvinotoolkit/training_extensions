@@ -1374,6 +1374,11 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train SSD --train-data-roots &lt;path/to/train/root&gt; --val-data-roots &lt;path/to/val/root&gt; params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
 </pre></div>
 </div>
+<p>As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the <cite>–gpus</cite> argument. The model will then be trained using distributed data parallel with the GPUs you have specified.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We’ll add support for them in the near future.</p>
+</div>
 </div>
 <div class="section" id="exporting">
 <h2>Exporting<a class="headerlink" href="#exporting" title="Permalink to this headline">¶</a></h2>
