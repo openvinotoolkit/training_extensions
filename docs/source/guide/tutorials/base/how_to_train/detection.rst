@@ -369,7 +369,7 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
 
   ...
 
-  2023-01-10 06:29:46,751 | INFO : Loading OpenVINO OpenVINO™ Training ExtensionsDetectionTask
+  2023-01-10 06:29:46,751 | INFO : Loading OpenVINO DetectionTask
   2023-01-10 06:29:47,685 | INFO : OpenVINO task initialization completed
   2023-01-10 06:29:47,685 | INFO : Start POT optimization
   2023-01-10 06:34:29,304 | INFO : POT optimization completed
