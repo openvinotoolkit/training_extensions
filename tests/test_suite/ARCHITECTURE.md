@@ -269,7 +269,7 @@ Note that the abstract interface class `OTXTestStagesStorageInterface` has the o
 `get_stage` with declaration
 
 ```python
-def get_stage(self, name: str) -> "OpenVINO™ Training ExtensionsTestStage":
+def get_stage(self, name: str) -> "OTXTestStage":
 ```
 
 -- it returns test stage class by its name.
