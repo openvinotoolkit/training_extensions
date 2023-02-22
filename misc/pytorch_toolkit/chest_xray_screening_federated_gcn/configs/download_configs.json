@@ -1,8 +1,8 @@
 {
     "data":{
         "dest_path_data": "dataset/data/data.zip",
-        "url_data":"",
-        "url_split": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi8/model.zip",
+        "url_data":"http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi8/data_samples.zip",
+        "url_split": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi8/split.npz",
         "dest_path_split": "dataset/split.zip"
     },
     "fl_with_gnn":{
