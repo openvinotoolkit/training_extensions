@@ -26,7 +26,7 @@ Dataset preparation
 
 Although we offer conversion codes from `ava dataset format <https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md>`_ to `cvat dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ from `this code <../../../../../../otx/algorithms/action/utils/convert_convert_data_to_cvat.py>`_, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from `this link <https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link>`_.
 
-If you download data from link and extrct to training_extensions/data folder(you should make data folder at firsst), you can see the structure below.
+If you download data from link and extract to training_extensions/data folder(you should make data folder at first), you can see the structure below.
 
 .. code-block::
 
@@ -70,7 +70,8 @@ The list of supported templates for action detection is available with the comma
 
 To have a specific example in this tutorial, all commands will be run on the X3D_FAST_RCNN  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2. Next, we need to create workspace for various tasks we provide.
+2. Next, we need to create workspace
+for various tasks we provide.
 
 Let's prepare an OTX action detection workspase running the following command:
 
@@ -141,4 +142,4 @@ We will get a similar to this validation output after some validation time(about
 
 .. note::
 
-  Currently we don't support export and optimze task in action detction. We wiil support these feature very near future.
+  Currently we don't support export and optimize task in action detection. We will support these features very near future.
