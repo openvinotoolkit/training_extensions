@@ -124,7 +124,7 @@ and save performance results in ``performance.json`` file:
                       --load-weights models/weights.pth \
                       --save-performance performance.json
 
-We will get a similar to this validation output after some validation time(about 2 minutes):
+We will get a similar to this validation output after some validation time (about 2 minutes):
 
 .. code-block::
 
