@@ -171,7 +171,7 @@ However, in real-world industries, it is difficult to apply because of small dat
 
 For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted `BYOL <https://arxiv.org/abs/2006.07733>`_ as our self-supervised method.
-Users only need a few more minutes to use these self-supervised learning recipes and can expect improved performance, especially in low-data regimes.
+Users need some time to use these self-supervised learning recipes and can expect improved performance, especially in low-data regimes.
 
 Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
 The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
