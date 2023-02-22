@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
     
@@ -209,6 +209,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../tutorials/base/demo.html">
        How to run the demo with exportable code
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../tutorials/base/explain.html">
+       How to explain the model behavior
       </a>
      </li>
     </ul>
@@ -398,12 +403,17 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../explanation/additional_features/hpo.html">
-     Hyperparameters Oprimization
+     Hyperparameters Optimization
     </a>
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">
      Auto-configuration
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../explanation/additional_features/xai.html">
+     Explainable AI
     </a>
    </li>
   </ul>
@@ -1161,6 +1171,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#explanation">
+   Explanation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#deployment">
    Deployment
   </a>
@@ -1459,6 +1474,42 @@ optional arguments:
 </div>
 <p>The command below will evaluate the trained model on the provided dataset:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval Custom_Object_Detection_Gen3_SSD --test-data-roots &lt;path/to/test/root&gt; --load-weights &lt;path/to/model_weghts&gt; --save-performance outputs/performance.json
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>it is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.pth</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> option.</p>
+</div>
+</div>
+<div class="section" id="explanation">
+<h2>Explanation<a class="headerlink" href="#explanation" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explanation algorithm of a model on the specific dataset. It helps explain model’s decision-making process in a way that is easily understood by humans.</p>
+<p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx explain --help
+usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
+
+positional arguments:
+  template              Enter the path or ID or name of the template file.
+                        This can be omitted if you have train-data-roots or run inside a workspace.
+  {params}              sub-command help
+    params              Hyper parameters defined in template file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --explain-data-roots EXPLAIN_DATA_ROOTS
+                        Comma-separated paths to explain data folders.
+  --save-explanation-to SAVE_EXPLANATION_TO
+                        Output path for explanation images.
+  --load-weights LOAD_WEIGHTS
+                        Load model weights from previously saved checkpoint.
+  --explain-algorithm EXPLAIN_ALGORITHM
+                        Explain algorithm name, currently support [&#39;activationmap&#39;, &#39;eigencam&#39;, &#39;classwisesaliencymap&#39;]. For Openvino task, default method will be selected.
+  --overlay-weight OVERLAY_WEIGHT
+                        Weight of the saliency map when overlaying the saliency map.
+</pre></div>
+</div>
+<p>The command below will generate saliency maps (heatmaps with areas of focus) of the trained model on the provided dataset and saves the resulting images to <code class="docutils literal notranslate"><span class="pre">save-explanation-to</span></code> path:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx explain Custom_Object_Detection_Gen3_SSD --explain-data-roots &lt;path/to/explain/root&gt; --load-weights &lt;path/to/model_weghts&gt; --save-explanation-to &lt;path/to/output/root&gt; --explain-algorithm classwisesaliencymap --overlay-weight 0.5
 </pre></div>
 </div>
 <div class="admonition note">
