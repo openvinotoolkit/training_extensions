@@ -18,7 +18,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OTX.
+You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 ***************************
 Dataset preparation
@@ -73,7 +73,7 @@ To have a specific example in this tutorial, all commands will be run on the X3D
 2. Next, we need to create workspace
 for various tasks we provide.
 
-Let's prepare an OTX action detection workspase running the following command:
+Let's prepare an OpenVINO™ Training Extensions action detection workspase running the following command:
 
 .. code-block::
 
@@ -101,7 +101,7 @@ That's it! The training will return artifacts: ``weights.pth`` and ``label_schem
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 70 minutes.
 
-After that, we have the PyTorch action detection model trained with OTX.
+After that, we have the PyTorch action detection model trained with OpenVINO™ Training Extensions.
 
 ***********
 Validation
