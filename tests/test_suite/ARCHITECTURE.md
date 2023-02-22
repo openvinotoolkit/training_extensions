@@ -261,7 +261,7 @@ def __init__(self, action: BaseOpenVINO™ Training ExtensionsTestAction, stages
 - The `stages_storage` here is an instance of a class that allows to get a stage by name, this will
   be a test case class that connects all the test stages between each other and keeps in its fields
   results of all test stages between tests
-  (all the test case classes are derived from OpenVINO™ Training ExtensionsTestStagesStorageInterface)
+  (all the test case classes are derived from OTXTestStagesStorageInterface)
 
 The `stages_storage` instance is also kept inside `OTXTestStage`, it will be used to get for each
 stage its dependencies.
