@@ -28,7 +28,7 @@ Dataset preparation
 ***************************
 
 1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https:/github.com/openvinotoolkit/training_Extensionss/tree/develop/tests/assets/car_tree_bug>`_ 
-provided by OTX.
+provided by OpenVINO™ Training Extensions.
 
 This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.
 
@@ -36,7 +36,7 @@ This dataset contains images of simple car, tree, bug with the annotation for in
 - ``tree``	- Tree Shape Illustration
 - ``bug``	- Bug Shape Illustration
 
-This allows us to look at the structure of the dataset used in instance-segmentation, and can be a good starting point for how to start an instance-segmentation task with OTX.
+This allows us to look at the structure of the dataset used in instance-segmentation, and can be a good starting point for how to start an instance-segmentation task with OpenVINO™ Training Extensions.
 
 |
 
