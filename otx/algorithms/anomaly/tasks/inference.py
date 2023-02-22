@@ -247,16 +247,24 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             opset_version=11,
         )
 
-    def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
+    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True) -> None:
         """Export model to OpenVINO IR.
 
         Args:
             export_type (ExportType): Export type should be ExportType.OPENVINO
             output_model (ModelEntity): The model entity in which to write the OpenVINO IR data
+            dump_features (bool): Flag to return "feature_vector" and "saliency_map".
 
         Raises:
             Exception: If export_type is not ExportType.OPENVINO
         """
+        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        if not dump_features:
+            logger.warning(
+                "Ommitting feature dumping is not implemented."
+                "The saliency maps and representation vector outputs will be dumped in the exported model."
+            )
+
         assert export_type == ExportType.OPENVINO, f"Incorrect export_type={export_type}"
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO

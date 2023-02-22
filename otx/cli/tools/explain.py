@@ -121,19 +121,22 @@ def main():
 
     image_files = get_image_files(args.explain_data_roots)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)
+    explain_parameters = InferenceParameters(
+        is_evaluation=False,
+        explainer=args.explain_algorithm,
+        explain_predicted_classes=False,
+    )
     explained_dataset = task.explain(
         dataset_to_explain.with_empty_annotations(),
-        InferenceParameters(
-            is_evaluation=False,
-            explainer=args.explain_algorithm,
-        ),
+        explain_parameters,
     )
 
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
         for metadata in explained_data.get_metadata():
             saliency_data = metadata.data
-            fname = f"{Path(Path(filename).name).stem[0]}_{saliency_data.name}".replace(" ", "_")
+            fname = f"{Path(Path(filename).name).stem}_{saliency_data.name}".replace(" ", "_")
             save_saliency_output(
+                process_saliency_maps=explain_parameters.process_saliency_maps,
                 img=explained_data.numpy,
                 saliency_map=saliency_data.numpy,
                 save_dir=args.save_explanation_to,

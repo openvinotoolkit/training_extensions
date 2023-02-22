@@ -200,7 +200,7 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100 an
   2023-01-10 05:52:35,907 | INFO : Evaluation completed
   Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 
-The training time highly relies on the hardware characteristics, for example on 1 GeForce 3090 the training took about 15 minutes.
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 15 minutes.
 
 After that we have the PyTorch object detection model trained with OTX, that we can use for evaliation, export, optimization and deployment.
 
@@ -379,7 +379,7 @@ To learn more about optimization, refer to `NNCF repository <https://github.com/
   2023-01-10 06:34:33,451 | INFO : OpenVINO metric evaluation completed
   Performance(score: 0.5389435989256938, dashboard: (1 metric groups))
 
-The optimization time highly relies on the hardware characteristics, for example on 1 GeForce 3090 it took about 10 minutes.
+The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
 Please note, that POT will take some time without logging to optimize the model.
 
 4. Finally, we can also evaluate the optimized model by passing it to the ``otx eval`` function.

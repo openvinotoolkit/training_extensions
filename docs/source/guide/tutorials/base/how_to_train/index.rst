@@ -5,6 +5,7 @@ How to train, validate, export and optimize the model
    :maxdepth: 1
 
    action_detection
+   action_classification
    classification
    detection
    instance_segmentation

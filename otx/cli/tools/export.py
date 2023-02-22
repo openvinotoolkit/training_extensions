@@ -40,6 +40,11 @@ def get_args():
         "--save-model-to",
         help="Location where exported model will be stored.",
     )
+    parser.add_argument(
+        "--dump_features",
+        action="store_true",
+        help="Whether to return feature vector and saliency map for explanation purposes.",
+    )
 
     return parser.parse_args()
 
@@ -84,7 +89,7 @@ def main():
 
     exported_model = ModelEntity(None, environment.get_model_configuration())
 
-    task.export(ExportType.OPENVINO, exported_model)
+    task.export(ExportType.OPENVINO, exported_model, args.dump_features)
 
     if "save_model_to" not in args or not args.save_model_to:
         args.save_model_to = str(config_manager.workspace_root / "model-exported")
