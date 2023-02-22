@@ -284,7 +284,6 @@ class CurveMetric(MetricEntity):
             f"xs=({len(self.xs) if self.xs is not None else 'None'} values))"
         )
 
-
     @staticmethod
     def type():
         """Returns the type of the MetricEntity."""
