@@ -1,7 +1,7 @@
 .. raw:: html
 
    <div style="margin-bottom:30px;">
-   <img src="../../_static/logos/otx-logo-black.png" alt="Logo" width="200" style="display:block;margin:auto;">
+   <img src="../../_static/logos/otx-logo-black.png" alt="Logo" width="900" style="display:block;margin:auto;">
    </div>
 
 Introduction
