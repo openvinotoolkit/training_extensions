@@ -41,7 +41,7 @@ Dataset Format
 At the current point we support `COCO <https://cocodataset.org/#format-data>`_, 
 `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and
 `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_ dataset format.
-Here is an example of expected format for COCO dataset:
+Learn more about the formats by following the links above. Here is an example of expected format for COCO dataset:
 
 .. code::
 
@@ -72,15 +72,15 @@ Models
 
 We support the following ready-to-use model templates:
 
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------+---------------------+-----------------+
-| Template ID                                                                                                                                                                           | Name  | Complexity (GFLOPs) | Model size (MB) |
-+=======================================================================================================================================================================================+=======+=====================+=================+
-| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml>`_      | YOLOX | 6.5                 | 20.4            |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_SSD <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml>`_    | SSD   | 9.4                 | 7.6             |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  | ATSS  | 20.6                | 9.1             |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------+---------------------+-----------------+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
+| Template ID                                                                                                                                                                           | Name    | Complexity (GFLOPs) | Model size (MB) |
++=======================================================================================================================================================================================+=========+=====================+=================+
+| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml>`_      | YOLOX   | 6.5                 | 20.4            |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_SSD <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml>`_    | SSD     | 9.4                 | 7.6             |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  | ATSS    | 20.6                | 9.1             |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
 
 `ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases. 
 `SSD <https://arxiv.org/abs/1512.02325>`_ and `YOLOX <https://arxiv.org/abs/2107.08430>`_ are light models, that a perfect for the fastest inference on low-power hardware.
@@ -101,15 +101,15 @@ The results were obtained on our templates without any changes.
 For hyperparameters, please, refer to the related template.
 We trained each model with a single Nvidia GeForce RTX3090.
 
-+-----------+------------+-----------+
-| Model name| COCO       | MinneApple|
-+===========+============+===========+
-| YOLOX     | N/A        | 24.5      |
-+-----------+------------+-----------+
-| SSD       | N/A        | 31.2      |
-+-----------+------------+-----------+
-| ATSS      | N/A        | 42.5      |
-+-----------+------------+-----------+
++-----------+------------+-----------+-----------+
+| Model name| COCO       | PASCAL VOC| MinneApple|
++===========+============+===========+===========+
+| YOLOX     | N/A        | N/A       | 24.5      |
++-----------+------------+-----------+-----------+
+| SSD       | N/A        | N/A       | 31.2      |
++-----------+------------+-----------+-----------+
+| ATSS      | N/A        | N/A       | 42.5      |
++-----------+------------+-----------+-----------+
 
 
 
