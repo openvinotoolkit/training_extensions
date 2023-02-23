@@ -437,6 +437,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         # Copy config files
         config_files = [
             (model_dir, "model.py", train_type_dir),
+            (model_dir, "model_multilabel.py", train_type_dir),
             (model_dir, "data_pipeline.py", train_type_dir),
             (template_dir, "tile_pipeline.py", self.workspace_root),
             (template_dir, "deployment.py", self.workspace_root),
