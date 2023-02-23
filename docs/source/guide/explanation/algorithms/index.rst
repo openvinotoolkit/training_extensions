@@ -20,8 +20,8 @@ To this end, we support:
    :maxdepth: 2
    :titlesonly:
 
+   classification/index
+   object_detection/index
+   segmentation/index
    anomaly/index
    action/index
-   classification/index
-   segmentation/index
-   object_detection/index
