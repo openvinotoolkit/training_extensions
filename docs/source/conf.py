@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information ----------------------------------------------------- #
 
-project = 'OpenVINO Training Extensions'
-copyright = '2023, OpenVINO Training Extensions Contributors'
-author = 'OpenVINO Training Extensions Contributors'
+project = 'OpenVINO™ Training Extensions'
+copyright = '2023, OpenVINO™ Training Extensions Contributors'
+author = 'OpenVINO™ Training Extensions Contributors'
 
 
 # -- General configuration --------------------------------------------------- #
@@ -34,9 +34,7 @@ author = 'OpenVINO Training Extensions Contributors'
 # ]
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx_panels',
     'sphinx_copybutton',
-    'sphinx_tabs.tabs'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -57,13 +55,13 @@ exclude_patterns = []
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_theme = "pydata_sphinx_theme"
 html_static_path = ['_static']
-html_logo = "_static/logos/otx-logo-black-mini.png"
+html_logo = "_static/logos/otx-logo-black.png"
 
 # html_theme_options = {
 #    "navbar_center": [],
 #    "logo": {
-#       "image_light": '_static/logos/otx-logo-black-mini.png',
-#       "image_dark": '_static/logos/otx-logo-black-mini.png',
+#       "image_light": '_static/logos/otx-logo-black.png',
+#       "image_dark": '_static/logos/otx-logo-black.png',
 #    }
 # }
 html_theme_options = {
