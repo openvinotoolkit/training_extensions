@@ -1,9 +1,9 @@
 import unittest
 import os
-from ..src.utils.downloader import download_checkpoint, download_data
-from ..src.utils.get_config import get_config
-from ..src.utils.train_utils_cnn import train_model
-from ..src.utils.train_utils_gnn import train_model as train_model_gnn
+from src.utils.downloader import download_checkpoint, download_data
+from src.utils.get_config import get_config
+from src.utils.train_utils_cnn import train_model
+from src.utils.train_utils_gnn import train_model as train_model_gnn
 
 def create_train_test_for_without_gnn():
     class TrainerTest(unittest.TestCase):

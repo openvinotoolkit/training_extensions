@@ -3,10 +3,10 @@ import numpy as np
 import unittest
 import torchvision
 import sys
-from ..src.utils.inference_utils import inference_model
+from src.utils.inference_utils import inference_model
 from torch.utils.data import DataLoader
-from ..src.utils.get_config import get_config
-from ..src.utils.downloader import download_data
+from src.utils.get_config import get_config
+from src.utils.downloader import download_data
 
 def create_inference_test_with_gnn():
     class InferenceTest(unittest.TestCase):

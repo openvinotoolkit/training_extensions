@@ -1,4 +1,4 @@
-torch==1.12.1
+torch==1.13.1
 torchvision==0.13.1
 torchmetrics
 pydicom
@@ -10,8 +10,6 @@ openvino-dev[onnx]==2021.4.2
 onnxruntime==1.8.1
 numpy==1.19.2
 matplotlib==3.5.2
-termcolor==1.1.0
-dahuffman
 wget
 tqdm
 pytest

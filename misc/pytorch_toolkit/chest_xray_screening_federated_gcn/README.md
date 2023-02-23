@@ -36,9 +36,11 @@ The overall performance of the proposed CNN-GNN is
 
 ## Model
 
-Download `.pth` checkpoint for CNN-GNN model trained on CheXpert dataset with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi8/model_weights_w_gnn.zip).
+Download `.pth` checkpoint for CNN-GNN model with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi8/model_weights_w_gnn.zip).
 
-Note: The ONNX and IR representation models accepts inputs of fixed size mentioned in configuration file. This needs to be updated based on the input size.
+> Note: The ONNX and IR representation models accepts inputs of fixed size mentioned in configuration file. This needs to be updated based on the input size.
+
+> Note: PyTorch to ONNX conversion is not currently supported for GNN models. Hence, export to ONNX and IR is currently disabled for the GNN.
 
 ## Setup
 
@@ -48,7 +50,6 @@ Note: The ONNX and IR representation models accepts inputs of fixed size mention
 * 16 GB RAM for inference
 
 ## Code and Directory Organisation
-
 
 ```
 federated_chest_screening/
@@ -96,8 +97,25 @@ federated_chest_screening/
 5. **tests** directory contains  unit tests.
 6. **config** directory contains model configurations for the network.
 
+## Create Environment
 
-### Run Tests
+```
+sh init_venv.sh
+source venv/bin/activate
+
+```
+In addition to the packages mentioned in requirements.txt, users are requested to install additional packages using 
+
+```
+pip install pyg-lib torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html
+pip install torch-geometric
+
+```
+
+where `${TORCH}` and `${CUDA}` should be replaced by the specific PyTorch and CUDA versions, respectively
+
+
+## Run Tests
 
 Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here](http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi8/data_samples.zip)
 
@@ -110,7 +128,7 @@ India Grand Challenge 2016 for Project MIRIAD.
 
 **Principal Investigators**
 
-<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a></br>
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>,<a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya"> Dr Nirmalya Ghosh (Co-PI) </a></br>
 Department of Electrical Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
 email: debdoot@ee.iitkgp.ac.in
@@ -134,6 +152,12 @@ Advanced Technology Development Center,</br>
 Indian Institute of Technology Kharagpur</br>
 email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
 Github username: Rakshith2597
+
+<a href="https://github.com/anupam-kliv"> Anupam Borthakur</a>,</br>
+Center of Excellence in Artifical Intelligence,</br>
+Indian Institute of Technology Kharagpur</br>
+email: ANUPAMBORTHAKUR@kgpian.iitkgp.ac.in </br>
+Github username: anupam-kliv
 
 
 ## References
