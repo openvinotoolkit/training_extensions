@@ -46,6 +46,9 @@ The following example creates a virtual environment in the ``det_venv`` folder f
 
 .. #TODO: Update installation part: virtual env, install prerequisite, pip install -e . or pip install otx
 
+
+.. _wgisd_dataset_descpiption:
+
 ***************************
 Dataset preparation
 ***************************

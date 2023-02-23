@@ -1,11 +1,11 @@
-How to deploy the model and use deployed demo
-=============================================
+How to deploy the model and use demo in exportable code
+=======================================================
 
 This guide shows, how to deploy a model trained in the :doc:`previous stage <how_to_train/index>` and visualize it outside of this repository.
 As a result of this step, we'll get the exported model together with the self-contained python package and a demo application to visualize results in other environment without long installation process.
 
 .. NOTE::
-    To learn how to use CLI demo inside this tutorial with more features, refer to :doc:`demo`.
+    To learn how to use demonstration mode inside this repository utilizing OTX CLI , refer to :doc:`demo`.
 
 To be specific, this tutorial uses as an example the object detection ATSS model trained and exported in the previuos step and located in ``outputs/openvino``.
 But it can be runned for any task in the same manner.
@@ -60,7 +60,7 @@ After that, we can use the resulting ``openvino.zip`` archive in other applicati
 Demonstrarion
 *************
 
-Using ported demo, we're able to run model in demonstration mode outside of this repository, using only ported ``.zip`` archive with minimum required packages. 
+Using the exported demo, we're able to run the model in the demonstration mode outside of this repository, using only ported ``.zip`` archive with minimum required packages.
 The demo allows to apply our model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.
 
 1. Unzip the ``openvino.zip``
@@ -85,12 +85,12 @@ using the model in the ``model`` folder. You can pass as ``input`` a single imag
 
 .. code-block::
 
-    (demo) ...$ python3 outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
+    (demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
                                                       --models outputs/deploy/model
 
 You can press ``Q`` to stop inference during the demo running.
 
-The model inference on your custom image will look like this:
+For example, the model inference on image from WGISD dataset, which we used for  :ref:`object detection training <wgisd_dataset_descpiption>`, will look like this:
 
 .. image:: ../../../../utils/images/wgisd_pr_sample.jpg
   :width: 600
@@ -153,6 +153,11 @@ The result will be the following:
   :width: 600
   :alt: this image shows the inference results on the WGISD dataset
 
+|
+
+.. note::
+
+    Although this is example for object detection demo, other tasks can have their own tunable parameters that we can check in ``config.json`` file
 
 Congratulations! Now you have learned how to use base OTX functionality. For the advanced features, please refer to the next section called :doc:`../advanced/index`.
 

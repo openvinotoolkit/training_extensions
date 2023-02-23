@@ -1,8 +1,14 @@
-How to run the demo
-===================
+How to run the demonstration mode with OpenVINO™ Training Extensions CLI
+========================================================================
 
-In this tutorial we will show how run :doc:`trained <how_to_train/index>` model inside OTX repository in demonstration mode.
+In this tutorial we will show how to run :doc:`trained <how_to_train/index>` model inside OTX repository in demonstration mode.
 It allows us to apply our model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.
+
+.. note::
+
+    This tutorial uses an object detection model for example, however for other tasks the functionality remains the same - you just need to replace the input dataset with your own.
+
+For visualization we use images from WGISD dataset from the :doc: `object detection tutorial <how_to_train/detection>`.
 
 1. Activate the virtual environment 
 created in the previous step.
