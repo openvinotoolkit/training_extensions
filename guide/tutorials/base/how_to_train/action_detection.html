@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Action Detection model &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Action Detection model &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="action-detection-model">
+  <section id="action-detection-model">
 <h1>Action Detection  model<a class="headerlink" href="#action-detection-model" title="Permalink to this headline">#</a></h1>
 <p>This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of <a class="reference external" href="http://jhmdb.is.tue.mpg.de/">JHMDB</a>.</p>
 <div class="admonition note">
@@ -466,11 +483,11 @@
 <li><p>Intel(R) Core(TM) i9-10980XE</p></li>
 <li><p>CUDA Toolkit 11.1</p></li>
 </ul>
-<div class="section" id="setup-virtual-environment">
+<section id="setup-virtual-environment">
 <h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
 <p>You can follow the installation process from a <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a> to create a universal virtual environment for OpenVINO™ Training Extensions.</p>
-</div>
-<div class="section" id="dataset-preparation">
+</section>
+<section id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
 <p>Although we offer conversion codes from <a class="reference external" href="https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md">ava dataset format</a> to <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">cvat dataset format</a> from <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py">this code</a>, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from <a class="reference external" href="https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link">this link</a>.</p>
 <p>If you download data from link and extract to training_extensions/data folder(you should make data folder at first), you can see the structure below.</p>
@@ -491,8 +508,8 @@
         └── test.pkl
 </pre></div>
 </div>
-</div>
-<div class="section" id="training">
+</section>
+<section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
 <p>1. First of all, we need to choose which action detection model will we train.
 The list of supported templates for action detection is available with the command line below.</p>
@@ -548,8 +565,8 @@ command in our worspace:</p>
 <p>That’s it! The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code>, which are needed as input for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  etc.</p>
 <p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 70 minutes.</p>
 <p>After that, we have the PyTorch action detection model trained with OpenVINO™ Training Extensions.</p>
-</div>
-<div class="section" id="validation">
+</section>
+<section id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
 model on a specific dataset.</p>
@@ -581,8 +598,8 @@ and save performance results in <code class="docutils literal notranslate"><span
 <p class="admonition-title">Note</p>
 <p>Currently we don’t support export and optimize task in action detection. We will support these features very near future.</p>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

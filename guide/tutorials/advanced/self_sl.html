@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Use Self-Supervised Learning &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Use Self-Supervised Learning &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="use-self-supervised-learning">
+  <section id="use-self-supervised-learning">
 <h1>Use Self-Supervised Learning<a class="headerlink" href="#use-self-supervised-learning" title="Permalink to this headline">#</a></h1>
 <p>This tutorial introduces how to train a model using self-supervised learning and fine-tune the model with pre-trained weights.
 OpenVINO™ Training Extensions provides self-supervised learning methods for <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html"><span class="doc">multi-classification</span></a> and <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html"><span class="doc">semantic segmentation</span></a>.</p>
@@ -468,11 +485,11 @@ OpenVINO™ Training Extensions provides self-supervised learning methods for <a
 <p>This example demonstates how to work with <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html#selfsl-multi-class-classification"><span class="std std-ref">self-supervised learning for classification</span></a>.
 There are some differences between classfication and semantic segmentation, so there will be some notes for <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html#selfsl-semantic-segmentation"><span class="std std-ref">self-supervised learning for semantic segmentation</span></a>.</p>
 </div>
-<div class="section" id="setup-virtual-environment">
+<section id="setup-virtual-environment">
 <h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
 <p>To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the <a class="reference internal" href="../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a>.</p>
-</div>
-<div class="section" id="pre-training">
+</section>
+<section id="pre-training">
 <h2>Pre-training<a class="headerlink" href="#pre-training" title="Permalink to this headline">#</a></h2>
 <ol class="arabic simple">
 <li><p>Prepare dataset and model. To prepare dataset and decide model, refer to <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a>. In this self-supervised learning tutorial, <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a> and <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html#classificaiton-models"><span class="std std-ref">MobileNet-V3-large-1x</span></a> model used in <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a> is used as it is.</p></li>
@@ -585,8 +602,8 @@ And don’t forget to add <code class="docutils literal notranslate"><span class
 <p>The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> and we can use the weights to fine-tune the model using target dataset.
 Final model performance will be set to -1, but it doesn’t matter because self-supervised learning doesn’t use accuracy.
 Let’s see how to fine-tune the model using pre-trained weights below.</p>
-</div>
-<div class="section" id="fine-tuning">
+</section>
+<section id="fine-tuning">
 <h2>Fine-tuning<a class="headerlink" href="#fine-tuning" title="Permalink to this headline">#</a></h2>
 <p>After pre-training progress, start fine-tuning by calling the below command with adding <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> argument in supervised learning workspace.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ cd ../otx-workspace-CLASSIFICATION
@@ -620,8 +637,8 @@ You can check performance improvement examples in <a class="reference internal" 
 <p class="admonition-title">Note</p>
 <p>Obtaining new model after fine-tuning you can proceed with optimization and exporting as described in <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a>.</p>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

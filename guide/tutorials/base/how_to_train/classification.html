@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Classification model &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Classification model &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="classification-model">
+  <section id="classification-model">
 <h1>Classification  model<a class="headerlink" href="#classification-model" title="Permalink to this headline">#</a></h1>
 <p>This live example shows how to easily train, validate, optimize and export classification model on the <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a> from TensorFlow.</p>
 <div class="admonition note">
@@ -473,11 +490,11 @@
 <p>While this example shows how to work with <a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html"><span class="doc">multi-class classification</span></a>, it is easy to extend it for the <a class="reference internal" href="../../../explanation/algorithms/classification/multi_label_classification.html"><span class="doc">multi-label</span></a> or <a class="reference internal" href="../../../explanation/algorithms/classification/hierarhical_classification.html"><span class="doc">hierarchical</span></a> classification.
 Substitute the dataset with a multi-label or hierarchical one. Everything else remains the same.</p>
 </div>
-<div class="section" id="setup-virtual-environment">
+<section id="setup-virtual-environment">
 <h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
 <p>You can follow the installation process from a <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a> to create a universal virtual environment for OpenVINO™ Training Extensions.</p>
-</div>
-<div class="section" id="dataset-preparation">
+</section>
+<section id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
 <p>Download and prepare a <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a>
 with the following command:</p>
@@ -503,8 +520,8 @@ with the following command:</p>
   ├── tulips
 </pre></div>
 </div>
-</div>
-<div class="section" id="training">
+</section>
+<section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
 <p>1. First of all, we need to choose which classification model will we train.
 The list of supported templates for classification is available with the command line below.</p>
@@ -550,8 +567,8 @@ command in our worspace:</p>
 <p>That’s it! The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code>, which are needed as input for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  etc.</p>
 <p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 8 minutes.</p>
 <p>After that, we have the PyTorch classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.</p>
-</div>
-<div class="section" id="validation">
+</section>
+<section id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
 model on a specific dataset.</p>
@@ -575,8 +592,8 @@ and save performance results in <code class="docutils literal notranslate"><span
 <span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.9659400544959128</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="export">
+</section>
+<section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
@@ -602,8 +619,8 @@ using <code class="docutils literal notranslate"><span class="pre">otx</span> <s
 Performance(score: 0.9659400544959128, dashboard: (3 metric groups))
 </pre></div>
 </div>
-</div>
-<div class="section" id="optimization">
+</section>
+<section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
 It uses NNCF or POT depending on the model format.</p>
@@ -638,8 +655,8 @@ Performance(score: 0.9577656675749319, dashboard: (3 metric groups))
 efficient model representation ready-to-use classification model.</p>
 <p>The following tutorials provide further steps on how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.
 The examples are provided with an object detection model, but it is easy to apply them for classification by substituting the object detection model with classification one.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

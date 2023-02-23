@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Object Detection model &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Object Detection model &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="object-detection-model">
+  <section id="object-detection-model">
 <h1>Object Detection model<a class="headerlink" href="#object-detection-model" title="Permalink to this headline">#</a></h1>
 <p>This tutorial reveals end-to-end solution from installation to model export and optimization for object detection task on a specific example.
 On this page, we show how to train, validate, export and optimize ATSS model on WGISD public dataset.</p>
@@ -469,7 +486,7 @@ On this page, we show how to train, validate, export and optimize ATSS model on 
 <li><p>Intel(R) Core(TM) i9-10980XE CPU</p></li>
 <li><p>CUDA Toolkit 11.1</p></li>
 </ul>
-<div class="section" id="setup-virtual-environment">
+<section id="setup-virtual-environment">
 <h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
 <p>To create a universal virtual environment for all tasks, you can follow the installation process from a <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">installation guide</span></a>.</p>
 <p>1. Activate your virtual
@@ -479,8 +496,8 @@ environment:</p>
 <span class="o">.</span> <span class="n">venv</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="dataset-preparation">
+</section>
+<section id="dataset-preparation">
 <span id="wgisd-dataset-descpiption"></span><h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -543,8 +560,8 @@ we need to reformat the dataset according to this structure:</p>
 <span class="n">mv</span> <span class="n">annotations</span><span class="o">/</span><span class="n">test_bbox_instances</span><span class="o">.</span><span class="n">json</span> <span class="n">annotations</span><span class="o">/</span><span class="n">instances_val</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="training">
+</section>
+<section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
 <p>1. First of all, we need to choose which object detection model will we train.
 The list of supported templates for object detection is available with the command line below.</p>
@@ -662,8 +679,8 @@ while training logs can be found in the <code class="docutils literal notranslat
 </div>
 <p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 15 minutes.</p>
 <p>After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.</p>
-</div>
-<div class="section" id="validation">
+</section>
+<section id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a
 trained model on a particular dataset.</p>
@@ -698,8 +715,8 @@ Learn more about template-specific parameters using <code class="docutils litera
 2023-01-10 06:21:04,254 | INFO : F-measure after evaluation: 0.514346439957492
 </pre></div>
 </div>
-</div>
-<div class="section" id="export">
+</section>
+<section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
@@ -729,8 +746,8 @@ using <code class="docutils literal notranslate"><span class="pre">otx</span> <s
 Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 </pre></div>
 </div>
-</div>
-<div class="section" id="optimization">
+</section>
+<section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
 It uses NNCF or POT depending on the model format.</p>
@@ -786,8 +803,8 @@ Please note, that POT will take some time without logging to optimize the model.
 it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> function.</p>
 <p>Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.</p>
 <p>The following tutorials provide further steps how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

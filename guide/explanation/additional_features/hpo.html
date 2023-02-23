@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hyperparameters Optimization &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Hyperparameters Optimization &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="hyperparameters-optimization">
+  <section id="hyperparameters-optimization">
 <h1>Hyperparameters Optimization<a class="headerlink" href="#hyperparameters-optimization" title="Permalink to this headline">#</a></h1>
 <p>Hyper-parameter optimization (HPO) can be a time-consuming process, even with state-of-the-art off-the-shelf libraries. OpenVINO™ Training Extensions makes HPO faster and easier by providing an easy-to-use interface and automatic configuration.</p>
 <p>With OpenVINO™ Training Extensions, you can run hyper-parameter optimization by simply adding a time constraint parameter. The auto-config feature automatically sets internal control parameters, guaranteeing that HPO will finish within the given time constraint.</p>
@@ -469,7 +486,7 @@
     --enable-hpo
 </pre></div>
 </div>
-<div class="section" id="algorithm">
+<section id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">#</a></h2>
 <p>If you have abundant GPU resources, it’s better to run HPO in parallel.
 In that case, <a class="reference external" href="https://arxiv.org/pdf/1810.05934.pdf">ASHA</a> is a good choice.
@@ -478,7 +495,7 @@ Currently, OpenVINO™ Training Extensions uses the ASHA algorithm.</p>
 <p>ASHA involves running multiple trials in parallel and evaluating them based on their validation metrics. It starts by running many trials for a short time, with only the best-performing trials advancing to the next round. In each subsequent round, the number of trials is reduced, and the amount of time spent on each trial is increased. This process is repeated until only one trial remains.</p>
 <p>ASHA is designed to be more efficient than SHA in parallel computing environments because it allows for asynchronous training of the trials. This means that each trial can be trained independently of the others, and they do not have to wait for all the other trials to complete before advancing to the next round. This reduces the amount of time it takes to complete the optimization process.</p>
 <p>ASHA also includes a technique called Hyperband, which is used to determine how much time to allocate to each trial in each round. Hyperband allocates more time to the best-performing trials, with the amount of time allocated decreasing as the performance of the trials decreases. This technique helps to reduce the overall amount of training time required to find the best hyperparameters.</p>
-<div class="section" id="how-to-configure-hyper-parameter-optimization">
+<section id="how-to-configure-hyper-parameter-optimization">
 <h3>How to configure hyper-parameter optimization<a class="headerlink" href="#how-to-configure-hyper-parameter-optimization" title="Permalink to this headline">#</a></h3>
 <p>You can configure HPO by modifying the <strong>hpo_config.yaml</strong> file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The <strong>hpo_config.yaml</strong> file already exists with default values in the same directory where <em>template.yaml</em> resides. Here is the default hpo_config.yaml file for classification:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metric</span><span class="p">:</span> <span class="n">accuracy</span>
@@ -560,9 +577,9 @@ Fortunately, there are not many attributes, so it’s not difficult to write you
 <li><p><strong>maximum_resource</strong> (<em>int</em>, <em>default=None</em>) - Maximum number of training epochs for each trial. When the number of training epochs reaches this value, the training of the trial will stop. The default value is None.</p></li>
 <li><p><strong>minimum_resource</strong> (<em>int</em>, <em>default=None</em>) - Minimum number of training epochs for each trial. Each trial will run for at least this many epochs, even if the performance of the model is not improving. The default value is None.</p></li>
 </ul>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             </article>

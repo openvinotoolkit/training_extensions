@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anomaly Detection Tutorial &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Anomaly Detection Tutorial &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="anomaly-detection-tutorial">
+  <section id="anomaly-detection-tutorial">
 <h1>Anomaly Detection Tutorial<a class="headerlink" href="#anomaly-detection-tutorial" title="Permalink to this headline">#</a></h1>
 <p>This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications. Read <a class="reference internal" href="../../../explanation/algorithms/anomaly/index.html"><span class="doc">Anomaly Detection</span></a> for more information about the Anomaly tasks.</p>
 <div class="admonition note">
@@ -467,7 +484,7 @@
 <li><p>Intel(R) Core(TM) i9-10980XE</p></li>
 <li><p>CUDA Toolkit 11.1</p></li>
 </ul>
-<div class="section" id="setup-the-virtual-environment">
+<section id="setup-the-virtual-environment">
 <h2>Setup the Virtual environment<a class="headerlink" href="#setup-the-virtual-environment" title="Permalink to this headline">#</a></h2>
 <p>To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a>.</p>
 <p>Alternatively, if you want to only train anomaly models then you can create a task specific environment.</p>
@@ -510,8 +527,8 @@
 </div>
 </li>
 </ol>
-</div>
-<div class="section" id="dataset-preparation">
+</section>
+<section id="dataset-preparation">
 <h2>Dataset Preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
 <p>For this example we will use the <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad">MVTec</a> dataset.</p>
 <p>You can download the dataset from the link above. We will use the <code class="docutils literal notranslate"><span class="pre">bottle</span></code> category for this tutorial.</p>
@@ -557,8 +574,8 @@
 <span class="w">        </span>...
 </pre></div>
 </div>
-</div>
-<div class="section" id="training">
+</section>
+<section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
 <p>For this example let’s look at the anomaly detection tasks</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>anomaly_detection
@@ -580,8 +597,8 @@
 </pre></div>
 </div>
 <p>This will start training and generate artifacts for commands such as <code class="docutils literal notranslate"><span class="pre">export</span></code> and <code class="docutils literal notranslate"><span class="pre">optimize</span></code>. You will notice the <code class="docutils literal notranslate"><span class="pre">otx-workspace-ANOMALY_DETECTION</span></code> directory in your current working directory. This is where all the artifacts are stored.</p>
-</div>
-<div class="section" id="evaluation">
+</section>
+<section id="evaluation">
 <h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">#</a></h2>
 <p>Now that we have trained the model, let’s see how it performs on the a specific dataset. In this example we will use the same dataset to generate evaluation metrics. To perform evaluation you need to run the following commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
@@ -596,8 +613,8 @@
 </div>
 <p>The primary metric here is the f-measure computed against the ground-truth bounding boxes. It is also called the local score. In addition, f-measure is also used to compute the global score. The global score is computed based on global label of the image. That is, the image is anomalous if it contains at least one anomaly. This global score is stored as an additional metric.</p>
 <p>All task types report Image-level F-measure as the primary metric. In addition, both localization tasks (anomaly detection and anomaly segmentation) also report localization performance (F-measure for anomaly detection and Dice-coefficient for anomaly segmentation).</p>
-</div>
-<div class="section" id="export">
+</section>
+<section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
@@ -631,8 +648,8 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MultiScorePerformance(score: 0.6511627906976744, primary_metric: ScoreMetric(name=`f-measure`, score=`0.6511627906976744`), additional_metrics: (1 metrics), dashboard: (2 metric groups))
 </pre></div>
 </div>
-</div>
-<div class="section" id="optimization">
+</section>
+<section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
 <p>Anomaly tasks can be optimized either in POT or NNCF format. For more information refer to the <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section.</p>
 <ol class="arabic">
@@ -676,8 +693,8 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 </div></blockquote>
 </li>
 </ol>
-</div>
-<div class="section" id="segmentation-and-classification">
+</section>
+<section id="segmentation-and-classification">
 <h2>Segmentation and Classification<a class="headerlink" href="#segmentation-and-classification" title="Permalink to this headline">#</a></h2>
 <p>While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models. To see what tasks are available, you can pass <code class="docutils literal notranslate"><span class="pre">anomaly_segmentation</span></code> and <code class="docutils literal notranslate"><span class="pre">anomaly_classification</span></code> to <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> mentioned in the <a class="reference internal" href="#training">Training</a> section. You can then use the same commands to train, evaluate, export and optimize the models.</p>
 <div class="admonition note">
@@ -685,8 +702,8 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 <p>The Segmentation and Detection tasks also require that the <code class="docutils literal notranslate"><span class="pre">ground_truth</span></code> masks be present to ensure that the localization metrics are computed correctly.
 The <code class="docutils literal notranslate"><span class="pre">ground_truth</span></code> masks are not required for the Classification task.</p>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

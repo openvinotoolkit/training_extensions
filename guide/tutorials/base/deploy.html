@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>How to deploy the model and use demo in exportable code &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>How to deploy the model and use demo in exportable code &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="how-to-deploy-the-model-and-use-demo-in-exportable-code">
+  <section id="how-to-deploy-the-model-and-use-demo-in-exportable-code">
 <h1>How to deploy the model and use demo in exportable code<a class="headerlink" href="#how-to-deploy-the-model-and-use-demo-in-exportable-code" title="Permalink to this headline">#</a></h1>
 <p>This guide shows, how to deploy a model trained in the <a class="reference internal" href="how_to_train/index.html"><span class="doc">previous stage</span></a> and visualize it outside of this repository.
 As a result of this step, we’ll get the exported model together with the self-contained python package and a demo application to visualize results in other environment without long installation process.</p>
@@ -462,7 +479,7 @@ As a result of this step, we’ll get the exported model together with the self-
 </div>
 <p>To be specific, this tutorial uses as an example the object detection ATSS model trained and exported in the previuos step and located in <code class="docutils literal notranslate"><span class="pre">outputs/openvino</span></code>.
 But it can be runned for any task in the same manner.</p>
-<div class="section" id="deployment">
+<section id="deployment">
 <h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">#</a></h2>
 <p>1. Activate the virtual environment
 created in the previous step.</p>
@@ -502,8 +519,8 @@ using the command below:</p>
 </div>
 <p>We also can deploy the quantized model, that was optimized with NNCF or POT, passing the path to this model in IR format to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
 <p>After that, we can use the resulting <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code> archive in other application.</p>
-</div>
-<div class="section" id="demonstrarion">
+</section>
+<section id="demonstrarion">
 <h2>Demonstrarion<a class="headerlink" href="#demonstrarion" title="Permalink to this headline">#</a></h2>
 <p>Using the exported demo, we’re able to run the model in the demonstration mode outside of this repository, using only ported <code class="docutils literal notranslate"><span class="pre">.zip</span></code> archive with minimum required packages.
 The demo allows to apply our model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.</p>
@@ -578,8 +595,8 @@ To overcome this problem, we can decrease <code class="docutils literal notransl
 <p>Although this is example for object detection demo, other tasks can have their own tunable parameters that we can check in <code class="docutils literal notranslate"><span class="pre">config.json</span></code> file</p>
 </div>
 <p>Congratulations! Now you have learned how to use base OTX functionality. For the advanced features, please refer to the next section called <a class="reference internal" href="../advanced/index.html"><span class="doc">Advanced tutorial</span></a>.</p>
-</div>
-<div class="section" id="troubleshooting">
+</section>
+<section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">#</a></h2>
 <p>1. If you have access to the Internet through the proxy server only,
 please use pip with a proxy call as demonstrated by the command below:</p>
@@ -593,8 +610,8 @@ please update the pip version by the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pip</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

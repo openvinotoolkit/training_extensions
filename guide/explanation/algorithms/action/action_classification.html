@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Action Classification &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Action Classification &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="action-classification">
+  <section id="action-classification">
 <h1>Action Classification<a class="headerlink" href="#action-classification" title="Permalink to this headline">#</a></h1>
 <p>Action classification is a problem of identifying the action that is being performed in a video. The input to the algorithm is a sequence of video frames, and the output is a label indicating the action that is being performed.</p>
 <p>For supervised learning we use the following algorithms components:</p>
@@ -462,13 +479,13 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: We use a step learning rate schedule, where the learning rate is reduced by a factor of 10 after a fixed number of epochs. We also use the Linear Warmup technique to gradually increase the learning rate at the beginning of training.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use the Cross-Entropy Loss as the loss function.</p></li>
 </ul>
-<div class="section" id="dataset-format">
+<section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">#</a></h2>
 <p>We support the popular action classification formats, such as <a class="reference external" href="https://developer.qualcomm.com/software/ai-datasets/jester">Jester</a>, <a class="reference external" href="https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/">HMDB51</a>, <a class="reference external" href="https://www.crcv.ucf.edu/data/UCF101.php">UCF101</a>. Specifically, these formats will be converted into our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/cvat_dataset/action_classification/train">internal representation</a> using the <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a> dataset handler.</p>
 <p>The names of the annotations files and the overall dataset structure should be the same as the original dataset.</p>
 <p>Refer to our tutorial for more information on how to train, validate, and optimize action classification models.</p>
-</div>
-<div class="section" id="models">
+</section>
+<section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">#</a></h2>
 <p>We support <a class="reference external" href="https://arxiv.org/abs/2004.04730">X3D</a> for action classification. X3D is a deep learning model that was proposed in the paper “X3D: Expanding Architectures for Efficient Video Recognition” by Christoph Feichtenhofer. The model is an extension of the popular 2D convolutional neural network (CNN) architectures to the 3D domain, allowing it to efficiently process spatiotemporal information in videos.</p>
 <p>Currenly OpenVINO™ Training Extensions supports X3D-S model with below template:</p>
@@ -514,8 +531,8 @@
 </tr>
 </tbody>
 </table>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

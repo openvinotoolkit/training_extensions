@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OpenVINO™ Training Extensions CLI commands &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>OpenVINO™ Training Extensions CLI commands &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,14 +469,14 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="openvino-training-extensions-cli-commands">
+  <section id="openvino-training-extensions-cli-commands">
 <h1>OpenVINO™ Training Extensions CLI commands<a class="headerlink" href="#openvino-training-extensions-cli-commands" title="Permalink to this headline">#</a></h1>
 <p>Below, all possible OpenVINO™ Training Extensions CLI commands are presented with some general examples of how to run specific functionality. We also have <a class="reference internal" href="../../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> in our documentation with life-practical examples on specific datasets for each task.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to <a class="reference internal" href="../../explanation/index.html"><span class="doc">explanation section</span></a> in the documentation.</p>
 </div>
-<div class="section" id="find">
+<section id="find">
 <h2>Find<a class="headerlink" href="#find" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> lists model templates and backbones available for the given task. Specify the task name with <code class="docutils literal notranslate"><span class="pre">--task</span></code> option. Use <code class="docutils literal notranslate"><span class="pre">--backbone</span> <span class="pre">BACKBONE</span></code> to find the backbone from supported frameworks.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --help
@@ -501,8 +518,8 @@ optional arguments:
 +-------+--------------------------------+---------------+---------+
 </pre></div>
 </div>
-</div>
-<div class="section" id="building-workspace-folder">
+</section>
+<section id="building-workspace-folder">
 <h2>Building workspace folder<a class="headerlink" href="#building-workspace-folder" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for a modifying backbone for the template.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --help
@@ -564,8 +581,8 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 <p class="admonition-title">Note</p>
 <p>Not all of the tasks support the auto-split feature. If the task isn’t supported - unexpected behavior or errors may appear. Please, refer to <a class="reference internal" href="../../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> documentation.</p>
 </div>
-</div>
-<div class="section" id="training">
+</section>
+<section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template) on a dataset and saves results in two files:</p>
 <ul class="simple">
@@ -635,8 +652,8 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 <p class="admonition-title">Note</p>
 <p>Multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We’ll add support for them in the near future.</p>
 </div>
-</div>
-<div class="section" id="exporting">
+</section>
+<section id="exporting">
 <h2>Exporting<a class="headerlink" href="#exporting" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained model to the OpenVINO™ IR format to efficiently run it on Intel hardware.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
@@ -660,8 +677,8 @@ optional arguments:
 </pre></div>
 </div>
 <p>The command results in <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code></p>
-</div>
-<div class="section" id="optimization">
+</section>
+<section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code> optimizes a model using <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a> or <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html">POT</a> depending on the model format.</p>
 <ul class="simple">
@@ -703,8 +720,8 @@ optional arguments:
 </pre></div>
 </div>
 <p>Thus, to use POT pass the path to exported IR model, to use NNCF pass the path to the PyTorch .pth weights.</p>
-</div>
-<div class="section" id="evaluation">
+</section>
+<section id="evaluation">
 <h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs the evaluation of a model on the specific dataset.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
@@ -736,8 +753,8 @@ optional arguments:
 <p class="admonition-title">Note</p>
 <p>it is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.pth</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> option.</p>
 </div>
-</div>
-<div class="section" id="explanation">
+</section>
+<section id="explanation">
 <h2>Explanation<a class="headerlink" href="#explanation" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explanation algorithm of a model on the specific dataset. It helps explain model’s decision-making process in a way that is easily understood by humans.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
@@ -812,8 +829,8 @@ optional arguments:
 <p class="admonition-title">Note</p>
 <p>The inference results with a model will be displayed to the GUI window with a 1-second interval. If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.</p>
 </div>
-</div>
-<div class="section" id="deployment">
+</section>
+<section id="deployment">
 <h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">deploy</span></code> creates <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code> with a self-contained python package, a demo application, and an exported model. As follows from the zip archive name, the <code class="docutils literal notranslate"><span class="pre">deploy</span></code> can be used only with the OpenVINO™ IR model.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
@@ -836,8 +853,8 @@ optional arguments:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx deploy Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/openvino.xml&gt; --save-model-to outputs/deploy
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Use Semi-Supervised Learning &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Use Semi-Supervised Learning &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="use-semi-supervised-learning">
+  <section id="use-semi-supervised-learning">
 <h1>Use Semi-Supervised Learning<a class="headerlink" href="#use-semi-supervised-learning" title="Permalink to this headline">#</a></h1>
 <p>This tutorial provides an example on how to use semi-supervised learning with OpenVINO™ Training Extensions on the specific dataset.</p>
 <p>OpenVINO™ Training Extensions now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy in case when we have small amount of annotated data. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.</p>
@@ -481,13 +498,13 @@
 <p>To learn how to run the demo and visualize results, refer to <a class="reference internal" href="../base/demo.html"><span class="doc">demo</span></a>.</p>
 <p>This tutorial explains how to train a model in semi-supervised learning mode and how to evaluate the resulting model.</p>
 </div>
-<div class="section" id="dataset-preparation">
+<section id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
 <p>We use the same dataset, <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a>, as we do in <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a>.</p>
 <p>Since it is assumed that we have additional unlabeled images,
 we make a use of <code class="docutils literal notranslate"><span class="pre">tests/assets/imagenet_dataset</span></code> for this purpose as an example.</p>
-</div>
-<div class="section" id="enable-via-otx-build">
+</section>
+<section id="enable-via-otx-build">
 <h2>Enable via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code><a class="headerlink" href="#enable-via-otx-build" title="Permalink to this headline">#</a></h2>
 <p>1. To enable semi-supervsied learning via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>, we need to add arguments <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code> and <code class="docutils literal notranslate"><span class="pre">--train-type</span></code>. OpenVINO™ Training Extensions receives the root path where unlabeled images are by <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code>.
 We should put the path where unlabeled data are contained. It also provides us <code class="docutils literal notranslate"><span class="pre">--train-type</span></code> to select the type of training scheme. All we have to do for that is specifying it as <strong>SEMISUPERVISED</strong>.</p>
@@ -528,8 +545,8 @@ command in our worspace:</p>
 </pre></div>
 </div>
 <p>After training ends, a trained model is saved in the <code class="docutils literal notranslate"><span class="pre">models</span></code> sub-directory in the workspace <code class="docutils literal notranslate"><span class="pre">otx-workspace-CLASSIFICATION</span></code>.</p>
-</div>
-<div class="section" id="enable-via-otx-train">
+</section>
+<section id="enable-via-otx-train">
 <h2>Enable via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code><a class="headerlink" href="#enable-via-otx-train" title="Permalink to this headline">#</a></h2>
 <p>1. To enable semi-supervised learning directly via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>, we need to add arguments <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code> and <code class="docutils literal notranslate"><span class="pre">--algo_backend.train_type</span></code>
 which is one of template-specific parameters (The details are provided in <a class="reference external" href="../../get_started/quick_start_guide/cli_commands.html#training">quick start guide</a>.)</p>
@@ -550,8 +567,8 @@ which is one of template-specific parameters (The details are provided in <a cla
 </pre></div>
 </div>
 <p>After training ends, a trained model is saved in the <code class="docutils literal notranslate"><span class="pre">models</span></code> sub-directory in the workspace named <code class="docutils literal notranslate"><span class="pre">otx-workspace-CLASSIFICATION</span></code> by default.</p>
-</div>
-<div class="section" id="validation">
+</section>
+<section id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
 <p>In the same manner with <a class="reference external" href="../base/how_to_train/classification.html#validation">the normal validation</a>,
 we can evaluate the trained model with auto-splitted validation dataset in the workspace and
@@ -564,8 +581,8 @@ save results to <code class="docutils literal notranslate"><span class="pre">per
                     --save-performance performance.json
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Multi-class Classification &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Multi-class Classification &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="multi-class-classification">
+  <section id="multi-class-classification">
 <h1>Multi-class Classification<a class="headerlink" href="#multi-class-classification" title="Permalink to this headline">#</a></h1>
 <p>Multi-class classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
 For the supervised training we use the following algorithms components:</p>
@@ -477,7 +494,7 @@ For the supervised training we use the following algorithms components:</p>
 </dl>
 </li>
 </ul>
-<div class="section" id="dataset-format">
+<section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">#</a></h2>
 <p>We support a commonly used format for multi-class image classification task: <a class="reference external" href="https://www.image-net.org/">imagenet</a> class folder format.
 This format has the following structure:</p>
@@ -507,8 +524,8 @@ This format has the following structure:</p>
 <p class="admonition-title">Note</p>
 <p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classificaiton models.</p>
 </div>
-</div>
-<div class="section" id="models">
+</section>
+<section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">#</a></h2>
 <p id="classificaiton-models">We support the following ready-to-use model templates:</p>
 <table class="table">
@@ -594,8 +611,8 @@ Please, refer to the <a class="reference internal" href="../../../tutorials/adva
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="semi-supervised-learning">
+</section>
+<section id="semi-supervised-learning">
 <h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this headline">#</a></h2>
 <p>Semi-SL (Semi supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.</p>
 <p>We use <a class="reference external" href="https://arxiv.org/abs/2001.07685">FixMatch</a> as a core algorithm for Semi-SL task solving. It is a specific implementation of Semi-SL that has been shown to be effective in various applications. FixMatch introduces pseudo-labeling, which is the process of generating labels for the unlabeled data and treating them as if they were labeled data. Pseudo-labeling is based on the idea that the model’s prediction for the unlabeled data is likely to be correct, which can improve the model’s accuracy and reduce the need for labeled data.</p>
@@ -731,8 +748,8 @@ Training time depends on the number of images and can be up to several times lon
 <p class="admonition-title">Note</p>
 <p>This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm, Some models may require larger datasets for better results.</p>
 </div>
-</div>
-<div class="section" id="self-supervised-learning">
+</section>
+<section id="self-supervised-learning">
 <h2>Self-supervised Learning<a class="headerlink" href="#self-supervised-learning" title="Permalink to this headline">#</a></h2>
 <p id="selfsl-multi-class-classification">Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
@@ -769,8 +786,8 @@ Unlike other tasks, <cite>–val-data-root</cite> is not needed.</p>
     --load-weights={PATH/PRETRAINED/WEIGHTS}
 </pre></div>
 </div>
-</div>
-<div class="section" id="supervised-contrastive-learning">
+</section>
+<section id="supervised-contrastive-learning">
 <h2>Supervised Contrastive Learning<a class="headerlink" href="#supervised-contrastive-learning" title="Permalink to this headline">#</a></h2>
 <p>To enhance the performance of the algorithm in case when we have a small number of data, <a class="reference external" href="https://arxiv.org/abs/2004.11362">Supervised Contrastive Learning (SupCon)</a> can be used.
 More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with <a class="reference external" href="https://arxiv.org/abs/2103.03230">Barlow Twins loss</a>.
@@ -843,12 +860,12 @@ It can be launched only with supervised (incremental) training type.</p>
 <p class="admonition-title">Note</p>
 <p>SL stands for Supervised Learning.</p>
 </div>
-</div>
-<div class="section" id="incremental-learning">
+</section>
+<section id="incremental-learning">
 <h2>Incremental Learning<a class="headerlink" href="#incremental-learning" title="Permalink to this headline">#</a></h2>
 <p>To be added soon</p>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

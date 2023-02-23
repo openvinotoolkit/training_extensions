@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Introduction &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Introduction &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -454,7 +471,7 @@
               
   <div style="margin-bottom:30px;">
 <img src="../../_static/logos/otx-logo-black.png" alt="Logo" width="900" style="display:block;margin:auto;">
-</div><div class="section" id="introduction">
+</div><section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">#</a></h1>
 <p>OpenVINO™ Training Extensions is a low-code transfer learning framework for Computer Vision. OpenVINO™ Training Extensions lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on <a class="reference external" href="https://pytorch.org/">PyTorch</a> and <a class="reference external" href="https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html">OpenVINO™ toolkit</a>. OpenVINO™ Training Extensions provides “model template” for every supported task type, which consolidates neccesary information to build a model. Model templates are validated on various datasets and serve one-stop shop for obtaining best models in general. If you are an experienced user, you can configure your own model based on <a class="reference external" href="https://pytorch.org/vision/stable/index.html">torchvision</a>, <a class="reference external" href="https://github.com/osmr/imgclsmob">pytorchcv</a>, <a class="reference external" href="https://github.com/open-mmlab/mmcv">mmcv</a> and <a class="reference external" href="https://github.com/openvinotoolkit/open_model_zoo">OpenVINO Model Zoo (OMZ)</a>. Moreover, OpenVINO™ Training Extensions provides automatic configuration of task types and hyperparameters. The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.</p>
 <p>OpenVINO™ Training Extensions supports the following computer vision tasks:</p>
@@ -480,7 +497,7 @@
 <li><p>OpenVINO™ Training Extensions uses <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/">Datumaro</a> as the backend to hadle datasets. Thanks to that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.</p></li>
 <li><p><a class="reference internal" href="../explanation/additional_features/auto_configuration.html"><span class="doc">Auto-configuration functionality</span></a>. OpenVINO™ Training Extensions analyzes provided dataset and chooses the proper task and model template to have the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.</p></li>
 </ul>
-</div>
+</section>
 
 
             </article>

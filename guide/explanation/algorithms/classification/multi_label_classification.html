@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Multi-label Classification &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Multi-label Classification &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -99,8 +100,8 @@
   
 
   
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -122,6 +123,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -164,6 +173,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -453,7 +470,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="multi-label-classification">
+  <section id="multi-label-classification">
 <h1>Multi-label Classification<a class="headerlink" href="#multi-label-classification" title="Permalink to this headline">#</a></h1>
 <p>Multi-label classification is a generalization of multiclass classification. The main goal of the task is to predict a set of labels per image. Each image may belong to more than one class and may belong to none of them at all.</p>
 <p>We solve this problem by optimizing small binary classification sub-tasks aimed to predict whether or not the specific category from the corpus is presented on the given image.</p>
@@ -465,7 +482,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use <strong>Asymmetric Angular Margin Loss</strong>. We can formulate this loss as follows: <span class="math notranslate nohighlight">\(L_j (cos\Theta_j,y) = \frac{k}{s}y p_-^{\gamma^-}\log{p_+} + \frac{1-k}{s}(1-y)p_+^{\gamma^+}\log{p_-}\)</span>, where <span class="math notranslate nohighlight">\(s\)</span> is a scale parameter, <span class="math notranslate nohighlight">\(m\)</span> is an angular margin, <span class="math notranslate nohighlight">\(k\)</span> is negative-positive weighting coefficient, <span class="math notranslate nohighlight">\(\gamma^+\)</span> and <span class="math notranslate nohighlight">\(\gamma^-\)</span> are weighting parameters. For further information about loss function, ablation studies, and experiments, please refer to our dedicated <a class="reference external" href="https://arxiv.org/abs/2209.06585">paper</a>.</p></li>
 <li><p>Additionally, we use the <a class="reference external" href="https://arxiv.org/abs/1812.01187">No Bias Decay (NBD)</a> technique, <strong>Exponential Moving Average (EMA)</strong> for the model’s weights and adaptive <strong>early stopping</strong> to add adaptability and prevent overfitting.</p></li>
 </ul>
-<div class="section" id="dataset-format">
+<section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this headline">#</a></h2>
 <p>As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>.
 Specifically, these formats will be converted in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel">internal representation</a> via the <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a> dataset handler.</p>
@@ -474,8 +491,8 @@ Specifically, these formats will be converted in our <a class="reference externa
 <p>Names of the annotations files and overall dataset structure should be the same as the original <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>.</p>
 <p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classificaiton models.</p>
 </div>
-</div>
-<div class="section" id="models">
+</section>
+<section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline">#</a></h2>
 <p>We use the same models as for Multi-class classification. Please, refer: <a class="reference internal" href="multi_class_classification.html#classificaiton-models"><span class="std std-ref">Classificaiton Models</span></a>.</p>
 <p>In the table below the <a class="reference external" href="https://en.wikipedia.org/w/index.php?title=Information_retrieval&amp;oldid=793358396#Average_precision">mAP</a> metrics on some academic datasets using our <a class="reference internal" href="#ml-cls-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.</p>
@@ -516,20 +533,20 @@ Specifically, these formats will be converted in our <a class="reference externa
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="semi-supervised-learning">
+</section>
+<section id="semi-supervised-learning">
 <h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this headline">#</a></h2>
 <p>To be added soon</p>
-</div>
-<div class="section" id="self-supervised-learning">
+</section>
+<section id="self-supervised-learning">
 <h2>Self-supervised Learning<a class="headerlink" href="#self-supervised-learning" title="Permalink to this headline">#</a></h2>
 <p>To be added soon</p>
-</div>
-<div class="section" id="incremental-learning">
+</section>
+<section id="incremental-learning">
 <h2>Incremental Learning<a class="headerlink" href="#incremental-learning" title="Permalink to this headline">#</a></h2>
 <p>To be added soon</p>
-</div>
-</div>
+</section>
+</section>
 
 
             </article>

@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Models Optimization &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Models Optimization &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,7 +469,7 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="models-optimization">
+  <section id="models-optimization">
 <h1>Models Optimization<a class="headerlink" href="#models-optimization" title="Permalink to this headline">#</a></h1>
 <p>OpenVINO™ Training Extensions provides two types of optimization algorithms: <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction">Post-training Optimization Tool (POT)</a> and <a class="reference external" href="https://github.com/openvinotoolkit/nncf">Neural Network Compression Framework (NNCF)</a>.</p>
 <p>Post-training Optimization is designed to optimize the inference of models by applying post-training methods that do not require model retraining or fine-tuning. If you want more details about how POT works and to be more familiar with model optimization methods, please refer to <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction">documentation</a>.</p>
@@ -466,7 +483,7 @@ The process of optimization is controlled by the NNCF configuration file. A JSON
 <p>NNCF tends to provide better quality in terms of preserving accuracy as it uses training compression approaches. <a class="reference external" href="https://github.com/openvinotoolkit/nncf#nncf-compressed-model-zoo">Here</a> can be found compression results achievable with the NNCF. Meanwhile, Post-training optimization is faster but can degrade accuracy more than the training-enabled approach.</p>
 <p>The main recommendation is to start with post-training compression and use NNCF compression during training if you are not satisfied with the results.</p>
 <p>Please, refer to our <a class="reference internal" href="../../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> on how to optimize your model using POT or NNCF.</p>
-</div>
+</section>
 
 
             </article>

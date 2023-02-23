@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Algorithm &#8212; OpenVINO™ Training Extensions  documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Algorithm &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -98,8 +99,8 @@
   
 
   
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/otx-logo-black.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -121,6 +122,14 @@
 </button>
         </div>
       
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -163,6 +172,14 @@
     
     
     <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
@@ -452,9 +469,9 @@
             
             <article class="bd-article" role="main">
               
-  <div class="section" id="algorithm">
+  <section id="algorithm">
 <h1>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">#</a></h1>
-<div class="section" id="introduction">
+<section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">#</a></h2>
 <p>This section contains algorithmic implementations. OpenVINO™ Training Extensions provides number of
 different algorithms such as classification, detection,
@@ -469,8 +486,8 @@ semi and self-supervised learning.</p>
 <li class="toctree-l1"><a class="reference internal" href="segmentation/index.html">Segmentation</a></li>
 </ul>
 </div>
-</div>
-<div class="section" id="organizational-structure">
+</section>
+<section id="organizational-structure">
 <h2>Organizational Structure<a class="headerlink" href="#organizational-structure" title="Permalink to this headline">#</a></h2>
 <p>Algorithms have the following organizational structure:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;algorithm&gt;
@@ -497,36 +514,36 @@ semi and self-supervised learning.</p>
 </pre></div>
 </div>
 <p>where each algorithm has <code class="docutils literal notranslate"><span class="pre">adapters</span></code>, <code class="docutils literal notranslate"><span class="pre">configs</span></code>, <code class="docutils literal notranslate"><span class="pre">tasks</span></code> and <code class="docutils literal notranslate"><span class="pre">tools</span></code>.</p>
-<div class="section" id="adapters">
+<section id="adapters">
 <h3>Adapters<a class="headerlink" href="#adapters" title="Permalink to this headline">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">adapters</span></code> contain modules to wrap the original library used to perform the
 task. For instance, detection task uses
 <a class="reference external" href="https://github.com/open-mmlab/mmdetection">mmdetection</a> library, meaning that
 <code class="docutils literal notranslate"><span class="pre">adapters</span></code> comprises adapters to wrap <code class="docutils literal notranslate"><span class="pre">mmdetection</span></code> to use with OpenVINO™ Training Extensions.</p>
-</div>
-<div class="section" id="configs">
+</section>
+<section id="configs">
 <h3>Configs<a class="headerlink" href="#configs" title="Permalink to this headline">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">configs</span></code> contain configuration related files including training, inference,
 <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a> and
 <a class="reference external" href="https://github.com/openvinotoolkit/hyper_parameter_optimization">HPO</a>.</p>
-</div>
-<div class="section" id="tasks">
+</section>
+<section id="tasks">
 <h3>Tasks<a class="headerlink" href="#tasks" title="Permalink to this headline">#</a></h3>
 <p id="id1">Tasks contain implementations that correspond to each phase in the workflow from
 training to OpenVINO inference. Each algorithm expects <code class="docutils literal notranslate"><span class="pre">train</span></code>, <code class="docutils literal notranslate"><span class="pre">inference</span></code>,
 <code class="docutils literal notranslate"><span class="pre">nncf</span></code> and <code class="docutils literal notranslate"><span class="pre">openvino</span></code> python modules that implement the
 <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/otx/api/usecases/tasks/interfaces">task interfaces</a>.</p>
-</div>
-<div class="section" id="tools">
+</section>
+<section id="tools">
 <h3>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">#</a></h3>
 <p>Tools contain python implementations that performs <a class="reference internal" href="#id1"><span class="std std-ref">tasks</span></a> in
 end-to-end workflow. For example, current anomaly implementation has <code class="docutils literal notranslate"><span class="pre">sample.py</span></code>
 file that reads an input dataset, trains a model and exports the model to
 OpenVINO IR via either <a class="reference external" href="https://docs.openvino.ai/2020.4/pot_README.html">POT</a>
 or <a class="reference external" href="https://docs.openvino.ai/latest/docs_nncf_introduction.html">NNCF</a>.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             </article>
