@@ -37,7 +37,7 @@ Now it is all set to use this dataset inside OpenVINO™ Training Extensions
 Model template and dataset loading
 **********************************
 
-Let's import the neccesary modules:
+Let's import the necessary modules:
 
 .. code-block::
 
@@ -86,10 +86,10 @@ The next step is to set up a dataset:
 .. code-block::
 
     dataset_adapter = get_dataset_adapter(task_type = model_template.task_type,
-                                            # set a path to the root folder of the wgisd repository
-                                            train_data_roots="./wgisd",
-                                            val_data_roots="./wgisd",
-                                            test_data_roots="./wgisd")
+                                          # set a path to the root folder of the wgisd repository
+                                          train_data_roots = "./wgisd",
+                                          val_data_roots = "./wgisd",
+                                          test_data_roots = "./wgisd")
     dataset, labels_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
 
@@ -102,10 +102,10 @@ Set up the environment and the task
     Task = get_impl_class(model_template.entrypoints.base)
 
     environment = TaskEnvironment(
-        model=None,
-        hyper_parameters=hyper_parameters,
-        label_schema=labels_schema,
-        model_template=model_template)
+        model = None,
+        hyper_parameters = hyper_parameters,
+        label_schema = labels_schema,
+        model_template = model_template)
 
     task = Task(task_environment=environment)
 
@@ -135,9 +135,9 @@ To perform validation we need to infer our model on the validation dataset, crea
         InferenceParameters(is_evaluation=True))
 
     resultset = ResultSetEntity(
-        model=output_model,
-        ground_truth_dataset=validation_dataset,
-        prediction_dataset=predicted_validation_dataset,
+        model = output_model,
+        ground_truth_dataset = validation_dataset,
+        prediction_dataset = predicted_validation_dataset,
     )
 
     task.evaluate(resultset)
@@ -168,9 +168,9 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
         InferenceParameters(is_evaluation=True))
 
     resultset = ResultSetEntity(
-        model=output_model,
-        ground_truth_dataset=validation_dataset,
-        prediction_dataset=predicted_validation_dataset,
+        model = output_model,
+        ground_truth_dataset = validation_dataset,
+        prediction_dataset = predicted_validation_dataset,
     )
     ov_task.evaluate(resultset)
 
@@ -181,7 +181,7 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
 Optimization
 ************
 
-To run optimization with POT on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:
+To run the optimization with POT on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:
 
 .. code-block::
 
@@ -196,7 +196,7 @@ To run optimization with POT on the OpenVINO™ IR model, we need to create an o
         optimized_model,
         OptimizationParameters())
 
-To run NNCF accuracy-aware training, return model in the environment back, create NNCF task, output model and run optimization procedure:
+To run the NNCF accuracy-aware training, return model in the environment back, create NNCF task, output model and run optimization procedure:
 
 .. code-block::
 
@@ -218,7 +218,7 @@ To run NNCF accuracy-aware training, return model in the environment back, creat
         optimized_nncf_model,
         OptimizationParameters())
 
-You can validate the optimized model as the usual model, for example for the NNCF model:
+You can validate the optimized model as the usual model. For example for the NNCF model it will look like this:
 
 .. code-block::
 
@@ -229,9 +229,9 @@ You can validate the optimized model as the usual model, for example for the NNC
 
     # ResultSetEntity creating with optimized_nncf_model
     resultset = ResultSetEntity(
-        model=optimized_nncf_model,
-        ground_truth_dataset=validation_dataset,
-        prediction_dataset=predicted_validation_dataset,
+        model = optimized_nncf_model,
+        ground_truth_dataset = validation_dataset,
+        prediction_dataset = predicted_validation_dataset,
     )
 
     # evaluation
@@ -245,7 +245,7 @@ You can validate the optimized model as the usual model, for example for the NNC
 Load the model and use it for any data
 **************************************
 
-Let's assume, that we have already trained the model and we want to use it in our project. Below simple steps are presented on how to load the model and infer it on custom images.
+Let's assume, that we have already trained the model and we want to use it in our project. The simple steps on how to load the model and infer it on custom images are presented below.
 
 .. code-block::
 
@@ -254,10 +254,10 @@ Let's assume, that we have already trained the model and we want to use it in ou
 
     # create new environment
     environment = TaskEnvironment(
-            model=None,
-            hyper_parameters=hyper_parameters,
-            label_schema=read_label_schema(weights_path),
-            model_template=template,
+            model = None,
+            hyper_parameters = hyper_parameters,
+            label_schema = read_label_schema(weights_path),
+            model_template = template,
         )
 
     # read the model and assign it to our environment
@@ -281,8 +281,8 @@ We can convert these steps to function and use it in a loop with multiple images
         empty_annotation = AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.PREDICTION)
 
         item = DatasetItemEntity(
-            media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
-            annotation_scene=empty_annotation,
+            media = Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+            annotation_scene = empty_annotation,
         )
 
         dataset = DatasetEntity(items=[item])

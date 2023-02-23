@@ -23,9 +23,10 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-You can follow the installation process from a :doc:`quick_start guide <../../../get_started/quick_start_guide/installation>` to create a virtual environment.
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-1. Activate your virtual 
+2. Activate your virtual 
 environment:
 
 .. code-block::

@@ -2,9 +2,9 @@
 Use Semi-Supervised Learning
 ############################
 
-This tutorial provides an example on how to use semi-supervised learning with OpenVINO™ Training Extensions on the specific dataset.
+This tutorial provides an example of how to use semi-supervised learning with OpenVINO™ Training Extensions on the specific dataset.
 
-OpenVINO™ Training Extensions now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy in case when we have small amount of annotated data. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.
+OpenVINO™ Training Extensions now offers semi-supervised learning, which combines labeled and unlabeled data during training to improve model accuracy in case when we have a small amount of annotated data. Currently, this type of training is available for multi-class classification, object detection, and semantic segmentation.
 
 Semi-supervised learning will soon be available for multi-label classification and instance segmentation as well.
 
@@ -28,7 +28,7 @@ The process has been tested on the following configuration:
   
   Currently, models trained by semi-supervised learning cannot be optimized with OpenVINO™ NNCF.
   
-  However, we will support for this functionality in the near future.
+  However, we will support this functionality in the near future.
 
   To learn how to export the trained model, refer to `classification export <../base/how_to_train/classification.html#export>`__.
 
@@ -38,8 +38,23 @@ The process has been tested on the following configuration:
 
   To learn how to run the demo and visualize results, refer to :doc:`demo <../base/demo>`.
 
-  This tutorial explains how to train a model in semi-supervised learning mode and how to evaluate the resulting model.
+This tutorial explains how to train a model in semi-supervised learning mode and how to evaluate the resulting model.
 
+*************************
+Setup virtual environment
+*************************
+
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+to create a universal virtual environment for OpenVINO™ Training Extensions.
+
+2. Activate your virtual 
+environment:
+
+.. code-block::
+
+  .otx/bin/activate
+  # or by this line, if you created an environment, using tox
+  . venv/otx/bin/activate
 
 ***************************
 Dataset preparation
@@ -55,12 +70,14 @@ we make a use of ``tests/assets/imagenet_dataset`` for this purpose as an exampl
 Enable via ``otx build``
 ***************************
 
-1. To enable semi-supervsied learning via ``otx build``, we need to add arguments ``--unlabeled-data-roots`` and ``--train-type``. OpenVINO™ Training Extensions receives the root path where unlabeled images are by ``--unlabeled-data-roots``.
+1. To enable semi-supervsied learning via ``otx build``, we need to add arguments ``--unlabeled-data-roots`` and ``--train-type``. 
+OpenVINO™ Training Extensions receives the root path where unlabeled images are by ``--unlabeled-data-roots``.
+
 We should put the path where unlabeled data are contained. It also provides us ``--train-type`` to select the type of training scheme. All we have to do for that is specifying it as **SEMISUPERVISED**.
 
 .. note::
 
-  OpenVINO™ Training Extensions automatically search for all image files with JPG, JPEG, and PNG formats in the root path specified using the ``--unlabeled-data-roots`` option, even if there are other file formats present. The image files which are located in sub-folders will be also collected for building unlabeled dataset.
+  OpenVINO™ Training Extensions automatically searches for all image files with JPG, JPEG, and PNG formats in the root path specified using the ``--unlabeled-data-roots`` option, even if there are other file formats present. The image files which are located in sub-folders will be also collected for building unlabeled dataset.
 
   In this tutorial, we make use of auto-split functionality for the multi-class classification, which makes train/validation splits for the given dataset.
   
@@ -111,7 +128,7 @@ Enable via ``otx train``
 ***************************
 
 1. To enable semi-supervised learning directly via ``otx train``, we need to add arguments ``--unlabeled-data-roots`` and ``--algo_backend.train_type`` 
-which is one of template-specific parameters (The details are provided in `quick start guide <../../get_started/quick_start_guide/cli_commands.html#training>`__.)
+which is one of template-specific parameters (details are provided in `quick start guide <../../get_started/quick_start_guide/cli_commands.html#training>`__.)
 
 .. code-block::
 
@@ -147,8 +164,6 @@ save results to ``performance.json`` by the following command:
 
 .. code-block::
 
-  (otx) ...$ cd ./otx-workspace-CLASSIFICATION
-  
   (otx) ...$ otx eval otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                       --test-data-roots splitted_dataset/val \
                       --load-weights models/weights.pth \
