@@ -210,8 +210,10 @@ def main():  # pylint: disable=too-many-branches
     save_model_data(output_model, args.save_model_to)
     print(f"[*] Save Model to: {args.save_model_to}")
 
-    if config_manager.data_config["val_subset"]["data_root"] and \
-        hyper_parameters.algo_backend.train_type.value != "SELFSUPERVISED":
+    if (
+        config_manager.data_config["val_subset"]["data_root"]
+        and hyper_parameters.algo_backend.train_type.value != "SELFSUPERVISED"
+    ):
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
         predicted_validation_dataset = task.infer(
             validation_dataset.with_empty_annotations(),
