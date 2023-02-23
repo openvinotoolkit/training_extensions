@@ -1257,13 +1257,12 @@ The list of supported templates for semantic segmentation is available with the 
 <p>We do not attach OCR head for supported models in default. We remain the suffix ‘_OCR’ in ID just for backward compatibility.</p>
 </div>
 <p>To have a specific example in this tutorial, all commands will be run on the <span class="xref std std-ref">Lite-HRNet-18-mod2</span>  model. It’s a light model, that achieves competitive accuracy while keeping the inference fast.</p>
-<ol class="arabic simple" start="2">
-<li><p>Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the semantic segmentation.</p></li>
-</ol>
-<p>Let’s prepare an OpenVINO™ Training Extensions semantic segmentation workspase running the following command:</p>
+<p>2.  Next, we need to create train/validation sets.
+OpenVINO™ Training Extensions supports auto-split functionality for the semantic segmentation.</p>
+<p>Let’s prepare an OpenVINO™ Training Extensions semantic segmentation workspace running the following command:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in argument ‘–val-data-roots’ when using other supported segmentation dataset. About dataset formats for semantic segmentation, please refer to the <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html"><span class="doc">explanation section</span></a>.</p>
+<p>Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in argument <code class="docutils literal notranslate"><span class="pre">--val-data-roots</span></code> when using other supported segmentation dataset. About dataset formats for semantic segmentation, please refer to the <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html"><span class="doc">explanation section</span></a>.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012 --model Lite-HRNet-18-mod2
 
@@ -1278,7 +1277,7 @@ The list of supported templates for semantic segmentation is available with the 
 </pre></div>
 </div>
 <p>It will create <strong>otx-workspace-SEGMENTATION</strong> with all necessery configs for Lite-HRNet-18-mod2, prepared <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands launch and splitted dataset.</p>
-<p>2. To start training we need to call <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>
+<p>3. To start training we need to call <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>
 command in our worspace:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train
 </pre></div>
@@ -1289,11 +1288,11 @@ command in our worspace:</p>
 <div class="section" id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
-model on a specific dataset.</p>
-<p>The eval function receives test annotation information and model snapshot, trained in the previous step.
+model on a specific dataset.
+The eval function receives test annotation information and model snapshot, trained in the previous step.
 Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a <code class="docutils literal notranslate"><span class="pre">mDice</span></code> score for semantic segmentation.</p>
-<p>2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument ‘–test-data-roots’.
+<p>2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument <code class="docutils literal notranslate"><span class="pre">--test-data-roots</span></code>.
 By running this example command, the performance results evaluated by our splitted validation dataset are saved in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                     --load-weights models/weights.pth \
@@ -1345,8 +1344,8 @@ Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
 <div class="section" id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h2>
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-It uses NNCF or POT depending on the model format.</p>
-<p>Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
+It uses NNCF or POT depending on the model format.
+Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
 <p>2. Command example for optimizing
 a PyTorch model (<cite>.pth</cite>) with OpenVINO™ NNCF.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
