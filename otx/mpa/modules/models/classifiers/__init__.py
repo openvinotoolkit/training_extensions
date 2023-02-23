@@ -3,4 +3,9 @@
 #
 
 # flake8: noqa
-from . import sam_classifier, semisl_classifier, supcon_classifier, semisl_multilabel_classifier
+from . import (
+    sam_classifier,
+    semisl_classifier,
+    semisl_multilabel_classifier,
+    supcon_classifier,
+)

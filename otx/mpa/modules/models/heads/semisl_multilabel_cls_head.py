@@ -6,8 +6,12 @@ import torch
 from mmcls.models.builder import HEADS, build_loss
 from torch import nn
 
-from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import CustomMultiLabelNonLinearClsHead
-from otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head import CustomMultiLabelLinearClsHead
+from otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head import (
+    CustomMultiLabelLinearClsHead,
+)
+from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import (
+    CustomMultiLabelNonLinearClsHead,
+)
 
 
 class SemiMultilabelClsHead:
@@ -18,13 +22,17 @@ class SemiMultilabelClsHead:
         use_dynamic_loss_weighting (boolean): whether to use dynamic unlabeled loss weighting, default is True
     """
 
-    def __init__(self, unlabeled_coef=0.1, use_dynamic_loss_weighting=True,
-                 aux_loss=dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)):
+    def __init__(
+        self,
+        unlabeled_coef=0.1,
+        use_dynamic_loss_weighting=True,
+        aux_loss=dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0),
+    ):
         self.unlabeled_coef = unlabeled_coef
         self.use_dynamic_loss_weighting = use_dynamic_loss_weighting
         self.aux_loss = build_loss(aux_loss)
         if self.use_dynamic_loss_weighting:
-            self.loss_balancer = LossBalancer(2, [1., unlabeled_coef])
+            self.loss_balancer = LossBalancer(2, [1.0, unlabeled_coef])
         else:
             self.loss_balancer = None
 
@@ -118,7 +126,9 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
     def forward_train(self, x, gt_label):
-        return SemiMultilabelClsHead.forward_train(self, x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp)
+        return SemiMultilabelClsHead.forward_train(
+            self, x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp
+        )
 
 
 @HEADS.register_module()
@@ -175,7 +185,9 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
     def forward_train(self, x, gt_label):
-        return SemiMultilabelClsHead.forward_train(self, x, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp)
+        return SemiMultilabelClsHead.forward_train(
+            self, x, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp
+        )
 
 
 def generate_aux_mlp(aux_mlp_cfg: dict, in_channels: int):
@@ -216,13 +228,14 @@ class LossBalancer:
             assert len(weights) == num_losses
             self.final_weights = weights
         else:
-            self.final_weights = [1.] * num_losses
+            self.final_weights = [1.0] * num_losses
 
     def balance_losses(self, losses):
-        total_loss = 0.
+        total_loss = 0.0
         for i, l in enumerate(losses):
             self.avg_estimators[i].update(float(l))
-            total_loss += self.final_weights[i] * l / (self.avg_estimators[i].val + self.EPS) * self.avg_estimators[0].val
+            total_loss += (
+                self.final_weights[i] * l / (self.avg_estimators[i].val + self.EPS) * self.avg_estimators[0].val
+            )
 
         return total_loss
-
