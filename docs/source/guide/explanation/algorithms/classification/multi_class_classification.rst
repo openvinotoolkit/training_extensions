@@ -164,6 +164,7 @@ In the table below the top-1 accuracy on some academic datasets using our pipeli
 ************************
 Self-supervised Learning
 ************************
+.. _selfsl_multi_class_classification:
 
 Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
@@ -171,7 +172,7 @@ However, in real-world industries, it is difficult to apply because of small dat
 
 For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted `BYOL <https://arxiv.org/abs/2006.07733>`_ as our self-supervised method.
-Users need some time to use these self-supervised learning recipes and can expect improved performance, especially in low-data regimes.
+This algorithm will required some additional training time, meanwhile, improved performance is expected, especially in low-data regimes.
 
 Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
 The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.

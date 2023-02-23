@@ -14,7 +14,8 @@ The process has been tested on the following configuration.
 
 .. note::
 
-  This example demonstates how to work with :doc:`self-supervised learning for classification <../../explanation/algorithms/classification/multi_class_classification>` and :doc:`self-supervised learning for semantic segmentation <../../explanation/algorithms/segmentation/semantic_segmentation>`.
+    This example demonstates how to work with :ref:`self-supervised learning for classification <selfsl_multi_class_classification>`.
+    There are some differences between classfication and semantic segmentation, so there will be some notes for :ref:`self-supervised learning for semantic segmentation <selfsl_semantic_segmentation>`.
 
 *************************
 Setup virtual environment
@@ -22,73 +23,13 @@ Setup virtual environment
 
 To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the :doc:`quick start guide <../../get_started/quick_start_guide/installation>`.
 
-***************************
-Multi-class classification
-***************************
-.. _tutorial_selfsl_classification:
-
-.. note::
-
-  To prepare `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_, refer to :doc:`how to train classification models <../base/how_to_train/classification>`.
-
-------------
+************
 Pre-training
-------------
+************
 
-1. We can check which models are provided for this task like the command below. All details are in :doc:`how to train classification models <../base/how_to_train/classification>`. We will choose :ref:`MobileNet-V3-large-1x <classificaiton_models>` like :doc:`how to train classification models <../base/how_to_train/classification>`.
+1. Prepare dataset and model. To prepare dataset and decide model, refer to :doc:`classification tutorial <../base/how_to_train/classification>`. In this self-supervised learning tutorial, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ and :ref:`MobileNet-V3-large-1x <classificaiton_models>` model used in :doc:`classification tutorial <../base/how_to_train/classification>` is used as it is.
 
-.. code-block::
-
-    (otx) ...$ otx find --task classification
-
-    +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-    |      TASK      |                         ID                        |          NAME         |                                        PATH                                       |
-    +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-    | CLASSIFICATION | Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml |
-    | CLASSIFICATION |    Custom_Image_Classification_EfficinetNet-B0    |    EfficientNet-B0    |    otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml   |
-    | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
-    +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-
-2. Prepare an OpenVINO™ Training Extensions workspace by running the following command:
-
-.. note::
-    Unlike :doc:`how to train classification models <../base/how_to_train/classification>`, ``--train-type SELFSUPERVISED`` must be added to get training components for self-supervised learning.
-
-.. code-block::
-
-    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type SELFSUPERVISED
-
-    [*] Workspace Path: otx-workspace-CLASSIFICATION
-    [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
-    [*] Load Model Name: MobileNet-V3-large-1x
-    [*]     - Updated: otx-workspace-CLASSIFICATION/selfsl/model.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION/selfsl/data_pipeline.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION/deployment.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION/hpo_config.yaml
-    [*]     - Updated: otx-workspace-CLASSIFICATION/model_hierarchical.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION/model_multilabel.py
-    [*] Update data configuration file to: otx-workspace-CLASSIFICATION/data.yaml
-
-    (otx) ...$ cd ./otx-workspace-CLASSIFICATION
-
-3. To start training we need to call ``otx train`` command in our workspace.
-
-.. note::
-    It is recommended to set ``--save-model-to`` to distinguish between pre-trained and fine-tuned weights or not to overwrite them.
-
-.. code-block::
-
-  (otx) ...$ otx train --save-model-to models/selfsl
-
-The training will return artifacts: ``weights.pth`` and ``label_schema.json`` and we can use this weights to fine-tune the models using target dataset.
-
-
------------
-Fine-tuning
------------
-
-1. Update our workspace to enable supervised (incremental) learning, which we actually try to do.
-Call the command below from `the root directory` without adding ``--train-type SELFSUPERVISED`` in the command.
+2. Prepare OpenVINO™ Training Extensions workspace for *supervised learning* by running the following command:
 
 .. code-block::
 
@@ -104,123 +45,135 @@ Call the command below from `the root directory` without adding ``--train-type S
     [*]     - Updated: otx-workspace-CLASSIFICATION/model_hierarchical.py
     [*]     - Updated: otx-workspace-CLASSIFICATION/model_multilabel.py
     [*]     - Updated: otx-workspace-CLASSIFICATION/compression_config.json
-    [*] Found validation data in your dataset in /home/sungchul/workspace/src/training_extensions/dataset/flower_photos. It'll be used as validation data.
     [*] Update data configuration file to: otx-workspace-CLASSIFICATION/data.yaml
 
-    (otx) ...$ cd ./otx-workspace-CLASSIFICATION
-
-2. To start training we need to call the below command with adding ``--load-weights`` argument in our workspace.
-
-.. note::
-    It is recommended to set ``--save-model-to`` to distinguish between pre-trained and fine-tuned weights or not to overwrite them.
+3. Prepare an OpenVINO™ Training Extensions workspace for *self-supervised learning* by running the following command:
 
 .. code-block::
 
-  (otx) ...$ otx train --load-weights models/selfsl/weights.pth --save-model-to models/finetune
+    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type SELFSUPERVISED --work-dir otx-workspace-CLASSIFICATION-SELFSUPERVISED
 
-After these progesses, you can validate, optimize, and export the models described in :doc:`how to train classification models <../base/how_to_train/classification>`.
-
-
-*********************
-Semantic segmentation
-*********************
+    [*] Workspace Path: otx-workspace-CLASSIFICATION-SELFSUPERVISED
+    [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
+    [*] Load Model Name: MobileNet-V3-large-1x[*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/selfsl/model.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/selfsl/data_pipeline.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/deployment.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/hpo_config.yaml
+    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/model_hierarchical.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/model_multilabel.py
+    [*] Update data configuration file to: otx-workspace-CLASSIFICATION-SELFSUPERVISED/data.yaml
 
 .. note::
+    Three things must be considered to set the workspace for self-supervised learning:
+    1. add ``--train-type SELFSUPERVISED`` in the command to get training components for self-supervised learning,
+    2. update the path set as ``train-data-roots``,
+    3. and add ``--work-dir`` to distinguish self-supervised learning workspace from supervised learning workspace.
 
-  To prepare `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_, refer to :doc:`how to train semantic segmentation models <../base/how_to_train/semantic_segmentation>`.
-
-------------
-Pre-training
-------------
-.. _tutorial_selfsl_semantic_segmentation_pretraining:
-
-1. We can check which models are provided for this task like the command below. All details are in :doc:`how to train semantic segmentation models <../base/how_to_train/semantic_segmentation>`. We will choose :ref:`Lite-HRNet-18-mod2 <semantic_segmentation_models>` like :doc:`how to train semantic segmentation models <../base/how_to_train/semantic_segmentation>`.
+After this workspace creation, the workspace structure is as follows:
 
 .. code-block::
 
-  (otx) ...$ otx find --task segmentation
-  
-  +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
-  |     TASK     |                          ID                         |        NAME        |                                BASE PATH                                 |
-  +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
-  | SEGMENTATION |    Custom_Semantic_Segmentation_Lite-HRNet-18_OCR   |   Lite-HRNet-18    |   otx/algorithms/segmentation/configs/ocr_lite_hrnet_18/template.yaml    |
-  | SEGMENTATION | Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 | otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml |
-  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR | Lite-HRNet-s-mod2  | otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml  |
-  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3  | otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml  |
-  +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
-
-2. Prepare an OpenVINO™ Training Extensions workspace by running the following command:
+    otx-workspace-CLASSIFICATION
+    ├── compression_config.json
+    ├── configuration.yaml
+    ├── data_pipeline.py
+    ├── data.yaml
+    ├── deployment.py
+    ├── hpo_config.yaml
+    ├── model_hierarchical.py
+    ├── model_multilabel.py
+    ├── model.py
+    ├── splitted_dataset
+    │   ├── train
+    │   └── val
+    └── template.yaml
+    otx-workspace-CLASSIFICATION-SELFSUPERVISED
+    ├── configuration.yaml
+    ├── data.yaml
+    ├── deployment.py
+    ├── hpo_config.yaml
+    ├── model_hierarchical.py
+    ├── model_multilabel.py
+    ├── selfsl
+    │   ├── data_pipeline.py
+    │   └── model.py
+    └── template.yaml
 
 .. note::
-    Unlike :ref:`Self-Supervised Learning for Classification <tutorial_selfsl_classification>`, for Self-Supervised Learning for semantic segmentation, a directory including only images, not masks, must be set as ``--train-data-root`` like the below command.
-    For example in the below command, ``data/VOCdevkit/VOC2012/JPEGImages`` must be set instead of ``data/VOCdevkit/VOC2012``.
+    For :ref:`semantic segmentation <selfsl_semantic_segmentation>`, ``--train-data-root`` must be set to a directory including only images, not masks, like below.
+    For `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ used in :doc:`semantic segmentation tutorial <../base/how_to_train/semantic_segmentation>`, for example, ``data/VOCdevkit/VOC2012/JPEGImages`` must be set instead of ``data/VOCdevkit/VOC2012``.
     Please refer to :ref:`Explanation of Self-Supervised Learning for Semantic Segmentation <selfsl_semantic_segmentation>`.
+    And don't forget to add ``--train-type SELFSUPERVISED``.
 
-.. note::
-    Unlike :doc:`how to train semantic segmentation models <../base/how_to_train/semantic_segmentation>`, ``--train-type SELFSUPERVISED`` must be added to get training components for self-supervised learning.
+  .. code-block::
 
-.. code-block::
+    (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012/JPEGImages --model Lite-HRNet-18-mod2 --train-type SELFSUPERVISED
 
-  (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012/JPEGImages --model Lite-HRNet-18-mod2 --train-type SELFSUPERVISED
-
-  [*] Workspace Path: otx-workspace-SEGMENTATION
-  [*] Load Model Template ID: Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR
-  [*] Load Model Name: Lite-HRNet-18-mod2
-  [*]     - Updated: otx-workspace-SEGMENTATION/selfsl/model.py
-  [*]     - Updated: otx-workspace-SEGMENTATION/selfsl/data_pipeline.py
-  [*]     - Updated: otx-workspace-SEGMENTATION/deployment.py
-  [*]     - Updated: otx-workspace-SEGMENTATION/hpo_config.yaml
-  [*] Update data configuration file to: otx-workspace-SEGMENTATION/data.yaml
-
-  (otx) ...$ cd ./otx-workspace-SEGMENTATION
-
-3. To start training we need to call ``otx train`` command in our workspace.
-
-.. note::
-    It is recommended to set ``--save-model-to`` to distinguish between pre-trained and fine-tuned weights or not to overwrite them.
+4. To start training we need to call ``otx train`` command in *self-supervised learning* workspace:
 
 .. code-block::
 
-  (otx) ...$ otx train --save-model-to models/selfsl
+    (otx) ...$ cd otx-workspace-CLASSIFICATION-SELFSUPERVISED
+    (otx) ...$ otx train --data ../otx-workspace-CLASSIFICATION/data.yaml
+    
+    ...
 
-The training will return artifacts: ``weights.pth`` and ``label_schema.json`` and we can use this weights to fine-tune the models using target dataset.
+    2023-02-23 19:41:36,879 | INFO : Iter [4970/5000]       lr: 8.768e-05, eta: 0:00:29, time: 1.128, data_time: 0.963, memory: 7522, current_iters: 4969, loss: 0.2788
+    2023-02-23 19:41:46,371 | INFO : Iter [4980/5000]       lr: 6.458e-05, eta: 0:00:19, time: 0.949, data_time: 0.782, memory: 7522, current_iters: 4979, loss: 0.2666
+    2023-02-23 19:41:55,806 | INFO : Iter [4990/5000]       lr: 5.037e-05, eta: 0:00:09, time: 0.943, data_time: 0.777, memory: 7522, current_iters: 4989, loss: 0.2793
+    2023-02-23 19:42:05,105 | INFO : Saving checkpoint at 5000 iterations
+    2023-02-23 19:42:05,107 | INFO : ----------------- BYOL.state_dict_hook() called
+    2023-02-23 19:42:05,314 | WARNING : training progress 100%
+    2023-02-23 19:42:05,315 | INFO : Iter [5000/5000]       lr: 4.504e-05, eta: 0:00:00, time: 0.951, data_time: 0.764, memory: 7522, current_iters: 4999, loss: 0.2787
+    2023-02-23 19:42:05,319 | INFO : run task done.
+    2023-02-23 19:42:05,323 | INFO : called save_model
+    2023-02-23 19:42:05,498 | INFO : Final model performance: Performance(score: -1, dashboard: (6 metric groups))
+    2023-02-23 19:42:05,499 | INFO : train done.
+    [*] Save Model to: models
 
+.. note::
+    To use the same splitted train dataset, set ``--data ../otx-workspace-CLASSIFICATION/data.yaml`` insead of using ``data.yaml`` in self-supervised learning workspace.
 
------------
+The training will return artifacts: ``weights.pth`` and ``label_schema.json`` and we can use the weights to fine-tune the model using target dataset.
+Final model performance will be set to -1, but it doesn't matter because self-supervised learning doesn't use accuracy.
+Let's see how to fine-tune the model using pre-trained weights below.
+
+***********
 Fine-tuning
------------
+***********
 
-1. Update our workspace to enable supervised (incremental) learning, which we actually try to do.
-Call the command below from `the root directory` without adding ``--train-type SELFSUPERVISED`` in the command.
-
-.. note::
-    Unlike :ref:`pretraining <tutorial_selfsl_semantic_segmentation_pretraining>`, for fine-tuning, data root directory must be set as ``--train-data-root`` like other tasks.
-    For example in the below command, ``data/VOCdevkit/VOC2012`` must be set instead of ``data/VOCdevkit/VOC2012/JPEGImages``.
+After pre-training progress, start fine-tuning by calling the below command with adding ``--load-weights`` argument in supervised learning workspace.
 
 .. code-block::
 
-    (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012 --model Lite-HRNet-18-mod2
+    (otx) ...$ cd ../otx-workspace-CLASSIFICATION
+    (otx) ...$ otx train --load-weights ../otx-workspace-CLASSIFICATION-SELFSUPERVISED/models/weights.pth
 
-    [*] Workspace Path: otx-workspace-SEGMENTATION
-    [*] Load Model Template ID: Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR
-    [*] Load Model Name: Lite-HRNet-18-mod2
-    [*]     - Updated: otx-workspace-SEGMENTATION/model.py
-    [*]     - Updated: otx-workspace-SEGMENTATION/data_pipeline.py
-    [*]     - Updated: otx-workspace-SEGMENTATION/deployment.py
-    [*]     - Updated: otx-workspace-SEGMENTATION/hpo_config.yaml
-    [*]     - Updated: otx-workspace-SEGMENTATION/compression_config.json
-    [*]     - Updated: otx-workspace-SEGMENTATION/pot_optimization_config.json
-    [*] Update data configuration file to: otx-workspace-SEGMENTATION/data.yaml
+    ...
 
-    (otx) ...$ cd ./otx-workspace-SEGMENTATION
+    2023-02-23 20:56:24,307 | INFO : run task done.
+    2023-02-23 20:56:28,883 | INFO : called evaluate()
+    2023-02-23 20:56:28,895 | INFO : Accuracy after evaluation: 0.9604904632152589
+    2023-02-23 20:56:28,896 | INFO : Evaluation completed
+    Performance(score: 0.9604904632152589, dashboard: (3 metric groups))
 
-2. To start training we need to call the below command with adding ``--load-weights`` argument in our workspace.
-
-.. note::
-    It is recommended to set ``--save-model-to`` to distinguish between pre-trained and fine-tuned weights or not to overwrite them.
+For comparison, we can also obtain the performance without pre-trained weights below.
 
 .. code-block::
 
-  (otx) ...$ otx train --load-weights models/selfsl/weights.pth --save-model-to models/finetune
+    (otx) ...$ otx train
 
-After these progesses, you can validate, optimize, and export the models described in :doc:`how to train semantic segmentation models <../base/how_to_train/semantic_segmentation>`.
+    ...
+
+    2023-02-23 18:24:34,453 | INFO : run task done.
+    2023-02-23 18:24:39,043 | INFO : called evaluate()
+    2023-02-23 18:24:39,056 | INFO : Accuracy after evaluation: 0.9550408719346049
+    2023-02-23 18:24:39,056 | INFO : Evaluation completed
+    Performance(score: 0.9550408719346049, dashboard: (3 metric groups))
+
+With self-supervised learning, we can obtain well-adaptive weights and train the model more accurately.
+This example showed a little improvement (0.955 → 0.960), but if We use only a few samples or datasets that are too difficult to train a model on, self-supervised learning can be the solution to improve the model.
+You can check performance improvement examples in :ref:`self-supervised learning for classification <selfsl_multi_class_classification>` documentation.
+
+.. note::
+    Obtaining new model after fine-tuning you can proceed with optimization and exporting as described in :doc:`classification tutorial <../base/how_to_train/classification>`.
