@@ -42,7 +42,7 @@ Dataset Format
 
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
 
-At this end we support `ADE20K <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`__, `Pascal VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data formats.
+At this end we support `Pascal VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data formats.
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
 
 .. code-block::
@@ -56,6 +56,7 @@ If you organized supported dataset format, starting training will be very simple
 ******
 Models
 ******
+.. _semantic_segmentation_models:
 
 We support the following ready-to-use model templates:
 
@@ -117,6 +118,7 @@ For the `DIS5K <https://xuebinqin.github.io/dis/index.html>`_ we prepared random
 ************************
 Self-supervised Learning
 ************************
+.. _selfsl_semantic_segmentation:
 
 Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
