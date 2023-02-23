@@ -129,7 +129,7 @@ Since STFPM trains the student network, we use the following parameters for its 
 
 - ``Backbone``: The default backbone is ``ResNet18``. You can also use ``Wide ResNet50``.
 - ``Loss``: Loss is computed as the mean squared error between the student and teacher feature pyramids. The default loss is ``MSE`` and cannot be changed.
-- ``Optimizer``: The default optimizer is ``SGD`` and cannot be changed. It uses the following parameters that can be changed from the UI.
+- ``Optimizer``: The default optimizer is ``SGD`` and cannot be changed. It uses the following parameters that can be changed:
    - ``Learning Rate``: The default learning rate is ``0.4``.
    - ``Momentum``: The default momentum is ``0.9``.
    - ``Weight Decay``: The default weight decay is ``0.0001``.
