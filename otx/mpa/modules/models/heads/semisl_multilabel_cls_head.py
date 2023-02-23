@@ -126,9 +126,7 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
     def forward_train(self, x, gt_label):
-        return self.forward_train_with_last_layers(
-            x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp
-        )
+        return self.forward_train_with_last_layers(x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp)
 
 
 @HEADS.register_module()
