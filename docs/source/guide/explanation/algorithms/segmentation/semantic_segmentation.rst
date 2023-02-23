@@ -56,6 +56,7 @@ If you organized supported dataset format, starting training will be very simple
 ******
 Models
 ******
+.. _semantic_segmentation_models:
 
 We support the following ready-to-use model templates:
 
@@ -117,6 +118,7 @@ For the `DIS5K <https://xuebinqin.github.io/dis/index.html>`_ we prepared random
 ************************
 Self-supervised Learning
 ************************
+.. _selfsl_semantic_segmentation:
 
 Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
