@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/openvinotoolkit/training_extensions/develop/docs/source/_static/logos/otx-logo-black.png" width="200px">
-
 # OpenVINO™ Training Extensions
 
 ---
