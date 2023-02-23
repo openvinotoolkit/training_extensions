@@ -93,22 +93,21 @@ we need to reformat the dataset according to this structure:
       ├── train
       ├── val
       └── test
+  (There may be more extra unrelated folders)
 
 We can do that by running these commands:
 
 .. code-block::
 
-  # remove extra folders
-  rm -rf contrib/ extra/ original_resolution/
-
   # format images folder
   mkdir data images
 
-  # format annotations folder and rename annotations to meet *_train.json pattern
+  # format annotations folder
   mv coco_annotations annotations
+
+  # rename annotations to meet *_train.json pattern
   mv annotations/train_bbox_instances.json annotations/instances_train.json
   mv annotations/test_bbox_instances.json annotations/instances_val.json
-  rm annotations/t*.json
 
 *********
 Training
