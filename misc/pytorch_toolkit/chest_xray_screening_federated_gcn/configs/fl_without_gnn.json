@@ -1,0 +1,38 @@
+{
+    "train": {
+        "data": "dataset/data/",
+        "split_npz": "dataset/split.npz",
+        "batch_size": 12,
+        "epochs": 1,
+        "gpu": "True",
+        "lr": 1e-5,
+        "checkpoint": "model_weights/without_gnn/model_weights_wo_gnn.pth",
+        "savepath": "model_weights/without_gnn/",
+        "backbone":"resnet",
+        "gnn":"False"
+    },
+    "inference": {
+        "data": "dataset/data/",
+        "split_npz": "dataset/split.npz",
+        "batch_size": 1,
+        "gpu": "True",
+        "gnn":"False",
+        "model_file": "model_weights/without_gnn/model_weights_wo_gnn.pth",
+        "checkpoint": "model_weights/without_gnn/model_weights_wo_gnn.pth",
+        "backbone":"resnet",
+        "max_samples":10
+    },
+    "export": {
+        "checkpoint": "model_weights/without_gnn/model_weights_wo_gnn.pth",
+        "backbone":"resnet",
+        "split_path":"dataset/split.npz",
+        "input_shape": [
+            1,
+            1,
+            320,
+            320
+        ],
+        "model_name_onnx": "model_weights_wo_gnn.onnx",
+        "model_name": "model_weights_wo_gnn"
+    }
+}
