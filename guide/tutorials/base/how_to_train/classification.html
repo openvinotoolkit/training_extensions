@@ -26,8 +26,8 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/tabs.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
     
@@ -42,7 +42,7 @@
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
     <link rel="next" title="Object Detection model" href="detection.html" />
-    <link rel="prev" title="Action Detection model" href="action_detection.html" />
+    <link rel="prev" title="How to train, validate, export and optimize the model" href="index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en" />
     
@@ -169,16 +169,6 @@
        </i>
       </label>
       <ul class="current">
-       <li class="toctree-l4">
-        <a class="reference internal" href="action_classification.html">
-         Action Classification model
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="action_detection.html">
-         Action Detection  model
-        </a>
-       </li>
        <li class="toctree-l4 current active">
         <a class="current reference internal" href="#">
          Classification  model
@@ -202,6 +192,16 @@
        <li class="toctree-l4">
         <a class="reference internal" href="anomaly_detection.html">
          Anomaly Detection Tutorial
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="action_classification.html">
+         Action Classification model
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="action_detection.html">
+         Action Detection  model
         </a>
        </li>
       </ul>
@@ -275,11 +275,77 @@
   </label>
   <ul>
    <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../../explanation/algorithms/anomaly/index.html">
-     Anomaly Recognition
+    <a class="reference internal" href="../../../explanation/algorithms/classification/index.html">
+     Classification
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
     <label for="toctree-checkbox-7">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html">
+       Multi-class Classification
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../explanation/algorithms/classification/multi_label_classification.html">
+       Multi-label Classification
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../explanation/algorithms/classification/hierarhical_classification.html">
+       Hierarchical Classification
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../../explanation/algorithms/object_detection/index.html">
+     Object Detection
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+    <label for="toctree-checkbox-8">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../explanation/algorithms/object_detection/object_detection.html">
+       Object Detection
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../../explanation/algorithms/segmentation/index.html">
+     Segmentation
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
+    <label for="toctree-checkbox-9">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html">
+       Semantic Segmentation
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../explanation/algorithms/segmentation/instance_segmentation.html">
+       Instance Segmentation
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../../explanation/algorithms/anomaly/index.html">
+     Anomaly Recognition
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/>
+    <label for="toctree-checkbox-10">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -305,8 +371,8 @@
     <a class="reference internal" href="../../../explanation/algorithms/action/index.html">
      Action Recognition
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
-    <label for="toctree-checkbox-8">
+    <input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/>
+    <label for="toctree-checkbox-11">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -319,72 +385,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../../explanation/algorithms/action/action_detection.html">
        Action Detection
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../../explanation/algorithms/classification/index.html">
-     Classification
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
-    <label for="toctree-checkbox-9">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html">
-       Multi-class Classification
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../explanation/algorithms/classification/multi_label_classification.html">
-       Multi-label Classification
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../explanation/algorithms/classification/hierarhical_classification.html">
-       Hierarchical Classification
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../../explanation/algorithms/segmentation/index.html">
-     Segmentation
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/>
-    <label for="toctree-checkbox-10">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html">
-       Semantic Segmentation
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../explanation/algorithms/segmentation/instance_segmentation.html">
-       Instance Segmentation
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../../explanation/algorithms/object_detection/index.html">
-     Object Detection
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/>
-    <label for="toctree-checkbox-11">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../../explanation/algorithms/object_detection/object_detection.html">
-       Object Detection
       </a>
      </li>
     </ul>
@@ -1387,7 +1387,7 @@ The examples are provided with an object detection model, but it is easy to appl
               
               <div class='prev-next-bottom'>
                 
-    <a class='left-prev' id="prev-link" href="action_detection.html" title="previous page">Action Detection  model</a>
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">How to train, validate, export and optimize the model</a>
     <a class='right-next' id="next-link" href="detection.html" title="next page">Object Detection model</a>
 
               </div>
