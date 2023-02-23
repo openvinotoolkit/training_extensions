@@ -81,15 +81,18 @@ The list of supported templates for semantic segmentation is available with the 
 .. note::
 
     We do not attach OCR head for supported models in default. We remain the suffix '_OCR' in ID just for backward compatibility.
+
 To have a specific example in this tutorial, all commands will be run on the :ref:`Lite-HRNet-18-mod2 <semantic_segmentation_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the semantic segmentation.
 
-Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspase running the following command:
+2.  Next, we need to create train/validation sets. 
+OpenVINO™ Training Extensions supports auto-split functionality for the semantic segmentation.
+
+Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspace running the following command:
 
 .. note::
 
-  Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in argument '--val-data-roots' when using other supported segmentation dataset. About dataset formats for semantic segmentation, please refer to the :doc:`explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
+  Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in argument ``--val-data-roots`` when using other supported segmentation dataset. About dataset formats for semantic segmentation, please refer to the :doc:`explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
 
 .. code-block::
 
@@ -106,7 +109,7 @@ Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspase
 
 It will create **otx-workspace-SEGMENTATION** with all necessery configs for Lite-HRNet-18-mod2, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
-2. To start training we need to call ``otx train``
+3. To start training we need to call ``otx train``
 command in our worspace:
 
 .. code-block::
@@ -123,13 +126,12 @@ Validation
 
 1. ``otx eval`` runs evaluation of a trained
 model on a specific dataset.
-
 The eval function receives test annotation information and model snapshot, trained in the previous step.
 Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
 
 ``otx eval`` will output a ``mDice`` score for semantic segmentation.
 
-2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument '--test-data-roots'.
+2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument ``--test-data-roots``.
 By running this example command, the performance results evaluated by our splitted validation dataset are saved in ``performance.json`` file:
 
 .. code-block::
@@ -198,7 +200,6 @@ Optimization
 
 1. We can further optimize the model with ``otx optimize``.
 It uses NNCF or POT depending on the model format.
-
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
 
 2. Command example for optimizing
