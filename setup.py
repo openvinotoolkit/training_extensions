@@ -28,6 +28,12 @@ except ModuleNotFoundError:
     print("Skip building ext ops due to the absence of torch.")
 
 
+def readme():
+    with open('README.md', encoding='utf-8') as f:
+        content = f.read()
+    return content
+
+
 def load_module(name: str = "otx/__init__.py"):
     """Load Python Module.
 
@@ -174,6 +180,21 @@ package_data.update(find_yaml_recipes())
 setup(
     name="otx",
     version=get_otx_version(),
+    description="OpenVINO™ Training Extensions: "
+    "Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO™",
+    long_description=readme(),
+    long_description_content_type="text/markdown",
+    author="OpenVINO™ Training Extensions Contributors",
+    url="https://github.com/openvinotoolkit/training_extensions",
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Cython",
+    ],
+    license="Apache License 2.0",
     packages=find_packages(exclude=("tests",)),
     package_data=package_data,
     ext_modules=get_extensions(),
