@@ -30,6 +30,15 @@ Setup virtual environment
 
 You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` to create a universal virtual environment for OpenVINO™ Training Extensions.
 
+1. Activate your virtual 
+environment:
+
+.. code-block::
+
+  .otx/bin/activate
+  # or by this line, if you created an environment, using tox
+  . venv/otx/bin/activate
+
 ***************************
 Dataset preparation
 ***************************
@@ -45,11 +54,13 @@ with the following command:
   cd ..
 
 |
+
 .. image:: ../../../../../utils/images/flowers.jpg
   :width: 600
+
 |
 
-This dataset contains images of 5 different flower categories and is stored in the imagenet format which is supported by OpenVINO™ Training Extensions:
+This dataset contains images of 5 different flower categories and is stored in the ImageNet format which is supported by OpenVINO™ Training Extensions:
 
 .. code-block::
 
@@ -65,14 +76,14 @@ This dataset contains images of 5 different flower categories and is stored in t
 Training
 *********
 
-1. First of all, we need to choose which classification model will we train.
+1. First of all, we need to choose which classification model we will train.
 The list of supported templates for classification is available with the command line below.
 
 .. note::
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/classification/multi_class_classification>`.
 
-  We also can modify the architecture of supported models with various backbones, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
+  We also can modify the architecture of supported models with various backbones. To do that, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
 .. code-block::
 
@@ -86,16 +97,17 @@ The list of supported templates for classification is available with the command
   | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
   +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
 
-To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classificaiton_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
+To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classification_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classificaiton.
+2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classification.
 For other classification types we need to prepare splits in advance.
 
-Let's prepare an OpenVINO™ Training Extensions classification workspase running the following command:
 
 .. note::
 
-  Currently, OpenVINO™ Training Extensions supports auto-split only for multi-class classificaiton. For the multi-label and hierarchical tasks we need to prepare data splits in advance.
+  Currently, OpenVINO™ Training Extensions supports auto-split only for multi-class classification. For the multi-label and hierarchical tasks we need to prepare data splits in advance.
+
+Let's prepare an OpenVINO™ Training Extensions classification workspace running the following command:
 
 .. code-block::
 
@@ -107,10 +119,10 @@ Let's prepare an OpenVINO™ Training Extensions classification workspase runnin
 
   (otx) ...$ cd ./otx-workspace-CLASSIFICATION
 
-It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+It will create **otx-workspace-CLASSIFICATION** with all necessary configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
 3. To start training we need to call ``otx train``
-command in our worspace:
+command in our workspace:
 
 .. code-block::
 
@@ -122,6 +134,9 @@ The training time highly relies on the hardware characteristics, for example on 
 
 After that, we have the PyTorch classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
+.. note::
+  If we specified ``--work-dir``, we also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
+
 ***********
 Validation
 ***********
@@ -130,9 +145,9 @@ Validation
 model on a specific dataset.
 
 The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
+Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
 
-``otx eval`` will output a top-1 accuracy score for multi-class classification.
+``otx eval`` will calculate a top-1 accuracy score for multi-class classification.
 
 2. The command below will run validation on our dataset
 and save performance results in ``performance.json`` file:
@@ -143,7 +158,7 @@ and save performance results in ``performance.json`` file:
                       --load-weights models/weights.pth \
                       --save-performance performance.json
 
-We will get a similar to this validation output:
+We will get a validation output similar to this:
 
 .. code-block::
 
@@ -163,7 +178,7 @@ Export
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
-and save the exported model to the ``openvino_model`` folder.
+and save the exported model to the ``openvino_model`` folder:
 
 .. code-block::
 

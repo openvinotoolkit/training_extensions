@@ -2,13 +2,15 @@ Instance Segmentation model
 ================================
 
 This tutorial reveals end-to-end solution from installation to model export and optimization for instance segmentation task on a specific example.
-On this page we show how to train, validate, export and optimize Mask-RCNN model on toy dataset.
+On this page, we show how to train, validate, export and optimize Mask-RCNN model on a toy dataset.
 
 .. note::
 
-  To learn how to deploy the trained model, refer to :doc:`../deploy`.
+  To learn deeper how to manage training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
 
-  To learn how to run the demo and visualize results, refer to :doc:`../demo`.
+  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
+
+  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
 
 The process has been tested on the following configuration.
 
@@ -23,11 +25,21 @@ Setup virtual environment
 
 You can follow the installation process from a :doc:`quick_start guide <../../../get_started/quick_start_guide/installation>` to create a virtual environment.
 
+1. Activate your virtual 
+environment:
+
+.. code-block::
+
+  .otx/bin/activate
+  # or by this line, if you created an environment, using tox
+  . venv/otx/bin/activate
+
+
 ***************************
 Dataset preparation
 ***************************
 
-1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https:/github.com/openvinotoolkit/training_Extensionss/tree/develop/tests/assets/car_tree_bug>`_ 
+1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_ 
 provided by OpenVINO™ Training Extensions.
 
 This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.
@@ -36,14 +48,12 @@ This dataset contains images of simple car, tree, bug with the annotation for in
 - ``tree``	- Tree Shape Illustration
 - ``bug``	- Bug Shape Illustration
 
-This allows us to look at the structure of the dataset used in instance-segmentation, and can be a good starting point for how to start an instance-segmentation task with OpenVINO™ Training Extensions.
+This allows us to look at the structure of the dataset used in instance segmentation, and can be a good starting point for how to start an instance segmentation task with OpenVINO™ Training Extensions.
 
-|
 
 .. image:: ../../../../../utils/images/car_tree_bug_gt_sample.png
   :width: 400
 
-|
 
 2. Check the file structure of downloaded dataset,
 we will need the following file structure:
@@ -59,7 +69,8 @@ we will need the following file structure:
   ...
 
 .. warning::
-  There may be features that don't work properly with the current toy dataset. We recommend that you proceed with a proper training and validation dataset, this tutorial and dataset are for reference only.
+  There may be features that don't work properly with the current toy dataset. We recommend that you proceed with a proper training and validation dataset, 
+  the tutorial and dataset here are for reference only.
 
   We will update this tutorial with larger public datasets soon.
 
@@ -67,7 +78,7 @@ we will need the following file structure:
 Training
 *********
 
-1. First of all, we need to choose which instance segmentation model will we train.
+1. First of all, we need to choose which instance segmentation model we will train.
 The list of supported templates for instance segmentation is available with the command line below.
 
 .. note::
@@ -90,7 +101,7 @@ The list of supported templates for instance segmentation is available with the 
 2. We need to create 
 OpenVINO™ Training Extensions workspace first.
 
-Let's prepare an OpenVINO™ Training Extensions instance segmentation workspase running the following command:
+Let's prepare an OpenVINO™ Training Extensions instance segmentation workspace running the following command:
 
 .. code-block::
 
@@ -109,7 +120,7 @@ Let's prepare an OpenVINO™ Training Extensions instance segmentation workspase
 
   (otx) ...$ cd ./otx-workspace-INSTANCE_SEGMENTATION
 
-It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery configs for MaskRCNN-ResNet50, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessary configs for MaskRCNN-ResNet50, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
 .. note::
   Using ``otx train`` with TEMPLATE allows you to run the training directly without ``otx build``.
@@ -123,9 +134,9 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessery config
                       --val-data-roots data/car_tree_bug \
                       params --learning_parameters.num_iters 8
 
-  The above command also creates an ``otx-workspace-INSTANCE_SEGMENTATION``, just like running build. This also updates ``data.yaml`` with data-specific commands.
+  The command above also creates an ``otx-workspace-INSTANCE_SEGMENTATION``, just like running build. This also updates ``data.yaml`` with data-specific commands.
 
-  For more information, see :doc:`quick start guide <../../../get_started/quick_start_guide/cli_commands>`
+  For more information, see :doc:`quick start guide <../../../get_started/quick_start_guide/cli_commands>` or :ref:`detection example <detection_workspace>`.
 
 3. Next, we need to update 
 train/validation set configuration in ``data.yaml``. 
@@ -152,9 +163,8 @@ The content of the ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` for dataset
     }
   }
 
-4. To start training we need 
-to call ``otx train``
-command in our worspace:
+4. To start training we need to call ``otx train``
+command in our workspace:
 
 .. code-block::
 
@@ -166,11 +176,10 @@ command in our worspace:
 
   In other general datasets, OpenVINO™ Training Extensions ends training at the right time without adjusting ``num_iters``.
 
-.. note::
 
-  The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``otx-workspace-INSTANCE_SEGMENTATION/models`` folder, while training logs and tf_logs for `Tensorboard` visualization can be found in the ``otx-workspace-INSTANCE_SEGMENTATION`` dir.
+The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``otx-workspace-INSTANCE_SEGMENTATION/models`` folder, while training logs and tf_logs for `Tensorboard` visualization can be found in the ``otx-workspace-INSTANCE_SEGMENTATION`` dir.
 
-  ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
+``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
 .. code-block::
 
@@ -188,7 +197,7 @@ command in our worspace:
   2023-02-21 22:35:07,909 | INFO : Evaluation completed
   Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
 
-After that we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, that we can use for evaliation, export, optimization and deployment.
+After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation
@@ -198,7 +207,7 @@ Validation
 model on a specific dataset.
 
 The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
+Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
 
 ``otx eval`` will output a F-measure for instance segmentation.
 
@@ -232,7 +241,7 @@ We will get a similar to this validation output:
   If you omit ``--save-performance``, it will create a ``performance.json`` in the folder for those weights.
 
 
-The output of ``./outputs/performance.json`` consists of dict with target metric name and its value.
+The output of ``./outputs/performance.json`` consists of a dict with target metric name and its value.
 
 .. code-block::
 
@@ -264,8 +273,10 @@ and save the exported model to the ``openvino_model`` folder.
   2023-02-21 22:38:21,894 | INFO : run task done.
   2023-02-21 22:38:21,940 | INFO : Exporting completed
 
-3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
-You can use ``otx train`` directly without ``otx build``. It will be required to add ``--train-data-roots`` and ``--val-data-roots`` in the command line
+3. We can check the accuracy of the IR model and the consistency between 
+the exported model and the PyTorch model.
+
+You can use ``otx train`` directly without ``otx build``. It will be required to add ``--train-data-roots`` and ``--val-data-roots`` in the command line:
 
 .. code-block::
 
@@ -325,6 +336,6 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
 4. Now we have fully trained, optimized and exported an
-efficient model representation ready-to-use instance-segmentation model.
+efficient model representation ready-to-use instance segmentation model.
 
 The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.

@@ -84,7 +84,7 @@ We should put the path where unlabeled data are contained. It also provides us `
 
 
 2. To start training we need to call ``otx train``
-command in our worspace:
+command in our workspace:
 
 .. code-block::
 

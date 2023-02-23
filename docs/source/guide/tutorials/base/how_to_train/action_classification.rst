@@ -2,12 +2,14 @@ Action Classification model
 ================================
 
 This live example shows how to easily train, validate, optimize and export classification model on the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_.
+To learn more about Action Classification task, refer to :doc:`../../../explanation/algorithms/action/action_classification`.
 
 .. note::
+  To learn more about managing the training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
 
-  For information on the training process, including additional parameters and modification, please refer to :doc:`./detection` documentation.
+  To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
-  For information on deploying  the trained model, please refer to the :doc:`../deploy` documentation.
+  To learn how to run the demo and visualize results, refer to: :doc:`../demo`.
 
 The process has been tested on the following configuration.
 
@@ -18,7 +20,7 @@ The process has been tested on the following configuration.
 
 .. note::
 
-  This example demonstates how to work with :doc:`action classification <../../../explanation/algorithms/action/action_classification>`.
+  To learn more about the model, algorithm and dataset format, refer to :doc:`action classification explanation <../../../explanation/algorithms/action/action_classification>`.
 
 
 *************************
@@ -26,6 +28,15 @@ Setup virtual environment
 *************************
 
 To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`.
+
+1. Activate your virtual 
+environment:
+
+.. code-block::
+
+  .otx/bin/activate
+  # or by this line, if you created an environment, using tox
+  . venv/otx/bin/activate
 
 ***************************
 Dataset preparation
@@ -64,16 +75,17 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
     │   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
     |
 
-Once you have the dataset structured properly, copy mmaction2/data folder which has hmdb51 dataset to training_extensions/data. And you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
+Once you have the dataset structured properly, copy ``mmaction2/data`` folder which has hmdb51 dataset to ``training_extensions/data``. 
+And you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
 
 .. code-block::
 
   (otx) ...$ python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
-  --task action_classification \
-  --src_path ./data/hmdb51/rawframes \
-  --dst_path ./data/hmdb51/CVAT/train \
-  --ann_file ./data/hmdb51/hmdb51_train_split_1_rawframes.txt \
-  --label_map ./data/hmdb51/label_map.txt
+                     --task action_classification \
+                     --src_path ./data/hmdb51/rawframes \
+                     --dst_path ./data/hmdb51/CVAT/train \
+                     --ann_file ./data/hmdb51/hmdb51_train_split_1_rawframes.txt \
+                     --label_map ./data/hmdb51/label_map.txt
 
 The resulting folder structure will be as follows:
 
@@ -110,7 +122,8 @@ The resulting folder structure will be as follows:
 Training
 *********
 
-1. Choose which action classification model to train by running the following command to see the list of supported templates:
+1. We need to choose, which action classification model we want to train.
+Using the following command we'll see the list of supported templates:
 
 .. note::
 
@@ -128,7 +141,8 @@ Training
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2. Prepare an OpenVINO™ Training Extensions workspace for the action classification task by running the following command:
+2. Prepare an OpenVINO™ Training Extensions workspace for 
+the action classification task by running the following command:
 
 .. code-block::
 
@@ -142,10 +156,11 @@ All commands will be run on the X3D model. It's a light model, that achieves com
 
   (otx) ...$ cd ./otx-workspace-ACTION_CLASSIFICATION
 
-It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessery configs for X3D, prepared ``data.yaml`` to simplify CLI commands.
+It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessary configs for X3D, prepared ``data.yaml`` to simplify CLI commands.
 
 
-3. To begin training, simply run ``otx train`` from **within the workspace directory**:
+3. To begin training, simply run ``otx train`` 
+from **within the workspace directory**:
 
 .. code-block::
 
@@ -161,12 +176,13 @@ After that, we have the PyTorch action classification model trained with OpenVIN
 Validation
 ***********
 
-1. To evaluate the trained model on a specific dataset, use the ``otx eval`` command with the following arguments:
+1. To evaluate the trained model on a specific dataset, use the ``otx eval`` command with 
+the following arguments:
 
 The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
+Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
 
-``otx eval`` will output a frame-wise accuracy for action classification. Note that top-1 accuracy during training is video-wise accuracy.
+``otx eval`` will output a frame-wise accuracy for action classification. Note, that top-1 accuracy during training is video-wise accuracy.
 
 2. The command below will run validation on our dataset
 and save performance results in ``performance.json`` file:
@@ -177,7 +193,7 @@ and save performance results in ``performance.json`` file:
                       --load-weights models/weights.pth \
                       --save-performance performance.json
 
-We will get a similar to this validation output:
+We will get a validation output similar to this:
 
 .. code-block::
 
@@ -256,3 +272,6 @@ Please note, that POT will take some time (generally less than NNCF optimization
 
 3. Now we have fully trained, optimized and exported an
 efficient model representation ready-to-use action classification model.
+
+The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
+The examples are provided with an object detection model, but it is easy to apply them for action classification by substituting the object detection model with classification one.
