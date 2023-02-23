@@ -7,9 +7,9 @@
 Introduction
 ============
 
-OpenVINO™ Training Extensions is a command-line interface (CLI) framework designed for low-code computer vision deep-learning model training. OpenVINO™ Training Extensions lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers a diverse combination of model architectures, learning methods, and training types using `PyTorch <https://pytorch.org/>`_ and `OpenVINO™ toolkit <https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html>`_. OpenVINO™ Training Extensions provides so-called "model templates" for every supported task which have been tested on various datasets and are a turnkey solution for obtaining an average good model without the need to change any hyperparameters. Besides, it is possible to configure your own model based on `torchvision <https://pytorch.org/vision/stable/index.html>`_, `mmcv <https://github.com/open-mmlab/mmcv>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_ and `OpenVINO Model Zoo (OMZ) <https://github.com/openvinotoolkit/open_model_zoo>`_. Moreover, OpenVINO™ Training Extensions supports auto-configuration functionality to choose a suitable model template based on the dataset. We will further extend our functionality to make training as much simple as possible for obtaining accurate, fast and light models ready to integrate into your projects.
+OpenVINO™ Training Extensions is a low-code transfer learning framework for Computer Vision. OpenVINO™ Training Extensions lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on `PyTorch <https://pytorch.org/>`_ and `OpenVINO™ toolkit <https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html>`_. OpenVINO™ Training Extensions provides "model template" for every supported task type, which consolidates neccesary information to build a model. Model templates are validated on various datasets and serve one-stop shop for obtaining best models in general. If you are an experienced user, you can configure your own model based on `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcv <https://github.com/open-mmlab/mmcv>`_ and `OpenVINO Model Zoo (OMZ) <https://github.com/openvinotoolkit/open_model_zoo>`_. Moreover, OpenVINO™ Training Extensions provides automatic configuration of task types and hyperparameters. The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
 
-To this end OpenVINO™ Training Extensions supports the following computer vision tasks:
+OpenVINO™ Training Extensions supports the following computer vision tasks:
 
 - **Classification**, including multi-class, multi-label and hierarchical image classification tasks.
 - **Object detection** including rotated bounding box support
@@ -18,13 +18,13 @@ To this end OpenVINO™ Training Extensions supports the following computer visi
 - **Action recognition** including action classification and detection
 - **Anomaly recognition** tasks including anomaly classification, detection and segmentation
 
-OpenVINO™ Training Extensions also supports different :doc:`training types <../explanation/algorithms/index>`:
+OpenVINO™ Training Extensions supports the :doc:`following learning methods <../explanation/algorithms/index>`:
 
 - **Supervised**, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks
 - **Semi-supervised learning**
 - **Self-supervised learning**
 
-Moving forward, OpenVINO™ Training Extensions provides the :doc:`following features <../explanation/index>`:
+OpenVINO™ Training Extensions will provide the :doc:`following features <../explanation/index>` in coming releases:
 
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Half-precision training** to save GPUs memory and use larger batch sizes
