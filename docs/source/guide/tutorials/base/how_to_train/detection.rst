@@ -187,10 +187,10 @@ Check ``otx-workspace-DETECTION/data.yaml`` to ensure, which data subsets will b
   data:
   train:
     ann-files: null
-    data-roots: /home/gzalessk/code/training_extensions/otx-workspace-DETECTION/splitted_dataset/train
+    data-roots: <training_extensions_path>/otx-workspace-DETECTION/splitted_dataset/train
   val:
     ann-files: null
-    data-roots: /home/gzalessk/code/training_extensions/otx-workspace-DETECTION/splitted_dataset/val
+    data-roots: <training_extensions_path>/otx-workspace-DETECTION/splitted_dataset/val
   test:
     ann-files: null
     data-roots: null
