@@ -162,7 +162,7 @@ def find_yaml_recipes():
         module = ".".join(root.split(os.sep))
         for file in files:
             _, ext = os.path.splitext(file)
-            if ext in [".yaml", "json"]:
+            if ext in [".yaml", ".json"]:
                 results[module] += [file]
 
     return results
