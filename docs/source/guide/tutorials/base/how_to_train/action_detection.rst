@@ -1,7 +1,8 @@
 Action Detection  model
 ================================
 
-This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of `JHMDB <http://jhmdb.is.tue.mpg.de/>`_.  
+This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of `JHMDB <http://jhmdb.is.tue.mpg.de/>`_. 
+To learn more about Action Detection task, refer to :doc:`../../../explanation/algorithms/action/action_detection`. 
 
 .. note::
 

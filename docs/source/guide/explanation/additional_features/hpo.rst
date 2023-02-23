@@ -15,35 +15,35 @@ Key features of OpenVINO™ Training Extensions include:
 
 - **Scalability** : OpenVINO™ Training Extensions offers both sequential and parallel methods, making it scalable for different training environments. If you have multiple GPUs, you can take advantage of all available GPU resources to accelerate HPO.
 
-You can run HPO by just adding **--enable-hpo** argument as below.
+You can run HPO by just adding **--enable-hpo** argument as below:
 
 .. code-block::
 
     $ otx train \
-        ... \
-        --enable-hpo
+          ... \
+          --enable-hpo
 
-==================================
+=========
 Algorithm
-==================================
+=========
 
 If you have abundant GPU resources, it's better to run HPO in parallel.
 In that case, `ASHA <https://arxiv.org/pdf/1810.05934.pdf>`_ is a good choice.
 Currently, OpenVINO™ Training Extensions uses the ASHA algorithm.
 
-Asynchronous Successive Halving Algorithm (ASHA) is a hyperparameter optimization algorithm that is based on Successive Halving Algorithm (SHA) but is designed to be more efficient in a parallel computing environment. It is used to efficiently search for the best hyperparameters for machine learning models.
+The **Asynchronous Successive Halving Algorithm (ASHA)** is a hyperparameter optimization algorithm that is based on Successive Halving Algorithm (SHA) but is designed to be more efficient in a parallel computing environment. It is used to efficiently search for the best hyperparameters for machine learning models.
 
 ASHA involves running multiple trials in parallel and evaluating them based on their validation metrics. It starts by running many trials for a short time, with only the best-performing trials advancing to the next round. In each subsequent round, the number of trials is reduced, and the amount of time spent on each trial is increased. This process is repeated until only one trial remains.
 
-ASHA is designed to be more efficient than SHA in parallel computing environments because it allows for asynchronous training of the trials. This means that each trial can be trained independently of the others, and they do not have to wait for all the other trials to complete before advancing to the next round. This reduces the amount of time it takes to complete the optimization process.
+ASHA is designed to be more efficient than SHA in parallel computing environments because it allows for asynchronous training of the trials. This means that each trial can be trained independently of the others, and they do not have to wait for all the other trials to be complete before advancing to the next round. This reduces the amount of time it takes to complete the optimization process.
 
 ASHA also includes a technique called Hyperband, which is used to determine how much time to allocate to each trial in each round. Hyperband allocates more time to the best-performing trials, with the amount of time allocated decreasing as the performance of the trials decreases. This technique helps to reduce the overall amount of training time required to find the best hyperparameters.
 
-**************
+*********************************************
 How to configure hyper-parameter optimization
-**************
+*********************************************
 
-You can configure HPO by modifying the **hpo_config.yaml** file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The **hpo_config.yaml** file already exists with default values in the same directory where *template.yaml* resides. Here is the default hpo_config.yaml file for classification:
+You can configure HPO by modifying the ``hpo_config.yaml`` file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The ``hpo_config.yaml`` file already exists with default values in the same directory where ``template.yaml`` resides. Here is the default ``hpo_config.yaml`` file for classification:
 
 .. code-block::
 
@@ -64,7 +64,7 @@ You can configure HPO by modifying the **hpo_config.yaml** file. This file conta
           - 2
 
 As you can see, there are a few attributes required to run HPO.
-Fortunately, there are not many attributes, so it's not difficult to write your own **hpo_config.yaml** file. The more detailed description is as follows:
+Fortunately, there are not many attributes, so it's not difficult to write your own ``hpo_config.yaml`` file. The more detailed description is as follows:
 
 - **hp_space** (*List[Dict[str, Any]]*, `required`) - Hyper parameter search space to find. It should be list of dictionary. Each dictionary has a hyperparameter name as the key and param_type and range as the values. You can optimize any learning parameters of each task.
 

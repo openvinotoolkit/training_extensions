@@ -2,7 +2,9 @@ Semantic Segmentation model
 ================================
 
 This tutorial demonstrates how to train and optimize a semantic segmentation model using the VOC2012 dataset from the PASCAL Visual Object Classes Challenge 2012. 
-The trained model will be used to segment images by assigning a label to each pixel of the input image. To learn more about Segmentation task, refer to :doc:`../../../explanation/algorithms/segmentation/semantic_segmentation`.
+The trained model will be used to segment images by assigning a label to each pixel of the input image. 
+
+To learn more about Segmentation task, refer to :doc:`../../../explanation/algorithms/segmentation/semantic_segmentation`.
 
 .. note::
   To learn more about managing the training process of the model including additional parameters and its modification, refer to :doc:`./detection`.

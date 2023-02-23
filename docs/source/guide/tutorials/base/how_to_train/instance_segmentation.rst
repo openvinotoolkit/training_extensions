@@ -4,6 +4,9 @@ Instance Segmentation model
 This tutorial reveals end-to-end solution from installation to model export and optimization for instance segmentation task on a specific example.
 On this page, we show how to train, validate, export and optimize Mask-RCNN model on a toy dataset.
 
+To learn more about Instance Segmentation task, refer to :doc:`../../../explanation/algorithms/segmentation/instance_segmentation`.
+
+
 .. note::
 
   To learn deeper how to manage training process of the model including additional parameters and its modification, refer to :doc:`./detection`.

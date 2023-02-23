@@ -2,6 +2,7 @@ Classification  model
 ================================
 
 This live example shows how to easily train, validate, optimize and export classification model on the `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ from TensorFlow.
+To learn more about Classification task, refer to :doc:`../../../explanation/algorithms/classification/index`.
 
 .. note::
 

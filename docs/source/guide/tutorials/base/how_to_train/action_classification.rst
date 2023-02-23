@@ -137,7 +137,7 @@ Using the following command we'll see the list of supported templates:
   +-----------------------+----------------------------------+------+----------------------------------------------------------------+
   |          TASK         |                ID                | NAME |                           BASE PATH                            |
   +-----------------------+----------------------------------+------+----------------------------------------------------------------+
-  | ACTION_CLASSIFICATION | Custom_Action_Classificaiton_X3D | X3D  | otx/algorithms/action/configs/classification/x3d/template.yaml |
+  | ACTION_CLASSIFICATION | Custom_Action_Classification_X3D | X3D  | otx/algorithms/action/configs/classification/x3d/template.yaml |
   +-----------------------+----------------------------------+------+----------------------------------------------------------------+
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
@@ -149,7 +149,7 @@ the action classification task by running the following command:
 
   (otx) ...$ otx build --task action_classification --train-data-roots data/hmdb51/CVAT/train/ --val-data-roots data/hmdb51/CVAT/valid
   [*] Workspace Path: otx-workspace-ACTION_CLASSIFICATION
-  [*] Load Model Template ID: Custom_Action_Classificaiton_X3D
+  [*] Load Model Template ID: Custom_Action_Classification_X3D
   [*] Load Model Name: X3D
   [*]     - Updated: otx-workspace-ACTION_CLASSIFICATION/model.py
   [*]     - Updated: otx-workspace-ACTION_CLASSIFICATION/data_pipeline.py

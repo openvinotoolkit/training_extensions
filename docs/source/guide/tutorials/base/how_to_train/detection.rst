@@ -2,6 +2,9 @@ Object Detection model
 ======================
 
 This tutorial reveals end-to-end solution from installation to model export and optimization for object detection task on a specific example.
+
+To learn more about Object Detection task, refer to :doc:`../../../explanation/algorithms/object_detection/object_detection`.
+
 On this page, we show how to train, validate, export and optimize ATSS model on WGISD public dataset.
 
 To have a specific example in this tutorial, all commands will be run on the ATSS model. It's a medium model, that achieves relatively high accuracy while keeping the inference fast.
