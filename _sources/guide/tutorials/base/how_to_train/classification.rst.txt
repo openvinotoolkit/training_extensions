@@ -88,7 +88,8 @@ The list of supported templates for classification is available with the command
 
 To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classificaiton_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classificaiton. For other classification types we need to prepare splits in advance.
+2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classificaiton.
+For other classification types we need to prepare splits in advance.
 
 Let's prepare an OpenVINO™ Training Extensions classification workspase running the following command:
 

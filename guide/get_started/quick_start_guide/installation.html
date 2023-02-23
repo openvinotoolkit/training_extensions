@@ -469,7 +469,8 @@
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If using CUDA, make sure you are using a proper driver version. To do so, use <code class="docutils literal notranslate"><span class="pre">ls</span> <span class="pre">-la</span> <span class="pre">/usr/local</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">cuda</span></code>. If necessary, <a class="reference external" href="https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&amp;target_arch=x86_64&amp;Distribution=Ubuntu&amp;target_version=20.04&amp;target_type=runfile_local">install CUDA 11.7</a> (requires ‘sudo’ permission) and select it with <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">CUDA_HOME=/usr/local/cuda-11.7</span></code>.</p>
+<p>If using CUDA, make sure you are using a proper driver version. To do so, use <code class="docutils literal notranslate"><span class="pre">ls</span> <span class="pre">-la</span> <span class="pre">/usr/local</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">cuda</span></code>.</p>
+<p>If necessary, <a class="reference external" href="https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&amp;target_arch=x86_64&amp;Distribution=Ubuntu&amp;target_version=20.04&amp;target_type=runfile_local">install CUDA 11.7</a> (requires ‘sudo’ permission) and select it with <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">CUDA_HOME=/usr/local/cuda-11.7</span></code>.</p>
 </div>
 </div>
 <div class="section" id="install-openvino-training-extensions-for-users">
@@ -497,8 +498,11 @@ dependencies with:</p>
 <p class="admonition-title">Note</p>
 <p>Currently, only torch==1.13.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)</p>
 </div>
-<p>Example install command for torch==1.13.1+cu117:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.13.1</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.14.1</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu117</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># install command for torch==1.13.1 for CUDA 11.7:</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.13.1</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.14.1</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu117</span>
+
+<span class="c1"># or install command for torch==1.13.1 for CUDA 11.1:</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.13.1</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.14.1</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu111</span>
 </pre></div>
 </div>
 <p>4. Then, install
@@ -528,6 +532,24 @@ OpenVINO™ Training Extensions package</p>
 <div class="section" id="run-unit-tests">
 <h2>Run unit tests<a class="headerlink" href="#run-unit-tests" title="Permalink to this headline">#</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="n">tests</span><span class="o">/</span><span class="n">unit</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">#</a></h2>
+<p>1. If you have problems when you try to use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> command,
+please update pip version by following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pip</span>
+</pre></div>
+</div>
+<p>2. If you’re facing a problem with torch or mmcv installation, please check that your CUDA version is compatible with torch version.
+Consider updating CUDA and CUDA drivers if needed.
+Check the <a class="reference external" href="https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&amp;target_arch=x86_64&amp;Distribution=Ubuntu&amp;target_version=20.04&amp;target_type=runfile_local">command example</a> to install CUDA 11.7 with drivers on Ubuntu 20.04.</p>
+<p>3. If you use Anaconda environment, you should consider that OpenVINO has limited <a class="reference external" href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html">Conda support</a> for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.
+So please use other tools to create the environment (like <code class="docutils literal notranslate"><span class="pre">venv</span></code> or <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>) and use <code class="docutils literal notranslate"><span class="pre">pip</span></code> as a package manager.</p>
+<p>4. If you have access to the Internet through the proxy server only,
+please use pip with proxy call as demonstrated by command below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">proxy</span> <span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">usr_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;@&lt;</span><span class="n">proxyserver_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="c1">#&gt; &lt;pkg_name&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -589,6 +611,11 @@ OpenVINO™ Training Extensions package</p>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#run-unit-tests">
    Run unit tests
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#troubleshooting">
+   Troubleshooting
   </a>
  </li>
 </ul>

@@ -460,46 +460,44 @@
   <div class="section" id="object-detection-model">
 <h1>Object Detection model<a class="headerlink" href="#object-detection-model" title="Permalink to this headline">#</a></h1>
 <p>This tutorial reveals end-to-end solution from installation to model export and optimization for object detection task on a specific example.
-On this page we show how to train, validate, export and optimize ATSS model on WGISD public dataset.</p>
+On this page, we show how to train, validate, export and optimize ATSS model on WGISD public dataset.</p>
+<p>To have a specific example in this tutorial, all commands will be run on the ATSS model. It’s a medium model, that achieves relatively high accuracy while keeping the inference fast.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To learn how to deploy the trained model, refer to <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model</span></a>.</p>
-<p>To learn how to run the demo and visualize results, refer to <a class="reference internal" href="../demo.html"><span class="doc">How to run the demo with exportable code</span></a>.</p>
+<p>To learn how to deploy the trained model and run the exported demo, refer to <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model</span></a>.</p>
+<p>To learn how to run the demo in CLI and visualize results, refer to <a class="reference internal" href="../demo.html"><span class="doc">How to run the demo with exportable code</span></a>.</p>
 </div>
 <p>The process has been tested on the following configuration.</p>
 <ul class="simple">
 <li><p>Ubuntu 20.04</p></li>
 <li><p>NVIDIA GeForce RTX 3090</p></li>
-<li><p>CUDA Toolkit 11.4</p></li>
+<li><p>Intel(R) Core(TM) i9-10980XE CPU</p></li>
+<li><p>CUDA Toolkit 11.1</p></li>
 </ul>
 <div class="section" id="setup-virtual-environment">
 <h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
-<p>You can follow the installation process from a <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick_start guide</span></a> to create a universal virtual environment for all tasks. On the other hand, you can create a task-specific environment following the process below.</p>
-<ol class="arabic simple">
-<li><p>Check your python version:</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">--</span><span class="n">version</span><span class="p">;</span> <span class="n">pip3</span> <span class="o">--</span><span class="n">version</span><span class="p">;</span>
-
-<span class="n">Python</span> <span class="mf">3.8.10</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="2">
-<li><p>Create and activate a virtual environment for the obect detection task.</p></li>
-</ol>
-<p>The following example creates a virtual environment in the <code class="docutils literal notranslate"><span class="pre">det_venv</span></code> folder for detection task.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python3</span><span class="o">-</span><span class="n">venv</span>
-<span class="c1"># create virtual env</span>
-<span class="n">bash</span> <span class="o">./</span><span class="n">otx</span><span class="o">/</span><span class="n">algorithms</span><span class="o">/</span><span class="n">detection</span><span class="o">/</span><span class="n">init_venv</span><span class="o">.</span><span class="n">sh</span> <span class="n">det_venv</span>
-<span class="c1"># activate virtual env</span>
-<span class="n">source</span> <span class="n">det_venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<p>To create a universal virtual environment for all tasks, you can follow the installation process from a <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">installation guide</span></a>.</p>
+<p>1. Activate your virtual
+environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="c1"># or by this line, if you created an environment, using tox</span>
+<span class="o">.</span> <span class="n">venv</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
-<ol class="arabic simple">
-<li><p>Clone a repository with <a class="reference external" href="https://github.com/thsant/wgisd">WGISD dataset</a>.</p></li>
-</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, we support the following object detection dataset formats:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://cocodataset.org/#format-data">COCO</a></p></li>
+<li><p><a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/">Pascal-VOC</a></p></li>
+<li><p><a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/">YOLO</a></p></li>
+</ul>
+</div>
+<p>1. Clone a repository with
+<a class="reference external" href="https://github.com/thsant/wgisd">WGISD dataset</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">data</span>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">thsant</span><span class="o">/</span><span class="n">wgisd</span><span class="o">.</span><span class="n">git</span>
 <span class="n">cd</span> <span class="n">wgisd</span>
@@ -508,11 +506,11 @@ On this page we show how to train, validate, export and optimize ATSS model on W
 </div>
 <p>This dataset contains images of grapevines with the annotation for different varieties of grapes.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">CDY</span></code>       - Chardonnay</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CFR</span></code>       - Cabernet Franc</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CSV</span></code>       - Cabernet Sauvignon</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">SVB</span></code>       - Sauvignon Blanc</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">SYH</span></code>       - Syrah</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CDY</span></code> - Chardonnay</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CFR</span></code> - Cabernet Franc</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CSV</span></code> - Cabernet Sauvignon</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SVB</span></code> - Sauvignon Blanc</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SYH</span></code> - Syrah</p></li>
 </ul>
 <p>It’s a great example to start with. The model achieves high accuracy right from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.</p>
 <div class="line-block">
@@ -522,49 +520,45 @@ On this page we show how to train, validate, export and optimize ATSS model on W
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<ol class="arabic simple" start="2">
-<li><p>Check the file structure of downloaded repository, we will need the following files:</p></li>
-</ol>
+<p>2. To run the training using <a class="reference internal" href="../../../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration feature</span></a>,
+we need to reformat the dataset according to this structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wgisd
-├── README.md
-├── coco_annotations/
-    ├── train_bbox_instances.json
-    └── test_bbox_instances.json
-├──data/
-    └── &lt;images&gt;
-...
+├── annotations/
+    ├── instances_train.json
+    ├── instances_val.json
+    (Optional)
+    └── instances_test.json
+├──images/
+    (Optional)
+    ├── train
+    ├── val
+    └── test
+(There may be more extra unrelated folders)
 </pre></div>
 </div>
-<ol class="arabic simple" start="3">
-<li><p><code class="docutils literal notranslate"><span class="pre">(Optional)</span></code> To simplify the command line functions calling, we may create a <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> file with annotations info and pass it as a <code class="docutils literal notranslate"><span class="pre">--data</span></code> parameter. The content of the <code class="docutils literal notranslate"><span class="pre">training_extesions/data.yaml</span></code> for WGISD dataset should have absolute paths and will be similar to that:</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span>
-  <span class="p">{</span><span class="s1">&#39;train&#39;</span><span class="p">:</span>
-    <span class="p">{</span><span class="s1">&#39;ann-files&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/&lt;username&gt;/training_extensions/data/wgisd/coco_annotations/train_bbox_instances.json&#39;</span><span class="p">,</span>
-     <span class="s1">&#39;data-roots&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/&lt;username&gt;/training_extensions/data/wgisd/data&#39;</span><span class="p">},</span>
-  <span class="s1">&#39;val&#39;</span><span class="p">:</span>
-    <span class="p">{</span><span class="s1">&#39;ann-files&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/&lt;username&gt;/training_extensions/data/wgisd/coco_annotations/test_bbox_instances.json&#39;</span><span class="p">,</span>
-     <span class="s1">&#39;data-roots&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/&lt;username&gt;/training_extensions/data/wgisd/data&#39;</span><span class="p">},</span>
-  <span class="s1">&#39;test&#39;</span><span class="p">:</span>
-    <span class="p">{</span><span class="s1">&#39;ann-files&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/&lt;username&gt;/training_extensions/data/wgisd/coco_annotations/train_bbox_instances.json&#39;</span><span class="p">,</span>
-     <span class="s1">&#39;data-roots&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/&lt;username&gt;/training_extensions/data/wgisd/data&#39;</span><span class="p">}</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<p>We can do that by running these commands:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># format images folder</span>
+<span class="n">mkdir</span> <span class="n">data</span> <span class="n">images</span>
+
+<span class="c1"># format annotations folder</span>
+<span class="n">mv</span> <span class="n">coco_annotations</span> <span class="n">annotations</span>
+
+<span class="c1"># rename annotations to meet *_train.json pattern</span>
+<span class="n">mv</span> <span class="n">annotations</span><span class="o">/</span><span class="n">train_bbox_instances</span><span class="o">.</span><span class="n">json</span> <span class="n">annotations</span><span class="o">/</span><span class="n">instances_train</span><span class="o">.</span><span class="n">json</span>
+<span class="n">mv</span> <span class="n">annotations</span><span class="o">/</span><span class="n">test_bbox_instances</span><span class="o">.</span><span class="n">json</span> <span class="n">annotations</span><span class="o">/</span><span class="n">instances_val</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">Ann-files</span></code> contains a path to the annotation, while <code class="docutils literal notranslate"><span class="pre">data-roots</span></code> is a path to the folder, where images are stored.</p>
 </div>
 <div class="section" id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
-<ol class="arabic simple">
-<li><p>First of all, we need to choose which object detection model will we train. The list of supported templates for object detection is available with the command line below.</p></li>
-</ol>
+<p>1. First of all, we need to choose which object detection model will we train.
+The list of supported templates for object detection is available with the command line below.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The characteristics and detailed comparison of the models could be found in <a class="reference internal" href="../../../explanation/algorithms/object_detection/object_detection.html"><span class="doc">Explanation section</span></a>.</p>
 <p>To modify the architecture of supported models with various backbones, please refer to the <a class="reference internal" href="../../advanced/backbones.html"><span class="doc">advanced tutorial for backbone replacement</span></a>.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx find --template --task DETECTION
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --template --task DETECTION
 +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 |    TASK   |                 ID                |  NAME |                                    PATH                                   |
 +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
@@ -574,49 +568,88 @@ On this page we show how to train, validate, export and optimize ATSS model on W
 +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 </pre></div>
 </div>
-<ol class="arabic simple" start="2">
-<li><p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template) on a dataset and results in two files:</p></li>
-</ol>
+<p>2. On this step we will create <strong>otx-workspace-Detection</strong>
+with:</p>
+<ul class="simple">
+<li><p>all necessary configs for Custom_Object_Detection_Gen3_ATSS</p></li>
+<li><p>prepared <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands launch</p></li>
+<li><p>train/validation sets, based on provided annotation.</p></li>
+</ul>
+<p>It may be counterintuitive, but for <code class="docutils literal notranslate"><span class="pre">--train-data-roots</span></code> we need to pass the path to the dataset folder root (in our case it’s <code class="docutils literal notranslate"><span class="pre">data/wgisd</span></code>) instead of the folder with validation images.
+This is because the function automatically detects annotations and images according to the expected folder structure we achieved above.
+So, if you’d like to add <code class="docutils literal notranslate"><span class="pre">--val-data-roots</span></code>, please note, that it should also be a path to a dataset folder root.</p>
+<p>On contrary, if we omit adding <code class="docutils literal notranslate"><span class="pre">--val-data-roots</span></code>, the function will find images for validation according to validation annotation and create <code class="docutils literal notranslate"><span class="pre">splitted_dataset</span></code> folder inside the workplace with the desired split.</p>
+<p>Let’s prepare the object detection workspace running the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we can specify the template by its ID
+(otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --train-data-roots data/wgisd
+
+# or its name
+(otx) ...$ otx build ATSS --train-data-roots data/wgisd
+
+# or its path
+(otx) ...$ otx build otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --train-data-roots data/wgisd
+
+...
+[*] Workspace Path: otx-workspace-DETECTION
+[*] Load Model Template ID: Custom_Object_Detection_Gen3_ATSS
+[*] Load Model Name: ATSS
+[*]     - Updated: otx-workspace-DETECTION/model.py
+[*]     - Updated: otx-workspace-DETECTION/data_pipeline.py
+[*]     - Updated: otx-workspace-DETECTION/tile_pipeline.py
+[*]     - Updated: otx-workspace-DETECTION/deployment.py
+[*]     - Updated: otx-workspace-DETECTION/hpo_config.yaml
+[*]     - Updated: otx-workspace-DETECTION/compression_config.json
+[*] Found validation data in your dataset. It&#39;ll be used as validation data.
+[*] Update data configuration file to: otx-workspace-DETECTION/data.yaml
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to update your current workspace by running <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> with other parameters, it’s better to delete the original workplace before that to prevent mistakes.</p>
+</div>
+<p>Check <code class="docutils literal notranslate"><span class="pre">otx-workspace-DETECTION/data.yaml</span></code> to ensure, which data subsets will be used for training and validation, and update it if necessary.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">:</span>
+<span class="n">train</span><span class="p">:</span>
+  <span class="n">ann</span><span class="o">-</span><span class="n">files</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">training_extensions_path</span><span class="o">&gt;/</span><span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span><span class="o">/</span><span class="n">splitted_dataset</span><span class="o">/</span><span class="n">train</span>
+<span class="n">val</span><span class="p">:</span>
+  <span class="n">ann</span><span class="o">-</span><span class="n">files</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">training_extensions_path</span><span class="o">&gt;/</span><span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span><span class="o">/</span><span class="n">splitted_dataset</span><span class="o">/</span><span class="n">val</span>
+<span class="n">test</span><span class="p">:</span>
+  <span class="n">ann</span><span class="o">-</span><span class="n">files</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="n">null</span>
+<span class="n">unlabeled</span><span class="p">:</span>
+  <span class="n">file</span><span class="o">-</span><span class="nb">list</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">data</span><span class="o">-</span><span class="n">roots</span><span class="p">:</span> <span class="n">null</span>
+</pre></div>
+</div>
+<p>We also can modify the backbone of the model, by adding <code class="docutils literal notranslate"><span class="pre">--backbone</span></code> parameter.
+We can find the available backbone by running <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> with the framework parameter.
+Learn more about modified backbones in <a class="reference internal" href="../../advanced/backbones.html"><span class="doc">advanced tutorial for backbone replacement</span></a>.</p>
+<p>3. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> trains a model (a particular model template)
+on a dataset and results in two files:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> - a model snapshot</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> - a label schema used in training, created from a dataset</p></li>
 </ul>
 <p>These are needed as inputs for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  <code class="docutils literal notranslate"><span class="pre">deploy</span></code> and <code class="docutils literal notranslate"><span class="pre">demo</span></code>.</p>
-<ol class="arabic simple" start="3">
-<li><p>To have a specific example in this tutorial, all commands will be run on the ATSS model. It’s a medium model, that achieves relatively high accuracy, while keeping the inference fast.</p></li>
-</ol>
-<p>The following command line starts training of the medium object detection model on the first GPU on WGISD dataset:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                          --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
-                          --train-data-roots  data/wgisd/data \
-                          --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
-                          --val-data-roots data/wgisd/data \
-                          --save-model-to outputs \
-                          --work-dir outputs/logs \
-                          --gpus 1
+<p>4. The following command line starts training of the medium object
+detection model on the first GPU on WGISD dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ cd otx-workspace-DETECTION/
+(otx) ...$ otx train  --save-model-to ../outputs --work-dir ../outputs/logs --gpus 1
 </pre></div>
 </div>
 <p>To start multi-gpu training, list the indexes of GPUs you want to train on or omit <cite>gpus</cite> parameter, so training will run on all available GPUs.</p>
-<p>If you created <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> file in previous step, you can simplify the training by passing it in <code class="docutils literal notranslate"><span class="pre">--data</span></code> parameter.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                          --data data.yaml \
-                          --save-model-to outputs \
-                          --work-dir outputs/logs \
-                          --gpus 1
-</pre></div>
-</div>
-<p>Looks much simpler, isn’t it? You can also pass the <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> for the rest of the OpenVINO™ Training Extensions CLI commands (eval, export, optimize) that require annotation paths.</p>
-<ol class="arabic simple" start="4">
-<li><p><code class="docutils literal notranslate"><span class="pre">(Optional)</span></code> Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations. More about template-specific parameters is in quick start [#TODO link].</p></li>
-</ol>
-<p>It can be done by manually updating parameters in the <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file or via command line.</p>
+<p>4. <code class="docutils literal notranslate"><span class="pre">(Optional)</span></code> Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about template-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span> <span class="pre">params</span> <span class="pre">--help</span></code>.</p>
+<p>It can be done by manually updating parameters in the <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file in your workplace or via the command line.</p>
 <p>For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">--</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">batch_size</span> <span class="mi">4</span> <span class="o">--</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">num_iters</span> <span class="mi">100</span> <span class="o">--</span><span class="n">learning_parameters</span><span class="o">.</span><span class="n">enable_early_stopping</span> <span class="n">false</span>
-</pre></div>
+<p>5. The training results are <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> files that located in <code class="docutils literal notranslate"><span class="pre">outputs</span></code> folder,
+while training logs can be found in the <code class="docutils literal notranslate"><span class="pre">outputs/logs</span></code> dir.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We also can visualize the training using <code class="docutils literal notranslate"><span class="pre">Tensorboard</span></code> as these logs are located in <code class="docutils literal notranslate"><span class="pre">outputs/logs/tf_logs</span></code>.</p>
 </div>
-<ol class="arabic simple" start="5">
-<li><p>The training results are <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> files that located in <code class="docutils literal notranslate"><span class="pre">outputs</span></code> folder, while training logs and tf_logs for <cite>Tensorboard</cite> visualization can be found in the <code class="docutils literal notranslate"><span class="pre">outputs/logs</span></code> dir.</p></li>
-</ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="mi">2023</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span> <span class="mi">05</span><span class="p">:</span><span class="mi">40</span><span class="p">:</span><span class="mi">21</span><span class="p">,</span><span class="mi">520</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Update</span> <span class="n">Lr</span> <span class="n">patience</span><span class="p">:</span> <span class="mi">3</span>
 <span class="mi">2023</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span> <span class="mi">05</span><span class="p">:</span><span class="mi">40</span><span class="p">:</span><span class="mi">21</span><span class="p">,</span><span class="mi">520</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Update</span> <span class="n">Validation</span> <span class="n">Interval</span><span class="p">:</span> <span class="mi">2</span>
@@ -633,60 +666,37 @@ On this page we show how to train, validate, export and optimize ATSS model on W
 </pre></div>
 </div>
 <p>The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 15 minutes.</p>
-<p>After that we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, that we can use for evaliation, export, optimization and deployment.</p>
+<p>After that, we have the PyTorch object detection model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.</p>
 </div>
 <div class="section" id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
-<ol class="arabic simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained model on a particular dataset.</p></li>
-</ol>
+<p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a
+trained model on a particular dataset.</p>
 <p>Eval function receives test annotation information and model snapshot, trained in previous step.
 Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.</p>
 <p>The default metric is F1 measure.</p>
-<ol class="arabic simple" start="2">
-<li><p>That’s how we can evaluate the snapshot in <code class="docutils literal notranslate"><span class="pre">outputs</span></code> folder on WGISD dataset and save results to <code class="docutils literal notranslate"><span class="pre">outputs/performance</span></code>:</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                          --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
-                          --test-data-roots data/wgisd/data \
-                          --load-weights outputs/weights.pth \
-                          --save-performance outputs/performance.json
+<p>2. That’s how we can evaluate the snapshot in <code class="docutils literal notranslate"><span class="pre">outputs</span></code>
+folder on WGISD dataset and save results to <code class="docutils literal notranslate"><span class="pre">outputs/performance</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
+                    --load-weights ../outputs/weights.pth \
+                    --save-performance ../outputs/performance.json
 </pre></div>
 </div>
-<p>If you created <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> file in previous step, you can simplify the training by passing it in <code class="docutils literal notranslate"><span class="pre">--data</span></code> parameter.
-Note,  with <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code>, it runs evaluation on test JSON annotation file (not on validation JSON annotation file).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                          --data data.yaml \
-                          --load-weights outputs/weights.pth \
-                          --save-performance outputs/performance.json
-</pre></div>
-</div>
-<p>We will get this validation output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2023</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span> <span class="mi">06</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">32</span><span class="p">,</span><span class="mi">182</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">run</span> <span class="n">task</span> <span class="n">done</span><span class="o">.</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span> <span class="mi">06</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">33</span><span class="p">,</span><span class="mi">884</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Inference</span> <span class="n">completed</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span> <span class="mi">06</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">33</span><span class="p">,</span><span class="mi">885</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">called</span> <span class="n">evaluate</span><span class="p">()</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span> <span class="mi">06</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">34</span><span class="p">,</span><span class="mi">142</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">F</span><span class="o">-</span><span class="n">measure</span> <span class="n">after</span> <span class="n">evaluation</span><span class="p">:</span> <span class="mf">0.5487693710118504</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">10</span> <span class="mi">06</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">34</span><span class="p">,</span><span class="mi">142</span> <span class="o">|</span> <span class="n">INFO</span> <span class="p">:</span> <span class="n">Evaluation</span> <span class="n">completed</span>
-<span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.5487693710118504</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="3">
-<li><p>The output of <code class="docutils literal notranslate"><span class="pre">./outputs/performance.json</span></code> consists of dict with target metric name and its value.</p></li>
-</ol>
+<p>3. The output of <code class="docutils literal notranslate"><span class="pre">../outputs/performance.json</span></code> consists of
+a dict with target metric name and its value.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;f-measure&quot;</span><span class="p">:</span> <span class="mf">0.5487693710118504</span><span class="p">}</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="4">
-<li><p><code class="docutils literal notranslate"><span class="pre">Optional</span></code> Additionally, we can tune evaluation parameters such as confidence threshold via the command line. Read more about template-specific parameters for validation in quick start [#TODO link].</p></li>
-</ol>
+<p>4. <code class="docutils literal notranslate"><span class="pre">Optional</span></code> Additionally, we can tune evaluation parameters such as confidence threshold via the command line.
+Learn more about template-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span> <span class="pre">params</span> <span class="pre">--help</span></code>.</p>
 <p>For example, if there are too many False-Positive predictions (there we have a prediction, but don’t have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.</p>
 <p>Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable <code class="docutils literal notranslate"><span class="pre">result_based_confidence_threshold</span></code> option.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                          --data data.yaml \
-                          --load-weights outputs/weights.pth \
-                          params \
-                          --postprocessing.confidence_threshold 0.5 \
-                          --postprocessing.result_based_confidence_threshold false
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
+                    --load-weights ../outputs/weights.pth \
+                    --save-performance ../outputs/performance.json
+                    params \
+                    --postprocessing.confidence_threshold 0.5 \
+                    --postprocessing.result_based_confidence_threshold false
 
 ...
 
@@ -699,12 +709,10 @@ Note,  with <code class="docutils literal notranslate"><span class="pre">data.ya
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
 Also, the resulting IR model is required to run POT optimization in the section below. IR model contains 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
-<ol class="arabic simple" start="2">
-<li><p>That’s how we can export the trained model <code class="docutils literal notranslate"><span class="pre">outputs/weights.pth</span></code> from the previous section and save the exported model to the <code class="docutils literal notranslate"><span class="pre">outputs/openvino/</span></code> folder.</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                            --load-weights outputs/weights.pth \
-                            --save-model-to outputs/openvino/
+<p>2. That’s how we can export the trained model <code class="docutils literal notranslate"><span class="pre">../outputs/weights.pth</span></code>
+from the previous section and save the exported model to the <code class="docutils literal notranslate"><span class="pre">../outputs/openvino/</span></code> folder.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights ../outputs/weights.pth \
+                      --save-model-to ../outputs/openvino/
 
 ...
 
@@ -712,14 +720,11 @@ Also, the resulting IR model is required to run POT optimization in the section 
 2023-01-10 06:23:41,630 | INFO : Exporting completed
 </pre></div>
 </div>
-<ol class="arabic simple" start="3">
-<li><p>We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model, using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                          --test-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
-                          --test-data-roots data/wgisd/data \
-                          --load-weights outputs/openvino/openvino.xml \
-                          --save-performance outputs/openvino/performance.json \
+<p>3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
+                    --load-weights ../outputs/openvino/openvino.xml \
+                    --save-performance ../outputs/performance.json
 
 ...
 2023-01-10 06:24:50,382 | INFO : Start OpenVINO inference
@@ -732,12 +737,11 @@ Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 </div>
 <div class="section" id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
-<ol class="arabic simple">
-<li><p>We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>. It uses NNCF or POT depending on the model format.</p></li>
-</ol>
+<p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
+It uses NNCF or POT depending on the model format.</p>
 <p><code class="docutils literal notranslate"><span class="pre">NNCF</span></code> optimization is used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.</p>
 <p><code class="docutils literal notranslate"><span class="pre">POT</span></code> optimization is used for models exported in the OpenVINO™ IR format. It decreases the floating-point precision to integer precision of the exported model by performing the post-training optimization.</p>
-<p>The function results with the following files, which could be used to run <a class="reference internal" href="../demo.html"><span class="doc">otx demo</span></a>:</p>
+<p>The function results with the following files, which could be used to run <a class="reference internal" href="../demo.html"><span class="doc">otx demo</span></a> as well with PyTorch (<cite>.pth</cite>) and IR model (<cite>.xml</cite>):</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">confidence_threshold</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">config.json</span></code></p></li>
@@ -746,17 +750,11 @@ Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 <li><p><code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code></p></li>
 </ul>
 <p>To learn more about optimization, refer to <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF repository</a>.</p>
-<ol class="arabic simple" start="2">
-<li><p>Command example for optimizing a PyTorch model (<cite>.pth</cite>) with OpenVINO NNCF.</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                              --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
-                              --train-data-roots  data/wgisd/data \
-                              --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
-                              --val-data-roots data/wgisd/data \
-                              --load-weights outputs/weights.pth \
-                              --save-model-to outputs/nncf \
-                              --save-performance outputs/nncf/performance.json
+<p>2. Command example for optimizing a PyTorch model (<cite>.pth</cite>)
+with OpenVINO NNCF.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize  --load-weights ../outputs/weights.pth \
+                         --save-model-to ../outputs/nncf \
+                         --save-performance ../outputs/nncf/performance.json
 
 ...
 
@@ -768,16 +766,11 @@ Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 Performance(score: 0.5446735395189003, dashboard: (1 metric groups))
 </pre></div>
 </div>
-<ol class="arabic simple" start="3">
-<li><p>Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT.</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
-                              --train-ann-files data/wgisd/coco_annotations/train_bbox_instances.json \
-                              --train-data-roots  data/wgisd/data \
-                              --val-ann-files data/wgisd/coco_annotations/test_bbox_instances.json \
-                              --val-data-roots data/wgisd/data \
-                              --load-weights outputs/openvino/openvino.xml \
-                              --save-model-to outputs/pot
+<p>3.  Command example for optimizing OpenVINO™ model (.xml)
+with OpenVINO™ POT.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize  --load-weights ../outputs/openvino/openvino.xml \
+                         --save-model-to ../outputs/pot \
+                         --save-performance ../outputs/pot/performance.json
 
 ...
 
@@ -794,30 +787,10 @@ Performance(score: 0.5389435989256938, dashboard: (1 metric groups))
 </div>
 <p>The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
 Please note, that POT will take some time without logging to optimize the model.</p>
-<ol class="arabic simple" start="4">
-<li><p>Finally, we can also evaluate the optimized model by passing it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> function.</p></li>
-</ol>
+<p>4. Finally, we can also evaluate the optimized model by passing
+it to the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> function.</p>
 <p>Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.</p>
-<p>Following tutorials provides further steps how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.</p>
-</div>
-<div class="section" id="troubleshooting">
-<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">#</a></h2>
-<ol class="arabic simple">
-<li><p>If you have access to the Internet through the proxy server only, please use pip with proxy call as demonstrated by command below:</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">proxy</span> <span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">usr_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;@&lt;</span><span class="n">proxyserver_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="c1">#&gt; &lt;pkg_name&gt;</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="2">
-<li><p>If you use Anaconda environment, you should consider that OpenVINO has limited <a class="reference external" href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html">Conda support</a> for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.</p></li>
-</ol>
-<p>So please use other tools to create the environment (like <code class="docutils literal notranslate"><span class="pre">venv</span></code> or <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>) and use <code class="docutils literal notranslate"><span class="pre">pip</span></code> as a package manager.</p>
-<ol class="arabic simple" start="3">
-<li><p>If you have problems when you try to use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> command, please update pip version by following command:</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pip</span>
-</pre></div>
-</div>
+<p>The following tutorials provide further steps how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.</p>
 </div>
 </div>
 
@@ -887,11 +860,6 @@ Please note, that POT will take some time without logging to optimize the model.
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#optimization">
    Optimization
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#troubleshooting">
-   Troubleshooting
   </a>
  </li>
 </ul>
