@@ -1,15 +1,13 @@
-name: Build Docs
+name: Build Docs for the latest
 
 on:
   push:
     branches:
       - develop
-      - releases/v1.0.0
-  workflow_dispatch: # run on request (no need for PR)
 
 jobs:
   Build-Docs:
-    runs-on: [self-hosted, linux, x64]
+    runs-on: ubuntu-20.04
     permissions:
       contents: write
     steps:
@@ -21,6 +19,7 @@ jobs:
         run: tox -e build-doc
       - name: Create gh-pages branch
         run: |
+          echo RELEASE_VERSION=${GITHUB_REF#refs/*/} >> $GITHUB_ENV
           echo SOURCE_NAME=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
           echo SOURCE_BRANCH=${GITHUB_REF#refs/heads/} >> $GITHUB_OUTPUT
           echo SOURCE_TAG=${GITHUB_REF#refs/tags/} >> $GITHUB_OUTPUT
@@ -49,7 +48,10 @@ jobs:
           mkdir -p /tmp/docs_build
           cp -r docs/build/html/* /tmp/docs_build/
           rm -rf ./*
-          cp -r /tmp/docs_build/* ./
+          echo '<html><head><meta http-equiv="refresh" content="0; url=stable/" /></head></html>' > index.html
+          mkdir -p ${{ env.RELEASE_VERSION }}
+          cp -r /tmp/docs_build/* ./${{ env.RELEASE_VERSION }}
+          ln -sf ${{ env.RELEASE_VERSION }} latest
           rm -rf /tmp/docs_build
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
