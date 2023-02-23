@@ -68,8 +68,8 @@ class SemiMultilabelClsHead:
 
         return losses
 
-    def forward_train(self, x, gt_label, final_cls_layer, final_emb_layer):
-        """forward_train head
+    def forward_train_with_last_layers(self, x, gt_label, final_cls_layer, final_emb_layer):
+        """Forwards multilabel semi-ls head and losses
 
         Args:
             x (dict): dict(labeled_weak. labeled_strong, unlabeled_weak, unlabeled_strong) or NxC input features.
@@ -126,8 +126,8 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
     def forward_train(self, x, gt_label):
-        return SemiMultilabelClsHead.forward_train(
-            self, x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp
+        return self.forward_train_with_last_layers(
+            x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp
         )
 
 
@@ -185,8 +185,8 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
     def forward_train(self, x, gt_label):
-        return SemiMultilabelClsHead.forward_train(
-            self, x, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp
+        return self.forward_train_with_last_layers(
+            x, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp
         )
 
 
