@@ -102,13 +102,13 @@ Let's prepare an OpenVINO™ Training Extensions classification workspase runnin
 
   [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
   [*] Load Model Name: MobileNet-V3-large-1x
-  [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION/data.yaml
+  [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x/data.yaml
 
-  (otx) ...$ cd ./otx-workspace-CLASSIFICATION
+  (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
 
 It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
-3. To start training we need to call ``otx train``
+2. To start training we need to call ``otx train``
 command in our worspace:
 
 .. code-block::
