@@ -120,7 +120,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
             try:
-                if model_data["config"]["model"]["backbone"] == self.config["model"]["backbone"]:
+                if model_data["config"]["model"].get("backbone") == self.config["model"].get("backbone"):
                     model.load_state_dict(model_data["model"])
                     logger.info("Loaded model weights from Task Environment")
                 else:
