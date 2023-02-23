@@ -21,6 +21,7 @@ from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
 from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
+    is_in_nncf_tracing,
     nncf_trace_wrapper,
     no_nncf_trace_wrapper,
 )
@@ -118,6 +119,30 @@ NNCF_PATCHER.patch(
 )
 NNCF_PATCHER.patch("mmdet.core.bbox2result", no_nncf_trace_wrapper)
 NNCF_PATCHER.patch("mmdet.core.bbox2roi", no_nncf_trace_wrapper)
+
+
+def _wrap_is_in_onnx_export(ctx, fn):
+    # TODO: find a better way to solve this w/o patching 'torch.onnx.is_in_onnx_export'
+    #
+    # prevent incomplete graph building for MaskRCNN models
+    #
+    # possible alternatives
+    #    - take the onnx branch in all cases
+
+    import inspect
+
+    stack = inspect.stack()
+    frame_info = stack[2]
+    if (
+        frame_info.function == "forward"
+        and "self" in frame_info.frame.f_locals.keys()
+        and frame_info.frame.f_locals["self"].__class__.__name__ == "SingleRoIExtractor"
+    ):
+        return fn() or is_in_nncf_tracing()
+    return fn()
+
+
+NNCF_PATCHER.patch("torch.onnx.is_in_onnx_export", _wrap_is_in_onnx_export)
 
 # add nncf context method that will be used when nncf tracing
 BaseDetector.nncf_trace_context = nncf_trace_context
