@@ -1,0 +1,12 @@
+{
+    "encoder":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi10/encoder-100.zip",
+        "dest_path":"/src/utils/model_weights/encoder.zip"
+
+    },
+    
+    "data":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi10/dataset.zip",
+        "dest_path":"/src/utils/dataset.zip"
+    }
+}
