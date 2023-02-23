@@ -2,7 +2,7 @@ Auto-configuration
 ==================
 
 Auto-configuration for a deep learning framework means the automatic finding of the most appropriate settings for the training parameters, based on the dataset and the specific task at hand.
-Auto-configuration can help to save time, it eases the process of interaction with OTX CLI and gives a better baseline for the given dataset.
+Auto-configuration can help to save time, it eases the process of interaction with OpenVINO™ Training Extensions CLI and gives a better baseline for the given dataset.
 
 At this end, we developed a simple auto-configuration functionality to ease the process of training and validation utilizing our framework.
 Basically, to start the training and obtain a good baseline with the best trade-off between accuracy and speed we need to pass only a dataset in the right format without specifying anything else:
@@ -13,13 +13,13 @@ Basically, to start the training and obtain a good baseline with the best trade-
 
 .. note::
 
-    OTX supports also ``otx build`` mode with the auto-configuration feature. We can build OTX workspace with the following CLI command:
+    OpenVINO™ Training Extensions supports also ``otx build`` mode with the auto-configuration feature. We can build OpenVINO™ Training Extensions workspace with the following CLI command:
 
     .. code-block::
 
         $ otx build --train-data-root <path_to_data_root>
 
-Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OTX will handle it on its own.
+Moreover, our dataset can have no train/val splits at all. The Datumaro manager integrated into OpenVINO™ Training Extensions will handle it on its own.
 It will recognize the task by analyzing the dataset and if there is no splits for the validation - Datumaro will do a random auto-split, saving this split to the workspace. It could be used with ``otx optimize`` or ``otx train``.
 
 .. note::
@@ -42,7 +42,7 @@ After dataset preparation, the training will be started with the middle-sized te
     - anomaly segmentation: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
     - instance segmentation: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
 
-    If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type and use `otx build` first with an additional CLI option. If not, OTX automatically chooses the task type that you might don't intend:
+    If we have a dataset format occluded with other tasks, for example ``COCO`` format, we should directly emphasize the task type and use `otx build` first with an additional CLI option. If not, OpenVINO™ Training Extensions automatically chooses the task type that you might don't intend:
 
     .. code-block::
 

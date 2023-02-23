@@ -1,7 +1,7 @@
-OTX CLI commands
+OpenVINO™ Training Extensions CLI commands
 =================
 
-Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
+Below, all possible OpenVINO™ Training Extensions CLI commands are presented with some general examples of how to run specific functionality. We also have :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
 
 .. note::
 
@@ -131,7 +131,7 @@ Then pass the path to ``coco_data_root`` to both root options:
   ``--train-data-roots coco_data_root --val-data-roots coco_data_root``
 
 However, if you store your training set and validation separately - provide paths to both accordingly.
-OTX supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to ``splitted_dataset`` folder inside the otx workspace folder. This split can be further used for training.
+OpenVINO™ Training Extensions supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to ``splitted_dataset`` folder inside the workspace folder. This split can be further used for training.
 
 .. note::
 
@@ -151,7 +151,7 @@ The results will be saved in ``./model`` folder by default. The output folder ca
 
 ``otx train`` receives ``template`` as a positional argument. ``template`` can be a path to the specific ``template.yaml`` file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.
 
-However, if you created a workspace with ``otx build``, the training process can be started (in the workspace directory) just with ``otx train`` command without any additional options. OTX will fetch everything else automatically.
+However, if you created a workspace with ``otx build``, the training process can be started (in the workspace directory) just with ``otx train`` command without any additional options. OpenVINO™ Training Extensions will fetch everything else automatically.
 
 .. code-block::
 
@@ -206,7 +206,7 @@ Example of the command line to start object detection training:
 
 
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset OTX will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
 We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
@@ -223,6 +223,11 @@ For example, that is how we can change the learning rate and the batch size for 
     (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
 
 
+As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the `--gpus` argument. The model will then be trained using distributed data parallel with the GPUs you have specified.
+
+.. note::
+
+    Multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We'll add support for them in the near future.
 
 **********
 Exporting
@@ -347,6 +352,50 @@ The command below will evaluate the trained model on the provided dataset:
 .. code-block::
 
     (otx) ...$ otx eval Custom_Object_Detection_Gen3_SSD --test-data-roots <path/to/test/root> --load-weights <path/to/model_weghts> --save-performance outputs/performance.json
+
+.. note::
+
+    it is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
+
+
+***********
+Explanation
+***********
+
+``otx explain`` runs the explanation algorithm of a model on the specific dataset. It helps explain model's decision-making process in a way that is easily understood by humans.
+
+With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
+
+.. code-block::
+
+    (otx) ...$ otx explain --help
+    usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
+
+    positional arguments:
+      template              Enter the path or ID or name of the template file.
+                            This can be omitted if you have train-data-roots or run inside a workspace.
+      {params}              sub-command help
+        params              Hyper parameters defined in template file.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --explain-data-roots EXPLAIN_DATA_ROOTS
+                            Comma-separated paths to explain data folders.
+      --save-explanation-to SAVE_EXPLANATION_TO
+                            Output path for explanation images.
+      --load-weights LOAD_WEIGHTS
+                            Load model weights from previously saved checkpoint.
+      --explain-algorithm EXPLAIN_ALGORITHM
+                            Explain algorithm name, currently support ['activationmap', 'eigencam', 'classwisesaliencymap']. For Openvino task, default method will be selected.
+      --overlay-weight OVERLAY_WEIGHT
+                            Weight of the saliency map when overlaying the saliency map.
+
+
+The command below will generate saliency maps (heatmaps with areas of focus) of the trained model on the provided dataset and saves the resulting images to ``save-explanation-to`` path:
+
+.. code-block::
+
+    (otx) ...$ otx explain Custom_Object_Detection_Gen3_SSD --explain-data-roots <path/to/explain/root> --load-weights <path/to/model_weghts> --save-explanation-to <path/to/output/root> --explain-algorithm classwisesaliencymap --overlay-weight 0.5
 
 .. note::
 

@@ -3,7 +3,7 @@ Algorithm
 
 Introduction
 ------------
-This section contains algorithmic implementations. ``otx`` provides number of
+This section contains algorithmic implementations. OpenVINO™ Training Extensions provides number of
 different algorithms such as classification, detection,
 segmentation and anomaly with various learning types such as supervised,
 semi and self-supervised learning.
@@ -53,7 +53,7 @@ Adapters
 ``adapters`` contain modules to wrap the original library used to perform the
 task. For instance, detection task uses
 `mmdetection <https://github.com/open-mmlab/mmdetection>`_ library, meaning that
-``adapters`` comprises adapters to wrap ``mmdetection`` to use with ``otx``.
+``adapters`` comprises adapters to wrap ``mmdetection`` to use with OpenVINO™ Training Extensions.
 
 Configs
 ^^^^^^^

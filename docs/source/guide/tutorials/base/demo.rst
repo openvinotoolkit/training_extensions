@@ -81,6 +81,7 @@ The output will look like this:
 
 After that, we can use this ``/dev/video0`` as a camera ID for ``--input``.
 
+Congratulations! Now you have learned how to use base OpenVINO™ Training Extensions functionality. For the advanced features, please refer to the next section called :doc:`../advanced/index`.
 
 ***************
 Troubleshooting

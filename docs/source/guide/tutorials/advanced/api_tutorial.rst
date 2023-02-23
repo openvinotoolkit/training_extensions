@@ -1,14 +1,14 @@
-Utilize OTX APIs in your project
+Utilize OpenVINO™ Training Extensions APIs in your project
 ================================
 
-Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OTX models into their projects.
+Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OpenVINO™ Training Extensions models into their projects.
 This tutorial intends to show how to create a dataset, model and use all of the CLI functionality through APIs.
 
 For demonstration purposes we will use the Object Detection SSD model with `WGISD <https://github.com/thsant/wgisd>`_ public dataset as we did for the :doc:`CLI tutorial <../base/how_to_train/detection>`.
 
 .. note::
 
-    To start with we need to `install OTX <https://github.com/openvinotoolkit/training_extensions/blob/develop/QUICK_START_GUIDE.md#setup-openvino-training-extensions>`_.
+    To start with we need to `install OpenVINO™ Training Extensions <https://github.com/openvinotoolkit/training_extensions/blob/develop/QUICK_START_GUIDE.md#setup-openvino-training-extensions>`_.
 
 *******************
 Dataset preparation
@@ -25,13 +25,13 @@ with `WGISD dataset <https://github.com/thsant/wgisd>`_.
   git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
 
 2. We need to rename annotations to
-be distinguished by OTX Datumaro manager:
+be distinguished by OpenVINO™ Training Extensions Datumaro manager:
 
 .. code-block::
 
     mv data images && mv coco_annotations annotations && mv annotations/train_bbox_instances.json instances_train.json  && mv annotations/test_bbox_instances.json instances_val.json
 
-Now it is all set to use this dataset inside OTX
+Now it is all set to use this dataset inside OpenVINO™ Training Extensions
 
 **********************************
 Model template and dataset loading
@@ -249,7 +249,7 @@ Let's assume, that we have already trained the model and we want to use it in ou
 
 .. code-block::
 
-    # path to the trained OTX weights, can be PyTorch .pth or OpenVINO™ IR .xml
+    # path to the trained OpenVINO™ Training Extensions weights, can be PyTorch .pth or OpenVINO™ IR .xml
     weights_path = "path/to/trained/weights"
 
     # create new environment
@@ -304,4 +304,4 @@ We can convert these steps to function and use it in a loop with multiple images
         img = draw_predictions(template.task_type, predictions, img, args.fit_to_size)
 
 
-That's it. Now, we can use OTX APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extension.
+That's it. Now, we can use OpenVINO™ Training Extensions APIs to create, train, and deploy deep learning models using the OpenVINO™ Training Extension.
