@@ -85,7 +85,6 @@ class TestRegressionActionClassification:
             template, tmp_dir_path, otx_dir, action_cls_data_args, 
             action_cls_regression_config["regression_criteria"]["train"], 
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
@@ -113,7 +112,6 @@ class TestRegressionActionClassification:
             criteria=action_cls_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
         
@@ -140,10 +138,9 @@ class TestRegressionActionClassification:
             criteria=action_cls_regression_config["regression_criteria"]["pot"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][self.pot_time] = round(pot_elapsed_time, 3)
+        self.performance[template.name][self.pot_eval_time] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)

@@ -26,7 +26,8 @@ from tests.test_suite.run_test_command import (
 from tests.regression.regression_test_helpers import (
     load_regression_configuration,
     get_result_dict,
-    REGRESSION_TEST_EPOCHS
+    REGRESSION_TEST_EPOCHS,
+    TIME_LOG
 )
 
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -55,22 +56,6 @@ segmentation_data_args["train_params"] = [
 class TestRegressionSegmentation:
     def setup_method(self):
         self.label_type = LABEL_TYPE
-        self.acc_metric = "Top-1 acc."
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-        
-        self.export_time = "Export time (sec.)"
-        self.export_eval_time = "Export eval time (sec.)"
-        
-        self.deploy_time = "Deploy time (sec.)"
-        self.deploy_eval_time = "Deploy eval time (sec.)"
-        
-        self.nncf_time = "NNCF time (sec.)"
-        self.nncf_eval_time = "NNCF eval time (sec.)"
-        
-        self.pot_time = "POT time (sec.)"
-        self.pot_eval_time = "POT eval time (sec.)"
-        
         self.performance = {}
         
     def teardown_method(self):        
@@ -92,12 +77,11 @@ class TestRegressionSegmentation:
             template, tmp_dir_path, otx_dir, segmentation_data_args, 
             segmentation_regression_config["regression_criteria"]["train"], 
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -111,6 +95,7 @@ class TestRegressionSegmentation:
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
         args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_cls_incr)
@@ -124,12 +109,11 @@ class TestRegressionSegmentation:
             args_cls_incr,
             config_cls_incr["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -143,9 +127,9 @@ class TestRegressionSegmentation:
 
         args_semisl["train_params"] = [
             "params",
-            "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS
+            "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS,
+            "--algo_backend.train_type", "SEMISUPERVISED"
         ]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
         train_elapsed_time = timer() - train_start_time
@@ -156,12 +140,11 @@ class TestRegressionSegmentation:
             template, tmp_dir_path, otx_dir, args_semisl, 
             config_semisl["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
     
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE]["semi_supervised"]["train"].append(self.performance)
         
     @e2e_pytest_component
@@ -173,9 +156,12 @@ class TestRegressionSegmentation:
         config_selfsl = load_regression_configuration(otx_dir, TASK_TYPE, "self_supervised", LABEL_TYPE)
         args_selfsl = config_selfsl["data_path"]
 
-        args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         selfsl_train_args = copy.deepcopy(args_selfsl)
-        selfsl_train_args["train_params"].extend(["--algo_backend.train_type", "SELFSUPERVISED"])
+        selfsl_train_args["train_params"] = [
+            "params",
+            "--algo_backend.train_type", "SELFSUPERVISED"
+        ]
+        
         # Self-supervised Training
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, selfsl_train_args)
@@ -184,12 +170,14 @@ class TestRegressionSegmentation:
         # Supervised Training
         template_work_dir = get_template_dir(template, tmp_dir_path)
         new_tmp_dir_path = tmp_dir_path / "test_supervised"
+        args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         args_selfsl["--val-data-roots"] = segmentation_data_args["--val-data-roots"]
         args_selfsl["--test-data-roots"] = segmentation_data_args["--test-data-roots"]
         args_selfsl["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, new_tmp_dir_path, otx_dir, args_selfsl)
         
         # Evaluation with self + supervised training model
+        args_selfsl.pop("--load-weights")
         infer_start_time = timer()
         otx_eval_compare(
             template,
@@ -198,12 +186,11 @@ class TestRegressionSegmentation:
             args_selfsl,
             config_selfsl["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["self_supervised"]["train"].append(self.performance)
         
     @e2e_pytest_component
@@ -226,12 +213,11 @@ class TestRegressionSegmentation:
             criteria=segmentation_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
         
-        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
-        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
@@ -254,12 +240,11 @@ class TestRegressionSegmentation:
             criteria=segmentation_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         deploy_eval_elapsed_time = timer() - deploy_eval_start_time
         
-        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
-        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
@@ -285,12 +270,11 @@ class TestRegressionSegmentation:
             criteria=segmentation_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         nncf_eval_elapsed_time = timer() - nncf_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
@@ -309,13 +293,12 @@ class TestRegressionSegmentation:
             tmp_dir_path,
             otx_dir,
             segmentation_data_args,
-            criteria=segmentation_regression_config["regression_criteria"]["nncf"],
+            criteria=segmentation_regression_config["regression_criteria"]["pot"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)

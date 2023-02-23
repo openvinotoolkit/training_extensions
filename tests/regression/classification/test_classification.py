@@ -14,7 +14,8 @@ from otx.cli.registry import Registry
 from tests.regression.regression_test_helpers import (
     get_result_dict,
     load_regression_configuration,
-    REGRESSION_TEST_EPOCHS
+    REGRESSION_TEST_EPOCHS,
+    TIME_LOG
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -34,7 +35,6 @@ from tests.test_suite.run_test_command import (
 # Configurations for regression test.
 TASK_TYPE = "classification"
 TRAIN_TYPE = "supervised"
-LABEL_TYPE = "multi_class"
 
 otx_dir = os.getcwd()
 templates = Registry("otx/algorithms/classification").filter(task_type=TASK_TYPE.upper()).templates
@@ -45,30 +45,14 @@ result_dir = f"/tmp/regression_test_results/{TASK_TYPE}"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 
 # Multi-class Classification
-multi_class_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, LABEL_TYPE)
+multi_class_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, "multi_class")
 multi_class_data_args = multi_class_regression_config["data_path"]
 multi_class_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
 
 class TestRegressionMultiClassClassification:
     def setup_method(self):
-        self.label_type = LABEL_TYPE
-        self.acc_metric = "Top-1 acc."
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-        
-        self.export_time = "Export time (sec.)"
-        self.export_eval_time = "Export eval time (sec.)"
-        
-        self.deploy_time = "Deploy time (sec.)"
-        self.deploy_eval_time = "Deploy eval time (sec.)"
-        
-        self.nncf_time = "NNCF time (sec.)"
-        self.nncf_eval_time = "NNCF eval time (sec.)"
-        
-        self.pot_time = "POT time (sec.)"
-        self.pot_eval_time = "POT eval time (sec.)"
-        
+        self.label_type = "multi_class"
         self.performance = {}
 
     def teardown_method(self):
@@ -93,12 +77,11 @@ class TestRegressionMultiClassClassification:
             multi_class_data_args,
             multi_class_regression_config["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -112,6 +95,7 @@ class TestRegressionMultiClassClassification:
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
         args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_cls_incr)
@@ -125,12 +109,11 @@ class TestRegressionMultiClassClassification:
             args_cls_incr,
             config_cls_incr["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
     
     @e2e_pytest_component
@@ -139,7 +122,7 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name] = {}
         
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
-        config_semisl = load_regression_configuration(otx_dir, TASK_TYPE, "semi_supervised", LABEL_TYPE)
+        config_semisl = load_regression_configuration(otx_dir, TASK_TYPE, "semi_supervised", self.label_type)
         args_semisl = config_semisl["data_path"]
 
         args_semisl["train_params"] = [
@@ -159,12 +142,11 @@ class TestRegressionMultiClassClassification:
             args_semisl,
             config_semisl["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["semi_supervised"]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -173,15 +155,17 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name] = {}
         
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
-        config_selfsl = load_regression_configuration(otx_dir, TASK_TYPE, "self_supervised", LABEL_TYPE)
+        config_selfsl = load_regression_configuration(otx_dir, TASK_TYPE, "self_supervised", self.label_type)
         args_selfsl = config_selfsl["data_path"]
 
-        args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         selfsl_train_args = copy.deepcopy(args_selfsl)
-        selfsl_train_args["train_params"].extend([
+        selfsl_train_args["train_params"] = [
+            "params",
             "--learning_parameters.batch_size", "64",
+            "--learning_parameters.num_iters", "10",
             "--algo_backend.train_type", "SELFSUPERVISED"
-        ])
+        ]
+        
         # Self-supervised Training
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, selfsl_train_args)
@@ -190,11 +174,14 @@ class TestRegressionMultiClassClassification:
         # Supervised Training
         template_work_dir = get_template_dir(template, tmp_dir_path)
         new_tmp_dir_path = tmp_dir_path / "test_supervised"
+        args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
+        args_selfsl["--val-data-roots"] = multi_class_data_args["--val-data-roots"]
         args_selfsl["--test-data-roots"] = multi_class_data_args["--test-data-roots"]
         args_selfsl["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, new_tmp_dir_path, otx_dir, args_selfsl)
         
         # Evaluation with self + supervised training model
+        args_selfsl.pop("--load-weights")
         infer_start_time = timer()
         otx_eval_compare(
             template,
@@ -203,12 +190,11 @@ class TestRegressionMultiClassClassification:
             args_selfsl,
             config_selfsl["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["self_supervised"]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -231,12 +217,11 @@ class TestRegressionMultiClassClassification:
             criteria=multi_class_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
         
-        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
-        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
@@ -259,12 +244,11 @@ class TestRegressionMultiClassClassification:
             criteria=multi_class_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         deploy_eval_elapsed_time = timer() - deploy_eval_start_time
         
-        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
-        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
@@ -290,12 +274,11 @@ class TestRegressionMultiClassClassification:
             criteria=multi_class_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         nncf_eval_elapsed_time = timer() - nncf_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
@@ -314,15 +297,14 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            criteria=multi_class_regression_config["regression_criteria"]["nncf"],
+            criteria=multi_class_regression_config["regression_criteria"]["pot"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
 
 # Multi-label Classification
@@ -334,22 +316,6 @@ multi_label_data_args["train_params"] = ["params", "--learning_parameters.num_it
 class TestRegressionMultiLabelClassification:
     def setup_method(self):
         self.label_type = "multi_label"
-        self.acc_metric = "Top-1 acc."
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-        
-        self.export_time = "Export time (sec.)"
-        self.export_eval_time = "Export eval time (sec.)"
-        
-        self.deploy_time = "Deploy time (sec.)"
-        self.deploy_eval_time = "Deploy eval time (sec.)"
-        
-        self.nncf_time = "NNCF time (sec.)"
-        self.nncf_eval_time = "NNCF eval time (sec.)"
-        
-        self.pot_time = "POT time (sec.)"
-        self.pot_eval_time = "POT eval time (sec.)"
-        
         self.performance = {}
 
     def teardown_method(self):
@@ -374,12 +340,11 @@ class TestRegressionMultiLabelClassification:
             multi_label_data_args,
             multi_label_regression_config["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -393,6 +358,7 @@ class TestRegressionMultiLabelClassification:
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
         args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_cls_incr)
@@ -406,12 +372,11 @@ class TestRegressionMultiLabelClassification:
             args_cls_incr,
             config_cls_incr["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
     
     @e2e_pytest_component
@@ -434,12 +399,11 @@ class TestRegressionMultiLabelClassification:
             criteria=multi_label_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
         
-        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
-        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
@@ -462,12 +426,11 @@ class TestRegressionMultiLabelClassification:
             criteria=multi_label_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         deploy_eval_elapsed_time = timer() - deploy_eval_start_time
         
-        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
-        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
@@ -493,12 +456,11 @@ class TestRegressionMultiLabelClassification:
             criteria=multi_label_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         nncf_eval_elapsed_time = timer() - nncf_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
@@ -517,15 +479,14 @@ class TestRegressionMultiLabelClassification:
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            criteria=multi_label_regression_config["regression_criteria"]["nncf"],
+            criteria=multi_label_regression_config["regression_criteria"]["pot"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
 
 # H-label Classification
@@ -535,23 +496,7 @@ h_label_data_args["train_params"] = ["params", "--learning_parameters.num_iters"
 
 class TestRegressionHierarchicalLabelClassification:
     def setup_method(self):
-        self.label_type = "multi_label"
-        self.acc_metric = "Top-1 acc."
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-        
-        self.export_time = "Export time (sec.)"
-        self.export_eval_time = "Export eval time (sec.)"
-        
-        self.deploy_time = "Deploy time (sec.)"
-        self.deploy_eval_time = "Deploy eval time (sec.)"
-        
-        self.nncf_time = "NNCF time (sec.)"
-        self.nncf_eval_time = "NNCF eval time (sec.)"
-        
-        self.pot_time = "POT time (sec.)"
-        self.pot_eval_time = "POT eval time (sec.)"
-        
+        self.label_type = "h_label"
         self.performance = {}
 
     def teardown_method(self):
@@ -576,12 +521,11 @@ class TestRegressionHierarchicalLabelClassification:
             h_label_data_args,
             h_label_regression_config["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -604,12 +548,11 @@ class TestRegressionHierarchicalLabelClassification:
             criteria=h_label_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
         
-        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
-        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
@@ -632,12 +575,11 @@ class TestRegressionHierarchicalLabelClassification:
             criteria=h_label_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         deploy_eval_elapsed_time = timer() - deploy_eval_start_time
         
-        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
-        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
@@ -663,12 +605,11 @@ class TestRegressionHierarchicalLabelClassification:
             criteria=h_label_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         nncf_eval_elapsed_time = timer() - nncf_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
@@ -687,25 +628,20 @@ class TestRegressionHierarchicalLabelClassification:
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            criteria=h_label_regression_config["regression_criteria"]["nncf"],
+            criteria=h_label_regression_config["regression_criteria"]["pot"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
 
 
 class TestRegressionSupconClassification:
     def setup_method(self):
         self.label_type = "supcon"
-        self.acc_metric = "Top-1 acc."
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-        
         self.performance = {}
 
 
@@ -741,10 +677,9 @@ class TestRegressionSupconClassification:
             args_supcon,
             config_supcon["regression_criteria"]["train"],
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)

@@ -18,11 +18,7 @@ from tests.regression.regression_test_helpers import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     otx_eval_compare,
-    otx_eval_openvino_testing,
-    otx_export_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
 )
 
 # Configurations for regression test.
@@ -48,7 +44,6 @@ action_det_data_args["train_params"] = ["params", "--learning_parameters.num_ite
 class TestRegressionActionDetection:
     def setup_method(self):
         self.label_type = LABEL_TYPE
-        self.acc_metric = "Top-1 acc."
         self.train_time = "Train + val time (sec.)"
         self.infer_time = "Infer time (sec.)"
         
@@ -85,7 +80,6 @@ class TestRegressionActionDetection:
             template, tmp_dir_path, otx_dir, action_det_data_args, 
             action_det_regression_config["regression_criteria"]["train"], 
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
         

@@ -20,6 +20,24 @@ REGRESSION_TEST_EPOCHS = "10"
 ANOMALY_DATASET_CATEGORIES = ["bottle", "cable", "capsule", "carpet", "grid", "hazelnut", "leather", "metal_nut",
                               "pill", "screw", "tile", "toothbrush", "transistor", "wood", "zipper"]
 
+
+TIME_LOG = {
+    "train_time" : "Train + val time (sec.)",
+    "infer_time" : "Infer time (sec.)",
+    
+    "export_time" : "Export time (sec.)",
+    "export_eval_time" : "Export eval time (sec.)",
+    
+    "deploy_time" : "Deploy time (sec.)",
+    "deploy_eval_time" : "Deploy eval time (sec.)",
+    
+    "nncf_time" : "NNCF time (sec.)",
+    "nncf_eval_time" : "NNCF eval time (sec.)",
+    
+    "pot_time" : "POT time (sec.)",
+    "pot_eval_time" : "POT eval time (sec.)"
+}
+
 def get_result_dict(task_type: str) -> Dict[str, Any]:
     result_dict = {task_type:{}}
     if not "anomaly" in task_type:

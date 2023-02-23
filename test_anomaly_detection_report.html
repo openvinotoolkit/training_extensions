@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>test_anomaly_detection_report.html</title>
+    <link href="assets/style.css" rel="stylesheet" type="text/css"/></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) { // eslint-disable-line no-redeclare
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function findAll(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sortColumn(elem) {
+    toggleSortStates(elem);
+    const colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    let key;
+    if (elem.classList.contains('result')) {
+        key = keyResult;
+    } else if (elem.classList.contains('links')) {
+        key = keyLink;
+    } else {
+        key = keyAlpha;
+    }
+    sortTable(elem, key(colIndex));
+}
+
+function showAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(showExtras);
+}
+
+function hideAllExtras() { // eslint-disable-line no-unused-vars
+    findAll('.col-result').forEach(hideExtras);
+}
+
+function showExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.remove('collapsed');
+    expandcollapse.classList.remove('expander');
+    expandcollapse.classList.add('collapser');
+}
+
+function hideExtras(colresultElem) {
+    const extras = colresultElem.parentNode.nextElementSibling;
+    const expandcollapse = colresultElem.firstElementChild;
+    extras.classList.add('collapsed');
+    expandcollapse.classList.remove('collapser');
+    expandcollapse.classList.add('expander');
+}
+
+function showFilters() {
+    let visibleString = getQueryParameter('visible') || 'all';
+    visibleString = visibleString.toLowerCase();
+    const checkedItems = visibleString.split(',');
+
+    const filterItems = document.getElementsByClassName('filter');
+    for (let i = 0; i < filterItems.length; i++) {
+        filterItems[i].hidden = false;
+
+        if (visibleString != 'all') {
+            filterItems[i].checked = checkedItems.includes(filterItems[i].getAttribute('data-test-result'));
+            filterTable(filterItems[i]);
+        }
+    }
+}
+
+function addCollapse() {
+    // Add links for show/hide all
+    const resulttable = find('table#results-table');
+    const showhideall = document.createElement('p');
+    showhideall.innerHTML = '<a href="javascript:showAllExtras()">Show all details</a> / ' +
+                            '<a href="javascript:hideAllExtras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    findAll('.col-result').forEach(function(elem) {
+        const collapsed = getQueryParameter('collapsed') || 'Passed';
+        const extras = elem.parentNode.nextElementSibling;
+        const expandcollapse = document.createElement('span');
+        if (extras.classList.contains('collapsed')) {
+            expandcollapse.classList.add('expander');
+        } else if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add('collapsed');
+            expandcollapse.classList.add('expander');
+        } else {
+            expandcollapse.classList.add('collapser');
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener('click', function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains('collapsed')) {
+                showExtras(event.currentTarget);
+            } else {
+                hideExtras(event.currentTarget);
+            }
+        });
+    });
+}
+
+function getQueryParameter(name) {
+    const match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () { // eslint-disable-line no-unused-vars
+    resetSortHeaders();
+
+    addCollapse();
+
+    showFilters();
+
+    sortColumn(find('.initial-sort'));
+
+    findAll('.sortable').forEach(function(elem) {
+        elem.addEventListener('click',
+            function() {
+                sortColumn(elem);
+            }, false);
+    });
+}
+
+function sortTable(clicked, keyFunc) {
+    const rows = findAll('.results-table-row');
+    const reversed = !clicked.classList.contains('asc');
+    const sortedRows = sort(rows, keyFunc, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    const thead = document.getElementById('results-table-head');
+    document.getElementById('results-table').remove();
+    const parent = document.createElement('table');
+    parent.id = 'results-table';
+    parent.appendChild(thead);
+    sortedRows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName('BODY')[0].appendChild(parent);
+}
+
+function sort(items, keyFunc, reversed) {
+    const sortArray = items.map(function(item, i) {
+        return [keyFunc(item), i];
+    });
+
+    sortArray.sort(function(a, b) {
+        const keyA = a[0];
+        const keyB = b[0];
+
+        if (keyA == keyB) return 0;
+
+        if (reversed) {
+            return keyA < keyB ? 1 : -1;
+        } else {
+            return keyA > keyB ? 1 : -1;
+        }
+    });
+
+    return sortArray.map(function(item) {
+        const index = item[1];
+        return items[index];
+    });
+}
+
+function keyAlpha(colIndex) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[colIndex].firstChild.data.toLowerCase();
+    };
+}
+
+function keyLink(colIndex) {
+    return function(elem) {
+        const dataCell = elem.childNodes[1].childNodes[colIndex].firstChild;
+        return dataCell == null ? '' : dataCell.innerText.toLowerCase();
+    };
+}
+
+function keyResult(colIndex) {
+    return function(elem) {
+        const strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+            'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[colIndex].firstChild.data);
+    };
+}
+
+function resetSortHeaders() {
+    findAll('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    findAll('.sortable').forEach(function(elem) {
+        const icon = document.createElement('div');
+        icon.className = 'sort-icon';
+        icon.textContent = 'vvv';
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove('desc', 'active');
+        elem.classList.add('asc', 'inactive');
+    });
+}
+
+function toggleSortStates(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        resetSortHeaders();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function isAllRowsHidden(value) {
+    return value.hidden == false;
+}
+
+function filterTable(elem) { // eslint-disable-line no-unused-vars
+    const outcomeAtt = 'data-test-result';
+    const outcome = elem.getAttribute(outcomeAtt);
+    const classOutcome = outcome + ' results-table-row';
+    const outcomeRows = document.getElementsByClassName(classOutcome);
+
+    for(let i = 0; i < outcomeRows.length; i++){
+        outcomeRows[i].hidden = !elem.checked;
+    }
+
+    const rows = findAll('.results-table-row').filter(isAllRowsHidden);
+    const allRowsHidden = rows.length == 0 ? true : false;
+    const notFoundMessage = document.getElementById('not-found-message');
+    notFoundMessage.hidden = !allRowsHidden;
+}
+</script>
+    <h1>test_anomaly_detection_report.html</h1>
+    <p>Report generated on 22-Feb-2023 at 13:10:27 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.2.0</p>
+    <h2>Environment</h2>
+    <table id="environment">
+      <tr>
+        <td>Packages</td>
+        <td>{"pluggy": "1.0.0", "pytest": "7.2.1"}</td></tr>
+      <tr>
+        <td>Platform</td>
+        <td>Linux-4.15.0-191-generic-x86_64-with-glibc2.17</td></tr>
+      <tr>
+        <td>Plugins</td>
+        <td>{"html": "3.2.0", "metadata": "2.0.4", "mock": "3.10.0", "nbmake": "1.4.1", "timeout": "2.1.0"}</td></tr>
+      <tr>
+        <td>Python</td>
+        <td>3.8.16</td></tr></table>
+    <h2>Summary</h2>
+    <p>150 tests ran in 51107.04 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">150 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">0 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable" col="duration">Duration</th>
+          <th class="sortable links" col="links">Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[bottle-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1431.64</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[bottle-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">203.95</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[cable-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1936.79</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[cable-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">303.41</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[capsule-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1981.04</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[capsule-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">150.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[carpet-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1501.11</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[carpet-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">162.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[grid-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">681.92</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[grid-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">155.20</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[hazelnut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">733.30</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[hazelnut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">721.05</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[leather-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1173.80</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[leather-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">145.39</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[metal_nut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1127.71</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[metal_nut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">164.29</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[pill-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">702.78</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[pill-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">180.59</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[screw-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">844.87</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[screw-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">247.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[tile-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1113.98</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[tile-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">162.12</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[toothbrush-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">738.11</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[toothbrush-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">235.14</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[transistor-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">644.81</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[transistor-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">227.02</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[wood-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">665.49</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[wood-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">262.32</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[zipper-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1216.89</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_train[zipper-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">303.47</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[bottle-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">43.04</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[bottle-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">38.82</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[cable-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">71.91</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[cable-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">68.72</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[capsule-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">63.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[capsule-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">55.92</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[carpet-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">69.24</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[carpet-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">54.75</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[grid-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">41.93</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[grid-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">41.66</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[hazelnut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">49.42</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[hazelnut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">51.93</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[leather-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">82.59</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[leather-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">55.35</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[metal_nut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">41.36</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[metal_nut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">43.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[pill-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">61.71</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[pill-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">55.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[screw-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">64.49</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[screw-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">57.85</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[tile-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">55.54</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[tile-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">50.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[toothbrush-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">36.43</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[toothbrush-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">34.28</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[transistor-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">53.09</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[transistor-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">56.52</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[wood-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">43.23</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[wood-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">40.75</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[zipper-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">47.88</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_export_eval_openvino[zipper-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">47.89</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[bottle-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">34.54</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[bottle-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">35.38</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[cable-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">71.36</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[cable-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">68.73</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[capsule-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">61.58</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[capsule-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">56.49</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[carpet-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">61.45</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[carpet-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">54.89</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[grid-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">43.25</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[grid-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">44.81</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[hazelnut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">54.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[hazelnut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">53.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[leather-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">80.97</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[leather-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">59.29</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[metal_nut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">43.14</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[metal_nut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">37.13</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[pill-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">64.22</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[pill-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">57.38</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[screw-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">63.90</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[screw-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">57.48</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[tile-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">53.31</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[tile-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">44.29</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[toothbrush-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">30.93</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[toothbrush-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">32.87</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[transistor-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">47.59</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[transistor-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">46.59</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[wood-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">43.60</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[wood-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">43.83</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[zipper-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">48.41</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_otx_deploy_eval_deployment[zipper-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">54.53</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[bottle-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">961.46</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[bottle-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">141.10</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[cable-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">729.57</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[cable-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">1408.95</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[capsule-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1097.57</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[capsule-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">670.99</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[carpet-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">2011.42</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[carpet-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">416.94</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[grid-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">765.26</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[grid-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">416.45</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[hazelnut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">843.64</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[hazelnut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">213.71</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[leather-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">765.47</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[leather-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">1979.81</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[metal_nut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">985.20</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[metal_nut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">205.25</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[pill-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">703.65</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[pill-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">559.49</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[screw-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1522.65</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[screw-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">330.38</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[tile-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1080.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[tile-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">329.28</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[toothbrush-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">789.61</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[toothbrush-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">373.34</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[transistor-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">877.49</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[transistor-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">1466.78</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[wood-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1706.15</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[wood-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">135.52</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[zipper-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">1069.88</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_nncf_optimize_eval[zipper-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">143.66</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[bottle-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">93.20</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[bottle-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">94.61</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[cable-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">123.68</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[cable-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">135.81</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[capsule-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">116.87</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[capsule-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">124.76</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[carpet-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">108.28</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[carpet-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">114.38</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[grid-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">77.16</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[grid-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">102.43</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[hazelnut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">97.17</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[hazelnut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">121.82</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[leather-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">140.85</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[leather-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">123.29</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[metal_nut-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">75.75</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[metal_nut-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">96.41</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[pill-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">105.74</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[pill-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">110.50</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[screw-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">108.70</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[screw-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">118.60</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[tile-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">104.06</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[tile-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">107.76</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[toothbrush-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">68.21</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[toothbrush-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">90.93</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[transistor-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">87.87</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[transistor-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">113.69</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[wood-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">82.05</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[wood-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">98.13</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[zipper-ote_anomaly_detection_stfpm]</td>
+          <td class="col-duration">99.85</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">regression/anomaly/test_anomaly_detection.py::TestRegressionAnomalyDetection::test_pot_optimize_eval[zipper-ote_anomaly_detection_padim]</td>
+          <td class="col-duration">116.42</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="empty log">No log output captured.</div></td></tr></tbody></table></body></html>

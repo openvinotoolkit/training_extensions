@@ -25,7 +25,8 @@ from tests.test_suite.run_test_command import (
 from tests.regression.regression_test_helpers import (
     load_regression_configuration,
     get_result_dict,
-    ANOMALY_DATASET_CATEGORIES
+    ANOMALY_DATASET_CATEGORIES,
+    TIME_LOG
 )
 
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -48,22 +49,6 @@ anomaly_classification_data_args = anomaly_classification_regression_config["dat
 
 class TestRegressionAnomalyClassification:
     def setup_method(self):
-        self.acc_metric = "F-1 score"
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-        
-        self.export_time = "Export time (sec.)"
-        self.export_eval_time = "Export eval time (sec.)"
-        
-        self.deploy_time = "Deploy time (sec.)"
-        self.deploy_eval_time = "Deploy eval time (sec.)"
-        
-        self.nncf_time = "NNCF time (sec.)"
-        self.nncf_eval_time = "NNCF eval time (sec.)"
-        
-        self.pot_time = "POT time (sec.)"
-        self.pot_eval_time = "POT eval time (sec.)"
-        
         self.performance = {}
         
     def teardown_method(self):        
@@ -99,12 +84,11 @@ class TestRegressionAnomalyClassification:
             template, tmp_dir_path, otx_dir, category_data_args, 
             anomaly_classification_regression_config["regression_criteria"]["train"][category], 
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
 
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE]["train"][category].append(self.performance)
         
     @e2e_pytest_component
@@ -129,12 +113,11 @@ class TestRegressionAnomalyClassification:
             criteria=anomaly_classification_regression_config["regression_criteria"]["export"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
         
-        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
-        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["export"][category].append(self.performance)
 
     @e2e_pytest_component
@@ -159,12 +142,11 @@ class TestRegressionAnomalyClassification:
             criteria=anomaly_classification_regression_config["regression_criteria"]["deploy"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         deploy_eval_elapsed_time = timer() - deploy_eval_start_time
         
-        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
-        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["deploy"][category].append(self.performance)
 
     @e2e_pytest_component
@@ -192,12 +174,11 @@ class TestRegressionAnomalyClassification:
             criteria=anomaly_classification_regression_config["regression_criteria"]["nncf"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         nncf_eval_elapsed_time = timer() - nncf_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["nncf"][category].append(self.performance)
 
     @e2e_pytest_component
@@ -221,10 +202,9 @@ class TestRegressionAnomalyClassification:
             criteria=anomaly_classification_regression_config["regression_criteria"]["pot"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["pot"][category].append(self.performance)

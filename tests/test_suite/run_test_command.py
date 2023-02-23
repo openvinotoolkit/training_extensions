@@ -239,7 +239,7 @@ def otx_eval_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
 
-def otx_eval_openvino_testing(template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}, acc_metric=""):
+def otx_eval_openvino_testing(template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -365,7 +365,7 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
     )
 
 
-def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}, acc_metric=""):
+def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -459,7 +459,7 @@ def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
 
 
-def pot_eval_testing(template, root, otx_dir, args, criteria={}, reg_threshold=0.10, result_dict={}, acc_metric=""):
+def pot_eval_testing(template, root, otx_dir, args, criteria={}, reg_threshold=0.10, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -547,7 +547,7 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf", test_name)
 
 
-def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria={}, reg_threshold=0.10, result_dict={}, acc_metric=""):
+def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria={}, reg_threshold=0.10, result_dict={}):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -820,7 +820,6 @@ def otx_eval_compare(
     args,
     criteria,
     result_dict,
-    acc_metric,
     threshold=0.10,
 ):
     template_work_dir = get_template_dir(template, root)

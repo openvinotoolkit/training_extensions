@@ -24,7 +24,8 @@ from tests.test_suite.run_test_command import (
 from tests.regression.regression_test_helpers import (
     load_regression_configuration,
     get_result_dict,
-    REGRESSION_TEST_EPOCHS
+    REGRESSION_TEST_EPOCHS,
+    TIME_LOG
 )
 
 from tests.test_suite.e2e_test_system import e2e_pytest_component
@@ -55,22 +56,6 @@ tiling_inst_seg_data_args["train_params"] = [
 class TestRegressionTilingInstanceSegmentation:
     def setup_method(self):
         self.label_type = LABEL_TYPE
-        self.acc_metric = "Top-1 acc."
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-        
-        self.export_time = "Export time (sec.)"
-        self.export_eval_time = "Export eval time (sec.)"
-        
-        self.deploy_time = "Deploy time (sec.)"
-        self.deploy_eval_time = "Deploy eval time (sec.)"
-        
-        self.nncf_time = "NNCF time (sec.)"
-        self.nncf_eval_time = "NNCF eval time (sec.)"
-        
-        self.pot_time = "POT time (sec.)"
-        self.pot_eval_time = "POT eval time (sec.)"
-        
         self.performance = {}
         
     def teardown_method(self):        
@@ -92,12 +77,11 @@ class TestRegressionTilingInstanceSegmentation:
             template, tmp_dir_path, otx_dir, tiling_inst_seg_data_args, 
             tiling_inst_seg_regression_config["regression_criteria"]["train"], 
             self.performance[template.name],
-            self.acc_metric
         )
         infer_elapsed_time = timer() - infer_start_time
     
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
         
     @e2e_pytest_component
@@ -120,12 +104,11 @@ class TestRegressionTilingInstanceSegmentation:
             criteria=tiling_inst_seg_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
         
-        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
-        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
@@ -148,12 +131,11 @@ class TestRegressionTilingInstanceSegmentation:
             criteria=tiling_inst_seg_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         deploy_eval_elapsed_time = timer() - deploy_eval_start_time
         
-        self.performance[template.name][self.deploy_time] = round(deploy_elapsed_time, 3)
-        self.performance[template.name][self.deploy_eval_time] = round(deploy_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
     @e2e_pytest_component
@@ -180,17 +162,15 @@ class TestRegressionTilingInstanceSegmentation:
             criteria=tiling_inst_seg_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         nncf_eval_elapsed_time = timer() - nncf_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(nncf_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(nncf_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
     def test_pot_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
         
@@ -205,13 +185,12 @@ class TestRegressionTilingInstanceSegmentation:
             tmp_dir_path,
             otx_dir,
             tiling_inst_seg_data_args,
-            criteria=tiling_inst_seg_regression_config["regression_criteria"]["nncf"],
+            criteria=tiling_inst_seg_regression_config["regression_criteria"]["pot"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
-            acc_metric=self.acc_metric
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
         
-        self.performance[template.name][self.nncf_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.nncf_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
