@@ -1,10 +1,10 @@
 furo
 myst-parser
 sphinx==4.2.*
-pydata-sphinx-theme==0.12.0
-sphinx-tabs==3.2.0
-sphinx-panels==0.6.0
-sphinx-copybutton==0.4.0
+pydata-sphinx-theme
+sphinx-tabs
+sphinx-panels
+sphinx-copybutton
 sphinx-autoapi
-sphinxemoji==0.1.8
+sphinxemoji
 nbsphinx
