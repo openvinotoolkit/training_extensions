@@ -2,7 +2,7 @@ Object Detection
 ================
 
 Object detection is a computer vision task where it's needed to locate objects, finding their bounding boxes coordinates together with defining class. 
-The input is an image, and the output is a pair of coordinates for bouding box corners with the number of class for each detected object.
+The input is an image, and the output is a pair of coordinates for bouding box corners and a class number for each detected object.
 
 The common approach to building object detection architecture is to take a feature extractor (backbone), that can be inherited from the classification task.
 Then goes a head that calculates coordinates and class probabilities based on aggregated information from the image.
@@ -41,7 +41,7 @@ Dataset Format
 At the current point we support `COCO <https://cocodataset.org/#format-data>`_, 
 `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and
 `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_ dataset format.
-The dataset should be formatted according to the structure below:
+Here is an example of expected format for COCO dataset:
 
 .. code::
 
@@ -59,8 +59,8 @@ If you have your dataset in those formats, then you can simply run using one lin
 
 .. code::
 
-    $ otx train ATSS --train-data-root <path_to_data_root> \
-                     --val-data-root <path_to_data_root>
+    $ otx train ATSS --train-data-roots <path_to_data_root> \
+                     --val-data-roots <path_to_data_root>
 
 .. note::
 
@@ -84,7 +84,8 @@ We support the following ready-to-use model templates:
 
 `ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases. 
 `SSD <https://arxiv.org/abs/1512.02325>`_ and `YOLOX <https://arxiv.org/abs/2107.08430>`_ are light models, that a perfect for the fastest inference on low-power hardware.
-YOLOX achieved the same accuracy as SSD, and even outperforms its inference on CPU 1.5 times, but requires 3 times more time for training, which is even more than for ATSS. So if you have resources for a long training, you can pick the YOLOX model.
+YOLOX achieved the same accuracy as SSD, and even outperforms its inference on CPU 1.5 times, but requires 3 times more time for training due to `Mosaic augmentation <https://arxiv.org/pdf/2004.10934.pdf>`_, which is even more than for ATSS.
+So if you have resources for a long training, you can pick the YOLOX model.
 
 Besides this, we support public backbones from `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcls <https://github.com/open-mmlab/mmclassification>`_ and `OpenVino Model Zoo <https://github.com/openvinotoolkit/open_model_zoo>`_.
 Please, refer to the :doc:`tutorial <../../../tutorials/advanced/backbones>` how to customize models and run public backbones.
@@ -95,7 +96,7 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
-In the table below the mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
+In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
 The results were obtained on our templates without any changes.
 For hyperparameters, please, refer to the related template.
 We trained each model with a single Nvidia GeForce RTX3090.
@@ -103,11 +104,11 @@ We trained each model with a single Nvidia GeForce RTX3090.
 +-----------+------------+-----------+
 | Model name| COCO       | MinneApple|
 +===========+============+===========+
-| YOLOX     | N/A        | N/A       |
+| YOLOX     | N/A        | 24.5      |
 +-----------+------------+-----------+
-| SSD       | N/A        | N/A       |
+| SSD       | N/A        | 31.2      |
 +-----------+------------+-----------+
-| ATSS      | N/A        | N/A       |
+| ATSS      | N/A        | 42.5      |
 +-----------+------------+-----------+
 
 
