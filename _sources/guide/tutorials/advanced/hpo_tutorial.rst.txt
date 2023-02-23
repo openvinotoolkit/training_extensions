@@ -15,9 +15,9 @@ First, let's build a workspace. You can do this by running the following command
 
     [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
     [*] Load Model Name: MobileNet-V3-large-1x
-    [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x/data.yaml
+    [*] Saving data configuration file to: ./otx-workspace-CLASSIFICATION/data.yaml
 
-    (otx) ...$ cd ./otx-workspace-CLASSIFICATION-MobileNet-V3-large-1x
+    (otx) ...$ cd ./otx-workspace-CLASSIFICATION
 
 .. note::
 
