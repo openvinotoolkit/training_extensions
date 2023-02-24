@@ -55,7 +55,7 @@ jobs:
           rm -rf /tmp/docs_build
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ${{ env.RELEASE_VERSION }}
+          git add ./stable ${{ env.RELEASE_VERSION }}
           git commit -m "Update documentation" -a || true
       - name: Push changes
         uses: ad-m/github-push-action@master
