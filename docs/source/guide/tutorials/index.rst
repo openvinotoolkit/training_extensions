@@ -1,5 +1,5 @@
-Tutorials
-=========
+How-To Guides
+=============
 
 This section reveals how to use ``CLI``, both base and advanced features.
 
