@@ -15,10 +15,10 @@
 
 </div>
 
-## Overview
+## Introduction
 
 OpenVINO™ Training Extensions is a low-code transfer learning framework for Computer Vision.
-OpenVINO™ Training Extensions lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field.
+Using the simple CLI commands of the framework, users can train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field.
 OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on [PyTorch](https://pytorch.org) and [OpenVINO™
 toolkit](https://software.intel.com/en-us/openvino-toolkit).
 
@@ -57,7 +57,12 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 ---
 
-## OpenVINO™ Training Extensions CLI Commands
+## Getting Started
+
+### Installation
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/guide/get_started/quick_start_guide/installation.html).
+
+### OpenVINO™ Training Extensions CLI Commands
 
 - `otx find` helps you quickly find the best pre-configured models templates as well as a list of supported backbones
 - `otx build` creates the workspace folder with all necessary components to start training. It can help you configure your own model with any supported backbone and even prepare a custom split for your dataset
@@ -68,6 +73,8 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 - `otx deploy` outputs the exported model together with the self-contained python package, a demo application to port and infer it outside of this repository.
 - `otx demo` allows one to apply a trained model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario.
 - `otx explain` runs explain algorithm on the provided data and outputs images with the saliency maps to show how your model makes predictions.
+
+You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/guide/get_started/quick_start_guide/cli_commands.html).
 
 ---
 
