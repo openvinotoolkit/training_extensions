@@ -2,10 +2,10 @@
 Use Self-Supervised Learning
 ############################
 
-This tutorial introduces how to train a model using self-supervised learning and fine-tune the model with pre-trained weights.
+This tutorial introduces how to train a model using self-supervised learning and how to fine-tune the model with pre-trained weights.
 OpenVINO™ Training Extensions provides self-supervised learning methods for :doc:`multi-classification <../../explanation/algorithms/classification/multi_class_classification>` and :doc:`semantic segmentation <../../explanation/algorithms/segmentation/semantic_segmentation>`.
 
-The process has been tested on the following configuration.
+The process has been tested on the following configuration:
 
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
@@ -14,22 +14,34 @@ The process has been tested on the following configuration.
 
 .. note::
 
-    This example demonstates how to work with :ref:`self-supervised learning for classification <selfsl_multi_class_classification>`.
+    This example demonstrates how to work with :ref:`self-supervised learning for classification <selfsl_multi_class_classification>`.
     There are some differences between classfication and semantic segmentation, so there will be some notes for :ref:`self-supervised learning for semantic segmentation <selfsl_semantic_segmentation>`.
 
 *************************
 Setup virtual environment
 *************************
 
-To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the :doc:`quick start guide <../../get_started/quick_start_guide/installation>`.
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+to create a universal virtual environment for OpenVINO™ Training Extensions.
+
+2. Activate your virtual 
+environment:
+
+.. code-block::
+
+  .otx/bin/activate
+  # or by this line, if you created an environment, using tox
+  . venv/otx/bin/activate
 
 ************
 Pre-training
 ************
 
-1. Prepare dataset and model. To prepare dataset and decide model, refer to :doc:`classification tutorial <../base/how_to_train/classification>`. In this self-supervised learning tutorial, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ and :ref:`MobileNet-V3-large-1x <classificaiton_models>` model used in :doc:`classification tutorial <../base/how_to_train/classification>` is used as it is.
+1. Prepare dataset and model. To prepare dataset and decide model, refer to :doc:`classification tutorial <../base/how_to_train/classification>`.
+In this self-supervised learning tutorial, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ and :ref:`MobileNet-V3-large-1x <classification_models>` model used in :doc:`classification tutorial <../base/how_to_train/classification>` is used as it is.
 
-2. Prepare OpenVINO™ Training Extensions workspace for *supervised learning* by running the following command:
+2. Prepare OpenVINO™ Training Extensions workspace for **supervised learning** by running 
+the following command:
 
 .. code-block::
 
@@ -47,7 +59,8 @@ Pre-training
     [*]     - Updated: otx-workspace-CLASSIFICATION/compression_config.json
     [*] Update data configuration file to: otx-workspace-CLASSIFICATION/data.yaml
 
-3. Prepare an OpenVINO™ Training Extensions workspace for *self-supervised learning* by running the following command:
+3. Prepare an OpenVINO™ Training Extensions workspace 
+for **self-supervised learning** by running the following command:
 
 .. code-block::
 
@@ -64,12 +77,14 @@ Pre-training
     [*] Update data configuration file to: otx-workspace-CLASSIFICATION-SELFSUPERVISED/data.yaml
 
 .. note::
+
     Three things must be considered to set the workspace for self-supervised learning:
-    1. add ``--train-type SELFSUPERVISED`` in the command to get training components for self-supervised learning,
+
+    1. add ``--train-type SELFSUPERVISED`` in the command to get the training components for self-supervised learning,
     2. update the path set as ``train-data-roots``,
     3. and add ``--work-dir`` to distinguish self-supervised learning workspace from supervised learning workspace.
 
-After this workspace creation, the workspace structure is as follows:
+After the workspace creation, the workspace structure is as follows:
 
 .. code-block::
 
@@ -100,16 +115,22 @@ After this workspace creation, the workspace structure is as follows:
     └── template.yaml
 
 .. note::
+
     For :ref:`semantic segmentation <selfsl_semantic_segmentation>`, ``--train-data-root`` must be set to a directory including only images, not masks, like below.
-    For `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ used in :doc:`semantic segmentation tutorial <../base/how_to_train/semantic_segmentation>`, for example, ``data/VOCdevkit/VOC2012/JPEGImages`` must be set instead of ``data/VOCdevkit/VOC2012``.
+    
+    For `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ used in :doc:`semantic segmentation tutorial <../base/how_to_train/semantic_segmentation>`, for example, the path ``data/VOCdevkit/VOC2012/JPEGImages`` must be set instead of ``data/VOCdevkit/VOC2012``.
+    
     Please refer to :ref:`Explanation of Self-Supervised Learning for Semantic Segmentation <selfsl_semantic_segmentation>`.
     And don't forget to add ``--train-type SELFSUPERVISED``.
 
-  .. code-block::
+    .. code-block::
 
-    (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012/JPEGImages --model Lite-HRNet-18-mod2 --train-type SELFSUPERVISED
+        (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012/JPEGImages \
+                            --model Lite-HRNet-18-mod2 \
+                            --train-type SELFSUPERVISED
 
-4. To start training we need to call ``otx train`` command in *self-supervised learning* workspace:
+4. To start training we need to call ``otx train`` 
+command in **self-supervised learning** workspace:
 
 .. code-block::
 
@@ -134,8 +155,8 @@ After this workspace creation, the workspace structure is as follows:
 .. note::
     To use the same splitted train dataset, set ``--data ../otx-workspace-CLASSIFICATION/data.yaml`` insead of using ``data.yaml`` in self-supervised learning workspace.
 
-The training will return artifacts: ``weights.pth`` and ``label_schema.json`` and we can use the weights to fine-tune the model using target dataset.
-Final model performance will be set to -1, but it doesn't matter because self-supervised learning doesn't use accuracy.
+The training will return artifacts: ``weights.pth`` and ``label_schema.json`` and we can use the weights to fine-tune the model using the target dataset.
+The final model performance will be set to -1, but it doesn't matter because self-supervised learning doesn't use accuracy.
 Let's see how to fine-tune the model using pre-trained weights below.
 
 ***********
@@ -157,7 +178,7 @@ After pre-training progress, start fine-tuning by calling the below command with
     2023-02-23 20:56:28,896 | INFO : Evaluation completed
     Performance(score: 0.9604904632152589, dashboard: (3 metric groups))
 
-For comparison, we can also obtain the performance without pre-trained weights below.
+For comparison, we can also obtain the performance without pre-trained weights as below:
 
 .. code-block::
 
@@ -172,8 +193,9 @@ For comparison, we can also obtain the performance without pre-trained weights b
     Performance(score: 0.9550408719346049, dashboard: (3 metric groups))
 
 With self-supervised learning, we can obtain well-adaptive weights and train the model more accurately.
-This example showed a little improvement (0.955 → 0.960), but if We use only a few samples or datasets that are too difficult to train a model on, self-supervised learning can be the solution to improve the model.
+This example showed a little improvement (0.955 → 0.960), but if we use only a few samples that are *too difficult to train a model on*, then
+self-supervised learning can be the solution to improve the model.
 You can check performance improvement examples in :ref:`self-supervised learning for classification <selfsl_multi_class_classification>` documentation.
 
 .. note::
-    Obtaining new model after fine-tuning you can proceed with optimization and exporting as described in :doc:`classification tutorial <../base/how_to_train/classification>`.
+    Then we obtain the new model after fine-tuning, we can proceed with optimization and exporting as described in :doc:`classification tutorial <../base/how_to_train/classification>`.

@@ -26,8 +26,8 @@ For the supervised training we use the following algorithms components:
       .. code-block::
 
         $ otx train {TEMPLATE} ... \
-            params \
-            --learning_parameters.enable_early_stopping=True
+                    params \
+                    --learning_parameters.enable_early_stopping=True
 
     - `Anchor clustering for SSD <https://arxiv.org/abs/2211.17170>`_: This model highly relies on predefined anchor boxes hyperparameter that impacts the size of objects, which can be detected. So before training, we collect object statistics within dataset, cluster them and modify anchor boxes sizes to fit the most for objects the model is going to detect. 
     
@@ -96,20 +96,20 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
-In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
-The results were obtained on our templates without any changes.
-For hyperparameters, please, refer to the related template.
-We trained each model with a single Nvidia GeForce RTX3090.
+.. In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
+.. The results were obtained on our templates without any changes.
+.. For hyperparameters, please, refer to the related template.
+.. We trained each model with a single Nvidia GeForce RTX3090.
 
-+-----------+------------+-----------+-----------+
-| Model name| COCO       | PASCAL VOC| MinneApple|
-+===========+============+===========+===========+
-| YOLOX     | N/A        | N/A       | 24.5      |
-+-----------+------------+-----------+-----------+
-| SSD       | N/A        | N/A       | 31.2      |
-+-----------+------------+-----------+-----------+
-| ATSS      | N/A        | N/A       | 42.5      |
-+-----------+------------+-----------+-----------+
+.. +-----------+------------+-----------+-----------+
+.. | Model name| COCO       | PASCAL VOC| MinneApple|
+.. +===========+============+===========+===========+
+.. | YOLOX     | N/A        | N/A       | 24.5      |
+.. +-----------+------------+-----------+-----------+
+.. | SSD       | N/A        | N/A       | 31.2      |
+.. +-----------+------------+-----------+-----------+
+.. | ATSS      | N/A        | N/A       | 42.5      |
+.. +-----------+------------+-----------+-----------+
 
 
 
@@ -117,7 +117,7 @@ We trained each model with a single Nvidia GeForce RTX3090.
 Semi-supervised Learning
 ************************
 
-For Semi-SL task solving we use `Unbiased Teacher model <https://arxiv.org/abs/2102.09480>`_, which is a specific implementation of Semi-SL for object detection. Unbiased teacher detach the student model and the teacher model to prevent teacher from being polluted by noisy pseudo-labels. In the early stage, the teacher model is trained by supervised loss. This stage is called a burn-in stage. After the burn-in, the student model is trained using both pseudo-labeled data from the teacher model and labeled data. And the teacher model is updated using
+For Semi-SL task solving we use the `Unbiased Teacher model <https://arxiv.org/abs/2102.09480>`_, which is a specific implementation of Semi-SL for object detection. The unbiased teacher detaches the student model and the teacher model to prevent the teacher from being polluted by noisy pseudo-labels. In the early stage, the teacher model is trained by supervised loss. This stage is called a burn-in stage. After the burn-in, the student model is trained using both pseudo-labeled data from the teacher model and labeled data. And the teacher model is updated using
 EMA.
 
 In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.
@@ -128,7 +128,7 @@ Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improv
 
 - ``Pseudo-labeling``: A specific implementation of Semi-SL that combines the use of pseudo-labeling with a consistency loss, strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.
 
-- ``Weak & Strong augmentation``: For teacher model weak augmentations(random flip) are applied to input image. For student model strong augmentations(colorjtter, grayscale, goussian blur, random erasing) are applied.
+- ``Weak & Strong augmentation``: For teacher model weak augmentations(random flip) are applied to input image. For the student model strong augmentations(colorjtter, grayscale, goussian blur, random erasing) are applied.
 
 - ``Additional training techniques``: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, Early stopping, LR conditioning.).
 
@@ -136,7 +136,7 @@ Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` how t
 
 In the table below the mAP on toy data sample from `COCO <https://cocodataset.org/#home>`_ dataset using our pipeline is presented. 
 
-We sample 400 images that contains one of [person, car, bus] for labeled train images. And 4000 images for unlabeled images. For validation 100 images are selected from val2017
+We sample 400 images that contain one of [person, car, bus] for labeled train images. And 4000 images for unlabeled images. For validation 100 images are selected from val2017.
 
 +---------+--------------------------------------------+
 | Dataset |            Sampled COCO dataset            |   
@@ -159,14 +159,14 @@ We sample 400 images that contains one of [person, car, bus] for labeled train i
 |         | | Mean:   63.6      | | Mean:  66.58       |
 +---------+---------------------+----------------------+
 
-************************
-Self-supervised Learning
-************************
+.. ************************
+.. Self-supervised Learning
+.. ************************
 
-To be added soon
+.. To be added soon
 
-********************
-Incremental Learning
-********************
+.. ********************
+.. Incremental Learning
+.. ********************
 
-To be added soon
+.. To be added soon

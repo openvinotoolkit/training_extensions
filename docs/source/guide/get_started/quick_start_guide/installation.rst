@@ -31,7 +31,7 @@ repository with the following command:
     git checkout develop
 
 2. Set up a
-virtual environment
+virtual environment.
 
 .. code-block::
 
@@ -41,14 +41,12 @@ virtual environment
     # Activate virtual env.
     source .otx/bin/activate
 
-3. Install prerequisite
-dependencies with:
-
-Install PyTorch according to your system environment. Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
+3. Install PyTorch according to your system environment. 
+Refer to the `official installation guide <https://pytorch.org/get-started/previous-versions/>`_
 
 .. note::
 
-    Currently, only torch==1.13.1 was fully validated. torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
+    Currently, only torch==1.13.1 was fully validated, torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
 
 .. code-block::
 
@@ -59,7 +57,7 @@ Install PyTorch according to your system environment. Refer to the `official ins
     pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu111
 
 4. Then, install
-OpenVINO™ Training Extensions package
+OpenVINO™ Training Extensions package.
 
 Install from a local source in development mode:
 
@@ -74,7 +72,7 @@ Or, you can install from PyPI:
     pip install otx
 
 5. Once the package is installed in the virtual environment, you can use full
-`otx` command line functionality.
+OpenVINO™ Training Extensions command line functionality.
 
 ****************************************************
 Install OpenVINO™ Training Extensions for developers
@@ -89,7 +87,7 @@ Install ``tox`` and create a development environment:
     tox devenv venv/otx -e pre-merge
     source venv/otx/bin/activate
 
-Then you may change code and all fixes will be directly applied to the editable package
+Then you may change code, and all fixes will be directly applied to the editable package.
 
 **************
 Run unit tests
@@ -110,12 +108,12 @@ please update pip version by following command:
 
     python -m pip install --upgrade pip
 
-2. If you're facing a problem with torch or mmcv installation, please check that your CUDA version is compatible with torch version. 
+2. If you're facing a problem with ``torch`` or ``mmcv`` installation, please check that your CUDA version is compatible with torch version. 
 Consider updating CUDA and CUDA drivers if needed. 
 Check the `command example <https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=runfile_local>`_ to install CUDA 11.7 with drivers on Ubuntu 20.04.
 
-3. If you use Anaconda environment, you should consider that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.
-So please use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.
+3. If you use Anaconda environment, you should consider that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only.
+So to use these python versions, please use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.
 
 4. If you have access to the Internet through the proxy server only, 
 please use pip with proxy call as demonstrated by command below:

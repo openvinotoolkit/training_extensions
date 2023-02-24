@@ -2,6 +2,9 @@ Object Detection model
 ======================
 
 This tutorial reveals end-to-end solution from installation to model export and optimization for object detection task on a specific example.
+
+To learn more about Object Detection task, refer to :doc:`../../../explanation/algorithms/object_detection/object_detection`.
+
 On this page, we show how to train, validate, export and optimize ATSS model on WGISD public dataset.
 
 To have a specific example in this tutorial, all commands will be run on the ATSS model. It's a medium model, that achieves relatively high accuracy while keeping the inference fast.
@@ -25,9 +28,10 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-To create a universal virtual environment for all tasks, you can follow the installation process from a :doc:`installation guide <../../../get_started/quick_start_guide/installation>`.
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-1. Activate your virtual 
+2. Activate your virtual 
 environment:
 
 .. code-block::
@@ -136,6 +140,7 @@ The list of supported templates for object detection is available with the comma
   | DETECTION | Custom_Object_Detection_Gen3_ATSS |  ATSS | otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
   +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 
+.. _detection_workspace:
 
 2. On this step we will create **otx-workspace-Detection** 
 with:
@@ -232,6 +237,7 @@ It can be done by manually updating parameters in the ``template.yaml`` file in 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
 .. code-block::
+  
                        params --learning_parameters.batch_size 4 
                               --learning_parameters.num_iters 100 \
                               --learning_parameters.enable_early_stopping false
@@ -271,7 +277,7 @@ Validation
 trained model on a particular dataset.
 
 Eval function receives test annotation information and model snapshot, trained in previous step.
-Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
+Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
 
 The default metric is F1 measure.
 

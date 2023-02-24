@@ -1,5 +1,5 @@
 Utilize OpenVINO™ Training Extensions APIs in your project
-================================
+==========================================================
 
 Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OpenVINO™ Training Extensions models into their projects.
 This tutorial intends to show how to create a dataset, model and use all of the CLI functionality through APIs.
@@ -37,7 +37,7 @@ Now it is all set to use this dataset inside OpenVINO™ Training Extensions
 Model template and dataset loading
 **********************************
 
-Let's import the neccesary modules:
+Let's import the necessary modules:
 
 .. code-block::
 
@@ -86,10 +86,10 @@ The next step is to set up a dataset:
 .. code-block::
 
     dataset_adapter = get_dataset_adapter(task_type = model_template.task_type,
-                                            # set a path to the root folder of the wgisd repository
-                                            train_data_roots="./wgisd",
-                                            val_data_roots="./wgisd",
-                                            test_data_roots="./wgisd")
+                                          # set a path to the root folder of the wgisd repository
+                                          train_data_roots="./wgisd",
+                                          val_data_roots="./wgisd",
+                                          test_data_roots="./wgisd")
     dataset, labels_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
 
@@ -181,7 +181,7 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
 Optimization
 ************
 
-To run optimization with POT on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:
+To run the optimization with POT on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:
 
 .. code-block::
 
@@ -196,7 +196,7 @@ To run optimization with POT on the OpenVINO™ IR model, we need to create an o
         optimized_model,
         OptimizationParameters())
 
-To run NNCF accuracy-aware training, return model in the environment back, create NNCF task, output model and run optimization procedure:
+To run the NNCF accuracy-aware training, return model in the environment back, create NNCF task, output model and run optimization procedure:
 
 .. code-block::
 
@@ -218,7 +218,7 @@ To run NNCF accuracy-aware training, return model in the environment back, creat
         optimized_nncf_model,
         OptimizationParameters())
 
-You can validate the optimized model as the usual model, for example for the NNCF model:
+You can validate the optimized model as the usual model. For example for the NNCF model it will look like this:
 
 .. code-block::
 
@@ -245,7 +245,7 @@ You can validate the optimized model as the usual model, for example for the NNC
 Load the model and use it for any data
 **************************************
 
-Let's assume, that we have already trained the model and we want to use it in our project. Below simple steps are presented on how to load the model and infer it on custom images.
+Let's assume, that we have already trained the model and we want to use it in our project. The simple steps on how to load the model and infer it on custom images are presented below.
 
 .. code-block::
 
