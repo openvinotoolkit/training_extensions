@@ -16,12 +16,18 @@ To this end, we support:
 
 - **Self-supervised learning**. This is a type of machine learning where the model is trained on a dataset that contains only unlabeled examples. The model is trained to learn useful representations of the data by solving a task that can be inferred from the input itself, without human-provided labels. The objective is to learn good representations of the input data that can then be used for downstream tasks such as classification, detection, generation or clustering.
 
+
+********
+Contents
+********
+
+
 .. toctree::
    :maxdepth: 2
    :titlesonly:
 
+   classification/index
+   object_detection/index
+   segmentation/index
    anomaly/index
    action/index
-   classification/index
-   segmentation/index
-   object_detection/index
