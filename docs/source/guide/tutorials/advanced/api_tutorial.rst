@@ -102,10 +102,10 @@ Set up the environment and the task
     Task = get_impl_class(model_template.entrypoints.base)
 
     environment = TaskEnvironment(
-        model = None,
-        hyper_parameters = hyper_parameters,
-        label_schema = labels_schema,
-        model_template = model_template)
+        model=None,
+        hyper_parameters=hyper_parameters,
+        label_schema=labels_schema,
+        model_template=model_template)
 
     task = Task(task_environment=environment)
 
