@@ -229,9 +229,9 @@ You can validate the optimized model as the usual model. For example for the NNC
 
     # ResultSetEntity creating with optimized_nncf_model
     resultset = ResultSetEntity(
-        model = optimized_nncf_model,
-        ground_truth_dataset = validation_dataset,
-        prediction_dataset = predicted_validation_dataset,
+        model=optimized_nncf_model,
+        ground_truth_dataset=validation_dataset,
+        prediction_dataset=predicted_validation_dataset,
     )
 
     # evaluation
