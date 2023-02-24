@@ -103,7 +103,7 @@ You can find more details with examples in the [CLI command intro](https://openv
 - Integrate hyper-parameter optimizations
 - Support action recognition task
 
-### v1.1+  (2Q23)
+### v1.1+ (2Q23)
 
 - In planning
 
@@ -114,6 +114,7 @@ Please refer to the [CHANGELOG.md](CHANGELOG.md)
 ---
 
 ## Branches
+
 - [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
   - Mainly maintained branch for developing new features for the future release
 - [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc)
