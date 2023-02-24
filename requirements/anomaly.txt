@@ -1,4 +1,4 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Anomaly Requirements.
-anomalib==0.4.0rc2
+anomalib==0.4.0rc2  # FIXME: -> 0.4.0
 kornia==0.6.9
