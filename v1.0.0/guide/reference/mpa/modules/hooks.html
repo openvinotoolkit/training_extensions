@@ -1,0 +1,2468 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Hooks &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/bootstrap.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+
+  
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=796348d33e8b1d947c94" rel="stylesheet">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94">
+
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/clipboard.min.js"></script>
+    <script src="../../../../_static/copybutton.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/mpa/modules/hooks';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Optimizer" href="optimizer.html" />
+    <link rel="prev" title="Datasets" href="datasets.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="docsearch:language" content="en">
+  </head>
+  
+  
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="180" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__primary" id="__primary">
+  <label class="overlay overlay-primary" for="__primary"></label>
+
+  
+  <input type="checkbox" class="sidebar-toggle" name="__secondary" id="__secondary">
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+      
+<form class="bd-search d-flex align-items-center" action="../../../../search.html" method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+    </div>
+  </div>
+
+  
+  <nav class="bd-header navbar navbar-expand-lg bd-navbar" id="navbar-main"><div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+      <span class="fa-solid fa-bars"></span>
+  </label>
+  <div id="navbar-start">
+    
+    
+  
+
+
+<a class="navbar-brand logo" href="../../../../index.html">
+
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
+  
+  
+</a>
+    
+  </div>
+
+  
+  <div class="col-lg-9 navbar-header-items">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+        <div class="navbar-end-item navbar-persistent--container">
+          
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+        </div>
+      
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+
+
+  
+  
+    <div class="navbar-persistent--mobile">
+<button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-toggle="tooltip">
+  <i class="fa-solid fa-magnifying-glass"></i>
+</button>
+    </div>
+  
+
+  
+  <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+  </label>
+  
+
+</div>
+  </nav>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+
+    
+    
+    <div class="sidebar-header-items__end">
+      
+      <div class="navbar-end-item">
+        <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+</button>
+      </div>
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  
+  <div class="sidebar-start-items sidebar-primary__section">
+    <div class="sidebar-start-items__item"><nav class="bd-links" id="bd-docs-nav" aria-label="Section navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">
+    Section Navigation
+  </p>
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../get_started/quick_start_guide/index.html">Quick Start Guide</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../get_started/quick_start_guide/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../get_started/quick_start_guide/cli_commands.html">OpenVINO™ Training Extensions CLI commands</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorials/index.html">How-To Guides</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../tutorials/base/index.html">Base tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../tutorials/base/how_to_train/index.html">How to train, validate, export and optimize the model</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html">Classification  model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tutorials/base/how_to_train/detection.html">Object Detection model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tutorials/base/how_to_train/instance_segmentation.html">Instance Segmentation model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tutorials/base/how_to_train/semantic_segmentation.html">Semantic Segmentation model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tutorials/base/how_to_train/anomaly_detection.html">Anomaly Detection Tutorial</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tutorials/base/how_to_train/action_classification.html">Action Classification model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tutorials/base/how_to_train/action_detection.html">Action Detection  model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/demo.html">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/deploy.html">How to deploy the model and use demo in exportable code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/base/explain.html">How to explain the model behavior</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../tutorials/advanced/index.html">Advanced tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/advanced/semi_sl.html">Use Semi-Supervised Learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/advanced/self_sl.html">Use Self-Supervised Learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/advanced/backbones.html">Backbone Replacement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/advanced/api_tutorial.html">Utilize OpenVINO™ Training Extensions APIs in your project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../tutorials/advanced/hpo_tutorial.html">Simple HPO Tutorial</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../explanation/algorithms/index.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/classification/multi_class_classification.html">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/classification/multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/classification/hierarhical_classification.html">Hierarchical Classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-8"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/object_detection/object_detection.html">Object Detection</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/segmentation/semantic_segmentation.html">Semantic Segmentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/segmentation/instance_segmentation.html">Instance Segmentation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/algorithms/anomaly/index.html">Anomaly Detection</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../explanation/algorithms/action/index.html">Action Recognition</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-10"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/action/action_classification.html">Action Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/algorithms/action/action_detection.html">Action Detection</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../explanation/additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-11"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/configuration/index.html">Configuration</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../api/entities/index.html">Entities</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-13"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/entities/general.html">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/entities/shapes.html">Shapes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/entities/interfaces.html">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../api/usecases/index.html">Usecases</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-14"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../api/usecases/adapters.html">Adapters</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../api/usecases/evaluation.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-15"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/usecases/exportable_code.html">Exportable Code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/usecases/reporting.html">Reporting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../api/usecases/tasks.html">Task interfaces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../algorithm/index.html">Algorithm</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-16"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../algorithm/action/index.html">Action</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-17"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/action/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-18"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/action/adapters/mmaction.html">mmaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/action/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/action/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-19"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/action/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-20"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../algorithm/anomaly/index.html">Anomaly</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-21"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/anomaly/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-22"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/anomaly/adapters/config.html">Config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/anomaly/adapters/data.html">Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/anomaly/adapters/callbacks.html">Callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/anomaly/adapters/logger.html">Logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/anomaly/adapters/exportable_code.html">Exportable Code</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/anomaly/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-23"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/anomaly/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-24"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/anomaly/tools.html">Tools</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-25"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../algorithm/classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-26"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/classification/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-27"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/classification/adapters/mmcls.html">mmclassification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/classification/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/classification/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-28"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/classification/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-29"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/classification/utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-30"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../algorithm/detection/index.html">Detection</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-31"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/detection/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-32"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/detection/adapters/mmdet.html">mmdetection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/detection/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/detection/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-33"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/detection/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-34"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/detection/utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-35"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../algorithm/segmentation/index.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-36"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/segmentation/adapters/index.html">Adapters</a><input class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-37"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/segmentation/adapters/mmseg.html">mmsegmentation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../algorithm/segmentation/adapters/openvino.html">openvino</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/segmentation/configs.html">Configs</a><input class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-38"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../algorithm/segmentation/tasks.html">Tasks</a><input class="toctree-checkbox" id="toctree-checkbox-39" name="toctree-checkbox-39" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-39"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../core/data.html">Data</a><input class="toctree-checkbox" id="toctree-checkbox-40" name="toctree-checkbox-40" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-40"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../hpo/hpo.html">HPO</a><input class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-41"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Model Preparation Algorithm</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-42"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Modules</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="models/backbones.html">Backbones</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models/classifiers.html">Classifiers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models/detectors.html">Detectors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models/heads.html">Heads</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models/losses.html">Losses</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models/scalar_schedulers.html">Scalar Schedulers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models/segmentors.html">Segmentors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models/utils.html">Utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="datasets.html">Datasets</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 current active has-children"><a class="current reference internal" href="#">Hooks</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="optimizer.html">Optimizer</a><input class="toctree-checkbox" id="toctree-checkbox-47" name="toctree-checkbox-47" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-47"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ov/index.html">OpenVINO</a><input class="toctree-checkbox" id="toctree-checkbox-48" name="toctree-checkbox-48" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-48"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="ov/graph.html">Graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ov/models.html">Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ov/ops.html">OPS</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-49" name="toctree-checkbox-49" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-49"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../classification.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-50" name="toctree-checkbox-50" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-50"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../detection.html">Detection</a><input class="toctree-checkbox" id="toctree-checkbox-51" name="toctree-checkbox-51" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-51"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../segmentation.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-52" name="toctree-checkbox-52" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-52"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../deploy.html">Deploy</a><input class="toctree-checkbox" id="toctree-checkbox-53" name="toctree-checkbox-53" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-53"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-54" name="toctree-checkbox-54" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-54"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Release Notes</a><input class="toctree-checkbox" id="toctree-checkbox-55" name="toctree-checkbox-55" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-55"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+  </div>
+</nav>
+    </div>
+  </div>
+  
+
+  
+  <div class="sidebar-end-items sidebar-primary__section">
+    <div class="sidebar-end-items__item">
+    </div>
+  </div>
+
+  
+  <div id="rtd-footer-container"></div>
+
+      </div>
+      <main id="main-content" class="bd-main">
+        
+        
+        <div class="bd-content">
+          <div class="bd-article-container">
+            
+            <div class="bd-header-article">
+                
+            </div>
+            
+            
+            <article class="bd-article" role="main">
+              
+  <section id="hooks">
+<h1>Hooks<a class="headerlink" href="#hooks" title="Permalink to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-otx.mpa.modules.hooks"></span><span class="target" id="module-otx.mpa.modules.hooks.adaptive_training_hooks"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.adaptive_training_hooks.</span></span><span class="sig-name descname"><span class="pre">AdaptiveTrainSchedulingHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_lr_patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_lr_patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_es_patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_es_patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.025</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_adaptive_interval_hook</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_eval_before_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Adaptive Training Scheduling Hook</p>
+<p>Depending on the size of iteration per epoch, adaptively update the validation interval and related values.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>max_interval (int): Maximum value of validation interval.</dt><dd><p>Defaults to 5.</p>
+</dd>
+<dt>base_lr_patience (int): The value of LR drop patience are expected in total epoch.</dt><dd><p>Patience used when interval is 1, Defaults to 5.</p>
+</dd>
+<dt>min_lr_patience (int): Minumum value of LR drop patience.</dt><dd><p>Defaults to 2.</p>
+</dd>
+<dt>base_es_patience (int): The value of Early-Stopping patience are expected in total epoch.</dt><dd><p>Patience used when interval is 1, Defaults to 10.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.before_train_iter">
+<span class="sig-name descname"><span class="pre">before_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.before_train_iter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.get_adaptive_interval">
+<span class="sig-name descname"><span class="pre">get_adaptive_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iter_per_epoch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.get_adaptive_interval" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.get_evalhook">
+<span class="sig-name descname"><span class="pre">get_evalhook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.get_evalhook" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.cancel_interface_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.cancel_interface_hook.</span></span><span class="sig-name descname"><span class="pre">CancelInterfaceHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.after_run">
+<span class="sig-name descname"><span class="pre">after_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.after_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.cancel">
+<span class="sig-name descname"><span class="pre">cancel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.cancel" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.checkpoint_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.checkpoint_hook.</span></span><span class="sig-name descname"><span class="pre">CheckpointHookWithValResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_keep_ckpts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults" title="Permalink to this definition">#</a></dt>
+<dd><p>Save checkpoints periodically.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>interval (int): The saving period. If <code class="docutils literal notranslate"><span class="pre">by_epoch=True</span></code>, interval</dt><dd><p>indicates epochs, otherwise it indicates iterations.
+Default: -1, which means “never”.</p>
+</dd>
+<dt>by_epoch (bool): Saving checkpoints by epoch or by iteration.</dt><dd><p>Default: True.</p>
+</dd>
+<dt>save_optimizer (bool): Whether to save optimizer state_dict in the</dt><dd><p>checkpoint. It is usually used for resuming experiments.
+Default: True.</p>
+</dd>
+<dt>out_dir (str, optional): The directory to save checkpoints. If not</dt><dd><p>specified, <code class="docutils literal notranslate"><span class="pre">runner.work_dir</span></code> will be used by default.</p>
+</dd>
+<dt>max_keep_ckpts (int, optional): The maximum checkpoints to keep.</dt><dd><p>In some cases we want only the latest few checkpoints and would
+like to delete old ones to save the disk space.
+Default: -1, which means unlimited.</p>
+</dd>
+<dt>sync_buffer (bool): Whether to synchronize buffers in different</dt><dd><p>gpus. Default: False.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.composed_dataloaders_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.composed_dataloaders_hook.</span></span><span class="sig-name descname"><span class="pre">ComposedDataLoadersHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">DataLoader</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataLoader</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook.add_dataloaders">
+<span class="sig-name descname"><span class="pre">add_dataloaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">DataLoader</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataLoader</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook.add_dataloaders" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook.before_epoch">
+<span class="sig-name descname"><span class="pre">before_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook.before_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.early_stopping_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.early_stopping_hook.</span></span><span class="sig-name descname"><span class="pre">EarlyStoppingHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbox_mAP'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Cancel training when a metric has stopped improving.</p>
+<p>Early Stopping hook monitors a metric quantity and if no improvement is seen for a ‘patience’
+number of epochs, the training is cancelled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interval</strong> – the number of intervals for checking early stop. The interval number should be
+the same as the evaluation interval - the <cite>interval</cite> variable set in
+<cite>evaluation</cite> config.</p></li>
+<li><p><strong>metric</strong> – the metric name to be monitored</p></li>
+<li><p><strong>rule</strong> – greater or less.  In <cite>less</cite> mode, training will stop when the metric has stopped
+decreasing and in <cite>greater</cite> mode it will stop when the metric has stopped
+increasing.</p></li>
+<li><p><strong>patience</strong> – Number of epochs with no improvement after which the training will be reduced.
+For example, if patience = 2, then we will ignore the first 2 epochs with no
+improvement, and will only cancel the training after the 3rd epoch if the
+metric still hasn’t improved then</p></li>
+<li><p><strong>iteration_patience</strong> – Number of iterations must be trained after the last improvement
+before training stops. The same as patience but the training
+continues if the number of iteration is lower than iteration_patience
+This variable makes sure a model is trained enough for some
+iterations after the last improvement before stopping.</p></li>
+<li><p><strong>min_delta</strong> – Minimal decay applied to lr. If the difference between new and old lr is
+smaller than eps, the update is ignored</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training epoch to evaluate the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training iter to evaluate the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.greater_keys">
+<span class="sig-name descname"><span class="pre">greater_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['acc',</span> <span class="pre">'top',</span> <span class="pre">'AR&#64;',</span> <span class="pre">'auc',</span> <span class="pre">'precision',</span> <span class="pre">'mAP',</span> <span class="pre">'mDice',</span> <span class="pre">'mIoU',</span> <span class="pre">'mAcc',</span> <span class="pre">'aAcc',</span> <span class="pre">'MHAcc']</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.greater_keys" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.init_value_map">
+<span class="sig-name descname"><span class="pre">init_value_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'greater':</span> <span class="pre">-inf,</span> <span class="pre">'less':</span> <span class="pre">inf}</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.init_value_map" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.less_keys">
+<span class="sig-name descname"><span class="pre">less_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['loss']</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.less_keys" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.rule_map">
+<span class="sig-name descname"><span class="pre">rule_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'greater':</span> <span class="pre">&lt;function</span> <span class="pre">EarlyStoppingHook.&lt;lambda&gt;&gt;,</span> <span class="pre">'less':</span> <span class="pre">&lt;function</span> <span class="pre">EarlyStoppingHook.&lt;lambda&gt;&gt;}</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.rule_map" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.LazyEarlyStoppingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.early_stopping_hook.</span></span><span class="sig-name descname"><span class="pre">LazyEarlyStoppingHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbox_mAP'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.LazyEarlyStoppingHook" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.early_stopping_hook.</span></span><span class="sig-name descname"><span class="pre">ReduceLROnPlateauLrUpdaterHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bbox_mAP'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration_patience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Reduce learning rate when a metric has stopped improving.</p>
+<p>Models often benefit from reducing the learning rate by a factor of 2-10 once learning stagnates.
+This scheduler reads a metrics quantity and if no improvement is seen for a ‘patience’
+number of epochs, the learning rate is reduced.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_lr</strong> – minimum learning rate. The lower bound of the desired learning rate.</p></li>
+<li><p><strong>interval</strong> – the number of intervals for checking the hook. The interval number should be
+the same as the evaluation interval - the <cite>interval</cite> variable set in
+<cite>evaluation</cite> config.</p></li>
+<li><p><strong>metric</strong> – the metric name to be monitored</p></li>
+<li><p><strong>rule</strong> – greater or less.  In <cite>less</cite> mode, learning rate will be dropped if the metric has
+stopped decreasing and in <cite>greater</cite> mode it will be dropped when the metric has
+stopped increasing.</p></li>
+<li><p><strong>patience</strong> – Number of epochs with no improvement after which learning rate will be reduced.
+For example, if patience = 2, then we will ignore the first 2 epochs with no
+improvement, and will only drop LR after the 3rd epoch if the metric still
+hasn’t improved then</p></li>
+<li><p><strong>iteration_patience</strong> – Number of iterations must be trained after the last improvement
+before LR drops. The same as patience but the LR remains the same if
+the number of iteration is lower than iteration_patience. This
+variable makes sure a model is trained enough for some iterations
+after the last improvement before dropping the LR.</p></li>
+<li><p><strong>factor</strong> – Factor to be multiply with the learning rate.
+For example, new_lr = current_lr * factor</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.get_lr">
+<span class="sig-name descname"><span class="pre">get_lr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.get_lr" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.greater_keys">
+<span class="sig-name descname"><span class="pre">greater_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['acc',</span> <span class="pre">'top',</span> <span class="pre">'AR&#64;',</span> <span class="pre">'auc',</span> <span class="pre">'precision',</span> <span class="pre">'mAP',</span> <span class="pre">'mDice',</span> <span class="pre">'mIoU',</span> <span class="pre">'mAcc',</span> <span class="pre">'aAcc']</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.greater_keys" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.init_value_map">
+<span class="sig-name descname"><span class="pre">init_value_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'greater':</span> <span class="pre">-inf,</span> <span class="pre">'less':</span> <span class="pre">inf}</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.init_value_map" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.less_keys">
+<span class="sig-name descname"><span class="pre">less_keys</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['loss']</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.less_keys" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.rule_map">
+<span class="sig-name descname"><span class="pre">rule_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'greater':</span> <span class="pre">&lt;function</span> <span class="pre">ReduceLROnPlateauLrUpdaterHook.&lt;lambda&gt;&gt;,</span> <span class="pre">'less':</span> <span class="pre">&lt;function</span> <span class="pre">ReduceLROnPlateauLrUpdaterHook.&lt;lambda&gt;&gt;}</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.rule_map" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.StopLossNanTrainingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.early_stopping_hook.</span></span><span class="sig-name descname"><span class="pre">StopLossNanTrainingHook</span></span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.StopLossNanTrainingHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.early_stopping_hook.StopLossNanTrainingHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseRunner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.early_stopping_hook.StopLossNanTrainingHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.eval_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.CustomEvalHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.eval_hook.</span></span><span class="sig-name descname"><span class="pre">CustomEvalHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ema_eval_start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Custom Evaluation hook for the MPA</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dataloader (DataLoader): A PyTorch dataloader.
+interval (int): Evaluation interval (by epochs). Default: 1.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.CustomEvalHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training epoch to evaluate the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.CustomEvalHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training iter to evaluate the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.CustomEvalHook.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook.evaluate" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.eval_hook.</span></span><span class="sig-name descname"><span class="pre">DistCustomEvalHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_collect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">eval_kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training epoch to evaluate the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Called after every training iter to evaluate the results.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.eval_hook.single_gpu_test">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.eval_hook.</span></span><span class="sig-name descname"><span class="pre">single_gpu_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.eval_hook.single_gpu_test" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.fp16_sam_optimizer_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.fp16_sam_optimizer_hook.Fp16SAMOptimizerHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.fp16_sam_optimizer_hook.</span></span><span class="sig-name descname"><span class="pre">Fp16SAMOptimizerHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.fp16_sam_optimizer_hook.Fp16SAMOptimizerHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Sharpness-aware Minimization optimizer hook</p>
+<p>Implemented as OptimizerHook for MMCV Runners
+- Paper ref: <a class="reference external" href="https://arxiv.org/abs/2010.01412">https://arxiv.org/abs/2010.01412</a>
+- code ref: <a class="github reference external" href="https://github.com/davda54/sam">davda54/sam</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.fp16_sam_optimizer_hook.Fp16SAMOptimizerHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.fp16_sam_optimizer_hook.Fp16SAMOptimizerHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform SAM optimization
+0. compute current loss (DONE IN model.train_step())
+1. compute current gradient
+2. move param to the approximate local maximum: w + e(w) = w + rho*norm_grad
+3. compute maximum loss
+4. compute SAM gradient on maximum loss
+5. restore parram to original param
+6. update param using SAM gradient</p>
+<p>Assuming model.current_batch had been set in model.train_step()</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.ib_loss_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.ib_loss_hook.IBLossHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.ib_loss_hook.</span></span><span class="sig-name descname"><span class="pre">IBLossHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dst_classes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.ib_loss_hook.IBLossHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.ib_loss_hook.IBLossHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.ib_loss_hook.IBLossHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.logger_replace_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.logger_replace_hook.LoggerReplaceHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.logger_replace_hook.</span></span><span class="sig-name descname"><span class="pre">LoggerReplaceHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.logger_replace_hook.LoggerReplaceHook" title="Permalink to this definition">#</a></dt>
+<dd><p>replace logger in the runner to the MPA logger.
+DO NOT INCLUDE this hook to the recipe directly.
+mpa will add this hook to all recipe internally.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.logger_replace_hook.LoggerReplaceHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.logger_replace_hook.LoggerReplaceHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.model_ema_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_hook.CustomModelEMAHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.model_ema_hook.</span></span><span class="sig-name descname"><span class="pre">CustomModelEMAHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_hook.CustomModelEMAHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_hook.CustomModelEMAHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_hook.CustomModelEMAHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd><p>We recover model’s parameter from ema backup after last epoch’s
+EvalHook.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.model_ema_hook.</span></span><span class="sig-name descname"><span class="pre">DualModelEMAHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_s'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model_t'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Generalized re-implementation of mmcv.runner.EMAHook</p>
+<p>Source model paramters would be exponentially averaged
+onto destination model pararmeters on given intervals</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ext{Xema_{t+1}} = (1 -  ext{momentum})  imes
+ext{Xema_{t}} +         ext{momentum}   imes X_t\]</div>
+</div></blockquote>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt>momentum (float): The momentum used for updating ema parameter.</dt><dd><p>Defaults to 0.0002.</p>
+</dd>
+<dt>epoch_momentum (float): if &gt; 0, momentum is ignored and re-calculated.</dt><dd><p>momentum = 1 - exp(1 - epoch_momentum, 1/num_iter_per_epoch)
+Defaults to 0.</p>
+</dd>
+<dt>interval (int): Update ema parameter every interval iteration.</dt><dd><p>Defaults to 1.</p>
+</dd>
+<dt>start_epoch (int): During initial a few epochs, we just copy values</dt><dd><p>to update ema parameters. Defaults to 5.</p>
+</dd>
+</dl>
+<p>src_model_name (str): Source model for EMA (X)
+dst_model_name (str): Destination model for EMA (Xema)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Update ema parameter every self.interval iterations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd><p>Set up src &amp; dst model parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.model_ema_v2_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.model_ema_v2_hook.</span></span><span class="sig-name descname"><span class="pre">ModelEmaV2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_len_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2" title="Permalink to this definition">#</a></dt>
+<dd><p>Model Exponential Moving Average V2
+Keep a moving average of everything in the model state_dict (parameters and buffers).
+V2 of this module is simpler, it does not match params/buffers based on name but simply
+iterates in order. It works with torchscript (JIT of full model).
+This is intended to allow functionality like
+<a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage">https://www.tensorflow.org/api_docs/python/tf/train/ExponentialMovingAverage</a>
+A smoothed version of the weights is necessary for some training schemes to perform well.
+E.g. Google’s hyper-params for training MNASNet, MobileNet-V3, EfficientNet, etc that use
+RMSprop with a short 2.4-3 epoch decay period and slow LR decay rate of .96-.99 requires EMA
+smoothing of weights to match results. Pay attention to the decay constant you are using
+relative to your update count per epoch.
+To keep EMA from using GPU resources, set device=’cpu’. This will save a bit of memory but
+disable validation of the EMA weights. Validation will have to be done manually in a separate
+process, or after the training stops converging.
+This class is sensitive where it is initialized in the sequence of model init,
+GPU assignment and distributed training wrappers.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2.training" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2.update" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.model_ema_v2_hook.</span></span><span class="sig-name descname"><span class="pre">ModelEmaV2Hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ema_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9995</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_len_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook" title="Permalink to this definition">#</a></dt>
+<dd><p>Source model paramters would be exponentially averaged
+onto destination model pararmeters on given intervals</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[ext{Xema_{t+1}} = (1 -  ext{momentum})  imes
+ext{Xema_{t}} +         ext{momentum}   imes X_t\]</div>
+</div></blockquote>
+<dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt>ema_decay (float): EMA decay value used for updating ema parameter.</dt><dd><p>Defaults to 0.999.</p>
+</dd>
+<dt>interval (int): Update ema parameter every interval iteration.</dt><dd><p>Defaults to 1.</p>
+</dd>
+<dt>start_epoch (int): During initial a few epochs, we just copy values</dt><dd><p>to update ema parameters. Defaults to 5.</p>
+</dd>
+</dl>
+<p>dataset_len_thr (int): number of train images in the dataset when to enable the EMA hook</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Update ema parameter every self.interval iterations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.no_bias_decay_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.no_bias_decay_hook.</span></span><span class="sig-name descname"><span class="pre">NoBiasDecayHook</span></span><a class="headerlink" href="#otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Hook for No Bias Decay Method (Bag of Tricks for Image Classification)</p>
+<p>This hook divides model’s weight &amp; bias to 3 parameter groups
+[weight with decay, weight without decay, bias without decay]</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook.after_train_epoch">
+<span class="sig-name descname"><span class="pre">after_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook.after_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.recording_forward_hooks"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.ActivationMapHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">ActivationMapHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.ActivationMapHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.ActivationMapHook.func">
+<span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.ActivationMapHook.func" title="Permalink to this definition">#</a></dt>
+<dd><p>This method get the feature vector or saliency map from the output of the module.
+Args:</p>
+<blockquote>
+<div><p>x (torch.Tensor): Feature map from the backbone module
+fpn_idx (int, optional): The layer index to be processed if the model is a FPN.</p>
+<blockquote>
+<div><p>Defaults to 0 which uses the largest feature map from FPN.</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor (torch.Tensor): Saliency map for feature vector</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">BaseRecordingForwardHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook" title="Permalink to this definition">#</a></dt>
+<dd><p>While registered with the designated PyTorch module, this class caches feature vector during forward pass.
+Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">BaseRecordingForwardHook</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">backbone</span><span class="p">)</span> <span class="k">as</span> <span class="n">hook</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">return_loss</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">hook</span><span class="o">.</span><span class="n">records</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl>
+<dt>Args:</dt><dd><p>module (torch.nn.Module): The PyTorch module to be registered in forward pass
+fpn_idx (int, optional): The layer index to be processed if the model is a FPN.</p>
+<blockquote>
+<div><p>Defaults to 0 which uses the largest feature map from FPN.</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.func">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.func" title="Permalink to this definition">#</a></dt>
+<dd><p>This method get the feature vector or saliency map from the output of the module.
+Args:</p>
+<blockquote>
+<div><p>x (torch.Tensor): Feature map from the backbone module
+fpn_idx (int, optional): The layer index to be processed if the model is a FPN.</p>
+<blockquote>
+<div><p>Defaults to 0 which uses the largest feature map from FPN.</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor (torch.Tensor): Saliency map for feature vector</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.records">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">records</span></span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.records" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">DetSaliencyMapHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Saliency map hook for object detection models.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook.func">
+<span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls_scores_provided</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook.func" title="Permalink to this definition">#</a></dt>
+<dd><p>Generate the saliency map from raw classification head output, then normalizing to (0, 255).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – Feature maps from backbone/FPN or classification scores from cls_head</p></li>
+<li><p><strong>cls_scores_provided</strong> – If True - use ‘x’ as is, otherwise forward ‘x’ through the classification head</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">EigenCamHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook.func">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook.func" title="Permalink to this definition">#</a></dt>
+<dd><p>This method get the feature vector or saliency map from the output of the module.
+Args:</p>
+<blockquote>
+<div><p>x (torch.Tensor): Feature map from the backbone module
+fpn_idx (int, optional): The layer index to be processed if the model is a FPN.</p>
+<blockquote>
+<div><p>Defaults to 0 which uses the largest feature map from FPN.</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor (torch.Tensor): Saliency map for feature vector</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.FeatureVectorHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">FeatureVectorHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.FeatureVectorHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.FeatureVectorHook.func">
+<span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.FeatureVectorHook.func" title="Permalink to this definition">#</a></dt>
+<dd><p>This method get the feature vector or saliency map from the output of the module.
+Args:</p>
+<blockquote>
+<div><p>x (torch.Tensor): Feature map from the backbone module
+fpn_idx (int, optional): The layer index to be processed if the model is a FPN.</p>
+<blockquote>
+<div><p>Defaults to 0 which uses the largest feature map from FPN.</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor (torch.Tensor): Saliency map for feature vector</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.ReciproCAMHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">ReciproCAMHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.ReciproCAMHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Implementation of recipro-cam for class-wise saliency map
+recipro-cam: gradient-free reciprocal class activation map (<a class="reference external" href="https://arxiv.org/pdf/2209.14074.pdf">https://arxiv.org/pdf/2209.14074.pdf</a>)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.ReciproCAMHook.func">
+<span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.ReciproCAMHook.func" title="Permalink to this definition">#</a></dt>
+<dd><p>This method get the feature vector or saliency map from the output of the module.
+Args:</p>
+<blockquote>
+<div><p>x (torch.Tensor): Feature map from the backbone module
+fpn_idx (int, optional): The layer index to be processed if the model is a FPN.</p>
+<blockquote>
+<div><p>Defaults to 0 which uses the largest feature map from FPN.</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>torch.Tensor (torch.Tensor): Saliency map for feature vector</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.sam_optimizer_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.sam_optimizer_hook.SAMOptimizerHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.sam_optimizer_hook.</span></span><span class="sig-name descname"><span class="pre">SAMOptimizerHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.sam_optimizer_hook.SAMOptimizerHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Sharpness-aware Minimization optimizer hook</p>
+<p>Implemented as OptimizerHook for MMCV Runners
+- Paper ref: <a class="reference external" href="https://arxiv.org/abs/2010.01412">https://arxiv.org/abs/2010.01412</a>
+- code ref: <a class="github reference external" href="https://github.com/davda54/sam">davda54/sam</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.sam_optimizer_hook.SAMOptimizerHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.sam_optimizer_hook.SAMOptimizerHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform SAM optimization
+0. compute current loss (DONE IN model.train_step())
+1. compute current gradient
+2. move param to the approximate local maximum: w + e(w) = w + rho*norm_grad
+3. compute maximum loss
+4. compute SAM gradient on maximum loss
+5. restore parram to original param
+6. update param using SAM gradient</p>
+<p>Assuming model.current_batch had been set in model.train_step()</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.save_initial_weight_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.save_initial_weight_hook.SaveInitialWeightHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.save_initial_weight_hook.</span></span><span class="sig-name descname"><span class="pre">SaveInitialWeightHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weights.pth'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.save_initial_weight_hook.SaveInitialWeightHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.save_initial_weight_hook.SaveInitialWeightHook.before_run">
+<span class="sig-name descname"><span class="pre">before_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.save_initial_weight_hook.SaveInitialWeightHook.before_run" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.semisl_cls_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.semisl_cls_hook.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unlabeled_warmup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Hook for SemiSL for classification</p>
+<dl class="simple">
+<dt>This hook includes unlabeled warm-up loss coefficient (default: True):</dt><dd><p>unlabeled_coef = (0.5 - cos(min(pi, 2 * pi * k) / K)) / 2
+k: current step, K: total steps</p>
+</dd>
+</dl>
+<p>Also, this hook adds semi-sl-related data to the log (unlabeled_coef, pseudo_label)</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>total_steps (int): total steps for training (iteration)</dt><dd><p>Raise the coefficient from 0 to 1 during half the duration of total_steps
+default: 0, use runner.max_iters</p>
+</dd>
+<dt>unlabeled_warmup (boolean): enable unlabeled warm-up loss coefficient</dt><dd><p>If False, Semi-SL uses 1 as unlabeled loss coefficient</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.after_epoch">
+<span class="sig-name descname"><span class="pre">after_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.after_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.before_train_iter">
+<span class="sig-name descname"><span class="pre">before_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.before_train_iter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.task_adapt_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.task_adapt_hook.TaskAdaptHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.task_adapt_hook.</span></span><span class="sig-name descname"><span class="pre">TaskAdaptHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'FasterRCNN'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampler_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampler_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cls_incr'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">efficient_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.task_adapt_hook.TaskAdaptHook" title="Permalink to this definition">#</a></dt>
+<dd><p>Task Adaptation Hook for Task-Inc &amp; Class-Inc</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>src_classes (list): A list of old classes used in the existing model
+dst_classes (list): A list of classes including new_classes to be newly learned
+model_type (str): Types of models used for learning
+sampler_flag (bool): Flag about using ClsIncrSampler
+efficient_mode (bool): Flag about using efficient mode sampler</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.task_adapt_hook.TaskAdaptHook.before_epoch">
+<span class="sig-name descname"><span class="pre">before_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.task_adapt_hook.TaskAdaptHook.before_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.unbiased_teacher_hook"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.unbiased_teacher_hook.</span></span><span class="sig-name descname"><span class="pre">UnbiasedTeacherHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_pseudo_label_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook.after_train_iter">
+<span class="sig-name descname"><span class="pre">after_train_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook.after_train_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>Update ema parameter every self.interval iterations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook.before_train_epoch">
+<span class="sig-name descname"><span class="pre">before_train_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runner</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook.before_train_epoch" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-otx.mpa.modules.hooks.workflow_hooks"></span><dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.AfterStageWFHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.workflow_hooks.</span></span><span class="sig-name descname"><span class="pre">AfterStageWFHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_cfg_updated_callback</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.AfterStageWFHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.AfterStageWFHook.after_stage">
+<span class="sig-name descname"><span class="pre">after_stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.AfterStageWFHook.after_stage" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.SampleLoggingHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.workflow_hooks.</span></span><span class="sig-name descname"><span class="pre">SampleLoggingHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'otx.mpa.modules.hooks.workflow_hooks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DEBUG'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.SampleLoggingHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.SampleLoggingHook.before_stage">
+<span class="sig-name descname"><span class="pre">before_stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.SampleLoggingHook.before_stage" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WFProfileHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.workflow_hooks.</span></span><span class="sig-name descname"><span class="pre">WFProfileHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'otx.mpa.modules.hooks.workflow_hooks'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.after_stage">
+<span class="sig-name descname"><span class="pre">after_stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.after_stage" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.after_workflow">
+<span class="sig-name descname"><span class="pre">after_workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.after_workflow" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.before_stage">
+<span class="sig-name descname"><span class="pre">before_stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.before_stage" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.before_workflow">
+<span class="sig-name descname"><span class="pre">before_workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.before_workflow" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WorkflowHook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.workflow_hooks.</span></span><span class="sig-name descname"><span class="pre">WorkflowHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.after_stage">
+<span class="sig-name descname"><span class="pre">after_stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.after_stage" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.after_workflow">
+<span class="sig-name descname"><span class="pre">after_workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.after_workflow" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.before_stage">
+<span class="sig-name descname"><span class="pre">before_stage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.before_stage" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.before_workflow">
+<span class="sig-name descname"><span class="pre">before_workflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workflow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.before_workflow" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.mpa.modules.hooks.workflow_hooks.build_workflow_hook">
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.workflow_hooks.</span></span><span class="sig-name descname"><span class="pre">build_workflow_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.workflow_hooks.build_workflow_hook" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            </article>
+            
+            
+            
+            <footer class="bd-footer-article">
+                <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+  <a class='left-prev' id="prev-link" href="datasets.html" title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+          <p class="prev-next-subtitle">previous</p>
+          <p class="prev-next-title">Datasets</p>
+      </div>
+  </a>
+  <a class='right-next' id="next-link" href="optimizer.html" title="next page">
+  <div class="prev-next-info">
+      <p class="prev-next-subtitle">next</p>
+      <p class="prev-next-title">Optimizer</p>
+  </div>
+  <i class="fa-solid fa-angle-right"></i>
+  </a>
+</div>
+            </footer>
+            
+          </div>
+          
+          
+          
+            <div class="bd-sidebar-secondary bd-toc">
+              
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AdaptiveTrainSchedulingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AdaptiveTrainSchedulingHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.before_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AdaptiveTrainSchedulingHook.before_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.get_adaptive_interval">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AdaptiveTrainSchedulingHook.get_adaptive_interval()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.adaptive_training_hooks.AdaptiveTrainSchedulingHook.get_evalhook">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AdaptiveTrainSchedulingHook.get_evalhook()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CancelInterfaceHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.after_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CancelInterfaceHook.after_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CancelInterfaceHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.cancel_interface_hook.CancelInterfaceHook.cancel">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CancelInterfaceHook.cancel()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CheckpointHookWithValResults
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CheckpointHookWithValResults.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CheckpointHookWithValResults.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.checkpoint_hook.CheckpointHookWithValResults.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CheckpointHookWithValResults.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ComposedDataLoadersHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook.add_dataloaders">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ComposedDataLoadersHook.add_dataloaders()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.composed_dataloaders_hook.ComposedDataLoadersHook.before_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ComposedDataLoadersHook.before_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     EarlyStoppingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.greater_keys">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.greater_keys
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.init_value_map">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.init_value_map
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.less_keys">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.less_keys
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.EarlyStoppingHook.rule_map">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EarlyStoppingHook.rule_map
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.LazyEarlyStoppingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     LazyEarlyStoppingHook
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ReduceLROnPlateauLrUpdaterHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.get_lr">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.get_lr()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.greater_keys">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.greater_keys
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.init_value_map">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.init_value_map
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.less_keys">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.less_keys
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.ReduceLROnPlateauLrUpdaterHook.rule_map">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReduceLROnPlateauLrUpdaterHook.rule_map
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.StopLossNanTrainingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     StopLossNanTrainingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.early_stopping_hook.StopLossNanTrainingHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       StopLossNanTrainingHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CustomEvalHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomEvalHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomEvalHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.CustomEvalHook.evaluate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomEvalHook.evaluate()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DistCustomEvalHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DistCustomEvalHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.DistCustomEvalHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DistCustomEvalHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.eval_hook.single_gpu_test">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     single_gpu_test()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.fp16_sam_optimizer_hook.Fp16SAMOptimizerHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Fp16SAMOptimizerHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.fp16_sam_optimizer_hook.Fp16SAMOptimizerHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Fp16SAMOptimizerHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.ib_loss_hook.IBLossHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IBLossHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.ib_loss_hook.IBLossHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IBLossHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.logger_replace_hook.LoggerReplaceHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     LoggerReplaceHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.logger_replace_hook.LoggerReplaceHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LoggerReplaceHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_hook.CustomModelEMAHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     CustomModelEMAHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_hook.CustomModelEMAHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomModelEMAHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DualModelEMAHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DualModelEMAHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DualModelEMAHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DualModelEMAHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_hook.DualModelEMAHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DualModelEMAHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ModelEmaV2
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2.training">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ModelEmaV2.training
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2.update">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ModelEmaV2.update()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ModelEmaV2Hook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ModelEmaV2Hook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ModelEmaV2Hook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.model_ema_v2_hook.ModelEmaV2Hook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ModelEmaV2Hook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     NoBiasDecayHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook.after_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NoBiasDecayHook.after_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.no_bias_decay_hook.NoBiasDecayHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NoBiasDecayHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.ActivationMapHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ActivationMapHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.ActivationMapHook.func">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ActivationMapHook.func()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     BaseRecordingForwardHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.func">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       BaseRecordingForwardHook.func()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.records">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       BaseRecordingForwardHook.records
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DetSaliencyMapHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook.func">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DetSaliencyMapHook.func()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     EigenCamHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook.func">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       EigenCamHook.func()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.FeatureVectorHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     FeatureVectorHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.FeatureVectorHook.func">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FeatureVectorHook.func()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.ReciproCAMHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ReciproCAMHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.ReciproCAMHook.func">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ReciproCAMHook.func()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.sam_optimizer_hook.SAMOptimizerHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SAMOptimizerHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.sam_optimizer_hook.SAMOptimizerHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SAMOptimizerHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.save_initial_weight_hook.SaveInitialWeightHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SaveInitialWeightHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.save_initial_weight_hook.SaveInitialWeightHook.before_run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SaveInitialWeightHook.before_run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.after_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsHook.after_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.semisl_cls_hook.SemiSLClsHook.before_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsHook.before_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.task_adapt_hook.TaskAdaptHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TaskAdaptHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.task_adapt_hook.TaskAdaptHook.before_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TaskAdaptHook.before_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     UnbiasedTeacherHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook.after_train_iter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       UnbiasedTeacherHook.after_train_iter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.unbiased_teacher_hook.UnbiasedTeacherHook.before_train_epoch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       UnbiasedTeacherHook.before_train_epoch()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.AfterStageWFHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AfterStageWFHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.AfterStageWFHook.after_stage">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AfterStageWFHook.after_stage()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.SampleLoggingHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SampleLoggingHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.SampleLoggingHook.before_stage">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SampleLoggingHook.before_stage()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     WFProfileHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.after_stage">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WFProfileHook.after_stage()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.after_workflow">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WFProfileHook.after_workflow()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.before_stage">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WFProfileHook.before_stage()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WFProfileHook.before_workflow">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WFProfileHook.before_workflow()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     WorkflowHook
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.after_stage">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WorkflowHook.after_stage()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.after_workflow">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WorkflowHook.after_workflow()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.before_stage">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WorkflowHook.before_stage()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.WorkflowHook.before_workflow">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WorkflowHook.before_workflow()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.workflow_hooks.build_workflow_hook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     build_workflow_hook()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
+<div id="searchbox"></div>
+</div>
+
+<div class="toc-item">
+  
+</div>
+
+<div class="toc-item">
+  
+<div class="tocsection sourcelink">
+    <a href="../../../../_sources/guide/reference/mpa/modules/hooks.rst.txt">
+        <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+</div>
+
+</div>
+
+            </div>
+          
+          
+        </div>
+        <footer class="bd-footer-content">
+          <div class="bd-footer-content__inner">
+            
+          </div>
+        </footer>
+        
+      </main>
+    </div>
+  </div>
+
+  
+    
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=796348d33e8b1d947c94"></script>
+
+  <footer class="bd-footer"><div class="bd-footer__inner container">
+  
+  <div class="footer-item">
+    
+<p class="copyright">
+
+    &copy; Copyright 2023, OpenVINO™ Training Extensions Contributors.<br>
+
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="theme-version">
+    Built with the
+    <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">
+        PyData Sphinx Theme
+    </a>
+    0.12.0.
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+<p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+
+  </div>
+  
+</div>
+  </footer>
+  </body>
+</html>
