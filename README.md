@@ -17,8 +17,20 @@
 
 ## Overview
 
-OpenVINO™ Training Extensions is a low-code transfer learning framework for Computer Vision. OpenVINO™ Training Extensions lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on [PyTorch](https://pytorch.org) and [OpenVINO™
-toolkit](https://software.intel.com/en-us/openvino-toolkit). OpenVINO™ Training Extensions provides "model template" for every supported task type, which consolidates neccesary information to build a model. Model templates are validated on various datasets and serve one-stop shop for obtaining best models in general. If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [pytorchcv](https://github.com/osmr/imgclsmob), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo). Moreover, OpenVINO™ Training Extensions provides automatic configuration of task types and hyperparameters. The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
+OpenVINO™ Training Extensions is a low-code transfer learning framework for Computer Vision.
+OpenVINO™ Training Extensions lets users train, infer, optimize and deploy models simply and fast even with low expertise in the deep learning field.
+OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on [PyTorch](https://pytorch.org) and [OpenVINO™
+toolkit](https://software.intel.com/en-us/openvino-toolkit).
+
+OpenVINO™ Training Extensions provides "model template" for every supported task type, which consolidates neccesary information to build a model.
+Model templates are validated on various datasets and serve one-stop shop for obtaining best models in general.
+If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [pytorchcv](https://github.com/osmr/imgclsmob), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
+
+Moreover, OpenVINO™ Training Extensions provides automatic configuration of task types and hyperparameters.
+The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration.
+The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
+
+### Key Features
 
 OpenVINO™ Training Extensions supports the following computer vision tasks:
 
@@ -31,7 +43,7 @@ OpenVINO™ Training Extensions supports the following computer vision tasks:
 
 OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/guide/explanation/algorithms/index.html):
 
-- **Supervised**, incremental training including class incremental scenario and contrastive learning for classification and semantic segmentation tasks
+- **Supervised**, incremental learning including class incremental scenario and contrastive learning for classification and semantic segmentation tasks
 - **Semi-supervised learning**
 - **Self-supervised learning**
 
@@ -93,19 +105,19 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 ---
 
-# Quick start guide
+## Quick start guide
 
-In order to get started with OpenVINO™ Training Extensions, see [the quick-start guide](QUICK_START_GUIDE.md).
+In order to get started with OpenVINO™ Training Extensions, see [the quick-start guide](https://openvinotoolkit.github.io/training_extensions/guide/get_started/quick_start_guide/index.html).
 
 ---
 
-# Documentation
+## Documentation
 
 Refer to our [documentation](https://openvinotoolkit.github.io/training_extensions/index.html) to read about explanation of the algorithms, additional features and also look into our dedicated tutorials covering all the functionality
 
 ---
 
-# License
+## License
 
 OpenVINO™ Toolkit is licensed under [Apache License Version 2.0](LICENSE).
 By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
