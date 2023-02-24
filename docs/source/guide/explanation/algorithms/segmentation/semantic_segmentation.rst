@@ -154,7 +154,7 @@ Each subset dataset has 8, 16, and 24 images, respectively.
 
 Unlike other tasks, two things are considered to use self-supervised learning:
 
-- ``--train-data-root`` must be set to a directory only containing images, not ground truths.
+- ``--train-data-roots`` must be set to a directory only containing images, not ground truths.
   DetCon uses pseudo masks created in ``detcon_mask`` directory for training. If they are not created yet, they will be created first.
 - ``--val-data-root`` is not needed.
 
