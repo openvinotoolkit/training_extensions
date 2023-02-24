@@ -4,6 +4,11 @@
 
 ---
 
+[Key Features](#key-features) •
+[Quick Start](https://openvinotoolkit.github.io/training_extensions/guide/get_started/quick_start_guide/index.html) •
+[Documentation](https://openvinotoolkit.github.io/training_extensions/index.html) •
+[License](#license)
+
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![openvino](https://img.shields.io/badge/openvino-2022.3.0-purple)]()
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f9ba89f9ea2a47eeb9d52c2acc311e6c)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
@@ -60,6 +65,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 ## Getting Started
 
 ### Installation
+
 Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/guide/get_started/quick_start_guide/installation.html).
 
 ### OpenVINO™ Training Extensions CLI Commands
@@ -78,7 +84,7 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ---
 
-## Roadmap
+## Updates
 
 ### v1.0.0 (1Q23)
 
@@ -92,9 +98,13 @@ You can find more details with examples in the [CLI command intro](https://openv
 - Integrate hyper-parameter optimizations
 - Support action recognition task
 
-### v1.1.0 (2Q23)
+### v1.?.0 (2Q23)
 
-- SDK/API update
+- In planning
+
+### Release History
+
+Please refer to the [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -106,21 +116,9 @@ You can find more details with examples in the [CLI command intro](https://openv
   - [OpenVINO™ Training Extensions Algorithms](otx/algorithms)
 - Branches
   - [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
-    - Mainly maintained branch for releasing new features in the future
+    - Mainly maintained branch for developing new features for the future release
   - [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc)
     - Previously developed models can be found on this branch
-
----
-
-## Quick start guide
-
-In order to get started with OpenVINO™ Training Extensions, see [the quick-start guide](https://openvinotoolkit.github.io/training_extensions/guide/get_started/quick_start_guide/index.html).
-
----
-
-## Documentation
-
-Refer to our [documentation](https://openvinotoolkit.github.io/training_extensions/index.html) to read about explanation of the algorithms, additional features and also look into our dedicated tutorials covering all the functionality
 
 ---
 

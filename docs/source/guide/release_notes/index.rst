@@ -4,9 +4,9 @@ Release Notes
 .. toctree::
    :maxdepth: 2
 
-***************
+*************
 v1.0.0 (1Q23)
-***************
+*************
 
 - Installation through PyPI
   - Package will be renamed as OpenVINO™ Training Extensions
@@ -18,8 +18,8 @@ v1.0.0 (1Q23)
 - Integrate hyper-parameter optimizations
 - Support action recognition task
 
-***************
-v1.1.0 (2Q23)
-***************
+*************
+v1.x.0 (2Q23)
+*************
 
-- SDK/API update
+- In planning
