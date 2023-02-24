@@ -87,9 +87,9 @@ The next step is to set up a dataset:
 
     dataset_adapter = get_dataset_adapter(task_type = model_template.task_type,
                                           # set a path to the root folder of the wgisd repository
-                                          train_data_roots = "./wgisd",
-                                          val_data_roots = "./wgisd",
-                                          test_data_roots = "./wgisd")
+                                          train_data_roots="./wgisd",
+                                          val_data_roots="./wgisd",
+                                          test_data_roots="./wgisd")
     dataset, labels_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
 
