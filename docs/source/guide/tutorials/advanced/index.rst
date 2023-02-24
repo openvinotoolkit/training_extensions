@@ -5,6 +5,7 @@ Advanced tutorial
    :maxdepth: 1
 
    semi_sl
+   self_sl
    backbones
    api_tutorial
    hpo_tutorial

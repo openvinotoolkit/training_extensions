@@ -12,7 +12,7 @@ For the supervised training we use the following algorithms components:
 
 - ``Learning rate schedule``: `Cosine Annealing <https://arxiv.org/abs/1608.03983v5>`_. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.
 
-- ``Loss function``: We use standart `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model. However, for the class-incremental scenario we use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for class-imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
+- ``Loss function``: We use standard `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_  to train a model. However, for the class-incremental scenario we use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. IB loss is a solution for the class imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.
 
 - ``Additional training techniques``
     - `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_: To add adaptability to the training pipeline and prevent overfitting.
@@ -30,7 +30,7 @@ For the supervised training we use the following algorithms components:
 Dataset Format
 **************
 
-We support a commonly used format for multi-class image classification task: `imagenet <https://www.image-net.org/>`_ class folder format.
+We support a commonly used format for multi-class image classification task: `ImageNet <https://www.image-net.org/>`_ class folder format.
 This format has the following structure:
 
 ::
@@ -58,12 +58,12 @@ This format has the following structure:
 
 .. note::
 
-    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classificaiton models.
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classification models.
 
 ******
 Models
 ******
-.. _classificaiton_models:
+.. _classification_models:
 
 We support the following ready-to-use model templates:
 
@@ -89,23 +89,23 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
-In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+.. In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
-+=======================+=================+===========+===========+===========+===========+
-| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
-| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
-+-----------------------+-----------------+-----------+-----------+-----------+-----------+
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+.. | Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
+.. +=======================+=================+===========+===========+===========+===========+
+.. | MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+.. | EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+.. | EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 ************************
 Semi-supervised Learning
 ************************
 
-Semi-SL (Semi supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.
+Semi-SL (Semi-supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.
 
 We use `FixMatch <https://arxiv.org/abs/2001.07685>`_ as a core algorithm for Semi-SL task solving. It is a specific implementation of Semi-SL that has been shown to be effective in various applications. FixMatch introduces pseudo-labeling, which is the process of generating labels for the unlabeled data and treating them as if they were labeled data. Pseudo-labeling is based on the idea that the model's prediction for the unlabeled data is likely to be correct, which can improve the model's accuracy and reduce the need for labeled data.
 
@@ -119,51 +119,54 @@ Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improv
 
 - ``Adaptable Threshold``: A novel addition to our solution that calculates a class-wise threshold for pseudo-labeling, which can solve the issue of imbalanced data and produce high-quality pseudo-labels that improve the overall score.
 
-- ``Unlabeled Warm Up Loss``: A technique for preventing the initial unstable learning of pseudo-labeling by increasing the coefficient of the unlabeled loss from 0 to 1.
+- ``Unlabeled Warm-Up Loss``: A technique for preventing the initial unstable learning of pseudo-labeling by increasing the coefficient of the unlabeled loss from 0 to 1.
 
 - ``Exponential Moving Average (EMA)``: A technique for maintaining a moving average of the model's parameters, which can improve the generalization performance of the model.
 
 - ``Additional techniques``: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, Early-Stopping, etc.)
 
-Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` how to train semi-supervised learning.
-Training time depends on the number of images and can be up to several times longer then conventional supervised learning.
+Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` on how to train semi-supervised learning. 
+Training time depends on the number of images and can be up to several times longer than conventional supervised learning.
 
-In the table below the top-1 accuracy on some academic datasets using our pipeline is presented. Same as the supervised setting except for an image for unlabeled and an additional batch size.
+In the table below the top-1 accuracy on some academic datasets using our pipeline is presented. Same as the supervised setting except for an image for unlabeled and additional batch size.
 
 - 4 labeled images per class including unlabeled dataset for Semi-SL
 
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  |        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
-  +=======================+=========+=========+=======+=========+========+=========+
-  |                       |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  | MobileNet-V3-large-1x |  40.75  |  43.13  | 23.32 |  27.85  |  68.2  |  71.84  |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  |   EfficientNet-B0     |  42.24  |  44.23  | 28.09 |  32.96  | 68.58  |  70.79  |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  |  EfficientNet-V2-S    |  36.03  |  39.66  | 16.81 |  20.28  | 65.99  |  69.61  |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
++-----------------------+---------+---------+-------+---------+--------+---------+
+|        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
++=======================+=========+=========+=======+=========+========+=========+
+|                       |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
++-----------------------+---------+---------+-------+---------+--------+---------+
+| MobileNet-V3-large-1x |  40.75  |  43.13  | 23.32 |  27.85  |  68.2  |  71.84  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|   EfficientNet-B0     |  42.24  |  44.23  | 28.09 |  32.96  | 68.58  |  70.79  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|  EfficientNet-V2-S    |  36.03  |  39.66  | 16.81 |  20.28  | 65.99  |  69.61  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+
+|
 
 - 10 labeled images per class including unlabeled dataset for Semi-SL
 
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  |        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
-  +=======================+=========+=========+=======+=========+========+=========+
-  |                       |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  | MobileNet-V3-large-1x |  50.77  |  52.16  | 38.73 |  48.36  | 73.33  |  77.04  |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  |   EfficientNet-B0     |  52.69  |  58.35  | 46.04 |  61.79  | 74.56  |  80.14  |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
-  |  EfficientNet-V2-S    |  48.84  |   55    | 26.16 |  47.99  |  74.6  |  80.92  |
-  +-----------------------+---------+---------+-------+---------+--------+---------+
++-----------------------+---------+---------+-------+---------+--------+---------+
+|        Dataset        | CIFAR10 |         | SVHN  |         | FMNIST |         |
++=======================+=========+=========+=======+=========+========+=========+
+|                       |   SL    | Semi-SL |  SL   | Semi-SL |   SL   | Semi-SL |
++-----------------------+---------+---------+-------+---------+--------+---------+
+| MobileNet-V3-large-1x |  50.77  |  52.16  | 38.73 |  48.36  | 73.33  |  77.04  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|   EfficientNet-B0     |  52.69  |  58.35  | 46.04 |  61.79  | 74.56  |  80.14  |
++-----------------------+---------+---------+-------+---------+--------+---------+
+|  EfficientNet-V2-S    |  48.84  |   55    | 26.16 |  47.99  |  74.6  |  80.92  |
++-----------------------+---------+---------+-------+---------+--------+---------+
 
 .. note::
-    This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm, Some models may require larger datasets for better results.
+    This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm. Some models may require larger datasets for better results.
 
 ************************
 Self-supervised Learning
 ************************
+.. _selfsl_multi_class_classification:
 
 Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
@@ -171,7 +174,7 @@ However, in real-world industries, it is difficult to apply because of small dat
 
 For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted `BYOL <https://arxiv.org/abs/2006.07733>`_ as our self-supervised method.
-Users only need a few more minutes to use these self-supervised learning recipes and can expect improved performance, especially in low-data regimes.
+This algorithm will require some additional training time, meanwhile, improved performance is expected, especially in low-data regimes.
 
 Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
 The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
@@ -182,7 +185,7 @@ To get the below performance, we had two steps:
 - Train the models using only images without label information to get pretrained weights for a few epochs.
 - Fine-tune the models with pretrained weights using subset datasets and get performance.
 
-We additionally obtained baseline performance from supervised learning using subset datasets for the comparison.
+We additionally obtained baseline performance from supervised learning using subset datasets for comparison.
 Each subset dataset has 500, 1000, 5000, 10000, and the whole images, respectively.
 
 .. image:: ../../../../../utils/images/multi_cls_selfsl_performance_CIFAR10.png
@@ -195,29 +198,29 @@ Each subset dataset has 500, 1000, 5000, 10000, and the whole images, respective
   :width: 600
 
 To enable self-supervised training, the command below can be executed.
-Unlike other tasks, `--val-data-root` is not needed.
+Unlike other tasks, ``--val-data-root`` is not needed.
 
 .. code-block::
 
   $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-      --train-data-root=tests/assets/imagenet_dataset_class_incremental \
-      params \
-      --algo_backend.train_type=SELFSUPERVISED
+              --train-data-root=tests/assets/imagenet_dataset_class_incremental \
+              params \
+              --algo_backend.train_type=SELFSUPERVISED
 
 After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:
 
 .. code-block::
 
   $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-      --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
-      --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
-      --load-weights={PATH/PRETRAINED/WEIGHTS}
+              --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
+              --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
+              --load-weights={PATH/PRETRAINED/WEIGHTS}
 
 *******************************
 Supervised Contrastive Learning
 *******************************
 
-To enhance the performance of the algorithm in case when we have a small number of data, `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_ can be used.
+To enhance the performance of the algorithm in the case when we have a small number of data, `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_ can be used.
 More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
 The below table shows how much performance SupCon improved compared with baseline performance on three baseline datasets with 10 samples per class: CIFAR10, Eurosat-10, and Food-101.
 
@@ -239,17 +242,17 @@ It can be launched only with supervised (incremental) training type.
 .. code-block::
 
   $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-      --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
-      --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
-      params \
-      --learning_parameters.enable_supcon=True
+              --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
+              --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
+              params \
+              --learning_parameters.enable_supcon=True
 
 .. note::
     SL stands for Supervised Learning.
 
 
-********************
-Incremental Learning
-********************
+.. ********************
+.. Incremental Learning
+.. ********************
 
-To be added soon
+.. To be added soon

@@ -5,6 +5,6 @@ Base tutorial
    :maxdepth: 2
 
    how_to_train/index
-   deploy
    demo
+   deploy
    explain
