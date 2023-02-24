@@ -1,10 +1,8 @@
-name: Build Docs for the RC
+name: Build Docs for releases
 
 on:
-  push:
-    branches:
-      - "releases/**"
-  workflow_dispatch: # run on request (no need for PR)
+  release:
+    types: [published]
 
 jobs:
   Build-Docs:
@@ -14,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Build-Docs
@@ -24,7 +24,6 @@ jobs:
           echo SOURCE_NAME=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
           echo SOURCE_BRANCH=${GITHUB_REF#refs/heads/} >> $GITHUB_OUTPUT
           echo SOURCE_TAG=${GITHUB_REF#refs/tags/} >> $GITHUB_OUTPUT
-
           existed_in_remote=$(git ls-remote --heads origin gh-pages)
 
           if [[ -z ${existed_in_remote} ]]; then
@@ -52,6 +51,7 @@ jobs:
           echo '<html><head><meta http-equiv="refresh" content="0; url=stable/" /></head></html>' > index.html
           mkdir -p ${{ env.RELEASE_VERSION }}
           cp -r /tmp/docs_build/* ./${{ env.RELEASE_VERSION }}
+          ln -sf ${{ env.RELEASE_VERSION }} stable
           rm -rf /tmp/docs_build
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
