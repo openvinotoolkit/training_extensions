@@ -254,10 +254,10 @@ Let's assume, that we have already trained the model and we want to use it in ou
 
     # create new environment
     environment = TaskEnvironment(
-            model = None,
-            hyper_parameters = hyper_parameters,
-            label_schema = read_label_schema(weights_path),
-            model_template = template,
+            model=None,
+            hyper_parameters=hyper_parameters,
+            label_schema=read_label_schema(weights_path),
+            model_template=template,
         )
 
     # read the model and assign it to our environment
