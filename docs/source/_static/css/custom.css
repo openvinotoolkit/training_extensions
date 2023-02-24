@@ -2,7 +2,7 @@
   /*****************************************************************************
   * Theme config
   **/
-  --pst-header-height: 60px;
+  --pst-header-height: 45px;
   /* smaller then heading font sizes*/
   --pst-font-size-milli: 12px;
   --pst-sidebar-font-size: 0.9em;

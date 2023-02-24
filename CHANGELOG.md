@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## \[v1.0.0\]
 
-> _**notes**_
+> _**NOTES**_
+>
 > OpenVINO™ Training Extensions which version 1.0.0 has been updated to include functional and security updates. Users should update to the latest version.
 
 ### New features
@@ -21,7 +22,7 @@ All notable changes to this project will be documented in this file.
 - Enhance `find` command to find configurations of supported tasks / algorithms / models / backbones
 - Introduce `build` command to customize task or model configurations in isolated workspace
 - Auto-config feature to automatically select the right algorithm and default model for the `train` & `build` command by detecting the task type of given input dataset
-- Imporve [documentation](https://openvinotoolkit.github.io/training_extensions/guide/get_started/introduction.html)
+- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/guide/get_started/introduction.html)
 - Improve training performance by introducing enhanced loss for the few-shot transfer
 
 ### Bug fixes
@@ -31,7 +32,8 @@ All notable changes to this project will be documented in this file.
 
 ## \[v0.5.0\]
 
-> _**notes**_
+> _**NOTES**_
+>
 > OpenVINO Training Extension which version is equal or older then v0.5.0 does not include the latest functional and security updates. OTE Version 1.0.0 is targeted to be released in February 2023 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
 
 ### Added
