@@ -41,7 +41,12 @@ from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
+from otx.api.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+)
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
@@ -307,7 +312,13 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             self._delete_scratch_space()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = True,
+    ):
         """Export function of OTX Action Task."""
         # TODO: add dumping saliency maps and representation vectors according to dump_features flag
         if not dump_features:
@@ -324,6 +335,9 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         output_model.optimization_type = ModelOptimizationType.MO
         self._init_task()
 
+        self._precision[0] = precision
+        half_precision = precision == ModelPrecision.FP16
+
         try:
             from torch.jit._trace import TracerWarning
 
@@ -333,6 +347,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
                 self._recipe_cfg,
                 onnx_model_path=f"{self._output_path}/openvino.onnx",
                 output_dir_path=f"{self._output_path}",
+                half_precision=half_precision,
             )
             bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
             xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
