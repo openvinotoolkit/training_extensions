@@ -172,7 +172,7 @@ After self-supervised training, pretrained weights can be use for supervised (in
 .. code-block::
 
   $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-root=tests/assets/common_semantic_segmentation_dataset/train \
+              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
               --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
               --load-weights={PATH/PRETRAINED/WEIGHTS}
 
