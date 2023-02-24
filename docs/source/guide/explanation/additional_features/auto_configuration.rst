@@ -35,7 +35,7 @@ Supported dataset formats for each task:
 - object detection: `COCO <https://cocodataset.org/#format-data>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_
 - semantic segmentation: `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_, `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_, `Cityscapes <https://openvinotoolkit.github.io/datumaro/docs/formats/cityscapes/>`_, `ADE20k <https://openvinotoolkit.github.io/datumaro/docs/formats/ade20k2020/>`_
 - action classification: `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
-- action : `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
+- action detection: `CVAT <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_
 - anomaly classification: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
 - anomaly detection: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
 - anomaly segmentation: `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_
