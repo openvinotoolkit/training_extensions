@@ -168,9 +168,9 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
         InferenceParameters(is_evaluation=True))
 
     resultset = ResultSetEntity(
-        model = output_model,
-        ground_truth_dataset = validation_dataset,
-        prediction_dataset = predicted_validation_dataset,
+        model=output_model,
+        ground_truth_dataset=validation_dataset,
+        prediction_dataset=predicted_validation_dataset,
     )
     ov_task.evaluate(resultset)
 
