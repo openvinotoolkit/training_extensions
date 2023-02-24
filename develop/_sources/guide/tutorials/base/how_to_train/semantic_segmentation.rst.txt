@@ -1,7 +1,10 @@
 Semantic Segmentation model
 ================================
 
-This tutorial demonstrates how to train and optimize a semantic segmentation model using the VOC2012 dataset from the PASCAL Visual Object Classes Challenge 2012. The trained model will be used to segment images by assigning a label to each pixel of the input image.
+This tutorial demonstrates how to train and optimize a semantic segmentation model using the VOC2012 dataset from the PASCAL Visual Object Classes Challenge 2012. 
+The trained model will be used to segment images by assigning a label to each pixel of the input image. 
+
+To learn more about Segmentation task, refer to :doc:`../../../explanation/algorithms/segmentation/semantic_segmentation`.
 
 .. note::
   To learn more about managing the training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
@@ -21,7 +24,17 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-To create a virtual environment for semantic segmentation, please follow the installation process from the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`.
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+to create a universal virtual environment for OpenVINO™ Training Extensions.
+
+2. Activate your virtual 
+environment:
+
+.. code-block::
+
+  .otx/bin/activate
+  # or by this line, if you created an environment, using tox
+  . venv/otx/bin/activate
 
 ***************************
 Dataset preparation
@@ -56,7 +69,7 @@ The dataset contains a set of RGB images with 20 semantic labels such as aeropla
 Training
 *********
 
-1. First of all, we need to choose which semantic segmentation model will we train.
+1. First of all, we need to choose which semantic segmentation model we will train.
 The list of supported templates for semantic segmentation is available with the command line below.
 
 .. note::
@@ -80,16 +93,19 @@ The list of supported templates for semantic segmentation is available with the 
 
 .. note::
 
-    We do not attach OCR head for supported models in default. We remain the suffix '_OCR' in ID just for backward compatibility.
+  We do not attach an OCR head for supported models in default. We remain the suffix '_OCR' in ID just for backward compatibility.
+
 To have a specific example in this tutorial, all commands will be run on the :ref:`Lite-HRNet-18-mod2 <semantic_segmentation_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the semantic segmentation.
 
-Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspase running the following command:
+2.  Next, we need to create train/validation sets. 
+OpenVINO™ Training Extensions supports auto-split functionality for semantic segmentation.
 
 .. note::
 
-  Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in argument '--val-data-roots' when using other supported segmentation dataset. About dataset formats for semantic segmentation, please refer to the :doc:`explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
+  Currently, OpenVINO™ Training Extensions supports auto-split only for public VOC dataset format in semantic segmentation. We should specify the validation roots in the argument ``--val-data-roots`` when using other supported segmentation dataset. To learn about dataset formats for semantic segmentation, please refer to the :doc:`explanation section <../../../explanation/algorithms/segmentation/semantic_segmentation>`.
+
+Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspace running the following command:
 
 .. code-block::
 
@@ -104,10 +120,10 @@ Let's prepare an OpenVINO™ Training Extensions semantic segmentation workspase
 
   (otx) ...$ cd ./otx-workspace-SEGMENTATION
 
-It will create **otx-workspace-SEGMENTATION** with all necessery configs for Lite-HRNet-18-mod2, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
+It will create **otx-workspace-SEGMENTATION** with all necessary configs for Lite-HRNet-18-mod2, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
-2. To start training we need to call ``otx train``
-command in our worspace:
+3. To start training we need to call ``otx train``
+command in our workspace:
 
 .. code-block::
 
@@ -123,13 +139,12 @@ Validation
 
 1. ``otx eval`` runs evaluation of a trained
 model on a specific dataset.
-
 The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta-information about the dataset and it should be located in the same folder as the model snapshot.
+Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
 
 ``otx eval`` will output a ``mDice`` score for semantic segmentation.
 
-2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument '--test-data-roots'.
+2. The command below will run validation on our splitted dataset. We can use other test dataset as well by specifying the path where test data exists in argument ``--test-data-roots``.
 By running this example command, the performance results evaluated by our splitted validation dataset are saved in ``performance.json`` file:
 
 .. code-block::
@@ -198,7 +213,6 @@ Optimization
 
 1. We can further optimize the model with ``otx optimize``.
 It uses NNCF or POT depending on the model format.
-
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
 
 2. Command example for optimizing
