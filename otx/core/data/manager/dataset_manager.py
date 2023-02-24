@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import datumaro
 from datumaro.components.dataset import Dataset, DatasetSubset
@@ -31,12 +31,12 @@ class DatasetManager:
         raise ValueError("Can't find training data.")
 
     @staticmethod
-    def get_val_dataset(dataset: Dataset) -> DatasetSubset:
+    def get_val_dataset(dataset: Dataset) -> Union[DatasetSubset, None]:
         """Returns validation dataset."""
         for k, v in dataset.subsets().items():
-            if "val" in k or "default" in k:
+            if "val" in k:
                 return v
-        raise ValueError("Can't find validation data.")
+        return None
 
     @staticmethod
     def get_data_format(data_root: str) -> str:
@@ -57,6 +57,7 @@ class DatasetManager:
             data_formats = datumaro.Environment().detect_dataset(data_root)
             # TODO: how to avoid hard-coded part
             data_format = data_formats[0] if "imagenet" not in data_formats else "imagenet"
+        print(f"[*] Detected dataset format: {data_format}")
         return data_format
 
     @staticmethod
