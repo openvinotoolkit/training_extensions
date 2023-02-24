@@ -48,14 +48,14 @@ jobs:
           git checkout gh-pages
           mkdir -p /tmp/docs_build
           cp -r docs/build/html/* /tmp/docs_build/
-          rm -rf ./*
+          rm -rf ${{ env.RELEASE_VERSION }}/*
           echo '<html><head><meta http-equiv="refresh" content="0; url=stable/" /></head></html>' > index.html
           mkdir -p ${{ env.RELEASE_VERSION }}
           cp -r /tmp/docs_build/* ./${{ env.RELEASE_VERSION }}
           rm -rf /tmp/docs_build
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .
+          git add ${{ env.RELEASE_VERSION }}
           git commit -m "Update documentation" -a || true
       - name: Push changes
         uses: ad-m/github-push-action@master
