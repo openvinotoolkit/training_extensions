@@ -57,8 +57,7 @@ class TestOTXDatasetManager:
     @pytest.mark.parametrize("subset", AVAILABLE_SUBSETS)
     def test_get_val_dataset(self, task: List[str], subset: List[str]):
         if subset == "train":
-            with pytest.raises(ValueError, match="Can't find validation data."):
-                DatasetManager.get_val_dataset(self.dataset[subset][task])
+            assert DatasetManager.get_val_dataset(self.dataset[subset][task]) is None
         else:
             val_dataset = DatasetManager.get_val_dataset(self.dataset[subset][task])
             assert isinstance(val_dataset, dm.DatasetSubset)
