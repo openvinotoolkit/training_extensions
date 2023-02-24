@@ -281,8 +281,8 @@ We can convert these steps to function and use it in a loop with multiple images
         empty_annotation = AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.PREDICTION)
 
         item = DatasetItemEntity(
-            media = Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
-            annotation_scene = empty_annotation,
+            media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+            annotation_scene=empty_annotation,
         )
 
         dataset = DatasetEntity(items=[item])
