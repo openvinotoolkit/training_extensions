@@ -113,17 +113,11 @@ Please refer to the [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
-## Repository
-
-- Components
-  - [OpenVINO™ Training Extensions API](otx/api)
-  - [OpenVINO™ Training Extensions CLI](otx/cli)
-  - [OpenVINO™ Training Extensions Algorithms](otx/algorithms)
-- Branches
-  - [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
-    - Mainly maintained branch for developing new features for the future release
-  - [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc)
-    - Previously developed models can be found on this branch
+## Branches
+- [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
+  - Mainly maintained branch for developing new features for the future release
+- [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc)
+  - Previously developed models can be found on this branch
 
 ---
 
