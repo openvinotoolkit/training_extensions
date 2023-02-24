@@ -163,7 +163,7 @@ To enable self-supervised training, the command below can be executed:
 .. code-block::
 
   $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-root=tests/assets/common_semantic_segmentation_dataset/train/images \
+              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train/images \
               params \
               --algo_backend.train_type=SELFSUPERVISED
 
