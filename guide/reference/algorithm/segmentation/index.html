@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Segmentation &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/algorithm/segmentation/index';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Adapters" href="adapters/index.html" />
     <link rel="prev" title="Utils" href="../detection/utils.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,22 +472,61 @@
             <article class="bd-article" role="main">
               
   <section id="segmentation">
-<h1>Segmentation<a class="headerlink" href="#segmentation" title="Permalink to this headline">#</a></h1>
+<h1>Segmentation<a class="headerlink" href="#segmentation" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="adapters/index.html">Adapters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="adapters/mmseg.html">mmsegmentation</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="adapters/mmseg.html">mmsegmentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB"><code class="docutils literal notranslate"><span class="pre">DetConB</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss"><code class="docutils literal notranslate"><span class="pre">DetConLoss</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MPASegDataset"><code class="docutils literal notranslate"><span class="pre">MPASegDataset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SelfSLMLP"><code class="docutils literal notranslate"><span class="pre">SelfSLMLP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB"><code class="docutils literal notranslate"><span class="pre">SupConDetConB</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="adapters/openvino.html">openvino</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="adapters/openvino.html">openvino</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters/openvino.html#otx.algorithms.segmentation.adapters.openvino.model_wrappers.BlurSegmentation"><code class="docutils literal notranslate"><span class="pre">BlurSegmentation</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="configs.html">Configs</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="configs.html">Configs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configs.html#otx.algorithms.segmentation.configs.base.Models"><code class="docutils literal notranslate"><span class="pre">Models</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.segmentation.configs.base.Models.BlurSegmentation"><code class="docutils literal notranslate"><span class="pre">Models.BlurSegmentation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.segmentation.configs.base.Models.Segmentation"><code class="docutils literal notranslate"><span class="pre">Models.Segmentation</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="configs.html#otx.algorithms.segmentation.configs.base.SegmentationConfig"><code class="docutils literal notranslate"><span class="pre">SegmentationConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.segmentation.configs.base.SegmentationConfig.id"><code class="docutils literal notranslate"><span class="pre">SegmentationConfig.id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.segmentation.configs.base.SegmentationConfig.type"><code class="docutils literal notranslate"><span class="pre">SegmentationConfig.type</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask"><code class="docutils literal notranslate"><span class="pre">OpenVINOSegmentationTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask.deploy"><code class="docutils literal notranslate"><span class="pre">OpenVINOSegmentationTask.deploy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask.evaluate"><code class="docutils literal notranslate"><span class="pre">OpenVINOSegmentationTask.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask.hparams"><code class="docutils literal notranslate"><span class="pre">OpenVINOSegmentationTask.hparams</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask.infer"><code class="docutils literal notranslate"><span class="pre">OpenVINOSegmentationTask.infer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask.load_inferencer"><code class="docutils literal notranslate"><span class="pre">OpenVINOSegmentationTask.load_inferencer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask.optimize"><code class="docutils literal notranslate"><span class="pre">OpenVINOSegmentationTask.optimize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationInferenceTask"><code class="docutils literal notranslate"><span class="pre">SegmentationInferenceTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationInferenceTask.evaluate"><code class="docutils literal notranslate"><span class="pre">SegmentationInferenceTask.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationInferenceTask.export"><code class="docutils literal notranslate"><span class="pre">SegmentationInferenceTask.export()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationInferenceTask.infer"><code class="docutils literal notranslate"><span class="pre">SegmentationInferenceTask.infer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationInferenceTask.unload"><code class="docutils literal notranslate"><span class="pre">SegmentationInferenceTask.unload()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationNNCFTask"><code class="docutils literal notranslate"><span class="pre">SegmentationNNCFTask</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationTrainTask"><code class="docutils literal notranslate"><span class="pre">SegmentationTrainTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationTrainTask.cancel_training"><code class="docutils literal notranslate"><span class="pre">SegmentationTrainTask.cancel_training()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationTrainTask.save_model"><code class="docutils literal notranslate"><span class="pre">SegmentationTrainTask.save_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.segmentation.tasks.SegmentationTrainTask.train"><code class="docutils literal notranslate"><span class="pre">SegmentationTrainTask.train()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -587,7 +628,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

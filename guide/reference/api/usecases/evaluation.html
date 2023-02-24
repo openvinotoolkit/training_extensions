@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Evaluation &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/api/usecases/evaluation';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Exportable Code" href="exportable_code.html" />
     <link rel="prev" title="Adapters" href="adapters.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,13 +472,13 @@
             <article class="bd-article" role="main">
               
   <section id="evaluation">
-<h1>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">#</a></h1>
+<h1>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-otx.api.usecases.evaluation.accuracy"></span><p>This module contains the implementation of Accuracy performance provider.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.Accuracy">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">Accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">otx.api.usecases.evaluation.averaging.MetricAverageMethod</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">MetricAverageMethod.MICRO</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">Accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">MetricAverageMethod</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MetricAverageMethod.MICRO</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy" title="Permalink to this definition">#</a></dt>
 <dd><p>This class is responsible for providing Accuracy measures; mainly for Classification problems.</p>
 <p>The calculation both supports multi label and binary label predictions.</p>
 <p>Accuracy is the proportion of the predicted correct labels, to the total number (predicted and actual)
@@ -492,13 +494,13 @@ MACRO: compute accuracy per label group, return the average of the per-label-gro
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.Accuracy.accuracy">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">accuracy</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a></em><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy.accuracy" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">accuracy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a></em><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy.accuracy" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the accuracy as ScoreMetric.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.Accuracy.get_performance">
-<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy.get_performance" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy.get_performance" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the performance with accuracy and confusion metrics.</p>
 </dd></dl>
 
@@ -506,7 +508,7 @@ MACRO: compute accuracy per label group, return the average of the per-label-gro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">compute_unnormalized_confusion_matrices_from_resultset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">compute_unnormalized_confusion_matrices_from_resultset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">MatrixMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes an (unnormalized) confusion matrix for every label group in the resultset.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>resultset: the input resultset</p>
@@ -518,7 +520,7 @@ MACRO: compute accuracy per label group, return the average of the per-label-gro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.precision_metrics_group">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">precision_metrics_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confusion_matrix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">otx.api.entities.metrics.MetricsGroup</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.precision_metrics_group" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">precision_metrics_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confusion_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">MatrixMetric</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">MetricsGroup</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.precision_metrics_group" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the precision per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>confusion_matrix: matrix to compute the precision per class for</p>
@@ -530,7 +532,7 @@ MACRO: compute accuracy per label group, return the average of the per-label-gro
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.recall_metrics_group">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">recall_metrics_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confusion_matrix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">otx.api.entities.metrics.MetricsGroup</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.recall_metrics_group" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">recall_metrics_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confusion_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">MatrixMetric</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">MetricsGroup</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.recall_metrics_group" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the recall per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>confusion_matrix: matrix to compute the recall per class for</p>
@@ -543,13 +545,13 @@ MACRO: compute accuracy per label group, return the average of the per-label-gro
 <span class="target" id="module-otx.api.usecases.evaluation.anomaly_metrics"></span><p>This module contains the implementations of performance providers for multi-score anomaly metrics.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalyDetectionScores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalyDetectionScores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores" title="Permalink to this definition">#</a></dt>
 <dd><p>Performance provider for anomaly detection tasks.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalyLocalizationPerformance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_score</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_score</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dashboard_metrics</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">otx.api.entities.metrics.MetricsGroup</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalyLocalizationPerformance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dashboard_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">MetricsGroup</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance" title="Permalink to this definition">#</a></dt>
 <dd><p>Anomaly specific MultiScorePerformance.</p>
 <p>This class implements a special case of the MultiScorePerformance, specific for anomaly tasks that perform
 anomaly localization (detection/segmentation), in addition to anomaly classification.</p>
@@ -567,13 +569,13 @@ local_score: Pixel- or bbox-level performance metric, depending</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.global_score">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">global_score</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.global_score" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">global_score</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.global_score" title="Permalink to this definition">#</a></dt>
 <dd><p>Return the global (image-level) score metric.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.local_score">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">local_score</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.local_score" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">local_score</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.local_score" title="Permalink to this definition">#</a></dt>
 <dd><p>Return the local (pixel-/bbox-level) score metric.</p>
 </dd></dl>
 
@@ -581,7 +583,7 @@ local_score: Pixel- or bbox-level performance metric, depending</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalyLocalizationScores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalyLocalizationScores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores" title="Permalink to this definition">#</a></dt>
 <dd><p>AnomalyLocalizationPerformance object for anomaly segmentation and anomaly detection tasks.</p>
 <p>Depending on the subclass, the <cite>get_performance</cite> method returns an AnomalyLocalizationPerformance object with the
 pixel- or bbox-level metric as the primary score. The global (image-level) performance metric is included as an
@@ -592,7 +594,7 @@ additional metric.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores.get_performance">
-<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores.get_performance" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores.get_performance" title="Permalink to this definition">#</a></dt>
 <dd><p>Return the performance object for the resultset.</p>
 </dd></dl>
 
@@ -600,23 +602,23 @@ additional metric.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalySegmentationScores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.</span></span><span class="sig-name descname"><span class="pre">AnomalySegmentationScores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores" title="Permalink to this definition">#</a></dt>
 <dd><p>Performance provider for anomaly segmentation tasks.</p>
 </dd></dl>
 
 <span class="target" id="module-otx.api.usecases.evaluation.averaging"></span><p>Averaging module contains averaging method enumeration.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.averaging.MetricAverageMethod">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.averaging.</span></span><span class="sig-name descname"><span class="pre">MetricAverageMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.averaging.</span></span><span class="sig-name descname"><span class="pre">MetricAverageMethod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="Permalink to this definition">#</a></dt>
 <dd><p>This defines the metrics averaging method.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.averaging.MetricAverageMethod.MACRO">
-<span class="sig-name descname"><span class="pre">MACRO</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MACRO" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">MACRO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MACRO" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.averaging.MetricAverageMethod.MICRO">
-<span class="sig-name descname"><span class="pre">MICRO</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MICRO" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">MICRO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MICRO" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -626,12 +628,12 @@ additional metric.</p>
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.NumberPerLabel">
 <span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">NumberPerLabel</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.NumberPerLabel" title="Permalink to this definition">#</a></dt>
 <dd><p>Dictionary storing a number for each label. The <code class="docutils literal notranslate"><span class="pre">None</span></code> key represents “all labels”</p>
-<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">otx.api.entities.label.LabelEntity</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</p>
+<p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><code class="xref py py-class docutils literal notranslate"><span class="pre">LabelEntity</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">divide_arrays_with_possible_zeros</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">divide_arrays_with_possible_zeros</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros" title="Permalink to this definition">#</a></dt>
 <dd><p>Sometimes the denominator in the precision or recall computation can contain a zero.</p>
 <p>In that case, a zero is returned for that element (<a class="reference external" href="https://stackoverflow.com/a/32106804">https://stackoverflow.com/a/32106804</a>).</p>
 <dl class="simple">
@@ -646,7 +648,7 @@ where the denominator was zero.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">get_intersections_and_cardinalities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">get_intersections_and_cardinalities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns all intersections and cardinalities between reference masks and prediction masks.</p>
 <p>Intersections and cardinalities are each returned in a dictionary mapping each label to its corresponding
 number of intersection/cardinality pixels</p>
@@ -662,7 +664,7 @@ labels (List[LabelEntity]): labels in input masks</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.intersection_box">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">intersection_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.intersection_box" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">intersection_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.intersection_box" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate the intersection box of two bounding boxes.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>box1: a Rectangle that represents the first bounding box
@@ -676,7 +678,7 @@ a valid intersection, else None</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.intersection_over_union">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">intersection_over_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">intersection</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.intersection_over_union" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">intersection_over_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/shapes.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">intersection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.intersection_over_union" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate the Intersection over Union (IoU) of two bounding boxes.</p>
 <dl>
 <dt>Args:</dt><dd><p>box1: a Rectangle representing a bounding box
@@ -693,7 +695,7 @@ intersection: precomputed intersection between two boxes (see</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.precision_per_class">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">precision_per_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.precision_per_class" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">precision_per_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.precision_per_class" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the precision per class based on the confusion matrix.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>matrix: the computed confusion matrix</p>
@@ -705,7 +707,7 @@ intersection: precomputed intersection between two boxes (see</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.recall_per_class">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">recall_per_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.recall_per_class" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">recall_per_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.recall_per_class" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the recall per class based on the confusion matrix.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>matrix: the computed confusion matrix</p>
@@ -718,7 +720,7 @@ intersection: precomputed intersection between two boxes (see</p>
 <span class="target" id="module-otx.api.usecases.evaluation.dice"></span><p>This module contains the Dice performance provider.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.dice.DiceAverage">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.dice.</span></span><span class="sig-name descname"><span class="pre">DiceAverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">otx.api.usecases.evaluation.averaging.MetricAverageMethod</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">MetricAverageMethod.MACRO</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.dice.</span></span><span class="sig-name descname"><span class="pre">DiceAverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">MetricAverageMethod</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MetricAverageMethod.MACRO</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the average Dice coefficient overall and for individual labels.</p>
 <p>See <a class="reference external" href="https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient">https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient</a> for background information.</p>
 <p>To compute the Dice coefficient the shapes in the dataset items of the prediction and ground truth
@@ -738,7 +740,7 @@ average (MetricAverageMethod): One of</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.dice.DiceAverage.compute_dice_using_intersection_and_cardinality">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">compute_dice_using_intersection_and_cardinality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_intersection</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_cardinality</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">otx.api.usecases.evaluation.averaging.MetricAverageMethod</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.compute_dice_using_intersection_and_cardinality" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_dice_using_intersection_and_cardinality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_intersection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_cardinality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">MetricAverageMethod</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.compute_dice_using_intersection_and_cardinality" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes dice score using intersection and cardinality dictionaries.</p>
 <p>Both dictionaries must contain the same set of keys.
 Dice score is computed by: 2 * intersection / cardinality</p>
@@ -764,19 +766,19 @@ DICE score</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.dice.DiceAverage.dice_per_label">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">dice_per_label</span></span><em class="property"><span class="pre">:</span> <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.dice_per_label" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dice_per_label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.dice_per_label" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns a dictionary mapping the label to its corresponding dice score (as ScoreMetric).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.dice.DiceAverage.get_performance">
-<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.get_performance" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.get_performance" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the performance of the resultset.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.dice.DiceAverage.overall_dice">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">overall_dice</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a></em><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.overall_dice" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">overall_dice</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a></em><a class="headerlink" href="#otx.api.usecases.evaluation.dice.DiceAverage.overall_dice" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the dice average as ScoreMetric.</p>
 </dd></dl>
 
@@ -785,7 +787,7 @@ DICE score</p>
 <span class="target" id="module-otx.api.usecases.evaluation.f_measure"></span><p>This module contains the f-measure performance provider class.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">FMeasure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_confidence_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_nms_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">FMeasure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_nms_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure" title="Permalink to this definition">#</a></dt>
 <dd><p>Computes the f-measure (also known as F1-score) for a resultset.</p>
 <p>The f-measure is typically used in detection (localization) tasks to obtain a single number that balances precision
 and recall.</p>
@@ -813,53 +815,53 @@ vary_confidence_threshold (bool): if True the maximal F-measure is determined by
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">best_confidence_threshold</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">best_confidence_threshold</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns best confidence threshold as ScoreMetric if exists.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">best_nms_threshold</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">best_nms_threshold</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the best NMS threshold as ScoreMetric if exists.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index">
-<span class="sig-name descname"><span class="pre">box_class_index</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">box_class_index</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index">
-<span class="sig-name descname"><span class="pre">box_score_index</span></span><em class="property"> <span class="pre">=</span> <span class="pre">5</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">box_score_index</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">f_measure</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the f-measure as ScoreMetric.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">f_measure_per_confidence</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">otx.api.entities.metrics.CurveMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure_per_confidence</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">CurveMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the curve for f-measure per confidence as CurveMetric if exists.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">f_measure_per_label</span></span><em class="property"><span class="pre">:</span> <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure_per_label</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the f-measure per label as dictionary (Label -&gt; ScoreMetric).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">f_measure_per_nms</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">otx.api.entities.metrics.CurveMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure_per_nms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">CurveMetric</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the curve for f-measure per nms threshold as CurveMetric if exists.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.get_performance">
-<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.get_performance" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.get_performance" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the performance which consists of the F-Measure score and the dashboard metrics.</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>Performance: Performance object containing the F-Measure score and the dashboard metrics.</p>
@@ -871,7 +873,7 @@ vary_confidence_threshold (bool): if True the maximal F-measure is determined by
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">bounding_box_intersection_over_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">bounding_box_intersection_over_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate the Intersection over Union (IoU) of two bounding boxes.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>box1 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
@@ -886,7 +888,7 @@ box2 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, sc
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.get_iou_matrix">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">get_iou_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ground_truth</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicted</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.get_iou_matrix" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">get_iou_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ground_truth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.get_iou_matrix" title="Permalink to this definition">#</a></dt>
 <dd><p>Constructs an iou matrix of shape [num_ground_truth_boxes, num_predicted_boxes].</p>
 <p>Each cell(x,y) in the iou matrix contains the intersection over union of ground truth box(x) and predicted box(y)
 An iou matrix corresponds to a single image</p>
@@ -911,7 +913,7 @@ boxes2: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.get_n_false_negatives">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">get_n_false_negatives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iou_matrix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.get_n_false_negatives" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">get_n_false_negatives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iou_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.get_n_false_negatives" title="Permalink to this definition">#</a></dt>
 <dd><p>Get the number of false negatives inside the IoU matrix for a given threshold.</p>
 <p>The first loop accounts for all the ground truth boxes which do not have a high enough iou with any predicted
 box (they go undetected)
@@ -928,7 +930,7 @@ iou_threshold (float): IoU threshold to use for the false negatives.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.intersection_box">
-<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">intersection_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.intersection_box" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">intersection_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.intersection_box" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate the intersection box of two bounding boxes.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>box1 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
@@ -943,12 +945,12 @@ box2 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, sc
 <p>This module contains the helper functions which can be called directly by algorithm implementers to obtain the metrics.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.metrics_helper.MetricsHelper">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.metrics_helper.</span></span><span class="sig-name descname"><span class="pre">MetricsHelper</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.metrics_helper.</span></span><span class="sig-name descname"><span class="pre">MetricsHelper</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper" title="Permalink to this definition">#</a></dt>
 <dd><p>Contains metrics computation functions.</p>
 <p>TODO: subject for refactoring.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_accuracy">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">compute_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">otx.api.usecases.evaluation.averaging.MetricAverageMethod</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">MetricAverageMethod.MICRO</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.Accuracy" title="otx.api.usecases.evaluation.accuracy.Accuracy"><span class="pre">otx.api.usecases.evaluation.accuracy.Accuracy</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_accuracy" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">MetricAverageMethod</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MetricAverageMethod.MICRO</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.Accuracy" title="otx.api.usecases.evaluation.accuracy.Accuracy"><span class="pre">Accuracy</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_accuracy" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the Accuracy on a resultset, averaged over the different label groups.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>resultset: The resultset used to compute the accuracy
@@ -961,7 +963,7 @@ average: The averaging method, either MICRO or MACRO</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_detection_scores">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">compute_anomaly_detection_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores" title="otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_detection_scores" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_anomaly_detection_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores" title="otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores"><span class="pre">AnomalyDetectionScores</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_detection_scores" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the anomaly localization performance metrics on an anomaly detection resultset.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>resultset: The resultset used to compute the metrics</p>
@@ -973,7 +975,7 @@ average: The averaging method, either MICRO or MACRO</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_segmentation_scores">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">compute_anomaly_segmentation_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores" title="otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores"><span class="pre">otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_segmentation_scores" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_anomaly_segmentation_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores" title="otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores"><span class="pre">AnomalySegmentationScores</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_segmentation_scores" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the anomaly localization performance metrics on an anomaly segmentation resultset.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>resultset: The resultset used to compute the metrics</p>
@@ -985,7 +987,7 @@ average: The averaging method, either MICRO or MACRO</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_dice_averaged_over_pixels">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">compute_dice_averaged_over_pixels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">otx.api.usecases.evaluation.averaging.MetricAverageMethod</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">MetricAverageMethod.MACRO</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.dice.DiceAverage" title="otx.api.usecases.evaluation.dice.DiceAverage"><span class="pre">otx.api.usecases.evaluation.dice.DiceAverage</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_dice_averaged_over_pixels" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_dice_averaged_over_pixels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">MetricAverageMethod</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MetricAverageMethod.MACRO</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.dice.DiceAverage" title="otx.api.usecases.evaluation.dice.DiceAverage"><span class="pre">DiceAverage</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_dice_averaged_over_pixels" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the Dice average on a resultset, averaged over the pixels.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>resultset: The resultset used to compute the Dice average
@@ -998,7 +1000,7 @@ average: The averaging method, either MICRO or MACRO</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_f_measure">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">compute_f_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_confidence_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_nms_threshold</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.FMeasure" title="otx.api.usecases.evaluation.f_measure.FMeasure"><span class="pre">otx.api.usecases.evaluation.f_measure.FMeasure</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_f_measure" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_f_measure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_nms_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.FMeasure" title="otx.api.usecases.evaluation.f_measure.FMeasure"><span class="pre">FMeasure</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_f_measure" title="Permalink to this definition">#</a></dt>
 <dd><p>Compute the F-Measure on a resultset given some parameters.</p>
 <dl>
 <dt>Args:</dt><dd><p>resultset: The resultset used to compute f-measure
@@ -1024,12 +1026,12 @@ values</p>
 <span class="target" id="module-otx.api.usecases.evaluation.performance_provider_interface"></span><p>This module contains interface for performance providers.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.performance_provider_interface.</span></span><span class="sig-name descname"><span class="pre">IPerformanceProvider</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.performance_provider_interface.</span></span><span class="sig-name descname"><span class="pre">IPerformanceProvider</span></span><a class="headerlink" href="#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider" title="Permalink to this definition">#</a></dt>
 <dd><p>Interface for performance provider.</p>
 <p>TODO: subject for refactoring.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider.get_performance">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider.get_performance" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../entities/general.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">Performance</span></a></span></span><a class="headerlink" href="#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider.get_performance" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the computed performance.</p>
 </dd></dl>
 
@@ -1068,6 +1070,484 @@ values</p>
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.accuracy.Accuracy">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Accuracy
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.accuracy.Accuracy.accuracy">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Accuracy.accuracy
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.accuracy.Accuracy.get_performance">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Accuracy.get_performance()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     compute_unnormalized_confusion_matrices_from_resultset()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.accuracy.precision_metrics_group">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     precision_metrics_group()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.accuracy.recall_metrics_group">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     recall_metrics_group()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AnomalyDetectionScores
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AnomalyLocalizationPerformance
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.global_score">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AnomalyLocalizationPerformance.global_score
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.local_score">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AnomalyLocalizationPerformance.local_score
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AnomalyLocalizationScores
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores.get_performance">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AnomalyLocalizationScores.get_performance()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AnomalySegmentationScores
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MetricAverageMethod
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MACRO">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricAverageMethod.MACRO
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MICRO">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricAverageMethod.MICRO
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.basic_operations.NumberPerLabel">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     NumberPerLabel
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     divide_arrays_with_possible_zeros()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_intersections_and_cardinalities()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.basic_operations.intersection_box">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     intersection_box()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.basic_operations.intersection_over_union">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     intersection_over_union()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.basic_operations.precision_per_class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     precision_per_class()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.basic_operations.recall_per_class">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     recall_per_class()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.dice.DiceAverage">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DiceAverage
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.dice.DiceAverage.compute_dice_using_intersection_and_cardinality">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiceAverage.compute_dice_using_intersection_and_cardinality()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.dice.DiceAverage.dice_per_label">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiceAverage.dice_per_label
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.dice.DiceAverage.get_performance">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiceAverage.get_performance()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.dice.DiceAverage.overall_dice">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DiceAverage.overall_dice
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     FMeasure
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.best_confidence_threshold
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.best_nms_threshold
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.box_class_index
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.box_score_index
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.f_measure
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.f_measure_per_confidence
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.f_measure_per_label
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.f_measure_per_nms
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.FMeasure.get_performance">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FMeasure.get_performance()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     bounding_box_intersection_over_union()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.get_iou_matrix">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_iou_matrix()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.get_n_false_negatives">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_n_false_negatives()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.f_measure.intersection_box">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     intersection_box()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MetricsHelper
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_accuracy">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricsHelper.compute_accuracy()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_detection_scores">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricsHelper.compute_anomaly_detection_scores()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_segmentation_scores">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricsHelper.compute_anomaly_segmentation_scores()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_dice_averaged_over_pixels">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricsHelper.compute_dice_averaged_over_pixels()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_f_measure">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MetricsHelper.compute_f_measure()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IPerformanceProvider
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider.get_performance">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IPerformanceProvider.get_performance()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -1132,7 +1612,7 @@ values</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

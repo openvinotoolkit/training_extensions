@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Utilize OpenVINO™ Training Extensions APIs in your project &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/advanced/api_tutorial';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Simple HPO Tutorial" href="hpo_tutorial.html" />
     <link rel="prev" title="Backbone Replacement" href="backbones.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="utilize-openvino-training-extensions-apis-in-your-project">
-<h1>Utilize OpenVINO™ Training Extensions APIs in your project<a class="headerlink" href="#utilize-openvino-training-extensions-apis-in-your-project" title="Permalink to this headline">#</a></h1>
+<h1>Utilize OpenVINO™ Training Extensions APIs in your project<a class="headerlink" href="#utilize-openvino-training-extensions-apis-in-your-project" title="Permalink to this heading">#</a></h1>
 <p>Besides CLI functionality, The OpenVINO™ Training Extension provides APIs that help developers to integrate OpenVINO™ Training Extensions models into their projects.
 This tutorial intends to show how to create a dataset, model and use all of the CLI functionality through APIs.</p>
 <p>For demonstration purposes we will use the Object Detection SSD model with <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a> public dataset as we did for the <a class="reference internal" href="../base/how_to_train/detection.html"><span class="doc">CLI tutorial</span></a>.</p>
@@ -479,7 +481,7 @@ This tutorial intends to show how to create a dataset, model and use all of the 
 <p>To start with we need to <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/QUICK_START_GUIDE.md#setup-openvino-training-extensions">install OpenVINO™ Training Extensions</a>.</p>
 </div>
 <section id="dataset-preparation">
-<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
+<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
 <p>1. Clone a repository
 with <a class="reference external" href="https://github.com/thsant/wgisd">WGISD dataset</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">data</span>
@@ -496,7 +498,7 @@ be distinguished by OpenVINO™ Training Extensions Datumaro manager:</p>
 <p>Now it is all set to use this dataset inside OpenVINO™ Training Extensions</p>
 </section>
 <section id="model-template-and-dataset-loading">
-<h2>Model template and dataset loading<a class="headerlink" href="#model-template-and-dataset-loading" title="Permalink to this headline">#</a></h2>
+<h2>Model template and dataset loading<a class="headerlink" href="#model-template-and-dataset-loading" title="Permalink to this heading">#</a></h2>
 <p>Let’s import the neccesary modules:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -546,7 +548,7 @@ be distinguished by OpenVINO™ Training Extensions Datumaro manager:</p>
 </div>
 </section>
 <section id="set-up-the-environment-and-the-task">
-<h2>Set up the environment and the task<a class="headerlink" href="#set-up-the-environment-and-the-task" title="Permalink to this headline">#</a></h2>
+<h2>Set up the environment and the task<a class="headerlink" href="#set-up-the-environment-and-the-task" title="Permalink to this heading">#</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Task</span> <span class="o">=</span> <span class="n">get_impl_class</span><span class="p">(</span><span class="n">model_template</span><span class="o">.</span><span class="n">entrypoints</span><span class="o">.</span><span class="n">base</span><span class="p">)</span>
 
 <span class="n">environment</span> <span class="o">=</span> <span class="n">TaskEnvironment</span><span class="p">(</span>
@@ -560,7 +562,7 @@ be distinguished by OpenVINO™ Training Extensions Datumaro manager:</p>
 </div>
 </section>
 <section id="training-validation-export">
-<h2>Training, Validation, Export<a class="headerlink" href="#training-validation-export" title="Permalink to this headline">#</a></h2>
+<h2>Training, Validation, Export<a class="headerlink" href="#training-validation-export" title="Permalink to this heading">#</a></h2>
 <p>Create an output model and start actual training:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output_model</span> <span class="o">=</span> <span class="n">ModelEntity</span><span class="p">(</span>
     <span class="n">dataset</span><span class="p">,</span>
@@ -621,7 +623,7 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
 </div>
 </section>
 <section id="optimization">
-<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>To run optimization with POT on the OpenVINO™ IR model, we need to create an output model and run the optimization procedure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimized_model</span> <span class="o">=</span> <span class="n">ModelEntity</span><span class="p">(</span>
             <span class="n">dataset</span><span class="p">,</span>
@@ -677,7 +679,7 @@ To validate the OpenVINO™ IR model, we need to create an openvino task first a
 </div>
 </section>
 <section id="load-the-model-and-use-it-for-any-data">
-<h2>Load the model and use it for any data<a class="headerlink" href="#load-the-model-and-use-it-for-any-data" title="Permalink to this headline">#</a></h2>
+<h2>Load the model and use it for any data<a class="headerlink" href="#load-the-model-and-use-it-for-any-data" title="Permalink to this heading">#</a></h2>
 <p>Let’s assume, that we have already trained the model and we want to use it in our project. Below simple steps are presented on how to load the model and infer it on custom images.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to the trained OpenVINO™ Training Extensions weights, can be PyTorch .pth or OpenVINO™ IR .xml</span>
 <span class="n">weights_path</span> <span class="o">=</span> <span class="s2">&quot;path/to/trained/weights&quot;</span>
@@ -873,7 +875,7 @@ We can convert these steps to function and use it in a loop with multiple images
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

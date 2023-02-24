@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Utils &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/mpa/utils';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Release Notes" href="../../release_notes/index.html" />
     <link rel="prev" title="Deploy" href="deploy.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,22 +472,22 @@
             <article class="bd-article" role="main">
               
   <section id="utils">
-<h1>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">#</a></h1>
+<h1>Utils<a class="headerlink" href="#utils" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-otx.mpa.utils"></span><span class="target" id="module-otx.mpa.utils.config_utils"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.utils.config_utils.MPAConfig">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">MPAConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.MPAConfig" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">MPAConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.MPAConfig" title="Permalink to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.utils.config_utils.MPAConfig.fromfile">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">fromfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_predefined_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">import_custom_modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.MPAConfig.fromfile" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fromfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_predefined_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">import_custom_modules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.MPAConfig.fromfile" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.utils.config_utils.add_custom_hook_if_not_exists">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">add_custom_hook_if_not_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.ConfigDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.add_custom_hook_if_not_exists" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">add_custom_hook_if_not_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.add_custom_hook_if_not_exists" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -495,18 +497,18 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.utils.config_utils.recursively_update_cfg">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">recursively_update_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">mmcv.utils.config.Config</span><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_dict</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.recursively_update_cfg" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">recursively_update_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Config</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.recursively_update_cfg" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.utils.config_utils.remove_custom_hook">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">remove_custom_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.remove_custom_hook" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">remove_custom_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.remove_custom_hook" title="Permalink to this definition">#</a></dt>
 <dd><p>Remove hook cfg if hook_type is in custom_hook</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.utils.config_utils.update_or_add_custom_hook">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">update_or_add_custom_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_cfg</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.ConfigDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.update_or_add_custom_hook" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.utils.config_utils.</span></span><span class="sig-name descname"><span class="pre">update_or_add_custom_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hook_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.utils.config_utils.update_or_add_custom_hook" title="Permalink to this definition">#</a></dt>
 <dd><p>Update hook cfg if same type is in custom_hook or append it</p>
 </dd></dl>
 
@@ -563,6 +565,119 @@
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.config_utils.MPAConfig">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MPAConfig
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.utils.config_utils.MPAConfig.fromfile">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MPAConfig.fromfile()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.config_utils.add_custom_hook_if_not_exists">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     add_custom_hook_if_not_exists()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.config_utils.copy_config">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     copy_config()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.config_utils.recursively_update_cfg">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     recursively_update_cfg()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.config_utils.remove_custom_hook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     remove_custom_hook()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.config_utils.update_or_add_custom_hook">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     update_or_add_custom_hook()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.ext_loader.load_ext">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     load_ext()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.mo_wrapper.check_requirements">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     check_requirements()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.mo_wrapper.check_requirements_with_version">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     check_requirements_with_version()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.utils.mo_wrapper.generate_ir">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     generate_ir()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -627,7 +742,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

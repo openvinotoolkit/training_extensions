@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Detection &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/algorithm/detection/index';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Adapters" href="adapters/index.html" />
     <link rel="prev" title="Utils" href="../classification/utils.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,25 +472,64 @@
             <article class="bd-article" role="main">
               
   <section id="detection">
-<h1>Detection<a class="headerlink" href="#detection" title="Permalink to this headline">#</a></h1>
+<h1>Detection<a class="headerlink" href="#detection" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="adapters/index.html">Adapters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="adapters/mmdet.html">mmdetection</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="adapters/mmdet.html">mmdetection</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmdet.html#otx.algorithms.detection.adapters.mmdet.OTXDetDataset"><code class="docutils literal notranslate"><span class="pre">OTXDetDataset</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="adapters/openvino.html">openvino</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="adapters/openvino.html">openvino</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters/openvino.html#otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel"><code class="docutils literal notranslate"><span class="pre">OTXMaskRCNNModel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/openvino.html#otx.algorithms.detection.adapters.openvino.model_wrappers.OTXSSDModel"><code class="docutils literal notranslate"><span class="pre">OTXSSDModel</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="configs.html">Configs</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="configs.html">Configs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configs.html#otx.algorithms.detection.configs.base.DetectionConfig"><code class="docutils literal notranslate"><span class="pre">DetectionConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.detection.configs.base.DetectionConfig.id"><code class="docutils literal notranslate"><span class="pre">DetectionConfig.id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.detection.configs.base.DetectionConfig.type"><code class="docutils literal notranslate"><span class="pre">DetectionConfig.type</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionInferenceTask"><code class="docutils literal notranslate"><span class="pre">DetectionInferenceTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionInferenceTask.evaluate"><code class="docutils literal notranslate"><span class="pre">DetectionInferenceTask.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionInferenceTask.explain"><code class="docutils literal notranslate"><span class="pre">DetectionInferenceTask.explain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionInferenceTask.export"><code class="docutils literal notranslate"><span class="pre">DetectionInferenceTask.export()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionInferenceTask.infer"><code class="docutils literal notranslate"><span class="pre">DetectionInferenceTask.infer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionInferenceTask.unload"><code class="docutils literal notranslate"><span class="pre">DetectionInferenceTask.unload()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionNNCFTask"><code class="docutils literal notranslate"><span class="pre">DetectionNNCFTask</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionTrainTask"><code class="docutils literal notranslate"><span class="pre">DetectionTrainTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionTrainTask.cancel_training"><code class="docutils literal notranslate"><span class="pre">DetectionTrainTask.cancel_training()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionTrainTask.save_model"><code class="docutils literal notranslate"><span class="pre">DetectionTrainTask.save_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.DetectionTrainTask.train"><code class="docutils literal notranslate"><span class="pre">DetectionTrainTask.train()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.deploy"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.deploy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.evaluate"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.explain"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.explain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.hparams"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.hparams</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.infer"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.infer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.load_config"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.load_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.load_inferencer"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.load_inferencer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.detection.tasks.OpenVINODetectionTask.optimize"><code class="docutils literal notranslate"><span class="pre">OpenVINODetectionTask.optimize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#otx.algorithms.detection.utils.format_list_to_str"><code class="docutils literal notranslate"><span class="pre">format_list_to_str()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#otx.algorithms.detection.utils.generate_label_schema"><code class="docutils literal notranslate"><span class="pre">generate_label_schema()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#otx.algorithms.detection.utils.get_anchor_boxes"><code class="docutils literal notranslate"><span class="pre">get_anchor_boxes()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#otx.algorithms.detection.utils.get_sizes_from_dataset_entity"><code class="docutils literal notranslate"><span class="pre">get_sizes_from_dataset_entity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#otx.algorithms.detection.utils.load_dataset_items_coco_format"><code class="docutils literal notranslate"><span class="pre">load_dataset_items_coco_format()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -590,7 +631,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

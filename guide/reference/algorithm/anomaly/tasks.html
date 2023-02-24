@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Tasks &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/algorithm/anomaly/tasks';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Tools" href="tools.html" />
     <link rel="prev" title="Configs" href="configs.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,13 +472,13 @@
             <article class="bd-article" role="main">
               
   <section id="tasks">
-<h1>Tasks<a class="headerlink" href="#tasks" title="Permalink to this headline">#</a></h1>
+<h1>Tasks<a class="headerlink" href="#tasks" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-otx.algorithms.anomaly.tasks"></span><p>Initialization of OTX Anomalib.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">InferenceTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">otx.api.entities.task_environment.TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">InferenceTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask" title="Permalink to this definition">#</a></dt>
 <dd><p>Base Anomaly Task.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask.cancel_training">
@@ -493,7 +495,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_metric</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.evaluate" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.evaluate" title="Permalink to this definition">#</a></dt>
 <dd><p>Evaluate the performance on a result set.</p>
 <dl>
 <dt>Args:</dt><dd><p>output_resultset (ResultSetEntity): Result Set from which the performance is evaluated.
@@ -507,7 +509,7 @@ evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask.export">
-<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.api.usecases.tasks.interfaces.export_interface.ExportType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_features</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.export" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ExportType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.export" title="Permalink to this definition">#</a></dt>
 <dd><p>Export model to OpenVINO IR.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>export_type (ExportType): Export type should be ExportType.OPENVINO
@@ -521,7 +523,7 @@ dump_features (bool): Flag to return “feature_vector” and “saliency_map”
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask.get_config">
-<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">omegaconf.dictconfig.DictConfig</span><span class="p"><span class="pre">,</span> </span><span class="pre">omegaconf.listconfig.ListConfig</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.get_config" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ListConfig</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.get_config" title="Permalink to this definition">#</a></dt>
 <dd><p>Get Anomalib Config from task environment.</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>Union[DictConfig, ListConfig]: Anomalib config.</p>
@@ -531,7 +533,7 @@ dump_features (bool): Flag to return “feature_vector” and “saliency_map”
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask.infer">
-<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">otx.api.entities.inference_parameters.InferenceParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.infer" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">InferenceParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.infer" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform inference on a dataset.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>dataset (DatasetEntity): Dataset to infer.
@@ -544,7 +546,7 @@ inference_parameters (InferenceParameters): Inference parameters.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask.load_model">
-<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">anomalib.models.components.base.anomaly_module.AnomalyModule</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.load_model" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AnomalyModule</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.load_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Create and Load Anomalib Module from OTX Model.</p>
 <p>This method checks if the task environment has a saved OTX Model,
 and creates one. If the OTX model already exists, it returns the
@@ -575,7 +577,7 @@ the model with the saved weights.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.InferenceTask.save_model">
-<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.save_model" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.InferenceTask.save_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Save the model after training is completed.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>output_model (ModelEntity): Output model onto which the weights are saved.</p>
@@ -593,11 +595,11 @@ the model with the saved weights.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.NNCFTask">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">NNCFTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">otx.api.entities.task_environment.TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.NNCFTask" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">NNCFTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.NNCFTask" title="Permalink to this definition">#</a></dt>
 <dd><p>Base Anomaly Task.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.NNCFTask.load_model">
-<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">anomalib.models.components.base.anomaly_module.AnomalyModule</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.NNCFTask.load_model" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AnomalyModule</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.NNCFTask.load_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Create and Load Anomalib Module from OTX Model.</p>
 <p>This method checks if the task environment has a saved OTX Model,
 and creates one. If the OTX model already exists, it returns the
@@ -628,7 +630,7 @@ the model with the saved weights.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.NNCFTask.optimize">
-<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimization_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters" title="otx.api.entities.optimization_parameters.OptimizationParameters"><span class="pre">otx.api.entities.optimization_parameters.OptimizationParameters</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.NNCFTask.optimize" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OptimizationType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters" title="otx.api.entities.optimization_parameters.OptimizationParameters"><span class="pre">OptimizationParameters</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.NNCFTask.optimize" title="Permalink to this definition">#</a></dt>
 <dd><p>Train the anomaly classification model.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>optimization_type (OptimizationType): Type of optimization.
@@ -643,7 +645,7 @@ optimization_parameters (OptimizationParameters): Training parameters</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.OpenVINOTask">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">OpenVINOTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">otx.api.entities.task_environment.TaskEnvironment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">OpenVINOTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask" title="Permalink to this definition">#</a></dt>
 <dd><p>OpenVINO inference task.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>task_environment (TaskEnvironment): task environment of the trained anomaly model</p>
@@ -651,7 +653,7 @@ optimization_parameters (OptimizationParameters): Training parameters</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.OpenVINOTask.deploy">
-<span class="sig-name descname"><span class="pre">deploy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.deploy" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">deploy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.deploy" title="Permalink to this definition">#</a></dt>
 <dd><p>Exports the weights from <code class="docutils literal notranslate"><span class="pre">output_model</span></code> along with exportable code.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>output_model (ModelEntity): Model with <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> and <code class="docutils literal notranslate"><span class="pre">.bin</span></code> keys</p>
@@ -663,7 +665,7 @@ optimization_parameters (OptimizationParameters): Training parameters</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.OpenVINOTask.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_resultset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_metric</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.evaluate" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.evaluate" title="Permalink to this definition">#</a></dt>
 <dd><p>Evaluate the performance of the model.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>output_resultset (ResultSetEntity): Result set storing ground truth and predicted dataset.
@@ -674,7 +676,7 @@ evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.OpenVINOTask.get_config">
-<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">addict.addict.Dict</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.get_config" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.get_config" title="Permalink to this definition">#</a></dt>
 <dd><p>Get Anomalib Config from task environment.</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>ADDict: Anomalib config</p>
@@ -690,7 +692,7 @@ evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.OpenVINOTask.infer">
-<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">otx.api.entities.inference_parameters.InferenceParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.infer" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">InferenceParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.infer" title="Permalink to this definition">#</a></dt>
 <dd><p>Perform Inference.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>dataset (DatasetEntity): Inference dataset
@@ -703,7 +705,7 @@ inference_parameters (InferenceParameters): Inference parameters.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.OpenVINOTask.load_inferencer">
-<span class="sig-name descname"><span class="pre">load_inferencer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">anomalib.deploy.inferencers.openvino_inferencer.OpenVINOInferencer</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.load_inferencer" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_inferencer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">OpenVINOInferencer</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.load_inferencer" title="Permalink to this definition">#</a></dt>
 <dd><p>Create the OpenVINO inferencer object.</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>OpenVINOInferencer object</p>
@@ -713,7 +715,7 @@ inference_parameters (InferenceParameters): Inference parameters.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.OpenVINOTask.optimize">
-<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimization_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters" title="otx.api.entities.optimization_parameters.OptimizationParameters"><span class="pre">otx.api.entities.optimization_parameters.OptimizationParameters</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.optimize" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OptimizationType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.optimization_parameters.OptimizationParameters" title="otx.api.entities.optimization_parameters.OptimizationParameters"><span class="pre">OptimizationParameters</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.optimize" title="Permalink to this definition">#</a></dt>
 <dd><p>Optimize the model.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>optimization_type (OptimizationType): Type of optimization [POT or NNCF]
@@ -730,11 +732,11 @@ optimization_parameters (Optional[OptimizationParameters]): Optimization paramet
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.TrainingTask">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">TrainingTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">otx.api.entities.task_environment.TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.TrainingTask" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.</span></span><span class="sig-name descname"><span class="pre">TrainingTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.TrainingTask" title="Permalink to this definition">#</a></dt>
 <dd><p>Base Anomaly Task.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.TrainingTask.load_model">
-<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">anomalib.models.components.base.anomaly_module.AnomalyModule</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.TrainingTask.load_model" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AnomalyModule</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.TrainingTask.load_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Create and Load Anomalib Module from OTE Model.</p>
 <p>This method checks if the task environment has a saved OTE Model,
 and creates one. If the OTE model already exists, it returns the
@@ -755,7 +757,7 @@ the model with the saved weights.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.TrainingTask.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.train_parameters.TrainParameters" title="otx.api.entities.train_parameters.TrainParameters"><span class="pre">otx.api.entities.train_parameters.TrainParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.TrainingTask.train" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.train_parameters.TrainParameters" title="otx.api.entities.train_parameters.TrainParameters"><span class="pre">TrainParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tasks.TrainingTask.train" title="Permalink to this definition">#</a></dt>
 <dd><p>Train the anomaly classification model.</p>
 <dl>
 <dt>Args:</dt><dd><p>dataset (DatasetEntity): Input dataset.
@@ -804,6 +806,260 @@ seed: (Optional[int]): Setting seed to a value other than 0 also marks PytorchLi
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     InferenceTask
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.cancel_training">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.cancel_training()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.cleanup">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.cleanup()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.evaluate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.evaluate()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.export">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.export()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.get_config">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.get_config()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.infer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.infer()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.load_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.load_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.model_info">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.model_info()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.save_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.save_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.InferenceTask.unload">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceTask.unload()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.NNCFTask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     NNCFTask
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.NNCFTask.load_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NNCFTask.load_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.NNCFTask.model_info">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NNCFTask.model_info()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.NNCFTask.optimize">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       NNCFTask.optimize()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OpenVINOTask
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.deploy">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOTask.deploy()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.evaluate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOTask.evaluate()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.get_config">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOTask.get_config()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.get_meta_data">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOTask.get_meta_data()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.infer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOTask.infer()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.load_inferencer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOTask.load_inferencer()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.OpenVINOTask.optimize">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OpenVINOTask.optimize()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.TrainingTask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TrainingTask
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.TrainingTask.load_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TrainingTask.load_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.anomaly.tasks.TrainingTask.train">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TrainingTask.train()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -868,7 +1124,7 @@ seed: (Optional[int]): Setting seed to a value other than 0 also marks PytorchLi
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

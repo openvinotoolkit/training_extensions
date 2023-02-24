@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Instance Segmentation model &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/base/how_to_train/instance_segmentation';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Semantic Segmentation model" href="semantic_segmentation.html" />
     <link rel="prev" title="Object Detection model" href="detection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="instance-segmentation-model">
-<h1>Instance Segmentation model<a class="headerlink" href="#instance-segmentation-model" title="Permalink to this headline">#</a></h1>
+<h1>Instance Segmentation model<a class="headerlink" href="#instance-segmentation-model" title="Permalink to this heading">#</a></h1>
 <p>This tutorial reveals end-to-end solution from installation to model export and optimization for instance segmentation task on a specific example.
 On this page we show how to train, validate, export and optimize Mask-RCNN model on toy dataset.</p>
 <div class="admonition note">
@@ -486,11 +488,11 @@ On this page we show how to train, validate, export and optimize Mask-RCNN model
 <li><p>CUDA Toolkit 11.4</p></li>
 </ul>
 <section id="setup-virtual-environment">
-<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
+<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this heading">#</a></h2>
 <p>You can follow the installation process from a <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick_start guide</span></a> to create a virtual environment.</p>
 </section>
 <section id="dataset-preparation">
-<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
+<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
 <p>1. Let’s use the simple toy dataset <a class="reference external" href="https:/github.com/openvinotoolkit/training_Extensionss/tree/develop/tests/assets/car_tree_bug">Car, Tree, Bug dataset</a>
 provided by OpenVINO™ Training Extensions.</p>
 <p>This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.</p>
@@ -525,7 +527,7 @@ we will need the following file structure:</p>
 </div>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
 <p>1. First of all, we need to choose which instance segmentation model will we train.
 The list of supported templates for instance segmentation is available with the command line below.</p>
 <div class="admonition note">
@@ -632,7 +634,7 @@ command in our worspace:</p>
 <p>After that we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, that we can use for evaliation, export, optimization and deployment.</p>
 </section>
 <section id="validation">
-<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
+<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
 model on a specific dataset.</p>
 <p>The eval function receives test annotation information and model snapshot, trained in the previous step.
@@ -667,7 +669,7 @@ and save performance results in <code class="docutils literal notranslate"><span
 </div>
 </section>
 <section id="export">
-<h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">#</a></h2>
+<h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the
 OpenVINO™ Intermediate Representation (IR) format.</p>
 <p>It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
@@ -705,7 +707,7 @@ Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
 </div>
 </section>
 <section id="optimization">
-<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
 It uses NNCF or POT depending on the model format.</p>
 <p>Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
@@ -878,7 +880,7 @@ efficient model representation ready-to-use instance-segmentation model.</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

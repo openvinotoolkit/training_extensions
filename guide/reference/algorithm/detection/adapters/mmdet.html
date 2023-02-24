@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>mmdetection &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
     <script src="../../../../../_static/jquery.js"></script>
     <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
     <script src="../../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/algorithm/detection/adapters/mmdet';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="openvino" href="openvino.html" />
     <link rel="prev" title="Adapters" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,13 +472,13 @@
             <article class="bd-article" role="main">
               
   <section id="mmdetection">
-<h1>mmdetection<a class="headerlink" href="#mmdetection" title="Permalink to this headline">#</a></h1>
+<h1>mmdetection<a class="headerlink" href="#mmdetection" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-otx.algorithms.detection.adapters.mmdet"></span><p>OTX Adapters - mmdet.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.OTXDetDataset">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.</span></span><span class="sig-name descname"><span class="pre">OTXDetDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><span class="pre">otx.api.entities.label.Domain</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.adapters.mmdet.</span></span><span class="sig-name descname"><span class="pre">OTXDetDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><span class="pre">Domain</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset" title="Permalink to this definition">#</a></dt>
 <dd><p>Wrapper that allows using a OTX dataset to train mmdetection models.</p>
 <p>This wrapper is not based on the filesystem,
 but instead loads the items here directly from the OTX DatasetEntity object.</p>
@@ -511,15 +513,15 @@ scale_ranges (list[tuple] | None): Scale ranges for evaluating mAP.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.OTXDetDataset.get_ann_info">
-<span class="sig-name descname"><span class="pre">get_ann_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.get_ann_info" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_ann_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.get_ann_info" title="Permalink to this definition">#</a></dt>
 <dd><p>This method is used for evaluation of predictions.</p>
 <p>The CustomDataset class implements a method
 CustomDataset.evaluate, which uses the class method get_ann_info to retrieve annotations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>idx</strong> – index of the dataset item for which to get the annotations</p>
 </dd>
-<dt class="field-even">Return ann_info</dt>
+<dt class="field-even">Return ann_info<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict that contains the coordinates of the bboxes and their corresponding labels</p>
 </dd>
 </dl>
@@ -527,19 +529,19 @@ CustomDataset.evaluate, which uses the class method get_ann_info to retrieve ann
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.OTXDetDataset.pre_pipeline">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">pre_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.pre_pipeline" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.pre_pipeline" title="Permalink to this definition">#</a></dt>
 <dd><p>Prepare results dict for pipeline. Add expected keys to the dict.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_test_img">
-<span class="sig-name descname"><span class="pre">prepare_test_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_test_img" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">prepare_test_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_test_img" title="Permalink to this definition">#</a></dt>
 <dd><p>Get testing data after pipeline.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>idx</strong> – int, Index of data.</p>
 </dd>
-<dt class="field-even">Return dict</dt>
+<dt class="field-even">Return dict<span class="colon">:</span></dt>
 <dd class="field-even"><p>Testing data after pipeline with new keys introduced by pipeline.</p>
 </dd>
 </dl>
@@ -547,13 +549,13 @@ CustomDataset.evaluate, which uses the class method get_ann_info to retrieve ann
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_train_img">
-<span class="sig-name descname"><span class="pre">prepare_train_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_train_img" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">prepare_train_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_train_img" title="Permalink to this definition">#</a></dt>
 <dd><p>Get training data and annotations after pipeline.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>idx</strong> – int, Index of data.</p>
 </dd>
-<dt class="field-even">Return dict</dt>
+<dt class="field-even">Return dict<span class="colon">:</span></dt>
 <dd class="field-even"><p>Training data and annotation after pipeline with new keys introduced by pipeline.</p>
 </dd>
 </dl>
@@ -594,6 +596,74 @@ CustomDataset.evaluate, which uses the class method get_ann_info to retrieve ann
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OTXDetDataset
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.evaluate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXDetDataset.evaluate()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.get_ann_info">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXDetDataset.get_ann_info()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.pre_pipeline">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXDetDataset.pre_pipeline()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_test_img">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXDetDataset.prepare_test_img()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.mmdet.OTXDetDataset.prepare_train_img">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXDetDataset.prepare_train_img()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -658,7 +728,7 @@ CustomDataset.evaluate, which uses the class method get_ann_info to retrieve ann
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

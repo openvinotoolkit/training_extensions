@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Semantic Segmentation model &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/base/how_to_train/semantic_segmentation';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Anomaly Detection Tutorial" href="anomaly_detection.html" />
     <link rel="prev" title="Instance Segmentation model" href="instance_segmentation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="semantic-segmentation-model">
-<h1>Semantic Segmentation model<a class="headerlink" href="#semantic-segmentation-model" title="Permalink to this headline">#</a></h1>
+<h1>Semantic Segmentation model<a class="headerlink" href="#semantic-segmentation-model" title="Permalink to this heading">#</a></h1>
 <p>This tutorial demonstrates how to train and optimize a semantic segmentation model using the VOC2012 dataset from the PASCAL Visual Object Classes Challenge 2012. The trained model will be used to segment images by assigning a label to each pixel of the input image.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -486,11 +488,11 @@
 <li><p>CUDA Toolkit 11.1</p></li>
 </ul>
 <section id="setup-virtual-environment">
-<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
+<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this heading">#</a></h2>
 <p>To create a virtual environment for semantic segmentation, please follow the installation process from the <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a>.</p>
 </section>
 <section id="dataset-preparation">
-<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
+<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
 <p>Download and prepare <a class="reference external" href="http://host.robots.ox.ac.uk/pascal/VOC/voc2012">VOC2012 dataset</a> with the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">data</span>
 <span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">host</span><span class="o">.</span><span class="n">robots</span><span class="o">.</span><span class="n">ox</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">uk</span><span class="o">/</span><span class="n">pascal</span><span class="o">/</span><span class="n">VOC</span><span class="o">/</span><span class="n">voc2012</span><span class="o">/</span><span class="n">VOCtrainval_11</span><span class="o">-</span><span class="n">May</span><span class="o">-</span><span class="mf">2012.</span><span class="n">tar</span>
@@ -510,7 +512,7 @@
 </div>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
 <p>1. First of all, we need to choose which semantic segmentation model will we train.
 The list of supported templates for semantic segmentation is available with the command line below.</p>
 <div class="admonition note">
@@ -564,7 +566,7 @@ command in our worspace:</p>
 <p>After that, we have the PyTorch model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.</p>
 </section>
 <section id="validation">
-<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
+<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
 model on a specific dataset.
 The eval function receives test annotation information and model snapshot, trained in the previous step.
@@ -593,7 +595,7 @@ By running this example command, the performance results evaluated by our splitt
 </div>
 </section>
 <section id="export">
-<h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">#</a></h2>
+<h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. We can run the below command line to export the trained model
@@ -620,7 +622,7 @@ Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
 </div>
 </section>
 <section id="optimization">
-<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
 It uses NNCF or POT depending on the model format.
 Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
@@ -794,7 +796,7 @@ The examples are provided with an object detection model, but it is easy to appl
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

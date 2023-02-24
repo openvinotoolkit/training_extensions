@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Simple HPO Tutorial &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/advanced/hpo_tutorial';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Algorithms" href="../../explanation/algorithms/index.html" />
     <link rel="prev" title="Utilize OpenVINO™ Training Extensions APIs in your project" href="api_tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,10 +472,10 @@
             <article class="bd-article" role="main">
               
   <section id="simple-hpo-tutorial">
-<h1>Simple HPO Tutorial<a class="headerlink" href="#simple-hpo-tutorial" title="Permalink to this headline">#</a></h1>
+<h1>Simple HPO Tutorial<a class="headerlink" href="#simple-hpo-tutorial" title="Permalink to this heading">#</a></h1>
 <p>This tutorial provides a step-by-step guide on how to use Hyper-Parameter Optimization (HPO) for classification tasks. In this tutorial, we will optimize the learning rate and batch size using HPO.</p>
 <section id="build-workspace">
-<h2>1. Build workspace<a class="headerlink" href="#build-workspace" title="Permalink to this headline">#</a></h2>
+<h2>1. Build workspace<a class="headerlink" href="#build-workspace" title="Permalink to this heading">#</a></h2>
 <p>First, let’s build a workspace. You can do this by running the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
 
@@ -491,7 +493,7 @@ You can find more detail explanation from it.</p>
 </div>
 </section>
 <section id="set-hpo-config-yaml">
-<h2>2. Set hpo_config.yaml<a class="headerlink" href="#set-hpo-config-yaml" title="Permalink to this headline">#</a></h2>
+<h2>2. Set hpo_config.yaml<a class="headerlink" href="#set-hpo-config-yaml" title="Permalink to this heading">#</a></h2>
 <p>Before running HPO, you can configure HPO using the hpo_config.yaml file. This file contains all the information that the HPO module needs, including the hyperparameters that you want to optimize. The file is located in the workspace you have made and comes with default values.</p>
 <p>Here’s the default hpo_config.yaml:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metric</span><span class="p">:</span> <span class="n">accuracy</span>
@@ -530,7 +532,7 @@ You can find more detail explanation from it.</p>
 <p>By modifying the hpo_config.yaml file, you can easily change the search space or hyperparameters that will be optimized during the HPO process.</p>
 </section>
 <section id="run-openvino-training-extensions">
-<h2>3. Run OpenVINO™ Training Extensions<a class="headerlink" href="#run-openvino-training-extensions" title="Permalink to this headline">#</a></h2>
+<h2>3. Run OpenVINO™ Training Extensions<a class="headerlink" href="#run-openvino-training-extensions" title="Permalink to this heading">#</a></h2>
 <p>Now it’s time to run OpenVINO™ Training Extensions. You can enable HPO by adding the argument <strong>–enable-hpo</strong>. By default, HPO will use four times the time allocated to training. However, if you are short on time, you can reduce the time for HPO as training by adding the argument   <strong>–hpo-time-ratio</strong> and setting it to 2. This means that HPO will use twice the time allocated to training.</p>
 <p>Here’s an tutorial command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train \
@@ -665,7 +667,7 @@ You can find more detail explanation from it.</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

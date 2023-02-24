@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>OpenVINO &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
     <script src="../../../../../_static/jquery.js"></script>
     <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
     <script src="../../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/mpa/modules/ov/index';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Graph" href="graph.html" />
     <link rel="prev" title="Optimizer" href="../optimizer.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="openvino">
-<h1>OpenVINO<a class="headerlink" href="#openvino" title="Permalink to this headline">#</a></h1>
+<h1>OpenVINO<a class="headerlink" href="#openvino" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="graph.html">Graph</a></li>
@@ -480,7 +482,7 @@
 </div>
 <span class="target" id="module-otx.mpa.modules.ov"></span><span class="target" id="module-otx.mpa.modules.ov.omz_wrapper"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.omz_wrapper.NameSpace">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.omz_wrapper.</span></span><span class="sig-name descname"><span class="pre">NameSpace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.omz_wrapper.NameSpace" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.omz_wrapper.</span></span><span class="sig-name descname"><span class="pre">NameSpace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.omz_wrapper.NameSpace" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -505,62 +507,62 @@
 
 <span class="target" id="module-otx.mpa.modules.ov.registry"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.registry.Registry">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.registry.</span></span><span class="sig-name descname"><span class="pre">Registry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_name_as_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.registry.</span></span><span class="sig-name descname"><span class="pre">Registry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_name_as_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry" title="Permalink to this definition">#</a></dt>
 <dd><dl class="py attribute">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.registry.Registry.REGISTERED_NAME_ATTR">
-<span class="sig-name descname"><span class="pre">REGISTERED_NAME_ATTR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'_registered_name'</span></em><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.REGISTERED_NAME_ATTR" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">REGISTERED_NAME_ATTR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_registered_name'</span></em><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.REGISTERED_NAME_ATTR" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.registry.Registry.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.get" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.get" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.registry.Registry.register">
-<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.register" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.register" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.registry.Registry.registry_dict">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">registry_dict</span></span><em class="property"><span class="pre">:</span> <span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.registry_dict" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">registry_dict</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.mpa.modules.ov.registry.Registry.registry_dict" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <span class="target" id="module-otx.mpa.modules.ov.utils"></span><dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.utils.convert_op_to_torch">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">convert_op_to_torch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">openvino._pyopenvino.Node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.utils.convert_op_to_torch" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">convert_op_to_torch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.utils.convert_op_to_torch" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.utils.convert_op_to_torch_module">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">convert_op_to_torch_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_op</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">openvino._pyopenvino.Node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.utils.convert_op_to_torch_module" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">convert_op_to_torch_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.ov.utils.convert_op_to_torch_module" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.utils.get_op_name">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">get_op_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">openvino._pyopenvino.Node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.get_op_name" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">get_op_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.get_op_name" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.utils.load_ov_model">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">load_ov_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_dynamic</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">openvino._pyopenvino.Model</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.load_ov_model" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">load_ov_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_dynamic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.load_ov_model" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.utils.normalize_name">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.normalize_name" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.normalize_name" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.utils.to_dynamic_model">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">to_dynamic_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ov_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">openvino._pyopenvino.Model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">openvino._pyopenvino.Model</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.to_dynamic_model" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">to_dynamic_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ov_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.to_dynamic_model" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.mpa.modules.ov.utils.unnormalize_name">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">unnormalize_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.unnormalize_name" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.ov.utils.</span></span><span class="sig-name descname"><span class="pre">unnormalize_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.mpa.modules.ov.utils.unnormalize_name" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -596,6 +598,173 @@
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.omz_wrapper.NameSpace">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     NameSpace
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.omz_wrapper.convert_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     convert_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.omz_wrapper.download_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     download_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.omz_wrapper.get_model_configuration">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_model_configuration()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.omz_wrapper.get_omz_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_omz_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.registry.Registry">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Registry
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.ov.registry.Registry.REGISTERED_NAME_ATTR">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Registry.REGISTERED_NAME_ATTR
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.ov.registry.Registry.get">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Registry.get()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.ov.registry.Registry.register">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Registry.register()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.modules.ov.registry.Registry.registry_dict">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Registry.registry_dict
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.utils.convert_op_to_torch">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     convert_op_to_torch()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.utils.convert_op_to_torch_module">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     convert_op_to_torch_module()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.utils.get_op_name">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_op_name()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.utils.load_ov_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     load_ov_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.utils.normalize_name">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     normalize_name()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.utils.to_dynamic_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     to_dynamic_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.modules.ov.utils.unnormalize_name">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     unnormalize_name()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -660,7 +829,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

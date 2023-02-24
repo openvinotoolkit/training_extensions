@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Hyperparameters Optimization &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/hpo';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Auto-configuration" href="auto_configuration.html" />
     <link rel="prev" title="Models Optimization" href="models_optimization.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="hyperparameters-optimization">
-<h1>Hyperparameters Optimization<a class="headerlink" href="#hyperparameters-optimization" title="Permalink to this headline">#</a></h1>
+<h1>Hyperparameters Optimization<a class="headerlink" href="#hyperparameters-optimization" title="Permalink to this heading">#</a></h1>
 <p>Hyper-parameter optimization (HPO) can be a time-consuming process, even with state-of-the-art off-the-shelf libraries. OpenVINO™ Training Extensions makes HPO faster and easier by providing an easy-to-use interface and automatic configuration.</p>
 <p>With OpenVINO™ Training Extensions, you can run hyper-parameter optimization by simply adding a time constraint parameter. The auto-config feature automatically sets internal control parameters, guaranteeing that HPO will finish within the given time constraint.</p>
 <p>OpenVINO™ Training Extensions provides both sequential and parallel methods, making it scalable for different training environments. If you have multiple GPUs, you can accelerate HPO by utilizing all available GPU resources.</p>
@@ -487,7 +489,7 @@
 </pre></div>
 </div>
 <section id="algorithm">
-<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">#</a></h2>
+<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this heading">#</a></h2>
 <p>If you have abundant GPU resources, it’s better to run HPO in parallel.
 In that case, <a class="reference external" href="https://arxiv.org/pdf/1810.05934.pdf">ASHA</a> is a good choice.
 Currently, OpenVINO™ Training Extensions uses the ASHA algorithm.</p>
@@ -496,7 +498,7 @@ Currently, OpenVINO™ Training Extensions uses the ASHA algorithm.</p>
 <p>ASHA is designed to be more efficient than SHA in parallel computing environments because it allows for asynchronous training of the trials. This means that each trial can be trained independently of the others, and they do not have to wait for all the other trials to complete before advancing to the next round. This reduces the amount of time it takes to complete the optimization process.</p>
 <p>ASHA also includes a technique called Hyperband, which is used to determine how much time to allocate to each trial in each round. Hyperband allocates more time to the best-performing trials, with the amount of time allocated decreasing as the performance of the trials decreases. This technique helps to reduce the overall amount of training time required to find the best hyperparameters.</p>
 <section id="how-to-configure-hyper-parameter-optimization">
-<h3>How to configure hyper-parameter optimization<a class="headerlink" href="#how-to-configure-hyper-parameter-optimization" title="Permalink to this headline">#</a></h3>
+<h3>How to configure hyper-parameter optimization<a class="headerlink" href="#how-to-configure-hyper-parameter-optimization" title="Permalink to this heading">#</a></h3>
 <p>You can configure HPO by modifying the <strong>hpo_config.yaml</strong> file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The <strong>hpo_config.yaml</strong> file already exists with default values in the same directory where <em>template.yaml</em> resides. Here is the default hpo_config.yaml file for classification:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metric</span><span class="p">:</span> <span class="n">accuracy</span>
 <span class="n">search_algorithm</span><span class="p">:</span> <span class="n">asha</span>
@@ -700,7 +702,7 @@ Fortunately, there are not many attributes, so it’s not difficult to write you
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

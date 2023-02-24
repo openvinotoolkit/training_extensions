@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Reporting &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/api/usecases/reporting';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Task interfaces" href="tasks.html" />
     <link rel="prev" title="Exportable Code" href="exportable_code.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,12 +472,12 @@
             <article class="bd-article" role="main">
               
   <section id="module-otx.api.usecases.reporting">
-<span id="reporting"></span><h1>Reporting<a class="headerlink" href="#module-otx.api.usecases.reporting" title="Permalink to this headline">#</a></h1>
+<span id="reporting"></span><h1>Reporting<a class="headerlink" href="#module-otx.api.usecases.reporting" title="Permalink to this heading">#</a></h1>
 <p>Training reporting.</p>
 <span class="target" id="module-otx.api.usecases.reporting.callback"></span><p>Callback module.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.reporting.callback.Callback">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.callback.</span></span><span class="sig-name descname"><span class="pre">Callback</span></span><a class="headerlink" href="#otx.api.usecases.reporting.callback.Callback" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.callback.</span></span><span class="sig-name descname"><span class="pre">Callback</span></span><a class="headerlink" href="#otx.api.usecases.reporting.callback.Callback" title="Permalink to this definition">#</a></dt>
 <dd><p>Abstract base class used to build new callbacks.</p>
 <dl class="simple">
 <dt>Properties</dt><dd><dl class="simple">
@@ -593,7 +595,7 @@ it passes to its callbacks:</p>
 <span class="target" id="module-otx.api.usecases.reporting.time_monitor_callback"></span><p>Time monitor callback module.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.time_monitor_callback.</span></span><span class="sig-name descname"><span class="pre">TimeMonitorCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epoch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_val_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_history</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_history</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.train_parameters.UpdateProgressCallback" title="otx.api.entities.train_parameters.UpdateProgressCallback"><span class="pre">otx.api.entities.train_parameters.UpdateProgressCallback</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.time_monitor_callback.</span></span><span class="sig-name descname"><span class="pre">TimeMonitorCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_val_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.train_parameters.UpdateProgressCallback" title="otx.api.entities.train_parameters.UpdateProgressCallback"><span class="pre">UpdateProgressCallback</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback" title="Permalink to this definition">#</a></dt>
 <dd><p>A callback to monitor the progress of training.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>num_epoch (int): Amount of epochs
@@ -671,7 +673,7 @@ at least 20x more than the average step duration</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.</span></span><span class="sig-name descname"><span class="pre">Callback</span></span><a class="headerlink" href="#otx.api.usecases.reporting.Callback" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.</span></span><span class="sig-name descname"><span class="pre">Callback</span></span><a class="headerlink" href="#otx.api.usecases.reporting.Callback" title="Permalink to this definition">#</a></dt>
 <dd><p>Abstract base class used to build new callbacks.</p>
 <dl class="simple">
 <dt>Properties</dt><dd><dl class="simple">
@@ -788,7 +790,7 @@ it passes to its callbacks:</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.</span></span><span class="sig-name descname"><span class="pre">TimeMonitorCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epoch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_val_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_steps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_history</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_history</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.train_parameters.UpdateProgressCallback" title="otx.api.entities.train_parameters.UpdateProgressCallback"><span class="pre">otx.api.entities.train_parameters.UpdateProgressCallback</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.</span></span><span class="sig-name descname"><span class="pre">TimeMonitorCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_val_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../entities/general.html#otx.api.entities.train_parameters.UpdateProgressCallback" title="otx.api.entities.train_parameters.UpdateProgressCallback"><span class="pre">UpdateProgressCallback</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback" title="Permalink to this definition">#</a></dt>
 <dd><p>A callback to monitor the progress of training.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>num_epoch (int): Amount of epochs
@@ -899,6 +901,494 @@ at least 20x more than the average step duration</p>
               
 <div class="toc-item">
   
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Callback
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_epoch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_epoch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_epoch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_epoch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_test_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_test_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_test_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_test_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_train_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_train_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_train_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.on_train_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.set_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.set_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.callback.Callback.set_params">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.set_params()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TimeMonitorCallback
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.get_progress">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.get_progress()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.is_stalling">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.is_stalling()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_epoch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_epoch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_epoch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_epoch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_test_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_test_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_test_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_test_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_end()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Callback
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_epoch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_epoch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_epoch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_epoch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_test_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_test_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_test_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_test_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_test_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_train_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_train_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_train_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.on_train_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.on_train_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.set_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.set_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.Callback.set_params">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Callback.set_params()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     TimeMonitorCallback
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.get_progress">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.get_progress()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.is_stalling">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.is_stalling()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_epoch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_epoch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_test_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_test_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_batch_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_batch_end()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_begin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_begin()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_end">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TimeMonitorCallback.on_train_end()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
+<div class="toc-item">
+  
 <div id="searchbox"></div>
 </div>
 
@@ -961,7 +1451,7 @@ at least 20x more than the average step duration</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

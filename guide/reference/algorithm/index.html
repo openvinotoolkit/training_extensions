@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Algorithm &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/algorithm/index';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Action" href="action/index.html" />
     <link rel="prev" title="Task interfaces" href="../api/usecases/tasks.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,9 +472,9 @@
             <article class="bd-article" role="main">
               
   <section id="algorithm">
-<h1>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">#</a></h1>
+<h1>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this heading">#</a></h1>
 <section id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">#</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">#</a></h2>
 <p>This section contains algorithmic implementations. OpenVINO™ Training Extensions provides number of
 different algorithms such as classification, detection,
 segmentation and anomaly with various learning types such as supervised,
@@ -488,7 +490,7 @@ semi and self-supervised learning.</p>
 </div>
 </section>
 <section id="organizational-structure">
-<h2>Organizational Structure<a class="headerlink" href="#organizational-structure" title="Permalink to this headline">#</a></h2>
+<h2>Organizational Structure<a class="headerlink" href="#organizational-structure" title="Permalink to this heading">#</a></h2>
 <p>Algorithms have the following organizational structure:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;algorithm&gt;
 ├──<span class="w"> </span>adapters
@@ -515,27 +517,27 @@ semi and self-supervised learning.</p>
 </div>
 <p>where each algorithm has <code class="docutils literal notranslate"><span class="pre">adapters</span></code>, <code class="docutils literal notranslate"><span class="pre">configs</span></code>, <code class="docutils literal notranslate"><span class="pre">tasks</span></code> and <code class="docutils literal notranslate"><span class="pre">tools</span></code>.</p>
 <section id="adapters">
-<h3>Adapters<a class="headerlink" href="#adapters" title="Permalink to this headline">#</a></h3>
+<h3>Adapters<a class="headerlink" href="#adapters" title="Permalink to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">adapters</span></code> contain modules to wrap the original library used to perform the
 task. For instance, detection task uses
 <a class="reference external" href="https://github.com/open-mmlab/mmdetection">mmdetection</a> library, meaning that
 <code class="docutils literal notranslate"><span class="pre">adapters</span></code> comprises adapters to wrap <code class="docutils literal notranslate"><span class="pre">mmdetection</span></code> to use with OpenVINO™ Training Extensions.</p>
 </section>
 <section id="configs">
-<h3>Configs<a class="headerlink" href="#configs" title="Permalink to this headline">#</a></h3>
+<h3>Configs<a class="headerlink" href="#configs" title="Permalink to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">configs</span></code> contain configuration related files including training, inference,
 <a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a> and
 <a class="reference external" href="https://github.com/openvinotoolkit/hyper_parameter_optimization">HPO</a>.</p>
 </section>
 <section id="tasks">
-<h3>Tasks<a class="headerlink" href="#tasks" title="Permalink to this headline">#</a></h3>
+<h3>Tasks<a class="headerlink" href="#tasks" title="Permalink to this heading">#</a></h3>
 <p id="id1">Tasks contain implementations that correspond to each phase in the workflow from
 training to OpenVINO inference. Each algorithm expects <code class="docutils literal notranslate"><span class="pre">train</span></code>, <code class="docutils literal notranslate"><span class="pre">inference</span></code>,
 <code class="docutils literal notranslate"><span class="pre">nncf</span></code> and <code class="docutils literal notranslate"><span class="pre">openvino</span></code> python modules that implement the
 <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/otx/api/usecases/tasks/interfaces">task interfaces</a>.</p>
 </section>
 <section id="tools">
-<h3>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">#</a></h3>
+<h3>Tools<a class="headerlink" href="#tools" title="Permalink to this heading">#</a></h3>
 <p>Tools contain python implementations that performs <a class="reference internal" href="#id1"><span class="std std-ref">tasks</span></a> in
 end-to-end workflow. For example, current anomaly implementation has <code class="docutils literal notranslate"><span class="pre">sample.py</span></code>
 file that reads an input dataset, trains a model and exports the model to
@@ -684,7 +686,7 @@ or <a class="reference external" href="https://docs.openvino.ai/latest/docs_nncf
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

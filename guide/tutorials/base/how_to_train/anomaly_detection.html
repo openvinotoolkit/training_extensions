@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Anomaly Detection Tutorial &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/base/how_to_train/anomaly_detection';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Action Classification model" href="action_classification.html" />
     <link rel="prev" title="Semantic Segmentation model" href="semantic_segmentation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="anomaly-detection-tutorial">
-<h1>Anomaly Detection Tutorial<a class="headerlink" href="#anomaly-detection-tutorial" title="Permalink to this headline">#</a></h1>
+<h1>Anomaly Detection Tutorial<a class="headerlink" href="#anomaly-detection-tutorial" title="Permalink to this heading">#</a></h1>
 <p>This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications. Read <a class="reference internal" href="../../../explanation/algorithms/anomaly/index.html"><span class="doc">Anomaly Detection</span></a> for more information about the Anomaly tasks.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -485,7 +487,7 @@
 <li><p>CUDA Toolkit 11.1</p></li>
 </ul>
 <section id="setup-the-virtual-environment">
-<h2>Setup the Virtual environment<a class="headerlink" href="#setup-the-virtual-environment" title="Permalink to this headline">#</a></h2>
+<h2>Setup the Virtual environment<a class="headerlink" href="#setup-the-virtual-environment" title="Permalink to this heading">#</a></h2>
 <p>To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a>.</p>
 <p>Alternatively, if you want to only train anomaly models then you can create a task specific environment.</p>
 <ol class="arabic">
@@ -529,7 +531,7 @@
 </ol>
 </section>
 <section id="dataset-preparation">
-<h2>Dataset Preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
+<h2>Dataset Preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
 <p>For this example we will use the <a class="reference external" href="https://www.mvtec.com/company/research/datasets/mvtec-ad">MVTec</a> dataset.</p>
 <p>You can download the dataset from the link above. We will use the <code class="docutils literal notranslate"><span class="pre">bottle</span></code> category for this tutorial.</p>
 <p>This is how it might look like in your file system:</p>
@@ -576,7 +578,7 @@
 </div>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
 <p>For this example let’s look at the anomaly detection tasks</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span>find<span class="w"> </span>--task<span class="w"> </span>anomaly_detection
 </pre></div>
@@ -599,7 +601,7 @@
 <p>This will start training and generate artifacts for commands such as <code class="docutils literal notranslate"><span class="pre">export</span></code> and <code class="docutils literal notranslate"><span class="pre">optimize</span></code>. You will notice the <code class="docutils literal notranslate"><span class="pre">otx-workspace-ANOMALY_DETECTION</span></code> directory in your current working directory. This is where all the artifacts are stored.</p>
 </section>
 <section id="evaluation">
-<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">#</a></h2>
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this heading">#</a></h2>
 <p>Now that we have trained the model, let’s see how it performs on the a specific dataset. In this example we will use the same dataset to generate evaluation metrics. To perform evaluation you need to run the following commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--test-data-roots<span class="w"> </span>datasets/MVTec/bottle/test<span class="w"> </span><span class="se">\</span>
@@ -615,7 +617,7 @@
 <p>All task types report Image-level F-measure as the primary metric. In addition, both localization tasks (anomaly detection and anomaly segmentation) also report localization performance (F-measure for anomaly detection and Dice-coefficient for anomaly segmentation).</p>
 </section>
 <section id="export">
-<h2>Export<a class="headerlink" href="#export" title="Permalink to this headline">#</a></h2>
+<h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. We can run the below command line to export the trained model
@@ -650,7 +652,7 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 </div>
 </section>
 <section id="optimization">
-<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">#</a></h2>
+<h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>Anomaly tasks can be optimized either in POT or NNCF format. For more information refer to the <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section.</p>
 <ol class="arabic">
 <li><p>Let’s start with POT optimization.</p>
@@ -695,7 +697,7 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 </ol>
 </section>
 <section id="segmentation-and-classification">
-<h2>Segmentation and Classification<a class="headerlink" href="#segmentation-and-classification" title="Permalink to this headline">#</a></h2>
+<h2>Segmentation and Classification<a class="headerlink" href="#segmentation-and-classification" title="Permalink to this heading">#</a></h2>
 <p>While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models. To see what tasks are available, you can pass <code class="docutils literal notranslate"><span class="pre">anomaly_segmentation</span></code> and <code class="docutils literal notranslate"><span class="pre">anomaly_classification</span></code> to <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">find</span></code> mentioned in the <a class="reference internal" href="#training">Training</a> section. You can then use the same commands to train, evaluate, export and optimize the models.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -847,7 +849,7 @@ The <code class="docutils literal notranslate"><span class="pre">ground_truth</s
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Shapes &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/api/entities/shapes';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Interfaces" href="interfaces.html" />
     <link rel="prev" title="General" href="general.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,11 +472,11 @@
             <article class="bd-article" role="main">
               
   <section id="module-otx.api.entities.shapes.ellipse">
-<span id="shapes"></span><h1>Shapes<a class="headerlink" href="#module-otx.api.entities.shapes.ellipse" title="Permalink to this headline">#</a></h1>
+<span id="shapes"></span><h1>Shapes<a class="headerlink" href="#module-otx.api.entities.shapes.ellipse" title="Permalink to this heading">#</a></h1>
 <p>This module implements the Ellipse shape entity.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.ellipse.</span></span><span class="sig-name descname"><span class="pre">Ellipse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.ellipse.</span></span><span class="sig-name descname"><span class="pre">Ellipse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse" title="Permalink to this definition">#</a></dt>
 <dd><p>Ellipse represents an ellipse that is encapsulated by a Rectangle.</p>
 <ul class="simple">
 <li><p>x1 and y1 represent the top-left coordinate of the encapsulating rectangle</p></li>
@@ -492,7 +494,7 @@ y2: bottom y coordinate of encapsulating rectangle</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.denormalize_wrt_roi_shape">
-<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.ellipse.Ellipse" title="otx.api.entities.shapes.ellipse.Ellipse"><span class="pre">otx.api.entities.shapes.ellipse.Ellipse</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.ellipse.Ellipse" title="otx.api.entities.shapes.ellipse.Ellipse"><span class="pre">Ellipse</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforming shape from the normalized coordinate system to the <cite>roi</cite> coordinate system.</p>
 <p>This function is the inverse of <code class="docutils literal notranslate"><span class="pre">normalize_wrt_roi_shape</span></code></p>
 <dl>
@@ -535,7 +537,7 @@ This function returns Ellipse <cite>c1</cite> expressed in the coordinate space 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.get_evenly_distributed_ellipse_coordinates">
-<span class="sig-name descname"><span class="pre">get_evenly_distributed_ellipse_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_coordinates</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.get_evenly_distributed_ellipse_coordinates" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_evenly_distributed_ellipse_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number_of_coordinates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.get_evenly_distributed_ellipse_coordinates" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns evenly distributed coordinates along the ellipse.</p>
 <p>Makes use of scipy.special.ellipeinc() which provides the numerical integral along the perimeter of the ellipse,
 and scipy.optimize.root() for solving the equal-arcs length equation for the angles.</p>
@@ -552,7 +554,7 @@ and scipy.optimize.root() for solving the equal-arcs length equation for the ang
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.height">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.height" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.height" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the height [y-axis] of the ellipse.</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">e1</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
@@ -568,7 +570,7 @@ and scipy.optimize.root() for solving the equal-arcs length equation for the ang
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.major_axis">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">major_axis</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.major_axis" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">major_axis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.major_axis" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the major axis of the ellipse.</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">e1</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
@@ -584,7 +586,7 @@ and scipy.optimize.root() for solving the equal-arcs length equation for the ang
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.minor_axis">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">minor_axis</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.minor_axis" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">minor_axis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.minor_axis" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the minor axis of the ellipse.</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">e1</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
@@ -600,7 +602,7 @@ and scipy.optimize.root() for solving the equal-arcs length equation for the ang
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.normalize_wrt_roi_shape">
-<span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.ellipse.Ellipse" title="otx.api.entities.shapes.ellipse.Ellipse"><span class="pre">otx.api.entities.shapes.ellipse.Ellipse</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.ellipse.Ellipse" title="otx.api.entities.shapes.ellipse.Ellipse"><span class="pre">Ellipse</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms from the <cite>roi</cite> coordinate system to the normalized coordinate system.</p>
 <p>This function is the inverse of <code class="docutils literal notranslate"><span class="pre">denormalize_wrt_roi_shape</span></code>.</p>
 <dl>
@@ -627,7 +629,7 @@ space. This function returns Ellipse <cite>c1</cite> expressed in the normalized
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.width">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.width" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.width" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the width [x-axis] of the ellipse.</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">e1</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
@@ -643,13 +645,13 @@ space. This function returns Ellipse <cite>c1</cite> expressed in the normalized
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.x_center">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">x_center</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.x_center" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x_center</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.x_center" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the x coordinate in the center of the ellipse.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.ellipse.Ellipse.y_center">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">y_center</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.y_center" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y_center</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.ellipse.Ellipse.y_center" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the y coordinate in the center of the ellipse.</p>
 </dd></dl>
 
@@ -658,12 +660,12 @@ space. This function returns Ellipse <cite>c1</cite> expressed in the normalized
 <span class="target" id="module-otx.api.entities.shapes.polygon"></span><p>This module implements the Polygon Shape entity.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.polygon.Point">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.polygon.</span></span><span class="sig-name descname"><span class="pre">Point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Point" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.polygon.</span></span><span class="sig-name descname"><span class="pre">Point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Point" title="Permalink to this definition">#</a></dt>
 <dd><p>This class defines a Point with an X and Y coordinate.</p>
 <p>Multiple points can be used to represent a Polygon</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.polygon.Point.denormalize_wrt_roi_shape">
-<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Point" title="otx.api.entities.shapes.polygon.Point"><span class="pre">otx.api.entities.shapes.polygon.Point</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Point.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Point" title="otx.api.entities.shapes.polygon.Point"><span class="pre">Point</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Point.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>The inverse of normalize_wrt_roi_shape.</p>
 <p>Transforming Polygon from the normalized coordinate system to the <cite>roi</cite> coordinate system.
 This is used to pull ground truth during training process of the tasks.
@@ -676,7 +678,7 @@ Examples given in the Shape implementations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.polygon.Point.normalize_wrt_roi">
-<span class="sig-name descname"><span class="pre">normalize_wrt_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Point" title="otx.api.entities.shapes.polygon.Point"><span class="pre">otx.api.entities.shapes.polygon.Point</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Point.normalize_wrt_roi" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">normalize_wrt_roi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Point" title="otx.api.entities.shapes.polygon.Point"><span class="pre">Point</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Point.normalize_wrt_roi" title="Permalink to this definition">#</a></dt>
 <dd><p>The inverse of denormalize_wrt_roi_shape.</p>
 <p>Transforming Polygon from the <cite>roi</cite> coordinate system to the normalized coordinate system.
 This is used when the tasks want to save the analysis results.</p>
@@ -702,7 +704,7 @@ needs to be normalized to the roi (bounding boxes) coming from the detection.</p
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.polygon.Polygon">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.polygon.</span></span><span class="sig-name descname"><span class="pre">Polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.shapes.polygon.Point" title="otx.api.entities.shapes.polygon.Point"><span class="pre">otx.api.entities.shapes.polygon.Point</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Polygon" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.polygon.</span></span><span class="sig-name descname"><span class="pre">Polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.shapes.polygon.Point" title="otx.api.entities.shapes.polygon.Point"><span class="pre">Point</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Polygon" title="Permalink to this definition">#</a></dt>
 <dd><p>Represents a polygon formed by a list of coordinates.</p>
 <p>NB Freehand drawings are also stored as polygons.</p>
 <dl class="simple">
@@ -712,7 +714,7 @@ modification_date: last modified date</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.polygon.Polygon.denormalize_wrt_roi_shape">
-<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Polygon" title="otx.api.entities.shapes.polygon.Polygon"><span class="pre">otx.api.entities.shapes.polygon.Polygon</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Polygon.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Polygon" title="otx.api.entities.shapes.polygon.Polygon"><span class="pre">Polygon</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Polygon.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforming shape from the normalized coordinate system to the <cite>roi</cite> coordinate system.</p>
 <p>This function is the inverse of <code class="docutils literal notranslate"><span class="pre">normalize_wrt_roi_shape</span></code></p>
 <dl>
@@ -758,7 +760,7 @@ are continuous, but pixels are discrete.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.polygon.Polygon.normalize_wrt_roi_shape">
-<span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Polygon" title="otx.api.entities.shapes.polygon.Polygon"><span class="pre">otx.api.entities.shapes.polygon.Polygon</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Polygon.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.polygon.Polygon" title="otx.api.entities.shapes.polygon.Polygon"><span class="pre">Polygon</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.polygon.Polygon.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms from the <cite>roi</cite> coordinate system to the normalized coordinate system.</p>
 <p>This function is the inverse of <code class="docutils literal notranslate"><span class="pre">denormalize_wrt_roi_shape</span></code>.</p>
 <dl>
@@ -787,7 +789,7 @@ space. This function returns Polygon <cite>p1</cite> expressed in the normalized
 <span class="target" id="module-otx.api.entities.shapes.rectangle"></span><p>This module implements the Rectangle shape entity.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.rectangle.</span></span><span class="sig-name descname"><span class="pre">Rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.rectangle.</span></span><span class="sig-name descname"><span class="pre">Rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle" title="Permalink to this definition">#</a></dt>
 <dd><p>Rectangle represents a rectangular shape.</p>
 <p>Rectangle are used to annotate detection and classification tasks. In the
 classification case, the rectangle is a full rectangle spanning the whole related
@@ -806,7 +808,7 @@ modification_date (datetime.datetime): Date of the last modification of the rect
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.clip_to_visible_region">
-<span class="sig-name descname"><span class="pre">clip_to_visible_region</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.clip_to_visible_region" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">clip_to_visible_region</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.clip_to_visible_region" title="Permalink to this definition">#</a></dt>
 <dd><p>Clip the rectangle to the [0, 1] visible region of an image.</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>Rectangle: Clipped rectangle.</p>
@@ -816,7 +818,7 @@ modification_date (datetime.datetime): Date of the last modification of the rect
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.crop_numpy_array">
-<span class="sig-name descname"><span class="pre">crop_numpy_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.crop_numpy_array" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">crop_numpy_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.crop_numpy_array" title="Permalink to this definition">#</a></dt>
 <dd><p>Crop the given Numpy array to the region of interest represented by this rectangle.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>data (np.ndarray): Image to crop.</p>
@@ -828,7 +830,7 @@ modification_date (datetime.datetime): Date of the last modification of the rect
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.denormalize_wrt_roi_shape">
-<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforming shape from the normalized coordinate system to the <cite>roi</cite> coordinate system.</p>
 <p>Example:</p>
 <blockquote>
@@ -861,7 +863,7 @@ Box denormalized to a rectangle as ROI</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.diagonal">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">diagonal</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.diagonal" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">diagonal</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.diagonal" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the diagonal size/hypotenuse  of the rectangle (x-axis).</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
@@ -877,7 +879,7 @@ Box denormalized to a rectangle as ROI</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.generate_full_box">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">generate_full_box</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.generate_full_box" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_full_box</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.generate_full_box" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns a rectangle that fully encapsulates the normalized coordinate space.</p>
 <dl>
 <dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Rectangle</span><span class="o">.</span><span class="n">generate_full_box</span><span class="p">()</span>
@@ -912,7 +914,7 @@ is approximate, because shapes are continuous, but pixels are discrete.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.height">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.height" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.height" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the height of the rectangle (y-axis).</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
@@ -928,7 +930,7 @@ is approximate, because shapes are continuous, but pixels are discrete.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.is_full_box">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">is_full_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rectangle</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.is_full_box" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_full_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rectangle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.is_full_box" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns true if rectangle is a full box (occupying the full normalized coordinate space).</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
@@ -951,7 +953,7 @@ is approximate, because shapes are continuous, but pixels are discrete.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.normalize_wrt_roi_shape">
-<span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>Transforms from the <cite>roi</cite> coordinate system to the normalized coordinate system.</p>
 <dl>
 <dt>Example:</dt><dd><p>Assume we have rectangle <cite>b1</cite> which lives in the top-right quarter of
@@ -978,7 +980,7 @@ quarter of the normalized coordinate space. This function returns rectangle
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.rectangle.Rectangle.width">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="pre">:</span> <span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.width" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#otx.api.entities.shapes.rectangle.Rectangle.width" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the width of the rectangle (x-axis).</p>
 <p>Example:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
@@ -997,17 +999,17 @@ quarter of the normalized coordinate space. This function returns rectangle
 <span class="target" id="module-otx.api.entities.shapes.shape"></span><p>This file defines the ShapeEntity interface and the Shape abstract class.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.GeometryException">
-<em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">GeometryException</span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.GeometryException" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">GeometryException</span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.GeometryException" title="Permalink to this definition">#</a></dt>
 <dd><p>Exception that is thrown if the geometry of a Shape is invalid.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.Shape">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">Shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeType" title="otx.api.entities.shapes.shape.ShapeType"><span class="pre">otx.api.entities.shapes.shape.ShapeType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">datetime.datetime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.shape.Shape" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">Shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeType" title="otx.api.entities.shapes.shape.ShapeType"><span class="pre">ShapeType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">modification_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.shape.Shape" title="Permalink to this definition">#</a></dt>
 <dd><p>Base class for Shape entities.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.Shape.contains_center">
-<span class="sig-name descname"><span class="pre">contains_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.Shape.contains_center" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">contains_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.Shape.contains_center" title="Permalink to this definition">#</a></dt>
 <dd><p>Checks whether the center of the ‘other’ shape is located in the shape.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>other (ShapeEntity): Shape to compare with.</p>
@@ -1025,7 +1027,7 @@ quarter of the normalized coordinate space. This function returns rectangle
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.Shape.intersects">
-<span class="sig-name descname"><span class="pre">intersects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.Shape" title="otx.api.entities.shapes.shape.Shape"><span class="pre">otx.api.entities.shapes.shape.Shape</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.Shape.intersects" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">intersects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.Shape" title="otx.api.entities.shapes.shape.Shape"><span class="pre">Shape</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.Shape.intersects" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns True, if other intersects with shape, otherwise returns False.</p>
 </dd></dl>
 
@@ -1033,12 +1035,12 @@ quarter of the normalized coordinate space. This function returns rectangle
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeEntity">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">ShapeEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeType" title="otx.api.entities.shapes.shape.ShapeType"><span class="pre">otx.api.entities.shapes.shape.ShapeType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">ShapeEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeType" title="otx.api.entities.shapes.shape.ShapeType"><span class="pre">ShapeType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity" title="Permalink to this definition">#</a></dt>
 <dd><p>This interface represents the annotation shapes on the media given by user annotations or system analysis.</p>
 <p>The shapes is a 2D geometric shape living in a normalized coordinate system (the values range from 0 to 1).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeEntity.contains_center">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">contains_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.contains_center" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contains_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.contains_center" title="Permalink to this definition">#</a></dt>
 <dd><p>Checks whether the center of the ‘other’ shape is located in the shape.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>other (ShapeEntity): Shape to compare with</p>
@@ -1050,7 +1052,7 @@ quarter of the normalized coordinate space. This function returns rectangle
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeEntity.denormalize_wrt_roi_shape">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Rectangle</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">ShapeEntity</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">denormalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">ShapeEntity</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.denormalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>The inverse of normalize_wrt_roi_shape.</p>
 <p>Transforming shape from the normalized coordinate system to the <cite>roi</cite> coordinate system.
 This is used to pull ground truth during training process of the tasks.
@@ -1065,13 +1067,13 @@ Examples given in the Shape implementations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeEntity.get_area">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">get_area</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.get_area" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_area</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.get_area" title="Permalink to this definition">#</a></dt>
 <dd><p>Get the area of the shape.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeEntity.intersects">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">intersects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.Shape" title="otx.api.entities.shapes.shape.Shape"><span class="pre">otx.api.entities.shapes.shape.Shape</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.intersects" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">intersects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.shape.Shape" title="otx.api.entities.shapes.shape.Shape"><span class="pre">Shape</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.intersects" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns true if other intersects with shape, otherwise returns false.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>other (Shape): Shape to compare with</p>
@@ -1083,7 +1085,7 @@ Examples given in the Shape implementations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeEntity.normalize_wrt_roi_shape">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Rectangle</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.shape.Shape" title="otx.api.entities.shapes.shape.Shape"><span class="pre">Shape</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize_wrt_roi_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roi_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.shapes.shape.Shape" title="otx.api.entities.shapes.shape.Shape"><span class="pre">Shape</span></a></span></span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.normalize_wrt_roi_shape" title="Permalink to this definition">#</a></dt>
 <dd><p>The inverse of denormalize_wrt_roi_shape.</p>
 <p>Transforming shape from the <cite>roi</cite> coordinate system to the normalized coordinate system.
 This is used when the tasks want to save the analysis results.</p>
@@ -1099,7 +1101,7 @@ needs to be normalized to the roi (bounding boxes) coming from the detection.</p
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeEntity.type">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeType" title="otx.api.entities.shapes.shape.ShapeType"><span class="pre">otx.api.entities.shapes.shape.ShapeType</span></a></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.type" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.shapes.shape.ShapeType" title="otx.api.entities.shapes.shape.ShapeType"><span class="pre">ShapeType</span></a></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeEntity.type" title="Permalink to this definition">#</a></dt>
 <dd><p>Get the type of Shape that this Shape represents.</p>
 </dd></dl>
 
@@ -1107,21 +1109,21 @@ needs to be normalized to the roi (bounding boxes) coming from the detection.</p
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeType">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">ShapeType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.shapes.shape.</span></span><span class="sig-name descname"><span class="pre">ShapeType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType" title="Permalink to this definition">#</a></dt>
 <dd><p>Shows which type of Shape is being used.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeType.ELLIPSE">
-<span class="sig-name descname"><span class="pre">ELLIPSE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType.ELLIPSE" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ELLIPSE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType.ELLIPSE" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeType.POLYGON">
-<span class="sig-name descname"><span class="pre">POLYGON</span></span><em class="property"> <span class="pre">=</span> <span class="pre">3</span></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType.POLYGON" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">POLYGON</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType.POLYGON" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.entities.shapes.shape.ShapeType.RECTANGLE">
-<span class="sig-name descname"><span class="pre">RECTANGLE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType.RECTANGLE" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">RECTANGLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#otx.api.entities.shapes.shape.ShapeType.RECTANGLE" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1159,6 +1161,455 @@ needs to be normalized to the roi (bounding boxes) coming from the detection.</p
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Ellipse
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.denormalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.denormalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.get_area">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.get_area()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.get_evenly_distributed_ellipse_coordinates">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.get_evenly_distributed_ellipse_coordinates()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.height">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.height
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.major_axis">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.major_axis
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.minor_axis">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.minor_axis
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.normalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.normalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.width">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.width
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.x_center">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.x_center
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.ellipse.Ellipse.y_center">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Ellipse.y_center
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Point">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Point
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Point.denormalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Point.denormalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Point.normalize_wrt_roi">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Point.normalize_wrt_roi()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Point.x">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Point.x
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Point.y">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Point.y
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Polygon">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Polygon
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Polygon.denormalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Polygon.denormalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Polygon.get_area">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Polygon.get_area()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.polygon.Polygon.normalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Polygon.normalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Rectangle
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.clip_to_visible_region">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.clip_to_visible_region()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.crop_numpy_array">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.crop_numpy_array()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.denormalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.denormalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.diagonal">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.diagonal
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.generate_full_box">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.generate_full_box()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.get_area">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.get_area()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.height">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.height
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.is_full_box">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.is_full_box()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.normalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.normalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.rectangle.Rectangle.width">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Rectangle.width
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.GeometryException">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     GeometryException
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.Shape">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Shape
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.Shape.contains_center">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Shape.contains_center()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.Shape.get_area">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Shape.get_area()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.Shape.intersects">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Shape.intersects()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeEntity">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ShapeEntity
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeEntity.contains_center">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeEntity.contains_center()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeEntity.denormalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeEntity.denormalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeEntity.get_area">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeEntity.get_area()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeEntity.intersects">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeEntity.intersects()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeEntity.normalize_wrt_roi_shape">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeEntity.normalize_wrt_roi_shape()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeEntity.type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeEntity.type
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeType">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ShapeType
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeType.ELLIPSE">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeType.ELLIPSE
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeType.POLYGON">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeType.POLYGON
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.shapes.shape.ShapeType.RECTANGLE">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ShapeType.RECTANGLE
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -1223,7 +1674,7 @@ needs to be normalized to the roi (bounding boxes) coming from the detection.</p
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

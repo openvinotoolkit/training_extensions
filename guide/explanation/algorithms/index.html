@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Algorithms &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/algorithms/index';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Classification" href="classification/index.html" />
     <link rel="prev" title="Simple HPO Tutorial" href="../../tutorials/advanced/hpo_tutorial.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,14 +472,14 @@
             <article class="bd-article" role="main">
               
   <section id="algorithms">
-<h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">#</a></h1>
+<h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this heading">#</a></h1>
 <p id="algo-section-ref">OpenVINO™ Training Extensions supports different training types to solve a variety of computer vision problems. This section provides what exactly we utilize inside our algorithms providing an end-to-end solution to solve real-life computer vision problems.</p>
 <p>To this end, we support:</p>
 <ul class="simple">
 <li><p><strong>Supervised training</strong>. This is the most common approach for computer vision tasks such as object detection and image classification. Supervised learning involves training a model on a labeled dataset of images. The model learns to associate specific features in the images with the corresponding labels.</p></li>
 <li><p><strong>Incremental learning</strong>. This learning approach lets the model train on new data as it becomes available, rather than retraining the entire model on the whole dataset every time new data is added. OpenVINO™ Training Extensions supports also the class incremental approach for all tasks. In this approach, the model is first trained on a set of classes, and then incrementally updated with new classes of data, while keeping the previously learned classes’ knowledge. The class incremental approach is particularly useful in situations where the number of classes is not fixed and new classes may be added over time.</p></li>
 </ul>
-<ul class="simple">
+<ul class="simple" id="semi-sl-explanation">
 <li><p><strong>Semi-supervised learning</strong>.  This is a type of machine learning in which the model is trained on a dataset that contains a combination of labeled and unlabeled examples. The labeled examples are used to train the model, while the unlabeled examples are used to improve the model’s performance by providing additional information about the underlying distribution of the data. This approach is often used when there is a limited amount of labeled data available, but a large amount of unlabeled data. This can make it more cost-effective and efficient to train models compared to traditional supervised learning, where the model is trained only on labeled data.</p></li>
 <li><p><strong>Self-supervised learning</strong>. This is a type of machine learning where the model is trained on a dataset that contains only unlabeled examples. The model is trained to learn useful representations of the data by solving a task that can be inferred from the input itself, without human-provided labels. The objective is to learn good representations of the input data that can then be used for downstream tasks such as classification, detection, generation or clustering.</p></li>
 </ul>
@@ -603,7 +605,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

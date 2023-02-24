@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Interfaces &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/api/entities/interfaces';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Usecases" href="../usecases/index.html" />
     <link rel="prev" title="Shapes" href="shapes.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,76 +472,76 @@
             <article class="bd-article" role="main">
               
   <section id="module-otx.api.entities.interfaces.graph_interface">
-<span id="interfaces"></span><h1>Interfaces<a class="headerlink" href="#module-otx.api.entities.interfaces.graph_interface" title="Permalink to this headline">#</a></h1>
+<span id="interfaces"></span><h1>Interfaces<a class="headerlink" href="#module-otx.api.entities.interfaces.graph_interface" title="Permalink to this heading">#</a></h1>
 <p>This module implements the Graph interface.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.interfaces.graph_interface.</span></span><span class="sig-name descname"><span class="pre">IGraph</span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.interfaces.graph_interface.</span></span><span class="sig-name descname"><span class="pre">IGraph</span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph" title="Permalink to this definition">#</a></dt>
 <dd><p>This interface describes how the interface of the Graph looks like.</p>
 <p>This interface is used to represent the TaskGraph inside project as well as the label tree inside LabelSchema</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.add_edge">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.add_edge" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.add_edge" title="Permalink to this definition">#</a></dt>
 <dd><p>Add an edge between node1 and node2.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.add_node">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.add_node" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.add_node" title="Permalink to this definition">#</a></dt>
 <dd><p>Add node to the graph.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.edges">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="pre">:</span> <span class="pre">networkx.classes.reportviews.OutMultiEdgeView</span></em><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.edges" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">OutMultiEdgeView</span></em><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.edges" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the edges in the Graph.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.find_cliques">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">find_cliques</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_cliques" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_cliques</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_cliques" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns cliques in the graph.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.find_in_edges">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">find_in_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.reportviews.InMultiEdgeView</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_in_edges" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_in_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">InMultiEdgeView</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_in_edges" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the edges coming in to the node.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.find_out_edges">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">find_out_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">networkx.classes.reportviews.OutMultiEdgeView</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_out_edges" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_out_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">OutMultiEdgeView</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_out_edges" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the edges coming out of the node.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.has_edge_between">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">has_edge_between</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.has_edge_between" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_edge_between</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.has_edge_between" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns whether there is an edge between <cite>node1</cite> and <cite>node2</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.neighbors">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">neighbors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.neighbors" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">neighbors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.neighbors" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns neighbors of <cite>node</cite>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.nodes">
-<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">nodes</span></span><em class="property"><span class="pre">:</span> <span class="pre">networkx.classes.reportviews.NodeView</span></em><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.nodes" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nodes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">NodeView</span></em><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.nodes" title="Permalink to this definition">#</a></dt>
 <dd><p>Return nodes in the graph.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.num_nodes">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">num_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.num_nodes" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.num_nodes" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns number of nodes.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.interfaces.graph_interface.IGraph.remove_edges">
-<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">remove_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.remove_edges" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.api.entities.interfaces.graph_interface.IGraph.remove_edges" title="Permalink to this definition">#</a></dt>
 <dd><p>Removes the edges between two nodes.</p>
 </dd></dl>
 
@@ -578,6 +580,128 @@
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IGraph
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.add_edge">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.add_edge()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.add_node">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.add_node()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.edges">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.edges
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_cliques">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.find_cliques()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_in_edges">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.find_in_edges()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.find_out_edges">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.find_out_edges()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.has_edge_between">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.has_edge_between()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.neighbors">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.neighbors()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.nodes">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.nodes
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.num_nodes">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.num_nodes()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.interfaces.graph_interface.IGraph.remove_edges">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IGraph.remove_edges()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -642,7 +766,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

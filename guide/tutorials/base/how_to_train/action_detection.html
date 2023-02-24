@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Action Detection model &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/base/how_to_train/action_detection';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="How to run the demonstration mode with OpenVINO™ Training Extensions CLI" href="../demo.html" />
     <link rel="prev" title="Action Classification model" href="action_classification.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="action-detection-model">
-<h1>Action Detection  model<a class="headerlink" href="#action-detection-model" title="Permalink to this headline">#</a></h1>
+<h1>Action Detection  model<a class="headerlink" href="#action-detection-model" title="Permalink to this heading">#</a></h1>
 <p>This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of <a class="reference external" href="http://jhmdb.is.tue.mpg.de/">JHMDB</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -484,11 +486,11 @@
 <li><p>CUDA Toolkit 11.1</p></li>
 </ul>
 <section id="setup-virtual-environment">
-<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
+<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this heading">#</a></h2>
 <p>You can follow the installation process from a <a class="reference internal" href="../../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a> to create a universal virtual environment for OpenVINO™ Training Extensions.</p>
 </section>
 <section id="dataset-preparation">
-<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this headline">#</a></h2>
+<h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
 <p>Although we offer conversion codes from <a class="reference external" href="https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md">ava dataset format</a> to <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">cvat dataset format</a> from <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py">this code</a>, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from <a class="reference external" href="https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link">this link</a>.</p>
 <p>If you download data from link and extract to training_extensions/data folder(you should make data folder at first), you can see the structure below.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>training_extensions
@@ -510,7 +512,7 @@
 </div>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">#</a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
 <p>1. First of all, we need to choose which action detection model will we train.
 The list of supported templates for action detection is available with the command line below.</p>
 <div class="admonition note">
@@ -521,12 +523,6 @@ The list of supported templates for action detection is available with the comma
 </pre></div>
 </div>
 <table class="table">
-<colgroup>
-<col style="width: 13%" />
-<col style="width: 28%" />
-<col style="width: 11%" />
-<col style="width: 49%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>TASK</p></td>
 <td><p>ID</p></td>
@@ -567,7 +563,7 @@ command in our worspace:</p>
 <p>After that, we have the PyTorch action detection model trained with OpenVINO™ Training Extensions.</p>
 </section>
 <section id="validation">
-<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">#</a></h2>
+<h2>Validation<a class="headerlink" href="#validation" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs evaluation of a trained
 model on a specific dataset.</p>
 <p>The eval function receives test annotation information and model snapshot, trained in the previous step.
@@ -728,7 +724,7 @@ and save performance results in <code class="docutils literal notranslate"><span
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

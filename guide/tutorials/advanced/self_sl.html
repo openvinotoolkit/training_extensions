@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Use Self-Supervised Learning &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/tutorials/advanced/self_sl';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Backbone Replacement" href="backbones.html" />
     <link rel="prev" title="Use Semi-Supervised Learning" href="semi_sl.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,7 +472,7 @@
             <article class="bd-article" role="main">
               
   <section id="use-self-supervised-learning">
-<h1>Use Self-Supervised Learning<a class="headerlink" href="#use-self-supervised-learning" title="Permalink to this headline">#</a></h1>
+<h1>Use Self-Supervised Learning<a class="headerlink" href="#use-self-supervised-learning" title="Permalink to this heading">#</a></h1>
 <p>This tutorial introduces how to train a model using self-supervised learning and fine-tune the model with pre-trained weights.
 OpenVINO™ Training Extensions provides self-supervised learning methods for <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html"><span class="doc">multi-classification</span></a> and <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html"><span class="doc">semantic segmentation</span></a>.</p>
 <p>The process has been tested on the following configuration.</p>
@@ -486,11 +488,11 @@ OpenVINO™ Training Extensions provides self-supervised learning methods for <a
 There are some differences between classfication and semantic segmentation, so there will be some notes for <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html#selfsl-semantic-segmentation"><span class="std std-ref">self-supervised learning for semantic segmentation</span></a>.</p>
 </div>
 <section id="setup-virtual-environment">
-<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this headline">#</a></h2>
+<h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this heading">#</a></h2>
 <p>To create a universal virtual environment for OpenVINO™ Training Extensions, please follow the installation process in the <a class="reference internal" href="../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a>.</p>
 </section>
 <section id="pre-training">
-<h2>Pre-training<a class="headerlink" href="#pre-training" title="Permalink to this headline">#</a></h2>
+<h2>Pre-training<a class="headerlink" href="#pre-training" title="Permalink to this heading">#</a></h2>
 <ol class="arabic simple">
 <li><p>Prepare dataset and model. To prepare dataset and decide model, refer to <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a>. In this self-supervised learning tutorial, <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a> and <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html#classificaiton-models"><span class="std std-ref">MobileNet-V3-large-1x</span></a> model used in <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a> is used as it is.</p></li>
 <li><p>Prepare OpenVINO™ Training Extensions workspace for <em>supervised learning</em> by running the following command:</p></li>
@@ -604,7 +606,7 @@ Final model performance will be set to -1, but it doesn’t matter because self-
 Let’s see how to fine-tune the model using pre-trained weights below.</p>
 </section>
 <section id="fine-tuning">
-<h2>Fine-tuning<a class="headerlink" href="#fine-tuning" title="Permalink to this headline">#</a></h2>
+<h2>Fine-tuning<a class="headerlink" href="#fine-tuning" title="Permalink to this heading">#</a></h2>
 <p>After pre-training progress, start fine-tuning by calling the below command with adding <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> argument in supervised learning workspace.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ cd ../otx-workspace-CLASSIFICATION
 (otx) ...$ otx train --load-weights ../otx-workspace-CLASSIFICATION-SELFSUPERVISED/models/weights.pth
@@ -762,7 +764,7 @@ You can check performance improvement examples in <a class="reference internal" 
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

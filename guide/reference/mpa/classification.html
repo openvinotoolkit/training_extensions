@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Classification &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/mpa/classification';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Detection" href="detection.html" />
     <link rel="prev" title="Utils" href="modules/utils.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,15 +472,15 @@
             <article class="bd-article" role="main">
               
   <section id="classification">
-<h1>Classification<a class="headerlink" href="#classification" title="Permalink to this headline">#</a></h1>
+<h1>Classification<a class="headerlink" href="#classification" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-otx.mpa.cls"></span><span class="target" id="module-otx.mpa.cls.exporter"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.exporter.ClsExporter">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.exporter.</span></span><span class="sig-name descname"><span class="pre">ClsExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.exporter.ClsExporter" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.exporter.</span></span><span class="sig-name descname"><span class="pre">ClsExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.exporter.ClsExporter" title="Permalink to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.exporter.ClsExporter.naive_export">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">naive_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_builder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.exporter.ClsExporter.naive_export" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naive_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_builder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.exporter.ClsExporter.naive_export" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -491,7 +493,7 @@
 
 <span class="target" id="module-otx.mpa.cls.inferrer"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.inferrer.ClsInferrer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.inferrer.</span></span><span class="sig-name descname"><span class="pre">ClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.inferrer.ClsInferrer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.inferrer.</span></span><span class="sig-name descname"><span class="pre">ClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.inferrer.ClsInferrer" title="Permalink to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.inferrer.ClsInferrer.infer">
 <span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_builder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_saliency_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.inferrer.ClsInferrer.infer" title="Permalink to this definition">#</a></dt>
@@ -512,10 +514,10 @@
 
 <span class="target" id="module-otx.mpa.cls.stage"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.stage.ClsStage">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.stage.</span></span><span class="sig-name descname"><span class="pre">ClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.stage.</span></span><span class="sig-name descname"><span class="pre">ClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage" title="Permalink to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.stage.ClsStage.MODEL_BUILDER">
-<span class="sig-name descname"><span class="pre">MODEL_BUILDER</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">torch.device</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg_options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">mmcv.utils.config.Config</span><span class="p"><span class="pre">,</span> </span><span class="pre">mmcv.utils.config.ConfigDict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_scratch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.nn.modules.module.Module</span></span></span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage.MODEL_BUILDER" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">MODEL_BUILDER</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">device</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Config</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_scratch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Module</span></span></span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage.MODEL_BUILDER" title="Permalink to this definition">#</a></dt>
 <dd><p>A builder function for mmcls model.</p>
 <p>Creates a model, based on the configuration in config.
 Note that this function updates ‘load_from’ attribute of ‘config’.</p>
@@ -548,7 +550,7 @@ Replace cfg.resume_from to cfg.load_from</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.stage.ClsStage.configure_in_channel">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">configure_in_channel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage.configure_in_channel" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configure_in_channel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage.configure_in_channel" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -563,14 +565,14 @@ Replace cfg.resume_from to cfg.load_from</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.stage.ClsStage.configure_topk">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">configure_topk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage.configure_topk" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configure_topk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.stage.ClsStage.configure_topk" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <span class="target" id="module-otx.mpa.cls.trainer"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.trainer.ClsTrainer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.trainer.</span></span><span class="sig-name descname"><span class="pre">ClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.trainer.ClsTrainer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.trainer.</span></span><span class="sig-name descname"><span class="pre">ClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.trainer.ClsTrainer" title="Permalink to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.trainer.ClsTrainer.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_ckpt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_cfg</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.trainer.ClsTrainer.run" title="Permalink to this definition">#</a></dt>
@@ -586,22 +588,22 @@ Replace cfg.resume_from to cfg.load_from</p>
 
 <span class="target" id="module-otx.mpa.cls.incremental"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.incremental.IncrClsInferrer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.</span></span><span class="sig-name descname"><span class="pre">IncrClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.IncrClsInferrer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.</span></span><span class="sig-name descname"><span class="pre">IncrClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.IncrClsInferrer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.incremental.IncrClsTrainer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.</span></span><span class="sig-name descname"><span class="pre">IncrClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.IncrClsTrainer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.</span></span><span class="sig-name descname"><span class="pre">IncrClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.IncrClsTrainer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <span class="target" id="module-otx.mpa.cls.incremental.inferrer"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.incremental.inferrer.IncrClsInferrer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.inferrer.</span></span><span class="sig-name descname"><span class="pre">IncrClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.inferrer.IncrClsInferrer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.inferrer.</span></span><span class="sig-name descname"><span class="pre">IncrClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.inferrer.IncrClsInferrer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <span class="target" id="module-otx.mpa.cls.incremental.stage"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.incremental.stage.IncrClsStage">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.stage.</span></span><span class="sig-name descname"><span class="pre">IncrClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.stage.IncrClsStage" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.stage.</span></span><span class="sig-name descname"><span class="pre">IncrClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.stage.IncrClsStage" title="Permalink to this definition">#</a></dt>
 <dd><p>Patch config to support incremental learning for object Cls</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.incremental.stage.IncrClsStage.configure_loss">
@@ -634,17 +636,17 @@ Replace cfg.resume_from to cfg.load_from</p>
 
 <span class="target" id="module-otx.mpa.cls.incremental.trainer"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.incremental.trainer.IncrClsTrainer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.trainer.</span></span><span class="sig-name descname"><span class="pre">IncrClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.trainer.IncrClsTrainer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.incremental.trainer.</span></span><span class="sig-name descname"><span class="pre">IncrClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.incremental.trainer.IncrClsTrainer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <span class="target" id="module-otx.mpa.cls.semisl"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.SemiSLClsInferrer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.SemiSLClsInferrer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.SemiSLClsInferrer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.SemiSLClsStage">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.SemiSLClsStage" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.SemiSLClsStage" title="Permalink to this definition">#</a></dt>
 <dd><p>Patch config to support semi supervised learning for object Cls</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.SemiSLClsStage.configure_data">
@@ -656,17 +658,17 @@ Replace cfg.resume_from to cfg.load_from</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.SemiSLClsTrainer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.SemiSLClsTrainer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.SemiSLClsTrainer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <span class="target" id="module-otx.mpa.cls.semisl.inferrer"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.inferrer.SemiSLClsInferrer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.inferrer.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.inferrer.SemiSLClsInferrer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.inferrer.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.inferrer.SemiSLClsInferrer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <span class="target" id="module-otx.mpa.cls.semisl.stage"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.stage.SemiSLClsStage">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.stage.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.stage.SemiSLClsStage" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.stage.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsStage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.stage.SemiSLClsStage" title="Permalink to this definition">#</a></dt>
 <dd><p>Patch config to support semi supervised learning for object Cls</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.stage.SemiSLClsStage.configure_data">
@@ -678,7 +680,7 @@ Replace cfg.resume_from to cfg.load_from</p>
 
 <span class="target" id="module-otx.mpa.cls.semisl.trainer"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.cls.semisl.trainer.SemiSLClsTrainer">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.trainer.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.trainer.SemiSLClsTrainer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.cls.semisl.trainer.</span></span><span class="sig-name descname"><span class="pre">SemiSLClsTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.cls.semisl.trainer.SemiSLClsTrainer" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -714,6 +716,356 @@ Replace cfg.resume_from to cfg.load_from</p>
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.exporter.ClsExporter">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ClsExporter
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.exporter.ClsExporter.naive_export">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsExporter.naive_export()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.exporter.ClsExporter.run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsExporter.run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.inferrer.ClsInferrer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ClsInferrer
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.inferrer.ClsInferrer.infer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsInferrer.infer()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.inferrer.ClsInferrer.run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsInferrer.run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ClsStage
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.MODEL_BUILDER">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.MODEL_BUILDER()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure_ckpt">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure_ckpt()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure_classes">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure_classes()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure_data">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure_data()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure_in_channel">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure_in_channel()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure_task">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure_task()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.stage.ClsStage.configure_topk">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsStage.configure_topk()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.trainer.ClsTrainer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ClsTrainer
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.trainer.ClsTrainer.run">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ClsTrainer.run()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.IncrClsInferrer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IncrClsInferrer
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.IncrClsTrainer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IncrClsTrainer
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.inferrer.IncrClsInferrer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IncrClsInferrer
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.stage.IncrClsStage">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IncrClsStage
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.stage.IncrClsStage.configure_loss">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IncrClsStage.configure_loss()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.stage.IncrClsStage.configure_task">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IncrClsStage.configure_task()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.stage.IncrClsStage.configure_task_adapt">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IncrClsStage.configure_task_adapt()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.stage.IncrClsStage.configure_task_modules">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IncrClsStage.configure_task_modules()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.stage.IncrClsStage.refine_classes">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       IncrClsStage.refine_classes()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.incremental.trainer.IncrClsTrainer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     IncrClsTrainer
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.SemiSLClsInferrer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsInferrer
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.SemiSLClsStage">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsStage
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.SemiSLClsStage.configure_data">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsStage.configure_data()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.SemiSLClsTrainer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsTrainer
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.inferrer.SemiSLClsInferrer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsInferrer
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.stage.SemiSLClsStage">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsStage
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.stage.SemiSLClsStage.configure_data">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SemiSLClsStage.configure_data()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.mpa.cls.semisl.trainer.SemiSLClsTrainer">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     SemiSLClsTrainer
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -778,7 +1130,7 @@ Replace cfg.resume_from to cfg.load_from</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

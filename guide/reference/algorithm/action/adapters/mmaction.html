@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>mmaction &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
     <script src="../../../../../_static/jquery.js"></script>
     <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/clipboard.min.js"></script>
     <script src="../../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/algorithm/action/adapters/mmaction';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="openvino" href="openvino.html" />
     <link rel="prev" title="Adapters" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,19 +472,19 @@
             <article class="bd-article" role="main">
               
   <section id="mmaction">
-<h1>mmaction<a class="headerlink" href="#mmaction" title="Permalink to this headline">#</a></h1>
+<h1>mmaction<a class="headerlink" href="#mmaction" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-otx.algorithms.action.adapters.mmaction.data"></span><p>OTX Algorithms - Action Classification Dataset.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.data.</span></span><span class="sig-name descname"><span class="pre">OTXActionClsDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'RGB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.data.</span></span><span class="sig-name descname"><span class="pre">OTXActionClsDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'RGB'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset" title="Permalink to this definition">#</a></dt>
 <dd><p>Wrapper that allows using a OTX dataset to train mmaction models.</p>
 <p>This wrapper is not based on the filesystem,
 but instead loads the items here directly from the OTX DatasetEntity object.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_test_frames">
-<span class="sig-name descname"><span class="pre">prepare_test_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_test_frames" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">prepare_test_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_test_frames" title="Permalink to this definition">#</a></dt>
 <dd><p>Get testing data after pipeline.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>idx (int): Index of data</p>
@@ -492,7 +494,7 @@ but instead loads the items here directly from the OTX DatasetEntity object.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_train_frames">
-<span class="sig-name descname"><span class="pre">prepare_train_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_train_frames" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">prepare_train_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_train_frames" title="Permalink to this definition">#</a></dt>
 <dd><p>Get training data and annotations after pipeline.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>idx (int): Index of data</p>
@@ -504,20 +506,20 @@ but instead loads the items here directly from the OTX DatasetEntity object.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.data.</span></span><span class="sig-name descname"><span class="pre">OTXActionDetDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">person_det_score_thr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_max_proposals</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.data.</span></span><span class="sig-name descname"><span class="pre">OTXActionDetDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">otx_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">person_det_score_thr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_max_proposals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'RGB'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset" title="Permalink to this definition">#</a></dt>
 <dd><p>Wrapper that allows using a OTX dataset to train action detection models.</p>
 <p>This wrapper is not based on the filesystem,
 but instead loads the items here directly from the OTX DatasetEntity object.
 It is adapted from AVADataset of mmaction, but it supports other dataset such as UCF and JHMDB.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">('mAP',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">logging.Logger</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.evaluate" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('mAP',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Logger</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.evaluate" title="Permalink to this definition">#</a></dt>
 <dd><p>Evaluate the prediction results and report mAP.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_test_frames">
-<span class="sig-name descname"><span class="pre">prepare_test_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_test_frames" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">prepare_test_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_test_frames" title="Permalink to this definition">#</a></dt>
 <dd><p>Get testing data after pipeline.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>idx (int): Index of data</p>
@@ -527,7 +529,7 @@ It is adapted from AVADataset of mmaction, but it supports other dataset such as
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_train_frames">
-<span class="sig-name descname"><span class="pre">prepare_train_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_train_frames" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">prepare_train_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_train_frames" title="Permalink to this definition">#</a></dt>
 <dd><p>Get training data and annotations after pipeline.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>idx (int): Index of data</p>
@@ -539,11 +541,11 @@ It is adapted from AVADataset of mmaction, but it supports other dataset such as
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.RawFrameDecode">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.data.</span></span><span class="sig-name descname"><span class="pre">RawFrameDecode</span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.RawFrameDecode" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.data.</span></span><span class="sig-name descname"><span class="pre">RawFrameDecode</span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.RawFrameDecode" title="Permalink to this definition">#</a></dt>
 <dd><p>Load and decode frames with given indices.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.data.RawFrameDecode.otx_dataset">
-<span class="sig-name descname"><span class="pre">otx_dataset</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.RawFrameDecode.otx_dataset" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">otx_dataset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.data.RawFrameDecode.otx_dataset" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -551,7 +553,7 @@ It is adapted from AVADataset of mmaction, but it supports other dataset such as
 <span class="target" id="module-otx.algorithms.action.adapters.mmaction.models"></span><p>OTX Adapters for action recognition models - mmaction2.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.models.</span></span><span class="sig-name descname"><span class="pre">AVAFastRCNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi_head</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neck</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.models.</span></span><span class="sig-name descname"><span class="pre">AVAFastRCNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi_head</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neck</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN" title="Permalink to this definition">#</a></dt>
 <dd><p>Implementation of <cite>Fast R-CNN</cite> for Action Detection.</p>
 <p>Add forward_infer function for inference without pre-proposals</p>
 <dl class="py method">
@@ -580,14 +582,14 @@ This funciton changes those pooling functions from dynamic shaping to static sha
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.training" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.training" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVARoIHead">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.models.</span></span><span class="sig-name descname"><span class="pre">AVARoIHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox_roi_extractor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_roi_extractor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.models.</span></span><span class="sig-name descname"><span class="pre">AVARoIHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox_roi_extractor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_roi_extractor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shared_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead" title="Permalink to this definition">#</a></dt>
 <dd><p>AVARoIHead for OTX.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVARoIHead.simple_test">
@@ -597,7 +599,7 @@ This funciton changes those pooling functions from dynamic shaping to static sha
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVARoIHead.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead.training" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead.training" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -617,25 +619,25 @@ This funciton changes those pooling functions from dynamic shaping to static sha
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.export_model">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">export_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.runner.base_module.BaseModule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onnx_model_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.export_model" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">export_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseModule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onnx_model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.export_model" title="Permalink to this definition">#</a></dt>
 <dd><p>Export PyTorch model into OpenVINO model.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.patch_config">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">patch_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_pipeline_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.model_template.TaskType" title="otx.api.entities.model_template.TaskType"><span class="pre">otx.api.entities.model_template.TaskType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.patch_config" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">patch_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_pipeline_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.model_template.TaskType" title="otx.api.entities.model_template.TaskType"><span class="pre">TaskType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.patch_config" title="Permalink to this definition">#</a></dt>
 <dd><p>Patch recipe config suitable to mmaction.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.prepare_for_training">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">prepare_for_training</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">mmcv.utils.config.Config</span><span class="p"><span class="pre">,</span> </span><span class="pre">mmcv.utils.config.ConfigDict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_monitor</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback" title="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><span class="pre">otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_curves</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">collections.defaultdict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">mmcv.utils.config.Config</span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.prepare_for_training" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">prepare_for_training</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Config</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_monitor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/usecases/reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback" title="otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><span class="pre">TimeMonitorCallback</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_curves</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">defaultdict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Config</span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.prepare_for_training" title="Permalink to this definition">#</a></dt>
 <dd><p>Prepare configs for training phase.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.set_data_classes">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">set_data_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">mmcv.utils.config.Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.model_template.TaskType" title="otx.api.entities.model_template.TaskType"><span class="pre">otx.api.entities.model_template.TaskType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.set_data_classes" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">set_data_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.model_template.TaskType" title="otx.api.entities.model_template.TaskType"><span class="pre">TaskType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.set_data_classes" title="Permalink to this definition">#</a></dt>
 <dd><p>Setter data classes into config.</p>
 </dd></dl>
 
@@ -672,6 +674,235 @@ This funciton changes those pooling functions from dynamic shaping to static sha
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OTXActionClsDataset
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_test_frames">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXActionClsDataset.prepare_test_frames()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionClsDataset.prepare_train_frames">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXActionClsDataset.prepare_train_frames()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     OTXActionDetDataset
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.evaluate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXActionDetDataset.evaluate()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_test_frames">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXActionDetDataset.prepare_test_frames()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.OTXActionDetDataset.prepare_train_frames">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXActionDetDataset.prepare_train_frames()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.RawFrameDecode">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     RawFrameDecode
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.data.RawFrameDecode.otx_dataset">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       RawFrameDecode.otx_dataset
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AVAFastRCNN
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.add_detector">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AVAFastRCNN.add_detector()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.forward_infer">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AVAFastRCNN.forward_infer()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.patch_pools">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AVAFastRCNN.patch_pools()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.training">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AVAFastRCNN.training
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     AVARoIHead
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead.simple_test">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AVARoIHead.simple_test()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead.training">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AVARoIHead.training
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.register_action_backbones">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     register_action_backbones()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.det_eval">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     det_eval()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.export_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     export_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.patch_config">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     patch_config()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.prepare_for_training">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     prepare_for_training()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.set_data_classes">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     set_data_classes()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
@@ -736,7 +967,7 @@ This funciton changes those pooling functions from dynamic shaping to static sha
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

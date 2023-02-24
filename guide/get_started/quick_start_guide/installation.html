@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Installation &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/get_started/quick_start_guide/installation';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="OpenVINO™ Training Extensions CLI commands" href="cli_commands.html" />
     <link rel="prev" title="Quick Start Guide" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,9 +472,9 @@
             <article class="bd-article" role="main">
               
   <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h1>
 <section id="prerequisites">
-<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">#</a></h2>
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading">#</a></h2>
 <p>The current version of OpenVINO™ Training Extensions was tested under the following environment:</p>
 <ul class="simple">
 <li><p>Ubuntu 20.04</p></li>
@@ -486,7 +488,7 @@
 </div>
 </section>
 <section id="install-openvino-training-extensions-for-users">
-<h2>Install OpenVINO™ Training Extensions for users<a class="headerlink" href="#install-openvino-training-extensions-for-users" title="Permalink to this headline">#</a></h2>
+<h2>Install OpenVINO™ Training Extensions for users<a class="headerlink" href="#install-openvino-training-extensions-for-users" title="Permalink to this heading">#</a></h2>
 <p>1. Clone the training_extensions
 repository with the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">openvinotoolkit</span><span class="o">/</span><span class="n">training_extensions</span><span class="o">.</span><span class="n">git</span>
@@ -531,7 +533,7 @@ OpenVINO™ Training Extensions package</p>
 <cite>otx</cite> command line functionality.</p>
 </section>
 <section id="install-openvino-training-extensions-for-developers">
-<h2>Install OpenVINO™ Training Extensions for developers<a class="headerlink" href="#install-openvino-training-extensions-for-developers" title="Permalink to this headline">#</a></h2>
+<h2>Install OpenVINO™ Training Extensions for developers<a class="headerlink" href="#install-openvino-training-extensions-for-developers" title="Permalink to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">tox</span></code> and create a development environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">tox</span>
 <span class="c1"># -- need to fix &#39;38&#39; in tox.ini if another python version needed</span>
@@ -542,13 +544,13 @@ OpenVINO™ Training Extensions package</p>
 <p>Then you may change code and all fixes will be directly applied to the editable package</p>
 </section>
 <section id="run-unit-tests">
-<h2>Run unit tests<a class="headerlink" href="#run-unit-tests" title="Permalink to this headline">#</a></h2>
+<h2>Run unit tests<a class="headerlink" href="#run-unit-tests" title="Permalink to this heading">#</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="n">tests</span><span class="o">/</span><span class="n">unit</span>
 </pre></div>
 </div>
 </section>
 <section id="troubleshooting">
-<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">#</a></h2>
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">#</a></h2>
 <p>1. If you have problems when you try to use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> command,
 please update pip version by following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pip</span>
@@ -699,7 +701,7 @@ please use pip with proxy call as demonstrated by command below:</p>
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

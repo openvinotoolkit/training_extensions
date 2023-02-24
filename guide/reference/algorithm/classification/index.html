@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Classification &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/algorithm/classification/index';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Adapters" href="adapters/index.html" />
     <link rel="prev" title="Tools" href="../anomaly/tools.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,25 +472,61 @@
             <article class="bd-article" role="main">
               
   <section id="classification">
-<h1>Classification<a class="headerlink" href="#classification" title="Permalink to this headline">#</a></h1>
+<h1>Classification<a class="headerlink" href="#classification" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="adapters/index.html">Adapters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="adapters/mmcls.html">mmclassification</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="adapters/mmcls.html">mmclassification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.BYOL"><code class="docutils literal notranslate"><span class="pre">BYOL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.ConstrastiveHead"><code class="docutils literal notranslate"><span class="pre">ConstrastiveHead</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.OTXClsDataset"><code class="docutils literal notranslate"><span class="pre">OTXClsDataset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.SelfSLDataset"><code class="docutils literal notranslate"><span class="pre">SelfSLDataset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.SelfSLMLP"><code class="docutils literal notranslate"><span class="pre">SelfSLMLP</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="adapters/openvino.html">openvino</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="adapters/openvino.html">openvino</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters/openvino.html#otx.algorithms.classification.adapters.openvino.model_wrappers.OTXClassification"><code class="docutils literal notranslate"><span class="pre">OTXClassification</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="configs.html">Configs</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="configs.html">Configs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configs.html#otx.algorithms.classification.configs.ClassificationConfig"><code class="docutils literal notranslate"><span class="pre">ClassificationConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.classification.configs.ClassificationConfig.id"><code class="docutils literal notranslate"><span class="pre">ClassificationConfig.id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="configs.html#otx.algorithms.classification.configs.ClassificationConfig.type"><code class="docutils literal notranslate"><span class="pre">ClassificationConfig.type</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.evaluate"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.explain"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.explain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.export"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.export()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.infer"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.infer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.unload"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.unload()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationNNCFTask"><code class="docutils literal notranslate"><span class="pre">ClassificationNNCFTask</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.deploy"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.deploy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.evaluate"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.explain"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.explain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.infer"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.infer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.load_inferencer"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.load_inferencer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.optimize"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.optimize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask.cancel_training"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask.cancel_training()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask.save_model"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask.save_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask.train"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask.train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#otx.algorithms.classification.utils.get_multihead_class_info"><code class="docutils literal notranslate"><span class="pre">get_multihead_class_info()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -590,7 +628,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>

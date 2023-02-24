@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Usecases &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=796348d33e8b1d947c94">
@@ -37,7 +37,9 @@
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
     <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/api/usecases/index';</script>
@@ -46,7 +48,7 @@
     <link rel="next" title="Adapters" href="adapters.html" />
     <link rel="prev" title="Interfaces" href="../entities/interfaces.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="docsearch:language" content="None">
+  <meta name="docsearch:language" content="en">
   </head>
   
   
@@ -99,8 +101,8 @@
   
 
   
-    <img src="../../../../_static/_static/logos/otx-logo-black.png" class="logo__image only-light" alt="Logo image">
-    <img src="../../../../_static/_static/logos/otx-logo-white.png" class="logo__image only-dark" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-light" alt="Logo image">
+    <img src="../../../../_static/logos/otx-logo.png" class="logo__image only-dark" alt="Logo image">
   
   
 </a>
@@ -470,18 +472,159 @@
             <article class="bd-article" role="main">
               
   <section id="module-otx.api.usecases">
-<span id="usecases"></span><h1>Usecases<a class="headerlink" href="#module-otx.api.usecases" title="Permalink to this headline">#</a></h1>
+<span id="usecases"></span><h1>Usecases<a class="headerlink" href="#module-otx.api.usecases" title="Permalink to this heading">#</a></h1>
 <p>Utilities and use cases built on top of OTX API.</p>
 <span class="target" id="module-otx.api.usecases.adapters"></span><p>Adapters.</p>
 <p>These connect datasource to OTX entities.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="adapters.html">Adapters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="evaluation.html">Evaluation</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="adapters.html">Adapters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adapters.html#otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter"><code class="docutils literal notranslate"><span class="pre">ExportableCodeAdapter</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="adapters.html#otx.api.usecases.adapters.model_adapter.IDataSource"><code class="docutils literal notranslate"><span class="pre">IDataSource</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters.html#otx.api.usecases.adapters.model_adapter.IDataSource.data"><code class="docutils literal notranslate"><span class="pre">IDataSource.data</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter"><code class="docutils literal notranslate"><span class="pre">ModelAdapter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter.data"><code class="docutils literal notranslate"><span class="pre">ModelAdapter.data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter.data_source"><code class="docutils literal notranslate"><span class="pre">ModelAdapter.data_source</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters.html#otx.api.usecases.adapters.model_adapter.ModelAdapter.from_file_storage"><code class="docutils literal notranslate"><span class="pre">ModelAdapter.from_file_storage</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="evaluation.html">Evaluation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.accuracy.Accuracy"><code class="docutils literal notranslate"><span class="pre">Accuracy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.accuracy.Accuracy.accuracy"><code class="docutils literal notranslate"><span class="pre">Accuracy.accuracy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.accuracy.Accuracy.get_performance"><code class="docutils literal notranslate"><span class="pre">Accuracy.get_performance()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset"><code class="docutils literal notranslate"><span class="pre">compute_unnormalized_confusion_matrices_from_resultset()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.accuracy.precision_metrics_group"><code class="docutils literal notranslate"><span class="pre">precision_metrics_group()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.accuracy.recall_metrics_group"><code class="docutils literal notranslate"><span class="pre">recall_metrics_group()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores"><code class="docutils literal notranslate"><span class="pre">AnomalyDetectionScores</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance"><code class="docutils literal notranslate"><span class="pre">AnomalyLocalizationPerformance</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.global_score"><code class="docutils literal notranslate"><span class="pre">AnomalyLocalizationPerformance.global_score</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationPerformance.local_score"><code class="docutils literal notranslate"><span class="pre">AnomalyLocalizationPerformance.local_score</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores"><code class="docutils literal notranslate"><span class="pre">AnomalyLocalizationScores</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalyLocalizationScores.get_performance"><code class="docutils literal notranslate"><span class="pre">AnomalyLocalizationScores.get_performance()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores"><code class="docutils literal notranslate"><span class="pre">AnomalySegmentationScores</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod"><code class="docutils literal notranslate"><span class="pre">MetricAverageMethod</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MACRO"><code class="docutils literal notranslate"><span class="pre">MetricAverageMethod.MACRO</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod.MICRO"><code class="docutils literal notranslate"><span class="pre">MetricAverageMethod.MICRO</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.basic_operations.NumberPerLabel"><code class="docutils literal notranslate"><span class="pre">NumberPerLabel</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros"><code class="docutils literal notranslate"><span class="pre">divide_arrays_with_possible_zeros()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities"><code class="docutils literal notranslate"><span class="pre">get_intersections_and_cardinalities()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.basic_operations.intersection_box"><code class="docutils literal notranslate"><span class="pre">intersection_box()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.basic_operations.intersection_over_union"><code class="docutils literal notranslate"><span class="pre">intersection_over_union()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.basic_operations.precision_per_class"><code class="docutils literal notranslate"><span class="pre">precision_per_class()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.basic_operations.recall_per_class"><code class="docutils literal notranslate"><span class="pre">recall_per_class()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage"><code class="docutils literal notranslate"><span class="pre">DiceAverage</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.compute_dice_using_intersection_and_cardinality"><code class="docutils literal notranslate"><span class="pre">DiceAverage.compute_dice_using_intersection_and_cardinality()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.dice_per_label"><code class="docutils literal notranslate"><span class="pre">DiceAverage.dice_per_label</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.get_performance"><code class="docutils literal notranslate"><span class="pre">DiceAverage.get_performance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.dice.DiceAverage.overall_dice"><code class="docutils literal notranslate"><span class="pre">DiceAverage.overall_dice</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure"><code class="docutils literal notranslate"><span class="pre">FMeasure</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold"><code class="docutils literal notranslate"><span class="pre">FMeasure.best_confidence_threshold</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold"><code class="docutils literal notranslate"><span class="pre">FMeasure.best_nms_threshold</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index"><code class="docutils literal notranslate"><span class="pre">FMeasure.box_class_index</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index"><code class="docutils literal notranslate"><span class="pre">FMeasure.box_score_index</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure"><code class="docutils literal notranslate"><span class="pre">FMeasure.f_measure</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence"><code class="docutils literal notranslate"><span class="pre">FMeasure.f_measure_per_confidence</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label"><code class="docutils literal notranslate"><span class="pre">FMeasure.f_measure_per_label</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms"><code class="docutils literal notranslate"><span class="pre">FMeasure.f_measure_per_nms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.FMeasure.get_performance"><code class="docutils literal notranslate"><span class="pre">FMeasure.get_performance()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union"><code class="docutils literal notranslate"><span class="pre">bounding_box_intersection_over_union()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.get_iou_matrix"><code class="docutils literal notranslate"><span class="pre">get_iou_matrix()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.get_n_false_negatives"><code class="docutils literal notranslate"><span class="pre">get_n_false_negatives()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.f_measure.intersection_box"><code class="docutils literal notranslate"><span class="pre">intersection_box()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper"><code class="docutils literal notranslate"><span class="pre">MetricsHelper</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_accuracy"><code class="docutils literal notranslate"><span class="pre">MetricsHelper.compute_accuracy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_detection_scores"><code class="docutils literal notranslate"><span class="pre">MetricsHelper.compute_anomaly_detection_scores()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_anomaly_segmentation_scores"><code class="docutils literal notranslate"><span class="pre">MetricsHelper.compute_anomaly_segmentation_scores()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_dice_averaged_over_pixels"><code class="docutils literal notranslate"><span class="pre">MetricsHelper.compute_dice_averaged_over_pixels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.metrics_helper.MetricsHelper.compute_f_measure"><code class="docutils literal notranslate"><span class="pre">MetricsHelper.compute_f_measure()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider"><code class="docutils literal notranslate"><span class="pre">IPerformanceProvider</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="evaluation.html#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider.get_performance"><code class="docutils literal notranslate"><span class="pre">IPerformanceProvider.get_performance()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="exportable_code.html">Exportable Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback"><code class="docutils literal notranslate"><span class="pre">Callback</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_batch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_batch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_epoch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_epoch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_batch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_batch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_test_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_batch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_batch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.on_train_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.set_model"><code class="docutils literal notranslate"><span class="pre">Callback.set_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.callback.Callback.set_params"><code class="docutils literal notranslate"><span class="pre">Callback.set_params()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.get_progress"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.get_progress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.is_stalling"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.is_stalling()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_epoch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_epoch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_test_batch_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_test_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_test_batch_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_test_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_batch_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_batch_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.time_monitor_callback.TimeMonitorCallback.on_train_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_end()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback"><code class="docutils literal notranslate"><span class="pre">Callback</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_batch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_batch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_epoch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_epoch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_test_batch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_test_batch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_test_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_test_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_test_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_train_batch_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_train_batch_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_train_begin"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.on_train_end"><code class="docutils literal notranslate"><span class="pre">Callback.on_train_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.set_model"><code class="docutils literal notranslate"><span class="pre">Callback.set_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.Callback.set_params"><code class="docutils literal notranslate"><span class="pre">Callback.set_params()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.get_progress"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.get_progress()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.is_stalling"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.is_stalling()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_epoch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_epoch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_test_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_test_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_batch_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_batch_end()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_begin"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_begin()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="reporting.html#otx.api.usecases.reporting.TimeMonitorCallback.on_train_end"><code class="docutils literal notranslate"><span class="pre">TimeMonitorCallback.on_train_end()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="tasks.html">Task interfaces</a></li>
 </ul>
 </div>
@@ -582,7 +725,7 @@
   <div class="footer-item">
     
 <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
 
   </div>
