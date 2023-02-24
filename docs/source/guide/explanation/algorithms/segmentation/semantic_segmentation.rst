@@ -207,7 +207,7 @@ It can be launched only with supervised (incremental) training type.
 .. code-block::
 
   $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-root=tests/assets/common_semantic_segmentation_dataset/train \
+              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
               --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
               params \
               --learning_parameters.enable_supcon=True
