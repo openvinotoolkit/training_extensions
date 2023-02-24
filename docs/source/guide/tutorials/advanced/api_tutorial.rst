@@ -135,9 +135,9 @@ To perform validation we need to infer our model on the validation dataset, crea
         InferenceParameters(is_evaluation=True))
 
     resultset = ResultSetEntity(
-        model = output_model,
-        ground_truth_dataset = validation_dataset,
-        prediction_dataset = predicted_validation_dataset,
+        model=output_model,
+        ground_truth_dataset=validation_dataset,
+        prediction_dataset=predicted_validation_dataset,
     )
 
     task.evaluate(resultset)
