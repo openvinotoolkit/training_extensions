@@ -52,7 +52,7 @@ Download and prepare `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/vo
 .. image:: ../../../../../utils/images/voc_example.png
   :width: 600
 
-The dataset contains a set of RGB images with 20 semantic labels such as airplane, bicycle, bird, car, person, etc. The images are stored in the following format:
+The dataset contains a set of RGB images with 20 semantic labels such as aeroplane, bicycle, bird, car, person, etc. The images are stored in the following format:
 
 .. code-block::
 
