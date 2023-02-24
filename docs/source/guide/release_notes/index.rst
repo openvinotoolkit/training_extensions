@@ -19,7 +19,7 @@ v1.0.0 (1Q23)
 - Support action recognition task
 
 *************
-v1.x.0 (2Q23)
+v1.1+  (2Q23)
 *************
 
 - In planning

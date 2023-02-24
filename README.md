@@ -98,7 +98,7 @@ You can find more details with examples in the [CLI command intro](https://openv
 - Integrate hyper-parameter optimizations
 - Support action recognition task
 
-### v1.?.0 (2Q23)
+### v1.1+  (2Q23)
 
 - In planning
 
