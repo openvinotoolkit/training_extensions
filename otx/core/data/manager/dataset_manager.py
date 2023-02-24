@@ -36,6 +36,7 @@ class DatasetManager:
         for k, v in dataset.subsets().items():
             if "val" in k:
                 return v
+        return None
 
     @staticmethod
     def get_data_format(data_root: str) -> str:
