@@ -16,6 +16,7 @@
 
 # pylint: disable=too-many-return-statements
 import importlib
+import os
 
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.api.entities.model_template import TaskType
@@ -55,18 +56,6 @@ ADAPTERS = {
             "class": "SelfSLSegmentationDatasetAdapter",
         },
     },
-    TaskType.ACTION_CLASSIFICATION: {
-        "INCREMENTAL": {
-            "module_name": "action_dataset_adapter",
-            "class": "ActionClassificationDatasetAdapter",
-        }
-    },
-    TaskType.ACTION_DETECTION: {
-        "INCREMENTAL": {
-            "module_name": "action_dataset_adapter",
-            "class": "ActionDetectionDatasetAdapter",
-        }
-    },
     TaskType.ANOMALY_CLASSIFICATION: {
         "INCREMENTAL": {
             "module_name": "anomaly_dataset_adapter",
@@ -86,6 +75,23 @@ ADAPTERS = {
         }
     },
 }
+if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+    ADAPTERS.update(
+        {
+            TaskType.ACTION_CLASSIFICATION: {
+                "INCREMENTAL": {
+                    "module_name": "action_dataset_adapter",
+                    "class": "ActionClassificationDatasetAdapter",
+                }
+            },
+            TaskType.ACTION_DETECTION: {
+                "INCREMENTAL": {
+                    "module_name": "action_dataset_adapter",
+                    "class": "ActionDetectionDatasetAdapter",
+                }
+            },
+        }
+    )
 
 
 def get_dataset_adapter(
