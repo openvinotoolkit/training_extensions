@@ -100,7 +100,7 @@ To see which public backbones are available for the task, the following command 
 .. +-----------------------+-----------------+-----------+-----------+-----------+
 .. | EfficientNet-V2-S     | 96.13           | 90.36     | 97.68     | 86.74     |
 .. +-----------------------+-----------------+-----------+-----------+-----------+
-These datasets were splitted with auto-split (80% train, 20% test).
+.. These datasets were splitted with auto-split (80% train, 20% test).
 
 ************************
 Semi-supervised Learning
