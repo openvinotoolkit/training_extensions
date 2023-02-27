@@ -267,6 +267,15 @@ class TestMultilabelClassificationCLI:
 
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_semisl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls" / "test_semisl"
+        args_semisl = copy.deepcopy(args_m)
+        args_semisl["--unlabeled-data-roots"] = args_m["--train-data-roots"]
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
 
 args_h = {
     "--train-data-roots": "tests/assets/datumaro_h-label",
