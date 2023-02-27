@@ -1,9 +1,10 @@
 {
+  "version": "0.25.0",
   "backbones": {
     "mmcls.AlexNet": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.Conformer": {
       "required": ["arch"],
@@ -17,7 +18,7 @@
       "options": {
         "arch": ["768/32", "1024/20", "1536/20"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ConvNeXt": {
       "required": ["arch"],
@@ -31,21 +32,21 @@
       "options": {
         "depth": [53]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.CSPResNet": {
       "required": ["depth"],
       "options": {
         "depth": [50]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.CSPResNeXt": {
       "required": ["depth"],
       "options": {
         "depth": [50]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.DistilledVisionTransformer": {
       "required": [],
@@ -57,7 +58,7 @@
       "options": {
         "arch": ["121", "169", "201", "161"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.EfficientFormer": {
       "required": ["arch"],
@@ -84,7 +85,7 @@
           "el"
         ]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.HorNet": {
       "required": ["arch"],
@@ -109,7 +110,7 @@
       "options": {
         "arch": ["w32", "w18", "w30", "w40", "w44", "w48", "w64"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.LeNet5": {
       "required": [],
@@ -126,28 +127,28 @@
     "mmcls.MobileNetV2": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.MobileNetV3": {
       "required": ["arch"],
       "options": {
         "arch": ["small", "large"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.MViT": {
       "required": ["arch"],
       "options": {
         "arch": ["base", "tiny", "small", "large"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.PoolFormer": {
       "required": ["arch"],
       "options": {
         "arch": ["s12", "s24", "s36", "m36", "m48"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.RegNet": {
       "required": ["arch"],
@@ -163,14 +164,14 @@
           "regnetx_12gf"
         ]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.RepMLPNet": {
       "required": ["arch"],
       "options": {
         "arch": ["base"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.RepVGG": {
       "required": ["arch"],
@@ -193,94 +194,95 @@
           "yolox-pai-small"
         ]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.Res2Net": {
       "required": ["depth"],
       "options": {
         "arch": [50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNeSt": {
       "required": ["depth"],
       "options": {
         "arch": [50, 101, 152, 200, 269]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNet": {
       "required": ["depth"],
       "options": {
         "arch": [18, 34, 50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNetV1c": {
       "required": ["depth"],
       "options": {
         "arch": [18, 34, 50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNetV1d": {
       "required": ["depth"],
       "options": {
         "arch": [18, 34, 50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNet_CIFAR": {
       "required": ["depth"],
       "options": {
         "arch": [18, 34, 50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNeXt": {
       "required": ["depth"],
       "options": {
         "arch": [50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.SEResNet": {
       "required": ["depth"],
       "options": {
         "arch": [50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.SEResNeXt": {
       "required": ["depth"],
       "options": {
         "arch": [50, 101, 152]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ShuffleNetV1": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ShuffleNetV2": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.SwinTransformer": {
       "required": ["arch"],
       "options": {
         "arch": ["tiny", "small", "base", "large"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.SwinTransformerV2": {
-      "required": ["arch"],
+      "required": ["arch", "pad_small_map"],
       "options": {
-        "arch": ["tiny", "small", "base", "large", "huge", "giant"]
+        "arch": ["tiny", "small", "base", "large", "huge", "giant"],
+        "pad_small_map": [true, false]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.T2T_ViT": {
       "required": [],
@@ -304,28 +306,28 @@
       "options": {
         "arch": ["base", "small", "large"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.SVT": {
       "required": ["arch"],
       "options": {
         "arch": ["base", "small", "large"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.VAN": {
       "required": ["arch"],
       "options": {
         "arch": ["b0", "b1", "b2", "b3", "b4", "b5", "b6"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.VGG": {
       "required": ["depth"],
       "options": {
         "arch": [11, 13, 16, 19]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.VisionTransformer": {
       "required": ["arch"],

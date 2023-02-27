@@ -3,62 +3,81 @@
     "mmseg.BEiT": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmseg.BiSeNetV1": {
       "required": ["backbone_cfg"],
       "options": {},
-      "available": []
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.BiSeNetV2": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
     "mmseg.CGNet": {
       "required": [],
       "options": {},
-      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.ERFNet": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmseg.FastSCNN": {
       "required": [],
       "options": {},
-      "available": ["Classification", "ATSS", "Mask-RCNN"]
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
     "mmseg.HRNet": {
       "required": ["extra"],
       "options": {},
-      "available": []
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.ICNet": {
       "required": ["backbone_cfg"],
       "options": {},
-      "available": []
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.MAE": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmseg.MixVisionTransformer": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
     "mmseg.MobileNetV2": {
       "required": [],
       "options": {},
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
     },
     "mmseg.MobileNetV3": {
@@ -66,53 +85,45 @@
       "options": {
         "arch": ["small", "large"]
       },
-      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.ResNeSt": {
       "required": ["depth"],
       "options": {
         "depth": [50, 101, 152, 200]
       },
-      "available": ["Classification", "ATSS", "Mask-RCNN"]
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.ResNet": {
       "required": ["depth"],
       "options": {
         "depth": [18, 34, 50, 101, 152]
       },
-      "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
-      ]
+      "available": ["CLASSIFICATION", "INSTANCE_SEGMENTATION", "SEGMENTATION"]
     },
     "mmseg.ResNetV1c": {
       "required": ["depth"],
       "options": {
         "depth": [18, 34, 50, 101, 152]
       },
-      "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
-      ]
+      "available": ["CLASSIFICATION", "INSTANCE_SEGMENTATION", "SEGMENTATION"]
     },
     "mmseg.ResNetV1d": {
       "required": ["depth"],
       "options": {
         "depth": [18, 34, 50, 101, 152]
       },
-      "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
-      ]
+      "available": ["CLASSIFICATION", "INSTANCE_SEGMENTATION", "SEGMENTATION"]
     },
     "mmseg.ResNeXt": {
       "required": ["depth"],
@@ -120,17 +131,21 @@
         "depth": [50, 101, 152]
       },
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
     },
     "mmseg.STDCContextPathNet": {
       "required": ["backbone_cfg"],
       "options": {},
-      "available": []
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.STDCNet": {
       "required": [
@@ -145,12 +160,17 @@
         "stdc_type": ["STDCNet1", "STDCNet2"],
         "bottleneck_type": ["add", "cat"]
       },
-      "available": []
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
     },
     "mmseg.SwinTransformer": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
     "mmseg.TIMMBackbone": {
       "required": ["model_name"],
@@ -160,22 +180,22 @@
     "mmseg.PCPVT": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
     "mmseg.SVT": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
     "mmseg.UNet": {
       "required": [],
       "options": {},
-      "available": ["Classification", "ATSS", "Mask-RCNN"]
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
     "mmseg.VisionTransformer": {
       "required": [],
       "options": {},
-      "available": ["Classification", "ATSS", "Mask-RCNN"]
+      "available": ["CLASSIFICATION"]
     }
   }
 }

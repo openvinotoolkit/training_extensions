@@ -122,6 +122,9 @@ def main():
         row_index = 1
         for _, backbone_meta in all_backbones.items():
             for backbone_type, meta_data in backbone_meta.items():
+                available_task = meta_data.get("available", [])
+                if not available_task or (args.task and args.task.upper() not in available_task):
+                    continue
                 rows = generate_backbone_rows(row_index, backbone_type, meta_data)
                 backbone_table.add_rows(rows)
                 row_index += 1
