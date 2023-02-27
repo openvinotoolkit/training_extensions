@@ -1,5 +1,154 @@
 {
   "backbones": {
+    "mmcls.AlexNet": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.Conformer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["tiny", "small", "base"]
+      },
+      "available": []
+    },
+    "mmcls.ConvMixer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["768/32", "1024/20", "1536/20"]
+      },
+      "available": []
+    },
+    "mmcls.ConvNeXt": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["tiny", "small", "base", "large", "xlarge"]
+      },
+      "available": []
+    },
+    "mmcls.CSPDarkNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [53]
+      },
+      "available": []
+    },
+    "mmcls.CSPResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50]
+      },
+      "available": []
+    },
+    "mmcls.CSPResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50]
+      },
+      "available": []
+    },
+    "mmcls.DistilledVisionTransformer": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.DenseNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["121", "169", "201", "161"]
+      },
+      "available": []
+    },
+    "mmcls.EfficientFormer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["l1", "l3", "l7"]
+      },
+      "available": []
+    },
+    "mmcls.EfficientNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "b0",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "es",
+          "em",
+          "el"
+        ]
+      },
+      "available": []
+    },
+    "mmcls.HorNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "tiny",
+          "tiny-gf",
+          "small",
+          "small-gf",
+          "base",
+          "base-gf",
+          "base-gf384",
+          "large",
+          "large-gf",
+          "large-gf384"
+        ]
+      },
+      "available": []
+    },
+    "mmcls.HRNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["w32", "w18", "w30", "w40", "w44", "w48", "w64"]
+      },
+      "available": []
+    },
+    "mmcls.LeNet5": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.MlpMixer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small", "large"]
+      },
+      "available": []
+    },
+    "mmcls.MobileNetV2": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.MobileNetV3": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["small", "large"]
+      },
+      "available": []
+    },
+    "mmcls.MViT": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "tiny", "small", "large"]
+      },
+      "available": []
+    },
+    "mmcls.PoolFormer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["s12", "s24", "s36", "m36", "m48"]
+      },
+      "available": []
+    },
     "mmcls.RegNet": {
       "required": ["arch"],
       "options": {
@@ -16,70 +165,97 @@
       },
       "available": []
     },
-    "mmcls.ResNet": {
-      "required": ["depth"],
+    "mmcls.RepMLPNet": {
+      "required": ["arch"],
       "options": {
-        "depth": [18, 34, 50, 101, 152]
+        "arch": ["base"]
       },
       "available": []
     },
-    "mmcls.ResNetV1d": {
-      "required": ["depth"],
+    "mmcls.RepVGG": {
+      "required": ["arch"],
       "options": {
-        "depth": [18, 34, 50, 101, 152]
+        "arch": [
+          "A0",
+          "A1",
+          "A2",
+          "B0",
+          "B1",
+          "B1g2",
+          "B1g4",
+          "B2",
+          "B2g2",
+          "B2g4",
+          "B3",
+          "B3g2",
+          "B3g4",
+          "D2se",
+          "yolox-pai-small"
+        ]
       },
       "available": []
     },
-    "mmcls.ResNeXt": {
+    "mmcls.Res2Net": {
       "required": ["depth"],
       "options": {
-        "depth": [50, 101, 152]
+        "arch": [50, 101, 152]
       },
       "available": []
     },
     "mmcls.ResNeSt": {
       "required": ["depth"],
       "options": {
-        "depth": [50, 101, 152, 200, 269]
+        "arch": [50, 101, 152, 200, 269]
+      },
+      "available": []
+    },
+    "mmcls.ResNet": {
+      "required": ["depth"],
+      "options": {
+        "arch": [18, 34, 50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.ResNetV1c": {
+      "required": ["depth"],
+      "options": {
+        "arch": [18, 34, 50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.ResNetV1d": {
+      "required": ["depth"],
+      "options": {
+        "arch": [18, 34, 50, 101, 152]
       },
       "available": []
     },
     "mmcls.ResNet_CIFAR": {
       "required": ["depth"],
       "options": {
-        "depth": [18, 34, 50, 101, 152]
+        "arch": [18, 34, 50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "arch": [50, 101, 152]
       },
       "available": []
     },
     "mmcls.SEResNet": {
       "required": ["depth"],
       "options": {
-        "depth": [50, 101, 152]
+        "arch": [50, 101, 152]
       },
       "available": []
     },
     "mmcls.SEResNeXt": {
       "required": ["depth"],
       "options": {
-        "depth": [50, 101, 152]
+        "arch": [50, 101, 152]
       },
-      "available": []
-    },
-    "mmcls.VGG": {
-      "required": ["depth"],
-      "options": {
-        "depth": [11, 13, 16, 19]
-      },
-      "available": []
-    },
-    "mmcls.LeNet5": {
-      "required": [],
-      "options": {},
-      "available": []
-    },
-    "mmcls.AlexNet": {
-      "required": [],
-      "options": {},
       "available": []
     },
     "mmcls.ShuffleNetV1": {
@@ -92,29 +268,77 @@
       "options": {},
       "available": []
     },
-    "mmcls.MobileNetV2": {
-      "required": [],
-      "options": {},
-      "available": []
-    },
-    "mmcls.MobileNetV3": {
-      "required": [],
-      "options": {},
-      "available": []
-    },
-    "mmcls.VisionTransformer": {
-      "required": [],
-      "options": {},
-      "available": []
-    },
     "mmcls.SwinTransformer": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["tiny", "small", "base", "large"]
+      },
+      "available": []
+    },
+    "mmcls.SwinTransformerV2": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["tiny", "small", "base", "large", "huge", "giant"]
+      },
+      "available": []
+    },
+    "mmcls.T2T_ViT": {
       "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.TIMMBackbone": {
+      "required": ["model_name"],
       "options": {},
       "available": []
     },
     "mmcls.TNT": {
-      "required": [],
-      "options": {},
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small"]
+      },
+      "available": []
+    },
+    "mmcls.PCPVT": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small", "large"]
+      },
+      "available": []
+    },
+    "mmcls.SVT": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["base", "small", "large"]
+      },
+      "available": []
+    },
+    "mmcls.VAN": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["b0", "b1", "b2", "b3", "b4", "b5", "b6"]
+      },
+      "available": []
+    },
+    "mmcls.VGG": {
+      "required": ["depth"],
+      "options": {
+        "arch": [11, 13, 16, 19]
+      },
+      "available": []
+    },
+    "mmcls.VisionTransformer": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "base",
+          "small",
+          "large",
+          "deit-tiny",
+          "deit-small",
+          "deit-base"
+        ]
+      },
       "available": []
     }
   }
