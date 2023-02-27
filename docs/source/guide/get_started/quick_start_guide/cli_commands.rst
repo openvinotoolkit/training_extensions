@@ -209,11 +209,11 @@ Example of the command line to start object detection training:
 
 
 .. note::
-  We also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
+  You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
 
 It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
-We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
+You also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
 .. code-block::
 
@@ -221,7 +221,7 @@ We also can modify model template-specific parameters through the command line. 
 
 
 
-For example, that is how we can change the learning rate and the batch size for the SSD model:
+For example, that is how you can change the learning rate and the batch size for the SSD model:
 
 .. code-block::
 
