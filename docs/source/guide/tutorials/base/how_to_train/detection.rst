@@ -120,7 +120,7 @@ We can do that by running these commands:
 Training
 *********
 
-1. First of all, we need to choose which object detection model will we train. 
+1. First of all, you need to choose which object detection model you want to train. 
 The list of supported templates for object detection is available with the command line below.
 
 .. note::

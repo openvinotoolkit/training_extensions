@@ -123,7 +123,7 @@ The resulting folder structure will be as follows:
 Training
 *********
 
-1. You need to choose, which action classification model we want to train.
+1. You need to choose, which action classification model you want to train.
 To see the list of supported templates, run the following command:
 
 .. note::

@@ -77,14 +77,14 @@ This dataset contains images of 5 different flower categories and is stored in t
 Training
 *********
 
-1. First of all, we need to choose which classification model we will train.
+1. First of all, you need to choose which classification model you want to train.
 The list of supported templates for classification is available with the command line below.
 
 .. note::
 
   The characteristics and detailed comparison of the models could be found in :doc:`Explanation section <../../../explanation/algorithms/classification/multi_class_classification>`.
 
-  We also can modify the architecture of supported models with various backbones. To do that, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
+  You also can modify the architecture of supported models with various backbones. To do that, please refer to the :doc:`advanced tutorial for model customization <../../advanced/backbones>`.
 
 .. code-block::
 
@@ -100,13 +100,13 @@ The list of supported templates for classification is available with the command
 
 To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classification_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2.  Next, we need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classification.
-For other classification types we need to prepare splits in advance.
+2.  Next, you need to create train/validation sets. OpenVINO™ Training Extensions supports auto-split functionality for the multi-class classification.
+For other classification types you need to prepare splits in advance.
 
 
 .. note::
 
-  Currently, OpenVINO™ Training Extensions supports auto-split only for multi-class classification. For the multi-label and hierarchical tasks we need to prepare data splits in advance.
+  Currently, OpenVINO™ Training Extensions supports auto-split only for multi-class classification. For the multi-label and hierarchical tasks you need to prepare data splits in advance.
 
 Let's prepare an OpenVINO™ Training Extensions classification workspace running the following command:
 
@@ -122,7 +122,7 @@ Let's prepare an OpenVINO™ Training Extensions classification workspace runnin
 
 It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset named ``splitted_dataset``.
 
-3. To start training we need to call ``otx train``
+3. To start training you need to call ``otx train``
 command in our workspace:
 
 .. code-block::
@@ -133,10 +133,10 @@ That's it! The training will return artifacts: ``weights.pth`` and ``label_schem
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 8 minutes.
 
-After that, we have the PyTorch classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
+After that, you have the PyTorch classification model trained with OpenVINO™ Training Extensions, which you can use for evaluation, export, optimization and deployment.
 
 .. note::
-  If we specified ``--work-dir``, we also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
+  If you specified ``--work-dir``, you also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
 
 ***********
 Validation
@@ -159,7 +159,7 @@ and save performance results in ``performance.json`` file:
                       --load-weights models/weights.pth \
                       --save-performance performance.json
 
-We will get a validation output similar to this:
+You will get a similar validation output:
 
 .. code-block::
 
@@ -178,7 +178,7 @@ Export
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
-2. We can run the below command line to export the trained model
+2. You can run the below command line to export the trained model
 and save the exported model to the ``openvino_model`` folder:
 
 .. code-block::
@@ -192,7 +192,7 @@ and save the exported model to the ``openvino_model`` folder:
   2023-02-02 03:23:03,064 | INFO : Exporting completed
 
 
-3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+3. You can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
 using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
 
 .. code-block::
@@ -210,10 +210,10 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 Optimization
 *************
 
-1. We can further optimize the model with ``otx optimize``.
+1. You can further optimize the model with ``otx optimize``.
 It uses NNCF or POT depending on the model format.
 
-Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
+Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
 2. Command example for optimizing
 a PyTorch model (`.pth`) with OpenVINO™ NNCF.
@@ -247,7 +247,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
-4. Now we have fully trained, optimized and exported an
+4. Now you have fully trained, optimized and exported an
 efficient model representation ready-to-use classification model.
 
 The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
