@@ -16,6 +16,8 @@
 
 import argparse
 import sys
+import os
+os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
 
 from mmcv.utils import get_logger
 
