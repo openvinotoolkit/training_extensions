@@ -17,7 +17,7 @@ For the supervised training we use the following algorithms components:
 - ``Additional training techniques``
     - `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_: To add adaptability to the training pipeline and prevent overfitting.
     - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.
-
+      
       .. code-block::
 
         $ otx train {TEMPLATE} ... \
@@ -91,15 +91,15 @@ To see which public backbones are available for the task, the following command 
 
 .. In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | Model name            | CIFAR10         |CIFAR100   |flowers    | cars      |
-.. +=======================+=================+===========+===========+===========+
-.. | MobileNet-V3-large-1x | 93.36           | 83.01       | 96.45     | 83.24   |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-B0       | 94.86           | 84.73     | 96.86     | 85.70     |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-V2-S     | 96.13           | 90.36     | 97.68     | 86.74     |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+.. | Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |
+.. +=======================+=================+===========+===========+===========+===========+
+.. | MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       | N/A       |
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+.. | EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       | N/A       |
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
+.. | EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       | N/A       |
+.. +-----------------------+-----------------+-----------+-----------+-----------+-----------+
 
 ************************
 Semi-supervised Learning
@@ -125,7 +125,7 @@ Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improv
 
 - ``Additional techniques``: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, Early-Stopping, etc.)
 
-Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` on how to train semi-supervised learning.
+Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` on how to train semi-supervised learning. 
 Training time depends on the number of images and can be up to several times longer than conventional supervised learning.
 
 In the table below the top-1 accuracy on some academic datasets using our pipeline is presented. Same as the supervised setting except for an image for unlabeled and additional batch size.
