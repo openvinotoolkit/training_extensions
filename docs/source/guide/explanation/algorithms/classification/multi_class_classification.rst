@@ -89,18 +89,18 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
-.. In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+In the table below the top-1 accuracy on some academic datasets using our :ref:`supervised pipeline <mcl_cls_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | Model name            | CIFAR10         |CIFAR100   |flowers*   | cars*     |
-.. +=======================+=================+===========+===========+===========+
-.. | MobileNet-V3-large-1x | 93.36           | 83.01     | 96.45     | 83.24     |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-B0       | 94.86           | 84.73     | 96.86     | 85.70     |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-V2-S     | 96.13           | 90.36     | 97.68     | 86.74     |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. These datasets were splitted with auto-split (80% train, 20% test).
++-----------------------+-----------------+-----------+-----------+-----------+
+| Model name            | CIFAR10         |CIFAR100   |flowers*   | cars*     |
++=======================+=================+===========+===========+===========+
+| MobileNet-V3-large-1x | 93.36           | 83.01     | 96.45     | 83.24     |
++-----------------------+-----------------+-----------+-----------+-----------+
+| EfficientNet-B0       | 94.86           | 84.73     | 96.86     | 85.70     |
++-----------------------+-----------------+-----------+-----------+-----------+
+| EfficientNet-V2-S     | 96.13           | 90.36     | 97.68     | 86.74     |
++-----------------------+-----------------+-----------+-----------+-----------+
+*These datasets were splitted with auto-split (80% train, 20% test).
 
 ************************
 Semi-supervised Learning
