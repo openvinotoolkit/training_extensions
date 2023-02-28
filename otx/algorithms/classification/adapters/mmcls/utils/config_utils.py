@@ -25,9 +25,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_color_conversion,
 )
 from otx.api.entities.label import Domain
-from otx.api.utils.argument_checks import (
-    check_input_parameters_type,
-)
+from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()

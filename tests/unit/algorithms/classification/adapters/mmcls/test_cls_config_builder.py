@@ -5,9 +5,7 @@
 import pytest
 from mmcv.utils import Config
 
-from otx.algorithms.classification.adapters.mmcls.utils import (
-    patch_evaluation,
-)
+from otx.algorithms.classification.adapters.mmcls.utils import patch_evaluation
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
