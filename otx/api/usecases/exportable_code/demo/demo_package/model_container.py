@@ -4,6 +4,7 @@
 #
 
 import importlib
+import json
 from pathlib import Path
 from typing import Any, Tuple
 
@@ -28,7 +29,14 @@ class ModelContainer:
     """
 
     def __init__(self, model_dir: Path, device="CPU") -> None:
-        self.parameters = get_parameters(model_dir / "config.json")
+        model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "model.xml"), device=device)
+
+        try:
+            config_data = model_adapter.model.get_rt_info(["config_json"])
+            self.parameters = json.loads(config_data)
+        except RuntimeError:
+            self.parameters = get_parameters(model_dir / "config.json")
+
         self._labels = LabelSchemaMapper.backward(self.parameters["model_parameters"]["labels"])
         self._task_type = TaskType[self.parameters["converter_type"]]
 
@@ -39,8 +47,6 @@ class ModelContainer:
         # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
         self.model_parameters["labels"] = []
-
-        model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "model.xml"), device=device)
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
