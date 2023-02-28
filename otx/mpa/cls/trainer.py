@@ -70,6 +70,7 @@ class ClsTrainer(ClsStage):
                     # instead of update(self.old_tasks), update using "self.model_tasks"
                 if self.model_classes:
                     cfg.checkpoint_config.meta.update({"CLASSES": self.model_classes})
+                    # FIXME:self.dst_classes?
 
         self.configure_samples_per_gpu(cfg, "train", self.distributed)
         self.configure_fp16_optimizer(cfg, self.distributed)
