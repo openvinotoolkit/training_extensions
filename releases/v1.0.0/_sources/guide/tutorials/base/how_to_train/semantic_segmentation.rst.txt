@@ -69,7 +69,7 @@ The dataset contains a set of RGB images with 20 semantic labels such as aeropla
 Training
 *********
 
-1. First of all, we need to choose which semantic segmentation model we will train.
+1. First of all, you need to choose which semantic segmentation model you want to train.
 The list of supported templates for semantic segmentation is available with the command line below.
 
 .. note::

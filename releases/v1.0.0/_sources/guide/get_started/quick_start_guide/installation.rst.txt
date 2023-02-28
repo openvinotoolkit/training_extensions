@@ -5,7 +5,7 @@ Installation
 Prerequisites
 **************
 
-The current version of OpenVINO™ Training Extensions was tested under the following environment:
+The current version of OpenVINO™ Training Extensions was tested in the following environment:
 
 - Ubuntu 20.04
 - Python 3.8.x
@@ -46,7 +46,7 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
 
 .. note::
 
-    Currently, only torch==1.13.1 was fully validated, torch==2.x will be supported soon. (Earlier versions are not supported due to security issues)
+    Currently, only torch==1.13.1 was fully validated, torch==2.x will be supported in the future (Previous versions are not supported due to security issues).
 
 .. code-block::
 
@@ -56,16 +56,15 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
     # or install command for torch==1.13.1 for CUDA 11.1:
     pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu111
 
-4. Then, install
-OpenVINO™ Training Extensions package.
+4. Install OpenVINO™ Training Extensions package from either:
 
-Install from a local source in development mode:
+* A local source in development mode
 
 .. code-block::
 
     pip install -e .[full]
 
-Or, you can install from PyPI:
+* PyPI
 
 .. code-block::
 

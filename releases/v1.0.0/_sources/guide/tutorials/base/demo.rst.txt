@@ -1,14 +1,14 @@
 How to run the demonstration mode with OpenVINO™ Training Extensions CLI
 ========================================================================
 
-In this tutorial we will show how to run :doc:`trained <how_to_train/index>` model inside OTX repository in demonstration mode.
-It allows us to apply our model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.
+This tutorial shows how to run :doc:`trained <how_to_train/index>` model inside OTX repository in demonstration mode.
+It allows you to apply the model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.
 
 .. note::
 
     This tutorial uses an object detection model for example, however for other tasks the functionality remains the same - you just need to replace the input dataset with your own.
 
-For visualization we use images from WGISD dataset from the :doc: `object detection tutorial <how_to_train/detection>`.
+For visualization you use images from WGISD dataset from the :doc: `object detection tutorial <how_to_train/detection>`.
 
 1. Activate the virtual environment 
 created in the previous step.
@@ -20,7 +20,7 @@ created in the previous step.
 2. As an ``input`` we can use a single image, 
 a folder of images, a video file, or a web camera id. We can run the demo on PyTorch (.pth) model and IR (.xml) model.
 
-The following line will run the demo on your input source, using PyTorch ``outputs/weights.pth``. 
+The following command will run the demo on your input source, using PyTorch ``outputs/weights.pth``. 
 
 .. code-block::
 
@@ -64,8 +64,8 @@ we can run the following line:
 ..   :alt: this image shows the inference results with inference time on the WGISD dataset
 .. image to be generated and added
 
-6. To run a demo on a web camera, we need to know its ID. 
-We can check a list of camera devices by running this command line on Linux system:
+6. To run a demo on a web camera, you need to know its ID. 
+You can check a list of camera devices by running the command line below on Linux system:
 
 .. code-block::
 
@@ -79,13 +79,13 @@ The output will look like this:
     Integrated Camera (usb-0000:00:1a.0-1.6):
         /dev/video0
 
-After that, we can use this ``/dev/video0`` as a camera ID for ``--input``.
+After that, you can use this ``/dev/video0`` as a camera ID for ``--input``.
 
-Congratulations! Now you have learned how to use base OpenVINO™ Training Extensions functionality. For the advanced features, please refer to the next section called :doc:`../advanced/index`.
+Congratulations! Now you have learned how to use base OpenVINO™ Training Extensions functionality. For the advanced features, refer to the next section called :doc:`../advanced/index`.
 
 ***************
 Troubleshooting
 ***************
 
-If you use Anaconda environment, you should consider that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.
-So please use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.
+If you use Anaconda environment, keep in mind that OpenVINO has limited `Conda support <https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html>`_ for Python 3.6 and 3.7 versions only. The demo package requires python 3.8, though.
+Therefore, use other tools to create the environment (like ``venv`` or ``virtualenv``) and use ``pip`` as a package manager.

@@ -1,11 +1,11 @@
 OpenVINO™ Training Extensions CLI commands
 =================
 
-Below, all possible OpenVINO™ Training Extensions CLI commands are presented with some general examples of how to run specific functionality. We also have :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
+All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
 
 .. note::
 
-    To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../../explanation/index>` in the documentation.
+    To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../../explanation/index>` in the documentation.
 
 *****
 Find
@@ -209,11 +209,11 @@ Example of the command line to start object detection training:
 
 
 .. note::
-  We also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
+  You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
 
 It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
-We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
+You also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
 .. code-block::
 
@@ -221,7 +221,7 @@ We also can modify model template-specific parameters through the command line. 
 
 
 
-For example, that is how we can change the learning rate and the batch size for the SSD model:
+For example, that is how you can change the learning rate and the batch size for the SSD model:
 
 .. code-block::
 
