@@ -153,11 +153,11 @@ class ClsStage(Stage):
         data_classes = Stage.get_data_classes(cfg)
 
         if cfg.get("model_classes", []):
-            cfg.model.head.num_classes = len(cfg.model_classes)
+            cfg.model.head.num_classes = len(cfg.model_classes)  # read from prev model label_schema
         elif model_classes:
-            cfg.model.head.num_classes = len(model_classes)
+            cfg.model.head.num_classes = len(model_classes)  # read from ckpt meta
         elif data_classes:
-            cfg.model.head.num_classes = len(data_classes)
+            cfg.model.head.num_classes = len(data_classes)  # read from env label_schema
         self.model_meta["CLASSES"] = model_classes
 
         if not train_data_cfg.get("new_classes", False):  # when train_data_cfg doesn't have 'new_classes' key
