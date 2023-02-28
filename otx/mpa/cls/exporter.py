@@ -41,7 +41,6 @@ class ClsExporter(ExporterMixin, ClsStage):
             return model
 
         kwargs["model_builder"] = model_builder_helper
-
         return super().run(model_cfg, model_ckpt, data_cfg, **kwargs)
 
     @staticmethod
