@@ -20,7 +20,7 @@ class IExportTask(metaclass=abc.ABCMeta):
     """A base interface class for tasks which can export their models."""
 
     @abc.abstractmethod
-    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = False):
+    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):  # FIXME: False
         """This method defines the interface for export.
 
         Args:
