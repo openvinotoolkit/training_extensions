@@ -167,4 +167,3 @@ class ClsStage(Stage):
 
         self.org_model_classes = org_model_classes
         self.model_classes = model_classes
-        self.data_classes = data_classes

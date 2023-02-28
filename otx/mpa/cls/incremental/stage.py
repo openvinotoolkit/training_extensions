@@ -43,7 +43,6 @@ class IncrClsStage(ClsStage):
                 logger.warning('"new_classes" should be defined for incremental learning w/ current model.')
 
             if cfg.model.type in WEIGHT_MIX_CLASSIFIER:
-                cfg.task_adapt.final = self.model_classes
                 cfg.model.task_adapt = ConfigDict(
                     src_classes=self.org_model_classes,
                     dst_classes=self.model_classes,
