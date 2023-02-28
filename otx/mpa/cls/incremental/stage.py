@@ -4,7 +4,7 @@
 
 from mmcv import ConfigDict
 
-from otx.mpa.cls.stage import ClsStage, Stage
+from otx.mpa.cls.stage import ClsStage
 from otx.mpa.utils.config_utils import update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 
@@ -35,9 +35,7 @@ class IncrClsStage(ClsStage):
     # noqa: C901
     def configure_task_adapt(self, cfg, training, **kwargs):
         """Configure for Task Adaptation Task"""
-
-        self.adapt_type = cfg["task_adapt"].get("op", "REPLACE")
-        train_data_cfg = Stage.get_data_cfg(cfg, "train")
+        train_data_cfg = self.get_data_cfg(cfg, "train")
         if training:
             if train_data_cfg.type not in CLASS_INC_DATASET:
                 logger.warning(f"Class Incremental Learning for {train_data_cfg.type} is not yet supported!")
@@ -45,24 +43,18 @@ class IncrClsStage(ClsStage):
                 logger.warning('"new_classes" should be defined for incremental learning w/ current model.')
 
             if cfg.model.type in WEIGHT_MIX_CLASSIFIER:
+                cfg.task_adapt.final = self.model_classes
                 cfg.model.task_adapt = ConfigDict(
-                    src_classes=self.model_classes,
-                    dst_classes=self.data_classes,
+                    src_classes=self.org_model_classes,
+                    dst_classes=self.model_classes,
                 )
             else:
                 logger.warning(f"Weight mixing for {cfg.model.type} is not yet supported!")
 
-            # refine self.dst_class following adapt_type (REPLACE, MERGE)
-            self.refine_classes(train_data_cfg)
-            cfg.model.head.num_classes = len(self.dst_classes)
+            train_data_cfg.classes = self.model_classes
 
             # configure loss, sampler, task_adapt_hook
             self.configure_task_modules(cfg)
-
-        else:  # if eval phase (eval)
-            if train_data_cfg.get("new_classes"):
-                self.refine_classes(train_data_cfg)
-                cfg.model.head.num_classes = len(self.dst_classes)
 
     def configure_task_modules(self, cfg):
         if not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False):
@@ -73,8 +65,8 @@ class IncrClsStage(ClsStage):
             efficient_mode = cfg["task_adapt"].get("efficient_mode", False)
             sampler_type = "cls_incr"
 
-        if len(set(self.model_classes) & set(self.dst_classes)) == 0 or set(self.model_classes) == set(
-            self.dst_classes
+        if len(set(self.org_model_classes) & set(self.model_classes)) == 0 or set(self.org_model_classes) == set(
+            self.model_classes
         ):
             sampler_flag = False
         else:
@@ -83,8 +75,8 @@ class IncrClsStage(ClsStage):
         # Update Task Adapt Hook
         task_adapt_hook = ConfigDict(
             type="TaskAdaptHook",
-            src_classes=self.old_classes,
-            dst_classes=self.dst_classes,
+            src_classes=self.org_model_classes,
+            dst_classes=self.model_classes,
             model_type=cfg.model.type,
             sampler_flag=sampler_flag,
             sampler_type=sampler_type,
@@ -93,8 +85,8 @@ class IncrClsStage(ClsStage):
         update_or_add_custom_hook(cfg, task_adapt_hook)
 
     def configure_loss(self, cfg):
-        if len(set(self.model_classes) & set(self.dst_classes)) == 0 or set(self.model_classes) == set(
-            self.dst_classes
+        if len(set(self.org_model_classes) & set(self.model_classes)) == 0 or set(self.org_model_classes) == set(
+            self.model_classes
         ):
             cfg.model.head.loss = dict(type="CrossEntropyLoss", loss_weight=1.0)
         else:
@@ -104,20 +96,6 @@ class IncrClsStage(ClsStage):
             )
             ib_loss_hook = ConfigDict(
                 type="IBLossHook",
-                dst_classes=self.dst_classes,
+                dst_classes=self.model_classes,
             )
             update_or_add_custom_hook(cfg, ib_loss_hook)
-
-    def refine_classes(self, train_cfg):
-        # Get 'new_classes' in data.train_cfg & get 'old_classes' pretreained model meta data CLASSES
-        new_classes = train_cfg["new_classes"]
-        self.old_classes = self.model_meta["CLASSES"]
-        if self.adapt_type == "REPLACE":
-            # if 'REPLACE' operation, then self.dst_classes -> data_classes
-            self.dst_classes = self.data_classes.copy()
-        elif self.adapt_type == "MERGE":
-            # if 'MERGE' operation, then self.dst_classes -> old_classes + new_classes (merge)
-            self.dst_classes = self.old_classes + [cls for cls in new_classes if cls not in self.old_classes]
-        else:
-            raise KeyError(f"{self.adapt_type} is not supported for task_adapt options!")
-        train_cfg.classes = self.dst_classes
