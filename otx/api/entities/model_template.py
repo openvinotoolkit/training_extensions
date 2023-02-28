@@ -205,16 +205,17 @@ class TaskType(Enum):
         is_global=False,
         is_local=True,
     )
-    ACTION_CLASSIFICATION = 14, TaskInfo(
-        domain=Domain.ACTION_CLASSIFICATION,
-        is_trainable=True,
-        is_anomaly=False,
-        is_global=False,
-        is_local=True,
-    )
-    ACTION_DETECTION = 15, TaskInfo(
-        domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
-    )
+    if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+        ACTION_CLASSIFICATION = 14, TaskInfo(
+            domain=Domain.ACTION_CLASSIFICATION,
+            is_trainable=True,
+            is_anomaly=False,
+            is_global=False,
+            is_local=True,
+        )
+        ACTION_DETECTION = 15, TaskInfo(
+            domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
+        )
 
     def __str__(self) -> str:
         """Returns name."""
@@ -246,9 +247,13 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
         TaskType.ANOMALY_DETECTION: Domain.ANOMALY_DETECTION,
         TaskType.ANOMALY_SEGMENTATION: Domain.ANOMALY_SEGMENTATION,
         TaskType.ROTATED_DETECTION: Domain.ROTATED_DETECTION,
-        TaskType.ACTION_CLASSIFICATION: Domain.ACTION_CLASSIFICATION,
-        TaskType.ACTION_DETECTION: Domain.ACTION_DETECTION,
     }
+    if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+        mapping = {
+            **mapping,
+            TaskType.ACTION_CLASSIFICATION: Domain.ACTION_CLASSIFICATION,
+            TaskType.ACTION_DETECTION: Domain.ACTION_DETECTION,
+        }
 
     try:
         return mapping[task_type]
@@ -581,9 +586,13 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,
     TaskType.ROTATED_DETECTION,
-    TaskType.ACTION_CLASSIFICATION,
-    TaskType.ACTION_DETECTION,
 )
+if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+    TRAINABLE_TASK_TYPES = (
+        *TRAINABLE_TASK_TYPES,
+        TaskType.ACTION_CLASSIFICATION,
+        TaskType.ACTION_DETECTION,
+    )
 
 
 def _parse_model_template_from_omegaconf(config: Union[DictConfig, ListConfig]) -> ModelTemplate:

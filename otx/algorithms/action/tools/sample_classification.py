@@ -49,9 +49,12 @@ VAL_DATA_ROOTS = "tests/assets/cvat_dataset/action_classification/train"
 
 def load_test_dataset(model_template):
     """Load Sample dataset for detection."""
+
+    algo_backend = model_template.hyper_parameters.parameter_overrides["algo_backend"]
+    train_type = algo_backend["train_type"]["default_value"]
     dataset_adapter = get_dataset_adapter(
         model_template.task_type,
-        model_template.train_type,
+        train_type,
         train_data_roots=TRAIN_DATA_ROOTS,
         val_data_roots=VAL_DATA_ROOTS,
     )
