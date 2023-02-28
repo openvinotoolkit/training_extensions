@@ -1,4 +1,4 @@
-Action Detection  model
+Action Detection model
 ================================
 
 This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of `JHMDB <http://jhmdb.is.tue.mpg.de/>`_. 
@@ -63,7 +63,7 @@ If you download data from link and extract to ``training_extensions/data`` folde
 Training
 *********
 
-1. First of all, we need to choose which action detection model we will train.
+1. First of all, you need to choose which action detection model you want to train.
 The list of supported templates for action detection is available with the command line below:
 
 .. note::

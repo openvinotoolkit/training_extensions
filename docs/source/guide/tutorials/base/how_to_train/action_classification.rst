@@ -5,7 +5,7 @@ This live example shows how to easily train, validate, optimize and export class
 To learn more about Action Classification task, refer to :doc:`../../../explanation/algorithms/action/action_classification`.
 
 .. note::
-  To learn more about managing the training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
+  To learn more about managing the training process of the model including additional parameters and modification, refer to :doc:`./detection`.
 
   To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
@@ -43,7 +43,7 @@ environment:
 Dataset preparation
 ***************************
 
-According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
+According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51>`_ provided by mmaction2, you need to ensure that the `HMDB51 <https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/>`_ dataset is structured as follows:
 
 .. code-block::
 
@@ -76,8 +76,8 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
     │   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
     |
 
-Once you have the dataset structured properly, copy ``mmaction2/data`` folder which has hmdb51 dataset to ``training_extensions/data``. 
-And you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
+Once you have the dataset structured properly, copy ``mmaction2/data`` folder, which contains hmdb51 dataset, to ``training_extensions/data``. 
+Then, you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
 
 .. code-block::
 
@@ -123,8 +123,8 @@ The resulting folder structure will be as follows:
 Training
 *********
 
-1. We need to choose, which action classification model we want to train.
-Using the following command we'll see the list of supported templates:
+1. You need to choose, which action classification model you want to train.
+To see the list of supported templates, run the following command:
 
 .. note::
 
@@ -157,7 +157,7 @@ the action classification task by running the following command:
 
   (otx) ...$ cd ./otx-workspace-ACTION_CLASSIFICATION
 
-It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessary configs for X3D, prepared ``data.yaml`` to simplify CLI commands.
+It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessary configs for X3D and prepare ``data.yaml`` to simplify CLI commands.
 
 
 3. To begin training, simply run ``otx train`` 
@@ -169,9 +169,9 @@ from **within the workspace directory**:
 
 That's it! The training will return artifacts: ``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
 
-The training time highly relies on the hardware characteristics, for example on single NVIDIA GeForce RTX 3090 the training took about 10 minutes.
+The training time highly relies on the hardware characteristics. For example, the training took about 10 minutes on a single NVIDIA GeForce RTX 3090.
 
-After that, we have the PyTorch action classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
+After that, you have the PyTorch action classification model trained with OpenVINO™ Training Extensions, which you can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation
@@ -181,11 +181,11 @@ Validation
 the following arguments:
 
 The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, ``label_schema.json`` file contains meta information about the dataset and it should be located in the same folder as the model snapshot.
+Keep in mind that ``label_schema.json`` file contains meta information about the dataset and it should be in the same folder as the model snapshot.
 
 ``otx eval`` will output a frame-wise accuracy for action classification. Note, that top-1 accuracy during training is video-wise accuracy.
 
-2. The command below will run validation on our dataset
+2. The command below will run validation on the dataset
 and save performance results in ``performance.json`` file:
 
 .. code-block::
@@ -194,7 +194,7 @@ and save performance results in ``performance.json`` file:
                       --load-weights models/weights.pth \
                       --save-performance performance.json
 
-We will get a validation output similar to this:
+You will get a similar validation output:
 
 .. code-block::
 
@@ -212,9 +212,9 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
-2. We can run the below command line to export the trained model
+2. Run the command line below to export the trained model
 and save the exported model to the ``openvino_models`` folder.
 
 .. code-block::
@@ -235,7 +235,7 @@ and save the exported model to the ``openvino_models`` folder.
   2023-02-21 22:54:35,424 - mmaction - INFO - Exporting completed
 
 
-3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
 using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
 
 .. code-block::
@@ -253,11 +253,11 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 Optimization
 *************
 
-1. We can further optimize the model with ``otx optimize``.
-Only POT is supported for action classsification now. NNCF will be supported in near future.
-Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
+1. You can further optimize the model with ``otx optimize``.
+Currently, only POT is supported for action classsification. NNCF will be supported in near future.
+Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
-2.  Command example for optimizing
+2. Example command for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
@@ -269,9 +269,9 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
   Performance(score: 0.6252587703095486, dashboard: (3 metric groups))
 
-Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
+Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
-3. Now we have fully trained, optimized and exported an
+3. Now, you have fully trained, optimized and exported an
 efficient model representation ready-to-use action classification model.
 
 The following tutorials provide further steps on how to :doc:`deploy <../deploy>` and use your model in the :doc:`demonstration mode <../demo>` and visualize results.
