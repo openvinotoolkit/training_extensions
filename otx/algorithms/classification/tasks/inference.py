@@ -215,7 +215,7 @@ class ClassificationInferenceTask(
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = False):
+    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
         """Export function of OTX Classification Task."""
 
         logger.info("Exporting the model")
