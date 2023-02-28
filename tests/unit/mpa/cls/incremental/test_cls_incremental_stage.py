@@ -21,7 +21,6 @@ class TestOTXIncrClsStage:
         self.stage.cfg.task_adapt.op = mode
         origin_model_classes = ["label_0", "label_3", "label_n"]
         mocker.patch("otx.mpa.cls.incremental.stage.IncrClsStage.get_model_classes", return_value=origin_model_classes)
-        # self.stage.model_meta = {"CLASSES": model_classes}
         self.stage.data_classes = self.data_cfg.data.train.data_classes  # ["label_0", "label_1"]
         self.stage.configure_classes(self.stage.cfg)
         merge_target = ["label_0", "label_1", "label_3", "label_n"]
