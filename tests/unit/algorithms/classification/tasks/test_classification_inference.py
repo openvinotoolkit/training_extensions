@@ -131,6 +131,7 @@ class TestOTXClassificationInferenceTask:
         with open(f"{self.output_path}/model.bin", "wb") as f:
             f.write(b"bar")
 
+        mocker.patch("otx.algorithms.classification.tasks.inference.embed_ir_model_data", return_value=None)
         fake_output = {"outputs": {"bin": f"{self.output_path}/model.xml", "xml": f"{self.output_path}/model.bin"}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
         self.cls_inference_task.export(ExportType.OPENVINO, self.model, precision)
