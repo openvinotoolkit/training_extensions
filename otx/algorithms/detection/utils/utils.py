@@ -19,11 +19,11 @@ from typing import Optional, Sequence
 
 import numpy as np
 
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.model_template import TaskType
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 # pylint: disable=invalid-name

@@ -36,13 +36,13 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
 )
-from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     cluster_anchors,
     should_cluster_anchors,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
+from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.api.configuration.helper.utils import config_to_bytes
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
@@ -271,7 +271,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         bin_file = outputs.get("bin")
         xml_file = outputs.get("xml")
 
-        ir_extra_data = get_det_model_api_configuration(self._task_environment.label_schema, self._task_type, self.confidence_threshold)
+        ir_extra_data = get_det_model_api_configuration(
+            self._task_environment.label_schema, self._task_type, self.confidence_threshold
+        )
         embed_ir_model_data(xml_file, ir_extra_data)
 
         if xml_file is None or bin_file is None:

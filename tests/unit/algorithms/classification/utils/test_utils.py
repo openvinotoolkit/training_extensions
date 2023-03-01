@@ -10,8 +10,8 @@ import pytest
 from otx.algorithms.classification.utils.cls_utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
-    get_multihead_class_info,
     get_cls_model_api_configuration,
+    get_multihead_class_info,
 )
 from otx.algorithms.classification.utils.convert_coco_to_multilabel import (
     coco_to_datumaro_multilabel,
