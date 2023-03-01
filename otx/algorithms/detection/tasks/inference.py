@@ -31,10 +31,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
+from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
 )
+from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     cluster_anchors,
@@ -268,6 +270,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         bin_file = outputs.get("bin")
         xml_file = outputs.get("xml")
+
+        ir_extra_data = get_det_model_api_configuration(self._task_environment.label_schema, self._task_type, self.confidence_threshold)
+        embed_ir_model_data(xml_file, ir_extra_data)
+
         if xml_file is None or bin_file is None:
             raise RuntimeError("invalid status of exporting. bin and xml should not be None")
         with open(bin_file, "rb") as f:
