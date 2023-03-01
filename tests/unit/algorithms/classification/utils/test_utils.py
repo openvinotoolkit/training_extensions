@@ -11,6 +11,7 @@ from otx.algorithms.classification.utils.cls_utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
     get_multihead_class_info,
+    get_cls_model_api_configuration,
 )
 from otx.algorithms.classification.utils.convert_coco_to_multilabel import (
     coco_to_datumaro_multilabel,
@@ -80,3 +81,14 @@ def test_get_cls_deploy_config(default_hierarchical_data) -> None:
     assert "labels" in config["model_parameters"]
     for k in inf_conf:
         assert k in config["model_parameters"]
+
+
+@e2e_pytest_unit
+def test_get_cls_model_api_configuration(default_hierarchical_data):
+    _, label_schema = default_hierarchical_data
+    config = get_cls_inferencer_configuration(label_schema)
+
+    model_api_cfg = get_cls_model_api_configuration(label_schema, config)
+
+    assert len(model_api_cfg) > 0
+    model_api_cfg[("model_info", "confidence_threshold")] = str(config["confidence_threshold"])

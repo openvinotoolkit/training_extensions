@@ -20,6 +20,7 @@ from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
+    get_cls_model_api_configuration,
 )
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
@@ -254,7 +255,9 @@ class ClassificationInferenceTask(
 
         inference_config = get_cls_inferencer_configuration(self._task_environment.label_schema)
         deploy_cfg = get_cls_deploy_config(self._task_environment.label_schema, inference_config)
-        embed_ir_model_data(xml_file, {"config_json": json.dumps(deploy_cfg, ensure_ascii=False)})
+        ir_extra_data = get_cls_model_api_configuration(self._task_environment.label_schema, inference_config)
+        ir_extra_data[("otx_config",)] = json.dumps(deploy_cfg, ensure_ascii=False)
+        embed_ir_model_data(xml_file, ir_extra_data)
 
         if xml_file is None or bin_file is None:
             raise RuntimeError("invalid status of exporting. bin and xml should not be None")

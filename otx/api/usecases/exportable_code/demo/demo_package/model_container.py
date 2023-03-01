@@ -32,7 +32,7 @@ class ModelContainer:
         model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "model.xml"), device=device)
 
         try:
-            config_data = model_adapter.model.get_rt_info(["config_json"])
+            config_data = model_adapter.model.get_rt_info(["otx_config"])
             self.parameters = json.loads(config_data)
         except RuntimeError:
             self.parameters = get_parameters(model_dir / "config.json")

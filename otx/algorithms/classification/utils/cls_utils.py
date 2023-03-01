@@ -80,6 +80,7 @@ def get_cls_inferencer_configuration(label_schema: LabelSchemaEntity):
         "multilabel": multilabel,
         "hierarchical": hierarchical,
         "multihead_class_info": multihead_class_info,
+        "confidence_threshold": 0.5,
     }
 
 
@@ -91,3 +92,19 @@ def get_cls_deploy_config(label_schema: LabelSchemaEntity, inference_config: Dic
     parameters["model_parameters"] = inference_config
     parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(label_schema)
     return parameters
+
+
+def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_config: Dict[str, Any]):
+    """Get ModelAPI config."""
+    mapi_config = {}
+    mapi_config[("model_info", "model_type")] = "classification"
+    mapi_config[("model_info", "confidence_threshold")] = str(inference_config["confidence_threshold"])
+    mapi_config[("model_info", "multilabel")] = str(inference_config["multilabel"])
+
+    all_labels = ""
+    for lbl in label_schema.get_labels(include_empty=False):
+        all_labels += lbl.name + " "
+    all_labels = all_labels.strip()
+
+    mapi_config[("model_info", "label_map")] = all_labels
+    return mapi_config
