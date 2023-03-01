@@ -107,7 +107,7 @@ def get_det_model_api_configuration(label_schema: LabelSchemaEntity, task_type: 
     if task_type == TaskType.DETECTION:
         omz_config[("model_info", "model_type")] = "ssd"
     if task_type == TaskType.INSTANCE_SEGMENTATION:
-        omz_config[("model_info", "model_type")] = "instance_segmentation"
+        omz_config[("model_info", "model_type")] = "MaskRCNN"
     if task_type == TaskType.ROTATED_DETECTION:
         omz_config[("model_info", "model_type")] = "rotated_detection"
 
