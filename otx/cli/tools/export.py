@@ -41,7 +41,7 @@ def get_args():
         help="Location where exported model will be stored.",
     )
     parser.add_argument(
-        "--dump_features",
+        "--dump-features",
         action="store_true",
         help="Whether to return feature vector and saliency map for explanation purposes.",
     )
