@@ -263,7 +263,7 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
         else:
             classes = []
         super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
-        self.CLASSES = [classes[0]] + [
+        self.CLASSES = ["background"] + [
             label.name for label in sorted(self.project_labels)
         ]  # FIXME : how to deal with id sorting mismatch
 
