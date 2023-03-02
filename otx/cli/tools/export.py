@@ -42,7 +42,7 @@ def get_args():
     )
     parser.add_argument(
         "--work-dir",
-        help="Location where the intermediate output of the training will be stored.",
+        help="Location where the intermediate output of the export will be stored.",
         default=None,
     )
     parser.add_argument(
