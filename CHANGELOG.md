@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.0.0\]
+
+> _**NOTES**_
+>
+> OpenVINO™ Training Extensions which version 1.0.0 has been updated to include functional and security updates. Users should update to the latest version.
+
+### New features
+
+- Adaptation of [Datumaro](https://github.com/openvinotoolkit/datumaro) component as a dataset interface
+- Integrate hyper-parameter optimizations
+- Support action recognition task
+- Self-supervised learning mode for representational training
+- Semi-supervised learning mode for better model quality
+
+### Enhancements
+
+- Installation via [PyPI package](https://pypi.org/project/otx/)
+- Enhance `find` command to find configurations of supported tasks / algorithms / models / backbones
+- Introduce `build` command to customize task or model configurations in isolated workspace
+- Auto-config feature to automatically select the right algorithm and default model for the `train` & `build` command by detecting the task type of given input dataset
+- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/introduction.html)
+- Improve training performance by introducing enhanced loss for the few-shot transfer
+
+### Bug fixes
+
+- Fixing configuration loading issue from the meta data of the model in OpenVINO task for the backward compatibility
+- Fixing some minor issues
+
+## \[v0.5.0\]
+
+> _**NOTES**_
+>
+> OpenVINO Training Extension which version is equal or older then v0.5.0 does not include the latest functional and security updates. OTE Version 1.0.0 is targeted to be released in February 2023 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
+
+### Added
+
+- Add tiling in rotated detection (<https://github.com/openvinotoolkit/training_extensions/pull/1420>)
+- Add Cythonize AugMixAugment (<https://github.com/openvinotoolkit/training_extensions/pull/1478>)
+- Integrate ov-telemetry (<https://github.com/openvinotoolkit/training_extensions/pull/1568>)
+
+### Changed
+
+- Update OpenVINO to 2022.3 release & nncf to the pre-2.4 version (<https://github.com/openvinotoolkit/training_extensions/pull/1393>)
+
+### Fixed
+
+- Fixing h-label head output bug in OV inference (<https://github.com/openvinotoolkit/training_extensions/pull/1458>)
+- Fixing deprecated np.bool issue from numpy==1.24.0 (<https://github.com/openvinotoolkit/training_extensions/pull/1455>)
+- Fixing tiling OpenVINO backward compatibility (<https://github.com/openvinotoolkit/training_extensions/pull/1516>)
+- Fixing indexing in hierarchical classification inference (<https://github.com/openvinotoolkit/training_extensions/pull/1551>)
+- Copying feature vector to resolve duplication issue (<https://github.com/openvinotoolkit/training_extensions/pull/1511>)
+- Fixing handling ignored samples in hierarchical head (<https://github.com/openvinotoolkit/training_extensions/pull/1599>)
+- Some minor issues
+
 ## \[v0.4.0\]
 
 ### Added
@@ -10,6 +64,7 @@ All notable changes to this project will be documented in this file.
   - Better saliency map support
     - Replace current saliency map generation with Recipro-CAM for cls (<https://github.com/openvinotoolkit/training_extensions/pull/1363>)
     - Class-wise saliency map generation for the detection task (<https://github.com/openvinotoolkit/training_extensions/pull/1402>)
+    - OTE Saliency Map Label (<https://github.com/openvinotoolkit/training_extensions/pull/1447>)
   - Improve object counting algorithm for high-res images via image tiling
     - Add Tiling Module (<https://github.com/openvinotoolkit/training_extensions/pull/1200>)
     - Fliter object less than 1 pixel (<https://github.com/openvinotoolkit/training_extensions/pull/1305>)
@@ -19,6 +74,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Hot-fix for Detection fix two stage error (<https://github.com/openvinotoolkit/training_extensions/pull/1433>)
+- Fixing ZeroDivisionError in iteration counter for detection-classification project trainings (<https://github.com/openvinotoolkit/training_extensions/pull/1449>)
 - Some minor issues
 
 ## \[v0.3.1\]

@@ -40,3 +40,7 @@ dmypy.json
 otx/**/*.c
 otx/**/*.html
 otx/**/*.so
+
+
+# Dataset made by unit-test
+tests/**/detcon_mask/*

@@ -13,6 +13,7 @@ Instance segmentation is commonly used in applications such as self-driving cars
 .. image:: ../../../../../utils/images/instance_seg_example.png
   :width: 600
 
+|
 
 We solve this problem in the `MaskRCNN <https://arxiv.org/abs/1703.06870>`_ manner. The main idea of Mask R-CNN is to add a branch for predicting an object mask in parallel with the existing branch for bounding box regression and object classification.
 
@@ -29,7 +30,7 @@ For the supervised training we use the following algorithms components:
 
 - ``Optimizer``: We use `SGD <https://en.wikipedia.org/wiki/Stochastic_gradient_descent>`_ optimizer with the weight decay set to **1e-4** and momentum set to **0.9**.
 
-- ``Learning rate schedule``: For scheduling training process we use **ReduceLrOnPlataeu** with linear learning rate warmup for **200** iterations. This method monitors a target metric (in our case we use metric on the validation set) and if no improvement is seen for a patience number of epochs, the learning rate is reduced.
+- ``Learning rate schedule``: For scheduling training process we use **ReduceLrOnPlateau** with linear learning rate warmup for **200** iterations. This method monitors a target metric (in our case we use metric on the validation set) and if no improvement is seen for a ``patience`` number of epochs, the learning rate is reduced.
 
 - ``Loss functions``: For the bounding box regression we use **L1 Loss** (the sum of the absolute differences between the ground truth value and the predicted value), `Cross Entropy Loss <https://en.wikipedia.org/wiki/Cross_entropy>`_ for the categories classification and segmentation masks prediction.
 
@@ -39,12 +40,13 @@ For the supervised training we use the following algorithms components:
 Dataset Format
 **************
 
-For the dataset handling inside OTX, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_. For instance segmentation we support `COCO <https://cocodataset.org/#format-data>`_ and `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ dataset formats.
-If you have your dataset in those formats, then you can simply run OTX using one line of code:
+For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_. For instance segmentation we support `COCO <https://cocodataset.org/#format-data>`_ and `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ dataset formats.
+If you have your dataset in those formats, then you can simply run using one line of code:
 
 .. code-block::
 
-    $ otx train --template <model_template> --train-data-root <path_to_data_root> --val-data-root <path_to_data_root>
+    $ otx train --template <model_template> --train-data-roots <path_to_data_root> \
+                --val-data-roots <path_to_data_root>
 
 .. note::
 
@@ -66,36 +68,36 @@ We support the following ready-to-use model templates:
 
 ``MaskRCNN-ResNet50`` uses `ResNet-50 <https://arxiv.org/abs/1512.03385>`_ as the backbone network for the image features extraction. It has more parameters and FLOPs and needs more time to train, meanwhile providing superior performance in terms of accuracy. ``MaskRCNN-EfficientNetB2B`` uses `EfficientNet-B2 <https://arxiv.org/abs/1905.11946>`_ as the backbone network. It is a good trade-off between accuracy and speed. It is a better choice when training time and computational cost are in priority.
 
-In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+.. In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
-+---------------------------+--------------+------------+-----------------+
-| Model name                | ADE20k       | Cityscapes | Pascal-VOC 2007 |
-+===========================+==============+============+=================+
-| MaskRCNN-EfficientNetB2B  | N/A          | N/A        | N/A             |
-+---------------------------+--------------+------------+-----------------+
-| MaskRCNN-ResNet50         | N/A          | N/A        | N/A             |
-+---------------------------+--------------+------------+-----------------+
+.. +---------------------------+--------------+------------+-----------------+
+.. | Model name                | ADE20k       | Cityscapes | Pascal-VOC 2007 |
+.. +===========================+==============+============+=================+
+.. | MaskRCNN-EfficientNetB2B  | N/A          | N/A        | N/A             |
+.. +---------------------------+--------------+------------+-----------------+
+.. | MaskRCNN-ResNet50         | N/A          | N/A        | N/A             |
+.. +---------------------------+--------------+------------+-----------------+
 
-*******************
-Tiling Pipeline
-*******************
+.. *******************
+.. Tiling Pipeline
+.. *******************
 
-To be added soon
+.. To be added soon
 
-************************
-Semi-supervised Learning
-************************
+.. ************************
+.. Semi-supervised Learning
+.. ************************
 
-To be added soon
+.. To be added soon
 
-************************
-Self-supervised Learning
-************************
+.. ************************
+.. Self-supervised Learning
+.. ************************
 
-To be added soon
+.. To be added soon
 
-********************
-Incremental Learning
-********************
+.. ********************
+.. Incremental Learning
+.. ********************
 
-To be added soon
+.. To be added soon

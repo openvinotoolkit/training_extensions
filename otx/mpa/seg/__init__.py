@@ -13,7 +13,7 @@ import otx.mpa.modules.models.scalar_schedulers.poly
 import otx.mpa.modules.models.scalar_schedulers.step
 import otx.mpa.modules.models.segmentors
 from otx.mpa.seg.incremental import IncrSegInferrer, IncrSegTrainer
-from otx.mpa.seg.semisl import SemiSLSegInferrer, SemiSLSegTrainer
+from otx.mpa.seg.semisl import SemiSLSegExporter, SemiSLSegInferrer, SemiSLSegTrainer
 
 # flake8: noqa
 from . import exporter, inferrer, stage, trainer

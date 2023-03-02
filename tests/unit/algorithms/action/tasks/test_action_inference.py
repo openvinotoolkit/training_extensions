@@ -26,6 +26,7 @@ from otx.api.entities.model import (
     ModelEntity,
     ModelFormat,
     ModelOptimizationType,
+    ModelPrecision,
 )
 from otx.api.entities.model_template import InstantiationType, TaskFamily, TaskType
 from otx.api.entities.resultset import ResultSetEntity
@@ -102,7 +103,7 @@ class MockDataLoader:
         return self
 
 
-def mock_export_model(model, recipe_cfg, onnx_model_path, output_dir_path):
+def mock_export_model(model, recipe_cfg, onnx_model_path, output_dir_path, half_precision):
     """Mock function for export_model function."""
 
     dummy_data = np.ndarray((1, 1, 1))
@@ -255,8 +256,9 @@ class TestActionInferenceTask:
         self.det_task.evaluate(resultset)
         assert resultset.performance.score.value == 0.0
 
+    @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export(self, mocker) -> None:
+    def test_export(self, mocker, precision: ModelPrecision) -> None:
         """Test export function.
 
         <Steps>
@@ -270,10 +272,11 @@ class TestActionInferenceTask:
         self.cls_task._recipe_cfg = None
         mocker.patch("otx.algorithms.action.tasks.inference.ActionInferenceTask._init_task", return_value=True)
         mocker.patch("otx.algorithms.action.tasks.inference.export_model", side_effect=mock_export_model)
-        self.cls_task.export(ExportType.OPENVINO, _model)
+        self.cls_task.export(ExportType.OPENVINO, _model, precision)
 
         assert _model.model_format == ModelFormat.OPENVINO
         assert _model.optimization_type == ModelOptimizationType.MO
+        assert _model.precision[0] == precision
         assert _model.get_data("openvino.bin") is not None
         assert _model.get_data("openvino.xml") is not None
         assert _model.get_data("confidence_threshold") is not None

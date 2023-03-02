@@ -91,7 +91,6 @@ class ResultMediaEntity(IMetadata):
             f"name={self.name}, "
             f"type={self.type}, "
             f"annotation_scene={self.annotation_scene}, "
-            f"numpy={self.numpy}, "
             f"roi={self.roi}, "
             f"label={self.label})"
         )

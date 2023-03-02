@@ -6,4 +6,3 @@ Object Detection
 
 
    object_detection
-   rotated_object_detection

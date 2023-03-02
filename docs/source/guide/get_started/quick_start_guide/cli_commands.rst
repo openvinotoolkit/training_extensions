@@ -1,11 +1,11 @@
-OTX CLI commands
+OpenVINO™ Training Extensions CLI commands
 =================
 
-Below, all possible otx CLI commands are presented with some general examples of how to run specific functionality. We also have :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
+All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
 
 .. note::
 
-    To run CLI commands we need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../../explanation/index>` in the documentation.
+    To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../../explanation/index>` in the documentation.
 
 *****
 Find
@@ -65,7 +65,7 @@ Example to find supported torchvision backbones for the detection task:
 Building workspace folder
 *************************
 
-``otx build`` creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for a modifying backbone for the template.
+``otx build`` creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for modifying the backbone of the model.
 
 .. code-block::
 
@@ -100,17 +100,19 @@ Building workspace folder
 
 
 For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
-Please refer to the advanced tutorial :doc:`Backbone Replacement <../../tutorials/advanced/backbones>` in the documentation.
+To learn more about backbone replacement, please refer to the :doc:`following advanced tutorial <../../tutorials/advanced/backbones>`.
 
 .. code-block::
 
     (otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
+----------------
+Dataset handling
+----------------
 
+If the train dataset root and validation dataset root are the same - pass the same path to both options. For example, you have a standard COCO format for object detection:
 
-If the train dataset root and validation dataset root are the same - pass the same path to both options. For example, you have a standart COCO format for object detection:
-
-::
+.. code-block::
 
     coco_data_root
       |---- annotations
@@ -126,12 +128,13 @@ If the train dataset root and validation dataset root are the same - pass the sa
 
 
 Then pass the path to ``coco_data_root`` to both root options:
-::
 
-  ``--train-data-roots coco_data_root --val-data-roots coco_data_root``
+.. code-block::
+
+  --train-data-roots coco_data_root --val-data-roots coco_data_root
 
 However, if you store your training set and validation separately - provide paths to both accordingly.
-OTX supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to ``splitted_dataset`` folder inside the otx workspace folder. This split can be further used for training.
+OpenVINO™ Training Extensions supports also auto-split functionality. If you don't have a prepared validation set - the Datumaro manager will run a random auto-split and will save the final dataset to ``splitted_dataset`` folder inside the workspace folder. This split can be further used for training.
 
 .. note::
 
@@ -147,11 +150,11 @@ Training
 - ``weights.pth`` - a model snapshot
 - ``label_schema.json`` - a label schema used in training, created from a dataset
 
-The results will be saved in ``./model`` folder by default. The output folder can be modified by ``--save-model-to`` option. These files can be used by other commands: ``export``, ``eval``, ``demo``, etc.
+The results will be saved in ``./model`` folder by default. The output folder can be modified by ``--save-model-to`` option. These files are used by other commands: ``export``, ``eval``, ``demo``, etc.
 
 ``otx train`` receives ``template`` as a positional argument. ``template`` can be a path to the specific ``template.yaml`` file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.
 
-However, if you created a workspace with ``otx build``, the training process can be started (in the workspace directory) just with ``otx train`` command without any additional options. OTX will fetch everything else automatically.
+However, if you created a workspace with ``otx build``, the training process can be started (in the workspace directory) just with ``otx train`` command without any additional options. OpenVINO™ Training Extensions will fetch everything else automatically.
 
 .. code-block::
 
@@ -205,10 +208,12 @@ Example of the command line to start object detection training:
     (otx) ...$ otx train SSD  --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 
+.. note::
+  You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset OTX will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
-We also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
+You also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
 .. code-block::
 
@@ -216,13 +221,22 @@ We also can modify model template-specific parameters through the command line. 
 
 
 
-For example, that is how we can change the learning rate and the batch size for the SSD model:
+For example, that is how you can change the learning rate and the batch size for the SSD model:
 
 .. code-block::
 
-    (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> params --learning_parameters.batch_size 16 --learning_parameters.learning_rate 0.001
+    (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> \
+                             --val-data-roots <path/to/val/root> \
+                             params \
+                             --learning_parameters.batch_size 16 \
+                             --learning_parameters.learning_rate 0.001
 
 
+As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the ``--gpus`` argument. It will start the distributed data-parallel training with the GPUs you have specified.
+
+.. note::
+
+    Multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We'll add support for them in the near future.
 
 **********
 Exporting
@@ -299,17 +313,22 @@ Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
 
 .. code-block::
 
-    (otx) ...$ otx optimize SSD --load-weights <path/to/trained/weights.pth> --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root> --save-model-to outputs/nncf
+    (otx) ...$ otx optimize SSD --load-weights <path/to/trained/weights.pth> \
+                                --train-data-roots <path/to/train/root> \
+                                --val-data-roots <path/to/val/root> \
+                                --save-model-to outputs/nncf
 
 
 Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:
 
 .. code-block::
 
-    (otx) ...$ otx optimize SSD --load-weights <path/to/openvino.xml> --val-data-roots <path/to/val/root> --save-model-to outputs/pot
+    (otx) ...$ otx optimize SSD --load-weights <path/to/openvino.xml> \
+                                --val-data-roots <path/to/val/root> \
+                                --save-model-to outputs/pot
 
 
-Thus, to use POT pass the path to exported IR model, to use NNCF pass the path to the PyTorch .pth weights.
+Thus, to use POT pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.
 
 
 ***********
@@ -346,26 +365,74 @@ The command below will evaluate the trained model on the provided dataset:
 
 .. code-block::
 
-    (otx) ...$ otx eval Custom_Object_Detection_Gen3_SSD --test-data-roots <path/to/test/root> --load-weights <path/to/model_weghts> --save-performance outputs/performance.json
+    (otx) ...$ otx eval SSD --test-data-roots <path/to/test/root> \
+                            --load-weights <path/to/model_weghts> \
+                            --save-performance outputs/performance.json
 
 .. note::
 
-    it is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
+    It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
 
 
 ***********
-Demonstrate
-************
+Explanation
+***********
 
-``otx demo`` runs model inference on images, videos, or webcam streams to show how it works with the user's data
+``otx explain`` runs the explanation algorithm of a model on the specific dataset. It helps explain the model's decision-making process in a way that is easily understood by humans.
+
+With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
+
+.. code-block::
+
+    (otx) ...$ otx explain --help
+    usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
+
+    positional arguments:
+      template              Enter the path or ID or name of the template file.
+                            This can be omitted if you have train-data-roots or run inside a workspace.
+      {params}              sub-command help
+        params              Hyper parameters defined in template file.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --explain-data-roots EXPLAIN_DATA_ROOTS
+                            Comma-separated paths to explain data folders.
+      --save-explanation-to SAVE_EXPLANATION_TO
+                            Output path for explanation images.
+      --load-weights LOAD_WEIGHTS
+                            Load model weights from previously saved checkpoint.
+      --explain-algorithm EXPLAIN_ALGORITHM
+                            Explain algorithm name, currently support ['activationmap', 'eigencam', 'classwisesaliencymap']. For Openvino task, default method will be selected.
+      --overlay-weight OVERLAY_WEIGHT
+                            Weight of the saliency map when overlaying the saliency map.
+
+
+The command below will generate saliency maps (heatmaps with read colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``save-explanation-to`` path:
+
+.. code-block::
+
+    (otx) ...$ otx explain SSD --explain-data-roots <path/to/explain/root> \
+                               --load-weights <path/to/model_weights> \
+                               --save-explanation-to <path/to/output/root> \
+                               --explain-algorithm classwisesaliencymap \
+                               --overlay-weight 0.5
 
 .. note::
 
-    ``otx demo`` command requires GUI backend to your system for displaying inference results.
+    It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
+
+
+*************
+Demonstration
+*************
+
+``otx demo`` runs model inference on images, videos, or webcam streams to show how it works with the user's data.
 
 .. note::
 
-    Only the OpenVINO™ IR model can be used for the ``otx demo`` command.
+  ``otx demo`` command requires GUI backend to your system for displaying inference results.
+
+  Only the OpenVINO™ IR model can be used for the ``otx demo`` command.
 
 .. code-block::
 
@@ -395,14 +462,17 @@ Command example of the demonstration:
 
 .. code-block::
 
-    (otx) ...$ otx demo SSD --input INPUT --load-weights <path/to/openvino.xml> --display-perf --delay 1000
+    (otx) ...$ otx demo SSD --input INPUT \
+                            --load-weights <path/to/openvino.xml> \
+                            --display-perf \
+                            --delay 1000
 
 
-Input can be a folder with images, a single image, a webcam ID or a video.
+Input can be a folder with images, a single image, a webcam ID or a video. The inference results of a model will be displayed to the GUI window with a 1-second interval.
 
 .. note::
-
-    The inference results with a model will be displayed to the GUI window with a 1-second interval. If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
+ 
+  If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
 
 
 ***********
@@ -434,5 +504,6 @@ Command example:
 
 .. code-block::
 
-    (otx) ...$ otx deploy Custom_Object_Detection_Gen3_SSD --load-weights <path/to/openvino.xml> --save-model-to outputs/deploy
+    (otx) ...$ otx deploy SSD --load-weights <path/to/openvino.xml> \
+                              --save-model-to outputs/deploy
 

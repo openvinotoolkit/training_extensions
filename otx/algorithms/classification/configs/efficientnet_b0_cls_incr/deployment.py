@@ -3,7 +3,7 @@
 _base_ = ["../base/deployments/base_classification_dynamic.py"]
 
 ir_config = dict(
-    output_names=["logits", "feature_vector", "saliency_map"],
+    output_names=["logits"],
 )
 
 backend_config = dict(

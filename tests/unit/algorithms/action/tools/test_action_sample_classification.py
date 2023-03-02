@@ -49,7 +49,9 @@ def test_load_test_dataset() -> None:
 
     class MockTemplate:
         task_type = TaskType.ACTION_CLASSIFICATION
-        train_type = TrainType.INCREMENTAL.value
+        hyper_parameters = Config(
+            {"parameter_overrides": {"algo_backend": {"train_type": {"default_value": TrainType.INCREMENTAL.value}}}}
+        )
 
     dataset, label_schema = load_test_dataset(MockTemplate())
     isinstance(dataset, DatasetEntity)

@@ -238,7 +238,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity):
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = True,
+    ):
         """Export function of OTX Detection Task."""
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
@@ -252,6 +258,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             stage_module,
             mode="train",
             export=True,
+            dump_features=dump_features,
+            enable_fp16=(precision == ModelPrecision.FP16),
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
@@ -271,7 +279,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
         )
         output_model.set_data("config.json", config_to_bytes(self._hyperparams))
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
         output_model.optimization_methods = self._optimization_methods
         output_model.set_data(
             "label_schema.json",
@@ -360,7 +368,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _update_stage_module(self, stage_module):
         module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
-        if self._train_type in module_prefix and stage_module in ["DetectionTrainer", "DetectionInferrer"]:
+        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "DetectionExporter":
+            stage_module = "SemiSLDetectionExporter"
+        elif self._train_type in module_prefix and stage_module in [
+            "DetectionTrainer",
+            "DetectionInferrer",
+        ]:
             stage_module = module_prefix[self._train_type] + stage_module
         return stage_module
 

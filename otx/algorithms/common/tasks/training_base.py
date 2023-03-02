@@ -227,6 +227,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             options = {}
 
         export = options.get("export", False)
+        fp16_export = options.get("enable_fp16", False)
 
         logger.info("initializing....")
         self._init_recipe()
@@ -327,10 +328,18 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
         if export:
+            if fp16_export:
+                self._precision[0] = ModelPrecision.FP16
             options["deploy_cfg"] = self._init_deploy_cfg()
             if options.get("precision", None) is None:
                 assert len(self._precision) == 1
                 options["precision"] = str(self._precision[0])
+
+            options["deploy_cfg"]["dump_features"] = options["dump_features"]
+            if options["dump_features"]:
+                output_names = options["deploy_cfg"]["ir_config"]["output_names"]
+                if "feature_vector" not in output_names and "saliency_map" not in output_names:
+                    options["deploy_cfg"]["ir_config"]["output_names"] += ["feature_vector", "saliency_map"]
 
         self._initialize_post_hook(options)
 

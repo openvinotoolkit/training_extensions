@@ -9,7 +9,7 @@ from otx.api.configuration import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label_schema import LabelSchemaEntity
-from otx.api.entities.model import ModelConfiguration, ModelEntity
+from otx.api.entities.model import ModelConfiguration, ModelEntity, ModelPrecision
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.train_parameters import TrainParameters
@@ -280,4 +280,9 @@ class TestIExportTask:
         )
         model_entity = ModelEntity(configuration=configuration, train_dataset=dataset)
         with pytest.raises(NotImplementedError):
-            IExportTask().export(export_type=ExportType.OPENVINO, output_model=model_entity)
+            IExportTask().export(
+                export_type=ExportType.OPENVINO,
+                output_model=model_entity,
+                precision=ModelPrecision.FP32,
+                dump_features=False,
+            )
