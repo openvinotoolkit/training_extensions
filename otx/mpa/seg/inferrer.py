@@ -95,6 +95,7 @@ class SegInferrer(SegStage):
 
         # Data loader
         self.dataset = build_dataset(data_cfg, "test", mmseg_build_dataset)
+
         test_dataloader = build_dataloader(
             self.dataset,
             data_cfg,
@@ -141,9 +142,11 @@ class SegInferrer(SegStage):
         feature_vectors = []
         with FeatureVectorHook(feature_model) if dump_features else nullcontext() as fhook:
             for data in test_dataloader:
+
                 with torch.no_grad():
                     result = model(return_loss=False, output_logits=True, **data)
                 eval_predictions.append(result)
+                # breakpoint()
             feature_vectors = fhook.records if dump_features else [None] * len(self.dataset)
 
         assert len(eval_predictions) == len(feature_vectors), (

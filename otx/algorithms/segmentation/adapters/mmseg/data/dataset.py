@@ -45,7 +45,6 @@ def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[La
     :param labels: List of labels in the project
     :return dict: annotation information dict in mmseg format
     """
-
     gt_seg_map = mask_from_dataset_item(dataset_item, labels)
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
 
@@ -108,6 +107,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
                 ann_info=dict(labels=self.labels),
                 ignored_labels=ignored_labels,
             )
+            breakpoint()
 
             return data_info
 
@@ -129,6 +129,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         dataset_labels = self.otx_dataset.get_labels(include_empty=False)
         self.project_labels = self.filter_labels(dataset_labels, classes)
         self.CLASSES, self.PALETTE = self.get_classes_and_palette(classes, None)
+        self.CLASSES = [classes[0]] + [label.name for label in sorted(self.project_labels)] # FIXME : how to deal with id sorting mismatch
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset
         # uses a proxy class with overriden __len__ and __getitem__; this proxy class
@@ -270,3 +271,4 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
                     self.label_map[i] = -1
                 else:
                     self.label_map[i] = classes.index(c)
+            breakpoint()
