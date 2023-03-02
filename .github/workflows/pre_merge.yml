@@ -33,7 +33,7 @@ jobs:
       - name: Code Quality Checks
         run: tox -e pre-commit
   Pre-Merge-Unit-Test:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64, test]
     needs: Code-Quality-Checks
     timeout-minutes: 120
     if: github.event.pull_request.draft == false
@@ -63,7 +63,7 @@ jobs:
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -Z true -U $HTTP_PROXY -f .tox/coverage.xml
   Pre-Merge-Integration-Test:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64, test]
     needs: Pre-Merge-Unit-Test
     timeout-minutes: 360
     steps:

@@ -8,7 +8,7 @@ on:
 
 jobs:
   Snyk-scan:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64, test]
     permissions:
       security-events: write
     steps:

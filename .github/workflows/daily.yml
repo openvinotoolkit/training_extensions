@@ -8,7 +8,7 @@ on:
 
 jobs:
   Daily-Tests:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64, test]
     timeout-minutes: 1440
     if: github.ref == 'refs/heads/develop'
     steps:
