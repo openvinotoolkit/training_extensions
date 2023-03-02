@@ -62,7 +62,7 @@
         }
       },
       "class_incr": {
-        "multi_class":{
+        "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
@@ -95,7 +95,7 @@
         }
       },
       "class_incr": {
-        "multi_class":{
+        "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl",
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/segmentation/regression_voc_sl"
@@ -116,7 +116,7 @@
       }
     },
     "instance_segmentation": {
-      "supervised":{
+      "supervised": {
         "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset_cls_decr",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset_cls_decr",
@@ -125,7 +125,7 @@
         }
       },
       "class_incr": {
-        "multi_class":{
+        "multi_class": {
           "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset",
           "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/detection/coco_subset"
@@ -159,11 +159,11 @@
       }
     },
     "anomaly_classification": {
-        "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-        "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-        "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
-        "--input": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec/bottle/test/contamination",
-        "train_params": []
+      "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+      "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+      "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
+      "--input": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec/bottle/test/contamination",
+      "train_params": []
     },
     "anomaly_detection": {
       "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/anomaly/mvtec",
@@ -184,132 +184,132 @@
     "classification": {
       "supervised": {
         "multi_class": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.655,
+            "EfficientNet-B0": 0.00
           },
-          "export":{
-            "EfficientNet-B0": 0.00,
-            "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+          "export": {
+            "EfficientNet-V2-S": 0.680,
+            "MobileNet-V3-large-1x": 0.655,
+            "EfficientNet-B0": 0.00
           },
-          "deploy":{
-            "EfficientNet-B0": 0.00,
+          "deploy": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.655,
+            "EfficientNet-B0": 0.00
           },
-          "nncf":{
-            "EfficientNet-B0": 0.00,
-            "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+          "nncf": {
+            "EfficientNet-V2-S": 0.668,
+            "MobileNet-V3-large-1x": 0.65,
+            "EfficientNet-B0": 0.682
           },
-          "pot":{
-            "EfficientNet-B0": 0.00,
+          "pot": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         },
         "multi_label": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "export":{
-            "EfficientNet-B0": 0.00,
+          "export": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "deploy":{
-            "EfficientNet-B0": 0.00,
+          "deploy": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "nncf":{
-            "EfficientNet-B0": 0.00,
+          "nncf": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "pot":{
-            "EfficientNet-B0": 0.00,
+          "pot": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         },
         "h_label": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "export":{
-            "EfficientNet-B0": 0.00,
+          "export": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "deploy":{
-            "EfficientNet-B0": 0.00,
+          "deploy": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "nncf":{
-            "EfficientNet-B0": 0.00,
+          "nncf": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           },
-          "pot":{
-            "EfficientNet-B0": 0.00,
+          "pot": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         },
         "supcon": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         }
       },
       "class_incr": {
         "multi_class": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         },
         "multi_label": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         },
         "h_label": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         }
       },
       "self_supervised": {
         "multi_class": {
-          "train":{
-            "EfficientNet-B0": 0.00,
+          "train": {
             "EfficientNet-V2-S": 0.00,
-            "MobileNet-V3-large-1x": 0.00
+            "MobileNet-V3-large-1x": 0.00,
+            "EfficientNet-B0": 0.00
           }
         }
       }
@@ -317,77 +317,77 @@
     "detection": {
       "supervised": {
         "multi_class": {
-          "train":{
+          "train": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "export":{
+          "export": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "deploy":{
+          "deploy": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "nncf":{
+          "nncf": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "pot":{
+          "pot": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           }
         }
       },
       "class_incr": {
         "multi_class": {
-          "train":{
+          "train": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           }
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "train":{
+          "train": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           }
         }
       },
       "tiling": {
         "multi_class": {
-          "train":{
+          "train": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "export":{
+          "export": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "deploy":{
+          "deploy": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "nncf":{
+          "nncf": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           },
-          "pot":{
+          "pot": {
             "YOLOX": 0.00,
-            "ATSS": 0.00,
-            "SSD": 0.00
+            "SSD": 0.00,
+            "ATSS": 0.00
           }
         }
       }
@@ -395,64 +395,64 @@
     "segmentation": {
       "supervised": {
         "multi_class": {
-          "train":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "train": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           },
-          "export":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "export": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           },
-          "deploy":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "deploy": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           },
-          "nncf":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "nncf": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           },
-          "pot":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "pot": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           }
         }
       },
       "class_incr": {
         "multi_class": {
-          "train":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "train": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           }
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "train":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "train": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           }
         }
       },
       "self_supervised": {
         "multi_class": {
-          "train":{
-            "Lite-HRNet-18": 0.00,
-            "Lite-HRNet-18-mod2": 0.00,
+          "train": {
             "Lite-HRNet-s-mod2": 0.00,
+            "Lite-HRNet-18-mod2": 0.00,
+            "Lite-HRNet-18": 0.00,
             "Lite-HRNet-x-mod3": 0.00
           }
         }
@@ -461,57 +461,57 @@
     "instance_segmentation": {
       "supervised": {
         "multi_class": {
-          "train":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "train": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "export":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "export": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "deploy":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "deploy": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "nncf":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "nncf": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "pot":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "pot": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           }
         }
       },
       "class_incr": {
         "multi_class": {
-          "train":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "train": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           }
         }
       },
       "tiling": {
         "multi_class": {
-          "train":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "train": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "export":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "export": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "deploy":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "deploy": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "nncf":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "nncf": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           },
-          "pot":{
-            "MaskRCNN-EfficientNetB2B": 0.00,
-            "MaskRCNN-ResNet50": 0.00
+          "pot": {
+            "MaskRCNN-ResNet50": 0.00,
+            "MaskRCNN-EfficientNetB2B": 0.00
           }
         }
       }
@@ -519,13 +519,13 @@
     "action_classification": {
       "supervised": {
         "multi_class": {
-          "train":{
+          "train": {
             "X3D": 0.00
           },
-          "export":{
+          "export": {
             "X3D": 0.00
           },
-          "pot":{
+          "pot": {
             "X3D": 0.00
           }
         }
@@ -534,1171 +534,946 @@
     "action_detection": {
       "supervised": {
         "multi_class": {
-          "train":{
+          "train": {
             "X3D_FAST_RCNN": 0.00
           }
         }
       }
     },
     "anomaly_classification": {
-      "train":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "train": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "export":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "export": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "deploy":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "deploy": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "nncf":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "nncf": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "pot":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "pot": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       }
     },
     "anomaly_detection": {
-      "train":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "train": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "export":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "export": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "deploy":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "deploy": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "nncf":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "nncf": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "pot":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "pot": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       }
     },
     "anomaly_segmentation": {
-      "train":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "train": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "export":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "export": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "deploy":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "deploy": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "nncf":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "nncf": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       },
-      "pot":{
-          "bottle": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "cable": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "capsule": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "carpet": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "grid": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "hazelnut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "leather": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "metal_nut": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "pill": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "screw": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "tile": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "toothbrush": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "transistor": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "wood": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          },
-          "zipper": {
-            "DRAEM": 0.00,
-            "PADIM": 0.00,
-            "STFPM": 0.00
-          }
+      "pot": {
+        "bottle": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "cable": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "capsule": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "carpet": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "grid": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "hazelnut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "leather": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "metal_nut": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "pill": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "screw": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "tile": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "toothbrush": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "transistor": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "wood": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        },
+        "zipper": {
+          "STFPM": 0.00,
+          "PADIM": 0.00
+        }
       }
     }
   }
