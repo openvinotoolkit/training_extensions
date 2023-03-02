@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from mmcv import ConfigDict
+import torch
 from mmcv.runner import load_checkpoint
+from mmcv.utils import Config
+from mmdeploy.apis import build_task_processor
+from mmdeploy.core import FUNCTION_REWRITER
 from mmdet.models import DETECTORS
-from mmdet.models.builder import build_detector
 from mmdet.models.detectors import FastRCNN
 from torch import nn
 
@@ -34,21 +36,25 @@ class ONNXPool3D(nn.Module):
     """
 
     def __init__(self, dim, pool_type):
+        # TODO This is tempral solution to export two-stage action detection model.
+        # This should be re-visited after fixing CVS-104657
         super().__init__()
         self.dim = dim
         if pool_type == "avg":
-            self.pool = nn.functional.avg_pool3d
+            self.pool = torch.mean
         else:
-            self.pool = nn.functional.max_pool3d
+            self.pool = torch.max
+        self.pool_type = pool_type
 
     def forward(self, x):
         """Forward method."""
-        size_array = [int(s) for s in x.size()[2:]]
         if self.dim == "temporal":
-            kernel_size = [size_array[0], 1, 1]
-        else:
-            kernel_size = [1, size_array[1], size_array[2]]
-        return self.pool(x, kernel_size)
+            if self.pool_type == "avg":
+                return self.pool(x, 2, keepdim=True)
+            return self.pool(x, 2, keepdim=True)[0]
+        if self.pool_type == "avg":
+            return self.pool(x, (3, 4), keepdim=True)
+        return self.pool(self.pool(x, 3, keepdim=True)[0], 4, keepdim=True)[0]
 
 
 @DETECTORS.register_module()
@@ -69,6 +75,8 @@ class AVAFastRCNN(FastRCNN):
             pretrained=pretrained,
         )
         self.detector = None
+        self.deply_cfg = None
+        self.detector_cfg = Config({"model": faster_rcnn})
 
     def add_detector(self):
         """Add Person Detector for inference.
@@ -78,8 +86,8 @@ class AVAFastRCNN(FastRCNN):
         without pre-proposals. Therefore, when the model infers to dataset without pre-proposal, person detector
         should be added to action detector.
         """
-        detector = ConfigDict(faster_rcnn)
-        self.detector = build_detector(detector)
+        task_processor = build_task_processor(self.detector_cfg, self.deploy_cfg, "cpu")
+        self.detector = task_processor.init_pytorch_model(faster_rcnn_pretrained)
         ckpt = load_checkpoint(self.detector, faster_rcnn_pretrained, map_location="cpu")
         self.detector.CLASSES = ckpt["meta"]["CLASSES"]
         if self.detector.CLASSES[0] != "person":
@@ -96,11 +104,13 @@ class AVAFastRCNN(FastRCNN):
         self.roi_head.bbox_head.temporal_pool = ONNXPool3D("temporal", self.roi_head.bbox_head.temporal_pool_type)
         self.roi_head.bbox_head.spatial_pool = ONNXPool3D("spatial", self.roi_head.bbox_head.spatial_pool_type)
 
-    def forward_infer(self, imgs, img_metas):
+    # pylint: disable=no-self-argument
+    @FUNCTION_REWRITER.register_rewriter("mmdet.models.detectors.base.BaseDetector.forward")
+    def forward_infer(ctx, self, imgs, img_metas):
         """Forward function for inference without pre-proposal."""
-        clip_len = imgs[0].shape[2]
-        img = imgs[0][:, :, int(clip_len / 2), :, :]
-        det_bboxes, det_labels = self.detector.onnx_export(img, img_metas[0])
+        clip_len = imgs.shape[2]
+        img = imgs[:, :, int(clip_len / 2), :, :]
+        det_bboxes, det_labels = self.detector.simple_test(img, img_metas[0])
         prediction = [det_bboxes[0][det_labels[0] == 0]]
-        prediction = self.forward_test(imgs, img_metas, proposals=[prediction])
+        prediction = self.simple_test(imgs, img_metas[0], proposals=prediction)
         return prediction
