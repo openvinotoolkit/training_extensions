@@ -219,7 +219,7 @@
 <li class="toctree-l4"><a class="reference internal" href="semantic_segmentation.html">Semantic Segmentation model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="anomaly_detection.html">Anomaly Detection Tutorial</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">Action Classification model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="action_detection.html">Action Detection  model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="action_detection.html">Action Detection model</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../demo.html">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
@@ -477,7 +477,7 @@
 To learn more about Action Classification task, refer to <a class="reference internal" href="../../../explanation/algorithms/action/action_classification.html"><span class="doc">Action Classification</span></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To learn more about managing the training process of the model including additional parameters and its modification, refer to <a class="reference internal" href="detection.html"><span class="doc">Object Detection model</span></a>.</p>
+<p>To learn more about managing the training process of the model including additional parameters and modification, refer to <a class="reference internal" href="detection.html"><span class="doc">Object Detection model</span></a>.</p>
 <p>To learn how to deploy the trained model, refer to: <a class="reference internal" href="../deploy.html"><span class="doc">How to deploy the model and use demo in exportable code</span></a>.</p>
 <p>To learn how to run the demo and visualize results, refer to: <a class="reference internal" href="../demo.html"><span class="doc">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</span></a>.</p>
 </div>
@@ -506,7 +506,7 @@ environment:</p>
 </section>
 <section id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
-<p>According to the <a class="reference external" href="https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51">documentation</a> provided by mmaction2, ensure that the <a class="reference external" href="https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/">HMDB51</a> dataset is structured as follows:</p>
+<p>According to the <a class="reference external" href="https://mmaction2.readthedocs.io/en/latest/supported_datasets.html#hmdb51">documentation</a> provided by mmaction2, you need to ensure that the <a class="reference external" href="https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/">HMDB51</a> dataset is structured as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>training_extensions
 ├── data
 │   ├── hmdb51
@@ -537,8 +537,8 @@ environment:</p>
 |
 </pre></div>
 </div>
-<p>Once you have the dataset structured properly, copy <code class="docutils literal notranslate"><span class="pre">mmaction2/data</span></code> folder which has hmdb51 dataset to <code class="docutils literal notranslate"><span class="pre">training_extensions/data</span></code>.
-And you can now convert it to the <a class="reference external" href="https://www.cvat.ai/">CVAT</a> format using the following command:</p>
+<p>Once you have the dataset structured properly, copy <code class="docutils literal notranslate"><span class="pre">mmaction2/data</span></code> folder, which contains hmdb51 dataset, to <code class="docutils literal notranslate"><span class="pre">training_extensions/data</span></code>.
+Then, you can now convert it to the <a class="reference external" href="https://www.cvat.ai/">CVAT</a> format using the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
                    --task action_classification \
                    --src_path ./data/hmdb51/rawframes \
@@ -579,8 +579,8 @@ And you can now convert it to the <a class="reference external" href="https://ww
 </section>
 <section id="training">
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this heading">#</a></h2>
-<p>1. We need to choose, which action classification model we want to train.
-Using the following command we’ll see the list of supported templates:</p>
+<p>1. You need to choose, which action classification model you want to train.
+To see the list of supported templates, run the following command:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>OpenVINO™ Training Extensions is supporting only X3D model template now, other architecture will be supported in near future.</p>
@@ -608,31 +608,31 @@ the action classification task by running the following command:</p>
 (otx) ...$ cd ./otx-workspace-ACTION_CLASSIFICATION
 </pre></div>
 </div>
-<p>It will create <strong>otx-workspace-ACTION_CLASSIFICATION</strong> with all necessary configs for X3D, prepared <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands.</p>
+<p>It will create <strong>otx-workspace-ACTION_CLASSIFICATION</strong> with all necessary configs for X3D and prepare <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> to simplify CLI commands.</p>
 <p>3. To begin training, simply run <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>
 from <strong>within the workspace directory</strong>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train
 </pre></div>
 </div>
 <p>That’s it! The training will return artifacts: <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code>, which are needed as input for the further commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>,  <code class="docutils literal notranslate"><span class="pre">optimize</span></code>,  etc.</p>
-<p>The training time highly relies on the hardware characteristics, for example on single NVIDIA GeForce RTX 3090 the training took about 10 minutes.</p>
-<p>After that, we have the PyTorch action classification model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.</p>
+<p>The training time highly relies on the hardware characteristics. For example, the training took about 10 minutes on a single NVIDIA GeForce RTX 3090.</p>
+<p>After that, you have the PyTorch action classification model trained with OpenVINO™ Training Extensions, which you can use for evaluation, export, optimization and deployment.</p>
 </section>
 <section id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this heading">#</a></h2>
 <p>1. To evaluate the trained model on a specific dataset, use the <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> command with
 the following arguments:</p>
 <p>The eval function receives test annotation information and model snapshot, trained in the previous step.
-Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be located in the same folder as the model snapshot.</p>
+Keep in mind that <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be in the same folder as the model snapshot.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a frame-wise accuracy for action classification. Note, that top-1 accuracy during training is video-wise accuracy.</p>
-<p>2. The command below will run validation on our dataset
+<p>2. The command below will run validation on the dataset
 and save performance results in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                     --load-weights models/weights.pth \
                     --save-performance performance.json
 </pre></div>
 </div>
-<p>We will get a validation output similar to this:</p>
+<p>You will get a similar validation output:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
 
   <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">22</span> <span class="mi">00</span><span class="p">:</span><span class="mi">08</span><span class="p">:</span><span class="mi">45</span><span class="p">,</span><span class="mi">156</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Model</span> <span class="n">architecture</span><span class="p">:</span> <span class="n">X3D</span>
@@ -647,8 +647,8 @@ and save performance results in <code class="docutils literal notranslate"><span
 <section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
-<p>2. We can run the below command line to export the trained model
+It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+<p>2. Run the command line below to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_models</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights models/weights.pth \
                       --save-model-to openvino_models
@@ -666,7 +666,7 @@ Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/late
 2023-02-21 22:54:35,424 - mmaction - INFO - Exporting completed
 </pre></div>
 </div>
-<p>3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+<p>3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
 using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                     --load-weights openvino_models/openvino.xml \
@@ -680,10 +680,10 @@ Performance(score: 0.6357698983041397, dashboard: (3 metric groups))
 </section>
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
-<p>1. We can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-Only POT is supported for action classsification now. NNCF will be supported in near future.
-Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
-<p>2.  Command example for optimizing
+<p>1. You can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
+Currently, only POT is supported for action classsification. NNCF will be supported in near future.
+Refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section for more details on model optimization.</p>
+<p>2. Example command for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
                         --save-model-to pot_model
@@ -693,8 +693,8 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
 Performance(score: 0.6252587703095486, dashboard: (3 metric groups))
 </pre></div>
 </div>
-<p>Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
-<p>3. Now we have fully trained, optimized and exported an
+<p>Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
+<p>3. Now, you have fully trained, optimized and exported an
 efficient model representation ready-to-use action classification model.</p>
 <p>The following tutorials provide further steps on how to <a class="reference internal" href="../deploy.html"><span class="doc">deploy</span></a> and use your model in the <a class="reference internal" href="../demo.html"><span class="doc">demonstration mode</span></a> and visualize results.
 The examples are provided with an object detection model, but it is easy to apply them for action classification by substituting the object detection model with classification one.</p>
@@ -719,7 +719,7 @@ The examples are provided with an object detection model, but it is easy to appl
   <a class='right-next' id="next-link" href="action_detection.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Action Detection  model</p>
+      <p class="prev-next-title">Action Detection model</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>

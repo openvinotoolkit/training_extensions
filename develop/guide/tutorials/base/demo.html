@@ -219,7 +219,7 @@
 <li class="toctree-l4"><a class="reference internal" href="how_to_train/semantic_segmentation.html">Semantic Segmentation model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="how_to_train/anomaly_detection.html">Anomaly Detection Tutorial</a></li>
 <li class="toctree-l4"><a class="reference internal" href="how_to_train/action_classification.html">Action Classification model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="how_to_train/action_detection.html">Action Detection  model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="how_to_train/action_detection.html">Action Detection model</a></li>
 </ul>
 </li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</a></li>
@@ -473,13 +473,13 @@
               
   <section id="how-to-run-the-demonstration-mode-with-openvino-training-extensions-cli">
 <h1>How to run the demonstration mode with OpenVINO™ Training Extensions CLI<a class="headerlink" href="#how-to-run-the-demonstration-mode-with-openvino-training-extensions-cli" title="Permalink to this heading">#</a></h1>
-<p>In this tutorial we will show how to run <a class="reference internal" href="how_to_train/index.html"><span class="doc">trained</span></a> model inside OTX repository in demonstration mode.
-It allows us to apply our model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.</p>
+<p>This tutorial shows how to run <a class="reference internal" href="how_to_train/index.html"><span class="doc">trained</span></a> model inside OTX repository in demonstration mode.
+It allows you to apply the model on the custom data or the online footage from a web camera and see how it will work in the real-life scenario.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This tutorial uses an object detection model for example, however for other tasks the functionality remains the same - you just need to replace the input dataset with your own.</p>
 </div>
-<p>For visualization we use images from WGISD dataset from the :doc: <cite>object detection tutorial &lt;how_to_train/detection&gt;</cite>.</p>
+<p>For visualization you use images from WGISD dataset from the :doc: <cite>object detection tutorial &lt;how_to_train/detection&gt;</cite>.</p>
 <p>1. Activate the virtual environment
 created in the previous step.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">.</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
@@ -487,7 +487,7 @@ created in the previous step.</p>
 </div>
 <p>2. As an <code class="docutils literal notranslate"><span class="pre">input</span></code> we can use a single image,
 a folder of images, a video file, or a web camera id. We can run the demo on PyTorch (.pth) model and IR (.xml) model.</p>
-<p>The following line will run the demo on your input source, using PyTorch <code class="docutils literal notranslate"><span class="pre">outputs/weights.pth</span></code>.</p>
+<p>The following command will run the demo on your input source, using PyTorch <code class="docutils literal notranslate"><span class="pre">outputs/weights.pth</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
                      --load-weights outputs/weights.pth
 </pre></div>
@@ -513,8 +513,8 @@ we can run the following line:</p>
                      --fit-to-size 800 600 --display-perf
 </pre></div>
 </div>
-<p>6. To run a demo on a web camera, we need to know its ID.
-We can check a list of camera devices by running this command line on Linux system:</p>
+<p>6. To run a demo on a web camera, you need to know its ID.
+You can check a list of camera devices by running the command line below on Linux system:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">v4l</span><span class="o">-</span><span class="n">utils</span>
 <span class="n">v4l2</span><span class="o">-</span><span class="n">ctl</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">devices</span>
 </pre></div>
@@ -524,12 +524,12 @@ We can check a list of camera devices by running this command line on Linux syst
     <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">video0</span>
 </pre></div>
 </div>
-<p>After that, we can use this <code class="docutils literal notranslate"><span class="pre">/dev/video0</span></code> as a camera ID for <code class="docutils literal notranslate"><span class="pre">--input</span></code>.</p>
-<p>Congratulations! Now you have learned how to use base OpenVINO™ Training Extensions functionality. For the advanced features, please refer to the next section called <a class="reference internal" href="../advanced/index.html"><span class="doc">Advanced tutorial</span></a>.</p>
+<p>After that, you can use this <code class="docutils literal notranslate"><span class="pre">/dev/video0</span></code> as a camera ID for <code class="docutils literal notranslate"><span class="pre">--input</span></code>.</p>
+<p>Congratulations! Now you have learned how to use base OpenVINO™ Training Extensions functionality. For the advanced features, refer to the next section called <a class="reference internal" href="../advanced/index.html"><span class="doc">Advanced tutorial</span></a>.</p>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">#</a></h2>
-<p>If you use Anaconda environment, you should consider that OpenVINO has limited <a class="reference external" href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html">Conda support</a> for Python 3.6 and 3.7 versions only. But the demo package requires python 3.8.
-So please use other tools to create the environment (like <code class="docutils literal notranslate"><span class="pre">venv</span></code> or <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>) and use <code class="docutils literal notranslate"><span class="pre">pip</span></code> as a package manager.</p>
+<p>If you use Anaconda environment, keep in mind that OpenVINO has limited <a class="reference external" href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_conda.html">Conda support</a> for Python 3.6 and 3.7 versions only. The demo package requires python 3.8, though.
+Therefore, use other tools to create the environment (like <code class="docutils literal notranslate"><span class="pre">venv</span></code> or <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>) and use <code class="docutils literal notranslate"><span class="pre">pip</span></code> as a package manager.</p>
 </section>
 </section>
 
@@ -545,7 +545,7 @@ So please use other tools to create the environment (like <code class="docutils 
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Action Detection  model</p>
+          <p class="prev-next-title">Action Detection model</p>
       </div>
   </a>
   <a class='right-next' id="next-link" href="deploy.html" title="next page">
