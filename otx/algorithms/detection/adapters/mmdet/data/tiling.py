@@ -410,7 +410,7 @@ class Tile:
         Returns:
             _type_: _description_
         """
-        with Pool(self.nproc) as pool:  
+        with Pool(self.nproc) as pool:
             results = pool.map(Tile.readjust_tile_mask, tile_masks)
         return results
 

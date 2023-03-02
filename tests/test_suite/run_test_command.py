@@ -240,7 +240,9 @@ def otx_eval_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
 
-def otx_eval_openvino_testing(template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}):
+def otx_eval_openvino_testing(
+    template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}
+):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -264,14 +266,14 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold=0.0, crit
     if template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
-        
+
     for k in trained_performance.keys():
         if template.name in criteria.keys():
             result_dict[k] = round(exported_performance[k], 3)
             assert (
                 exported_performance[k] >= modified_criteria
             ), f"Current exported model performance: ({exported_performance[k]}) < criteria: ({modified_criteria})."
-             
+
         assert (
             exported_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
@@ -366,7 +368,9 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
     )
 
 
-def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}):
+def otx_eval_deployment_testing(
+    template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}
+):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -386,7 +390,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0, cr
         exported_performance = json.load(read_file)
     with open(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json") as read_file:
         deployed_performance = json.load(read_file)
-    
+
     if template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
@@ -483,7 +487,7 @@ def pot_eval_testing(template, root, otx_dir, args, criteria={}, reg_threshold=0
     if template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
-    
+
     for k in pot_performance.keys():
         if template.name in criteria.keys():
             result_dict[k] = round(pot_performance[k], 3)
@@ -568,7 +572,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria={
         trained_performance = json.load(read_file)
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json") as read_file:
         evaluated_performance = json.load(read_file)
-    
+
     if template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
@@ -853,8 +857,7 @@ def otx_eval_compare(
         assert (
             trained_performance[k] >= modified_criteria
         ), f"Current model performance: ({trained_performance[k]}) < criteria: ({modified_criteria})."
-    
-    result_dict["Model size (MB)"] = round(
-        os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")/1e+6, 2
-    )
 
+    result_dict["Model size (MB)"] = round(
+        os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth") / 1e6, 2
+    )

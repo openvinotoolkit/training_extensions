@@ -2,18 +2,18 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import os
-import pytest
 import json
+import os
 from pathlib import Path
 from timeit import default_timer as timer
 
+import pytest
 
 from otx.cli.registry import Registry
 from tests.regression.regression_test_helpers import (
+    REGRESSION_TEST_EPOCHS,
     get_result_dict,
     load_regression_configuration,
-    REGRESSION_TEST_EPOCHS
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -51,21 +51,21 @@ class TestRegressionActionClassification:
         self.acc_metric = "Top-1 acc."
         self.train_time = "Train + val time (sec.)"
         self.infer_time = "Infer time (sec.)"
-        
+
         self.export_time = "Export time (sec.)"
         self.export_eval_time = "Export eval time (sec.)"
-        
+
         self.deploy_time = "Deploy time (sec.)"
         self.deploy_eval_time = "Deploy eval time (sec.)"
-        
+
         self.nncf_time = "NNCF time (sec.)"
         self.nncf_eval_time = "NNCF eval time (sec.)"
-        
+
         self.pot_time = "POT time (sec.)"
         self.pot_eval_time = "POT eval time (sec.)"
-        
+
         self.performance = {}
-        
+
     def teardown(self):
         with open(f"{result_dir}/result.json", "w") as result_file:
             json.dump(result_dict, result_file, indent=4)
@@ -74,34 +74,37 @@ class TestRegressionActionClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         self.performance[template.name] = {}
-        
+
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, action_cls_data_args)
         train_elapsed_time = timer() - train_start_time
-        
+
         infer_start_time = timer()
         otx_eval_compare(
-            template, tmp_dir_path, otx_dir, action_cls_data_args, 
-            action_cls_regression_config["regression_criteria"]["train"], 
+            template,
+            tmp_dir_path,
+            otx_dir,
+            action_cls_data_args,
+            action_cls_regression_config["regression_criteria"]["train"],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
-        
+
         self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
         self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
-        
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_eval_openvino(self, template, tmp_dir_path):
         self.performance[template.name] = {}
-         
+
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         export_start_time = timer()
         otx_export_testing(template, tmp_dir_path)
         export_elapsed_time = timer() - export_start_time
-        
+
         export_eval_start_time = timer()
         otx_eval_openvino_testing(
             template,
@@ -114,7 +117,7 @@ class TestRegressionActionClassification:
             result_dict=self.performance[template.name],
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
-        
+
         self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
         self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
@@ -123,12 +126,12 @@ class TestRegressionActionClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
-        
+
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         pot_start_time = timer()
         pot_optimize_testing(template, tmp_dir_path, otx_dir, action_cls_data_args)
         pot_elapsed_time = timer() - pot_start_time
-        
+
         pot_eval_start_time = timer()
         pot_eval_testing(
             template,
@@ -140,7 +143,7 @@ class TestRegressionActionClassification:
             result_dict=self.performance[template.name],
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
-        
+
         self.performance[template.name][self.pot_time] = round(pot_elapsed_time, 3)
         self.performance[template.name][self.pot_eval_time] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)

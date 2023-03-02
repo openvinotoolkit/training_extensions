@@ -17,30 +17,42 @@ LABEL_TYPES = ["multi_class", "multi_label", "h_label", "supcon"]
 
 REGRESSION_TEST_EPOCHS = "10"
 
-ANOMALY_DATASET_CATEGORIES = ["bottle", "cable", "capsule", "carpet", "grid", "hazelnut", "leather", "metal_nut",
-                              "pill", "screw", "tile", "toothbrush", "transistor", "wood", "zipper"]
+ANOMALY_DATASET_CATEGORIES = [
+    "bottle",
+    "cable",
+    "capsule",
+    "carpet",
+    "grid",
+    "hazelnut",
+    "leather",
+    "metal_nut",
+    "pill",
+    "screw",
+    "tile",
+    "toothbrush",
+    "transistor",
+    "wood",
+    "zipper",
+]
 
 
 TIME_LOG = {
-    "train_time" : "Train + val time (sec.)",
-    "infer_time" : "Infer time (sec.)",
-    
-    "export_time" : "Export time (sec.)",
-    "export_eval_time" : "Export eval time (sec.)",
-    
-    "deploy_time" : "Deploy time (sec.)",
-    "deploy_eval_time" : "Deploy eval time (sec.)",
-    
-    "nncf_time" : "NNCF time (sec.)",
-    "nncf_eval_time" : "NNCF eval time (sec.)",
-    
-    "pot_time" : "POT time (sec.)",
-    "pot_eval_time" : "POT eval time (sec.)"
+    "train_time": "Train + val time (sec.)",
+    "infer_time": "Infer time (sec.)",
+    "export_time": "Export time (sec.)",
+    "export_eval_time": "Export eval time (sec.)",
+    "deploy_time": "Deploy time (sec.)",
+    "deploy_eval_time": "Deploy eval time (sec.)",
+    "nncf_time": "NNCF time (sec.)",
+    "nncf_eval_time": "NNCF eval time (sec.)",
+    "pot_time": "POT time (sec.)",
+    "pot_eval_time": "POT eval time (sec.)",
 }
 
+
 def get_result_dict(task_type: str) -> Dict[str, Any]:
-    result_dict = {task_type:{}}
-    if not "anomaly" in task_type:
+    result_dict = {task_type: {}}
+    if "anomaly" not in task_type:
         for label_type in LABEL_TYPES:
             result_dict[task_type][label_type] = {}
             for train_type in TRAIN_TYPES:
@@ -52,7 +64,7 @@ def get_result_dict(task_type: str) -> Dict[str, Any]:
             result_dict[task_type][test_type] = {}
             for category in ANOMALY_DATASET_CATEGORIES:
                 result_dict[task_type][test_type][category] = []
-        
+
     return result_dict
 
 
@@ -72,7 +84,7 @@ def load_regression_config(otx_dir: str) -> Dict[str, Any]:
 
 
 def load_regression_configuration(
-    otx_dir: str, task_type: str, train_type: str="", label_type: str=""
+    otx_dir: str, task_type: str, train_type: str = "", label_type: str = ""
 ) -> Dict[str, Union[str, int, float]]:
     """Load dataset path according to task, train, label types.
 
