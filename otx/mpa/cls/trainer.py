@@ -62,14 +62,8 @@ class ClsTrainer(ClsStage):
             cfg.checkpoint_config.meta = dict(mmcls_version=__version__)
             if hasattr(repr_ds, "tasks"):
                 cfg.checkpoint_config.meta["tasks"] = repr_ds.tasks
-            else:
+            if hasattr(repr_ds, "CLASSES"):
                 cfg.checkpoint_config.meta["CLASSES"] = repr_ds.CLASSES
-            if "task_adapt" in cfg:
-                if hasattr(self, "model_tasks"):  # for incremnetal learning
-                    cfg.checkpoint_config.meta.update({"tasks": self.model_tasks})
-                    # instead of update(self.old_tasks), update using "self.model_tasks"
-                else:
-                    cfg.checkpoint_config.meta.update({"CLASSES": self.model_classes})
 
         self.configure_samples_per_gpu(cfg, "train", self.distributed)
         self.configure_fp16_optimizer(cfg, self.distributed)
@@ -83,10 +77,6 @@ class ClsTrainer(ClsStage):
             self._modify_cfg_for_distributed(model, cfg)
 
         self.configure_compat_cfg(cfg)
-
-        # Save config
-        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
-        # logger.info(f'Config:\n{cfg.pretty_text}')
 
         # register custom eval hooks
         validate = True if cfg.data.get("val", None) else False

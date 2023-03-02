@@ -1,14 +1,14 @@
 How to deploy the model and use demo in exportable code
 =======================================================
 
-This guide shows, how to deploy a model trained in the :doc:`previous stage <how_to_train/index>` and visualize it outside of this repository.
-As a result of this step, we'll get the exported model together with the self-contained python package and a demo application to visualize results in other environment without long installation process.
+This guide explains how to deploy a model trained in the :doc:`previous stage <how_to_train/index>` and visualize it outside of this repository.
+As a result of this step, you'll get the exported model together with the self-contained python package and a demo application to visualize results in other environment without long installation process.
 
 .. NOTE::
     To learn how to use demonstration mode inside this repository utilizing OTX CLI , refer to :doc:`demo`.
 
-To be specific, this tutorial uses as an example the object detection ATSS model trained and exported in the previuos step and located in ``outputs/openvino``.
-But it can be runned for any task in the same manner.
+To be specific, this tutorial uses the object detection ATSS model trained and exported in the previuos step, which is located in ``outputs/openvino``.
+Nevertheless, it can be run for any task in the same manner.
 
 **********
 Deployment
@@ -38,7 +38,7 @@ archive with the following files:
   - ``requirements.txt`` - minimal packages required to run the demo
 
 
-3. We can deploy the model exported to IR, 
+3. You can deploy the model exported to IR, 
 using the command below:
 
 .. code-block::
@@ -52,9 +52,9 @@ using the command below:
     2023-01-20 09:30:41,737 | INFO : Deploying the model
     2023-01-20 09:30:41,753 | INFO : Deploying completed
 
-We also can deploy the quantized model, that was optimized with NNCF or POT, passing the path to this model in IR format to ``--load-weights`` parameter.
+You can also deploy the quantized model, that was optimized with NNCF or POT, passing the path to this model in IR format to ``--load-weights`` parameter.
 
-After that, we can use the resulting ``openvino.zip`` archive in other application. 
+After that, you can use the resulting ``openvino.zip`` archive in other application. 
 
 *************
 Demonstrarion

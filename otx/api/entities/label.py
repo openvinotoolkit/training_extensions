@@ -5,6 +5,7 @@
 
 
 import datetime
+import os
 from enum import Enum, auto
 from typing import Optional
 
@@ -25,8 +26,9 @@ class Domain(Enum):
     ANOMALY_SEGMENTATION = auto()
     INSTANCE_SEGMENTATION = auto()
     ROTATED_DETECTION = auto()
-    ACTION_CLASSIFICATION = auto()
-    ACTION_DETECTION = auto()
+    if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+        ACTION_CLASSIFICATION = auto()
+        ACTION_DETECTION = auto()
 
     def __str__(self):
         """Returns Domain name."""
