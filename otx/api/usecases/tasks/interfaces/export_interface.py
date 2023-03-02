@@ -21,7 +21,11 @@ class IExportTask(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def export(
-        self, export_type: ExportType, output_model: ModelEntity, precision: ModelPrecision, dump_features: bool = True  # FIXME: False
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision,
+        dump_features: bool = True,  # FIXME: False
     ):
         """This method defines the interface for export.
 
