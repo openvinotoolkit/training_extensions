@@ -56,7 +56,9 @@ def _convert_sync_batch_to_normal_batch(module: BaseModule):
 class Exporter:
     """Export class for action recognition model using mmdeploy framework."""
 
-    def __init__(self, recipe_cfg: Config, weights: OrderedDict, deploy_cfg: Config, work_dir: str):
+    def __init__(
+        self, recipe_cfg: Config, weights: OrderedDict, deploy_cfg: Config, work_dir: str, half_precision: bool
+    ):
         """Initialize Exporter.
 
         Args:
@@ -64,6 +66,7 @@ class Exporter:
             weights (str): model weights
             deploy_cfg (Config): deploy config which contains deploy info
             work_dir (str): path to save onnx and openvino xml file
+            half_precision (bool): whether to use half-precision(FP16)
         """
 
         self.task_processor = build_task_processor(recipe_cfg, deploy_cfg, "cpu")
@@ -75,6 +78,8 @@ class Exporter:
         self.input_tensor, self.input_metas = self._get_inputs()
         self.work_dir = work_dir
         self.context_info = {"deploy_cfg": deploy_cfg}
+        if half_precision:
+            self.deploy_cfg.backend_config.mo_options["flags"] = ["--compress_to_fp16"]
 
     def _get_model(self) -> torch.nn.Module:
         """Prepare torch model for exporting."""

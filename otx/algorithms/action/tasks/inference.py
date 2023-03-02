@@ -347,7 +347,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         self._init_task(export=True, dump_features=dump_features)
 
         self._precision[0] = precision
-        # half_precision = precision == ModelPrecision.FP16
+        half_precision = precision == ModelPrecision.FP16
 
         try:
             from torch.jit._trace import TracerWarning
@@ -358,6 +358,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
                 self._model.state_dict(),
                 self.deploy_cfg,
                 f"{self._output_path}/openvino",
+                half_precision,
             )
             exporter.export()
             bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
