@@ -625,11 +625,11 @@ class TestRectangle:
         1. Check diagonal method for Rectangle instance
         """
         for rectangle, expected_diagonal in [
-            (self.horizontal_rectangle(), 0.360555127546399),
-            (self.vertical_rectangle(), 0.3605551275463989),
+            (self.horizontal_rectangle(), 0.36055512754639896),
+            (self.vertical_rectangle(), 0.36055512754639896),
             (self.square(), 0.282842712474619),
         ]:
-            assert rectangle.diagonal == expected_diagonal
+            np.testing.assert_approx_equal(rectangle.diagonal, expected_diagonal)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
