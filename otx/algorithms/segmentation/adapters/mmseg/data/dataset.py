@@ -129,9 +129,6 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         dataset_labels = self.otx_dataset.get_labels(include_empty=False)
         self.project_labels = self.filter_labels(dataset_labels, classes)
         self.CLASSES, self.PALETTE = self.get_classes_and_palette(classes, None)
-        self.CLASSES = [classes[0]] + [
-            label.name for label in sorted(self.project_labels)
-        ]  # FIXME : how to deal with id sorting mismatch
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset
         # uses a proxy class with overriden __len__ and __getitem__; this proxy class
@@ -266,6 +263,10 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
         else:
             classes = []
         super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
+        self.CLASSES = [classes[0]] + [
+            label.name for label in sorted(self.project_labels)
+        ]  # FIXME : how to deal with id sorting mismatch
+
         if self.label_map is None:
             self.label_map = {}
             for i, c in enumerate(self.CLASSES):

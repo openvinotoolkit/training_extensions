@@ -137,7 +137,6 @@ class DiceAverage(IPerformanceProvider):
         all_cardinality: Dict[Optional[LabelEntity], int],
         average: MetricAverageMethod,
     ) -> Tuple[ScoreMetric, Dict[LabelEntity, ScoreMetric]]:
-
         """Computes dice score using intersection and cardinality dictionaries.
 
         Both dictionaries must contain the same set of keys.
