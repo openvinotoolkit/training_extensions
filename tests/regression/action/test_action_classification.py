@@ -12,6 +12,7 @@ import pytest
 from otx.cli.registry import Registry
 from tests.regression.regression_test_helpers import (
     REGRESSION_TEST_EPOCHS,
+    TIME_LOG,
     get_result_dict,
     load_regression_configuration,
 )
@@ -48,22 +49,6 @@ action_cls_data_args["train_params"] = ["params", "--learning_parameters.num_ite
 class TestRegressionActionClassification:
     def setup_method(self):
         self.label_type = LABEL_TYPE
-        self.acc_metric = "Top-1 acc."
-        self.train_time = "Train + val time (sec.)"
-        self.infer_time = "Infer time (sec.)"
-
-        self.export_time = "Export time (sec.)"
-        self.export_eval_time = "Export eval time (sec.)"
-
-        self.deploy_time = "Deploy time (sec.)"
-        self.deploy_eval_time = "Deploy eval time (sec.)"
-
-        self.nncf_time = "NNCF time (sec.)"
-        self.nncf_eval_time = "NNCF eval time (sec.)"
-
-        self.pot_time = "POT time (sec.)"
-        self.pot_eval_time = "POT eval time (sec.)"
-
         self.performance = {}
 
     def teardown(self):
@@ -91,8 +76,8 @@ class TestRegressionActionClassification:
         )
         infer_elapsed_time = timer() - infer_start_time
 
-        self.performance[template.name][self.train_time] = round(train_elapsed_time, 3)
-        self.performance[template.name][self.infer_time] = round(infer_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
 
     @e2e_pytest_component
@@ -118,8 +103,8 @@ class TestRegressionActionClassification:
         )
         export_eval_elapsed_time = timer() - export_eval_start_time
 
-        self.performance[template.name][self.export_time] = round(export_elapsed_time, 3)
-        self.performance[template.name][self.export_eval_time] = round(export_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
     @e2e_pytest_component
@@ -144,6 +129,6 @@ class TestRegressionActionClassification:
         )
         pot_eval_elapsed_time = timer() - pot_eval_start_time
 
-        self.performance[template.name][self.pot_time] = round(pot_elapsed_time, 3)
-        self.performance[template.name][self.pot_eval_time] = round(pot_eval_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
