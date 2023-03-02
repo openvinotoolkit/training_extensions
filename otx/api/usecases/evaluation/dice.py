@@ -123,7 +123,6 @@ class DiceAverage(IPerformanceProvider):
             h_r = mask_from_dataset_item(reference_item, labels).squeeze(2).astype(np.uint8)
             hard_predictions.append(h_p)
             hard_references.append(h_r)
-            
 
         all_intersection, all_cardinality = get_intersections_and_cardinalities(
             hard_references, hard_predictions, labels

@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from otx.api.entities.label import LabelEntity, Domain
+from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.shapes.rectangle import Rectangle
 
 #: Dictionary storing a number for each label. The ``None`` key represents "all labels"
@@ -44,11 +44,11 @@ def get_intersections_and_cardinalities(
     all_cardinalities[background_label_entity] = 0
     for reference, prediction in zip(references, predictions):
         print(np.unique(reference), np.unique(prediction))
-        #breakpoint()
+        # breakpoint()
         intersection = np.where(reference == prediction, reference, -1)
         all_intersections[None] += np.count_nonzero(intersection)
         all_cardinalities[None] += np.count_nonzero(reference) + np.count_nonzero(prediction)
-        
+
         for i, label in enumerate(labels):
             label_num = i + 1
             all_intersections[label] += np.count_nonzero(intersection == label_num)
@@ -59,7 +59,7 @@ def get_intersections_and_cardinalities(
         reference_area = np.count_nonzero(reference == 0)
         prediction_area = np.count_nonzero(prediction == 0)
         all_cardinalities[background_label_entity] += reference_area + prediction_area
-    
+
     breakpoint()
     return all_intersections, all_cardinalities
 
