@@ -107,7 +107,6 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
                 ann_info=dict(labels=self.labels),
                 ignored_labels=ignored_labels,
             )
-            breakpoint()
 
             return data_info
 
@@ -274,4 +273,4 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
                     self.label_map[i] = -1
                 else:
                     self.label_map[i] = classes.index(c)
-            breakpoint()
+            # breakpoint()

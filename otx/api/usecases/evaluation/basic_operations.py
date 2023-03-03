@@ -42,9 +42,38 @@ def get_intersections_and_cardinalities(
     background_label_entity = LabelEntity("background", domain=Domain.SEGMENTATION, id=-1)
     all_intersections[background_label_entity] = 0
     all_cardinalities[background_label_entity] = 0
+    
+    import torch
+    ignore_index = 255
+    num_classes = len(labels) + 1
+
+    for reference, prediction in zip(references, predictions):
+        pred_label = torch.from_numpy((prediction))
+        label = torch.from_numpy(reference)
+
+        mask = (label != ignore_index)
+        pred_label = pred_label[mask]
+        label = label[mask]
+
+        intersect = pred_label[pred_label == label]
+        area_intersect = torch.histc(
+            intersect.float(), bins=(num_classes), min=0, max=num_classes - 1)
+        area_pred_label = torch.histc(
+            pred_label.float(), bins=(num_classes), min=0, max=num_classes - 1)
+        area_label = torch.histc(
+            label.float(), bins=(num_classes), min=0, max=num_classes - 1)
+
+        for i, label in enumerate(labels):
+            all_intersections[label] += area_intersect[i+1]
+            all_cardinalities[label] += area_pred_label[i+1] + area_label[i+1]
+        all_intersections[background_label_entity] += area_intersect[0]
+        all_cardinalities[background_label_entity] += area_pred_label[0] + area_label[0]
+    breakpoint()
+
+    """
     for reference, prediction in zip(references, predictions):
         print(np.unique(reference), np.unique(prediction))
-        # breakpoint()
+        breakpoint()
         intersection = np.where(reference == prediction, reference, -1)
         all_intersections[None] += np.count_nonzero(intersection)
         all_cardinalities[None] += np.count_nonzero(reference) + np.count_nonzero(prediction)
@@ -59,8 +88,10 @@ def get_intersections_and_cardinalities(
         reference_area = np.count_nonzero(reference == 0)
         prediction_area = np.count_nonzero(prediction == 0)
         all_cardinalities[background_label_entity] += reference_area + prediction_area
+    # breakpoint()
+    # FIXME : different with how validation calculate the mdice - cannot reproduce (custom.py:evaluate) - maybe threshold exists in otx eval???
+    """
 
-    breakpoint()
     return all_intersections, all_cardinalities
 
 
