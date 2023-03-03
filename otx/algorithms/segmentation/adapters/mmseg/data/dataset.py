@@ -83,8 +83,8 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
             **kwargs,  # pylint: disable=unused-argument
         ):
             self.otx_dataset = otx_dataset
-            self.labels = labels
-            self.label_idx = {label.id: i for i, label in enumerate(labels)}
+            self.labels = sorted(labels)
+            self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
 
         def __len__(self):
             return len(self.otx_dataset)
