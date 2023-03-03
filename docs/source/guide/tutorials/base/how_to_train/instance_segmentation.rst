@@ -26,10 +26,10 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -43,7 +43,7 @@ environment:
 Dataset preparation
 ***************************
 
-1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_ 
+1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_
 provided by OpenVINO™ Training Extensions.
 
 This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.
@@ -73,7 +73,7 @@ we will need the following file structure:
   ...
 
 .. warning::
-  There may be features that don't work properly with the current toy dataset. We recommend that you proceed with a proper training and validation dataset, 
+  There may be features that don't work properly with the current toy dataset. We recommend that you proceed with a proper training and validation dataset,
   the tutorial and dataset here are for reference only.
 
   We will update this tutorial with larger public datasets soon.
@@ -102,7 +102,7 @@ The list of supported templates for instance segmentation is available with the 
   | INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B | MaskRCNN-EfficientNetB2B | otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml |
   +-----------------------+----------------------------------------------------------------+--------------------------+-----------------------------------------------------------------------------------------------+
 
-2. We need to create 
+2. We need to create
 OpenVINO™ Training Extensions workspace first.
 
 Let's prepare an OpenVINO™ Training Extensions instance segmentation workspace running the following command:
@@ -142,10 +142,14 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessary config
 
   For more information, see :doc:`quick start guide <../../../get_started/quick_start_guide/cli_commands>` or :ref:`detection example <detection_workspace>`.
 
-3. Next, we need to update 
-train/validation set configuration in ``data.yaml``. 
+.. warning::
+  Note, that we can't run CLI commands for instance segmentation via model name, since the same models are utilized for different algorithm and the behavior can be unpredictable.
+  Please, use the template path or template ID instead.
 
-To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. 
+3. Next, we need to update
+train/validation set configuration in ``data.yaml``.
+
+To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter.
 The content of the ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` for dataset should have absolute paths and will be similar to that:
 
 .. note::
@@ -255,7 +259,7 @@ The output of ``./outputs/performance.json`` consists of a dict with target metr
 Export
 *********
 
-1. ``otx export`` exports a trained Pytorch `.pth` model to the 
+1. ``otx export`` exports a trained Pytorch `.pth` model to the
 OpenVINO™ Intermediate Representation (IR) format.
 
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
@@ -277,7 +281,7 @@ and save the exported model to the ``openvino_model`` folder.
   2023-02-21 22:38:21,894 | INFO : run task done.
   2023-02-21 22:38:21,940 | INFO : Exporting completed
 
-3. We can check the accuracy of the IR model and the consistency between 
+3. We can check the accuracy of the IR model and the consistency between
 the exported model and the PyTorch model.
 
 You can use ``otx train`` directly without ``otx build``. It will be required to add ``--train-data-roots`` and ``--val-data-roots`` in the command line:
