@@ -146,9 +146,6 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessary config
   Note, that we can't run CLI commands for instance segmentation via model name, since the same models are utilized for different algorithm and the behavior can be unpredictable.
   Please, use the template path or template ID instead.
 
-3. Next, we need to update
-train/validation set configuration in ``data.yaml``.
-
 To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter.
 The content of the ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` for dataset should have absolute paths and will be similar to that:
 
