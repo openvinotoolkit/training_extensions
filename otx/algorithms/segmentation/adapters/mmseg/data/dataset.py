@@ -45,6 +45,7 @@ def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[La
     :param labels: List of labels in the project
     :return dict: annotation information dict in mmseg format
     """
+
     gt_seg_map = mask_from_dataset_item(dataset_item, labels)
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
 
@@ -84,7 +85,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         ):
             self.otx_dataset = otx_dataset
             self.labels = labels
-            self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
+            self.label_idx = {label.id: i for i, label in enumerate(labels)}
 
         def __len__(self):
             return len(self.otx_dataset)
@@ -144,7 +145,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
     @staticmethod
     @check_input_parameters_type()
     def filter_labels(all_labels: List[LabelEntity], label_names: List[str]) -> List[LabelEntity]:
-        """Filter and collect label entities."""
+        """Filter and collect actual label entities."""
         filtered_labels = []
         for label_name in label_names:
             matches = [label for label in all_labels if label.name == label_name]
@@ -262,9 +263,9 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
         else:
             classes = []
         super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
-        self.CLASSES = ["background"] + [
-            label.name for label in self.project_labels
-        ]  # FIXME : how to deal with id sorting mismatch
+
+        # TODO [Soobee] : Need to align again when background label is removed
+        self.CLASSES = ["background"] + [label.name for label in self.project_labels]
 
         if self.label_map is None:
             self.label_map = {}
@@ -273,4 +274,3 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
                     self.label_map[i] = -1
                 else:
                     self.label_map[i] = classes.index(c)
-            # breakpoint()

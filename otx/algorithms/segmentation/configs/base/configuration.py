@@ -100,7 +100,7 @@ class SegmentationConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
         soft_threshold = configurable_float(
-            default_value=0.0,
+            default_value=0.5,
             header="Soft threshold",
             description="The threshold to apply to the probability output of the model, for each pixel. A higher value "
             "means a stricter segmentation prediction.",

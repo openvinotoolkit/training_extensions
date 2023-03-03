@@ -93,9 +93,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._label_dictionary = {}  # type: Dict
 
         super().__init__(SegmentationConfig, task_environment, **kwargs)
-        # self._label_dictionary = dict(enumerate(self._labels, 1))
         self._label_dictionary = dict(enumerate(sorted(self._labels), 1))
-        # breakpoint()
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -258,7 +256,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
         """Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTX format."""
 
-        breakpoint()
         for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
             hard_prediction = create_hard_prediction_from_soft_prediction(
@@ -271,7 +268,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 soft_prediction=soft_prediction,
                 label_map=self._label_dictionary,
             )
-            # breakpoint()
             dataset_item.append_annotations(annotations=annotations)
 
             if feature_vector is not None:
