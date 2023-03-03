@@ -83,7 +83,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
             **kwargs,  # pylint: disable=unused-argument
         ):
             self.otx_dataset = otx_dataset
-            self.labels = sorted(labels)
+            self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
 
         def __len__(self):
@@ -127,7 +127,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         self.label_map = None
 
         dataset_labels = self.otx_dataset.get_labels(include_empty=False)
-        self.project_labels = self.filter_labels(dataset_labels, classes)
+        self.project_labels = sorted(self.filter_labels(dataset_labels, classes))
         self.CLASSES, self.PALETTE = self.get_classes_and_palette(classes, None)
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset
@@ -144,8 +144,8 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
     @staticmethod
     @check_input_parameters_type()
-    def filter_labels(all_labels: List[LabelEntity], label_names: List[str]):
-        """Filtering Labels function."""
+    def filter_labels(all_labels: List[LabelEntity], label_names: List[str]) -> List[LabelEntity]:
+        """Filter and collect label entities."""
         filtered_labels = []
         for label_name in label_names:
             matches = [label for label in all_labels if label.name == label_name]
@@ -264,7 +264,7 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
             classes = []
         super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
         self.CLASSES = ["background"] + [
-            label.name for label in sorted(self.project_labels)
+            label.name for label in self.project_labels
         ]  # FIXME : how to deal with id sorting mismatch
 
         if self.label_map is None:
