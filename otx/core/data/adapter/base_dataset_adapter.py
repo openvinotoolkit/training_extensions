@@ -75,6 +75,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             unlabeled_data_roots=unlabeled_data_roots,
         )
 
+
         self.category_items: Dict[DatumaroAnnotationType, DatumaroCategories]
         self.label_groups: List[str]
         self.label_entities: List[LabelEntity]
@@ -107,7 +108,6 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             # Find self.data_type and task_type
             self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
-
             train_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
             # Prepare subsets by using Datumaro dataset
