@@ -10,6 +10,10 @@ ir_config = dict(
     output_names=["logits"],
     input_shape=None,
     optimize=True,
+    dynamic_axes=dict(
+        data=dict({0: "batch"}),
+        logits=dict({0: "batch"}),
+    ),
 )
 codebase_config = dict(type="mmaction", task="VideoRecognition")
 backend_config = dict(
