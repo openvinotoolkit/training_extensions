@@ -15,6 +15,8 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
@@ -42,15 +44,25 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    shapes: List[Annotation] = []
+                    datumaro_labels = []
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.label:
-                            shapes.append(self._get_label_entity(ann))
+                            datumaro_labels.append(ann.label)
 
+                    shapes = self._get_cls_shapes(datumaro_labels)
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
+
                     dataset_items.append(dataset_item)
 
         return DatasetEntity(items=dataset_items)
+
+    def _get_cls_shapes(self, datumaro_labels: List[int]) -> List[Annotation]:
+        """Converts a list of datumaro labels to Annotation object."""
+        otx_labels = []
+        for d_label in datumaro_labels:
+            otx_labels.append(ScoredLabel(label=self.label_entities[d_label], probability=1.0))
+
+        return [Annotation(Rectangle.generate_full_box(), labels=otx_labels)]
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
