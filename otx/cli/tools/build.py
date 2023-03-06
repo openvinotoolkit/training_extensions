@@ -26,6 +26,7 @@ SUPPORTED_TASKS = (
     "CLASSIFICATION",
     "DETECTION",
     "INSTANCE_SEGMENTATION",
+    "ROTATED_DETECTION",
     "SEGMENTATION",
     "ACTION_CLASSIFICATION",
     "ACTION_DETECTION",
@@ -110,6 +111,8 @@ def main():
         if not args.backbone.endswith((".yml", ".yaml", ".json")):
             backbone_config_file = str(config_manager.workspace_root / "backbone.yaml")
             missing_args = builder.build_backbone_config(args.backbone, backbone_config_file)
+        else:
+            backbone_config_file = args.backbone
         if missing_args:
             print(
                 f"[!] {args.backbone} backbone has inputs that the user must enter.\n"

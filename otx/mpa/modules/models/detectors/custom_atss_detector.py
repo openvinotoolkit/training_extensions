@@ -86,10 +86,14 @@ if is_mmdeploy_enabled():
         feat = self.extract_feat(img)
         outs = self.bbox_head(feat)
         bbox_results = self.bbox_head.get_bboxes(*outs, img_metas=img_metas, cfg=self.test_cfg, **kwargs)
-        feature_vector = FeatureVectorHook.func(feat)
-        cls_scores = outs[0]
-        saliency_map = DetSaliencyMapHook(self).func(cls_scores, cls_scores_provided=True)
-        return (*bbox_results, feature_vector, saliency_map)
+
+        if ctx.cfg["dump_features"]:
+            feature_vector = FeatureVectorHook.func(feat)
+            cls_scores = outs[0]
+            saliency_map = DetSaliencyMapHook(self).func(cls_scores, cls_scores_provided=True)
+            return (*bbox_results, feature_vector, saliency_map)
+
+        return bbox_results
 
     @mark("custom_atss_forward", inputs=["input"], outputs=["dets", "labels", "feats", "saliencies"])
     def __forward_impl(ctx, self, img, img_metas, **kwargs):

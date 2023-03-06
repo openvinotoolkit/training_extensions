@@ -147,19 +147,33 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity):
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = True,
+    ):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        if not dump_features:
+            logger.warning(
+                "Ommitting feature dumping is not implemented."
+                "The saliency maps and representation vector outputs will be dumped in the exported model."
+            )
 
         stage_module = "SegExporter"
         results = self._run_task(
             stage_module,
             mode="train",
             export=True,
+            dump_features=dump_features,
+            enable_fp16=(precision == ModelPrecision.FP16),
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
@@ -174,7 +188,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
         output_model.optimization_methods = self._optimization_methods
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
@@ -220,7 +234,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
     def _update_stage_module(self, stage_module: str):
         module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
-        if self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
+        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "SegExporter":
+            stage_module = "SemiSLSegExporter"
+        elif self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
             stage_module = module_prefix[self._train_type] + stage_module
 
         return stage_module

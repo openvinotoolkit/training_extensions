@@ -1,18 +1,14 @@
-OpenVINO Training Extensions -- OTX
-===================================
+Welcome to Intel OpenVINO Training Extensions's develop documentation!
+======================================================================
 
 .. toctree::
-   :maxdepth: 1
+   :hidden:
 
-   get_started/index
-   tutorials/index
-   explanation/index
-   reference/index
-   release_notes/index
+   guide/index
 
-
+******************
 Indices and tables
-==================
+******************
 
 * :ref:`genindex`
 * :ref:`modindex`

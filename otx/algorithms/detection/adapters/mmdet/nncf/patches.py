@@ -21,6 +21,7 @@ from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
 from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
+    is_in_nncf_tracing,
     nncf_trace_wrapper,
     no_nncf_trace_wrapper,
 )
@@ -66,21 +67,21 @@ def _should_wrap(obj_cls, fn_name, targets):
 def _wrap_mmdet_head(obj_cls):
     for fn_name in HEADS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, HEADS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
             # 'onnx_export' method calls 'forward' method which need to be traced
-            NNCF_PATCHER.patch(getattr(obj_cls, "forward"), nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, "forward"), nncf_trace_wrapper)
 
 
 def _wrap_mmdet_bbox_assigner(obj_cls):
     for fn_name in BBOX_ASSIGNERS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, BBOX_ASSIGNERS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
 def _wrap_mmdet_sampler(obj_cls):
     for fn_name in SAMPLERS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, SAMPLERS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
 # pylint: disable=invalid-name,unused-argument
@@ -118,6 +119,30 @@ NNCF_PATCHER.patch(
 )
 NNCF_PATCHER.patch("mmdet.core.bbox2result", no_nncf_trace_wrapper)
 NNCF_PATCHER.patch("mmdet.core.bbox2roi", no_nncf_trace_wrapper)
+
+
+def _wrap_is_in_onnx_export(ctx, fn):
+    # TODO: find a better way to solve this w/o patching 'torch.onnx.is_in_onnx_export'
+    #
+    # prevent incomplete graph building for MaskRCNN models
+    #
+    # possible alternatives
+    #    - take the onnx branch in all cases
+
+    import inspect
+
+    stack = inspect.stack()
+    frame_info = stack[2]
+    if (
+        frame_info.function == "forward"
+        and "self" in frame_info.frame.f_locals.keys()
+        and frame_info.frame.f_locals["self"].__class__.__name__ == "SingleRoIExtractor"
+    ):
+        return fn() or is_in_nncf_tracing()
+    return fn()
+
+
+NNCF_PATCHER.patch("torch.onnx.is_in_onnx_export", _wrap_is_in_onnx_export)
 
 # add nncf context method that will be used when nncf tracing
 BaseDetector.nncf_trace_context = nncf_trace_context

@@ -255,6 +255,7 @@ def export_model(
     config: Config,
     onnx_model_path: Optional[str] = None,
     output_dir_path: Optional[str] = None,
+    half_precision: Optional[bool] = False,
 ):
     """Export PyTorch model into OpenVINO model."""
     if isinstance(model, Recognizer3D):
@@ -264,4 +265,5 @@ def export_model(
         input_shape = [1, 3, 32, 256, 256]
         layout = "bctwh"
     pytorch2onnx(model, input_shape=input_shape, output_file=onnx_model_path)
-    onnx2openvino(config, onnx_model_path, output_dir_path, layout, input_shape)
+    precision = "FP16" if half_precision else "FP32"
+    onnx2openvino(config, onnx_model_path, output_dir_path, layout, input_shape, precision=precision)

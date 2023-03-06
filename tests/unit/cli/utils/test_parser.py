@@ -89,7 +89,9 @@ def mock_args(mocker):
 
 @e2e_pytest_unit
 def test_gen_params_dict_from_args(mock_args):
-    param_dict = gen_params_dict_from_args(mock_args)
+    param_dict = gen_params_dict_from_args(
+        mock_args, ["params.a.a", "params.a.b", "params.a.c", "params.b", "params.c"]
+    )
 
     assert param_dict["a"]["a"]["value"] == 1
     assert param_dict["a"]["b"]["value"] == 2.1
@@ -109,7 +111,9 @@ def test_gen_params_dict_from_args_with_type_hint(mock_args):
         "c": {"type": str},
     }
 
-    param_dict = gen_params_dict_from_args(mock_args, type_hint)
+    param_dict = gen_params_dict_from_args(
+        mock_args, ["params.a.a", "params.a.b", "params.a.c", "params.b", "params.c"], type_hint
+    )
 
     assert param_dict["a"]["a"]["value"] == "1"
     assert param_dict["a"]["b"]["value"] == 2

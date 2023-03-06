@@ -3,7 +3,7 @@
 _base_ = ["../../base/deployments/base_detection_dynamic.py"]
 
 ir_config = dict(
-    output_names=["boxes", "labels", "feature_vector", "saliency_map"],
+    output_names=["boxes", "labels"],
 )
 
 backend_config = dict(

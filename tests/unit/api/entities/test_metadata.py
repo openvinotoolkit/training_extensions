@@ -179,8 +179,7 @@ class TestMetadataItemEntity:
         assert test_instance0 == test_instance1 != test_instance2
         __repr = repr(test_instance0)
         repr_pattern = (
-            r"MetadataItemEntity\(model=\<otx.api.entities.model.ModelEntity object at"
-            r" 0x[a-fA-F0-9]{10,32}\>\, data\=default_i_metadata\)"
+            r"MetadataItemEntity\(model=\<otx.api.entities.model.ModelEntity object at" r" 0x[a-fA-F0-9]{10,32}\>\)"
         )
         assert re.match(repr_pattern, __repr)
 

@@ -410,8 +410,8 @@ class Tile:
         Returns:
             _type_: _description_
         """
-        pool = Pool(self.nproc)  # pylint: disable=consider-using-with
-        results = pool.map(Tile.readjust_tile_mask, tile_masks)
+        with Pool(self.nproc) as pool:
+            results = pool.map(Tile.readjust_tile_mask, tile_masks)
         return results
 
     # pylint: disable=too-many-locals

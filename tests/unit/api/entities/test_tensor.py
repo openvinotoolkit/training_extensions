@@ -139,4 +139,4 @@ class TestTensorEntity:
         Test passes if value returned by __repr__ method is equal to expected
         """
         tensor = self.tensor()
-        assert repr(tensor) == f"TensorEntity(name=Test Tensor, numpy={tensor.numpy})"
+        assert repr(tensor) == "TensorEntity(name=Test Tensor)"

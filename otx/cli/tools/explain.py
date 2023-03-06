@@ -36,10 +36,12 @@ from otx.cli.utils.parser import (
 ESC_BUTTON = 27
 SUPPORTED_EXPLAIN_ALGORITHMS = ["activationmap", "eigencam", "classwisesaliencymap"]
 
+# pylint: disable=too-many-locals
+
 
 def get_args():
     """Parses command line arguments."""
-    parser, hyper_parameters, _ = get_parser_and_hprams_data()
+    parser, hyper_parameters, params = get_parser_and_hprams_data()
 
     parser.add_argument(
         "--explain-data-roots",
@@ -70,21 +72,22 @@ def get_args():
         help="weight of the saliency map when overlaying the saliency map",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
+    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
 
-    return parser.parse_args()
+    return parser.parse_args(), override_param
 
 
 def main():
     """Main function that is used for model explanation."""
 
-    args = get_args()
+    args, override_param = get_args()
 
     config_manager = ConfigManager(args, mode="eval")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
     # Update Hyper Parameter Configs
-    hyper_parameters = config_manager.get_hyparams_config()
+    hyper_parameters = config_manager.get_hyparams_config(override_param)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     template = config_manager.template
@@ -118,19 +121,22 @@ def main():
 
     image_files = get_image_files(args.explain_data_roots)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)
+    explain_parameters = InferenceParameters(
+        is_evaluation=False,
+        explainer=args.explain_algorithm,
+        explain_predicted_classes=False,
+    )
     explained_dataset = task.explain(
         dataset_to_explain.with_empty_annotations(),
-        InferenceParameters(
-            is_evaluation=False,
-            explainer=args.explain_algorithm,
-        ),
+        explain_parameters,
     )
 
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
         for metadata in explained_data.get_metadata():
             saliency_data = metadata.data
-            fname = f"{Path(Path(filename).name).stem[0]}_{saliency_data.name}".replace(" ", "_")
+            fname = f"{Path(Path(filename).name).stem}_{saliency_data.name}".replace(" ", "_")
             save_saliency_output(
+                process_saliency_maps=explain_parameters.process_saliency_maps,
                 img=explained_data.numpy,
                 saliency_map=saliency_data.numpy,
                 save_dir=args.save_explanation_to,
