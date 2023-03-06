@@ -1,0 +1,11 @@
+torch==1.12.0
+torchvision==0.13.0
+numpy==1.19.5
+openvino-dev[onnx]==2022.1.0
+onnxruntime==1.10.0
+wget
+tqdm
+pytest
+matplotlib
+natsort
+pylidc

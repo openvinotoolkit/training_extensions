@@ -1,0 +1,208 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  OPENVINO_VERSION: 2022.1.0
+  OPENCV_VERSION: 4.5.5
+  VERSION: 2022.1.0.dev3
+  DIST_WIN: https://registrationcenter-download.intel.com/akdlm/irc_nas/18618/w_openvino_toolkit_p_2022.1.0.643_offline.exe
+  DIST_MAC: https://registrationcenter-download.intel.com/akdlm/irc_nas/18616/m_openvino_toolkit_p_2022.1.0.643_offline.dmg
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build_lnx:
+    runs-on: ubuntu-18.04
+    container:
+      centos:centos8.4.2105
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        dnf -y --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
+        dnf -y distro-sync
+        yum group install -y "Development Tools" --nobest
+        yum install -y python3 wget cmake
+        python3 -m pip install --upgrade pip
+
+    - name: Install OpenVINO
+      run: |
+        tee > /tmp/openvino-2022.repo << EOF
+        [OpenVINO]
+        name=Intel(R) Distribution of OpenVINO 2022
+        baseurl=https://yum.repos.intel.com/openvino/2022
+        enabled=1
+        gpgcheck=1
+        repo_gpgcheck=1
+        gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+        EOF
+        mv /tmp/openvino-2022.repo /etc/yum.repos.d
+        yum repolist | grep -i openvino
+        yum install -y yum-utils openvino-2022.1.0
+
+    - name: Build OpenCV
+      run: |
+        git clone https://github.com/opencv/opencv/ -b ${{env.OPENCV_VERSION}} --depth 1
+        mkdir opencv_build && cd opencv_build
+        cmake ../opencv -DCMAKE_BUILD_TYPE=Release -DBUILD_LIST=core
+        make -j$(nproc --all) install
+
+    - name: Build CPU extensions
+      run: |
+        source /opt/intel/openvino_2022/setupvars.sh
+        cd user_ie_extensions
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc --all)
+
+    - name: Build wheel
+      run: |
+        python3 -m pip install wheel
+        EXT_LIB=user_ie_extensions/build/libuser_cpu_extension.so python3 setup.py build bdist_wheel
+        mv dist/*.whl openvino_extensions-${{env.VERSION}}-py3-none-manylinux2014_x86_64.whl
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: "wheel_lnx"
+        path: "*.whl"
+
+  build_win:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install OpenVINO
+      run: |
+        Invoke-WebRequest ${{env.DIST_WIN}} -OutFile openvino.exe
+        Start-Process -Wait -FilePath "openvino.exe" -ArgumentList "-s -a --silent --eula accept"
+      shell: pwsh
+
+    - name: Build OpenCV
+      run: |
+        git clone https://github.com/opencv/opencv/ -b ${{env.OPENCV_VERSION}} --depth 1
+        mkdir opencv_build && cd opencv_build
+        cmake ..\\opencv -DCMAKE_BUILD_TYPE=Release -DBUILD_LIST=core
+        cmake --build . --config Release -j 2
+        cmake --install . --prefix "C:\opencv_install"
+      shell: cmd
+
+    - name: Build CPU extensions
+      run: |
+        call "C:\Program Files (x86)\Intel\openvino_2022\setupvars.bat"
+        cd user_ie_extensions
+        mkdir build && cd build
+        cmake .. -DOpenCV_DIR="C:\opencv_install"
+        cmake --build . --config Release -j 2
+      shell: cmd
+
+    - name: Build wheel
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install wheel
+        ls user_ie_extensions\build\Release
+        set EXT_LIB=user_ie_extensions\\build\\Release\\user_cpu_extension.dll
+        python3 setup.py build bdist_wheel
+        move dist\\*.whl openvino_extensions-${{env.VERSION}}-py3-none-win_amd64.whl
+      shell: cmd
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: "wheel_win"
+        path: "*.whl"
+
+  build_mac:
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install OpenVINO
+      run: |
+        curl ${{env.DIST_MAC}} -o openvino.dmg
+        hdiutil attach openvino.dmg
+        cd /Volumes/m_openvino_toolkit_p_2022.1.0.643_offline/bootstrapper.app/Contents/MacOS/
+        sudo ./install.sh -s --eula=accept
+
+    - name: Build OpenCV
+      run: |
+        git clone https://github.com/opencv/opencv/ -b ${{env.OPENCV_VERSION}} --depth 1
+        mkdir opencv_build && cd opencv_build
+        cmake ../opencv -DCMAKE_BUILD_TYPE=Release -DBUILD_LIST=core
+        make -j$(nproc --all) install
+
+    - name: Build CPU extensions
+      run: |
+        source /opt/intel/openvino_2022/setupvars.sh
+        cd user_ie_extensions
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        make -j$(nproc --all)
+
+    - name: Build wheel
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install wheel
+        ls user_ie_extensions/build/
+        EXT_LIB=user_ie_extensions/build/libuser_cpu_extension.dylib python3 setup.py build bdist_wheel
+        mv dist/*.whl openvino_extensions-${{env.VERSION}}-py3-none-macosx_10_15_x86_64.whl
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: "wheel_mac"
+        path: "*.whl"
+
+  test_lnx:
+    needs: build_lnx
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/download-artifact@v2
+      with:
+          name: wheel_lnx
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y python3-setuptools libopencv-dev
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r tests/requirements.txt
+        python3 -m pip install -U protobuf
+        python3 -m pip install openvino-dev[onnx]==${{env.OPENVINO_VERSION}}
+
+    # Also, remove "openvino_extensions" folder to avoid import confusion
+    - name: Install CPU extensions
+      run: |
+        rm -r openvino_extensions
+        python3 -m pip install *.whl
+
+    - name: Test
+      run: |
+        python3 -m pytest tests/run_tests.py
+
+  publish:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    needs: [test_lnx, build_win, build_mac]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/download-artifact@v2
+
+      - name: Publish
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install twine
+          python3 -m twine upload wheel*/*.whl --skip-existing
