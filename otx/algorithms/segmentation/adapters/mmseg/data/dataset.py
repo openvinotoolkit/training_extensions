@@ -264,8 +264,9 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
             classes = []
         super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
 
-        # TODO [Soobee] : Need to align again when background label is removed
-        self.CLASSES = ["background"] + [label.name for label in self.project_labels]
+        self.CLASSES = [label.name for label in self.project_labels]
+        if "background" not in self.CLASSES:
+            self.CLASSES = ["background"] + self.CLASSES
 
         if self.label_map is None:
             self.label_map = {}
