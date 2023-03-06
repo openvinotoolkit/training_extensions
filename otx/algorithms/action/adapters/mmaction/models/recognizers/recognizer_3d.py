@@ -27,17 +27,16 @@ class OTXRecognizer3D(Recognizer3D):
         if backbone_type not in ["OTXMoViNet"]:
             return
 
-        output = OrderedDict()
-        for k, v in state_dict.items():
-            if k.startswith("cls_head"):
+        for k in list(state_dict.keys()):
+            v = state_dict.pop(k)
+            if "cls_head" in k:
                 k = k.replace("cls_head.", "")
             else:
                 k = k.replace("backbone.", "")
-            output[k] = v
-        return output
+            state_dict[k] = v
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):
+    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):
         """Redirect input state_dict to model for OTX model compatibility"""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMoViNet"]:
@@ -45,8 +44,8 @@ class OTXRecognizer3D(Recognizer3D):
 
         for k in list(state_dict.keys()):
             v = state_dict.pop(k)
-            if k.startswith("classifier"):
+            if "classifier" in k:
                 k = k.replace("classifier", "cls_head.classifier")
             else:
-                k = "backbone." + k
+                k = prefix + "backbone." + k[len(prefix):]
             state_dict[k] = v
