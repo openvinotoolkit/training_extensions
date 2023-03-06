@@ -1,6 +1,7 @@
+from typing import List, Tuple, Union
+
 import torch
 import torch.nn.functional as F
-from typing import List, Tuple, Union
 
 from otx.mpa.modules.models.heads.custom_atss_head import CustomATSSHead
 from otx.mpa.modules.models.heads.custom_ssd_head import CustomSSDHead

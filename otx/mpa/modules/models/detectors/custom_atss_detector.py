@@ -76,8 +76,8 @@ if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER, mark
     from mmdeploy.utils import is_dynamic_shape
 
-    from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
     from otx.mpa.modules.hooks.det_saliency_map_hook import DetSaliencyMapHook
+    from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
 
     @FUNCTION_REWRITER.register_rewriter("otx.mpa.modules.models.detectors.custom_atss_detector.CustomATSS.simple_test")
     def custom_atss__simple_test(ctx, self, img, img_metas, **kwargs):
