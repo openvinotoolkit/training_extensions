@@ -14,16 +14,20 @@ class MemCacheHook(Hook):
 
     def __init__(self) -> None:
         self.handler = MemCacheHandlerSingleton.get()
-
-    def before_run(self, runner):
-        """Before run, freeze the handler."""
+        # It is because the first evaluation comes at the very beginning of the training.
+        # We don't want to cache validation samples first.
         self.handler.freeze()
 
     def before_epoch(self, runner):
         """Before training, unfreeze the handler."""
+        # We want to cache training samples first.
         self.handler.unfreeze()
 
     def after_epoch(self, runner):
-        """After epoch. Log the handler statistics."""
+        """After epoch. Log the handler statistics.
+
+        To prevent it from skipping the validation samples,
+        this hook should have lower priority than CustomEvalHook.
+        """
         self.handler.freeze()
         runner.logger.info(f"{self.handler}")

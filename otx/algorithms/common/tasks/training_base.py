@@ -25,7 +25,6 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
-from mmcv.runner import get_dist_info
 from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
@@ -637,13 +636,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             return max(num_workers)
 
         def _get_mem_cache_size():
-            if not hasattr(self.hyperparams, "algo_backend"):
-                return 0
             if not hasattr(self.hyperparams.algo_backend, "mem_cache_size"):
                 return 0
 
-            _, world_size = get_dist_info()
-            return self.hyperparams.algo_backend.mem_cache_size // world_size
+            return self.hyperparams.algo_backend.mem_cache_size
 
         max_num_workers = _find_max_num_workers(data_cfg)
         mem_cache_size = _get_mem_cache_size()
@@ -653,5 +649,5 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         update_or_add_custom_hook(
             self._recipe_cfg,
-            ConfigDict(type="MemCacheHook"),
+            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
         )

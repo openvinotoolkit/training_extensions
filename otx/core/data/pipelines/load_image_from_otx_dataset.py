@@ -36,8 +36,8 @@ class LoadImageFromOTXDataset:
         try:
             self.mem_cache_handler = MemCacheHandlerSingleton.get()
         except MemCacheHandlerError:
-            # Create a dummy handler
-            MemCacheHandlerSingleton.create(mode="singleprocessing", mem_size=0)
+            # Create a null handler
+            MemCacheHandlerSingleton.create(mode="null", mem_size=0)
             self.mem_cache_handler = MemCacheHandlerSingleton.get()
 
     @staticmethod

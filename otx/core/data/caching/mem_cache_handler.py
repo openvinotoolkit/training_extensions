@@ -9,6 +9,7 @@ from multiprocessing.managers import DictProxy
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
+from mmcv.runner import get_dist_info
 from multiprocess.synchronize import Lock
 
 from otx.mpa.utils.logger import get_logger
@@ -172,13 +173,18 @@ class MemCacheHandlerSingleton:
         """Create a new MemCacheHandlerBase instance.
 
         Args:
-            mode (str): There are two options: multiprocessing or singleprocessing.
+            mode (str): There are two options: null, multiprocessing or singleprocessing.
             mem_size (int): The size of memory pool (bytes).
         """
         logger.info(f"Try to create a {mem_size} size memory pool.")
 
-        if mem_size == 0:
-            cls.instance = MemCacheHandlerBase(mem_size)
+        _, world_size = get_dist_info()
+        if world_size > 1:
+            mem_size = mem_size // world_size
+            logger.info(f"Since world_size={world_size} > 1, each worker a {mem_size} size memory pool.")
+
+        if mode == "null" or mem_size == 0:
+            cls.instance = MemCacheHandlerBase(mem_size=0)
             cls.instance.freeze()
         elif mode == "multiprocessing":
             cls.instance = MemCacheHandlerForMP(mem_size)
