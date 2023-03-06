@@ -237,7 +237,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
             if val_dataset is None:
                 if self.data_format == "mvtec":
-                    # TODO: This is a temporary workaround because Datumaro Split does not recognize anomaly task types
+                    # Set task type to classification because we do not need instance-specific splitting for anomaly
                     splitted_dataset = self.dataset_manager.auto_split(
                         task="classification", dataset=test_dataset, split_ratio=[("val", 0.5), ("test", 0.5)]
                     )
