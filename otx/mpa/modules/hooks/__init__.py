@@ -3,6 +3,8 @@
 #
 
 # flake8: noqa
+from otx import MMDET_AVAILABLE
+
 from . import (
     adaptive_training_hooks,
     checkpoint_hook,
@@ -22,3 +24,6 @@ from . import (
     unbiased_teacher_hook,
     workflow_hooks,
 )
+
+if MMDET_AVAILABLE:
+    from . import det_saliency_map_hook

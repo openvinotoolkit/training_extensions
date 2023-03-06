@@ -5,4 +5,7 @@
 
 import os
 
-os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
+from otx import MMACTION_AVAILABLE
+
+if MMACTION_AVAILABLE:
+    os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
