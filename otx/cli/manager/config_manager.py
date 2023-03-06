@@ -38,6 +38,7 @@ AUTOSPLIT_SUPPORTED_FORMAT = [
     "coco",
     "cityscapes",
     "voc",
+    "mvtec",
 ]
 
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
@@ -231,14 +232,21 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         dataset = self.dataset_manager.import_dataset(data_root=data_roots, data_format=self.data_format)
         train_dataset = self.dataset_manager.get_train_dataset(dataset)
         val_dataset = self.dataset_manager.get_val_dataset(dataset)
+        test_dataset = self.dataset_manager.get_test_dataset(dataset)
         splitted_dataset = None
         if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
             if val_dataset is None:
-                splitted_dataset = self.dataset_manager.auto_split(
-                    task=task,
-                    dataset=train_dataset,
-                    split_ratio=[("train", 0.8), ("val", 0.2)],
-                )
+                if self.data_format == "mvtec":
+                    # TODO: This is a temporary workaround because Datumaro Split does not recognize anomaly task types
+                    splitted_dataset = self.dataset_manager.auto_split(
+                        task="classification", dataset=test_dataset, split_ratio=[("val", 0.5), ("test", 0.5)]
+                    )
+                else:
+                    splitted_dataset = self.dataset_manager.auto_split(
+                        task=task,
+                        dataset=train_dataset,
+                        split_ratio=[("train", 0.8), ("val", 0.2)],
+                    )
             else:
                 print(f"[*] Found validation data in your dataset in {data_roots}. It'll be used as validation data.")
                 splitted_dataset = {"train": train_dataset, "val": val_dataset}

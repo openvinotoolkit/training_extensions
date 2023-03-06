@@ -39,6 +39,14 @@ class DatasetManager:
         return None
 
     @staticmethod
+    def get_test_dataset(dataset: Dataset) -> Union[DatasetSubset, None]:
+        """Returns validation dataset."""
+        for k, v in dataset.subsets().items():
+            if "test" in k:
+                return v
+        return None
+
+    @staticmethod
     def get_data_format(data_root: str) -> str:
         """Find the format of dataset."""
         data_root = os.path.abspath(data_root)

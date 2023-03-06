@@ -6,11 +6,10 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
-from typing import Dict, List, Optional
+from typing import List, Optional, Union
 
 import cv2
 import numpy as np
-from datumaro.components.dataset import Dataset as DatumaroDataset
 
 from otx.algorithms.common.utils.mask_to_bbox import mask2bbox
 from otx.api.entities.annotation import (
@@ -24,9 +23,9 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.model_template import TaskType
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.subset import Subset
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
@@ -34,39 +33,27 @@ from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited from BaseDatasetAdapter."""
 
-    def _import_dataset(
-        self,
-        train_data_roots: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-    ) -> Dict[Subset, DatumaroDataset]:
-        """Import MVTec dataset.
+    def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
+        """Select specific type among candidates.
 
         Args:
-            train_data_roots (Optional[str]): Path for training data
-            val_data_roots (Optional[str]): Path for validation data
-            test_data_roots (Optional[str]): Path for test data
-            unlabeled_data_roots (Optional[str]): Path for unlabeled data
+            data_candidates (Union[List[str], str]): Type candidates made by Datumaro.Environment().detect_dataset()
 
         Returns:
-            DatumaroDataset: Datumaro Dataset
+            str: Selected data type
         """
-        # Construct dataset for training, validation, unlabeled
-        # TODO: currently, only MVTec dataset format can be used
-        dataset = {}
-        if train_data_roots is None and test_data_roots is None:
-            raise ValueError("At least 1 data_root is needed to train/test.")
-
-        if train_data_roots:
-            dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
-            if val_data_roots:
-                dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format="image_dir")
-            else:
-                raise NotImplementedError("Anomaly task needs validation dataset.")
-        if test_data_roots:
-            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
-        return dataset
+        if self.task_type == TaskType.ACTION_CLASSIFICATION:
+            assert "mvtec_classification" in data_candidates
+            data_type = "mvtec_classification"
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            assert "mvtec_segmentation" in data_candidates
+            data_type = "mvtec_segmentation"
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            assert "mvtec_detection" in data_candidates
+            data_type = "mvtec_detection"
+        else:
+            raise ValueError(f"Unrecognized anomaly task type: {self.task_type}")
+        return data_type
 
     def _prepare_anomaly_label_information(self) -> List[LabelEntity]:
         """Prepare LabelEntity List."""
