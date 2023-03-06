@@ -16,10 +16,10 @@
 
 import torch
 from mmcv.runner import load_checkpoint
-from mmcv.utils import Config
-from mmdeploy.apis import build_task_processor
+from mmcv.utils import ConfigDict
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdet.models import DETECTORS
+from mmdet.models.builder import build_detector
 from mmdet.models.detectors import FastRCNN
 from torch import nn
 
@@ -75,10 +75,13 @@ class AVAFastRCNN(FastRCNN):
             pretrained=pretrained,
         )
         self.detector = None
-        self.deply_cfg = None
-        self.detector_cfg = Config({"model": faster_rcnn})
 
-    def add_detector(self):
+    def patch_for_export(self):
+        """Patch mmdetection's FastRCNN for exporting to onnx."""
+        self._add_detector()
+        self._patch_pools()
+
+    def _add_detector(self):
         """Add Person Detector for inference.
 
         Action classification backbone + Fast RCNN structure use pre-proposals instead outputs from person detector
@@ -86,8 +89,8 @@ class AVAFastRCNN(FastRCNN):
         without pre-proposals. Therefore, when the model infers to dataset without pre-proposal, person detector
         should be added to action detector.
         """
-        task_processor = build_task_processor(self.detector_cfg, self.deploy_cfg, "cpu")
-        self.detector = task_processor.init_pytorch_model(faster_rcnn_pretrained)
+        detector = ConfigDict(faster_rcnn)
+        self.detector = build_detector(detector)
         ckpt = load_checkpoint(self.detector, faster_rcnn_pretrained, map_location="cpu")
         self.detector.CLASSES = ckpt["meta"]["CLASSES"]
         if self.detector.CLASSES[0] != "person":
@@ -95,7 +98,7 @@ class AVAFastRCNN(FastRCNN):
                 f"Person detector should have person as the first category, but got {self.detector.CLASSES}"
             )
 
-    def patch_pools(self):
+    def _patch_pools(self):
         """Patch pooling functions for ONNX export.
 
         AVAFastRCNN's bbox head has pooling funcitons, which contain dynamic shaping.
@@ -105,7 +108,9 @@ class AVAFastRCNN(FastRCNN):
         self.roi_head.bbox_head.spatial_pool = ONNXPool3D("spatial", self.roi_head.bbox_head.spatial_pool_type)
 
     # pylint: disable=no-self-argument
-    @FUNCTION_REWRITER.register_rewriter("mmdet.models.detectors.base.BaseDetector.forward")
+    @FUNCTION_REWRITER.register_rewriter(
+        "otx.algorithms.action.adapters.mmaction.models.detectors.fast_rcnn.AVAFastRCNN.forward"
+    )
     def forward_infer(ctx, self, imgs, img_metas):
         """Forward function for inference without pre-proposal."""
         clip_len = imgs.shape[2]

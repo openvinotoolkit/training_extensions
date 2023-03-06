@@ -42,10 +42,7 @@ class MockAVAFastRCNN(AVAFastRCNN):
         super(BaseModule, self).__init__()
         self.deploy_cfg = None
 
-    def add_detector(self) -> None:
-        pass
-
-    def patch_pools(self) -> None:
+    def patch_for_export(self) -> None:
         pass
 
     def forward_infer(self, inputs: Any, img_metas: Any) -> str:

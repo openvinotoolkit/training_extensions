@@ -87,9 +87,7 @@ class Exporter:
         model = self.task_processor.init_pytorch_model(None)
         model.load_state_dict(self.weights)
         if isinstance(model, AVAFastRCNN):
-            model.deploy_cfg = self.deploy_cfg
-            model.add_detector()
-            model.patch_pools()
+            model.patch_for_export()
         return _convert_sync_batch_to_normal_batch(model)
 
     def _get_inputs(self) -> Tuple[torch.Tensor, Optional[Dict[str, Any]]]:

@@ -71,8 +71,8 @@ class TestONNXPool3d:
 class TestAVAFastRCNN:
     """Test AVAFastRCNN class.
 
-    1. Check add_detector function
-    2. Check patch_pools function
+    1. Check _add_detector function
+    2. Check _patch_pools function
     3. Check forward_infer function
     """
 
@@ -103,6 +103,14 @@ class TestAVAFastRCNN:
         )
 
     @e2e_pytest_unit
+    def test_patch_for_export(self, mocker) -> None:
+        """Test patch_for_export function."""
+
+        mocker.patch.object(AVAFastRCNN, "_add_detector", return_value=True)
+        mocker.patch.object(AVAFastRCNN, "_patch_pools", return_value=True)
+        self.model.patch_for_export()
+
+    @e2e_pytest_unit
     def test_add_detector(self, mocker) -> None:
         """Test add_deector function.
 
@@ -121,7 +129,7 @@ class TestAVAFastRCNN:
             return_value={"meta": {"CLASSES": ["person", "motorcycle", "car"]}},
         )
         self.model.deploy_cfg = mock_deploy_cfg
-        self.model.add_detector()
+        self.model._add_detector()
         assert isinstance(self.model.detector, FasterRCNN)
         assert self.model.detector.roi_head.bbox_head.num_classes == 80
         assert self.model.detector.CLASSES == ["person", "motorcycle", "car"]
@@ -131,18 +139,18 @@ class TestAVAFastRCNN:
             return_value={"meta": {"CLASSES": ["motorcycle", "car", "person"]}},
         )
         with pytest.raises(Exception):
-            self.model.add_detector()
+            self.model._add_detector()
 
     @e2e_pytest_unit
     def test_patch_pools(self) -> None:
-        """Test patch_pools function.
+        """Test _patch_pools function.
 
         <Steps>
             1. Check bbox_head's temporal pool is avg_pool and it pools through temporal axis
             2. Check bbox_head's spatial pool is max_pool and it pools through spatial axis
         """
 
-        self.model.patch_pools()
+        self.model._patch_pools()
         assert isinstance(self.model.roi_head.bbox_head.temporal_pool, ONNXPool3D)
         assert self.model.roi_head.bbox_head.temporal_pool.pool == torch.mean
         assert self.model.roi_head.bbox_head.temporal_pool.dim == "temporal"
