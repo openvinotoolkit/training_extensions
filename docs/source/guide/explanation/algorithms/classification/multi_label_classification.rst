@@ -23,11 +23,15 @@ For supervised learning we use the following algorithms components:
 Dataset Format
 **************
 
-As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: `COCO <https://cocodataset.org/#format-data>`_.
-Specifically, these formats will be converted in our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel>`_ via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
+As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection format: `COCO <https://cocodataset.org/#format-data>`_.
+Specifically, this format should be converted in our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel>`_ first. We provided a `script <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/utils/convert_coco_to_multilabel.py>` to help with conversion.
+To convert the COCO data format to our internal one, run this script in similar way:
+
+.. code-block::
+    python convert_coco_to_multilabel.py --ann_file_path <path to .json COCO annotations> --data_root_dir <path to images folder> --output <output path to save annotations>
 
 .. note::
-    Names of the annotations files and overall dataset structure should be the same as the original `COCO <https://cocodataset.org/#format-data>`_.
+    Names of the annotations files and overall dataset structure should be the same as the original `COCO <https://cocodataset.org/#format-data>`_. You need to convert train and validation sets separately.
 
     Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classification models.
 
