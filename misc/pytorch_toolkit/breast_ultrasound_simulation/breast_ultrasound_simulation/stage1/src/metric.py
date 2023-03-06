@@ -24,14 +24,14 @@ def filterr(ss, lff, hff):
 
 def fft(img, maskk, v):
     img = img/255
-    m = np.mean(img)
-    img = (img - m)
-    f = np.fft.fft2(img)
-    f = np.fft.fftshift(f)
-    f = maskk*f
-    ss = np.sum(np.abs(f)**2)
+    mean = np.mean(img)
+    img = img - mean
+    fft_out = np.fft.fft2(img)
+    fft_out = np.fft.fftshift(fft_out)
+    fft_out = maskk*fft_out
+    ss = np.sum(np.abs(fft_out)**2)
 
-    return ss/m, f
+    return ss/mean, fft_out
 
 
 dirr = [args.dir]

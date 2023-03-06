@@ -44,6 +44,6 @@ for kernel_dilation_factor in [(0.05 * i) for i in range(11)]:
         torchvision.utils.save_image(output.detach().cpu(),
                                      "../model_inference_results/" +
                                      image_name.replace(".", "_") + "_" +
-                                     "latest_pt" + ("_dil_{0:.2f}".format(kernel_dilation_factor)).replace(".", "_") +
+                                     "latest_pt" + f"_dil_{kernel_dilation_factor:.2f}".replace(".", "_") +
                                      ".png",
                                      normalize=True, scale_each=True)

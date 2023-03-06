@@ -96,7 +96,7 @@ def pseudo_b_mode_2d(input_tensor, f0=10e6, c=1540.0, sigma_x=2.0, sigma_y=1.5, 
 def sub2ind_2d(size_of_tensor, row_ind_array, col_ind_array):
     output_linear_indices = []
     for i, r_elem in enumerate(row_ind_array):
-        linear_index = ((size_of_tensor[0] * col_ind_array[i]) + r_elem)
+        linear_index = (size_of_tensor[0] * col_ind_array[i]) + r_elem
         output_linear_indices.append(linear_index)
 
     return np.array(output_linear_indices, dtype=int)
@@ -128,13 +128,12 @@ def padarray_2d(input_tensor, pad):
 def find_2d(input_tensor):
     input_tensor = np.array(input_tensor)
     if input_tensor.ndim == 2:
-        input_vector = np.transpose(input_tensor).reshape(np.shape(input_tensor)[0] * np.shape(input_tensor)[1])
-    elif input_tensor.ndim == 1:
-        input_vector = input_tensor
-    else:
+        input_tensor = np.transpose(input_tensor).reshape(np.shape(input_tensor)[0] * np.shape(input_tensor)[1])
+
+    if input_tensor.ndim != 1:
         print(input_tensor.ndim)
 
-    output_tensor = np.argwhere(input_vector != 0).reshape(-1) + 1
+    output_tensor = np.argwhere(input_tensor != 0).reshape(-1) + 1
 
     return output_tensor
 
