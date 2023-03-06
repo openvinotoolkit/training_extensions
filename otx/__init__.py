@@ -12,21 +12,21 @@ MMSEG_AVAILABLE = True
 MMACTION_AVAILABLE = True
 
 try:
-    import mmcls
+    import mmcls  # noqa: F401
 except ImportError:
     MMCLS_AVAILABLE = False
 
 try:
-    import mmdet
+    import mmdet  # noqa: F401
 except ImportError:
     MMDET_AVAILABLE = False
 
 try:
-    import mmseg
+    import mmseg  # noqa: F401
 except ImportError:
     MMSEG_AVAILABLE = False
 
 try:
-    import mmaction
+    import mmaction  # noqa: F401
 except ImportError:
     MMACTION_AVAILABLE = False
