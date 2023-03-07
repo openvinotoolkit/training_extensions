@@ -116,7 +116,7 @@ def get_det_model_api_configuration(label_schema: LabelSchemaEntity, task_type: 
 
     all_labels = ""
     for lbl in label_schema.get_labels(include_empty=False):
-        all_labels += lbl.name + " "
+        all_labels += lbl.name.replace(" ", "_") + " "
     all_labels = all_labels.strip()
 
     omz_config[("model_info", "label_map")] = all_labels
