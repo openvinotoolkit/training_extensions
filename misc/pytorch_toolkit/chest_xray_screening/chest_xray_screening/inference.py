@@ -91,7 +91,6 @@ class RSNAInference():
         auroc_mean = np.array(auroc_individual).mean()
         return auroc_mean
 
-
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 

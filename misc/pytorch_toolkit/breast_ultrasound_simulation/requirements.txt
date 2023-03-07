@@ -1,0 +1,14 @@
+torch==1.12.1
+torchvision==0.13.1
+opencv-python==4.6.0.66
+numpy==1.23.3
+scipy==1.9.1
+Pillow==9.2.0
+tqdm==4.64.1
+ax-platform==0.2.9
+tensorboard==2.2.2
+tensorboard-plugin-wit==1.7.0
+tensorflow-estimator==2.2.0
+openvino-dev[onnx]
+onnxruntime
+wget
