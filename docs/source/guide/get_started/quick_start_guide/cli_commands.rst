@@ -165,7 +165,7 @@ However, if you created a workspace with ``otx build``, the training process can
                     [template] {params} ...
 
     positional arguments:
-      template              Enter the path or ID or name of the template file. 
+      template              Enter the path or ID or name of the template file.
                             This can be omitted if you have train-data-roots or run inside a workspace.
       {params}              sub-command help
         params              Hyper parameters defined in template file.
@@ -481,7 +481,7 @@ Command example of the demonstration:
 Input can be a folder with images, a single image, a webcam ID or a video. The inference results of a model will be displayed to the GUI window with a 1-second interval.
 
 .. note::
- 
+
   If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
 
 
