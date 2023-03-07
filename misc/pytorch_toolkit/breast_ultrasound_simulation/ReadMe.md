@@ -10,6 +10,10 @@ Using a regression analysis, we have concluded that there exists a linear relati
 
 <img src="./media/kd_pipeline.png" width="509" height="744">
 
+
+> **Note**: The method used is yet to be published in a peer-reviewed journal. Appropriate changes will be made to the repository once it is published.
+
+
 ## Kernel Dilation:
 
 The blue boxes represent $3\times3$ convolution kernels with different dilation rates operating on the underlying image. A low dilation factor (left) is used for modeling high resolution image and a high dilation factor (right) is used for modeling low resolution image.
@@ -28,11 +32,9 @@ Plot between the inverse of power of band pass spectrum of simulated images and 
 
 <img src="./media/kd_results.png" width="985" height="488">
 
-## **Model**
+## **Trained Model**
 
 Download `.pt` checkpoint for Stage1 Generator model with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi6/model.pt).
-
-Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public).
 
 
 ## **Setup**

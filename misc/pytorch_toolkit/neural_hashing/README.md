@@ -7,40 +7,32 @@ The rapid digitalisation of the healthcare sector has resulted in a large corpus
 This code/method is designed to retrieve medical images with semantic similarity of organs and their associated pathology. In this code, experiments are performed on LeNet-121[[3](#LeNet)] CNN architecture for this task. The method contains three steps to generate authentic hash codes from images during the training procedure. First, minimise the classifying error of input images. Second, maximise the ability of the discriminator to identify two similar images, and third, minimise and maximise the Hamming distance with cosine similarity for two similar and two dissimilar images, respectively, using Cauchy cross-entropy loss [[3](#cauchy)]. This model is trained using a subset of the publicly available benchmark MedMNIST v2. [[5]](#medmnist) [(link)](https://zenodo.org/record/6496656) [(license)](https://medmnist.com/). The performance of the model was evaluated using two metrics mean Average Precision (mAP) and normalised Discounted Cumulative Gain (nDCG). The evaluation process can be found [(here)](https://github.com/asimmanna17/Deep-Neural-Hashing/blob/main/Evaluation_metrics.pdf).
 
 
-> **Note:**  The model was first proposed for a dataset created by collecting images from the brain tumor dataset [(link)](https://figshare.com/articles/dataset/brain_tumor_dataset/1512427/5), dataset of breast ultrasound images [(link)](https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset) and Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images [(link)](https://data.mendeley.com/datasets/rscbjbr9sj/2). However, the dataset license clause does not abide by the criteria/requirements of the training_extension repository. Hence, a model trained using the MedMNISTv2 dataset comprising images of size 28x28 is provided here.
+> **Note**:  The model was first proposed for a dataset created by collecting images from the brain tumor dataset [(link)](https://figshare.com/articles/dataset/brain_tumor_dataset/1512427/5), dataset of breast ultrasound images [(link)](https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset) and Labeled Optical Coherence Tomography (OCT) and Chest X-Ray Images [(link)](https://data.mendeley.com/datasets/rscbjbr9sj/2). However, the dataset license clause does not abide by the criteria/requirements of the training_extension repository. Hence, a model trained using the MedMNISTv2 dataset comprising images of size 28x28 is provided here.
 
 
-> **Note:** The model trained on MedNISTv2 dataset is **NOT** intended for clinical use.
+> **Note**: The model trained on MedNISTv2 dataset is **NOT** intended for clinical use.
 
 
-> **Note:** The method used is yet to be published in a peer-reviewed journal. Appropriate changes will be made to the repository once it is published.
+> **Note**: The method used is yet to be published in a peer-reviewed journal. Appropriate changes will be made to the repository once it is published.
 
 </div>
 
 
-Few example images from the dataset
+Montage of images from the dataset
 <table >
 <tr>
-<td align='center'> Image 1</td>
-<td align='center'> Image 2 </td>
-<td align='center'> Image 3 </td>
-<td align='center'> Image 4 </td>
+<td align='center'> Breast</td>
+<td align='center'> Chest </td>
+<td align='center'> Retina </td>
+<td align='center'> Tissue </td>
 </tr>
 <tr>
-<td align='center'><img src="./media/Breast_1.png" width="84" height="84"></td>
-<td align='center'> <img src="./media/chest_0.png" width="84" height="84"></td>
-<td align='center'> <img src="./media/oct_2.png" width="84" height="84"> </td>
-<td align='center'> <img src="./media/tissue_7.png" width="84" height="84"> </td>
+<td align='center'><img src="./media/breast.png" width="84" height="84"></td>
+<td align='center'> <img src="./media/chest.png" width="84" height="84"></td>
+<td align='center'> <img src="./media/retina_oct.png" width="84" height="84"> </td>
+<td align='center'> <img src="./media/tissue.png" width="84" height="84"> </td>
 </tr>
 </table>
-
-Image 1: Organ- Breast,  Pathology- normal or benign.      
-
-Image 2: Organ- Chest, Pathology- atelectasis.
-
-Image 3: Organ- Retina, Pathology- drusen.
-
-Image 4: Organ-Tissue,  Pathology- Thick Ascending Limb​.
 
 
 Minimizing classification loss:

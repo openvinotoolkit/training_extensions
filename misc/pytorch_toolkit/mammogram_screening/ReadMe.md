@@ -5,89 +5,187 @@
 Mammograms are commonly employed in the large scale screening of breast cancer which is primarily characterized by the presence of malignant masses. However, automated image-level detection of malignancy is a challenging task given the small size of the mass regions and difficulty in discriminating between malignant, benign mass and healthy dense fibro-glandular tissue. To address these issues, we explore
 a two-stage Multiple Instance Learning (MIL) framework. A Convolutional Neural Network (CNN) is trained in the first stage to extract local candidate patches in the mammograms that may contain either a benign or malignant mass. The second stage employs a MIL strategy for an image level benign vs. malignant classification. A global image-level feature is computed as a weighted average of patch-level features
 learned using a CNN. Restricting the MIL only to the candidate
-patches extracted in Stage 1 led to a significant improvement in classification performance in comparison to a dense extraction of patches from the entire mammogram. Our method performed well on the task of localization of masses with an average Precision/Recall of 0.76/0.80 and acheived an average AUC of 0.91 on the imagelevel classification task using a five-fold cross-validation on the INbreast dataset. The models made available in this repo are models trained using [RBIS-DDSM dataset](https://ieee-dataport.org/documents/re-curated-breast-imaging-subset-ddsm-dataset-rbis-ddsm).
+patches extracted in Stage 1 led to a significant improvement in classification performance in comparison to a dense extraction of patches from the entire mammogram. Our method performed well on the task of localization of masses with an average Precision/Recall of 0.76/0.80 and acheived an average AUC of 0.91 on the imagelevel classification task using a five-fold cross-validation on the INbreast dataset.
+
+
+>**Paper** : C. K. Sarath, A. Chakravarty, N. Ghosh, T. Sarkar, R. Sethuraman and D. Sheet, **"A Two-Stage Multiple Instance Learning Framework for the Detection of Breast Cancer in Mammograms,"** 2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), 2020. </br> _Access the paper via_ 
+[IEEE Xplore](https://ieeexplore.ieee.org/abstract/document/9176427).
+
+BibTeX reference to cite, if you use it:
+
+```bibtex
+@INPROCEEDINGS{9176427,
+  author={Sarath, Chandra K. and Chakravarty, Arunava and Ghosh, Nirmalya and Sarkar, Tandra and Sethuraman, Ramanathan and Sheet, Debdoot},
+  booktitle={2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC)}, 
+  title={A Two-Stage Multiple Instance Learning Framework for the Detection of Breast Cancer in Mammograms}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={1128-1131},
+  doi={10.1109/EMBC44109.2020.9176427}}
+```
 
 <img src="./media/mil_pipeline.png" width="900" height="200">
 
-## Network Architecture:
+
+## Dataset used
+
+The models made available in this repo are models trained using [RBIS-DDSM dataset](https://ieee-dataport.org/documents/re-curated-breast-imaging-subset-ddsm-dataset-rbis-ddsm).
+
+> **Dataset:** </br>
+Arunava Chakravarty, Tandra Sarkar , Rakshith Sathish, Ramanathan Sethuraman, Debdoot Sheet, February 2, 2022, "Re-curated Breast Imaging Subset DDSM Dataset (RBIS-DDSM)", IEEE Dataport, doi: https://dx.doi.org/10.21227/nqp1-sp19. </br>
+_Access the dataset via_ [**IEEE Dataport**](https://ieee-dataport.org/documents/re-curated-breast-imaging-subset-ddsm-dataset-rbis-ddsm)
+
+
+BibTeX reference to cite, if you use it:
+
+```
+@data{nqp1-sp19-22,
+doi = {10.21227/nqp1-sp19},
+url = {https://dx.doi.org/10.21227/nqp1-sp19},
+author = {Chakravarty, Arunava and Sarkar , Tandra and Sathish, Rakshith and Sethuraman, Ramanathan and Sheet, Debdoot},
+publisher = {IEEE Dataport},
+title = {Re-curated Breast Imaging Subset DDSM Dataset (RBIS-DDSM)},
+year = {2022} }
+```
+
+## Network Architecture
 
 The block diagram and CNN architecture used in Stage 1 to detect the bounding boxes of the mass regions in the mammogram.
-<img src="./media/mil_stage1_arch.png" width="500" height="400">
+<img src="./media/mil_stage1_arch.png" width="700" height="400">
 
 The architecture of the patch level CNN is shown below
 </br>
 <img src="./media/mil_stage2_arch.png" width="500" height="200">
 
-## **Results**
+## Results
 
-**Sensitivity:** 0.63 
+| Metric      | Score |
+| ----------- | ----- |
+| Sensitivity | 0.63  |
+| Specificity | 0.45  |
+| Accuracy    | 0.90  |
 
-**Specificity:** 0.45
+> **Note**: The newtork was trained for only 25 epochs. 
 
-**Accuracy:** 0.90
+Performance of the network, when trained and evaluated using the Inbreast dataset as reported in the publication is given below.
 
-Note: The newtork was trained for 25 epochs. 
-
-Performance of the network, when trained and evaluated using the Inbreast dataset is given below.
-
-**Sensitivity:** 0.96
-
-**Specificity:** 0.77
-
-**Accuracy:** 0.86
+|   Metric    | Score |
+| ----------- | ----- |
+| Sensitivity | 0.96  |
+| Specificity | 0.77  |
+| Accuracy    | 0.86  |
 
 
-## **Model**
+## Trained Models
 
-Download `.pth`checkpoint for stage1 mass localisation model with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi5/checkpoint_stage1.zip).
+Download `.pth` checkpoint for stage1 mass localisation model with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi5/checkpoint_stage1.zip).
 
 Download `.pth` checkpoint for stage2 patch level model with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi5/checkpoint_stage2.zip)
 
-Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public).
 
-
-## **Setup**
-
-### Prerequisites
+## System Specifications
 
 * Ubuntu\* 16.04
 * Python\* 3.6
 * NVidia\* GPU for training
 * 16GB RAM for inference
 
-## **Train**
+## Train
 
 1. Download the [RBIS-DDSM](https://ieee-dataport.org/documents/re-curated-breast-imaging-subset-ddsm-dataset-rbis-ddsm) dataset
 2. Create the directory tree
 3. Prepare the training dataset
 4. Run the training script
 
-## **Code Structure**
+## Code and Directory Organisation
 
-1. `train.py` in `mammogram_screening/stage1` and `mammogram_screening/stage2` directory contains the code for training the model.
-2. `inference.py` in `mammogram_screening/stage1` and `mammogram_screening/stage2` directory contains the code for evaluating the model with test set.
-3. `export.py` in `mammogram_screening/train_utils` directory generating the ONNX and Openvino IR of the trained model.
-4. All dependencies are provided in **train_utils** folder.
-5. **tests** directory contains  unittests.
-6. **config** directory contains model configs.
+```
+mammogram_screening/
+	mammogram_screening/
+      stage1/
+        data_prep_rbis.py
+        inference_mass_localization.py
+        train_stage1.py
+      stage2/
+        inference_stage2.py
+        step2_get_predictions_for_all.py
+        step3_get_patches.py
+        train_stage2.py
+      train_utils/
+        downloader.py
+        downloader.py
+        export.py
+        get_config.py
+        loss_functions.py
+        models.py
+        train_functions.py
+        transforms.py
+        val_function.py
+	configs/
+      download_configs.json
+      network_stage1_configs.json
+      network_stage2_configs.json
+	media/
+	tests/
+      test_1_export.py
+      test_2_train.py
+      test_3_inference.py
+	init_venv.sh
+	README.md
+	requirements.txt
+	setup.py
+```
 
-## **Run Tests**
+# Using the code
 
-Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here](http://miriad.digital-health.one/sample_data/bmi5/rbis_ddsm_sample.zip).
+## Create environment
 
-## How to run
+Create a virtual environment with all dependencies using 
+
+`sh init_venv.sh`
+
+Activate the environment using `source venv/bin/activate`
+
+
+## How to run Stage 1
 Follow the below steps to reproduce
 
-1. Create virtual environment: sh init_venv.sh
-2. Activate venv: source venv/bin/activate
-3. Create dataset: python -m mammogram_screening.stage1.data_prep_rbis
-4. Train stage1 model: python -m mammogram_screening.stage1.train_stage1
-5. Inference on stage 1 model: python -m mammogram_screening.stage1.inference_mass_localisation
-6. Prepare dataset (step1): python -m mammogram_screening.stage2.step2_get_predictions_for_all
-7. Prepare dataset (step2): python -m mammogram_screening.stage2.step3_get_patches
-8. Train stage2 model: python -m mammogram_screening.stage2.train_stage2
-9. Inference on stage 2 model: python -m mammogram_screening.stage2.inference_stage2
+### Prepare Training Dataset
 
+`python -m mammogram_screening.stage1.data_prep_rbis`
+
+### Run Training
+
+`python -m mammogram_screening.stage1.train_stage1`
+
+### Run Inference
+
+`python -m mammogram_screening.stage1.inference_mass_localisation`
+
+
+## How to run Stage 2
+
+### Prepare Training Dataset
+
+
+`python -m mammogram_screening.stage2.step2_get_predictions_for_all`
+
+`python -m mammogram_screening.stage2.step3_get_patches`
+
+### Run Training
+
+`python -m mammogram_screening.stage2.train_stage2`
+
+
+### Run Inference
+
+`python -m mammogram_screening.stage2.inference_stage2`
+
+
+## Run Tests
+
+Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here](http://miriad.digital-health.one/sample_data/bmi5/rbis_ddsm_sample.zip).
 
 ## **Acknowledgement**
 
@@ -119,7 +217,3 @@ Github username: Rakshith2597
 Department of Electrical Engineering, </br>
 Indian Institute of Technology Kharagpur</br>
 email: arunavachakravarty1206@gmail.com </br>
-
-## **References**
-
-C. K. Sarath, A. Chakravarty, N. Ghosh, T. Sarkar, R. Sethuraman and D. Sheet, "A Two-Stage Multiple Instance Learning Framework for the Detection of Breast Cancer in Mammograms," 2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), 2020, pp. 1128-1131, doi: 10.1109/EMBC44109.2020.9176427.
