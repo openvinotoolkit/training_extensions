@@ -31,7 +31,7 @@ class DatasetManager:
         if train_dataset is not None:
             return train_dataset
 
-        for k, v in dataset.subsets().items():
+        for k, v in subsets.items():
             if "train" in k or "default" in k:
                 return v
         raise ValueError("Can't find training data.")
@@ -45,7 +45,7 @@ class DatasetManager:
         if val_dataset is not None:
             return val_dataset
 
-        for k, v in dataset.subsets().items():
+        for k, v in subsets.items():
             if "val" in k:
                 return v
         return None
