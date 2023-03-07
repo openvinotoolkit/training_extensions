@@ -82,7 +82,7 @@ we will need the following file structure:
 Training
 *********
 
-1. First of all, we need to choose which instance segmentation model we will train.
+1. First of all, you need to choose which instance segmentation model you want to train.
 The list of supported templates for instance segmentation is available with the command line below.
 
 .. note::

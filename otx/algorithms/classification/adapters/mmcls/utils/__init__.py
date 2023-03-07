@@ -3,17 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .builder import build_classifier
-from .config_utils import (
-    patch_config,
-    patch_datasets,
-    patch_evaluation,
-    prepare_for_training,
-)
+from .config_utils import patch_datasets, patch_evaluation
 
 __all__ = [
-    "patch_config",
+    "build_classifier",
     "patch_datasets",
     "patch_evaluation",
-    "prepare_for_training",
-    "build_classifier",
 ]

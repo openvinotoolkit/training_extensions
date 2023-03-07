@@ -188,6 +188,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 return train_type.get("value", "INCREMENTAL")
             if self.mode in ("build") and self.args.train_type:
                 self.train_type = self.args.train_type.upper()
+                if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
+                    raise ValueError(f"{self.train_type} is not currently supported by otx.")
             if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
                 return self.train_type
 

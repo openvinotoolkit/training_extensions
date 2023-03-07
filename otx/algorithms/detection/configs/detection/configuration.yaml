@@ -101,7 +101,7 @@ learning_parameters:
     warning: null
   num_workers:
     affects_outcome_of: NONE
-    default_value: 2
+    default_value: 0
     description:
       Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
@@ -261,6 +261,22 @@ algo_backend:
       type: UI_RULES
     value: INCREMENTAL
     visible_in_ui: True
+    warning: null
+  mem_cache_size:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description: Size of memory pool for caching decoded data to load data faster (bytes).
+    editable: true
+    header: Size of memory pool
+    max_value: 9223372036854775807
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true

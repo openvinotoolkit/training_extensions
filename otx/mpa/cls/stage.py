@@ -143,25 +143,27 @@ class ClsStage(Stage):
         self.configure_classes(cfg)
 
     def configure_classes(self, cfg):
-        model_classes, data_classes = [], []
-        self.model_meta = self.get_model_meta(cfg)
-        train_data_cfg = Stage.get_data_cfg(cfg, "train")
-        if isinstance(train_data_cfg, list):
-            train_data_cfg = train_data_cfg[0]
+        """Patch classes for model and dataset."""
+        self.task_adapt_op = "REPLACE"
+        if "task_adapt" in cfg:
+            self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
 
-        model_classes = Stage.get_model_classes(cfg)
-        data_classes = Stage.get_data_classes(cfg)
+        org_model_classes = self.get_model_classes(cfg)
+        data_classes = self.get_data_classes(cfg)
 
-        if cfg.get("model_classes", []):
-            cfg.model.head.num_classes = len(cfg.model_classes)
-        elif model_classes:
-            cfg.model.head.num_classes = len(model_classes)
-        elif data_classes:
-            cfg.model.head.num_classes = len(data_classes)
-        self.model_meta["CLASSES"] = model_classes
+        # Model classes
+        if self.task_adapt_op == "REPLACE":
+            if len(data_classes) == 0:
+                model_classes = org_model_classes.copy()
+            else:
+                model_classes = data_classes.copy()
+        elif self.task_adapt_op == "MERGE":
+            model_classes = org_model_classes + [cls for cls in data_classes if cls not in org_model_classes]
+        else:
+            raise KeyError(f"{self.task_adapt_op} is not supported for task_adapt options!")
 
-        if not train_data_cfg.get("new_classes", False):  # when train_data_cfg doesn't have 'new_classes' key
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
+        # Model architecture
+        cfg.model.head.num_classes = len(model_classes)
+
+        self.org_model_classes = org_model_classes
         self.model_classes = model_classes
-        self.data_classes = data_classes
