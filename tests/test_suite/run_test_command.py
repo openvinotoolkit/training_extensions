@@ -241,7 +241,7 @@ def otx_eval_testing(template, root, otx_dir, args):
 
 
 def otx_eval_openvino_testing(
-    template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}
+    template, root, otx_dir, args, threshold=0.0, criteria=None, reg_threshold=0.10, result_dict=None
 ):
     template_work_dir = get_template_dir(template, root)
     command_line = [
@@ -263,7 +263,7 @@ def otx_eval_openvino_testing(
     with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
         exported_performance = json.load(read_file)
 
-    if template.name in criteria.keys():
+    if isinstance(criteria, dict) and template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
@@ -369,7 +369,7 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
 
 
 def otx_eval_deployment_testing(
-    template, root, otx_dir, args, threshold=0.0, criteria={}, reg_threshold=0.10, result_dict={}
+    template, root, otx_dir, args, threshold=0.0, criteria=None, reg_threshold=0.10, result_dict=None
 ):
     template_work_dir = get_template_dir(template, root)
     command_line = [
@@ -391,7 +391,7 @@ def otx_eval_deployment_testing(
     with open(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json") as read_file:
         deployed_performance = json.load(read_file)
 
-    if template.name in criteria.keys():
+    if isinstance(criteria, dict) and template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
@@ -464,7 +464,7 @@ def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
 
 
-def pot_eval_testing(template, root, otx_dir, args, criteria={}, reg_threshold=0.10, result_dict={}):
+def pot_eval_testing(template, root, otx_dir, args, criteria=None, reg_threshold=0.10, result_dict=None):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -484,7 +484,7 @@ def pot_eval_testing(template, root, otx_dir, args, criteria={}, reg_threshold=0
     with open(f"{template_work_dir}/pot_{template.model_template_id}/performance.json") as read_file:
         pot_performance = json.load(read_file)
 
-    if template.name in criteria.keys():
+    if isinstance(criteria, dict) and template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
@@ -552,7 +552,7 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf", test_name)
 
 
-def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria={}, reg_threshold=0.10, result_dict={}):
+def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria=None, reg_threshold=0.10, result_dict=None):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -573,7 +573,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria={
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json") as read_file:
         evaluated_performance = json.load(read_file)
 
-    if template.name in criteria.keys():
+    if isinstance(criteria, dict) and template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
@@ -861,3 +861,32 @@ def otx_eval_compare(
     result_dict["Model size (MB)"] = round(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth") / 1e6, 2
     )
+
+def otx_eval_e2e_train_time(
+    train_time_criteria,
+    e2e_train_time,
+    template,
+    threshold=0.10
+):
+    e2e_train_time_criteria = train_time_criteria[template.name]
+    modified_train_criteria = e2e_train_time_criteria - (e2e_train_time_criteria * threshold)
+    
+    assert (
+        e2e_train_time >= modified_train_criteria
+    ), f"Current model e2e time: ({e2e_train_time}) < criteria: ({modified_train_criteria})."
+
+def otx_eval_e2e_eval_time(
+    eval_time_criteria,
+    e2e_eval_time,
+    template,
+    threshold=0.10
+):
+    e2e_eval_time_criteria = eval_time_criteria[template.name]
+    modified_eval_criteria = e2e_eval_time_criteria - (e2e_eval_time_criteria * threshold)
+    
+    assert (
+        e2e_eval_time >= modified_eval_criteria
+    ), f"Current model e2e time: ({e2e_eval_time}) < criteria: ({modified_eval_criteria})."
+
+
+    

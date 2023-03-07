@@ -16,6 +16,7 @@ from tests.regression.regression_test_helpers import (
     TIME_LOG,
     get_result_dict,
     load_regression_configuration,
+    get_template_performance
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -30,6 +31,8 @@ from tests.test_suite.run_test_command import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    otx_eval_e2e_train_time,
+    otx_eval_e2e_eval_time
 )
 
 # Configurations for regression test.
@@ -45,7 +48,6 @@ result_dict = get_result_dict(TASK_TYPE)
 result_dir = f"/tmp/regression_test_results/{TASK_TYPE}"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 
-# Segmentation
 segmentation_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, LABEL_TYPE)
 segmentation_data_args = segmentation_regression_config["data_path"]
 segmentation_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
@@ -87,6 +89,24 @@ class TestRegressionSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_kpi_test(self, template):
+        results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
+        performance = get_template_performance(results, template) 
+        
+        otx_eval_e2e_train_time(
+            train_time_criteria=segmentation_regression_config["kpi_e2e_train_time_criteria"]["train"],
+            e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
+            template=template
+        )
+        
+        otx_eval_e2e_eval_time(
+            eval_time_criteria=segmentation_regression_config["kpi_e2e_eval_time_criteria"]["train"],
+            e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
+            template=template
+        )
+    
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
@@ -117,6 +137,25 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_cls_incr_kpi_test(self, template):
+        config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
+        results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
+        performance = get_template_performance(results, template) 
+        
+        otx_eval_e2e_train_time(
+            train_time_criteria=config_cls_incr["kpi_e2e_train_time_criteria"]["train"],
+            e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
+            template=template
+        )
+        
+        otx_eval_e2e_eval_time(
+            eval_time_criteria=config_cls_incr["kpi_e2e_eval_time_criteria"]["train"],
+            e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
+            template=template
+        )
+    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_semisl(self, template, tmp_dir_path):
@@ -153,6 +192,25 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE]["semi_supervised"]["train"].append(self.performance)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_semisl_kpi_test(self, template):
+        config_semisl = load_regression_configuration(otx_dir, TASK_TYPE, "semi_supervised", LABEL_TYPE)
+        results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
+        performance = get_template_performance(results, template) 
+        
+        otx_eval_e2e_train_time(
+            train_time_criteria=config_semisl["kpi_e2e_train_time_criteria"]["train"],
+            e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
+            template=template
+        )
+        
+        otx_eval_e2e_eval_time(
+            eval_time_criteria=config_semisl["kpi_e2e_eval_time_criteria"]["train"],
+            e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
+            template=template
+        )
+    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
@@ -196,6 +254,25 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["self_supervised"]["train"].append(self.performance)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_selfsl_kpi_test(self, template):
+        config_selfsl = load_regression_configuration(otx_dir, TASK_TYPE, "self_supervised", LABEL_TYPE)
+        results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
+        performance = get_template_performance(results, template) 
+        
+        otx_eval_e2e_train_time(
+            train_time_criteria=config_selfsl["kpi_e2e_train_time_criteria"]["train"],
+            e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
+            template=template
+        )
+        
+        otx_eval_e2e_eval_time(
+            eval_time_criteria=config_selfsl["kpi_e2e_eval_time_criteria"]["train"],
+            e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
+            template=template
+        )
+    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_eval_openvino(self, template, tmp_dir_path):

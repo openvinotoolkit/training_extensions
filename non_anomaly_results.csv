@@ -1,0 +1,61 @@
+,Task type,Train type,Label type,Model,train,export,deploy,nncf,pot,train E2E Time (Sec.),export E2E Time (Sec.),deploy E2E Time (Sec.),nncf E2E Time (Sec.),pot E2E Time (Sec.),train Eval Time (Sec.),export Eval Time (Sec.),deploy Eval Time (Sec.),nncf Eval Time (Sec.),pot Eval Time (Sec.)
+0,classification,supervised,multi_class,EfficientNet-V2-S,Accuracy: 0.753,Accuracy: 0.756,Accuracy: 0.756,Accuracy: 0.756,Accuracy: 0.731,103.542,60.807,22.072,1245.054,283.325,21.425,39.938,37.569,53.33,36.615
+1,classification,supervised,multi_class,MobileNet-V3-large-1x,Accuracy: 0.728,Accuracy: 0.728,Accuracy: 0.728,Accuracy: 0.733,Accuracy: 0.692,91.159,32.454,15.701,352.947,143.136,22.95,27.505,23.951,33.237,22.538
+2,classification,supervised,multi_class,EfficientNet-B0,Accuracy: 0.769,Accuracy: 0.769,Accuracy: 0.769,Accuracy: 0.758,Accuracy: 0.753,97.82,36.508,16.123,1016.029,129.238,19.973,26.033,23.627,46.674,21.533
+3,classification,semi_supervised,multi_class,EfficientNet-V2-S,Accuracy: 0.831,-,-,-,-,493.345,-,-,-,-,24.197,-,-,-,-
+4,classification,semi_supervised,multi_class,MobileNet-V3-large-1x,Accuracy: 0.764,-,-,-,-,317.886,-,-,-,-,24.329,-,-,-,-
+5,classification,semi_supervised,multi_class,EfficientNet-B0,Accuracy: 0.828,-,-,-,-,340.885,-,-,-,-,18.391,-,-,-,-
+6,classification,self_supervised,multi_class,EfficientNet-V2-S,Accuracy: 0.747,-,-,-,-,53.535,-,-,-,-,32.317,-,-,-,-
+7,classification,self_supervised,multi_class,MobileNet-V3-large-1x,Accuracy: 0.719,-,-,-,-,69.584,-,-,-,-,24.676,-,-,-,-
+8,classification,self_supervised,multi_class,EfficientNet-B0,Accuracy: 0.772,-,-,-,-,51.071,-,-,-,-,22.458,-,-,-,-
+9,classification,class_incr,multi_class,EfficientNet-V2-S,Accuracy: 0.8,-,-,-,-,134.915,-,-,-,-,23.531,-,-,-,-
+10,classification,class_incr,multi_class,MobileNet-V3-large-1x,Accuracy: 0.76,-,-,-,-,109.944,-,-,-,-,23.178,-,-,-,-
+11,classification,class_incr,multi_class,EfficientNet-B0,Accuracy: 0.8,-,-,-,-,99.421,-,-,-,-,21.431,-,-,-,-
+12,classification,supervised,multi_label,EfficientNet-V2-S,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.989,242.586,30.993,406.276,741.291,274.416,25.915,37.113,50.62,72.473,39.392
+13,classification,supervised,multi_label,MobileNet-V3-large-1x,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.988,248.58,23.91,278.165,412.852,140.605,26.925,24.033,27.583,36.124,24.999
+14,classification,supervised,multi_label,EfficientNet-B0,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.988,Accuracy: 0.987,Accuracy: 0.987,214.801,24.435,284.074,524.439,126.233,96.734,29.381,28.848,35.388,25.633
+15,classification,class_incr,multi_label,EfficientNet-V2-S,Accuracy: 0.99,-,-,-,-,325.446,-,-,-,-,27.862,-,-,-,-
+16,classification,class_incr,multi_label,MobileNet-V3-large-1x,Accuracy: 0.99,-,-,-,-,309.765,-,-,-,-,28.428,-,-,-,-
+17,classification,class_incr,multi_label,EfficientNet-B0,Accuracy: 0.989,-,-,-,-,245.931,-,-,-,-,20.845,-,-,-,-
+18,classification,supervised,h_label,EfficientNet-V2-S,Accuracy: 0.656,Accuracy: 0.656,Accuracy: 0.656,Accuracy: 0.633,Accuracy: 0.639,107.832,33.438,19.795,574.208,299.245,20.453,43.758,40.453,99.908,40.583
+19,classification,supervised,h_label,MobileNet-V3-large-1x,Accuracy: 0.675,Accuracy: 0.675,Accuracy: 0.675,Accuracy: 0.678,Accuracy: 0.658,103.356,23.049,13.027,557.418,130.828,23.109,25.429,24.893,56.923,26.452
+20,classification,supervised,h_label,EfficientNet-B0,Accuracy: 0.744,Accuracy: 0.744,Accuracy: 0.744,Accuracy: 0.672,Accuracy: 0.725,96.987,25.917,13.435,771.575,126.057,22.136,24.864,24.022,33.975,27.714
+21,classification,supervised,supcon,EfficientNet-V2-S,Accuracy: 0.783,-,-,-,-,151.86,-,-,-,-,23.455,-,-,-,-
+22,classification,supervised,supcon,MobileNet-V3-large-1x,Accuracy: 0.728,-,-,-,-,139.579,-,-,-,-,24.327,-,-,-,-
+23,classification,supervised,supcon,EfficientNet-B0,Accuracy: 0.772,-,-,-,-,162.515,-,-,-,-,20.268,-,-,-,-
+24,instance_segmentation,supervised,multi_class,MaskRCNN-ResNet50,f-measure: 0.473,f-measure: 0.0,f-measure: 0.0,f-measure: 0.437,f-measure: 0.0,6108.891,32.458,3198.887,21906.016,788.928,141.878,373.044,344.852,121.94,117.013
+25,instance_segmentation,supervised,multi_class,MaskRCNN-EfficientNetB2B,f-measure: 0.277,f-measure: 0.0,f-measure: 0.0,f-measure: 0.287,f-measure: 0.0,5957.731,62.418,1325.044,3303.895,743.359,137.571,184.068,144.822,122.89,67.742
+26,instance_segmentation,class_incr,multi_class,MaskRCNN-ResNet50,f-measure: 0.486,-,-,-,-,6519.51,-,-,-,-,290.42,-,-,-,-
+27,instance_segmentation,class_incr,multi_class,MaskRCNN-EfficientNetB2B,f-measure: 0.307,-,-,-,-,4982.118,-,-,-,-,161.194,-,-,-,-
+28,action_classification,supervised,multi_class,X3D,Accuracy: 0.633,Accuracy: 0.59,-,-,Accuracy: 0.591,3806.71,20.141,-,-,1114.671,350.249,844.991,-,-,730.614
+29,tiling_instance_segmentation,tiling,multi_class,MaskRCNN-ResNet50,f-measure: 0.469,f-measure: 0.0,f-measure: 0.0,-,f-measure: 0.0,11984.924,32.484,3208.067,-,1270.423,714.227,365.685,349.092,-,221.453
+30,tiling_instance_segmentation,tiling,multi_class,MaskRCNN-EfficientNetB2B,f-measure: 0.311,f-measure: 0.0,f-measure: 0.0,-,f-measure: 0.0,11096.47,54.388,1333.693,-,1099.428,476.145,184.077,148.252,-,154.921
+31,action_detection,supervised,multi_class,X3D_FAST_RCNN,f-measure: 0.602,-,-,-,-,15850.639,-,-,-,-,293.361,-,-,-,-
+32,segmentation,supervised,multi_class,Lite-HRNet-s-mod2,Dice Average: 0.791,Dice Average: 0.791,Dice Average: 0.791,Dice Average: 0.78,Dice Average: 0.697,639.665,75.422,61.731,3138.385,641.969,62.231,136.879,108.859,371.318,64.268
+33,segmentation,supervised,multi_class,Lite-HRNet-18-mod2,Dice Average: 0.829,Dice Average: 0.83,Dice Average: 0.83,Dice Average: 0.814,Dice Average: 0.493,842.533,123.505,87.964,7716.308,1056.679,61.293,181.622,169.655,451.699,99.137
+34,segmentation,supervised,multi_class,Lite-HRNet-18,Dice Average: 0.814,Dice Average: 0.815,Dice Average: 0.815,Dice Average: 0.805,Dice Average: 0.435,1003.818,127.231,95.926,3857.905,1176.997,90.227,186.166,171.356,284.22,90.725
+35,segmentation,supervised,multi_class,Lite-HRNet-x-mod3,Dice Average: 0.789,Dice Average: 0.788,Dice Average: 0.788,Dice Average: 0.729,Dice Average: 0.071,2135.726,324.398,88.088,22909.743,3040.795,133.559,179.67,194.645,533.314,111.842
+36,segmentation,semi_supervised,multi_class,Lite-HRNet-s-mod2,Dice Average: 0.818,-,-,-,-,1589.595,-,-,-,-,50.469,-,-,-,-
+37,segmentation,semi_supervised,multi_class,Lite-HRNet-18-mod2,Dice Average: 0.837,-,-,-,-,1068.11,-,-,-,-,75.606,-,-,-,-
+38,segmentation,semi_supervised,multi_class,Lite-HRNet-18,Dice Average: 0.835,-,-,-,-,2055.82,-,-,-,-,64.938,-,-,-,-
+39,segmentation,semi_supervised,multi_class,Lite-HRNet-x-mod3,Dice Average: 0.809,-,-,-,-,1476.021,-,-,-,-,89.535,-,-,-,-
+40,segmentation,self_supervised,multi_class,Lite-HRNet-s-mod2,Dice Average: 0.76,-,-,-,-,1870.189,-,-,-,-,81.293,-,-,-,-
+41,segmentation,self_supervised,multi_class,Lite-HRNet-18-mod2,Dice Average: 0.814,-,-,-,-,1946.69,-,-,-,-,58.344,-,-,-,-
+42,segmentation,self_supervised,multi_class,Lite-HRNet-18,Dice Average: 0.832,-,-,-,-,1143.266,-,-,-,-,53.143,-,-,-,-
+43,segmentation,self_supervised,multi_class,Lite-HRNet-x-mod3,Dice Average: 0.776,-,-,-,-,1464.186,-,-,-,-,126.495,-,-,-,-
+44,segmentation,class_incr,multi_class,Lite-HRNet-s-mod2,Dice Average: 0.78,-,-,-,-,1270.246,-,-,-,-,62.218,-,-,-,-
+45,segmentation,class_incr,multi_class,Lite-HRNet-18-mod2,Dice Average: 0.817,-,-,-,-,827.092,-,-,-,-,84.723,-,-,-,-
+46,segmentation,class_incr,multi_class,Lite-HRNet-18,Dice Average: 0.822,-,-,-,-,931.863,-,-,-,-,67.932,-,-,-,-
+47,segmentation,class_incr,multi_class,Lite-HRNet-x-mod3,Dice Average: 0.737,-,-,-,-,1195.722,-,-,-,-,103.375,-,-,-,-
+48,detection,supervised,multi_class,YOLOX,f-measure: 0.537,f-measure: 0.534,f-measure: 0.534,f-measure: 0.52,f-measure: 0.531,2035.128,26.611,542.139,5763.269,259.332,48.405,65.493,95.0,94.352,91.273
+49,detection,supervised,multi_class,SSD,f-measure: 0.172,f-measure: 0.172,f-measure: 0.172,f-measure: 0.174,f-measure: 0.176,1269.04,24.175,595.255,1210.186,455.126,75.079,84.567,78.674,101.113,57.207
+50,detection,supervised,multi_class,ATSS,f-measure: 0.446,f-measure: 0.455,f-measure: 0.455,f-measure: 0.447,f-measure: 0.456,1238.34,40.974,767.716,1938.294,791.052,64.336,137.401,111.318,91.142,111.911
+51,detection,semi_supervised,multi_class,YOLOX,f-measure: 0.399,-,-,-,-,1848.188,-,-,-,-,84.865,-,-,-,-
+52,detection,semi_supervised,multi_class,SSD,f-measure: 0.141,-,-,-,-,2043.565,-,-,-,-,66.58,-,-,-,-
+53,detection,semi_supervised,multi_class,ATSS,f-measure: 0.437,-,-,-,-,2189.031,-,-,-,-,50.976,-,-,-,-
+54,detection,class_incr,multi_class,YOLOX,f-measure: 0.532,-,-,-,-,2212.205,-,-,-,-,59.611,-,-,-,-
+55,detection,class_incr,multi_class,SSD,f-measure: 0.201,-,-,-,-,1295.933,-,-,-,-,79.096,-,-,-,-
+56,detection,class_incr,multi_class,ATSS,f-measure: 0.442,-,-,-,-,1153.319,-,-,-,-,76.022,-,-,-,-
+57,tiling_detection,tiling,multi_class,YOLOX,f-measure: 0.545,f-measure: 0.549,f-measure: 0.549,-,f-measure: 0.531,923.668,57.795,539.47,-,249.847,126.231,79.97,89.111,-,67.653
+58,tiling_detection,tiling,multi_class,SSD,f-measure: 0.182,f-measure: 0.182,f-measure: 0.182,-,f-measure: 0.184,1138.663,32.526,735.298,-,595.514,124.969,87.621,69.68,-,80.869
+59,tiling_detection,tiling,multi_class,ATSS,f-measure: 0.444,f-measure: 0.46,f-measure: 0.46,-,f-measure: 0.456,1491.218,35.65,833.158,-,818.883,95.091,128.619,97.645,-,120.412

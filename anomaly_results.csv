@@ -1,0 +1,91 @@
+,Task type,MVTec Category,Model,train,export,deploy,nncf,pot,train E2E Time (Sec.),export E2E Time (Sec.),deploy E2E Time (Sec.),nncf E2E Time (Sec.),pot E2E Time (Sec.),train Eval Time (Sec.),export Eval Time (Sec.),deploy Eval Time (Sec.),nncf Eval Time (Sec.),pot Eval Time (Sec.)
+0,anomaly_detection,bottle,STFPM,f-measure: 0.744,f-measure: 0.759,f-measure: 0.759,f-measure: 0.752,f-measure: 0.761,1356.347,21.561,10.847,551.144,63.444,22.319,37.086,23.716,22.312,23.313
+1,anomaly_detection,bottle,PADIM,f-measure: 0.921,f-measure: 0.846,f-measure: 0.846,f-measure: 0.958,f-measure: 0.836,121.353,20.981,14.379,155.338,79.117,22.518,30.791,33.231,22.66,21.215
+2,anomaly_detection,cable,STFPM,f-measure: 0.601,f-measure: 0.41,f-measure: 0.41,f-measure: 0.604,f-measure: 0.409,778.169,21.814,12.494,563.561,80.428,26.702,57.135,41.635,28.577,39.657
+3,anomaly_detection,cable,PADIM,f-measure: 0.678,f-measure: 0.588,f-measure: 0.588,f-measure: 0.68,f-measure: 0.599,128.718,19.26,13.352,154.604,111.963,27.459,54.228,44.546,24.56,42.562
+4,anomaly_detection,capsule,STFPM,f-measure: 0.821,f-measure: 0.826,f-measure: 0.826,f-measure: 0.821,f-measure: 0.826,752.927,20.094,11.247,559.607,80.4,31.333,46.332,39.11,28.219,35.17
+5,anomaly_detection,capsule,PADIM,f-measure: 0.837,f-measure: 0.826,f-measure: 0.826,f-measure: 0.844,f-measure: 0.795,534.334,20.248,13.309,161.125,105.312,27.329,47.205,33.796,26.919,34.298
+6,anomaly_detection,carpet,STFPM,f-measure: 0.75,f-measure: 0.762,f-measure: 0.762,f-measure: 0.866,f-measure: 0.775,977.977,19.523,11.266,1413.436,93.065,27.952,53.725,44.958,42.143,44.866
+7,anomaly_detection,carpet,PADIM,f-measure: 0.764,f-measure: 0.761,f-measure: 0.761,f-measure: 0.764,f-measure: 0.744,720.094,19.156,13.002,700.921,99.079,24.434,39.329,31.855,46.102,27.029
+8,anomaly_detection,grid,STFPM,f-measure: 0.779,f-measure: 0.498,f-measure: 0.498,f-measure: 0.792,f-measure: 0.495,624.409,15.362,11.89,1065.248,62.566,23.194,30.717,23.368,25.104,20.722
+9,anomaly_detection,grid,PADIM,f-measure: 0.787,f-measure: 0.487,f-measure: 0.487,f-measure: 0.727,f-measure: 0.491,111.853,17.244,14.14,246.078,87.32,21.743,34.051,24.517,25.41,23.135
+10,anomaly_detection,hazelnut,STFPM,f-measure: 0.642,f-measure: 0.639,f-measure: 0.639,f-measure: 0.685,f-measure: 0.636,604.335,20.322,13.347,1024.806,76.307,24.364,45.62,33.433,28.369,30.493
+11,anomaly_detection,hazelnut,PADIM,f-measure: 0.908,f-measure: 0.719,f-measure: 0.719,f-measure: 0.886,f-measure: 0.71,97.453,21.649,15.456,188.211,92.612,21.172,44.403,33.914,27.619,30.044
+12,anomaly_detection,leather,STFPM,f-measure: 0.837,f-measure: 0.793,f-measure: 0.793,f-measure: 0.903,f-measure: 0.758,1793.502,22.032,13.56,689.162,96.315,26.403,70.691,58.868,28.972,51.785
+13,anomaly_detection,leather,PADIM,f-measure: 0.816,f-measure: 0.791,f-measure: 0.791,f-measure: 0.923,f-measure: 0.855,118.473,14.291,14.255,137.69,98.818,28.645,43.832,37.311,22.696,34.151
+14,anomaly_detection,metal_nut,STFPM,f-measure: 0.803,f-measure: 0.809,f-measure: 0.809,f-measure: 0.798,f-measure: 0.802,700.552,20.005,13.881,625.261,56.488,24.762,35.277,26.894,23.569,19.599
+15,anomaly_detection,metal_nut,PADIM,f-measure: 0.812,f-measure: 0.795,f-measure: 0.795,f-measure: 0.821,f-measure: 0.809,253.221,20.301,15.261,163.268,77.037,22.516,34.549,21.589,24.016,19.403
+16,anomaly_detection,pill,STFPM,f-measure: 0.841,f-measure: 0.844,f-measure: 0.844,f-measure: 0.84,f-measure: 0.844,602.1,19.787,12.01,986.114,62.978,32.492,38.765,42.324,42.32,32.925
+17,anomaly_detection,pill,PADIM,f-measure: 0.841,f-measure: 0.844,f-measure: 0.844,f-measure: 0.841,f-measure: 0.844,395.348,14.588,15.439,957.486,84.085,23.919,37.047,39.031,23.969,29.469
+18,anomaly_detection,screw,STFPM,f-measure: 0.781,f-measure: 0.744,f-measure: 0.744,f-measure: 0.752,f-measure: 0.744,1137.651,13.83,14.712,1606.437,75.41,28.384,50.985,46.459,31.386,32.833
+19,anomaly_detection,screw,PADIM,f-measure: 0.74,f-measure: 0.744,f-measure: 0.744,f-measure: 0.74,f-measure: 0.744,133.043,17.113,15.426,151.489,96.168,28.04,37.065,42.704,31.289,34.886
+20,anomaly_detection,tile,STFPM,f-measure: 0.838,f-measure: 0.725,f-measure: 0.725,f-measure: 0.896,f-measure: 0.712,1308.421,13.619,12.356,1152.183,72.673,24.431,46.0,44.376,23.165,34.108
+21,anomaly_detection,tile,PADIM,f-measure: 0.75,f-measure: 0.686,f-measure: 0.686,f-measure: 0.797,f-measure: 0.689,531.855,15.001,13.6,173.753,86.578,19.97,33.03,33.492,26.66,23.195
+22,anomaly_detection,toothbrush,STFPM,f-measure: 0.65,f-measure: 0.714,f-measure: 0.714,f-measure: 0.699,f-measure: 0.714,748.83,15.442,13.64,747.952,53.967,19.832,19.795,18.341,24.668,14.477
+23,anomaly_detection,toothbrush,PADIM,f-measure: 0.843,f-measure: 0.784,f-measure: 0.784,f-measure: 0.892,f-measure: 0.783,148.044,15.031,13.849,149.521,76.344,21.884,18.428,19.645,24.905,12.937
+24,anomaly_detection,transistor,STFPM,f-measure: 0.384,f-measure: 0.396,f-measure: 0.396,f-measure: 0.694,f-measure: 0.394,569.85,15.263,12.762,1398.091,65.259,22.627,39.153,36.25,18.412,27.117
+25,anomaly_detection,transistor,PADIM,f-measure: 0.714,f-measure: 0.413,f-measure: 0.413,f-measure: 0.798,f-measure: 0.431,104.448,17.754,13.017,121.081,88.392,24.433,36.152,32.199,21.178,27.761
+26,anomaly_detection,wood,STFPM,f-measure: 0.949,f-measure: 0.837,f-measure: 0.837,f-measure: 0.937,f-measure: 0.837,687.169,15.394,13.683,842.847,65.04,29.907,34.746,30.645,22.158,26.037
+27,anomaly_detection,wood,PADIM,f-measure: 0.943,f-measure: 0.829,f-measure: 0.829,f-measure: 0.93,f-measure: 0.828,190.406,19.251,15.339,127.146,80.688,27.968,29.84,35.441,23.004,22.828
+28,anomaly_detection,zipper,STFPM,f-measure: 0.784,f-measure: 0.781,f-measure: 0.781,f-measure: 0.784,f-measure: 0.788,1561.414,14.828,12.943,539.191,60.287,29.647,42.346,38.179,25.174,30.315
+29,anomaly_detection,zipper,PADIM,f-measure: 0.864,f-measure: 0.861,f-measure: 0.861,f-measure: 0.853,f-measure: 0.841,268.7,17.441,14.002,182.287,85.529,32.426,32.104,36.503,26.515,29.031
+30,anomaly_classification,bottle,STFPM,f-measure: 0.867,f-measure: 0.77,f-measure: 0.77,f-measure: 0.795,f-measure: 0.773,777.481,13.127,12.067,1696.821,53.172,20.954,18.989,19.217,30.834,16.344
+31,anomaly_classification,bottle,PADIM,f-measure: 0.952,f-measure: 0.832,f-measure: 0.832,f-measure: 0.964,f-measure: 0.842,262.015,15.411,12.852,791.264,73.87,21.909,19.66,18.687,29.319,13.932
+32,anomaly_classification,cable,STFPM,f-measure: 0.613,f-measure: 0.613,f-measure: 0.613,f-measure: 0.613,f-measure: 0.613,979.732,13.234,12.437,739.855,69.787,22.08,38.757,33.764,25.005,28.254
+33,anomaly_classification,cable,PADIM,f-measure: 0.613,f-measure: 0.613,f-measure: 0.613,f-measure: 0.673,f-measure: 0.625,236.553,13.647,13.798,235.616,81.121,21.33,33.25,34.817,22.927,21.236
+34,anomaly_classification,capsule,STFPM,f-measure: 0.826,f-measure: 0.826,f-measure: 0.826,f-measure: 0.826,f-measure: 0.826,2423.578,12.775,10.571,657.704,60.709,22.084,29.612,30.94,26.585,19.124
+35,anomaly_classification,capsule,PADIM,f-measure: 0.871,f-measure: 0.841,f-measure: 0.841,f-measure: 0.848,f-measure: 0.841,765.459,14.325,13.498,187.651,88.814,23.252,30.632,29.046,25.222,27.928
+36,anomaly_classification,carpet,STFPM,f-measure: 0.829,f-measure: 0.761,f-measure: 0.761,f-measure: 0.855,f-measure: 0.761,1064.589,13.957,13.971,631.978,63.251,21.446,29.321,31.19,25.953,23.498
+37,anomaly_classification,carpet,PADIM,f-measure: 0.761,f-measure: 0.744,f-measure: 0.744,f-measure: 0.786,f-measure: 0.752,214.02,16.122,14.379,158.452,82.67,23.297,30.25,29.729,24.645,24.037
+38,anomaly_classification,grid,STFPM,f-measure: 0.756,f-measure: 0.731,f-measure: 0.731,f-measure: 0.782,f-measure: 0.731,1425.216,14.337,13.4,679.553,53.522,18.889,18.948,21.403,23.303,15.288
+39,anomaly_classification,grid,PADIM,f-measure: 0.744,f-measure: 0.731,f-measure: 0.731,f-measure: 0.744,f-measure: 0.731,130.358,16.261,12.049,158.766,79.29,21.612,18.348,16.769,24.008,14.545
+40,anomaly_classification,hazelnut,STFPM,f-measure: 0.673,f-measure: 0.642,f-measure: 0.642,f-measure: 0.736,f-measure: 0.636,1696.563,13.262,11.127,1318.398,57.719,21.087,25.937,26.393,21.983,22.807
+41,anomaly_classification,hazelnut,PADIM,f-measure: 0.845,f-measure: 0.687,f-measure: 0.687,f-measure: 0.873,f-measure: 0.713,324.155,14.733,13.827,988.658,81.537,20.086,25.473,24.41,19.304,22.148
+42,anomaly_classification,leather,STFPM,f-measure: 0.879,f-measure: 0.787,f-measure: 0.787,f-measure: 0.863,f-measure: 0.765,1140.225,12.855,12.047,846.981,62.056,20.516,28.167,28.912,23.83,24.923
+43,anomaly_classification,leather,PADIM,f-measure: 0.855,f-measure: 0.769,f-measure: 0.769,f-measure: 0.863,f-measure: 0.766,98.076,14.311,14.438,151.871,81.915,19.185,25.558,29.49,24.735,25.648
+44,anomaly_classification,metal_nut,STFPM,f-measure: 0.809,f-measure: 0.809,f-measure: 0.809,f-measure: 0.835,f-measure: 0.809,1272.574,12.648,12.203,954.013,55.449,21.19,19.993,19.294,23.935,14.494
+45,anomaly_classification,metal_nut,PADIM,f-measure: 0.817,f-measure: 0.809,f-measure: 0.809,f-measure: 0.826,f-measure: 0.819,455.888,14.3,12.794,136.142,74.651,24.089,19.557,21.472,24.463,14.867
+46,anomaly_classification,pill,STFPM,f-measure: 0.844,f-measure: 0.844,f-measure: 0.844,f-measure: 0.844,f-measure: 0.844,707.164,11.988,12.055,606.816,58.431,18.61,29.431,30.143,25.889,23.482
+47,anomaly_classification,pill,PADIM,f-measure: 0.844,f-measure: 0.847,f-measure: 0.847,f-measure: 0.844,f-measure: 0.844,91.168,21.905,12.902,159.922,77.541,20.006,28.044,28.15,25.647,18.913
+48,anomaly_classification,screw,STFPM,f-measure: 0.825,f-measure: 0.744,f-measure: 0.744,f-measure: 0.762,f-measure: 0.748,1811.376,14.797,10.824,1169.511,57.67,20.299,38.964,32.875,28.192,20.337
+49,anomaly_classification,screw,PADIM,f-measure: 0.744,f-measure: 0.744,f-measure: 0.744,f-measure: 0.744,f-measure: 0.744,129.524,14.235,14.373,146.847,83.469,20.487,28.691,31.563,25.896,23.98
+50,anomaly_classification,tile,STFPM,f-measure: 0.838,f-measure: 0.74,f-measure: 0.74,f-measure: 0.923,f-measure: 0.749,742.34,11.37,12.921,1179.472,56.151,22.606,23.664,24.743,19.08,18.208
+51,anomaly_classification,tile,PADIM,f-measure: 0.769,f-measure: 0.718,f-measure: 0.718,f-measure: 0.803,f-measure: 0.718,182.155,14.524,13.54,120.29,71.019,23.422,22.805,24.245,21.858,18.054
+52,anomaly_classification,toothbrush,STFPM,f-measure: 0.714,f-measure: 0.714,f-measure: 0.714,f-measure: 0.714,f-measure: 0.714,897.108,12.418,10.9,706.979,48.905,18.367,15.016,16.432,20.929,12.653
+53,anomaly_classification,toothbrush,PADIM,f-measure: 0.786,f-measure: 0.741,f-measure: 0.741,f-measure: 0.881,f-measure: 0.737,115.218,14.251,12.841,116.049,67.498,20.969,14.354,16.665,19.573,10.22
+54,anomaly_classification,transistor,STFPM,f-measure: 0.4,f-measure: 0.4,f-measure: 0.4,f-measure: 0.72,f-measure: 0.4,1220.878,12.07,12.093,914.32,53.986,18.942,25.073,29.23,21.064,18.921
+55,anomaly_classification,transistor,PADIM,f-measure: 0.62,f-measure: 0.419,f-measure: 0.419,f-measure: 0.7,f-measure: 0.425,205.561,15.022,14.841,105.146,84.734,17.59,23.887,23.945,20.426,22.945
+56,anomaly_classification,wood,STFPM,f-measure: 0.962,f-measure: 0.824,f-measure: 0.824,f-measure: 0.937,f-measure: 0.8,639.723,12.925,10.988,828.918,54.811,17.727,21.186,25.952,19.036,13.414
+57,anomaly_classification,wood,PADIM,f-measure: 0.924,f-measure: 0.815,f-measure: 0.815,f-measure: 0.937,f-measure: 0.817,100.719,18.858,13.976,93.422,76.668,17.522,22.296,26.636,17.488,19.748
+58,anomaly_classification,zipper,STFPM,f-measure: 0.788,f-measure: 0.781,f-measure: 0.781,f-measure: 0.788,f-measure: 0.788,1107.225,13.064,14.975,513.97,69.837,19.351,30.511,37.014,21.398,24.824
+59,anomaly_classification,zipper,PADIM,f-measure: 0.828,f-measure: 0.821,f-measure: 0.821,f-measure: 0.834,f-measure: 0.781,114.284,14.687,13.189,102.903,82.005,18.974,30.351,26.239,20.19,19.963
+60,anomaly_segmentation,bottle,STFPM,Dice Average: 0.188,Dice Average: 0.134,Dice Average: 0.134,Dice Average: 0.313,Dice Average: 0.126,1494.973,12.243,12.907,1266.668,110.936,42.249,50.965,51.092,35.294,49.804
+61,anomaly_segmentation,bottle,PADIM,Dice Average: 0.653,Dice Average: 0.561,Dice Average: 0.561,Dice Average: 0.626,Dice Average: 0.605,157.775,16.243,15.973,178.749,122.818,31.042,51.389,42.974,31.833,42.46
+62,anomaly_segmentation,cable,STFPM,Dice Average: 0.128,Dice Average: 0.06,Dice Average: 0.06,Dice Average: 0.219,Dice Average: 0.06,1753.541,14.095,11.48,929.754,143.656,76.558,98.751,91.811,38.625,110.875
+63,anomaly_segmentation,cable,PADIM,Dice Average: 0.242,Dice Average: 0.07,Dice Average: 0.07,Dice Average: 0.227,Dice Average: 0.075,195.477,15.377,14.704,167.282,247.508,49.747,144.833,128.268,38.283,148.695
+64,anomaly_segmentation,capsule,STFPM,Dice Average: 0.104,Dice Average: 0.019,Dice Average: 0.019,Dice Average: 0.142,Dice Average: 0.019,1692.073,15.11,13.434,875.04,129.36,40.828,91.209,74.371,30.875,80.443
+65,anomaly_segmentation,capsule,PADIM,Dice Average: 0.324,Dice Average: 0.249,Dice Average: 0.249,Dice Average: 0.287,Dice Average: 0.293,179.873,14.87,14.639,152.218,126.447,38.957,60.863,53.609,29.856,51.752
+66,anomaly_segmentation,carpet,STFPM,Dice Average: 0.256,Dice Average: 0.032,Dice Average: 0.032,Dice Average: 0.406,Dice Average: 0.032,2540.78,16.622,14.743,1227.65,131.879,40.6,83.047,69.764,25.576,73.919
+67,anomaly_segmentation,carpet,PADIM,Dice Average: 0.433,Dice Average: 0.133,Dice Average: 0.133,Dice Average: 0.331,Dice Average: 0.197,160.481,15.663,16.604,137.499,169.29,35.965,99.989,92.015,29.065,89.736
+68,anomaly_segmentation,grid,STFPM,Dice Average: 0.076,Dice Average: 0.014,Dice Average: 0.014,Dice Average: 0.103,Dice Average: 0.014,1371.507,13.603,14.184,1686.479,102.467,38.39,52.372,49.869,24.265,56.8
+69,anomaly_segmentation,grid,PADIM,Dice Average: 0.023,Dice Average: 0.014,Dice Average: 0.014,Dice Average: 0.016,Dice Average: 0.014,169.911,15.409,16.38,134.104,133.031,30.921,52.072,45.801,20.533,63.273
+70,anomaly_segmentation,hazelnut,STFPM,Dice Average: 0.134,Dice Average: 0.061,Dice Average: 0.061,Dice Average: 0.342,Dice Average: 0.053,1097.505,17.765,13.333,1555.773,148.939,56.315,95.514,95.715,30.819,99.549
+71,anomaly_segmentation,hazelnut,PADIM,Dice Average: 0.492,Dice Average: 0.174,Dice Average: 0.174,Dice Average: 0.51,Dice Average: 0.186,172.07,15.056,14.93,147.631,145.935,35.559,60.815,66.893,25.697,57.419
+72,anomaly_segmentation,leather,STFPM,Dice Average: 0.249,Dice Average: 0.013,Dice Average: 0.013,Dice Average: 0.376,Dice Average: 0.013,2028.78,12.837,11.653,1036.525,115.784,28.235,74.895,76.855,27.31,73.57
+73,anomaly_segmentation,leather,PADIM,Dice Average: 0.416,Dice Average: 0.129,Dice Average: 0.129,Dice Average: 0.383,Dice Average: 0.142,145.059,12.972,15.686,140.323,147.985,27.872,66.668,67.648,25.037,59.308
+74,anomaly_segmentation,metal_nut,STFPM,Dice Average: 0.431,Dice Average: 0.26,Dice Average: 0.26,Dice Average: 0.375,Dice Average: 0.241,1881.231,12.929,14.049,888.969,111.901,41.702,67.346,61.354,33.302,61.837
+75,anomaly_segmentation,metal_nut,PADIM,Dice Average: 0.458,Dice Average: 0.396,Dice Average: 0.396,Dice Average: 0.485,Dice Average: 0.421,172.623,15.057,15.968,157.701,138.51,40.482,56.161,55.011,33.602,58.627
+76,anomaly_segmentation,pill,STFPM,Dice Average: 0.198,Dice Average: 0.068,Dice Average: 0.068,Dice Average: 0.241,Dice Average: 0.067,1401.235,12.061,13.485,883.208,124.716,54.417,82.835,77.186,36.291,83.049
+77,anomaly_segmentation,pill,PADIM,Dice Average: 0.267,Dice Average: 0.214,Dice Average: 0.214,Dice Average: 0.225,Dice Average: 0.23,181.396,16.84,16.049,155.571,156.644,42.778,88.084,82.152,34.438,73.981
+78,anomaly_segmentation,screw,STFPM,Dice Average: 0.04,Dice Average: 0.005,Dice Average: 0.005,Dice Average: 0.099,Dice Average: 0.005,2344.878,15.427,14.07,2738.707,134.835,41.219,87.332,79.655,36.806,87.103
+79,anomaly_segmentation,screw,PADIM,Dice Average: 0.083,Dice Average: 0.023,Dice Average: 0.023,Dice Average: 0.073,Dice Average: 0.025,225.199,14.789,14.453,571.001,158.593,30.717,73.341,69.5,51.139,72.971
+80,anomaly_segmentation,tile,STFPM,Dice Average: 0.463,Dice Average: 0.132,Dice Average: 0.132,Dice Average: 0.44,Dice Average: 0.132,1301.761,12.491,11.625,1426.097,127.711,51.526,62.119,73.274,69.511,85.224
+81,anomaly_segmentation,tile,PADIM,Dice Average: 0.265,Dice Average: 0.169,Dice Average: 0.169,Dice Average: 0.267,Dice Average: 0.18,264.392,15.237,14.337,1211.815,247.661,52.635,96.34,91.097,71.739,152.983
+82,anomaly_segmentation,toothbrush,STFPM,Dice Average: 0.172,Dice Average: 0.033,Dice Average: 0.033,Dice Average: 0.259,Dice Average: 0.031,1983.868,13.148,11.835,1213.882,106.612,30.446,37.093,36.43,30.244,45.395
+83,anomaly_segmentation,toothbrush,PADIM,Dice Average: 0.521,Dice Average: 0.103,Dice Average: 0.103,Dice Average: 0.426,Dice Average: 0.112,789.673,16.778,15.78,357.548,124.644,30.832,31.327,32.591,36.155,41.205
+84,anomaly_segmentation,transistor,STFPM,Dice Average: 0.202,Dice Average: 0.097,Dice Average: 0.097,Dice Average: 0.185,Dice Average: 0.095,2189.658,14.399,13.22,3714.938,169.351,48.64,87.573,84.033,46.453,97.866
+85,anomaly_segmentation,transistor,PADIM,Dice Average: 0.435,Dice Average: 0.167,Dice Average: 0.167,Dice Average: 0.379,Dice Average: 0.189,826.261,16.102,16.261,317.015,200.481,48.407,99.906,87.779,39.491,120.381
+86,anomaly_segmentation,wood,STFPM,Dice Average: 0.526,Dice Average: 0.097,Dice Average: 0.097,Dice Average: 0.506,Dice Average: 0.08,2829.591,12.995,13.735,1193.128,157.513,51.582,84.651,81.33,67.481,109.08
+87,anomaly_segmentation,wood,PADIM,Dice Average: 0.327,Dice Average: 0.233,Dice Average: 0.233,Dice Average: 0.346,Dice Average: 0.231,334.116,16.546,15.415,824.848,206.755,41.811,72.167,71.037,47.534,117.197
+88,anomaly_segmentation,zipper,STFPM,Dice Average: 0.236,Dice Average: 0.232,Dice Average: 0.232,Dice Average: 0.29,Dice Average: 0.207,1513.729,12.999,12.614,4955.91,233.058,53.047,81.612,78.7,93.039,153.229
+89,anomaly_segmentation,zipper,PADIM,Dice Average: 0.295,Dice Average: 0.292,Dice Average: 0.292,Dice Average: 0.302,Dice Average: 0.3,155.646,15.132,16.715,908.745,180.445,35.599,60.633,56.589,57.815,83.81
