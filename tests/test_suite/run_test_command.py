@@ -212,7 +212,7 @@ def otx_export_testing(template, root):
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--save-model-to",
         f"{template_work_dir}/exported_{template.model_template_id}",
-        "--dump_features",
+        "--dump-features",
     ]
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml")

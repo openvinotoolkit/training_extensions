@@ -41,7 +41,12 @@ def get_args():
         help="Location where exported model will be stored.",
     )
     parser.add_argument(
-        "--dump_features",
+        "--work-dir",
+        help="Location where the intermediate output of the export will be stored.",
+        default=None,
+    )
+    parser.add_argument(
+        "--dump-features",
         action="store_true",
         help="Whether to return feature vector and saliency map for explanation purposes.",
     )
@@ -57,7 +62,7 @@ def get_args():
 def main():
     """Main function that is used for model exporting."""
     args = get_args()
-    config_manager = ConfigManager(args, mode="eval")
+    config_manager = ConfigManager(args, mode="eval", workspace_root=args.work_dir)
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -90,7 +95,7 @@ def main():
     )
     environment.model = model
 
-    task = task_class(task_environment=environment)
+    task = task_class(task_environment=environment, output_path=args.work_dir)
 
     exported_model = ModelEntity(None, environment.get_model_configuration())
 
