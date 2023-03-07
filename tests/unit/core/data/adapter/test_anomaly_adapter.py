@@ -7,11 +7,7 @@ import os
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
-from otx.core.data.adapter.anomaly_dataset_adapter import (
-    AnomalyClassificationDatasetAdapter,
-    AnomalyDetectionDatasetAdapter,
-    AnomalySegmentationDatasetAdapter,
-)
+from otx.core.data.adapter.anomaly_dataset_adapter import AnomalyDatasetAdapter
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.core.data.test_helpers import (
     TASK_NAME_TO_DATA_ROOT,
@@ -31,13 +27,13 @@ class TestOTXAnomalyClassificationDatasetAdapter:
         self.val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
         self.test_data_roots: str = os.path.join(self.root_path, data_root_dict["test"])
 
-        self.train_dataset_adapter = AnomalyClassificationDatasetAdapter(
+        self.train_dataset_adapter = AnomalyDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
         )
 
-        self.test_dataset_adapter = AnomalyClassificationDatasetAdapter(
+        self.test_dataset_adapter = AnomalyDatasetAdapter(
             task_type=self.task_type,
             test_data_roots=self.test_data_roots,
         )
@@ -66,13 +62,13 @@ class TestOTXAnomalyDetectionDatasetAdapter:
         self.val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
         self.test_data_roots: str = os.path.join(self.root_path, data_root_dict["test"])
 
-        self.train_dataset_adapter = AnomalyDetectionDatasetAdapter(
+        self.train_dataset_adapter = AnomalyDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
         )
 
-        self.test_dataset_adapter = AnomalyDetectionDatasetAdapter(
+        self.test_dataset_adapter = AnomalyDatasetAdapter(
             task_type=self.task_type,
             test_data_roots=self.test_data_roots,
         )
@@ -101,13 +97,13 @@ class TestOTXAnomalySegmentationDatasetAdapter:
         self.val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
         self.test_data_roots: str = os.path.join(self.root_path, data_root_dict["test"])
 
-        self.train_dataset_adapter = AnomalySegmentationDatasetAdapter(
+        self.train_dataset_adapter = AnomalyDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
         )
 
-        self.test_dataset_adapter = AnomalySegmentationDatasetAdapter(
+        self.test_dataset_adapter = AnomalyDatasetAdapter(
             task_type=self.task_type,
             test_data_roots=self.test_data_roots,
         )
