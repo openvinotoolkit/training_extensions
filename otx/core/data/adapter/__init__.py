@@ -70,19 +70,19 @@ ADAPTERS = {
     TaskType.ANOMALY_CLASSIFICATION: {
         "INCREMENTAL": {
             "module_name": "anomaly_dataset_adapter",
-            "class": "AnomalyClassificationDatasetAdapter",
+            "class": "AnomalyDatasetAdapter",
         }
     },
     TaskType.ANOMALY_DETECTION: {
         "INCREMENTAL": {
             "module_name": "anomaly_dataset_adapter",
-            "class": "AnomalyDetectionDatasetAdapter",
+            "class": "AnomalyDatasetAdapter",
         }
     },
     TaskType.ANOMALY_SEGMENTATION: {
         "INCREMENTAL": {
             "module_name": "anomaly_dataset_adapter",
-            "class": "AnomalySegmentationDatasetAdapter",
+            "class": "AnomalyDatasetAdapter",
         }
     },
 }
