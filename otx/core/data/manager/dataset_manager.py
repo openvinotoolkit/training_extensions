@@ -25,6 +25,12 @@ class DatasetManager:
     @staticmethod
     def get_train_dataset(dataset: Dataset) -> DatasetSubset:
         """Returns train dataset."""
+        subsets = dataset.subsets()
+        train_dataset = subsets.get("train", None)
+
+        if train_dataset is not None:
+            return train_dataset
+
         for k, v in dataset.subsets().items():
             if "train" in k or "default" in k:
                 return v
@@ -33,6 +39,12 @@ class DatasetManager:
     @staticmethod
     def get_val_dataset(dataset: Dataset) -> Union[DatasetSubset, None]:
         """Returns validation dataset."""
+        subsets = dataset.subsets()
+        val_dataset = subsets.get("val", None)
+
+        if val_dataset is not None:
+            return val_dataset
+
         for k, v in dataset.subsets().items():
             if "val" in k:
                 return v
