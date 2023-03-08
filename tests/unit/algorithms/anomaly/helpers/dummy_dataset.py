@@ -18,11 +18,6 @@ from otx.algorithms.anomaly.adapters.anomalib.data.data import (
     OTXAnomalyDataModule,
     OTXAnomalyDataset,
 )
-from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
-    AnomalyClassificationDataset,
-    AnomalyDetectionDataset,
-    AnomalySegmentationDataset,
-)
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -37,10 +32,10 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.subset import Subset
+from otx.core.data.adapter.anomaly_dataset_adapter import AnomalyDatasetAdapter
 
 
-def get_shapes_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEntity:
+def get_shapes_dataset(task_type: TaskType, stage: str = "fit") -> DatasetEntity:
     """Get shapes dataset.
 
     Args:
@@ -48,37 +43,16 @@ def get_shapes_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEn
         one_each (bool): If this flag is true then it will sample one normal and one abnormal image for each split.
             The training split will have only one normal image. Defaults to False.
     """
-    dataset: DatasetEntity
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        train_subset, test_subset, val_subset = _get_annotations("classification")
-        dataset = AnomalyClassificationDataset(train_subset, val_subset, test_subset)
-    elif task_type == TaskType.ANOMALY_SEGMENTATION:
-        train_subset, test_subset, val_subset = _get_annotations("segmentation")
-        dataset = AnomalySegmentationDataset(train_subset, val_subset, test_subset)
-    elif task_type == TaskType.ANOMALY_DETECTION:
-        train_subset, test_subset, val_subset = _get_annotations("detection")
-        dataset = AnomalyDetectionDataset(train_subset, val_subset, test_subset)
-    else:
-        raise ValueError(f"{task_type} not supported.")
+    if stage == "fit":
+        dataset_adapter = AnomalyDatasetAdapter(
+            task_type=task_type,
+            train_data_roots="tests/assets/anomaly/shapes",
+            val_data_roots="tests/assets/anomaly/shapes",
+        )
+    elif stage == "test":
+        dataset_adapter = AnomalyDatasetAdapter(task_type=task_type, test_data_roots="tests/assets/anomaly/shapes")
+    dataset = dataset_adapter.get_otx_dataset()
 
-    if one_each:
-        train_subset = []
-        test_subset = []
-        val_subset = []
-        for item in dataset._items:
-            if item.subset == Subset.TRAINING and len(train_subset) < 1:
-                train_subset.append(item)
-            # Check if the label is already present in the subset.
-            elif item.subset == Subset.TESTING and item.annotation_scene.annotations[0].get_labels()[0].name not in [
-                a.annotation_scene.annotations[0].get_labels()[0].name for a in test_subset
-            ]:
-                test_subset.append(item)
-            # Check if the label is already present in the subset.
-            elif item.subset == Subset.VALIDATION and item.annotation_scene.annotations[0].get_labels()[0].name not in [
-                a.annotation_scene.annotations[0].get_labels()[0].name for a in val_subset
-            ]:
-                val_subset.append(item)
-        dataset._items = train_subset + test_subset + val_subset
     return dataset
 
 

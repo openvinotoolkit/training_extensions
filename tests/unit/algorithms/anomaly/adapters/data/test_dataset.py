@@ -4,9 +4,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
+from omegaconf import OmegaConf
 
+from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.api.entities.model_template import TaskType
-from tests.unit.algorithms.anomaly.helpers.dummy_dataset import ShapesDataModule
+from otx.core.data.adapter.anomaly_dataset_adapter import AnomalyDatasetAdapter
 
 
 @pytest.mark.parametrize("stage", ["predict", "fit", "validate", "test"])
@@ -16,7 +18,25 @@ def test_dataloaders(task_type, stage):
 
     For all the test stages and the task types, the datamodule should return the correct keys.
     """
-    datamodule = ShapesDataModule(task_type)
+    config = OmegaConf.create(
+        {
+            "dataset": {
+                "eval_batch_size": 32,
+                "train_batch_size": 32,
+                "test_batch_size": 32,
+                "num_workers": 2,
+                "image_size": [32, 32],
+                "transform_config": {"train": None},
+            }
+        }
+    )
+    if stage in ("fit", "validate"):
+        dataset_adapter = AnomalyDatasetAdapter(task_type=task_type, train_data_roots="tests/assets/anomaly/shapes")
+    else:
+        dataset_adapter = AnomalyDatasetAdapter(task_type=task_type, test_data_roots="tests/assets/anomaly/shapes")
+    dataset = dataset_adapter.get_otx_dataset()
+    datamodule = OTXAnomalyDataModule(config=config, dataset=dataset, task_type=task_type)
+
     datamodule.setup(stage)
     if stage == "fit":
         batch = next(iter(datamodule.train_dataloader()))
