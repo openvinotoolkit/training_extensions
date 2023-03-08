@@ -106,5 +106,5 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
         all_labels += lbl.name.replace(" ", "_") + " "
     all_labels = all_labels.strip()
 
-    mapi_config[("model_info", "label_map")] = all_labels
+    mapi_config[("model_info", "labels")] = all_labels
     return mapi_config
