@@ -14,15 +14,15 @@ from tests.regression.regression_test_helpers import (
     REGRESSION_TEST_EPOCHS,
     TIME_LOG,
     get_result_dict,
+    get_template_performance,
     load_regression_configuration,
-    get_template_performance
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
-    otx_eval_compare, 
-    otx_train_testing,
+    otx_eval_compare,
+    otx_eval_e2e_eval_time,
     otx_eval_e2e_train_time,
-    otx_eval_e2e_eval_time
+    otx_train_testing,
 )
 
 # Configurations for regression test.
@@ -82,17 +82,16 @@ class TestRegressionActionDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, template):
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
-        performance = get_template_performance(results, template) 
-        
+        performance = get_template_performance(results, template)
+
         otx_eval_e2e_train_time(
             train_time_criteria=action_det_regression_config["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
-            template=template
+            template=template,
         )
-        
+
         otx_eval_e2e_eval_time(
             eval_time_criteria=action_det_regression_config["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
-            template=template
+            template=template,
         )
-    

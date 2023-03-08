@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, List, Union
+
 from otx.api.entities.model_template import ModelTemplate
 
 TEST_TYPES = ["train", "export", "deploy", "nncf", "pot"]
@@ -109,8 +110,12 @@ def load_regression_configuration(
         if train_type == "" or label_type == "":
             raise ValueError()
         result["regression_criteria"] = reg_config["regression_criteria"][task_type][train_type][label_type]
-        result["kpi_e2e_train_time_criteria"] = reg_config["kpi_e2e_train_time_criteria"][task_type][train_type][label_type]
-        result["kpi_e2e_eval_time_criteria"] = reg_config["kpi_e2e_eval_time_criteria"][task_type][train_type][label_type]
+        result["kpi_e2e_train_time_criteria"] = reg_config["kpi_e2e_train_time_criteria"][task_type][train_type][
+            label_type
+        ]
+        result["kpi_e2e_eval_time_criteria"] = reg_config["kpi_e2e_eval_time_criteria"][task_type][train_type][
+            label_type
+        ]
         result["data_path"] = reg_config["data_path"][task_type][train_type][label_type]
     else:
         result["regression_criteria"] = reg_config["regression_criteria"][task_type]
@@ -119,6 +124,7 @@ def load_regression_configuration(
         result["data_path"] = reg_config["data_path"][task_type]
 
     return result
+
 
 def get_template_performance(results: List[Dict], template: ModelTemplate):
     """Get proper template performance inside of performance list."""
@@ -130,4 +136,4 @@ def get_template_performance(results: List[Dict], template: ModelTemplate):
             break
     if performance is None:
         raise ValueError("Performance is None.")
-    return performance 
+    return performance

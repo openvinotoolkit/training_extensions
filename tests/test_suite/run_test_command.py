@@ -552,7 +552,9 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf", test_name)
 
 
-def nncf_eval_testing(template, root, otx_dir, args, threshold=0.001, criteria=None, reg_threshold=0.10, result_dict=None):
+def nncf_eval_testing(
+    template, root, otx_dir, args, threshold=0.001, criteria=None, reg_threshold=0.10, result_dict=None
+):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -862,31 +864,20 @@ def otx_eval_compare(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth") / 1e6, 2
     )
 
-def otx_eval_e2e_train_time(
-    train_time_criteria,
-    e2e_train_time,
-    template,
-    threshold=0.10
-):
+
+def otx_eval_e2e_train_time(train_time_criteria, e2e_train_time, template, threshold=0.10):
     e2e_train_time_criteria = train_time_criteria[template.name]
     modified_train_criteria = e2e_train_time_criteria - (e2e_train_time_criteria * threshold)
-    
+
     assert (
         e2e_train_time >= modified_train_criteria
     ), f"Current model e2e time: ({e2e_train_time}) < criteria: ({modified_train_criteria})."
 
-def otx_eval_e2e_eval_time(
-    eval_time_criteria,
-    e2e_eval_time,
-    template,
-    threshold=0.10
-):
+
+def otx_eval_e2e_eval_time(eval_time_criteria, e2e_eval_time, template, threshold=0.10):
     e2e_eval_time_criteria = eval_time_criteria[template.name]
     modified_eval_criteria = e2e_eval_time_criteria - (e2e_eval_time_criteria * threshold)
-    
+
     assert (
         e2e_eval_time >= modified_eval_criteria
     ), f"Current model e2e time: ({e2e_eval_time}) < criteria: ({modified_eval_criteria})."
-
-
-    

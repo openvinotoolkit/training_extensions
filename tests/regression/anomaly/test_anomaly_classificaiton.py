@@ -15,8 +15,8 @@ from tests.regression.regression_test_helpers import (
     ANOMALY_DATASET_CATEGORIES,
     TIME_LOG,
     get_result_dict,
+    get_template_performance,
     load_regression_configuration,
-    get_template_performance
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -25,13 +25,13 @@ from tests.test_suite.run_test_command import (
     otx_deploy_openvino_testing,
     otx_eval_compare,
     otx_eval_deployment_testing,
+    otx_eval_e2e_eval_time,
+    otx_eval_e2e_train_time,
     otx_eval_openvino_testing,
     otx_export_testing,
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
-    otx_eval_e2e_train_time,
-    otx_eval_e2e_eval_time
 )
 
 # Configurations for regression test.
@@ -49,6 +49,7 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 # Detection
 anomaly_classification_regression_config = load_regression_configuration(otx_dir, TASK_TYPE)
 anomaly_classification_data_args = anomaly_classification_regression_config["data_path"]
+
 
 class TestRegressionAnomalyClassification:
     def setup_method(self):
@@ -102,20 +103,24 @@ class TestRegressionAnomalyClassification:
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_train_kpi_test(self, template, category):
         results = result_dict[TASK_TYPE]["train"][category]
-        performance = get_template_performance(results, template) 
-        
+        performance = get_template_performance(results, template)
+
         otx_eval_e2e_train_time(
-            train_time_criteria=anomaly_classification_regression_config["kpi_e2e_train_time_criteria"]["train"][category],
+            train_time_criteria=anomaly_classification_regression_config["kpi_e2e_train_time_criteria"]["train"][
+                category
+            ],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
-            template=template
+            template=template,
         )
-        
+
         otx_eval_e2e_eval_time(
-            eval_time_criteria=anomaly_classification_regression_config["kpi_e2e_eval_time_criteria"]["train"][category],
+            eval_time_criteria=anomaly_classification_regression_config["kpi_e2e_eval_time_criteria"]["train"][
+                category
+            ],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
-            template=template
+            template=template,
         )
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
