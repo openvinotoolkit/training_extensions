@@ -19,14 +19,13 @@
 num_classes = 400
 model = dict(
     type="MoViNetRecognizer",
-    backbone=dict(type="OTXMoViNet", name="MoViNetA0", num_classes=num_classes),
+    backbone=dict(type="OTXMoViNet"),
     cls_head=dict(
         type="MoViNetHead",
         in_channels=480,  # A0: 480, A1: 600, A2: 640, A3: 744, A4: 856, A5: 992
         hidden_dim=2048,
         num_classes=num_classes,
-        spatial_type="avg",
-        dropout_ratio=0.5,
+        loss_cls=dict(type="CrossEntropyLoss", loss_weight=1.0),
     ),
     # model training and testing settings
     train_cfg=None,

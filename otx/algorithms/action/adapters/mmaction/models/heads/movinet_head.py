@@ -1,11 +1,12 @@
+""" MoViNet head for otx action recognition. """
 # Copyright (c) OpenMMLab. All rights reserved.
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import torch.nn as nn
 from mmaction.models.builder import HEADS
 from mmaction.models.heads.base import BaseHead
 from mmcv.cnn import normal_init
+from torch import nn
 
 from otx.algorithms.action.adapters.mmaction.models.backbones.movinet import ConvBlock3D
 
@@ -24,7 +25,6 @@ class MoViNetHead(BaseHead):
         spatial_type (str): Pooling type in spatial dimension. Default: 'avg'.
         dropout_ratio (float): Probability of dropout layer. Default: 0.5.
         init_std (float): Standard deviation for initialization. Default: 0.1.
-        causal (bool): If True, uses causal convolution. Default: False.
     """
 
     def __init__(
@@ -32,27 +32,18 @@ class MoViNetHead(BaseHead):
         num_classes: int,
         in_channels: int,
         hidden_dim: int,
+        loss_cls: dict,
         tf_like: bool = False,
         conv_type: str = "3d",
-        loss_cls=dict(type="CrossEntropyLoss"),
-        spatial_type: str = "avg",
-        dropout_ratio: float = 0.5,
-        init_std: float = 0.1,
-        causal: bool = False,
     ):
         super().__init__(num_classes, in_channels, loss_cls)
-
-        self.spatial_type = spatial_type
-        self.dropout_ratio = dropout_ratio
-        self.init_std = init_std
-
+        self.init_std = 0.1
         self.classifier = nn.Sequential(
             ConvBlock3D(
                 in_channels,
                 hidden_dim,
                 kernel_size=(1, 1, 1),
                 tf_like=tf_like,
-                causal=causal,
                 conv_type=conv_type,
                 bias=True,
             ),
@@ -63,7 +54,6 @@ class MoViNetHead(BaseHead):
                 num_classes,
                 kernel_size=(1, 1, 1),
                 tf_like=tf_like,
-                causal=causal,
                 conv_type=conv_type,
                 bias=True,
             ),
