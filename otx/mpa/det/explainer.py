@@ -13,9 +13,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataset,
 )
 from otx.algorithms.detection.adapters.mmdet.data import ImageTilingDataset
+from otx.mpa.modules.hooks.det_saliency_map_hook import DetSaliencyMapHook
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
-    DetSaliencyMapHook,
     EigenCamHook,
 )
 from otx.mpa.registry import STAGES

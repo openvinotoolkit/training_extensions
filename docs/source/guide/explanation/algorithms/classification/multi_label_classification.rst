@@ -36,17 +36,17 @@ Models
 ******
 We use the same models as for Multi-class classification. Please, refer: :ref:`Classification Models <classification_models>`.
 
-.. In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our templates without any changes (including input resolution, which is 224x224 for all templates). We trained each model with single Nvidia GeForce RTX3090.
 
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | Model name            | Pascal-VOC 2007 |    COCO   | NUS-WIDE  | Mean mAP  |
-.. +=======================+=================+===========+===========+===========+
-.. | MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
++-----------------------+-----------------+-----------+------------------+-----------+
+| Model name            | Pascal-VOC 2007 | COCO 2014 | Aerial Maritime  | Mean mAP  |
++=======================+=================+===========+==================+===========+
+| MobileNet-V3-large-1x | 86.14           | 67.94     | 69.61            | 74.56     |
++-----------------------+-----------------+-----------+------------------+-----------+
+| EfficientNet-B0       | 86.07           | 67.87     | 73.83            | 75.92     |
++-----------------------+-----------------+-----------+------------------+-----------+
+| EfficientNet-V2-S     | 91.91           | 77.28     | 71.52            | 80.24     |
++-----------------------+-----------------+-----------+------------------+-----------+
 
 .. ************************
 .. Semi-supervised Learning
