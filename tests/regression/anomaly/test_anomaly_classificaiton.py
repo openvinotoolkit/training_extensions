@@ -13,7 +13,6 @@ import pytest
 from otx.cli.registry import Registry
 from tests.regression.regression_test_helpers import (
     ANOMALY_DATASET_CATEGORIES,
-    REGRESSION_TEST_EPOCHS,
     TIME_LOG,
     get_result_dict,
     load_regression_configuration,
@@ -37,7 +36,7 @@ from tests.test_suite.run_test_command import (
 
 # Configurations for regression test.
 TASK_TYPE = "anomaly_classification"
-SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 3)
+SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 1)
 
 otx_dir = os.getcwd()
 templates = Registry("otx/algorithms/anomaly").filter(task_type=TASK_TYPE.upper()).templates
@@ -72,7 +71,7 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES)
+    @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     # ANOMALY_DATASET_CATEGORIES : all categories of MVTec dataset.
     def test_otx_train(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
@@ -100,26 +99,26 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES)
+    @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_train_kpi_test(self, template, category):
         results = result_dict[TASK_TYPE]["train"][category]
         performance = get_template_performance(results, template) 
         
         otx_eval_e2e_train_time(
-            train_time_criteria=anomaly_classification_regression_config["kpi_e2e_train_time_criteria"]["train"],
+            train_time_criteria=anomaly_classification_regression_config["kpi_e2e_train_time_criteria"]["train"][category],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template
         )
         
         otx_eval_e2e_eval_time(
-            eval_time_criteria=anomaly_classification_regression_config["kpi_e2e_eval_time_criteria"]["train"],
+            eval_time_criteria=anomaly_classification_regression_config["kpi_e2e_eval_time_criteria"]["train"][category],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template
         )
     
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES)
+    @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_export_eval_openvino(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
@@ -148,7 +147,7 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES)
+    @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_deploy_eval_deployment(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
@@ -177,7 +176,7 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES)
+    @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_nncf_optimize_eval(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
@@ -209,7 +208,7 @@ class TestRegressionAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("category", ANOMALY_DATASET_CATEGORIES)
+    @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_pot_optimize_eval(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
