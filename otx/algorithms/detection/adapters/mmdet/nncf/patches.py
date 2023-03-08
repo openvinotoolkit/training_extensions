@@ -129,14 +129,18 @@ def _wrap_is_in_onnx_export(ctx, fn):
     # possible alternatives
     #    - take the onnx branch in all cases
 
-    import inspect
+    import sys
 
-    stack = inspect.stack()
-    frame_info = stack[2]
+    frame = sys._getframe()
+    ctr = 2
+    while frame is not None and ctr:
+        frame = frame.f_back
+        ctr -= 1
     if (
-        frame_info.function == "forward"
-        and "self" in frame_info.frame.f_locals.keys()
-        and frame_info.frame.f_locals["self"].__class__.__name__ == "SingleRoIExtractor"
+        frame is not None
+        and frame.f_code.co_name == "forward"
+        and "self" in frame.f_locals.keys()
+        and frame.f_locals["self"].__class__.__name__ == "SingleRoIExtractor"
     ):
         return fn() or is_in_nncf_tracing()
     return fn()
