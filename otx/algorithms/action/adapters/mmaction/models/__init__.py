@@ -6,6 +6,6 @@
 from .backbones import OTXMoViNet, register_action_backbones
 from .detectors import AVAFastRCNN
 from .heads import AVARoIHead, MoViNetHead
-from .recognizers import OTXRecognizer3D
+from .recognizers import MoViNetRecognizer
 
-__all__ = ["register_action_backbones", "AVAFastRCNN", "OTXMoViNet", "MoViNetHead", "OTXRecognizer3D", "AVARoIHead"]
+__all__ = ["register_action_backbones", "AVAFastRCNN", "OTXMoViNet", "MoViNetHead", "MoViNetRecognizer", "AVARoIHead"]

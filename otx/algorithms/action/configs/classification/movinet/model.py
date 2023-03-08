@@ -18,7 +18,7 @@
 
 num_classes = 400
 model = dict(
-    type="OTXRecognizer3D",
+    type="MoViNetRecognizer",
     backbone=dict(type="OTXMoViNet", name="MoViNetA0", num_classes=num_classes),
     cls_head=dict(
         type="MoViNetHead",

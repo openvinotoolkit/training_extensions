@@ -3,6 +3,6 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .recognizer_3d import OTXRecognizer3D
+from .movinet_recognizer import MoViNetRecognizer
 
-__all__ = ["OTXRecognizer3D"]
+__all__ = ["MoViNetRecognizer"]
