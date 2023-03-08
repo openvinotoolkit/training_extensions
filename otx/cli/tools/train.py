@@ -33,6 +33,7 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
 from otx.cli.utils.parser import (
+    MemSizeAction,
     add_hyper_parameters_sub_parser,
     get_parser_and_hprams_data,
 )
@@ -112,6 +113,16 @@ def get_args():
         help="Total number of workers in a worker group.",
     )
     parser.add_argument(
+        "--mem-cache-size",
+        action=MemSizeAction,
+        dest="params.algo_backend.mem_cache_size",
+        type=str,
+        required=False,
+        help="Size of memory pool for caching decoded data to load data faster. "
+        "For example, you can use digits for bytes size (e.g. 1024) or a string with size units "
+        "(e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30).",
+    )
+    parser.add_argument(
         "--data",
         type=str,
         default=None,
@@ -120,6 +131,7 @@ def get_args():
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
+    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
     if not hyper_parameters and "params" in params:
         if "params" in params:
             params = params[params.index("params") :]
@@ -131,12 +143,12 @@ def get_args():
                         f"{param}",
                         dest=f"params.{param[2:]}",
                     )
-    return parser.parse_args()
+    return parser.parse_args(), override_param
 
 
 def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
-    args = get_args()
+    args, override_param = get_args()
 
     config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="train")
     # Auto-Configuration for model template
@@ -157,7 +169,7 @@ def main():  # pylint: disable=too-many-branches
     task_class = get_impl_class(template.entrypoints.base)
 
     # Update Hyper Parameter Configs
-    hyper_parameters = config_manager.get_hyparams_config()
+    hyper_parameters = config_manager.get_hyparams_config(override_param=override_param)
 
     environment = TaskEnvironment(
         model=None,

@@ -16,55 +16,87 @@
 
 # pylint: disable=too-many-return-statements
 import importlib
+import os
 
+from otx.algorithms.common.configs.training_base import TrainType
 from otx.api.entities.model_template import TaskType
 
 ADAPTERS = {
     TaskType.CLASSIFICATION: {
-        "module_name": "classification_dataset_adapter",
-        "class": "ClassificationDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "classification_dataset_adapter",
+            "class": "ClassificationDatasetAdapter",
+        }
     },
     TaskType.DETECTION: {
-        "module_name": "detection_dataset_adapter",
-        "class": "DetectionDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "detection_dataset_adapter",
+            "class": "DetectionDatasetAdapter",
+        }
     },
     TaskType.ROTATED_DETECTION: {
-        "module_name": "detection_dataset_adapter",
-        "class": "DetectionDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "detection_dataset_adapter",
+            "class": "DetectionDatasetAdapter",
+        }
     },
     TaskType.INSTANCE_SEGMENTATION: {
-        "module_name": "detection_dataset_adapter",
-        "class": "DetectionDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "detection_dataset_adapter",
+            "class": "DetectionDatasetAdapter",
+        }
     },
     TaskType.SEGMENTATION: {
-        "module_name": "segmentation_dataset_adapter",
-        "class": "SegmentationDatasetAdapter",
-    },
-    TaskType.ACTION_CLASSIFICATION: {
-        "module_name": "action_dataset_adapter",
-        "class": "ActionClassificationDatasetAdapter",
-    },
-    TaskType.ACTION_DETECTION: {
-        "module_name": "action_dataset_adapter",
-        "class": "ActionDetectionDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "segmentation_dataset_adapter",
+            "class": "SegmentationDatasetAdapter",
+        },
+        "SELFSUPERVISED": {
+            "module_name": "segmentation_dataset_adapter",
+            "class": "SelfSLSegmentationDatasetAdapter",
+        },
     },
     TaskType.ANOMALY_CLASSIFICATION: {
-        "module_name": "anomaly_dataset_adapter",
-        "class": "AnomalyClassificationDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "anomaly_dataset_adapter",
+            "class": "AnomalyClassificationDatasetAdapter",
+        }
     },
     TaskType.ANOMALY_DETECTION: {
-        "module_name": "anomaly_dataset_adapter",
-        "class": "AnomalyDetectionDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "anomaly_dataset_adapter",
+            "class": "AnomalyDetectionDatasetAdapter",
+        }
     },
     TaskType.ANOMALY_SEGMENTATION: {
-        "module_name": "anomaly_dataset_adapter",
-        "class": "AnomalySegmentationDatasetAdapter",
+        "INCREMENTAL": {
+            "module_name": "anomaly_dataset_adapter",
+            "class": "AnomalySegmentationDatasetAdapter",
+        }
     },
 }
+if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+    ADAPTERS.update(
+        {
+            TaskType.ACTION_CLASSIFICATION: {
+                "INCREMENTAL": {
+                    "module_name": "action_dataset_adapter",
+                    "class": "ActionClassificationDatasetAdapter",
+                }
+            },
+            TaskType.ACTION_DETECTION: {
+                "INCREMENTAL": {
+                    "module_name": "action_dataset_adapter",
+                    "class": "ActionDetectionDatasetAdapter",
+                }
+            },
+        }
+    )
 
 
 def get_dataset_adapter(
     task_type: TaskType,
+    train_type: TrainType,
     train_data_roots: str = None,
     val_data_roots: str = None,
     test_data_roots: str = None,
@@ -74,17 +106,23 @@ def get_dataset_adapter(
 
     Args:
         task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
-        CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
+            CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
+        train_type: train type such as INCREMENTAL and SELFSUPERVISED.
+            SELFSUPERVISED is only supported for SEGMENTATION.
         train_data_roots: the path of data root for training data
         val_data_roots: the path of data root for validation data
         test_data_roots: the path of data root for test data
         unlabeled_data_roots: the path of data root for unlabeled data
     """
 
+    train_type_to_be_called = TrainType.INCREMENTAL.value
+    # FIXME : Hardcoded solution for self-sl for seg
+    if task_type == TaskType.SEGMENTATION and train_type == TrainType.SELFSUPERVISED.value:
+        train_type_to_be_called = TrainType.SELFSUPERVISED.value
     module_root = "otx.core.data.adapter."
-    module = importlib.import_module(module_root + ADAPTERS[task_type]["module_name"])
+    module = importlib.import_module(module_root + ADAPTERS[task_type][train_type_to_be_called]["module_name"])
 
-    return getattr(module, ADAPTERS[task_type]["class"])(
+    return getattr(module, ADAPTERS[task_type][train_type_to_be_called]["class"])(
         task_type=task_type,
         train_data_roots=train_data_roots,
         val_data_roots=val_data_roots,

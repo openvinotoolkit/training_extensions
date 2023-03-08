@@ -50,4 +50,4 @@ class TensorEntity(IMetadata):
 
     def __repr__(self):
         """Returns the representation of the tensor."""
-        return f"{self.__class__.__name__}(name={self.name}, numpy={self.numpy})"
+        return f"{self.__class__.__name__}(name={self.name})"

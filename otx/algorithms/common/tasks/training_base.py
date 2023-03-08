@@ -45,6 +45,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.core.data import caching
 from otx.mpa.builder import build
 from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage
@@ -227,6 +228,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             options = {}
 
         export = options.get("export", False)
+        fp16_export = options.get("enable_fp16", False)
 
         logger.info("initializing....")
         self._init_recipe()
@@ -323,14 +325,25 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 dataloader_cfg["persistent_workers"] = False
                 data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
+        # Update recipe with caching modules
+        self._update_caching_modules(data_cfg)
+
         if self._data_cfg is not None:
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
         if export:
+            if fp16_export:
+                self._precision[0] = ModelPrecision.FP16
             options["deploy_cfg"] = self._init_deploy_cfg()
             if options.get("precision", None) is None:
                 assert len(self._precision) == 1
                 options["precision"] = str(self._precision[0])
+
+            options["deploy_cfg"]["dump_features"] = options["dump_features"]
+            if options["dump_features"]:
+                output_names = options["deploy_cfg"]["ir_config"]["output_names"]
+                if "feature_vector" not in output_names and "saliency_map" not in output_names:
+                    options["deploy_cfg"]["ir_config"]["output_names"] += ["feature_vector", "saliency_map"]
 
         self._initialize_post_hook(options)
 
@@ -403,7 +416,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
-
                 normalize_cfg = get_configs_by_pairs(
                     self._recipe_cfg.data.test.pipeline,
                     dict(type="Normalize"),
@@ -611,3 +623,31 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 update_or_add_custom_hook(self._recipe_cfg, early_stop_hook)
             else:
                 remove_custom_hook(self._recipe_cfg, "LazyEarlyStoppingHook")
+
+    def _update_caching_modules(self, data_cfg: Config) -> None:
+        def _find_max_num_workers(cfg: dict):
+            num_workers = [0]
+            for key, value in cfg.items():
+                if key == "workers_per_gpu" and isinstance(value, int):
+                    num_workers += [value]
+                elif isinstance(value, dict):
+                    num_workers += [_find_max_num_workers(value)]
+
+            return max(num_workers)
+
+        def _get_mem_cache_size():
+            if not hasattr(self.hyperparams.algo_backend, "mem_cache_size"):
+                return 0
+
+            return self.hyperparams.algo_backend.mem_cache_size
+
+        max_num_workers = _find_max_num_workers(data_cfg)
+        mem_cache_size = _get_mem_cache_size()
+
+        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
+        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
+
+        update_or_add_custom_hook(
+            self._recipe_cfg,
+            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
+        )

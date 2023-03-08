@@ -13,7 +13,7 @@ class TestMask2Bbox:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.mask = np.zeros((3, 3))
-        self.mask[0, 0] = 255
+        self.mask[0, 0] = 1
 
     @e2e_pytest_unit
     def test_mask_to_border(self):

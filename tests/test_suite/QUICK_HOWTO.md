@@ -1,10 +1,10 @@
-# Quick HOW TO add training tests using OTX test suite
+# Quick HOW TO add training tests using OpenVINO™ Training Extensions test suite
 
-## I. Introduction to OTX test suite
+## I. Introduction to OpenVINO™ Training Extensions test suite
 
 ### I.1 General description
 
-OTX test suite allows to create training tests
+OpenVINO™ Training Extensions test suite allows to create training tests
 
 The training tests are tests that may run in some unified manner such stages (or, as we also
 call it, "actions") as
@@ -14,7 +14,7 @@ call it, "actions") as
 - export or optimization of the trained model,
 - and evaluation of exported/optimized model.
 
-Typically each OTX algo backend contains test file `test_otx_training.py` that allows to run the
+Typically each OpenVINO™ Training Extensions algo backend contains test file `test_otx_training.py` that allows to run the
 training tests.
 
 Note that there are a lot of dependencies between different stages of training tests: most of them
@@ -54,16 +54,16 @@ One of the most important question is when a test may re-use results of another 
 We can consider this from the following point of view.
 We suppose that the test suite indeed do not make several independent tests, but make a set of
 actions with several "test cases".
-Since the test suite works with OTX, each "test case" is considered as a situation that could be
-happened during some process of work with OTX, and the process may include different actions.
+Since the test suite works with OpenVINO™ Training Extensions, each "test case" is considered as a situation that could be
+happened during some process of work with OpenVINO™ Training Extensions, and the process may include different actions.
 
-Since OTX is focused on training a neural network and making some operations on the trained model,
+Since OpenVINO™ Training Extensions is focused on training a neural network and making some operations on the trained model,
 we defined the test case by the parameters that define training process
 (at least they defines it as much as it is possible for such stochastic process).
 
 Usually the parameters defining the training process are:
 
-1. a model - typically it is a name of OTX template to be used
+1. a model - typically it is a name of OpenVINO™ Training Extensions template to be used
    -- this is the field `model_template_id` of the model template YAML file
 2. a dataset - typically it is a dataset name that should be used
    (we use known pre-defined names for the datasets on our CI)
@@ -100,7 +100,7 @@ previous tests of the same test case in the current test.
 
 Pytest allows running parametrized test methods in test classes.
 
-The test suite is made such that for each OTX task (e.g. "object detection", "image classification",
+The test suite is made such that for each OpenVINO™ Training Extensions task (e.g. "object detection", "image classification",
 etc) there is one test class with one test method with the name `test`, the method is parametrized
 using special pytest tricks in the function `pytest_generate_tests` in the file `conftest.py` in the
 folder `tests/`.
@@ -144,7 +144,7 @@ the info to identify the test.
 
 ### II.1 How to add a new model+dataset pair to the training tests
 
-Let's there are implemented training tests for some OTX algo backend, and we want to add
+Let's there are implemented training tests for some OpenVINO™ Training Extensions algo backend, and we want to add
 new model+dataset pair to the training test.
 
 In this case you should do as follows:

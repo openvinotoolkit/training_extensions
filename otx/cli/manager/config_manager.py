@@ -24,6 +24,7 @@ DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
     "DETECTION": "Custom_Object_Detection_Gen3_ATSS",
     "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
+    "ROTATED_DETECTION": "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50",
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
     "ACTION_CLASSIFICATION": "Custom_Action_Classificaiton_X3D",
     "ACTION_DETECTION": "Custom_Action_Detection_X3D_FAST_RCNN",
@@ -49,6 +50,7 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
     "ANOMALY_DETECTION": ["mvtec"],
     "ANOMALY_SEGMENTATION": ["mvtec"],
     "INSTANCE_SEGMENTATION": ["coco", "voc"],
+    "ROTATED_DETECTION": ["coco", "voc"],
 }
 
 TASK_TYPE_TO_SUB_DIR_NAME = {
@@ -148,14 +150,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Checking for Rebuild status."""
         if self.args.task and str(self.template.task_type) != self.args.task.upper():
             raise NotImplementedError("Task Update is not yet supported.")
-        if not self.args.model and not self.args.train_type:
-            return False
         result = False
-        if self.template.name != self.args.model.upper():
+        if self.args.model and self.template.name != self.args.model.upper():
             print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
             result = True
         template_train_type = self._get_train_type(ignore_args=True)
-        if template_train_type != self.args.train_type.upper():
+        if self.args.train_type and template_train_type != self.args.train_type.upper():
             self.train_type = self.args.train_type.upper()
             print(f"[*] Rebuild train-type: {template_train_type} -> {self.train_type}")
             result = True
@@ -169,7 +169,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
             # FIXME: Hardcoded for Self-Supervised Learning
             if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
-                splitted_dataset = self.auto_split_data(data_yaml["data"]["train"]["data-roots"], self.task_type)
+                splitted_dataset = self.auto_split_data(data_yaml["data"]["train"]["data-roots"], str(self.task_type))
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
@@ -188,6 +188,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 return train_type.get("value", "INCREMENTAL")
             if self.mode in ("build") and self.args.train_type:
                 self.train_type = self.args.train_type.upper()
+                if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
+                    raise ValueError(f"{self.train_type} is not currently supported by otx.")
             if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
                 return self.train_type
 
@@ -202,7 +204,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if not data_roots:
             raise ValueError("Workspace must already exist or one of {task or model or train-data-roots} must exist.")
         self.data_format = self.dataset_manager.get_data_format(data_roots)
-        print(f"[*] Detected dataset format: {self.data_format}")
         return self._get_task_type_from_data_format(self.data_format)
 
     def _get_task_type_from_data_format(self, data_format: str) -> str:
@@ -256,6 +257,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
             if self.args.val_data_roots:
                 data_yaml["data"]["val"]["data-roots"] = self.args.val_data_roots
+            if self.args.unlabeled_data_roots:
+                data_yaml["data"]["unlabeled"]["data-roots"] = self.args.unlabeled_data_roots
         elif self.mode == "test":
             if self.args.test_data_roots:
                 data_yaml["data"]["test"]["data-roots"] = self.args.test_data_roots
@@ -290,6 +293,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 dataset=datum_dataset, output_dir=str(dst_dir_path), data_format=self.data_format, save_media=True
             )
 
+        if data_config["data"]["unlabeled"]["data-roots"] is not None:
+            data_config["data"]["unlabeled"]["data-roots"] = str(
+                Path(data_config["data"]["unlabeled"]["data-roots"]).absolute()
+            )
+
     def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
         data_config: Dict[str, Dict[str, Any]] = {"data": {}}
@@ -303,11 +311,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Export the data configuration file to output_path."""
         Path(output_path).write_text(OmegaConf.to_yaml(data_cfg), encoding="utf-8")
 
-    def get_hyparams_config(self) -> ConfigurableParameters:
+    def get_hyparams_config(self, override_param: Optional[List] = None) -> ConfigurableParameters:
         """Separates the input params received from args and updates them.."""
         hyper_parameters = self.template.hyper_parameters.data
         type_hint = gen_param_help(hyper_parameters)
-        updated_hyper_parameters = gen_params_dict_from_args(self.args, type_hint=type_hint)
+        updated_hyper_parameters = gen_params_dict_from_args(
+            self.args, override_param=override_param, type_hint=type_hint
+        )
         override_parameters(updated_hyper_parameters, hyper_parameters)
         return create(hyper_parameters)
 
@@ -320,7 +330,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         Returns:
             dict: dataset_config
         """
-        dataset_config = {"task_type": self.task_type}
+        dataset_config = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
             if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
                 dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})

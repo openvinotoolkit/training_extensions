@@ -4,6 +4,7 @@
 
 from typing import Dict, List, Optional, Union
 
+import openvino.runtime as ov
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import ClsHead
@@ -16,7 +17,7 @@ from ...mmov_model import MMOVModel
 class MMOVClsHead(ClsHead):
     def __init__(
         self,
-        model_path: str,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -29,13 +30,13 @@ class MMOVClsHead(ClsHead):
         kwargs.pop("num_classes", None)
         super().__init__(**kwargs)
 
-        self._model_path = model_path
+        self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._init_weight = init_weight
         self._softmax_at_test = softmax_at_test
 
         self.model = MMOVModel(
-            model_path,
+            model_path_or_model,
             weight_path,
             inputs=inputs,
             outputs=outputs,

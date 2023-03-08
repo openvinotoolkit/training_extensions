@@ -81,6 +81,7 @@ def to_dynamic_model(ov_model: Model) -> Model:
 
 
 def load_ov_model(model_path: str, weight_path: Optional[str] = None, convert_dynamic: bool = False) -> Model:
+    model_path = str(model_path)
     if model_path.startswith("omz://"):
         model_path = model_path.replace("omz://", "")
         assert model_path in AVAILABLE_OMZ_MODELS
@@ -141,27 +142,19 @@ def convert_op_to_torch(op: Node):
     return torch_module
 
 
-def convert_op_to_torch_module(target_op: Node, ops: List[Node]):
+def convert_op_to_torch_module(target_op: Node):
     from .ops.modules import OperationModule
 
-    ops_map = {}
-    for op in ops:
-        ops_map[get_op_name(op)] = op
-
-    parent_names = []
+    dependent_modules = []
     for in_port in target_op.inputs():
         out_port = in_port.get_source_output()
-        parent_names.append(get_op_name(out_port.get_node()))
-
-    module = convert_op_to_torch(target_op)
-    dependent_modules = []
-    for parent_name in parent_names:
-        parent = ops_map[parent_name]
+        parent = out_port.get_node()
 
         parent_type = parent.get_type_name()
         if parent_type == "Constant":
             dependent_modules.append(convert_op_to_torch(parent))
         else:
             dependent_modules.append(None)
+    module = convert_op_to_torch(target_op)
     module = OperationModule(module, dependent_modules)
     return module
