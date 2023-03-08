@@ -492,6 +492,9 @@ class TestConfigManager:
         mock_get_val_dataset = mocker.patch(
             "otx.cli.manager.config_manager.DatasetManager.get_val_dataset", return_value="val_dataset"
         )
+        mock_get_test_dataset = mocker.patch(
+            "otx.cli.manager.config_manager.DatasetManager.get_test_dataset", return_value="test_dataset"
+        )
         mock_auto_split = mocker.patch(
             "otx.cli.manager.config_manager.DatasetManager.auto_split",
             return_value={"train": "auto_train", "val": "auto_val"},
@@ -507,6 +510,20 @@ class TestConfigManager:
         mock_get_val_dataset.return_value = None
         assert config_manager.auto_split_data("test_data_root", task="DETECTION") == {
             "train": "auto_train",
+            "val": "auto_val",
+        }
+
+        # test anomaly auto splitting
+        mock_get_data_format = mocker.patch(
+            "otx.cli.manager.config_manager.DatasetManager.get_data_format", return_value="mvtec"
+        )
+        mock_auto_split = mocker.patch(
+            "otx.cli.manager.config_manager.DatasetManager.auto_split",
+            return_value={"test": "auto_test", "val": "auto_val"},
+        )
+        mock_get_test_dataset.return_value = None
+        assert config_manager.auto_split_data("test_data_root", task="ANOMALY_SEGMENTATION") == {
+            "test": "auto_test",
             "val": "auto_val",
         }
 
