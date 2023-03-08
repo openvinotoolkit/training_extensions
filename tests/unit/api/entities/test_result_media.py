@@ -146,22 +146,20 @@ class TestResultMediaEntity:
         # Checking __repr__ method for ResultMediaEntity class object initialized with default optional parameters
         initialization_params = self.default_result_media_parameters()
         annotation_scene = initialization_params.get("annotation_scene")
-        numpy = initialization_params.get("numpy")
         result_media = ResultMediaEntity(**initialization_params)
         assert repr(result_media) == (
             f"ResultMediaEntity(name=ResultMedia name, type=Test ResultMedia, annotation_scene={annotation_scene}, "
-            f"numpy={numpy}, roi={result_media.roi}, label=None)"
+            f"roi={result_media.roi}, label=None)"
         )
         # Checking __repr__ method for ResultMediaEntity class object initialized with specified optional parameters
         initialization_params = self.optional_result_media_parameters()
         annotation_scene = initialization_params.get("annotation_scene")
-        numpy = initialization_params.get("numpy")
         roi = initialization_params.get("roi")
         label = initialization_params.get("label")
         result_media = ResultMediaEntity(**initialization_params)
         assert repr(result_media) == (
             f"ResultMediaEntity(name=ResultMedia name, type=Test ResultMedia, annotation_scene={annotation_scene}, "
-            f"numpy={numpy}, roi={roi}, label={label})"
+            f"roi={roi}, label={label})"
         )
 
     @pytest.mark.priority_medium

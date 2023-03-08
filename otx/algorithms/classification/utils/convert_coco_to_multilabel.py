@@ -36,13 +36,14 @@ multilabel_ann_format = {
 }  # type: Dict[str, Any]
 
 
-def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: str):
+def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: str, test_mode: bool = False):
     """Convert coco dataset to datumaro multi-label format.
 
     Args:
         ann_file_path (str): The path of annotation file (COCO)
         data_root_dir (str): The path of images folder (COCO)
         output (str): Destination path of converted data (CVAT multi-label format)
+        test_mode (bool): Omit filtering irrelevant images during COCO dataset initialization for testing purposes.
     """
 
     # Prepare COCO dataset to load annotations
@@ -50,7 +51,7 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
         ann_file=ann_file_path,
         data_root=data_root_dir,
         classes=None,
-        test_mode=False,
+        test_mode=test_mode,
         with_mask=False,
     )
 
@@ -75,11 +76,10 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
 
         annotations = []
         for i, label in enumerate(labels):
-            annotation = {"id": int(i), "type": "label", "group": 0, "label_id": int(label)}
-            annotations.append(annotation)
+            annotations.append({"id": int(i), "type": "label", "group": 0, "label_id": int(label)})
 
         multilabel_ann_format["items"].append(
-            {"id": str(file_id), "annotations": str(annotations), "image": {"path": str(filename)}}
+            {"id": str(file_id), "annotations": annotations, "image": {"path": str(filename)}}
         )
     print(f"Saving logfile to: {output}")
     with open(output, "w", encoding="utf-8") as out_file:

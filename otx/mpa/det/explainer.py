@@ -13,9 +13,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataset,
 )
 from otx.algorithms.detection.adapters.mmdet.data import ImageTilingDataset
+from otx.mpa.modules.hooks.det_saliency_map_hook import DetSaliencyMapHook
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
-    DetSaliencyMapHook,
     EigenCamHook,
 )
 from otx.mpa.registry import STAGES
@@ -148,9 +148,11 @@ class DetectionExplainer(DetectionStage):
         self.set_inference_progress_callback(model, cfg)
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
+        eval_predictions = []
         with self.explainer_hook(feature_model) as saliency_hook:
             for data in test_dataloader:
-                _ = model(return_loss=False, rescale=True, **data)
+                result = model(return_loss=False, rescale=True, **data)
+                eval_predictions.extend(result)
             saliency_maps = saliency_hook.records
 
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
@@ -162,5 +164,5 @@ class DetectionExplainer(DetectionStage):
         if isinstance(dataset, ImageTilingDataset):
             saliency_maps = [saliency_maps[i] for i in range(dataset.num_samples)]
 
-        outputs = dict(saliency_maps=saliency_maps)
+        outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
         return outputs

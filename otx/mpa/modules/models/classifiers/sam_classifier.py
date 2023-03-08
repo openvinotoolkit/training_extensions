@@ -295,6 +295,10 @@ if is_mmdeploy_enabled():
     def sam_image_classifier__simple_test(ctx, self, img, img_metas):
         feat, backbone_feat = self.extract_feat(img)
         logit = self.head.simple_test(feat)
-        saliency_map = ReciproCAMHook(self).func(backbone_feat)
-        feature_vector = FeatureVectorHook.func(backbone_feat)
-        return logit, feature_vector, saliency_map
+
+        if ctx.cfg["dump_features"]:
+            saliency_map = ReciproCAMHook(self).func(backbone_feat)
+            feature_vector = FeatureVectorHook.func(backbone_feat)
+            return logit, feature_vector, saliency_map
+
+        return logit

@@ -89,7 +89,7 @@ class OTXClassification(Classification):
         return layer_name
 
     @check_input_parameters_type()
-    def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):  # pylint: disable=unused-argument
+    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
         """Post-process."""
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
@@ -103,8 +103,6 @@ class OTXClassification(Classification):
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         """Post-process for auxiliary outputs."""
-        saliency_map = outputs["saliency_map"][0]
-        repr_vector = outputs["feature_vector"].reshape(-1)
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
             probs = sigmoid_numpy(logits)
@@ -113,6 +111,13 @@ class OTXClassification(Classification):
         else:
             probs = softmax_numpy(logits)
         act_score = float(np.max(probs) - np.min(probs))
+
+        if "saliency_map" in outputs:
+            saliency_map = outputs["saliency_map"][0]
+            repr_vector = outputs["feature_vector"].reshape(-1)
+        else:
+            saliency_map, repr_vector = None, None
+
         return probs, saliency_map, repr_vector, act_score
 
 
@@ -125,17 +130,8 @@ def sigmoid_numpy(x: np.ndarray):
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
     """Softmax numpy."""
-    x = np.exp(x)
-    # FIXME: "x = np.exp(x - np.max(x))" is better for numerical stability.
-    # But it results in "ValueError: zero-size array to reduction operation maximum which has no identity"
-    inf_ind = np.isinf(x)
-    total_infs = np.sum(inf_ind)
-    if total_infs > 0:
-        x[inf_ind] = 1.0 / total_infs
-        x[~inf_ind] = 0
-    else:
-        x /= np.sum(x) + eps
-    return x
+    x = np.exp(x - np.max(x))
+    return x / (np.sum(x) + eps)
 
 
 @check_input_parameters_type()

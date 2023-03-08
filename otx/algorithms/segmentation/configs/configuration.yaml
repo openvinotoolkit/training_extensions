@@ -212,6 +212,22 @@ learning_parameters:
     value: 0
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
+  enable_supcon:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description:
+      Enable an auxiliar supervised contrastive loss, which might increase robustness
+      and accuracy for small datasets.
+    editable: true
+    header: Enable Supervised Contrastive helper loss
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -275,6 +291,22 @@ algo_backend:
       type: UI_RULES
     value: INCREMENTAL
     visible_in_ui: True
+    warning: null
+  mem_cache_size:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description: Size of memory pool for caching decoded data to load data faster (bytes).
+    editable: true
+    header: Size of memory pool
+    max_value: 9223372036854775807
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true

@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 
-from .data import MPAClsDataset, SelfSLDataset
+from .data import OTXClsDataset, SelfSLDataset
 from .models import BYOL, ConstrastiveHead, SelfSLMLP
 
 # fmt: off
@@ -28,7 +28,7 @@ get_root_logger().propagate = False
 # fmt: on
 
 __all__ = [
-    "MPAClsDataset",
+    "OTXClsDataset",
     "SelfSLDataset",
     "BYOL",
     "SelfSLMLP",

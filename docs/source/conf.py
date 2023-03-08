@@ -10,33 +10,22 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information ----------------------------------------------------- #
 
-project = 'OpenVINO Training Extensions'
-copyright = '2022, OpenVINO Training Extensions Contributors'
-author = 'OpenVINO Training Extensions Contributors'
-
+project = 'OpenVINO™ Training Extensions'
+copyright = '2023, OpenVINO™ Training Extensions Contributors'
+author = 'OpenVINO™ Training Extensions Contributors'
+release = '1.0.0'
 
 # -- General configuration --------------------------------------------------- #
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-# extensions = [
-#     "sphinx.ext.autodoc",
-#     "sphinx.ext.napoleon",
-#     "nbsphinx",
-# ]
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx_panels',
     'sphinx_copybutton',
-    'sphinx_tabs.tabs'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,14 +44,16 @@ exclude_patterns = []
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_theme = "pydata_sphinx_theme"
+html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
-html_logo = "_static/logos/otx-logo-black-mini.png"
+
 html_theme_options = {
-    "navbar_start": ["navbar-logo"],
-    "navbar_center": [],
-    "navbar_end": ["navbar-icon-links"]
+   "navbar_center": [],
+   "logo": {
+      "image_light": 'logos/otx-logo.png',
+      "image_dark": 'logos/otx-logo.png',
+   }
 }
 html_css_files = [
-    '_static/css/custom.css',
+    'css/custom.css',
 ]

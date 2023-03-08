@@ -7,11 +7,26 @@ requires = [
     "setuptools>=42",
     "wheel",
     "Cython~=0.29.32",
-    "numpy~=1.21.0",
-    "torch@https://download.pytorch.org/whl/lts/1.8/cu111/torch-1.8.2%2Bcu111-cp38-cp38-linux_x86_64.whl"
+    "numpy~=1.21.0"
 ]
 build-backend = "setuptools.build_meta"
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# COVERAGE CONFIGURATION.                                                     #
+[tool.coverage.run]
+source = [
+    "otx/",
+]
+omit = [
+    "otx/algorithms/*/configs/**/*pipeline*.py",
+    "otx/algorithms/*/configs/**/model*.py",
+    "otx/algorithms/*/configs/**/deployment.py",
+    "otx/algorithms/**/configs/**/backbones/*",
+    "otx/algorithms/**/*sample*.py",
+    "**/__init__.py",
+    "otx/recipes/*",
+]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # ISORT CONFIGURATION.                                                        #
@@ -28,7 +43,7 @@ ignore_missing_imports = true
 show_error_codes = true
 
 # TODO: Need to be edited
-follow_imports = "skip" 
+follow_imports = "skip"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # PYLINT CONFIGURATION                                                        #
@@ -52,6 +67,8 @@ disable = [
     "use-symbolic-message-instead",
     "import-outside-toplevel",
     "arguments-differ",
+    "use-dict-literal",
+    "broad-exception-raised",
 ]
 
 [tool.pylint.typecheck]
@@ -83,6 +100,7 @@ good-names = [
     "i",
     "j",
     "k",
+    "e",
     "ex",
     "Run",
     "_",

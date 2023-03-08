@@ -34,6 +34,7 @@ SUPPORTED_TASKS = (
     "INSTANCE_SEGMENTATION",
     "SEGMENTATION",
     "ACTION_CLASSIFICATION",
+    "ACTION_DETECTION",
     "ANOMALY_CLASSIFICATION",
     "ANOMALY_DETECTION",
     "ANOMALY_SEGMENTATION",
@@ -44,7 +45,7 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", help="Supported task types.", choices=SUPPORTED_TASKS)
+    parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
     parser.add_argument(
         "--template", action="store_true", help="Shows a list of templates that can be used immediately."
     )
@@ -99,12 +100,10 @@ def main():
     args = parse_args()
 
     otx_root = get_otx_root_path()
-    otx_registry = Registry(otx_root)
-    if args.task:
-        otx_registry = otx_registry.filter(task_type=args.task)
+    otx_registry = Registry(otx_root).filter(task_type=args.task)
 
-    if args.template:
-        template_table = PrettyTable(["TASK", "ID", "NAME", "PATH"])
+    if not args.backbone or args.template:
+        template_table = PrettyTable(["TASK", "ID", "NAME", "BASE PATH"])
         for template in otx_registry.templates:
             relpath = os.path.relpath(template.model_template_path, os.path.abspath("."))
             template_table.add_row(
@@ -123,10 +122,15 @@ def main():
         row_index = 1
         for _, backbone_meta in all_backbones.items():
             for backbone_type, meta_data in backbone_meta.items():
+                available_task = meta_data.get("available", [])
+                if not available_task or (args.task and args.task.upper() not in available_task):
+                    continue
                 rows = generate_backbone_rows(row_index, backbone_type, meta_data)
                 backbone_table.add_rows(rows)
                 row_index += 1
         print(backbone_table)
+
+    return dict(retcode=0, task_type=args.task)
 
 
 if __name__ == "__main__":

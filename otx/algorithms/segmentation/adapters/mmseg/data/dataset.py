@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from abc import ABCMeta
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
@@ -54,7 +55,7 @@ def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[La
 
 
 @DATASETS.register_module()
-class OTXSegDataset(CustomDataset):
+class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
     """Wrapper that allows using a OTX dataset to train mmsegmentation models.
 
     This wrapper is not based on the filesystem,
@@ -126,7 +127,7 @@ class OTXSegDataset(CustomDataset):
         self.label_map = None
 
         dataset_labels = self.otx_dataset.get_labels(include_empty=False)
-        self.project_labels = self.filter_labels(dataset_labels, classes)
+        self.project_labels = sorted(self.filter_labels(dataset_labels, classes))
         self.CLASSES, self.PALETTE = self.get_classes_and_palette(classes, None)
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset
@@ -143,8 +144,8 @@ class OTXSegDataset(CustomDataset):
 
     @staticmethod
     @check_input_parameters_type()
-    def filter_labels(all_labels: List[LabelEntity], label_names: List[str]):
-        """Filtering Labels function."""
+    def filter_labels(all_labels: List[LabelEntity], label_names: List[str]) -> List[LabelEntity]:
+        """Filter and collect actual label entities."""
         filtered_labels = []
         for label_name in label_names:
             matches = [label for label in all_labels if label.name == label_name]
@@ -235,7 +236,7 @@ class OTXSegDataset(CustomDataset):
 
 
 @DATASETS.register_module()
-class MPASegDataset(OTXSegDataset):
+class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
     """Wrapper dataset that allows using a OTX dataset to train models."""
 
     def __init__(self, **kwargs):
@@ -262,6 +263,11 @@ class MPASegDataset(OTXSegDataset):
         else:
             classes = []
         super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
+
+        self.CLASSES = [label.name for label in self.project_labels]
+        if "background" not in self.CLASSES:
+            self.CLASSES = ["background"] + self.CLASSES
+
         if self.label_map is None:
             self.label_map = {}
             for i, c in enumerate(self.CLASSES):

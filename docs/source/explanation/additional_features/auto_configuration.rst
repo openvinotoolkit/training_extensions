@@ -1,4 +1,0 @@
-Auto-configuration
-==================
-
-Coming soon...

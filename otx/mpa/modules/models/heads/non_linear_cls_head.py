@@ -33,9 +33,11 @@ class NonLinearClsHead(ClsHead):
         loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
         topk=(1,),
         dropout=False,
+        *args,
+        **kwargs,
     ):
         topk = (1,) if num_classes < 5 else (1, 5)
-        super(NonLinearClsHead, self).__init__(loss=loss, topk=topk)
+        super(NonLinearClsHead, self).__init__(loss=loss, topk=topk, *args, **kwargs)
         self.in_channels = in_channels
         self.hid_channels = hid_channels
         self.num_classes = num_classes

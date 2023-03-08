@@ -30,14 +30,12 @@ from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKi
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
-from otx.api.entities.label import Domain, LabelEntity
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import (
     ModelConfiguration,
     ModelEntity,
     ModelOptimizationType,
 )
-from otx.api.entities.model_template import TaskType
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.utils.nncf import is_checkpoint_nncf
@@ -171,89 +169,6 @@ def read_label_schema(path: str) -> LabelSchemaEntity:
     return LabelSchemaMapper().backward(serialized_label_schema)
 
 
-def generate_label_schema(dataset: DatasetEntity, task_type: TaskType) -> LabelSchemaEntity:
-    """Generates label schema depending on task type.
-
-    Args:
-        dataset (DatasetEntity): Task specific dataset.
-        task_type (TaskType): Task type used to call dataset specific functions and update label schema.
-
-    Returns:
-        LabelSchemaEntity: Label schema for the task.
-    """
-    if task_type == TaskType.CLASSIFICATION:
-        not_empty_labels = dataset.get_labels()
-        assert len(not_empty_labels) > 1
-        label_schema = LabelSchemaEntity()
-        # TODO dataset specific functions live in external. Ideally these should be refactored to be part of OTX
-        # TODO /contd adapters and type checked here.
-        if dataset.is_multilabel():  # type: ignore[attr-defined]
-            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
-            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
-            # pylint: disable=unnecessary-comprehension
-            key = [i for i in dataset.annotations.keys()][0]  # type: ignore[attr-defined]
-            for group in dataset.annotations[key][2]:  # type: ignore[attr-defined]
-                group_labels = []
-                for label_name in group:
-                    group_labels.append(dataset.label_name_to_project_label(label_name))  # type: ignore[attr-defined]
-                labels = group_labels if dataset.is_multilabel() else group_labels[1:]  # type: ignore[attr-defined]
-                label_schema.add_group(
-                    LabelGroup(
-                        name=group_labels[0].name,
-                        labels=labels,
-                        group_type=LabelGroupType.EXCLUSIVE,
-                    )
-                )
-            label_schema.add_group(empty_group)
-        # TODO same as above. Refactor to support type checking
-        elif dataset.is_multihead():  # type: ignore[attr-defined]
-            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
-            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
-            key = [i for i in dataset.annotations.keys()][0]  # type: ignore[attr-defined]
-            hierarchy_info = dataset.annotations[key][2]  # type: ignore[attr-defined]
-
-            def add_subtask_labels(dataset, info):
-                group = info["group"]
-                labels = info["labels"]
-                task_type = info["task_type"]
-                if task_type == "single-label":  # add one label group includes all labels
-                    label_entity_list = [dataset.label_name_to_project_label(lbl) for lbl in labels]
-                    label_group = LabelGroup(
-                        name=group,
-                        labels=label_entity_list,
-                        group_type=LabelGroupType.EXCLUSIVE,
-                    )
-                    label_schema.add_group(label_group)
-                elif task_type == "multi-label":  # add label group for each label
-                    for label in labels:
-                        label_entity_list = [dataset.label_name_to_project_label(label)]
-                        label_group = LabelGroup(
-                            name=f"{group}____{label}",
-                            labels=label_entity_list,
-                            group_type=LabelGroupType.EXCLUSIVE,
-                        )
-                        label_schema.add_group(label_group)
-                if "subtask" in info:
-                    subtask = info["subtask"]
-                    for stask in subtask:  # if has several subtasks
-                        add_subtask_labels(dataset, stask)
-
-            for info in hierarchy_info:
-                if info["task_type"] == "multi-label" and emptylabel not in label_schema.get_labels(include_empty=True):
-                    label_schema.add_group(empty_group)
-                add_subtask_labels(dataset, info)
-        else:
-            main_group = LabelGroup(
-                name="labels",
-                labels=dataset.project_labels,  # type: ignore[attr-defined]
-                group_type=LabelGroupType.EXCLUSIVE,
-            )
-            label_schema.add_group(main_group)
-        return label_schema
-
-    return LabelSchemaEntity.from_labels(dataset.get_labels())
-
-
 def get_image_files(root_dir: str) -> Optional[List[Tuple[str, str]]]:
     """Recursively get all image file paths from given root_dir."""
     img_data_formats = (
@@ -284,19 +199,25 @@ def get_image_files(root_dir: str) -> Optional[List[Tuple[str, str]]]:
 
 
 def save_saliency_output(
+    process_saliency_maps: bool,
     img: np.array,
     saliency_map: np.array,
     save_dir: str,
     fname: str,
     weight: float = 0.3,
 ) -> None:
-    """Receives img and saliency map, then convert to colormap image and save images."""
-    overlay = img * weight + saliency_map * (1 - weight)
-    overlay[overlay > 255] = 255
-    overlay = overlay.astype(np.uint8)
+    """Saves processed saliency map (with image overlay) or raw saliency map."""
+    if process_saliency_maps:
+        # Saves processed saliency map
+        overlay = img * weight + saliency_map * (1 - weight)
+        overlay[overlay > 255] = 255
+        overlay = overlay.astype(np.uint8)
 
-    cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", saliency_map)
-    cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
+        cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", saliency_map)
+        cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
+    else:
+        # Saves raw, low-resolution saliency map
+        cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.tiff", saliency_map)
 
 
 def get_explain_dataset_from_filelist(image_files: list):

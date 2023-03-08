@@ -282,6 +282,16 @@ class BaseConfig(ConfigurableParameters):
             visible_in_ui=True,
         )
 
+        mem_cache_size = configurable_integer(
+            header="Size of memory pool for caching decoded data to load data faster",
+            description="Size of memory pool for caching decoded data to load data faster",
+            default_value=0,
+            min_value=0,
+            max_value=maxsize,
+            visible_in_ui=False,
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BaseTilingParameters(ParameterGroup):
         """BaseTilingParameters for OTX Algorithms."""

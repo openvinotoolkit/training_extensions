@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import datumaro
 from datumaro.components.dataset import Dataset, DatasetSubset
@@ -28,15 +28,15 @@ class DatasetManager:
         for k, v in dataset.subsets().items():
             if "train" in k or "default" in k:
                 return v
-        raise ValueError(f"Can't find training data in {str(dataset)}")
+        raise ValueError("Can't find training data.")
 
     @staticmethod
-    def get_val_dataset(dataset: Dataset) -> DatasetSubset:
+    def get_val_dataset(dataset: Dataset) -> Union[DatasetSubset, None]:
         """Returns validation dataset."""
         for k, v in dataset.subsets().items():
-            if "val" in k or "default" in k:
+            if "val" in k:
                 return v
-        raise ValueError(f"Can't find validation data in {str(dataset)}")
+        return None
 
     @staticmethod
     def get_data_format(data_root: str) -> str:
@@ -57,18 +57,13 @@ class DatasetManager:
             data_formats = datumaro.Environment().detect_dataset(data_root)
             # TODO: how to avoid hard-coded part
             data_format = data_formats[0] if "imagenet" not in data_formats else "imagenet"
+        print(f"[*] Detected dataset format: {data_format}")
         return data_format
 
     @staticmethod
     def get_image_path(data_item: DatasetItem) -> str:
         """Returns the path of image."""
         return data_item.media.path
-
-    @staticmethod
-    def get_classification_label(data_item: DatasetItem) -> str:
-        """Returns the classfication label (multi-class)."""
-        assert len(data_item.annotations) == 1, "Not implemented for multi-label"
-        return data_item.annotations[0].label
 
     @staticmethod
     def export_dataset(dataset: Dataset, output_dir: str, data_format: str, save_media=True):

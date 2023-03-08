@@ -228,16 +228,17 @@ class Graph(nx.MultiDiGraph):
         edges_to_keep = []
         if keep_connect:
             predecessors = [predecessor for predecessor in self.predecessors(node) if predecessor.type != "Constant"]
-            assert len(predecessors) == 1
-            predecessor = predecessors[0]
+            if predecessors:
+                assert len(predecessors) == 1
+                predecessor = predecessors[0]
 
-            for successor in self.successors(node):
-                for predecessor_ in self.predecessors(successor):
-                    edges_attrs = self.get_edge_data(predecessor_, successor)
-                    assert len(edges_attrs) == 1
-                    if predecessor_ == node:
-                        for edge_attrs in edges_attrs:
-                            edges_to_keep.append([predecessor, successor, edge_attrs])
+                for successor in self.successors(node):
+                    for predecessor_ in self.predecessors(successor):
+                        edges_attrs = self.get_edge_data(predecessor_, successor)
+                        assert len(edges_attrs) == 1
+                        if predecessor_ == node:
+                            for edge_attrs in edges_attrs:
+                                edges_to_keep.append([predecessor, successor, edge_attrs])
 
         super().remove_node(node)
         for edge in edges_to_keep:
@@ -283,9 +284,11 @@ class Graph(nx.MultiDiGraph):
                 for edge in self.get_edge_data(predecessor, node_to)
             ]
             assert len(occupied) == len(set(occupied))
-            for i, j in [occupied[i : i + 2] for i in range(len(occupied) - 1)]:
-                if j - i != 1:
-                    in_port = i + 1
+            if occupied:
+                for i in range(max(occupied)):
+                    if i not in occupied:
+                        in_port = i
+                        break
             if in_port is None:
                 in_port = len(occupied)
 
@@ -510,6 +513,9 @@ class Graph(nx.MultiDiGraph):
                 if len([i for i in found if i is not None]) < len([i for i in found_ if i is not None]):
                     found = found_
 
+            if not all([i is not None for i in found]):
+                continue
+
             self._normalize_nodes.append(found)
             for normalize_node in found:
                 if normalize_node is not None:
@@ -520,8 +526,8 @@ class Graph(nx.MultiDiGraph):
                     attrs = asdict(attrs)
                     attrs["is_parameter"] = False
                     new_constant_node = constant_node.__class__(
-                        constant_node.data.data,
                         constant_node.name,
+                        data=constant_node.data.data,
                         **attrs,
                     )
                     self.replace_node(constant_node, new_constant_node)
@@ -541,6 +547,7 @@ class Graph(nx.MultiDiGraph):
                 logger.info(f"Remove normalize node {second_node.name}")
             except Exception:
                 pass
+        self._normalize_nodes = []
 
     def topological_sort(self):
         return nx.topological_sort(self)

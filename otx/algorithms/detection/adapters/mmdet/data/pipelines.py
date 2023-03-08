@@ -12,13 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
 import copy
 from typing import Any, Dict, Optional
 
-import numpy as np
 from mmdet.datasets.builder import PIPELINES
 
+import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
 from otx.api.entities.label import Domain
 from otx.api.utils.argument_checks import check_input_parameters_type
 
@@ -27,51 +26,8 @@ from .dataset import get_annotation_mmdet_format
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
 @PIPELINES.register_module()
-class LoadImageFromOTXDataset:
-    """Pipeline element that loads an image from a OTX Dataset on the fly. Can do conversion to float 32 if needed.
-
-    Expected entries in the 'results' dict that should be passed to this pipeline element are:
-        results['dataset_item']: dataset_item from which to load the image
-        results['dataset_id']: id of the dataset to which the item belongs
-        results['index']: index of the item in the dataset
-
-    :param to_float32: optional bool, True to convert images to fp32. defaults to False
-    """
-
-    @check_input_parameters_type()
-    def __init__(self, to_float32: bool = False):
-        self.to_float32 = to_float32
-
-    @check_input_parameters_type()
-    def __call__(self, results: Dict[str, Any]):
-        """Callback function LoadImageFromOTXDataset."""
-        dataset_item = results["dataset_item"]
-        img = dataset_item.numpy
-        shape = img.shape
-
-        assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
-        assert img.shape[1] == results["width"], f"{img.shape[1]} != {results['width']}"
-
-        filename = f"Dataset item index {results['index']}"
-        results["filename"] = filename
-        results["ori_filename"] = filename
-        results["img"] = img
-        results["img_shape"] = shape
-        results["ori_shape"] = shape
-        # Set initial values for default meta_keys
-        results["pad_shape"] = shape
-        num_channels = 1 if len(shape) < 3 else shape[2]
-        results["img_norm_cfg"] = dict(
-            mean=np.zeros(num_channels, dtype=np.float32),
-            std=np.ones(num_channels, dtype=np.float32),
-            to_rgb=False,
-        )
-        results["img_fields"] = ["img"]
-
-        if self.to_float32:
-            results["img"] = results["img"].astype(np.float32)
-
-        return results
+class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
+    """Pipeline element that loads an image from a OTX Dataset on the fly."""
 
 
 @PIPELINES.register_module()

@@ -11,7 +11,8 @@ import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import (
+from tests.test_suite.e2e_test_system import e2e_pytest_component
+from tests.test_suite.run_test_command import (
     get_template_dir,
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
@@ -25,14 +26,13 @@ from otx.cli.utils.tests import (
     otx_resume_testing,
     otx_train_testing,
 )
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "data/imagenet_dataset_class_incremental",
-    "--val-data-roots": "data/imagenet_dataset_class_incremental",
-    "--test-data-roots": "data/imagenet_dataset_class_incremental",
-    "--input": "data/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--test-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--input": "tests/assets/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -61,7 +61,7 @@ args_semisl = {
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--train-data-roots": "data/imagenet_dataset",
+    "--train-data-roots": "tests/assets/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -104,14 +104,256 @@ templates_ids = [template.model_template_id for template in templates]
 class TestMultiClassClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_multi_gpu_train_semi(self, template, tmp_dir_path):
-        args1 = copy.deepcopy(args_semisl)
+    def test_otx_train_supcon(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_supcon"
+        args1 = copy.deepcopy(args)
+        args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_resume"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args)
+        args1["train_params"] = resume_params
+        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_export_testing(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_hpo(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_hpo"
+        otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu"
+        args1 = copy.deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_multi_gpu_train_self(self, template, tmp_dir_path):
-        args1 = copy.deepcopy(args_selfsl)
-        args1["--gpus"] = "0,1"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+    def test_otx_train_semisl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
+        args_semisl = copy.deepcopy(args)
+        args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_selfsl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
+
+
+# Multi-label training w/ 'car', 'tree', 'bug' classes
+args_m = {
+    "--train-data-roots": "tests/assets/datumaro_multilabel",
+    "--val-data-roots": "tests/assets/datumaro_multilabel",
+    "--test-data-roots": "tests/assets/datumaro_multilabel",
+    "--input": "tests/assets/datumaro_multilabel/images/train",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
+}
+
+
+class TestMultilabelClassificationCLI:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_export_testing(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m, threshold=1.0)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=1.0)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
+
+
+args_h = {
+    "--train-data-roots": "tests/assets/datumaro_h-label",
+    "--val-data-roots": "tests/assets/datumaro_h-label",
+    "--test-data-roots": "tests/assets/datumaro_h-label",
+    "--input": "tests/assets/datumaro_h-label/images/train",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
+}
+
+
+class TestHierarchicalClassificationCLI:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_export_testing(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h, threshold=1.0)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_deploy_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_eval_deployment(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=1.0)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_nncf_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+
+        nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_h)

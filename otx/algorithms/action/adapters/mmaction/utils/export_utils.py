@@ -70,7 +70,7 @@ def preprocess(
     To get proper proposals from Faster-RCNN, the action detector needs real data
     """
     frames = []
-    frame_dir = f"data/cvat_dataset/action_detection/train/{category}/images"
+    frame_dir = f"tests/assets/cvat_dataset/action_detection/train/{category}/images"
     mean = [123.675, 116.28, 103.53]
     std = [58.395, 57.12, 57.375]
     # TODO: allow only .jpg, .png exts
@@ -83,7 +83,7 @@ def preprocess(
         resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
         resized_frame = (resized_frame - mean) / std
         frames.append(resized_frame)
-    np_frames = np.expand_dims(frames, axis=(0))  # [1, T, H, W, C]
+    np_frames = np.expand_dims(frames, axis=0)  # [1, T, H, W, C]
     np_frames = np_frames.transpose(0, 4, 1, 2, 3)  # [1, C, T, H, W]
     frame_inds = get_frame_inds(np_frames, clip_len, interval)
     np_frames = np_frames[:, :, frame_inds, :, :]
@@ -123,7 +123,6 @@ def pytorch2onnx(
     opset_version: int = 11,
     show: bool = False,
     output_file: Optional[str] = "tmp.onnx",
-    softmax: bool = False,
     is_localizer: bool = False,
 ):
     """Convert pytorch model to onnx model.
@@ -135,8 +134,6 @@ def pytorch2onnx(
         show (bool): Determines whether to print the onnx model architecture.
             Default: False.
         output_file (str): Output onnx model name. Default: 'tmp.onnx'.
-        softmax (bool): Determines whether to use softmax function.
-            Default: False.
         is_localizer(bool): Determines this model is localizer or not
             Default: False.
     """
@@ -155,7 +152,8 @@ def pytorch2onnx(
         output_names = ["det_bboxes", "det_labels"]
     else:
         if hasattr(model, "forward_dummy"):
-            model.forward = partial(model.forward_dummy, softmax=softmax)
+            # TODO Replace model.forward with model.onnx_export
+            model.forward = model.forward_dummy
         elif hasattr(model, "_forward") and is_localizer:
             model.forward = model._forward
         else:
@@ -257,6 +255,7 @@ def export_model(
     config: Config,
     onnx_model_path: Optional[str] = None,
     output_dir_path: Optional[str] = None,
+    half_precision: Optional[bool] = False,
 ):
     """Export PyTorch model into OpenVINO model."""
     if isinstance(model, Recognizer3D):
@@ -266,4 +265,5 @@ def export_model(
         input_shape = [1, 3, 32, 256, 256]
         layout = "bctwh"
     pytorch2onnx(model, input_shape=input_shape, output_file=onnx_model_path)
-    onnx2openvino(config, onnx_model_path, output_dir_path, layout, input_shape)
+    precision = "FP16" if half_precision else "FP32"
+    onnx2openvino(config, onnx_model_path, output_dir_path, layout, input_shape, precision=precision)

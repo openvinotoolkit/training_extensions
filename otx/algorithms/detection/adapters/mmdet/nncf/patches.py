@@ -19,8 +19,9 @@ from mmdet.models.roi_heads.bbox_heads.bbox_head import BBoxHead
 from mmdet.models.roi_heads.bbox_heads.sabl_head import SABLHead
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
-from otx.algorithms.common.adapters.nncf.patchers import (
+from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
+    is_in_nncf_tracing,
     nncf_trace_wrapper,
     no_nncf_trace_wrapper,
 )
@@ -66,28 +67,29 @@ def _should_wrap(obj_cls, fn_name, targets):
 def _wrap_mmdet_head(obj_cls):
     for fn_name in HEADS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, HEADS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
             # 'onnx_export' method calls 'forward' method which need to be traced
-            NNCF_PATCHER.patch(getattr(obj_cls, "forward"), nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, "forward"), nncf_trace_wrapper)
 
 
 def _wrap_mmdet_bbox_assigner(obj_cls):
     for fn_name in BBOX_ASSIGNERS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, BBOX_ASSIGNERS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
 def _wrap_mmdet_sampler(obj_cls):
     for fn_name in SAMPLERS_TARGETS["fn_names"]:
         if _should_wrap(obj_cls, fn_name, SAMPLERS_TARGETS):
-            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
+            NNCF_PATCHER.patch((obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
 # pylint: disable=invalid-name,unused-argument
 def _wrap_register_module(self, fn, *args, **kwargs):
     """A function to wrap classes lazily defined such as custom ones."""
 
-    module = kwargs["module"]
+    module = kwargs.get("module", args[0] if args else None)
+    assert module is not None
     _wrap_mmdet_head(module)
     _wrap_mmdet_bbox_assigner(module)
     _wrap_mmdet_sampler(module)
@@ -117,6 +119,30 @@ NNCF_PATCHER.patch(
 )
 NNCF_PATCHER.patch("mmdet.core.bbox2result", no_nncf_trace_wrapper)
 NNCF_PATCHER.patch("mmdet.core.bbox2roi", no_nncf_trace_wrapper)
+
+
+def _wrap_is_in_onnx_export(ctx, fn):
+    # TODO: find a better way to solve this w/o patching 'torch.onnx.is_in_onnx_export'
+    #
+    # prevent incomplete graph building for MaskRCNN models
+    #
+    # possible alternatives
+    #    - take the onnx branch in all cases
+
+    import inspect
+
+    stack = inspect.stack()
+    frame_info = stack[2]
+    if (
+        frame_info.function == "forward"
+        and "self" in frame_info.frame.f_locals.keys()
+        and frame_info.frame.f_locals["self"].__class__.__name__ == "SingleRoIExtractor"
+    ):
+        return fn() or is_in_nncf_tracing()
+    return fn()
+
+
+NNCF_PATCHER.patch("torch.onnx.is_in_onnx_export", _wrap_is_in_onnx_export)
 
 # add nncf context method that will be used when nncf tracing
 BaseDetector.nncf_trace_context = nncf_trace_context

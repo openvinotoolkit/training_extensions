@@ -93,7 +93,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._label_dictionary = {}  # type: Dict
 
         super().__init__(SegmentationConfig, task_environment, **kwargs)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
+        self._label_dictionary = dict(enumerate(sorted(self._labels), 1))
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -147,37 +147,50 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity):
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = True,
+    ):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        if not dump_features:
+            logger.warning(
+                "Ommitting feature dumping is not implemented."
+                "The saliency maps and representation vector outputs will be dumped in the exported model."
+            )
 
         stage_module = "SegExporter"
         results = self._run_task(
             stage_module,
             mode="train",
             export=True,
+            dump_features=dump_features,
+            enable_fp16=(precision == ModelPrecision.FP16),
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
-            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
-            # output_model.model_status = ModelStatus.FAILED
-        else:
-            bin_file = outputs.get("bin")
-            xml_file = outputs.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
-                output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
-                output_model.set_data("openvino.xml", f.read())
-            output_model.precision = [ModelPrecision.FP32]
-            output_model.optimization_methods = self._optimization_methods
-            output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+        if xml_file is None or bin_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
+        output_model.precision = self._precision
+        output_model.optimization_methods = self._optimization_methods
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
 
     def _init_recipe(self):
@@ -187,7 +200,12 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info(f"train type = {self._train_type}")
 
         if self._train_type in RECIPE_TRAIN_TYPE:
-            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
+            if self._train_type == TrainType.INCREMENTAL and self._hyperparams.learning_parameters.enable_supcon:
+                recipe = os.path.join(recipe_root, "supcon.py")
+                if "supcon" not in self._model_dir:
+                    self._model_dir = os.path.join(self._model_dir, "supcon")
+            else:
+                recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
         else:
             raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
 
@@ -207,13 +225,18 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         if self._recipe_cfg.get("evaluation", None):
             self.metric = self._recipe_cfg.evaluation.metric
 
+        if self._recipe_cfg.get("override_configs", None):
+            self.override_configs.update(self._recipe_cfg.override_configs)
+
         if not self.freeze:
             remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
         logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):
         module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
-        if self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
+        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "SegExporter":
+            stage_module = "SemiSLSegExporter"
+        elif self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
             stage_module = module_prefix[self._train_type] + stage_module
 
         return stage_module

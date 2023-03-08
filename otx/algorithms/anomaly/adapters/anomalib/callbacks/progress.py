@@ -83,13 +83,8 @@ class ProgressCallback(TQDMProgressBar):
         if self.progress_and_hpo_callback is not None:
             score = None
             metric = getattr(self.progress_and_hpo_callback, "metric", None)
-            print(f"[DEBUG-HPO] logged_metrics = {trainer.logged_metrics}")
             if metric in trainer.logged_metrics:
                 score = float(trainer.logged_metrics[metric])
-                if score < 1.0:
-                    score = score + int(trainer.global_step)
-                else:
-                    score = -(score + int(trainer.global_step))
 
             # Always assumes that hpo validation step is called during training.
             self.progress_and_hpo_callback(int(self._get_progress("train")), score)  # pylint: disable=not-callable

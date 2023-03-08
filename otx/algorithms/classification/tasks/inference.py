@@ -98,15 +98,15 @@ class ClassificationInferenceTask(
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
         if self._multilabel:
-            logger.info("Classiification mode: multilabel")
+            logger.info("Classification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
-            logger.info("Classiification mode: hierarchical")
+            logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
-        else:
-            logger.info("Classiification mode: multiclass")
+        if not self._multilabel and not self._hierarchical:
+            logger.info("Classification mode: multiclass")
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             self._selfsl = True
@@ -143,10 +143,16 @@ class ClassificationInferenceTask(
         )
 
         update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
+            process_saliency_maps = inference_parameters.process_saliency_maps
+            explain_predicted_classes = inference_parameters.explain_predicted_classes
 
-        self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback)
+        self._add_predictions_to_dataset(
+            prediction_results, dataset, update_progress_callback, process_saliency_maps, explain_predicted_classes
+        )
         return dataset
 
     def explain(
@@ -167,12 +173,26 @@ class ClassificationInferenceTask(
             explainer=explain_parameters.explainer if explain_parameters else None,
         )
         logger.debug(f"result of run_task {stage_module} module = {results}")
+        predictions = results["outputs"]["eval_predictions"]
         saliency_maps = results["outputs"]["saliency_maps"]
+
         update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
         if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress  # type: ignore
+            process_saliency_maps = explain_parameters.process_saliency_maps
+            explain_predicted_classes = explain_parameters.explain_predicted_classes
 
-        self._add_saliency_maps_to_dataset(saliency_maps, dataset, update_progress_callback)
+        self._add_explanations_to_dataset(
+            predictions,
+            saliency_maps,
+            dataset,
+            update_progress_callback,
+            process_saliency_maps,
+            explain_predicted_classes,
+        )
+        logger.info("Explain completed")
         return dataset
 
     @check_input_parameters_type()
@@ -195,7 +215,13 @@ class ClassificationInferenceTask(
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity):
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = True,
+    ):
         """Export function of OTX Classification Task."""
 
         logger.info("Exporting the model")
@@ -205,78 +231,97 @@ class ClassificationInferenceTask(
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = "ClsExporter"
-        results = self._run_task(stage_module, mode="train", export=True)
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            export=True,
+            enable_fp16=(precision == ModelPrecision.FP16),
+            dump_features=dump_features,
+        )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
-            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
-        else:
-            bin_file = outputs.get("bin")
-            xml_file = outputs.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
-                output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
-                output_model.set_data("openvino.xml", f.read())
-        output_model.precision = [ModelPrecision.FP32]
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+        if xml_file is None or bin_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
+        output_model.precision = self._precision
         output_model.set_data(
             "label_schema.json",
             label_schema_to_bytes(self._task_environment.label_schema),
         )
         logger.info("Exporting completed")
 
+    # pylint: disable=too-many-locals
+    def _get_item_labels(self, prediction_item, pos_thr):
+        item_labels = []
+
+        if self._multilabel:
+            if max(prediction_item) < pos_thr:
+                logger.info("Confidence is smaller than pos_thr, empty_label will be appended to item_labels.")
+                item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
+            else:
+                for cls_idx, pred_item in enumerate(prediction_item):
+                    if pred_item > pos_thr:
+                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
+                        item_labels.append(cls_label)
+
+        elif self._hierarchical:
+            for head_idx in range(self._hierarchical_info["num_multiclass_heads"]):
+                logits_begin, logits_end = self._hierarchical_info["head_idx_to_logits_range"][head_idx]
+                head_logits = prediction_item[logits_begin:logits_end]
+                head_pred = np.argmax(head_logits)  # Assume logits already passed softmax
+                label_str = self._hierarchical_info["all_groups"][head_idx][head_pred]
+                otx_label = next(x for x in self._labels if x.name == label_str)
+                item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
+
+            if self._hierarchical_info["num_multilabel_classes"]:
+                head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"] :]
+                for logit_idx, logit in enumerate(head_logits):
+                    if logit > pos_thr:  # Assume logits already passed sigmoid
+                        label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
+                        label_str = self._hierarchical_info["all_groups"][label_str_idx][0]
+                        otx_label = next(x for x in self._labels if x.name == label_str)
+                        item_labels.append(ScoredLabel(label=otx_label, probability=float(logit)))
+            item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
+            if not item_labels:
+                logger.info("item_labels is empty.")
+                item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
+
+        else:
+            label_idx = prediction_item.argmax()
+            cls_label = ScoredLabel(
+                self._labels[label_idx],
+                probability=float(prediction_item[label_idx]),
+            )
+            item_labels.append(cls_label)
+        return item_labels
+
     # pylint: disable=too-many-branches, too-many-locals
-    def _add_predictions_to_dataset(self, prediction_results, dataset, update_progress_callback):
+    def _add_predictions_to_dataset(
+        self,
+        prediction_results,
+        dataset,
+        update_progress_callback,
+        process_saliency_maps=False,
+        explain_predicted_classes=True,
+    ):
         """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
 
         dataset_size = len(dataset)
         pos_thr = 0.5
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
-            item_labels = []
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
                 logger.info("Nan in prediction_item.")
 
-            if self._multilabel:
-                if max(prediction_item) < pos_thr:
-                    logger.info("Confidence is smaller than pos_thr, empty_label will be appended to item_labels.")
-                    item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
-                else:
-                    for cls_idx, pred_item in enumerate(prediction_item):
-                        if pred_item > pos_thr:
-                            cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
-                            item_labels.append(cls_label)
-
-            elif self._hierarchical:
-                for head_idx in range(self._hierarchical_info["num_multiclass_heads"]):
-                    logits_begin, logits_end = self._hierarchical_info["head_idx_to_logits_range"][head_idx]
-                    head_logits = prediction_item[logits_begin:logits_end]
-                    head_pred = np.argmax(head_logits)  # Assume logits already passed softmax
-                    label_str = self._hierarchical_info["all_groups"][head_idx][head_pred]
-                    otx_label = next(x for x in self._labels if x.name == label_str)
-                    item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
-
-                if self._hierarchical_info["num_multilabel_classes"]:
-                    head_logits = prediction_item[self._hierarchical_info["num_single_label_classes"] :]
-                    for logit_idx, logit in enumerate(head_logits):
-                        if logit > pos_thr:  # Assume logits already passed sigmoid
-                            label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
-                            label_str = self._hierarchical_info["all_groups"][label_str_idx][0]
-                            otx_label = next(x for x in self._labels if x.name == label_str)
-                            item_labels.append(ScoredLabel(label=otx_label, probability=float(logit)))
-                item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
-                if not item_labels:
-                    logger.info("item_labels is empty.")
-                    item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
-
-            else:
-                label_idx = prediction_item.argmax()
-                cls_label = ScoredLabel(
-                    self._labels[label_idx],
-                    probability=float(prediction_item[label_idx]),
-                )
-                item_labels.append(cls_label)
+            item_labels = self._get_item_labels(prediction_item, pos_thr)
 
             dataset_item.append_labels(item_labels)
 
@@ -300,20 +345,33 @@ class ClassificationInferenceTask(
                     saliency_map=saliency_map,
                     model=self._task_environment.model,
                     labels=self._labels,
-                    task="cls",
+                    predicted_scored_labels=item_labels,
+                    explain_predicted_classes=explain_predicted_classes,
+                    process_saliency_maps=process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100))
 
-    def _add_saliency_maps_to_dataset(self, saliency_maps, dataset, update_progress_callback):
+    def _add_explanations_to_dataset(
+        self,
+        predictions,
+        saliency_maps,
+        dataset,
+        update_progress_callback,
+        process_saliency_maps,
+        explain_predicted_classes,
+    ):
         """Loop over dataset again and assign saliency maps."""
         dataset_size = len(dataset)
-        for i, (dataset_item, saliency_map) in enumerate(zip(dataset, saliency_maps)):
+        for i, (dataset_item, prediction_item, saliency_map) in enumerate(zip(dataset, predictions, saliency_maps)):
+            item_labels = self._get_item_labels(prediction_item, pos_thr=0.5)
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
                 model=self._task_environment.model,
                 labels=self._labels,
-                task="cls",
+                predicted_scored_labels=item_labels,
+                explain_predicted_classes=explain_predicted_classes,
+                process_saliency_maps=process_saliency_maps,
             )
             update_progress_callback(int(i / dataset_size * 100))
 
@@ -328,14 +386,14 @@ class ClassificationInferenceTask(
                 ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
             )
 
-        if params.enable_early_stopping:
-            early_stop = ConfigDict(
-                start=int(params.early_stop_start),
-                patience=int(params.early_stop_patience),
-                iteration_patience=int(params.early_stop_iteration_patience),
-            )
-        else:
-            early_stop = False
+        early_stop = False
+        if self._recipe_cfg is not None:
+            if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
+                early_stop = ConfigDict(
+                    start=int(params.early_stop_start),
+                    patience=int(params.early_stop_patience),
+                    iteration_patience=int(params.early_stop_iteration_patience),
+                )
 
         if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
             runner = ConfigDict(max_iters=int(params.num_iters))
@@ -399,13 +457,13 @@ class ClassificationInferenceTask(
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = self._train_type.name
 
-        options_for_patch_datasets = {"type": "MPAClsDataset", "empty_label": self._empty_label}
+        options_for_patch_datasets = {"type": "OTXClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
         if self._multilabel:
-            options_for_patch_datasets["type"] = "MPAMultilabelClsDataset"
+            options_for_patch_datasets["type"] = "OTXMultilabelClsDataset"
             options_for_patch_evaluation["task"] = "multilabel"
         elif self._hierarchical:
-            options_for_patch_datasets["type"] = "MPAHierarchicalClsDataset"
+            options_for_patch_datasets["type"] = "OTXHierarchicalClsDataset"
             options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
             options_for_patch_evaluation["task"] = "hierarchical"
         elif self._selfsl:

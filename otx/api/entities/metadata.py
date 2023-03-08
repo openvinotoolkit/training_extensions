@@ -108,7 +108,7 @@ class MetadataItemEntity:
 
     def __repr__(self):
         """Prints the model and data of the MetadataItemEntity."""
-        return f"MetadataItemEntity(model={self.model}, data={self.data})"
+        return f"MetadataItemEntity(model={self.model})"
 
     def __eq__(self, other):
         """Returns true if the model and the data match the other MetadataItemEntity."""
