@@ -42,30 +42,13 @@ args = {
     ],
 }
 
-args_semisl = {
-    "--train-data-roots": "data/imagenet_dataset_class_incremental",
-    "--val-data-roots": "data/imagenet_dataset_class_incremental",
-    "--test-data-roots": "data/imagenet_dataset_class_incremental",
-    "--unlabeled-data-roots": "data/imagenet_dataset_class_incremental",
-    "--input": "data/imagenet_dataset/label_0",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "5",
-        "--learning_parameters.batch_size",
-        "4",
-        "--algo_backend.train_type",
-        "SEMISUPERVISED",
-    ],
-}
-
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
     "--train-data-roots": "tests/assets/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
-        "5",
+        "1",
         "--learning_parameters.batch_size",
         "4",
         "--algo_backend.train_type",
@@ -204,10 +187,32 @@ class TestMultiClassClassificationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
+        args_semisl = copy.deepcopy(args)
+        args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
+
+    @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_selfsl"
+        args_selfsl_multigpu = copy.deepcopy(args_selfsl)
+        args_selfsl_multigpu["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
 
 
 # Multi-label training w/ 'car', 'tree', 'bug' classes
