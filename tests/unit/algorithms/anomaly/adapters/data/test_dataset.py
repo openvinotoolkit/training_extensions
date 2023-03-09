@@ -31,9 +31,13 @@ def test_dataloaders(task_type, stage):
         }
     )
     if stage in ("fit", "validate"):
-        dataset_adapter = AnomalyDatasetAdapter(task_type=task_type, train_data_roots="tests/assets/anomaly/shapes")
+        dataset_adapter = AnomalyDatasetAdapter(
+            task_type=task_type, train_data_roots="tests/assets/anomaly/shapes_splitted"
+        )
     else:
-        dataset_adapter = AnomalyDatasetAdapter(task_type=task_type, test_data_roots="tests/assets/anomaly/shapes")
+        dataset_adapter = AnomalyDatasetAdapter(
+            task_type=task_type, test_data_roots="tests/assets/anomaly/shapes_splitted"
+        )
     dataset = dataset_adapter.get_otx_dataset()
     datamodule = OTXAnomalyDataModule(config=config, dataset=dataset, task_type=task_type)
 
