@@ -30,7 +30,7 @@ from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
 
 from otx.algorithms.action.adapters.mmaction import (
-    export_model,
+    Exporter,
     patch_config,
     set_data_classes,
 )
@@ -77,6 +77,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         super().__init__(ActionConfig, task_environment, **kwargs)
+        self.deploy_cfg = None
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -114,6 +115,15 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         else:
             raise Exception("Model initialization is failed")
         return dataset
+
+    def _initialize_post_hook(self, options=None):
+        """Procedure after inialization."""
+
+        if options is None:
+            return
+
+        if "deploy_cfg" in options:
+            self.deploy_cfg = options["deploy_cfg"]
 
     def _infer_model(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
@@ -321,6 +331,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     ):
         """Export function of OTX Action Task."""
         # TODO: add dumping saliency maps and representation vectors according to dump_features flag
+        dump_features = False
         if not dump_features:
             logger.warning(
                 "Ommitting feature dumping is not implemented."
@@ -333,7 +344,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
-        self._init_task()
+        self._init_task(export=True, dump_features=dump_features)
 
         self._precision[0] = precision
         half_precision = precision == ModelPrecision.FP16
@@ -342,13 +353,14 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             from torch.jit._trace import TracerWarning
 
             warnings.filterwarnings("ignore", category=TracerWarning)
-            export_model(
-                self._model,
+            exporter = Exporter(
                 self._recipe_cfg,
-                onnx_model_path=f"{self._output_path}/openvino.onnx",
-                output_dir_path=f"{self._output_path}",
-                half_precision=half_precision,
+                self._model.state_dict(),
+                self.deploy_cfg,
+                f"{self._output_path}/openvino",
+                half_precision,
             )
+            exporter.export()
             bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
             xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
             with open(os.path.join(self._output_path, bin_file), "rb") as f:
