@@ -21,8 +21,7 @@ Guide
   :hidden:
   :caption: Explanation
 
-  explanation/algorithms/index
-  explanation/additional_features/index
+  explanation/index
 
 
 .. toctree::
