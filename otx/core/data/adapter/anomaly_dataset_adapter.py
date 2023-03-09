@@ -84,7 +84,7 @@ class AnomalyDatasetAdapter(BaseDatasetAdapter):
         return shapes
 
     def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Anomaly segmentation."""
+        """Convert DatumaroDataset to DatasetEntity for Anomaly tasks."""
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
 
