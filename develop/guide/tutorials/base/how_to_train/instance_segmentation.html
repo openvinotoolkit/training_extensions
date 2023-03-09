@@ -586,8 +586,11 @@ OpenVINO™ Training Extensions workspace first.</p>
 <p>The command above also creates an <code class="docutils literal notranslate"><span class="pre">otx-workspace-INSTANCE_SEGMENTATION</span></code>, just like running build. This also updates <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> with data-specific commands.</p>
 <p>For more information, see <a class="reference internal" href="../../../get_started/quick_start_guide/cli_commands.html"><span class="doc">quick start guide</span></a> or <a class="reference internal" href="detection.html#detection-workspace"><span class="std std-ref">detection example</span></a>.</p>
 </div>
-<p>3. Next, we need to update
-train/validation set configuration in <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Note, that we can’t run CLI commands for instance segmentation via model name, since the same models are utilized for different algorithm and the behavior can be unpredictable.
+Please, use the template path or template ID instead.</p>
+</div>
 <p>To simplify the command line functions calling, we may create a <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code> file with annotations info and pass it as a <code class="docutils literal notranslate"><span class="pre">--data</span></code> parameter.
 The content of the <code class="docutils literal notranslate"><span class="pre">otx-workspace-INSTANCE_SEGMENTATION/data.yaml</span></code> for dataset should have absolute paths and will be similar to that:</p>
 <div class="admonition note">
