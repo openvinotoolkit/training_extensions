@@ -1057,29 +1057,6 @@ fpn_idx (int, optional): The layer index to be processed if the model is a FPN.<
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">DetSaliencyMapHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook" title="Permalink to this definition">#</a></dt>
-<dd><p>Saliency map hook for object detection models.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook.func">
-<span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls_scores_provided</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook.func" title="Permalink to this definition">#</a></dt>
-<dd><p>Generate the saliency map from raw classification head output, then normalizing to (0, 255).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – Feature maps from backbone/FPN or classification scores from cls_head</p></li>
-<li><p><strong>cls_scores_provided</strong> – If True - use ‘x’ as is, otherwise forward ‘x’ through the classification head</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.hooks.recording_forward_hooks.</span></span><span class="sig-name descname"><span class="pre">EigenCamHook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.EigenCamHook" title="Permalink to this definition">#</a></dt>
 <dd><dl class="py method">
@@ -2032,26 +2009,6 @@ efficient_mode (bool): Flag about using efficient mode sampler</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        BaseRecordingForwardHook.records
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     DetSaliencyMapHook
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.hooks.recording_forward_hooks.DetSaliencyMapHook.func">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       DetSaliencyMapHook.func()
       </span>
      </code>
     </a>
