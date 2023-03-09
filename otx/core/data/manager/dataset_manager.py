@@ -135,11 +135,12 @@ class DatasetManager:
         will be deprecated soon.
         """
 
-        mvtec_format = sorted(["ground_truth", "train", "test"])
+        mvtec_format = sorted(["ground_truth", "train", "test", "val"])
         folder_list = []
         for sub_folder in os.listdir(path):
             sub_folder_path = os.path.join(path, sub_folder)
             # only use the folder name.
             if os.path.isdir(sub_folder_path):
                 folder_list.append(sub_folder)
-        return sorted(folder_list) == mvtec_format
+        # folder should contain at least ground_truth, train and test, but may contain other
+        return set(folder_list).issubset(set(mvtec_format))
