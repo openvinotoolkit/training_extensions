@@ -31,9 +31,8 @@ from tests.test_suite.run_test_command import (
 )
 
 args = {
-    "--train-data-roots": "tests/assets/anomaly/shapes/train",
-    "--val-data-roots": "tests/assets/anomaly/shapes/test",
-    "--test-data-roots": "tests/assets/anomaly/shapes/test",
+    "--train-data-roots": "tests/assets/anomaly/shapes",
+    "--test-data-roots": "tests/assets/anomaly/shapes",
     "--input": "tests/assets/anomaly/shapes/test/hexagon",
     "train_params": [],
 }

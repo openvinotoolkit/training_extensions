@@ -31,9 +31,8 @@ from tests.test_suite.run_test_command import (
 )
 
 args = {
-    "--train-data-roots": "tests/assets/anomaly/shapes/train",
-    "--val-data-roots": "tests/assets/anomaly/shapes/test",
-    "--test-data-roots": "tests/assets/anomaly/shapes/test",
+    "--train-data-roots": "tests/assets/anomaly/shapes",
+    "--test-data-roots": "tests/assets/anomaly/shapes",
     "--input": "tests/assets/anomaly/shapes/test/hexagon",
     "train_params": [],
 }
@@ -80,5 +79,4 @@ class TestToolsAnomalySegmentation:
     def test_nncf_optimize(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
-
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)

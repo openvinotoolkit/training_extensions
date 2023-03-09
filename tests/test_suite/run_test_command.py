@@ -464,8 +464,6 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         template.model_template_path,
         "--train-data-roots",
         f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-data-roots",
-        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--save-model-to",
@@ -473,6 +471,8 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json",
     ]
+    if "--val-data-roots" in args:
+        command_line.extend(["--val-data-roots", f'{os.path.join(otx_dir, args["--val-data-roots"])}'])
     command_line.extend(["--work-dir", f"{template_work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
