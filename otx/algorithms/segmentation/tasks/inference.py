@@ -93,7 +93,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._label_dictionary = {}  # type: Dict
 
         super().__init__(SegmentationConfig, task_environment, **kwargs)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
+        self._label_dictionary = dict(enumerate(sorted(self._labels), 1))
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
