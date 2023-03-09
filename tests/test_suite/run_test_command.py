@@ -866,8 +866,8 @@ def otx_eval_compare(
 
 
 def otx_eval_e2e_train_time(train_time_criteria, e2e_train_time, template, threshold=0.10):
-    """Measure train+val time and comapre with test criteria. 
-    
+    """Measure train+val time and comapre with test criteria.
+
     Test criteria was set by previous measurement.
     """
     e2e_train_time_criteria = train_time_criteria[template.name]
@@ -879,8 +879,8 @@ def otx_eval_e2e_train_time(train_time_criteria, e2e_train_time, template, thres
 
 
 def otx_eval_e2e_eval_time(eval_time_criteria, e2e_eval_time, template, threshold=0.10):
-    """Measure evaluation time and comapre with test criteria. 
-    
+    """Measure evaluation time and comapre with test criteria.
+
     Test criteria was set by previous measurement.
     """
     e2e_eval_time_criteria = eval_time_criteria[template.name]
