@@ -560,27 +560,15 @@ It is adapted from AVADataset of mmaction, but it supports other dataset such as
 <dd><p>Implementation of <cite>Fast R-CNN</cite> for Action Detection.</p>
 <p>Add forward_infer function for inference without pre-proposals</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.add_detector">
-<span class="sig-name descname"><span class="pre">add_detector</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.add_detector" title="Permalink to this definition">#</a></dt>
-<dd><p>Add Person Detector for inference.</p>
-<p>Action classification backbone + Fast RCNN structure use pre-proposals instead outputs from person detector
-This saves training and evaluation time. However, this method doesn’t support inference for the dataset
-without pre-proposals. Therefore, when the model infers to dataset without pre-proposal, person detector
-should be added to action detector.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.forward_infer">
-<span class="sig-name descname"><span class="pre">forward_infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.forward_infer" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward_infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.forward_infer" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward function for inference without pre-proposal.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.patch_pools">
-<span class="sig-name descname"><span class="pre">patch_pools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.patch_pools" title="Permalink to this definition">#</a></dt>
-<dd><p>Patch pooling functions for ONNX export.</p>
-<p>AVAFastRCNN’s bbox head has pooling funcitons, which contain dynamic shaping.
-This funciton changes those pooling functions from dynamic shaping to static shaping.</p>
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.patch_for_export">
+<span class="sig-name descname"><span class="pre">patch_for_export</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.patch_for_export" title="Permalink to this definition">#</a></dt>
+<dd><p>Patch mmdetection’s FastRCNN for exporting to onnx.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -614,16 +602,22 @@ This funciton changes those pooling functions from dynamic shaping to static sha
 </dd></dl>
 
 <span class="target" id="module-otx.algorithms.action.adapters.mmaction.utils"></span><p>OTX Adapters - mmaction.utils.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.Exporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">Exporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recipe_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OrderedDict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deploy_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">half_precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.Exporter" title="Permalink to this definition">#</a></dt>
+<dd><p>Export class for action recognition model using mmdeploy framework.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.Exporter.export">
+<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.Exporter.export" title="Permalink to this definition">#</a></dt>
+<dd><p>Export action model using mmdeploy apis.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.det_eval">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">det_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_infos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.det_eval" title="Permalink to this definition">#</a></dt>
 <dd><p>Evaluation method for AVA Dataset.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.export_model">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">export_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseModule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onnx_model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">half_precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.export_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Export PyTorch model into OpenVINO model.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -781,15 +775,6 @@ This funciton changes those pooling functions from dynamic shaping to static sha
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.add_detector">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       AVAFastRCNN.add_detector()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.forward_infer">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -799,10 +784,10 @@ This funciton changes those pooling functions from dynamic shaping to static sha
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.patch_pools">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.patch_for_export">
      <code class="docutils literal notranslate">
       <span class="pre">
-       AVAFastRCNN.patch_pools()
+       AVAFastRCNN.patch_for_export()
       </span>
      </code>
     </a>
@@ -857,19 +842,30 @@ This funciton changes those pooling functions from dynamic shaping to static sha
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.Exporter">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Exporter
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.Exporter.export">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Exporter.export()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.det_eval">
    <code class="docutils literal notranslate">
     <span class="pre">
      det_eval()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.export_model">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     export_model()
     </span>
    </code>
   </a>
