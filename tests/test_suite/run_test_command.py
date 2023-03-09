@@ -268,7 +268,7 @@ def otx_eval_openvino_testing(
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in trained_performance.keys():
-        if template.name in criteria.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(exported_performance[k], 3)
             assert (
                 exported_performance[k] >= modified_criteria
@@ -396,7 +396,7 @@ def otx_eval_deployment_testing(
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in exported_performance.keys():
-        if template.name in criteria.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(deployed_performance[k], 3)
             assert (
                 exported_performance[k] >= modified_criteria
@@ -489,7 +489,7 @@ def pot_eval_testing(template, root, otx_dir, args, criteria=None, reg_threshold
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in pot_performance.keys():
-        if template.name in criteria.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(pot_performance[k], 3)
             assert (
                 pot_performance[k] >= modified_criteria
@@ -580,7 +580,7 @@ def nncf_eval_testing(
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
     for k in trained_performance.keys():
-        if template.name in criteria.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(evaluated_performance[k], 3)
             assert (
                 evaluated_performance[k] >= modified_criteria
@@ -866,6 +866,10 @@ def otx_eval_compare(
 
 
 def otx_eval_e2e_train_time(train_time_criteria, e2e_train_time, template, threshold=0.10):
+    """Measure train+val time and comapre with test criteria. 
+    
+    Test criteria was set by previous measurement.
+    """
     e2e_train_time_criteria = train_time_criteria[template.name]
     modified_train_criteria = e2e_train_time_criteria - (e2e_train_time_criteria * threshold)
 
@@ -875,6 +879,10 @@ def otx_eval_e2e_train_time(train_time_criteria, e2e_train_time, template, thres
 
 
 def otx_eval_e2e_eval_time(eval_time_criteria, e2e_eval_time, template, threshold=0.10):
+    """Measure evaluation time and comapre with test criteria. 
+    
+    Test criteria was set by previous measurement.
+    """
     e2e_eval_time_criteria = eval_time_criteria[template.name]
     modified_eval_criteria = e2e_eval_time_criteria - (e2e_eval_time_criteria * threshold)
 

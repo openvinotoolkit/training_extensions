@@ -36,7 +36,7 @@ from tests.test_suite.run_test_command import (
 
 # Configurations for regression test.
 TASK_TYPE = "anomaly_classification"
-SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 1)
+SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 15)
 
 otx_dir = os.getcwd()
 templates = Registry("otx/algorithms/anomaly").filter(task_type=TASK_TYPE.upper()).templates
@@ -46,7 +46,6 @@ result_dict = get_result_dict(TASK_TYPE)
 result_dir = f"/tmp/regression_test_results/{TASK_TYPE}"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 
-# Detection
 anomaly_classification_regression_config = load_regression_configuration(otx_dir, TASK_TYPE)
 anomaly_classification_data_args = anomaly_classification_regression_config["data_path"]
 
@@ -73,7 +72,6 @@ class TestRegressionAnomalyClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
-    # ANOMALY_DATASET_CATEGORIES : all categories of MVTec dataset.
     def test_otx_train(self, template, tmp_dir_path, category):
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
@@ -102,9 +100,11 @@ class TestRegressionAnomalyClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_train_kpi_test(self, template, category):
+        """KPI tests: measure the train+val time and evaluation time and compare with criteria."""
         results = result_dict[TASK_TYPE]["train"][category]
         performance = get_template_performance(results, template)
 
+        # Compare train+val time with the KPI criteria.
         otx_eval_e2e_train_time(
             train_time_criteria=anomaly_classification_regression_config["kpi_e2e_train_time_criteria"]["train"][
                 category
@@ -113,6 +113,7 @@ class TestRegressionAnomalyClassification:
             template=template,
         )
 
+        # Compare evaluation time with the KPI criteria.
         otx_eval_e2e_eval_time(
             eval_time_criteria=anomaly_classification_regression_config["kpi_e2e_eval_time_criteria"]["train"][
                 category
