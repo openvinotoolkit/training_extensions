@@ -46,11 +46,13 @@ def get_shapes_dataset(task_type: TaskType, stage: str = "fit") -> DatasetEntity
     if stage == "fit":
         dataset_adapter = AnomalyDatasetAdapter(
             task_type=task_type,
-            train_data_roots="tests/assets/anomaly/shapes",
-            val_data_roots="tests/assets/anomaly/shapes",
+            train_data_roots="tests/assets/anomaly/shapes_splitted",
+            val_data_roots="tests/assets/anomaly/shapes_splitted",
         )
     elif stage == "test":
-        dataset_adapter = AnomalyDatasetAdapter(task_type=task_type, test_data_roots="tests/assets/anomaly/shapes")
+        dataset_adapter = AnomalyDatasetAdapter(
+            task_type=task_type, test_data_roots="tests/assets/anomaly/shapes_splitted"
+        )
     dataset = dataset_adapter.get_otx_dataset()
 
     return dataset
