@@ -49,7 +49,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
 
                         if ann.label not in used_labels:
                             used_labels.append(ann.label)
-                    
+
                     if len(shapes) > 0 or subset == Subset.UNLABELED or len(datumaro_item.annotations) == 0:
                         dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                         dataset_items.append(dataset_item)

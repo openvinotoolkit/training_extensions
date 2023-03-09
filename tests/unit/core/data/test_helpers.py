@@ -109,6 +109,7 @@ def generate_datumaro_dataset_item(
 
     return dm.DatasetItem(id=item_id, subset=subset, image=np.ones(image_shape), annotations=[ann_task_dict[task]])
 
+
 def generate_datumaro_dataset(
     subsets: List[str],
     task: str,

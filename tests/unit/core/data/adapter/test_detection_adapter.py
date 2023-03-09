@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
-from typing import Optional
 
-from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.annotation import NullAnnotationSceneEntity
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
@@ -46,9 +45,9 @@ class TestOTXDetectionDatasetAdapter:
         det_train_label_schema = det_train_dataset_adapter.get_label_schema()
         assert isinstance(det_train_dataset, DatasetEntity)
         assert isinstance(det_train_label_schema, LabelSchemaEntity)
-        
-        # In the test data, there is a empty_label image. 
-        # So, has_empty_label should be True 
+
+        # In the test data, there is a empty_label image.
+        # So, has_empty_label should be True
         has_empty_label = False
         for train_data in det_train_dataset:
             if isinstance(train_data.annotation_scene, NullAnnotationSceneEntity):
@@ -63,7 +62,7 @@ class TestOTXDetectionDatasetAdapter:
         assert Subset.TESTING in det_test_dataset_adapter.dataset
         assert isinstance(det_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
         assert isinstance(det_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        
+
     @e2e_pytest_unit
     def test_instance_segmentation(self):
         task = "instance_segmentation"
@@ -88,9 +87,9 @@ class TestOTXDetectionDatasetAdapter:
         instance_seg_otx_train_label_schema = instance_seg_train_dataset_adapter.get_label_schema()
         assert isinstance(instance_seg_otx_train_data, DatasetEntity)
         assert isinstance(instance_seg_otx_train_label_schema, LabelSchemaEntity)
-        
-        # In the test data, there is a empty_label image. 
-        # So, has_empty_label should be True 
+
+        # In the test data, there is a empty_label image.
+        # So, has_empty_label should be True
         has_empty_label = False
         for train_data in instance_seg_otx_train_data:
             if isinstance(train_data.annotation_scene, NullAnnotationSceneEntity):
