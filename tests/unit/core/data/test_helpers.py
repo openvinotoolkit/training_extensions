@@ -86,6 +86,7 @@ def generate_datumaro_dataset_item(
     task: str,
     image_shape: np.array = np.array((5, 5, 3)),
     mask_shape: np.array = np.array((5, 5)),
+    empty_label: bool = False,
 ) -> dm.DatasetItem:
     """Generate Datumaro DatasetItem.
 
@@ -95,6 +96,7 @@ def generate_datumaro_dataset_item(
         task (str): task type, e.g. "classification"
         image_shape (np.array): the shape of image.
         image_shape (np.array): the shape of mask.
+        empty_label (bool): make dataset item with no annotation.
 
     Returns:
         dm.DatasetItem: Datumaro DatasetItem
@@ -106,7 +108,6 @@ def generate_datumaro_dataset_item(
     }
 
     return dm.DatasetItem(id=item_id, subset=subset, image=np.ones(image_shape), annotations=[ann_task_dict[task]])
-
 
 def generate_datumaro_dataset(
     subsets: List[str],
