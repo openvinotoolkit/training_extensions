@@ -130,10 +130,8 @@ if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER, mark
     from mmdeploy.utils import is_dynamic_shape
 
-    from otx.mpa.modules.hooks.recording_forward_hooks import (
-        DetSaliencyMapHook,
-        FeatureVectorHook,
-    )
+    from otx.mpa.modules.hooks.det_saliency_map_hook import DetSaliencyMapHook
+    from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
 
     @FUNCTION_REWRITER.register_rewriter(
         "otx.mpa.modules.models.detectors.custom_single_stage_detector.CustomSingleStageDetector.simple_test"
