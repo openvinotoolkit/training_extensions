@@ -199,63 +199,63 @@
     "mmcls.Res2Net": {
       "required": ["depth"],
       "options": {
-        "arch": [50, 101, 152]
+        "depth": [50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNeSt": {
       "required": ["depth"],
       "options": {
-        "arch": [50, 101, 152, 200, 269]
+        "depth": [50, 101, 152, 200, 269]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNet": {
       "required": ["depth"],
       "options": {
-        "arch": [18, 34, 50, 101, 152]
+        "depth": [18, 34, 50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNetV1c": {
       "required": ["depth"],
       "options": {
-        "arch": [18, 34, 50, 101, 152]
+        "depth": [18, 34, 50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNetV1d": {
       "required": ["depth"],
       "options": {
-        "arch": [18, 34, 50, 101, 152]
+        "depth": [18, 34, 50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNet_CIFAR": {
       "required": ["depth"],
       "options": {
-        "arch": [18, 34, 50, 101, 152]
+        "depth": [18, 34, 50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.ResNeXt": {
       "required": ["depth"],
       "options": {
-        "arch": [50, 101, 152]
+        "depth": [50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.SEResNet": {
       "required": ["depth"],
       "options": {
-        "arch": [50, 101, 152]
+        "depth": [50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
     "mmcls.SEResNeXt": {
       "required": ["depth"],
       "options": {
-        "arch": [50, 101, 152]
+        "depth": [50, 101, 152]
       },
       "available": ["CLASSIFICATION"]
     },
@@ -325,7 +325,7 @@
     "mmcls.VGG": {
       "required": ["depth"],
       "options": {
-        "arch": [11, 13, 16, 19]
+        "depth": [11, 13, 16, 19]
       },
       "available": ["CLASSIFICATION"]
     },

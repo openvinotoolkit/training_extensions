@@ -1,7 +1,7 @@
 Object Detection
 ================
 
-Object detection is a computer vision task where it's needed to locate objects, finding their bounding boxes coordinates together with defining class. 
+Object detection is a computer vision task where it's needed to locate objects, finding their bounding boxes coordinates together with defining class.
 The input is an image, and the output is a pair of coordinates for bouding box corners and a class number for each detected object.
 
 The common approach to building object detection architecture is to take a feature extractor (backbone), that can be inherited from the classification task.
@@ -22,15 +22,15 @@ For the supervised training we use the following algorithms components:
 
 - ``Additional training techniques``
     - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.
-      
+
       .. code-block::
 
         $ otx train {TEMPLATE} ... \
                     params \
                     --learning_parameters.enable_early_stopping=True
 
-    - `Anchor clustering for SSD <https://arxiv.org/abs/2211.17170>`_: This model highly relies on predefined anchor boxes hyperparameter that impacts the size of objects, which can be detected. So before training, we collect object statistics within dataset, cluster them and modify anchor boxes sizes to fit the most for objects the model is going to detect. 
-    
+    - `Anchor clustering for SSD <https://arxiv.org/abs/2211.17170>`_: This model highly relies on predefined anchor boxes hyperparameter that impacts the size of objects, which can be detected. So before training, we collect object statistics within dataset, cluster them and modify anchor boxes sizes to fit the most for objects the model is going to detect.
+
     - ``Backbone pretraining``: we pretrained MobileNetV2 backbone on large `ImageNet21k <https://github.com/Alibaba-MIIL/ImageNet21K>`_ dataset to improve feature extractor and learn better and faster.
 
 
@@ -38,9 +38,8 @@ For the supervised training we use the following algorithms components:
 Dataset Format
 **************
 
-At the current point we support `COCO <https://cocodataset.org/#format-data>`_, 
-`Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ and
-`YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_ dataset format.
+At the current point we support `COCO <https://cocodataset.org/#format-data>`_ and
+`Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ dataset formats.
 Learn more about the formats by following the links above. Here is an example of expected format for COCO dataset:
 
 .. code::
@@ -82,7 +81,7 @@ We support the following ready-to-use model templates:
 | `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  | ATSS    | 20.6                | 9.1             |
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
 
-`ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases. 
+`ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases.
 `SSD <https://arxiv.org/abs/1512.02325>`_ and `YOLOX <https://arxiv.org/abs/2107.08430>`_ are light models, that a perfect for the fastest inference on low-power hardware.
 YOLOX achieved the same accuracy as SSD, and even outperforms its inference on CPU 1.5 times, but requires 3 times more time for training due to `Mosaic augmentation <https://arxiv.org/pdf/2004.10934.pdf>`_, which is even more than for ATSS.
 So if you have resources for a long training, you can pick the YOLOX model.
@@ -132,14 +131,14 @@ Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improv
 
 - ``Additional training techniques``: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, Early stopping, LR conditioning.).
 
-Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` how to train semi supervised learning. 
+Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` how to train semi supervised learning.
 
-In the table below the mAP on toy data sample from `COCO <https://cocodataset.org/#home>`_ dataset using our pipeline is presented. 
+In the table below the mAP on toy data sample from `COCO <https://cocodataset.org/#home>`_ dataset using our pipeline is presented.
 
 We sample 400 images that contain one of [person, car, bus] for labeled train images. And 4000 images for unlabeled images. For validation 100 images are selected from val2017.
 
 +---------+--------------------------------------------+
-| Dataset |            Sampled COCO dataset            |   
+| Dataset |            Sampled COCO dataset            |
 +=========+=====================+======================+
 |         |          SL         |       Semi-SL        |
 +---------+---------------------+----------------------+

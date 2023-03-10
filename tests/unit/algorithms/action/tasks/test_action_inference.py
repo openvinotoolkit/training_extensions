@@ -103,14 +103,18 @@ class MockDataLoader:
         return self
 
 
-def mock_export_model(model, recipe_cfg, onnx_model_path, output_dir_path, half_precision):
-    """Mock function for export_model function."""
+class MockExporter:
+    """Mock class for Exporter."""
 
-    dummy_data = np.ndarray((1, 1, 1))
-    with open(os.path.join(output_dir_path, "dummpy.bin"), "wb") as f:
-        f.write(dummy_data)
-    with open(os.path.join(output_dir_path, "dummpy.xml"), "wb") as f:
-        f.write(dummy_data)
+    def __init__(self, recipe_cfg, weights, deploy_cfg, work_dir, half_precision):
+        self.work_dir = work_dir
+
+    def export(self):
+        dummy_data = np.ndarray((1, 1, 1))
+        with open(self.work_dir + ".bin", "wb") as f:
+            f.write(dummy_data)
+        with open(self.work_dir + ".xml", "wb") as f:
+            f.write(dummy_data)
 
 
 class TestActionInferenceTask:
@@ -256,6 +260,17 @@ class TestActionInferenceTask:
         self.det_task.evaluate(resultset)
         assert resultset.performance.score.value == 0.0
 
+    @e2e_pytest_unit
+    def test_initialize_post_hook(self) -> None:
+        """Test _initialize_post_hook funciton."""
+
+        options = None
+        assert self.cls_task._initialize_post_hook(options) is None
+
+        options = {"deploy_cfg": Config()}
+        self.cls_task._initialize_post_hook(options)
+        assert isinstance(self.cls_task.deploy_cfg, Config)
+
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
     def test_export(self, mocker, precision: ModelPrecision) -> None:
@@ -268,10 +283,13 @@ class TestActionInferenceTask:
         """
         _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)
         _model = ModelEntity(self.cls_dataset, _config)
-        self.cls_task._model = None
+        self.cls_task._model = nn.Module()
         self.cls_task._recipe_cfg = None
+        self.cls_task.deploy_cfg = Config(
+            dict(codebase_config=dict(type="mmdet", task="ObjectDetection"), backend_config=dict(type="openvino"))
+        )
         mocker.patch("otx.algorithms.action.tasks.inference.ActionInferenceTask._init_task", return_value=True)
-        mocker.patch("otx.algorithms.action.tasks.inference.export_model", side_effect=mock_export_model)
+        mocker.patch("otx.algorithms.action.tasks.inference.Exporter", side_effect=MockExporter)
         self.cls_task.export(ExportType.OPENVINO, _model, precision)
 
         assert _model.model_format == ModelFormat.OPENVINO

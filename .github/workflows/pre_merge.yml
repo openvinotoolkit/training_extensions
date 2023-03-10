@@ -25,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - name: Install dependencies
@@ -62,14 +62,69 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -Z true -U $HTTP_PROXY -f .tox/coverage.xml
-  Pre-Merge-Integration-Test:
+  Pre-Merge-Integration-Common-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
-    timeout-minutes: 360
+    timeout-minutes: 120
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
-        run: tox -e pre-merge -- tests/integration/cli
+        run: tox -e pre-merge -- tests/integration/cli/test_cli.py
+  Pre-Merge-Integration-Cls-Test:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Pre-Merge-Unit-Test
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Integration-testing
+        run: tox -e pre-merge-cls
+  Pre-Merge-Integration-Det-Test:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Pre-Merge-Unit-Test
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Integration-testing
+        run: tox -e pre-merge-det
+  Pre-Merge-Integration-Seg-Test:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Pre-Merge-Unit-Test
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Integration-testing
+        run: tox -e pre-merge-seg
+  Pre-Merge-Integration-Action-Test:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Pre-Merge-Unit-Test
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Integration-testing
+        run: tox -e pre-merge-action
+  Pre-Merge-Integration-Anomaly-Test:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Pre-Merge-Unit-Test
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Integration-testing
+        run: tox -e pre-merge-anomaly
