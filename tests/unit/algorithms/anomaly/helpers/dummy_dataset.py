@@ -43,16 +43,13 @@ def get_shapes_dataset(task_type: TaskType, stage: str = "fit") -> DatasetEntity
         one_each (bool): If this flag is true then it will sample one normal and one abnormal image for each split.
             The training split will have only one normal image. Defaults to False.
     """
-    if stage == "fit":
-        dataset_adapter = AnomalyDatasetAdapter(
-            task_type=task_type,
-            train_data_roots="tests/assets/anomaly/shapes_splitted",
-            val_data_roots="tests/assets/anomaly/shapes_splitted",
-        )
-    elif stage == "test":
-        dataset_adapter = AnomalyDatasetAdapter(
-            task_type=task_type, test_data_roots="tests/assets/anomaly/shapes_splitted"
-        )
+    dataset_adapter = AnomalyDatasetAdapter(
+        task_type=task_type,
+        train_data_roots="tests/assets/anomaly/shapes",
+        val_data_roots="tests/assets/anomaly/shapes",
+        test_data_roots="tests/assets/anomaly/shapes",
+    )
+
     dataset = dataset_adapter.get_otx_dataset()
 
     return dataset

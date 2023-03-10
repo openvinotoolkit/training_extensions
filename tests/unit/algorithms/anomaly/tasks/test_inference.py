@@ -40,7 +40,7 @@ class TestInferenceTask:
         assert output_model.get_data("weights.pth") is not None  # Should not raise an error
 
         # 3. Create new task environment and inference task and test inference
-        new_dataset = get_shapes_dataset(task_type, stage="fit")
+        new_dataset = get_shapes_dataset(task_type)
         gt_val_dataset = new_dataset.get_subset(Subset.VALIDATION)
         new_task_environment = create_task_environment(gt_val_dataset, task_type)
         # this loads the output model from the previous training task when creating the new InferenceTask

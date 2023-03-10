@@ -30,7 +30,7 @@ class TestEnvironment:
 def setup_task_environment(request):
     """Returns a task environment, a model and datset."""
     task_type = request.param
-    dataset: DatasetEntity = get_shapes_dataset(task_type, stage="fit")
+    dataset: DatasetEntity = get_shapes_dataset(task_type)
     task_environment = create_task_environment(dataset, task_type)
     output_model = ModelEntity(
         dataset,
