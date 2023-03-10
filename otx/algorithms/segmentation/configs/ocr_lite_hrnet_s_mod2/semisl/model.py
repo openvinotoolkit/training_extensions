@@ -18,6 +18,7 @@
 
 
 _base_ = [
+    "../../../../../recipes/stages/segmentation/semisl.py",
     "../../base/models/mean_teacher.py",
     "../model.py",
 ]

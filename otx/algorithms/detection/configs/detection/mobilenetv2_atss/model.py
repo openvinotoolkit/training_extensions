@@ -17,6 +17,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
+    "../../../../../recipes/stages/detection/incremental.py",
     "../../../../common/adapters/mmcv/configs/backbones/mobilenet_v2_w1.yaml",
     "../../base/models/detector.py",
 ]

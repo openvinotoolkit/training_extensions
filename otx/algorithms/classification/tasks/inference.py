@@ -62,7 +62,6 @@ from otx.api.utils.argument_checks import (
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
-from otx.mpa import MPAConstants
 from otx.mpa.utils.config_utils import MPAConfig
 from otx.mpa.utils.logger import get_logger
 
@@ -78,9 +77,8 @@ RECIPE_TRAIN_TYPE = {
 }
 
 
-class ClassificationInferenceTask(
-    BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload
-):  # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
+class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
     """Inference Task Implementation of OTX Classification."""
 
     @check_input_parameters_type()
@@ -440,32 +438,9 @@ class ClassificationInferenceTask(
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 
-        if self._multilabel:
-            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification/multilabel")
-        else:
-            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
-
         logger.info(f"train type = {self._train_type}")
 
-        if self._train_type in RECIPE_TRAIN_TYPE:
-            # TODO: this condition will be simplified after adding support for multlabel and hierarchical to SupCon.
-            if (
-                self._train_type == TrainType.INCREMENTAL
-                and not self._multilabel
-                and not self._hierarchical
-                and self._hyperparams.learning_parameters.enable_supcon
-                and not self._model_dir.endswith("supcon")
-            ):
-                recipe = os.path.join(recipe_root, "supcon.yaml")
-                self._model_dir = os.path.join(self._model_dir, "supcon")
-            else:
-                recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
-        else:
-            raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
-
-        logger.info(f"train type = {self._train_type} - loading {recipe}")
-
-        self._recipe_cfg = MPAConfig.fromfile(recipe)
+        self._recipe_cfg = self._init_model_cfg()
 
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
@@ -491,7 +466,6 @@ class ClassificationInferenceTask(
             **options_for_patch_datasets,
         )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)  # for OTX compatibility
-        logger.info(f"initialized recipe = {recipe}")
 
     # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
     # model.py contains heads/classifier only for INCREMENTAL setting

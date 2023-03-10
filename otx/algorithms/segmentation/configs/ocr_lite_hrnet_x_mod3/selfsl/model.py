@@ -17,6 +17,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
+    "../../../../../recipes/stages/segmentation/selfsl.py",
     "../model.py",
 ]
 

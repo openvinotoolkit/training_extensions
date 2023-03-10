@@ -78,9 +78,9 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             "confidence_threshold": self.confidence_threshold,
             "VERSION": 1,
         }
-        if self._model_cfg is not None and should_cluster_anchors(self._model_cfg):
+        if self._recipe_cfg is not None and should_cluster_anchors(self._recipe_cfg):
             modelinfo["anchors"] = {}
-            self._update_anchors(modelinfo["anchors"], self._model_cfg.model.bbox_head.anchor_generator)
+            self._update_anchors(modelinfo["anchors"], self._recipe_cfg.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
