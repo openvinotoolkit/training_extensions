@@ -263,7 +263,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
             if self.args.val_data_roots:
                 data_yaml["data"]["val"]["data-roots"] = self.args.val_data_roots
-            if "unlabeled_data_roots" in self.args and self.args.unlabeled_data_roots:
+            if hasattr(self.args, "unlabeled_data_roots") and self.args.unlabeled_data_roots:
                 data_yaml["data"]["unlabeled"]["data-roots"] = self.args.unlabeled_data_roots
         elif self.mode == "test":
             if self.args.test_data_roots:
