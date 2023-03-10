@@ -73,16 +73,6 @@
       "flickr_url": "",
       "coco_url": "",
       "date_captured": 0
-    },
-    {
-      "id": 7,
-      "width": 1280,
-      "height": 720,
-      "file_name": "Slide3.PNG",
-      "license": 0,
-      "flickr_url": "",
-      "coco_url": "",
-      "date_captured": 0
     }
   ],
   "annotations": [
