@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import json
 import os
 from typing import Optional
 
@@ -17,6 +18,11 @@ from otx.algorithms.classification.adapters.mmcls.utils.config_utils import (
 )
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
+    get_cls_deploy_config,
+    get_cls_inferencer_configuration,
+    get_cls_model_api_configuration,
+)
+from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -26,6 +32,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
+from otx.algorithms.common.utils import embed_ir_model_data
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -245,6 +252,13 @@ class ClassificationInferenceTask(
 
         bin_file = outputs.get("bin")
         xml_file = outputs.get("xml")
+
+        inference_config = get_cls_inferencer_configuration(self._task_environment.label_schema)
+        deploy_cfg = get_cls_deploy_config(self._task_environment.label_schema, inference_config)
+        ir_extra_data = get_cls_model_api_configuration(self._task_environment.label_schema, inference_config)
+        ir_extra_data[("otx_config",)] = json.dumps(deploy_cfg, ensure_ascii=False)
+        embed_ir_model_data(xml_file, ir_extra_data)
+
         if xml_file is None or bin_file is None:
             raise RuntimeError("invalid status of exporting. bin and xml should not be None")
         with open(bin_file, "rb") as f:
