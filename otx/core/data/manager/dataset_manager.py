@@ -59,6 +59,8 @@ class DatasetManager:
         # After, the upgrade of Datumaro, below codes will be changed.
         if DatasetManager.is_cvat_format(data_root):
             data_format = "multi-cvat"
+        # TODO: this check can be removed when Datumaro correctly detects mvtec,
+        # see https://github.com/openvinotoolkit/datumaro/pull/843
         elif DatasetManager.is_mvtec_format(data_root):
             data_format = "mvtec"
         else:
