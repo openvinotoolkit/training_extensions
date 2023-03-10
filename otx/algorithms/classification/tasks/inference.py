@@ -286,7 +286,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         elif self._hierarchical:
             for head_idx in range(self._hierarchical_info["num_multiclass_heads"]):
-                logits_begin, logits_end = self._hierarchical_info["head_idx_to_logits_range"][head_idx]
+                logits_begin, logits_end = self._hierarchical_info["head_idx_to_logits_range"][str(head_idx)]
                 head_logits = prediction_item[logits_begin:logits_end]
                 head_pred = np.argmax(head_logits)  # Assume logits already passed softmax
                 label_str = self._hierarchical_info["all_groups"][head_idx][head_pred]
