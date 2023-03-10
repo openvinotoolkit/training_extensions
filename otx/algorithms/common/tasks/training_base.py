@@ -137,14 +137,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # changes under MPA and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
         data_cfg = deepcopy(self._data_cfg)
-        # assert model_cfg is not None, "'model_cfg' is not initialized."
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
         recipe_cfg["model_classes"] = model_classes
-        # model_cfg["model_classes"] = model_classes
         if dataset is not None:
             train_data_cfg = Stage.get_data_cfg(data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes

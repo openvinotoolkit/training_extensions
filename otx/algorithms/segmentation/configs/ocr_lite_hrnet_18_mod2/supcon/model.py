@@ -18,8 +18,59 @@
 
 _base_ = [
     "../../../../../recipes/stages/segmentation/supcon.py",
-    "../selfsl/model.py",
+    "../../../../common/adapters/mmcv/configs/backbones/lite_hrnet_18.py",
 ]
+
+model = dict(
+    type="DetConB",
+    pretrained="https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
+        /models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth",
+    num_classes=256,
+    num_samples=16,
+    downsample=4,
+    input_transform="resize_concat",
+    in_index=[0, 1, 2, 3],
+    neck=dict(
+        type="SelfSLMLP",
+        in_channels=600,
+        hid_channels=256,
+        out_channels=128,
+        norm_cfg=dict(type="BN1d", requires_grad=True),
+        with_avg_pool=False,
+    ),
+    head=dict(
+        type="SelfSLMLP",
+        in_channels=128,
+        hid_channels=256,
+        out_channels=128,
+        norm_cfg=dict(type="BN1d", requires_grad=True),
+        with_avg_pool=False,
+    ),
+    loss_cfg=dict(type="DetConLoss", temperature=0.1),
+    decode_head=dict(
+        type="FCNHead",
+        in_channels=[40, 80, 160, 320],
+        in_index=[0, 1, 2, 3],
+        input_transform="multiple_select",
+        channels=40,
+        kernel_size=1,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=-1,
+        num_classes=2,
+        norm_cfg=dict(type="BN", requires_grad=True),
+        align_corners=False,
+        enable_aggregator=True,
+        enable_out_norm=False,
+        loss_decode=[
+            dict(
+                type="CrossEntropyLoss",
+                use_sigmoid=False,
+                loss_weight=1.0,
+            ),
+        ],
+    ),
+)
 
 model = dict(type="SupConDetConB")
 

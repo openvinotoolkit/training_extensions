@@ -18,8 +18,9 @@
 
 _base_ = [
     "../../../../../recipes/stages/segmentation/selfsl.py",
-    "../model.py",
+    "../../../../common/adapters/mmcv/configs/backbones/lite_hrnet_18.py",
 ]
+
 
 model = dict(
     type="DetConB",
@@ -47,6 +48,29 @@ model = dict(
         with_avg_pool=False,
     ),
     loss_cfg=dict(type="DetConLoss", temperature=0.1),
+    decode_head=dict(
+        type="FCNHead",
+        in_channels=[40, 80, 160, 320],
+        in_index=[0, 1, 2, 3],
+        input_transform="multiple_select",
+        channels=40,
+        kernel_size=1,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=-1,
+        num_classes=2,
+        norm_cfg=dict(type="BN", requires_grad=True),
+        align_corners=False,
+        enable_aggregator=True,
+        enable_out_norm=False,
+        loss_decode=[
+            dict(
+                type="CrossEntropyLoss",
+                use_sigmoid=False,
+                loss_weight=1.0,
+            ),
+        ],
+    ),
 )
 
 load_from = None

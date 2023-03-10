@@ -164,7 +164,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
 
     def _initialize_post_hook(self, options=None):
         super()._initialize_post_hook(options)
-        assert self._recipe_cfg is not None and self._recipe_cfg is not None
+        assert self._recipe_cfg is not None
 
         # TODO: more delicate configuration change control in MPA side
 
@@ -181,7 +181,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
                 self._recipe_cfg.data["train_dataloader"] = data_loader
 
         # nncf does not suppoer FP16
-        if "fp16" in self._recipe_cfg or "fp16" in self._recipe_cfg:
+        if "fp16" in self._recipe_cfg:
             remove_from_config(self._recipe_cfg, "fp16")
             logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
 

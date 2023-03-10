@@ -194,6 +194,14 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
     def _init_recipe(self):
         logger.info("called _init_recipe()")
+        # TODO: Need to remove the hard coding for supcon only.
+        if (
+            self._train_type in RECIPE_TRAIN_TYPE
+            and self._train_type == TrainType.INCREMENTAL
+            and self._hyperparams.learning_parameters.enable_supcon
+            and "supcon" not in self._model_dir
+        ):
+            self._model_dir = os.path.join(self._model_dir, "supcon")
 
         self._recipe_cfg = self._init_model_cfg()
         options_for_patch_datasets = {"type": "MPASegDataset"}

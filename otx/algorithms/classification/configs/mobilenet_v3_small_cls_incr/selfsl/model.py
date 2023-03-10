@@ -2,7 +2,7 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../../../../../recipes/stages/classification/selfsl.yaml", "../model.py"]
+_base_ = ["../../../../../recipes/stages/classification/selfsl.yaml", "../../base/models/mobilenet_v3.py"]
 
 model = dict(
     type="BYOL",
