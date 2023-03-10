@@ -152,6 +152,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 return v
             if subset == "test" and "val" in k:
                 return v
+            if subset == "val" and "test" in k:
+                return v
 
         raise ValueError("Can't find proper dataset.")
 
