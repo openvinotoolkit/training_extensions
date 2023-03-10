@@ -22,7 +22,7 @@ _base_ = [
 ]
 
 model = dict(
-    type="DetConB",
+    type="SupConDetConB",
     pretrained="https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
         /models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
     num_classes=256,
@@ -80,8 +80,6 @@ model = dict(
         ),
     ),
 )
-
-model = dict(type="SupConDetConB")
 
 load_from = None
 
