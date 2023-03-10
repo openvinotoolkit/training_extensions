@@ -3,7 +3,9 @@
 Lung cancer is the most common form of cancer found worldwide with a high mortality rate. Early detection of pulmonary nodules by screening with a low-dose computed tomography (CT) scan is crucial for its effective clinical management. Nodules which are symptomatic of malignancy occupy about 0.0125 - 0.025% of volume in a CT scan of a patient. Manual screening of all slices is a tedious task and presents a high risk of human errors. To tackle this problem we propose a computationally efficient two-stage framework. In the first stage, a convolutional neural network (CNN) trained adversarially using Turing test loss segments the lung region.
 In the second stage, patches sampled from the segmented region are then classified to detect the presence of nodules. The proposed method is experimentally validated on the LUNA16 challenge dataset with a dice coefficient of **0.984 ± 0.0007** for 10-fold cross-validation.
 
->**Paper** : [IEEE Xplore](https://ieeexplore.ieee.org/abstract/document/9175649)
+
+>**Paper** : C. K. Sarath, A. Chakravarty, N. Ghosh, T. Sarkar, R. Sethuraman and D. Sheet, **"Lung Segmentation and Nodule Detection in Computed Tomography Scan using a Convolutional Neural Network Trained Adversarially using Turing Test Loss"** ,2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC), 2020. </br> _Access the paper via_ 
+[IEEE Xplore](https://ieeexplore.ieee.org/abstract/document/9175649).
 
 BibTeX reference to cite, if you use it:
 
