@@ -1,4 +1,4 @@
-"""Code modified by: https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py."""
+"""Code modified from: https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
