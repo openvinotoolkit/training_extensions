@@ -194,7 +194,7 @@ class ConvBlock3D(nn.Module):
         super().__init__()
         self.conv_2 = None
         if tf_like:
-            # We neek odd kernel to have even padding
+            # We need odd kernel to have even padding
             # and stride == 1 to precompute padding,
             if kernel_size[0] % 2 == 0:
                 raise ValueError("tf_like supports only odd" + " kernels for temporal dimension")
