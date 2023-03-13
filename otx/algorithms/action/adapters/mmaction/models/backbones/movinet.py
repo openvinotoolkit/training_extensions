@@ -658,8 +658,8 @@ class MoViNet(nn.Module):
 class OTXMoViNet(MoViNet):
     """MoViNet wrapper class for OTX."""
 
-    def __init__(self):
-
+    # pylint: disable=unused-argument
+    def __init__(self, **kwargs):
         cfg = Config()
         cfg.name = "A0"
         cfg.conv1 = Config()
