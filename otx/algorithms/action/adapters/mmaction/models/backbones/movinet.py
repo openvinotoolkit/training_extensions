@@ -491,7 +491,8 @@ class BasicBneck(nn.Module):
             norm_layer=norm_layer,
             activation_layer=activation_layer,
         )
-        self.squeeze_excitation = SqueezeExcitation(
+        # pylint: disable=invalid-name
+        self.se = SqueezeExcitation(
             cfg.expanded_channels,
             activation_1=activation_layer,
             activation_2=(nn.Sigmoid if conv_type == "3d" else nn.Hardsigmoid),
@@ -539,7 +540,7 @@ class BasicBneck(nn.Module):
         if self.expand is not None:
             x = self.expand(x)
         x = self.deep(x)
-        x = self.squeeze_excitation(x)
+        x = self.se(x)
         x = self.project(x)
         result = residual + self.alpha * x
         return result
