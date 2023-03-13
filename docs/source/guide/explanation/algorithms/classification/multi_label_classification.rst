@@ -23,11 +23,15 @@ For supervised learning we use the following algorithms components:
 Dataset Format
 **************
 
-As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: `COCO <https://cocodataset.org/#format-data>`_.
-Specifically, these formats will be converted in our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel>`_ via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
+As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection format: `COCO <https://cocodataset.org/#format-data>`_.
+Specifically, this format should be converted in our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel>`_ first. We provided a `script <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/utils/convert_coco_to_multilabel.py>` to help with conversion.
+To convert the COCO data format to our internal one, run this script in similar way:
+
+.. code-block::
+    python convert_coco_to_multilabel.py --ann_file_path <path to .json COCO annotations> --data_root_dir <path to images folder> --output <output path to save annotations>
 
 .. note::
-    Names of the annotations files and overall dataset structure should be the same as the original `COCO <https://cocodataset.org/#format-data>`_.
+    Names of the annotations files and overall dataset structure should be the same as the original `COCO <https://cocodataset.org/#format-data>`_. You need to convert train and validation sets separately.
 
     Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/classification>` for more information how to train, validate and optimize classification models.
 
@@ -36,17 +40,17 @@ Models
 ******
 We use the same models as for Multi-class classification. Please, refer: :ref:`Classification Models <classification_models>`.
 
-.. In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make the results comparable with academic papers, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>`_ metrics on some academic datasets using our :ref:`supervised pipeline <ml_cls_supervised_pipeline>` are presented. The results were obtained on our templates without any changes (including input resolution, which is 224x224 for all templates). We trained each model with single Nvidia GeForce RTX3090.
 
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | Model name            | Pascal-VOC 2007 |    COCO   | NUS-WIDE  | Mean mAP  |
-.. +=======================+=================+===========+===========+===========+
-.. | MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
-.. | EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       |
-.. +-----------------------+-----------------+-----------+-----------+-----------+
++-----------------------+-----------------+-----------+------------------+-----------+
+| Model name            | Pascal-VOC 2007 | COCO 2014 | Aerial Maritime  | Mean mAP  |
++=======================+=================+===========+==================+===========+
+| MobileNet-V3-large-1x | 86.14           | 67.94     | 69.61            | 74.56     |
++-----------------------+-----------------+-----------+------------------+-----------+
+| EfficientNet-B0       | 86.07           | 67.87     | 73.83            | 75.92     |
++-----------------------+-----------------+-----------+------------------+-----------+
+| EfficientNet-V2-S     | 91.91           | 77.28     | 71.52            | 80.24     |
++-----------------------+-----------------+-----------+------------------+-----------+
 
 .. ************************
 .. Semi-supervised Learning

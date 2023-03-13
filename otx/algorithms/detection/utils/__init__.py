@@ -20,9 +20,10 @@ from .data import (
     get_sizes_from_dataset_entity,
     load_dataset_items_coco_format,
 )
-from .utils import generate_label_schema
+from .utils import generate_label_schema, get_det_model_api_configuration
 
 __all__ = [
+    "get_det_model_api_configuration",
     "load_dataset_items_coco_format",
     "get_sizes_from_dataset_entity",
     "get_anchor_boxes",

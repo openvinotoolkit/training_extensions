@@ -306,8 +306,17 @@ class Stage(object):
 
         if distributed:
             dataset_len = dataset_len // dist.get_world_size()
+
+        # set batch size as a total dataset
+        # if it is smaller than total dataset
         if dataset_len < samples_per_gpu:
             dataloader_cfg.samples_per_gpu = dataset_len
+
+        # drop the last batch if the last batch size is 1
+        # batch size of 1 is a runtime error for training batch normalization layer
+        if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
+            dataloader_cfg.drop_last = True
+
         cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
     @staticmethod

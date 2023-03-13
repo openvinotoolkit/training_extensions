@@ -1,5 +1,5 @@
 OpenVINO™ Training Extensions CLI commands
-=================
+==========================================
 
 All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
 
@@ -161,7 +161,7 @@ However, if you created a workspace with ``otx build``, the training process can
     otx train --help
     usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS] [--unlabeled-file-list UNLABELED_FILE_LIST]
                     [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
-                    [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE] [--data DATA]
+                    [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE] [--mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE] [--data DATA]
                     [template] {params} ...
 
     positional arguments:
@@ -197,6 +197,8 @@ However, if you created a workspace with ``otx build``, the training process can
                             Base rank of the current node workers.
       --world-size WORLD_SIZE
                             Total number of workers in a worker group.
+      --mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE
+                            Size of memory pool for caching decoded data to load data faster. For example, you can use digits for bytes size (e.g. 1024) or a string with size units (e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30).
       --data DATA           The data.yaml path want to use in train task.
 
 
@@ -210,6 +212,14 @@ Example of the command line to start object detection training:
 
 .. note::
   You also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
+
+.. note::
+  ``--mem-cache-size`` provides in-memory caching for decoded images in main memory.
+  If the batch size is large, such as for classification tasks, or if your dataset contains high-resolution images,
+  image decoding can account for a non-negligible overhead in data pre-processing.
+  This option can be useful for maximizing GPU utilization and reducing model training time in those cases.
+  If your machine has enough main memory, we recommend increasing this value as much as possible.
+  For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--mem-cache-size=8GB``.
 
 It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
@@ -471,7 +481,7 @@ Command example of the demonstration:
 Input can be a folder with images, a single image, a webcam ID or a video. The inference results of a model will be displayed to the GUI window with a 1-second interval.
 
 .. note::
- 
+
   If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error messages from this command.
 
 

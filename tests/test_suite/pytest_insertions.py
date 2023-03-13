@@ -82,6 +82,15 @@ def otx_pytest_addoption_insertion(parser):
         help="Obsolete parameter. Should be removed when CI is changed.",
     )
 
+    parser.addoption(
+        "--test-work-dir",
+        type=str,
+        default=None,
+        help="OTX test requires a certain amount of storage in the test work directory. "
+        "If you don't have enough space on the drive where the default path is located (e.g. /tmp on linux), "
+        "you can use this option to change the test work directory path to a different drive.",
+    )
+
 
 def otx_pytest_generate_tests_insertion(metafunc):
     """

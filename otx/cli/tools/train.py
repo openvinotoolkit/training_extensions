@@ -33,6 +33,7 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
 from otx.cli.utils.parser import (
+    MemSizeAction,
     add_hyper_parameters_sub_parser,
     get_parser_and_hprams_data,
 )
@@ -110,6 +111,16 @@ def get_args():
         type=int,
         default=0,
         help="Total number of workers in a worker group.",
+    )
+    parser.add_argument(
+        "--mem-cache-size",
+        action=MemSizeAction,
+        dest="params.algo_backend.mem_cache_size",
+        type=str,
+        required=False,
+        help="Size of memory pool for caching decoded data to load data faster. "
+        "For example, you can use digits for bytes size (e.g. 1024) or a string with size units "
+        "(e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30).",
     )
     parser.add_argument(
         "--data",
