@@ -52,9 +52,8 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disabl
         )
 
         # do not configure regularization
-        if "l2sp_weight" in self._recipe_cfg.model or "l2sp_weight" in self._model_cfg.model:
+        if "l2sp_weight" in self._recipe_cfg.model or "l2sp_weight" in self._recipe_cfg.model:
             remove_from_config(self._recipe_cfg.model, "l2sp_weight")
-            remove_from_config(self._model_cfg.model, "l2sp_weight")
 
     def _optimize(
         self,

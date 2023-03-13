@@ -102,9 +102,9 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
             head_gt = gt_label[:, i]
             head_logits = cls_score[
                 :,
-                self.hierarchical_info["head_idx_to_logits_range"][i][0] : self.hierarchical_info[
+                self.hierarchical_info["head_idx_to_logits_range"][str(i)][0] : self.hierarchical_info[
                     "head_idx_to_logits_range"
-                ][i][1],
+                ][str(i)][1],
             ]
             valid_mask = head_gt >= 0
             head_gt = head_gt[valid_mask].long()
@@ -149,9 +149,9 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
         for i in range(self.hierarchical_info["num_multiclass_heads"]):
             multiclass_logit = cls_score[
                 :,
-                self.hierarchical_info["head_idx_to_logits_range"][i][0] : self.hierarchical_info[
+                self.hierarchical_info["head_idx_to_logits_range"][str(i)][0] : self.hierarchical_info[
                     "head_idx_to_logits_range"
-                ][i][1],
+                ][str(i)][1],
             ]
             if not torch.onnx.is_in_onnx_export():
                 multiclass_logit = torch.softmax(multiclass_logit, dim=1)
