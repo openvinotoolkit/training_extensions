@@ -32,7 +32,7 @@ class MockModule:
         return self._state_dict
 
 
-class TestMoViNetHead:
+class TestMoViNetRecognizer:
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
         mocker.patch.object(Recognizer3D, "__init__", return_value=None)
