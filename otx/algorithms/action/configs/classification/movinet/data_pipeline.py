@@ -1,4 +1,4 @@
-"""Data Pipeline of X3D model for Action Cls Task."""
+"""Data Pipeline of MoViNet model for Action Classification Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
