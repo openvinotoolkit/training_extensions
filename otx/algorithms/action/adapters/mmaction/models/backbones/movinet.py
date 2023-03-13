@@ -537,7 +537,7 @@ class BasicBneck(nn.Module):
             residual = self.res(x)
         else:
             residual = x
-        if self.expand is not None:
+        if hasattr(self, "expand"):
             x = self.expand(x)
         x = self.deep(x)
         x = self.se(x)
