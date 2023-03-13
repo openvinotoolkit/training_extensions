@@ -19,7 +19,6 @@
 
 _base_ = [
     "../../../../../recipes/stages/segmentation/semisl.py",
-    "../../base/models/mean_teacher.py",
     "../../../../common/adapters/mmcv/configs/backbones/lite_hrnet_x.py",
 ]
 
