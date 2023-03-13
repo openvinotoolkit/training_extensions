@@ -1,7 +1,4 @@
-"""
-Code modified by:
-https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py
-"""
+"""Code modified by: https://github.com/Atze00/MoViNet-pytorch/blob/main/movinets/models.py."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -18,6 +15,28 @@ from torch.nn.modules.utils import _pair, _triple
 
 
 class Conv2dBNActivation(nn.Sequential):
+    """A base module that applies a 2D Conv-BN-Activation.
+
+    Args:
+        in_planes (int): Number of input channels.
+        out_planes (int): Number of output channels.
+        kernel_size (Union[int, Tuple[int, int]]): Size of the convolution kernel.
+        padding (Union[int, Tuple[int, int]]): Size of the padding applied to the input.
+        stride (Union[int, Tuple[int, int]], optional): Stride of the convolution. Default: 1.
+        groups (int, optional): Number of groups in the convolution. Default: 1.
+        norm_layer (Optional[Callable[..., nn.Module]], optional): Normalization layer to use.
+            If None, identity is used. Default: None.
+        activation_layer (Optional[Callable[..., nn.Module]], optional): Activation layer to use.
+            If None, identity is used. Default: None.
+        **kwargs (Any): Additional keyword arguments passed to nn.Conv2d.
+
+    Attributes:
+        kernel_size (Tuple[int, int]): Size of the convolution kernel.
+        stride (Tuple[int, int]): Stride of the convolution.
+        out_channels (int): Number of output channels.
+
+    """
+
     def __init__(
         self,
         in_planes: int,
@@ -57,10 +76,32 @@ class Conv2dBNActivation(nn.Sequential):
         )
 
         self.out_channels = out_planes
-        super(Conv2dBNActivation, self).__init__(dict_layers)
+        super().__init__(dict_layers)
 
 
 class Conv3DBNActivation(nn.Sequential):
+    """A base module that applies a 3D Conv-BN-Activation.
+
+    Args:
+        in_planes (int): Number of input channels.
+        out_planes (int): Number of output channels.
+        kernel_size (Union[int, Tuple[int, int, int]]): Size of the convolution kernel.
+        padding (Union[int, Tuple[int, int, int]]): Size of the padding applied to the input.
+        stride (Union[int, Tuple[int, int, int]], optional): Stride of the convolution. Default: 1.
+        groups (int, optional): Number of groups in the convolution. Default: 1.
+        norm_layer (Optional[Callable[..., nn.Module]], optional): Normalization layer to use.
+            If None, identity is used. Default: None.
+        activation_layer (Optional[Callable[..., nn.Module]], optional): Activation layer to use.
+            If None, identity is used. Default: None.
+        **kwargs (Any): Additional keyword arguments passed to nn.Conv3d.
+
+    Attributes:
+        kernel_size (Tuple[int, int, int]): Size of the convolution kernel.
+        stride (Tuple[int, int, int]): Stride of the convolution.
+        out_channels (int): Number of output channels.
+
+    """
+
     def __init__(
         self,
         in_planes: int,
@@ -101,29 +142,56 @@ class Conv3DBNActivation(nn.Sequential):
         )
 
         self.out_channels = out_planes
-        super(Conv3DBNActivation, self).__init__(dict_layers)
+        super().__init__(dict_layers)
 
 
 class ConvBlock3D(nn.Module):
+    """A module that applies a 2+1D or 3D Conv-BN-activation sequential.
+
+    Args:
+        in_planes (int): Number of input channels.
+        out_planes (int): Number of output channels.
+        kernel_size (Tuple[int, int, int]): Size of the convolution kernel.
+        tf_like (bool): Whether to use TensorFlow-like padding and convolution.
+        conv_type (str): Type of 3D convolution to use. Must be "2plus1d" or "3d".
+        padding (Tuple[int, int, int], optional): Size of the padding applied to the input.
+            Default: (0, 0, 0).
+        stride (Tuple[int, int, int], optional): Stride of the convolution. Default: (1, 1, 1).
+        norm_layer (Optional[Callable[..., nn.Module]], optional): Normalization layer to use.
+            If None, identity is used. Default: None.
+        activation_layer (Optional[Callable[..., nn.Module]], optional): Activation layer to use.
+            If None, identity is used. Default: None.
+        bias (bool, optional): Whether to use bias in the convolution. Default: False.
+        **kwargs (Any): Additional keyword arguments passed to nn.Conv2d or nn.Conv3d.
+
+    Attributes:
+        conv_1 (Union[Conv2dBNActivation, Conv3DBNActivation]): Convolutional layer.
+        conv_2 (Optional[Conv2dBNActivation]): Convolutional layer for 2+1D convolution.
+        padding (Tuple[int, int, int]): Size of the padding applied to the input.
+        kernel_size (Tuple[int, int, int]): Size of the convolution kernel.
+        dim_pad (int): Padding along the temporal dimension.
+        stride (Tuple[int, int, int]): Stride of the convolution.
+        conv_type (str): Type of 3D convolution used.
+        tf_like (bool): Whether to use TensorFlow-like padding and convolution.
+
+    """
+
+    # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
         self,
         in_planes: int,
         out_planes: int,
-        *,
-        kernel_size: int,
+        kernel_size: Tuple[int, int, int],
         tf_like: bool,
         conv_type: str,
-        padding: int = 0,
-        stride: int = 1,
+        padding: Tuple[int, int, int] = (0, 0, 0),
+        stride: Tuple[int, int, int] = (1, 1, 1),
         norm_layer: Optional[Callable[..., nn.Module]] = None,
         activation_layer: Optional[Callable[..., nn.Module]] = None,
         bias: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__()
-        kernel_size = _triple(kernel_size)
-        stride = _triple(stride)
-        padding = _triple(padding)
         self.conv_2 = None
         if tf_like:
             # We neek odd kernel to have even padding
@@ -137,7 +205,7 @@ class ConvBlock3D(nn.Module):
                 # these values are not tested so should be avoided
                 raise ValueError("tf_like supports only" + "  stride <= of the kernel size")
 
-        if conv_type != "2plus1d" and conv_type != "3d":
+        if conv_type not in ["2plus1d", "3d"]:
             raise ValueError("only 2plus2d or 3d are " + "allowed as 3d convolutions")
 
         if conv_type == "2plus1d":
@@ -198,6 +266,7 @@ class ConvBlock3D(nn.Module):
         return x
 
     def forward(self, x: Tensor) -> Tensor:
+        """Forward function of ConvBlock3D."""
         if self.tf_like:
             x = same_padding(
                 x,
@@ -211,23 +280,19 @@ class ConvBlock3D(nn.Module):
         x = self._forward(x)
         return x
 
-    def _cat_stream_buffer(self, x: Tensor, device: torch.device) -> Tensor:
-        if self.activation is None:
-            self._setup_activation(x.shape)
-        x = torch.cat((self.activation.to(device), x), 2)
-        self._save_in_activation(x)
-        return x
-
-    def _save_in_activation(self, x: Tensor) -> None:
-        assert self.dim_pad > 0
-        self.activation = x[:, :, -self.dim_pad :, ...].clone().detach()
-
-    def _setup_activation(self, input_shape: Tuple[float, ...]) -> None:
-        assert self.dim_pad > 0
-        self.activation = torch.zeros(*input_shape[:2], self.dim_pad, *input_shape[3:])  # type: ignore
-
 
 class SqueezeExcitation(nn.Module):
+    """Implements the Squeeze-and-Excitation (SE) block.
+
+    Args:
+        input_channels (int): Number of input channels.
+        activation_2 (nn.Module): Activation function applied after the second convolutional block.
+        activation_1 (nn.Module): Activation function applied after the first convolutional block.
+        conv_type (str): Convolutional block type ("2plus1d" or "3d").
+        squeeze_factor (int, optional): The reduction factor for the number of channels (default: 4).
+        bias (bool, optional): Whether to add a bias term to the convolutional blocks (default: True).
+    """
+
     def __init__(
         self,
         input_channels: int,
@@ -244,7 +309,7 @@ class SqueezeExcitation(nn.Module):
             input_channels * se_multiplier,
             squeeze_channels,
             kernel_size=(1, 1, 1),
-            padding=0,
+            padding=(0, 0, 0),
             tf_like=False,
             conv_type=conv_type,
             bias=bias,
@@ -255,36 +320,39 @@ class SqueezeExcitation(nn.Module):
             squeeze_channels,
             input_channels,
             kernel_size=(1, 1, 1),
-            padding=0,
+            padding=(0, 0, 0),
             tf_like=False,
             conv_type=conv_type,
             bias=bias,
         )
 
-    def _scale(self, input: Tensor) -> Tensor:
-        scale = F.adaptive_avg_pool3d(input, 1)
+    def _scale(self, x: Tensor) -> Tensor:
+        """Computes the scaling factor for the input tensor.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, channels, time, height, width).
+
+        Returns:
+            torch.Tensor: Scaling factor for the input tensor of shape (batch_size, channels, 1, 1, 1).
+        """
+        scale = F.adaptive_avg_pool3d(x, 1)
         scale = self.fc1(scale)
         scale = self.activation_1(scale)
         scale = self.fc2(scale)
         return self.activation_2(scale)
 
-    def forward(self, input: Tensor) -> Tensor:
-        scale = self._scale(input)
-        return scale * input
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function of SqueezeExcitation."""
+        scale = self._scale(x)
+        return scale * x
 
 
-def _make_divisible(v: float, divisor: int, min_value: Optional[int] = None) -> int:
-    """
-    This function is taken from the original tf repo.
-    It ensures that all layers have a channel number that is divisible by 8
-    It can be seen here:
-    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
-    """
+def _make_divisible(value: float, divisor: int, min_value: Optional[int] = None) -> int:
     if min_value is None:
         min_value = divisor
-    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
+    new_v = max(min_value, int(value + divisor / 2) // divisor * divisor)
     # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
+    if new_v < 0.9 * value:
         new_v += divisor
     return new_v
 
@@ -292,6 +360,22 @@ def _make_divisible(v: float, divisor: int, min_value: Optional[int] = None) -> 
 def same_padding(
     x: Tensor, in_height: int, in_width: int, stride_h: int, stride_w: int, filter_height: int, filter_width: int
 ) -> Tensor:
+    """Applies padding to the input tensor to ensure that the output tensor size is the same as the input tensor size.
+
+    Args:
+        x (torch.Tensor): Input tensor of shape (batch_size, channels, time, height, width).
+        in_height (int): Height of the input tensor.
+        in_width (int): Width of the input tensor.
+        stride_h (int): Stride in the height dimension.
+        stride_w (int): Stride in the width dimension.
+        filter_height (int): Height of the filter (kernel).
+        filter_width (int): Width of the filter (kernel).
+
+    Returns:
+        torch.Tensor: Padded tensor of shape (batch_size, channels, time, height + pad_h, width + pad_w), where
+        pad_h and pad_w are the heights and widths of the top, bottom, left, and right padding applied to the tensor.
+
+    """
     if in_height % stride_h == 0:
         pad_along_height = max(filter_height - stride_h, 0)
     else:
@@ -308,19 +392,31 @@ def same_padding(
     return torch.nn.functional.pad(x, padding_pad)
 
 
-class tfAvgPool3D(nn.Module):
+class TFAvgPool3D(nn.Module):
+    """3D average pooling layer with padding."""
+
     def __init__(self) -> None:
         super().__init__()
         self.avgf = nn.AvgPool3d((1, 3, 3), stride=(1, 2, 2))
 
     def forward(self, x: Tensor) -> Tensor:
-        f1 = x.shape[-1] % 2 != 0
-        if f1:
+        """Applies 3D average pooling with padding to the input tensor.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, channels, time, height, width).
+
+        Returns:
+            torch.Tensor: Pooled tensor of shape (batch_size, channels, time, height', width'), where
+            height' and width' are the heights and widths of the pooled tensor after padding is applied.
+
+        """
+        use_padding = x.shape[-1] % 2 != 0
+        if use_padding:
             padding_pad = (0, 0, 0, 0)
         else:
             padding_pad = (0, 1, 0, 1)
         x = torch.nn.functional.pad(x, padding_pad)
-        if f1:
+        if use_padding:
             x = torch.nn.functional.avg_pool3d(
                 x, (1, 3, 3), stride=(1, 2, 2), count_include_pad=False, padding=(0, 1, 1)
             )
@@ -332,6 +428,33 @@ class tfAvgPool3D(nn.Module):
 
 
 class BasicBneck(nn.Module):
+    """Basic bottleneck block of MoViNet network.
+
+    Args:
+        cfg (Config): Configuration object containing block's hyperparameters.
+        tf_like (bool): A boolean indicating whether to use TensorFlow like convolution
+            padding or not.
+        conv_type (str): A string indicating the type of convolutional layer to use.
+            Can be "2d" or "3d".
+        norm_layer (Callable[..., nn.Module], optional): A callable normalization layer
+            to use. Defaults to None.
+        activation_layer (Callable[..., nn.Module], optional): A callable activation
+            layer to use. Defaults to None.
+
+    Attributes:
+        expand (ConvBlock3D, optional): An optional expansion convolutional block.
+        deep (ConvBlock3D): A convolutional block with kernel size, stride, padding,
+            and groups as specified in the configuration object.
+        squeeze_excitation (SqueezeExcitation): A squeeze-and-excitation block.
+        project (ConvBlock3D): A projection convolutional block.
+        res (nn.Sequential, optional): An optional residual convolutional block.
+        alpha (nn.Parameter): A learnable parameter used in the ReZero operation.
+
+    Raises:
+        AssertionError: If the stride in configuration is not a tuple.
+
+    """
+
     def __init__(
         self,
         cfg: "Config",
@@ -341,9 +464,7 @@ class BasicBneck(nn.Module):
         activation_layer: Optional[Callable[..., nn.Module]] = None,
     ) -> None:
         super().__init__()
-        assert type(cfg.stride) is tuple
-        if not cfg.stride[0] == 1 or not (1 <= cfg.stride[1] <= 2) or not (1 <= cfg.stride[2] <= 2):
-            raise ValueError("illegal stride value")
+        assert isinstance(cfg.stride, tuple)
         self.res = None
 
         layers = []
@@ -363,14 +484,14 @@ class BasicBneck(nn.Module):
             out_planes=cfg.expanded_channels,
             kernel_size=cfg.kernel_size,
             padding=cfg.padding,
-            stride=cfg.stride,
+            stride=cfg.stride,  # type: ignore
             groups=cfg.expanded_channels,
             conv_type=conv_type,
             tf_like=tf_like,
             norm_layer=norm_layer,
             activation_layer=activation_layer,
         )
-        self.se = SqueezeExcitation(
+        self.squeeze_excitation = SqueezeExcitation(
             cfg.expanded_channels,
             activation_1=activation_layer,
             activation_2=(nn.Sigmoid if conv_type == "3d" else nn.Hardsigmoid),
@@ -390,7 +511,7 @@ class BasicBneck(nn.Module):
         if not (cfg.stride == (1, 1, 1) and cfg.input_channels == cfg.out_channels):
             if cfg.stride != (1, 1, 1):
                 if tf_like:
-                    layers.append(tfAvgPool3D())
+                    layers.append(TFAvgPool3D())
                 else:
                     layers.append(nn.AvgPool3d((1, 3, 3), stride=cfg.stride, padding=cfg.padding_avg))
             layers.append(
@@ -409,41 +530,52 @@ class BasicBneck(nn.Module):
         # ReZero
         self.alpha = nn.Parameter(torch.tensor(0.0), requires_grad=True)
 
-    def forward(self, input: Tensor) -> Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function of BasicBneck."""
         if self.res is not None:
-            residual = self.res(input)
+            residual = self.res(x)
         else:
-            residual = input
+            residual = x
         if self.expand is not None:
-            x = self.expand(input)
-        else:
-            x = input
+            x = self.expand(x)
         x = self.deep(x)
-        x = self.se(x)
+        x = self.squeeze_excitation(x)
         x = self.project(x)
         result = residual + self.alpha * x
         return result
 
 
 class MoViNet(nn.Module):
+    """MoViNet class used for video classification.
+
+    Args:
+        cfg (Config): Configuration object containing network's hyperparameters.
+        conv_type (str, optional): A string indicating the type of convolutional layer
+            to use. Can be "2d" or "3d". Defaults to "3d".
+        tf_like (bool, optional): A boolean indicating whether to use TensorFlow like
+            convolution padding or not. Defaults to False.
+
+    Attributes:
+        conv1 (ConvBlock3D): A convolutional block for the first layer.
+        blocks (nn.Sequential): A sequence of basic bottleneck blocks.
+        conv7 (ConvBlock3D): A convolutional block for the final layer.
+
+    Methods:
+        avg(x: Tensor) -> Tensor: A static method that returns the adaptive average pool
+            of the input tensor.
+        _init_weights(module): A private method that initializes the weights of the network's
+            convolutional, batch normalization, and linear layers.
+        forward(x: Tensor) -> Tensor: The forward pass of the network.
+
+    """
+
     def __init__(
         self,
         cfg: "Config",
-        pretrained: bool = False,
         conv_type: str = "3d",
         tf_like: bool = False,
     ) -> None:
         super().__init__()
-        """
-        pretrained: pretrained models
-        If pretrained is True:
-            conv_type is set to "3d" if causal is False,
-                "2plus1d" if causal is True
-            tf_like is set to True
-        num_classes: number of classes for classifcation
-        conv_type: type of convolution either 3d or 2plus1d
-        tf_like: tf_like behaviour, basically same padding for convolutions
-        """
         tf_like = True
         blocks_dic = OrderedDict()
 
@@ -484,22 +616,32 @@ class MoViNet(nn.Module):
         )
 
     def avg(self, x: Tensor) -> Tensor:
+        """Returns the adaptive average pool of the input tensor.
+
+        Args:
+            x (Tensor): A tensor to be averaged.
+
+        Returns:
+            Tensor: A tensor with the averaged values.
+
+        """
         return F.adaptive_avg_pool3d(x, 1)
 
     @staticmethod
-    def _init_weights(m):
-        if isinstance(m, nn.Conv3d):
-            nn.init.kaiming_normal_(m.weight, mode="fan_out")
-            if m.bias is not None:
-                nn.init.zeros_(m.bias)
-        elif isinstance(m, (nn.BatchNorm3d, nn.BatchNorm2d, nn.GroupNorm)):
-            nn.init.ones_(m.weight)
-            nn.init.zeros_(m.bias)
-        elif isinstance(m, nn.Linear):
-            nn.init.normal_(m.weight, 0, 0.01)
-            nn.init.zeros_(m.bias)
+    def _init_weights(module):
+        if isinstance(module, nn.Conv3d):
+            nn.init.kaiming_normal_(module.weight, mode="fan_out")
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+        elif isinstance(module, (nn.BatchNorm3d, nn.BatchNorm2d, nn.GroupNorm)):
+            nn.init.ones_(module.weight)
+            nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.Linear):
+            nn.init.normal_(module.weight, 0, 0.01)
+            nn.init.zeros_(module.bias)
 
     def forward(self, x: Tensor) -> Tensor:
+        """Forward function of MoViNet."""
         x = self.conv1(x)
         x = self.blocks(x)
         x = self.conv7(x)
@@ -507,12 +649,15 @@ class MoViNet(nn.Module):
         return x
 
     def init_weights(self):
+        """Initializes the weights of network."""
         self.apply(self._init_weights)
 
 
 @BACKBONES.register_module()
 class OTXMoViNet(MoViNet):
-    def __init__(self, **kwargs):
+    """MoViNet wrapper class for OTX."""
+
+    def __init__(self):
 
         cfg = Config()
         cfg.name = "A0"
@@ -528,38 +673,39 @@ class OTXMoViNet(MoViNet):
         ]
 
         # block 2
-        OTXMoViNet.fill_SE_config(cfg.blocks[0][0], 8, 8, 24, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[0][0], 8, 8, 24, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
 
         # block 3
-        OTXMoViNet.fill_SE_config(cfg.blocks[1][0], 8, 32, 80, (3, 3, 3), (1, 2, 2), (1, 0, 0), (0, 0, 0))
-        OTXMoViNet.fill_SE_config(cfg.blocks[1][1], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[1][2], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[1][0], 8, 32, 80, (3, 3, 3), (1, 2, 2), (1, 0, 0), (0, 0, 0))
+        OTXMoViNet.fill_se_config(cfg.blocks[1][1], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[1][2], 32, 32, 80, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 4
-        OTXMoViNet.fill_SE_config(cfg.blocks[2][0], 32, 56, 184, (5, 3, 3), (1, 2, 2), (2, 0, 0), (0, 0, 0))
-        OTXMoViNet.fill_SE_config(cfg.blocks[2][1], 56, 56, 112, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[2][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[2][0], 32, 56, 184, (5, 3, 3), (1, 2, 2), (2, 0, 0), (0, 0, 0))
+        OTXMoViNet.fill_se_config(cfg.blocks[2][1], 56, 56, 112, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[2][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 5
-        OTXMoViNet.fill_SE_config(cfg.blocks[3][0], 56, 56, 184, (5, 3, 3), (1, 1, 1), (2, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[3][1], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[3][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[3][3], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[3][0], 56, 56, 184, (5, 3, 3), (1, 1, 1), (2, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[3][1], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[3][2], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[3][3], 56, 56, 184, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
         # block 6
-        OTXMoViNet.fill_SE_config(cfg.blocks[4][0], 56, 104, 384, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[4][1], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[4][2], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
-        OTXMoViNet.fill_SE_config(cfg.blocks[4][3], 104, 104, 344, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[4][0], 56, 104, 384, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[4][1], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[4][2], 104, 104, 280, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
+        OTXMoViNet.fill_se_config(cfg.blocks[4][3], 104, 104, 344, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
 
         cfg.conv7 = Config()
         OTXMoViNet.fill_conv(cfg.conv7, 104, 480, (1, 1, 1), (1, 1, 1), (0, 0, 0))
 
         cfg.dense9 = Config(dict(hidden_dim=2048))
-        super(OTXMoViNet, self).__init__(cfg)
+        super().__init__(cfg)
 
     @staticmethod
-    def fill_SE_config(
+    # pylint: disable=too-many-arguments
+    def fill_se_config(
         conf,
         input_channels,
         out_channels,
@@ -569,6 +715,21 @@ class OTXMoViNet(MoViNet):
         padding,
         padding_avg,
     ):
+        """Set the values of a given Config object to SE module.
+
+        Args:
+            conf (Config): The Config object to be updated.
+            input_channels (int): The number of input channels.
+            out_channels (int): The number of output channels.
+            expanded_channels (int): The number of channels after expansion in the basic block.
+            kernel_size (tuple[int]): The size of the kernel.
+            stride (tuple[int]): The stride of the kernel.
+            padding (tuple[int]): The padding of the kernel.
+            padding_avg (tuple[int]): The padding for the average pooling operation.
+
+        Returns:
+            None.
+        """
         conf.expanded_channels = expanded_channels
         conf.padding_avg = padding_avg
         OTXMoViNet.fill_conv(
@@ -589,6 +750,19 @@ class OTXMoViNet(MoViNet):
         stride,
         padding,
     ):
+        """Set the values of a given Config object to conv layer.
+
+        Args:
+            conf (Config): The Config object to be updated.
+            input_channels (int): The number of input channels.
+            out_channels (int): The number of output channels.
+            kernel_size (tuple[int]): The size of the kernel.
+            stride (tuple[int]): The stride of the kernel.
+            padding (tuple[int]): The padding of the kernel.
+
+        Returns:
+            None.
+        """
         conf.input_channels = input_channels
         conf.out_channels = out_channels
         conf.kernel_size = kernel_size

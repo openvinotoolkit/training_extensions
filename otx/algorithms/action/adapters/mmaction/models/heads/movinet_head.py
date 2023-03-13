@@ -1,4 +1,4 @@
-""" MoViNet head for otx action recognition. """
+"""MoViNet head for otx action recognition."""
 # Copyright (c) OpenMMLab. All rights reserved.
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
