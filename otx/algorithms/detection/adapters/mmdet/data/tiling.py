@@ -401,7 +401,7 @@ class Tile:
         tile_mask = np.pad(tile_mask, ((y1, height - y2), (x1, width - x2)))
         return mask_util.encode(tile_mask)
 
-    def process_masks(self, tile_masks: List[Dict]):
+    def process_masks(self, tile_masks: List):
         """Decode Mask Result to Numpy mask, add paddings then encode masks again.
 
         Args:
@@ -410,8 +410,10 @@ class Tile:
         Returns:
             _type_: _description_
         """
-        with Pool(self.nproc) as pool:
-            results = pool.map(Tile.readjust_tile_mask, tile_masks)
+        results = []
+        if tile_masks:
+            with Pool(self.nproc) as pool:
+                results = pool.map(Tile.readjust_tile_mask, tile_masks)
         return results
 
     # pylint: disable=too-many-locals

@@ -6,6 +6,7 @@
 from . import (
     custom_atss_detector,
     custom_maskrcnn_detector,
+    custom_maskrcnn_tile_optimised,
     custom_single_stage_detector,
     custom_two_stage_detector,
     custom_vfnet_detector,

@@ -6,7 +6,7 @@
 
 import copy
 from itertools import product
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Tuple, Union, Optional
 
 import numpy as np
 
@@ -21,6 +21,8 @@ class Tiler:
         tile_size: Tile dimension for each patch
         overlap: Overlap between adjacent tile
         max_number: max number of prediction per image
+        model: OpenVINO adaptor model
+        tile_classifier: Tile classifier OpenVINO adaptor model
         segm: enable instance segmentation mask output
     """
 
@@ -30,6 +32,7 @@ class Tiler:
         overlap: float,
         max_number: int,
         model: Any,
+        tile_classifier: Optional = None,
         segm: bool = False,
     ) -> None:
         self.tile_size = tile_size
@@ -37,6 +40,7 @@ class Tiler:
         self.stride = int(tile_size * (1 - overlap))
         self.max_number = max_number
         self.model = model
+        self.tile_classifier = tile_classifier
         self.segm = segm
 
     def tile(self, image: np.ndarray) -> List[List[int]]:
@@ -103,7 +107,7 @@ class Tiler:
         coord: List[int],
         masks: List[np.ndarray],
         return_features=False,
-    ):
+    ) -> Tuple:
         """Predict on single tile.
 
         Args:
@@ -118,16 +122,19 @@ class Tiler:
         """
         features = (None, None)
         offset_x, offset_y, tile_dict, tile_meta = self.preprocess_tile(image, coord)
-        raw_predictions = self.model.infer_sync(tile_dict)
-        output = self.model.postprocess(raw_predictions, tile_meta)
-        output = self.postprocess_tile(output, offset_x, offset_y, masks)
-        if return_features:
-            if "feature_vector" in raw_predictions or "saliency_map" in raw_predictions:
-                features = (
-                    raw_predictions["feature_vector"].reshape(-1),
-                    raw_predictions["saliency_map"][0],
-                )
-        return features, output
+        objectness_score = self.tile_classifier.infer_sync(tile_dict)['prob'] if self.tile_classifier else 1.0
+        if objectness_score > 0.45:
+            raw_predictions = self.model.infer_sync(tile_dict)
+            output = self.model.postprocess(raw_predictions, tile_meta)
+            output = self.postprocess_tile(output, offset_x, offset_y, masks)
+            if return_features:
+                if "feature_vector" in raw_predictions or "saliency_map" in raw_predictions:
+                    features = (
+                        raw_predictions["feature_vector"].reshape(-1),
+                        raw_predictions["saliency_map"][0],
+                    )
+            return features, output
+        return features, np.empty((0, 6), dtype=np.float32)
 
     def postprocess_tile(
         self,
