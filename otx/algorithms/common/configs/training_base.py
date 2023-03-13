@@ -308,8 +308,12 @@ class BaseConfig(ConfigurableParameters):
         enable_tile_classifier = configurable_boolean(
             default_value=False,
             header="Enable tile classifier",
-            description="Enabling tile classifier enhances the speed of tiling inference by incorporating a tile classifier into the instance segmentation model. This feature prevents the detector from making predictions on tiles that do not contain any objects, thus optimizing its speed performance.",
-            warning="The tile classifier prioritizes inference speed over training speed, it requires more training in order to achieve its optimized performance.",
+            description="Enabling tile classifier enhances the speed of tiling inference by incorporating a tile "
+            "classifier into the instance segmentation model. This feature prevents the detector from "
+            "making predictions on tiles that do not contain any objects, thus optimizing its "
+            "speed performance.",
+            warning="The tile classifier prioritizes inference speed over training speed, it requires more training "
+            "in order to achieve its optimized performance.",
             affects_outcome_of=ModelLifecycle.NONE,
         )
 

@@ -3,25 +3,23 @@
 #
 
 
+import numpy as np
 import torch
+from mmcv.runner import auto_fp16
 from mmdet.models.builder import DETECTORS
+from torch import nn
 
 from otx.mpa.deploy.utils import is_mmdeploy_enabled
 from otx.mpa.utils.logger import get_logger
 
 from .custom_maskrcnn_detector import CustomMaskRCNN
 
-from mmcv.runner import auto_fp16
-
-from torch import nn
-import numpy as np
-
 logger = get_logger()
 
 
 class TileClassifier(torch.nn.Module):
     def __init__(self):
-        """ Tile classifier model """
+        """Tile classifier model"""
         super().__init__()
         self.fp16_enabled = False
         self.features = nn.Sequential(
@@ -44,7 +42,7 @@ class TileClassifier(torch.nn.Module):
             torch.nn.ReLU(inplace=True),
             torch.nn.Linear(256, 256),
             torch.nn.ReLU(inplace=True),
-            torch.nn.Linear(256, 1)
+            torch.nn.Linear(256, 1),
         )
 
         self.loss_fun = torch.nn.BCEWithLogitsLoss()
@@ -52,7 +50,7 @@ class TileClassifier(torch.nn.Module):
 
     @auto_fp16()
     def forward(self, img: torch.Tensor) -> torch.Tensor:
-        """ Forward pass.
+        """Forward pass.
 
         Args:
             img (torch.Tensor): input image
@@ -68,7 +66,7 @@ class TileClassifier(torch.nn.Module):
 
     @auto_fp16()
     def loss(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        """ Calculate BCE loss.
+        """Calculate BCE loss.
 
         Args:
             pred (torch.Tensor): _description_
@@ -82,7 +80,7 @@ class TileClassifier(torch.nn.Module):
 
     @auto_fp16()
     def simple_test(self, img: torch.Tensor) -> torch.Tensor:
-        """ Simple test.
+        """Simple test.
 
         Args:
             img (torch.Tensor): input image
@@ -95,22 +93,16 @@ class TileClassifier(torch.nn.Module):
 
 @DETECTORS.register_module()
 class CustomMaskRCNNTileOptimised(CustomMaskRCNN):
-    """ Custom MaskRCNN detector with tile classifier. """
+    """Custom MaskRCNN detector with tile classifier."""
+
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.tile_classifier = TileClassifier()
 
     def forward_train(
-            self,
-            img,
-            img_metas,
-            gt_bboxes,
-            gt_labels,
-            gt_bboxes_ignore=None,
-            gt_masks=None,
-            proposals=None,
-            **kwargs):
-        """ Forward pass during training.
+        self, img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore=None, gt_masks=None, proposals=None, **kwargs
+    ):
+        """Forward pass during training.
 
         Joint training of tile classifier and MaskRCNN.
 
@@ -141,19 +133,15 @@ class CustomMaskRCNNTileOptimised(CustomMaskRCNN):
         gt_bboxes = [item for keep, item in zip(targets, gt_bboxes) if keep]
         gt_masks = [item for keep, item in zip(targets, gt_masks) if keep]
         if gt_bboxes_ignore:
-            gt_bboxes_ignore = [
-                item for keep, item in zip(targets, gt_bboxes_ignore) if keep]
+            gt_bboxes_ignore = [item for keep, item in zip(targets, gt_bboxes_ignore) if keep]
         rcnn_loss = super().forward_train(
-                        img,
-                        img_metas,
-                        gt_bboxes,
-                        gt_labels,
-                        gt_bboxes_ignore, gt_masks, proposals, **kwargs)
+            img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore, gt_masks, proposals, **kwargs
+        )
         losses.update(rcnn_loss)
         return losses
 
     def simple_test(self, img, img_metas, proposals=None, rescale=False):
-        """ Simple test.
+        """Simple test.
 
         Tile classifier is used to filter out images without any objects.
         If no objects are present, empty results are returned. Otherwise, MaskRCNN is used to detect objects.
@@ -180,7 +168,7 @@ class CustomMaskRCNNTileOptimised(CustomMaskRCNN):
             tmp_results.append((bbox_results, mask_results))
             return tmp_results
 
-        assert self.with_bbox, 'Bbox head must be implemented.'
+        assert self.with_bbox, "Bbox head must be implemented."
         x = self.extract_feat(img)
 
         if proposals is None:
@@ -188,8 +176,7 @@ class CustomMaskRCNNTileOptimised(CustomMaskRCNN):
         else:
             proposal_list = proposals
 
-        return self.roi_head.simple_test(
-            x, proposal_list, img_metas, rescale=rescale)
+        return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale)
 
 
 if is_mmdeploy_enabled():
@@ -203,7 +190,7 @@ if is_mmdeploy_enabled():
 
     @mark("tile_classifier", inputs=["image"], outputs=["prob"])
     def tile_classifier__simple_test_impl(ctx, self, img):
-        """ Tile Classifier Simple Test Impl with added mmdeploy marking for model partitioning
+        """Tile Classifier Simple Test Impl with added mmdeploy marking for model partitioning
 
         Partition tile classifier by marking tile classifier in tracing.
 
@@ -220,7 +207,7 @@ if is_mmdeploy_enabled():
         "otx.mpa.modules.models.detectors.custom_maskrcnn_detector_tile_optimised.TileClassifier.simple_test"
     )
     def tile_classifier__simple_test(ctx, self, img, **kwargs):
-        """ Tile Classifier Simple Test Rewriter.
+        """Tile Classifier Simple Test Rewriter.
 
         Partition tile classifier by rewriting tile classifier simple test.
 
@@ -265,7 +252,7 @@ if is_mmdeploy_enabled():
         "otx.mpa.modules.models.detectors.custom_maskrcnn_detector_tile_optimised.CustomMaskRCNNTileOptimised.simple_test"
     )
     def custom_mask_rcnn__simple_test(ctx, self, img, img_metas, proposals=None, **kwargs):
-        """ Custom Mask RCNN Simple Test Rewriter for ONNX tracing
+        """Custom Mask RCNN Simple Test Rewriter for ONNX tracing
 
         Tile classifier is added to ONNX tracing in order to partition the model.
 

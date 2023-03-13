@@ -6,7 +6,7 @@
 
 import copy
 from itertools import product
-from typing import Any, List, Tuple, Union, Optional
+from typing import Any, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -32,7 +32,7 @@ class Tiler:
         overlap: float,
         max_number: int,
         model: Any,
-        tile_classifier: Optional = None,
+        tile_classifier: Optional[Any] = None,
         segm: bool = False,
     ) -> None:
         self.tile_size = tile_size
@@ -122,7 +122,7 @@ class Tiler:
         """
         features = (None, None)
         offset_x, offset_y, tile_dict, tile_meta = self.preprocess_tile(image, coord)
-        objectness_score = self.tile_classifier.infer_sync(tile_dict)['prob'] if self.tile_classifier else 1.0
+        objectness_score = self.tile_classifier.infer_sync(tile_dict)["prob"] if self.tile_classifier else 1.0
         if objectness_score > 0.45:
             raw_predictions = self.model.infer_sync(tile_dict)
             output = self.model.postprocess(raw_predictions, tile_meta)
