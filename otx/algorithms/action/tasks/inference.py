@@ -317,14 +317,12 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         export_type: ExportType,
         output_model: ModelEntity,
         precision: ModelPrecision = ModelPrecision.FP32,
-        dump_features: bool = True,
+        dump_features: bool = False,
     ):
         """Export function of OTX Action Task."""
-        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
-        if not dump_features:
-            logger.warning(
-                "Ommitting feature dumping is not implemented."
-                "The saliency maps and representation vector outputs will be dumped in the exported model."
+        if dump_features:
+            raise NotImplementedError(f"Feature dumping is not implemented for the anomaly task."
+                                      "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
         # copied from OTX inference_task.py

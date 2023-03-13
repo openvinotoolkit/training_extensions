@@ -342,8 +342,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             options["deploy_cfg"]["dump_features"] = options["dump_features"]
             if options["dump_features"]:
                 output_names = options["deploy_cfg"]["ir_config"]["output_names"]
-                if "feature_vector" not in output_names and "saliency_map" not in output_names:
-                    options["deploy_cfg"]["ir_config"]["output_names"] += ["feature_vector", "saliency_map"]
+                if "feature_vector" not in output_names:
+                    options["deploy_cfg"]["ir_config"]["output_names"].append("feature_vector")
+                if options["deploy_cfg"]["codebase_config"]["task"] != 'Segmentation':
+                    if "saliency_map" not in output_names:
+                        options["deploy_cfg"]["ir_config"]["output_names"].append("saliency_map")
 
         self._initialize_post_hook(options)
 

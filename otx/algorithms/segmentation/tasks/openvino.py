@@ -217,7 +217,12 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, feature_vector, soft_prediction = self.inferencer.predict(dataset_item.numpy)
+            predictions = self.inferencer.predict(dataset_item.numpy)
+            if len(predictions) == 3:
+                predicted_scene, feature_vector, soft_prediction = predictions
+            else:
+                predicted_scene, soft_prediction = predictions
+                feature_vector = None
             dataset_item.append_annotations(predicted_scene.annotations)
 
             if feature_vector is not None:
