@@ -338,7 +338,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 output_names = options["deploy_cfg"]["ir_config"]["output_names"]
                 if "feature_vector" not in output_names:
                     options["deploy_cfg"]["ir_config"]["output_names"].append("feature_vector")
-                if options["deploy_cfg"]["codebase_config"]["task"] != 'Segmentation':
+                if options["deploy_cfg"]["codebase_config"]["task"] != "Segmentation":
                     if "saliency_map" not in output_names:
                         options["deploy_cfg"]["ir_config"]["output_names"].append("saliency_map")
 
