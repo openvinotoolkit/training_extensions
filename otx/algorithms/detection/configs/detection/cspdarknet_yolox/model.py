@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../../base/models/detector.py"]
+_base_ = ["../../../../../recipes/stages/detection/incremental.py", "../../base/models/detector.py"]
 
 model = dict(
     type="CustomYOLOX",

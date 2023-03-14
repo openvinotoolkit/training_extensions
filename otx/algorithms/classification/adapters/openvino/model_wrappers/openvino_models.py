@@ -40,10 +40,8 @@ class OTXClassification(Classification):
         super().__init__(model_adapter, configuration, preload)
         if self.hierarchical:
             logits_range_dict = self.multihead_class_info.get("head_idx_to_logits_range", False)
-            if logits_range_dict:  # json allows only string key, revert to integer.
-                self.multihead_class_info["head_idx_to_logits_range"] = {
-                    int(k): v for k, v in logits_range_dict.items()
-                }
+            if logits_range_dict:
+                self.multihead_class_info["head_idx_to_logits_range"] = dict(logits_range_dict.items())
 
     @classmethod
     def parameters(cls):
@@ -138,7 +136,7 @@ def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
 def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
     """Activate multi-head output."""
     for i in range(multihead_class_info["num_multiclass_heads"]):
-        logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][i]
+        logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][str(i)]
         logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
 
     if multihead_class_info["num_multilabel_classes"]:
@@ -155,7 +153,7 @@ def get_hierarchical_predictions(
     """Get hierarchical predictions."""
     predicted_labels = []
     for i in range(multihead_class_info["num_multiclass_heads"]):
-        logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][i]
+        logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][str(i)]
         head_logits = logits[logits_begin:logits_end]
         if activate:
             head_logits = softmax_numpy(head_logits)
