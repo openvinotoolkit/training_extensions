@@ -89,7 +89,7 @@ In the table below the mAP on some academic datasets using our pipeline is prese
 |  EfficientNet-V2-S    |  75.91               |  81.91  | 95.65          |  96.43  | 85.19          |  84.24  |
 +-----------------------+----------------------+---------+----------------+---------+----------------+---------+
 
-AerialMaritime was sampled with 5 images per label. VOC and COCO were sampled with 50 images per label.
+AerialMaritime was sampled with 5 images per label. VOC and COCO were sampled with 40 images per label.
 
 .. note::
     This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm. Some models may require larger datasets for better results.
