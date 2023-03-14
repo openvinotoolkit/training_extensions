@@ -45,12 +45,24 @@ def get_args():
         help="Comma-separated paths to training data folders.",
     )
     parser.add_argument(
+        "--train-ann-files",
+        help="Comma-separated paths to train annotation files."
+    )
+    parser.add_argument(
         "--val-data-roots",
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
+        "--val-ann-files",
+        help="Comma-separated paths to train annotation files."
+    )
+    parser.add_argument(
         "--test-data-roots",
         help="Comma-separated paths to test data folders.",
+    )
+    parser.add_argument(
+        "--test-ann-files",
+        help="Comma-separated paths to train annotation files."
     )
     parser.add_argument(
         "--unlabeled-data-roots",

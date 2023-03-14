@@ -37,9 +37,13 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     def _import_dataset(
         self,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import MVTec dataset.
 

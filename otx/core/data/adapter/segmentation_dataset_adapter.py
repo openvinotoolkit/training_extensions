@@ -43,11 +43,25 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         self,
         task_type: TaskType,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
     ):
-        super().__init__(task_type, train_data_roots, val_data_roots, test_data_roots, unlabeled_data_roots)
+        super().__init__(
+            task_type, 
+            train_data_roots, 
+            train_ann_files,
+            val_data_roots, 
+            val_ann_files, 
+            test_data_roots,
+            test_ann_files, 
+            unlabeled_data_roots,
+            unlabeled_file_list
+        )
         self.updated_label_id: Dict[int, int] = {}
 
     def get_otx_dataset(self) -> DatasetEntity:
@@ -139,9 +153,13 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
     def _import_dataset(
         self,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
         pseudo_mask_dir: str = "detcon_mask",
     ) -> Dict[Subset, DatumaroDataset]:
         """Import custom Self-SL dataset for using DetCon.
