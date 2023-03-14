@@ -374,7 +374,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if not template_lst:
                 raise ValueError(
                     f"[*] {model} is not a type supported by OTX {task_type}."
-                    f"\n[*] Please refer to 'otx find --template --task_type {task_type}'"
+                    f"\n[*] Please refer to 'otx find --template --task {task_type}'"
                 )
             template = template_lst[0]
         else:
