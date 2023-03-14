@@ -35,6 +35,7 @@ class SemiMultilabelClsHead:
             self.loss_balancer = LossBalancer(2, [1.0, unlabeled_coef])
         else:
             self.loss_balancer = None
+        self.num_pseudo_label = 0
 
     def loss(self, logits, gt_label, features):
         """loss function in which unlabeled data is considered
