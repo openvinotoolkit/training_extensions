@@ -9,7 +9,7 @@ from openvino.model_zoo.model_api.models.classification import Classification
 from otx.algorithms.classification.adapters.openvino.model_wrappers import (
     OTXClassification,
 )
-from otx.algorithms.classification.utils.labels_utils import get_multihead_class_info
+from otx.algorithms.classification.utils.cls_utils import get_multihead_class_info
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import (
     generate_cls_dataset,

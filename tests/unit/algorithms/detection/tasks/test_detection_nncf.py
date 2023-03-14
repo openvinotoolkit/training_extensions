@@ -38,8 +38,7 @@ class TestOTXDetTaskNNCF:
     def test_save_model(self, mocker):
         """Test save_model method in OTXDetTaskNNCF."""
         mocker.patch("torch.load", return_value="")
-        self.det_nncf_task._recipe_cfg = Config({})
-        self.det_nncf_task._model_cfg = Config(
+        self.det_nncf_task._recipe_cfg = Config(
             {
                 "model": {
                     "bbox_head": {

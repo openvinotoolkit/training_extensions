@@ -112,6 +112,7 @@ class TestOTXDetectionTaskInference:
     def test_export(self, task_type, mocker, precision: ModelPrecision):
         """Test export method in DetectionInferenceTask, expected RuntimeError without model file."""
         fake_output = {"outputs": {"bin": None, "xml": None}}
+        mocker.patch("otx.algorithms.detection.tasks.inference.embed_ir_model_data", return_value=None)
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
 
         with pytest.raises(RuntimeError):
@@ -132,6 +133,7 @@ class TestOTXDetectionTaskInference:
             f.write(b"bar")
 
         fake_output = {"outputs": {"bin": f"{self.output_path}/model.xml", "xml": f"{self.output_path}/model.bin"}}
+        mocker.patch("otx.algorithms.detection.tasks.inference.embed_ir_model_data", return_value=None)
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
         self.inference_task[task_type].export(ExportType.OPENVINO, self.model, precision)
 

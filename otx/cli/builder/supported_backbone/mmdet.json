@@ -50,7 +50,7 @@
     "mmdet.EfficientNet": {
       "required": ["arch"],
       "options": {
-        "depth": [
+        "arch": [
           "b0",
           "b1",
           "b2",
