@@ -19,7 +19,7 @@
 
 _base_ = [
     "../../../../../recipes/stages/segmentation/semisl.py",
-    "../../../common/adapters/mmcv/configs/backbones/lite_hrnet_s.py",
+    "../../../../common/adapters/mmcv/configs/backbones/lite_hrnet_s.py",
 ]
 
 model = dict(
