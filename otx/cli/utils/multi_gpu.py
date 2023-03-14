@@ -99,6 +99,11 @@ def set_arguments_to_argv(key: str, value: Optional[str] = None, after_params: b
                 sys.argv.append(key)
 
 
+def is_multigpu_child_process():
+    """Check current process is a child process for multi GPU training."""
+    return torch.distributed.is_initialized() and os.environ["LOCAL_RANK"] != 0
+
+
 class MultiGPUManager:
     """Class to manage multi GPU training.
 

@@ -16,6 +16,7 @@
 
 # pylint: disable=too-many-locals
 
+import sys
 from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -32,7 +33,7 @@ from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
-from otx.cli.utils.multi_gpu import MultiGPUManager
+from otx.cli.utils.multi_gpu import MultiGPUManager, is_multigpu_child_process
 from otx.cli.utils.parser import (
     MemSizeAction,
     add_hyper_parameters_sub_parser,
@@ -244,10 +245,12 @@ def main():  # pylint: disable=too-many-branches
         assert resultset.performance is not None
         print(resultset.performance)
 
-    task.cleanup()
-
     if args.gpus:
         multigpu_manager.finalize()
+    elif is_multigpu_child_process():
+        sys.exit()
+
+    task.cleanup()
 
     return dict(retcode=0, template=template.name)
 
