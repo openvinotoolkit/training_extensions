@@ -21,7 +21,7 @@ not fully covered by unit tests or manual testing can be complicated. -->
 - [ ] I submit my changes into the `develop` branch
 - [ ] I have added description of my changes into [CHANGELOG](https://github.com/openvinotoolkit/training_extensions/blob/develop/CHANGELOG.md)
 - [ ] I have updated the [documentation](
-  https://github.com/openvinotoolkit/datumaro/tree/develop/docs) accordingly
+  https://github.com/openvinotoolkit/training_extensions/tree/develop/docs) accordingly
 - [ ] I have added tests to cover my changes
 - [ ] I have [linked related issues](
   https://help.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
