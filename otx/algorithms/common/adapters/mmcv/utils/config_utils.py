@@ -172,10 +172,10 @@ def patch_runner(config: Config):
         remove_from_config(config, "total_epochs")
 
     # Change runner's type.
-    if is_epoch_based_runner(config.runner):
+    if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
         logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
         config.runner.type = "EpochRunnerWithCancel"
-    else:
+    elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
         logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
         config.runner.type = "IterBasedRunnerWithCancel"
 

@@ -132,11 +132,14 @@ def otx_train_testing(template, root, otx_dir, args):
             command_line.extend([arg, os.path.join(otx_dir, arg_value)])
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
     command_line.extend(["--work-dir", f"{template_work_dir}"])
+    if "--load-weights" in args:
+        command_line.extend(["--load-weights", args["--load-weights"]])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
             command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
-    command_line.extend(args["train_params"])
+    if "train_params" in args:
+        command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
@@ -209,12 +212,29 @@ def otx_export_testing(template, root):
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--save-model-to",
         f"{template_work_dir}/exported_{template.model_template_id}",
-        "--dump-features",
     ]
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/label_schema.json")
+
+
+def otx_export_testing_w_features(template, root):
+    template_work_dir = get_template_dir(template, root)
+    command_line = [
+        "otx",
+        "export",
+        template.model_template_path,
+        "--load-weights",
+        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+        "--save-model-to",
+        f"{template_work_dir}/exported_{template.model_template_id}_w_features",
+        "--dump-features",
+    ]
+    check_run(command_line)
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/label_schema.json")
 
 
 def otx_eval_testing(template, root, otx_dir, args):
@@ -237,7 +257,9 @@ def otx_eval_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
 
-def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
+def otx_eval_openvino_testing(
+    template, root, otx_dir, args, threshold=0.0, criteria=None, reg_threshold=0.10, result_dict=None
+):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -258,7 +280,17 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
     with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
         exported_performance = json.load(read_file)
 
+    if isinstance(criteria, dict) and template.name in criteria.keys():
+        model_criteria = criteria[template.name]
+        modified_criteria = model_criteria - (model_criteria * reg_threshold)
+
     for k in trained_performance.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
+            result_dict[k] = round(exported_performance[k], 3)
+            assert (
+                exported_performance[k] >= modified_criteria
+            ), f"Current exported model performance: ({exported_performance[k]}) < criteria: ({modified_criteria})."
+
         assert (
             exported_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
@@ -353,7 +385,9 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
     )
 
 
-def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
+def otx_eval_deployment_testing(
+    template, root, otx_dir, args, threshold=0.0, criteria=None, reg_threshold=0.10, result_dict=None
+):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -374,7 +408,16 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
     with open(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json") as read_file:
         deployed_performance = json.load(read_file)
 
+    if isinstance(criteria, dict) and template.name in criteria.keys():
+        model_criteria = criteria[template.name]
+        modified_criteria = model_criteria - (model_criteria * reg_threshold)
+
     for k in exported_performance.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
+            result_dict[k] = round(deployed_performance[k], 3)
+            assert (
+                exported_performance[k] >= modified_criteria
+            ), f"Current deployed model performance: ({deployed_performance[k]}) < criteria: ({modified_criteria})."
         assert (
             deployed_performance[k] >= exported_performance[k]
             or abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
@@ -438,7 +481,7 @@ def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
 
 
-def pot_eval_testing(template, root, otx_dir, args):
+def pot_eval_testing(template, root, otx_dir, args, criteria=None, reg_threshold=0.10, result_dict=None):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -454,6 +497,20 @@ def pot_eval_testing(template, root, otx_dir, args):
     command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
+
+    with open(f"{template_work_dir}/pot_{template.model_template_id}/performance.json") as read_file:
+        pot_performance = json.load(read_file)
+
+    if isinstance(criteria, dict) and template.name in criteria.keys():
+        model_criteria = criteria[template.name]
+        modified_criteria = model_criteria - (model_criteria * reg_threshold)
+
+    for k in pot_performance.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
+            result_dict[k] = round(pot_performance[k], 3)
+            assert (
+                pot_performance[k] >= modified_criteria
+            ), f"Current POT model performance: ({pot_performance[k]}) < criteria: ({modified_criteria})."
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
@@ -512,7 +569,9 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf", test_name)
 
 
-def nncf_eval_testing(template, root, otx_dir, args, threshold):
+def nncf_eval_testing(
+    template, root, otx_dir, args, threshold=0.001, criteria=None, reg_threshold=0.10, result_dict=None
+):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -533,7 +592,16 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json") as read_file:
         evaluated_performance = json.load(read_file)
 
+    if isinstance(criteria, dict) and template.name in criteria.keys():
+        model_criteria = criteria[template.name]
+        modified_criteria = model_criteria - (model_criteria * reg_threshold)
+
     for k in trained_performance.keys():
+        if isinstance(criteria, dict) and template.name in criteria.keys():
+            result_dict[k] = round(evaluated_performance[k], 3)
+            assert (
+                evaluated_performance[k] >= modified_criteria
+            ), f"Current nncf model performance: ({evaluated_performance[k]}) < criteria: ({modified_criteria})."
         assert (
             evaluated_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
@@ -632,7 +700,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
+        f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
         "--explain-data-root",
         os.path.join(otx_dir, args["--input"]),
         "--save-explanation-to",
@@ -640,6 +708,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
         "--explain-algorithm",
         test_algorithm,
     ]
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
     check_run(command_line)
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
@@ -767,3 +836,74 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
     command_line.extend(["--work-dir", f"{work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
+
+
+def otx_eval_compare(
+    template,
+    root,
+    otx_dir,
+    args,
+    criteria,
+    result_dict,
+    threshold=0.10,
+):
+    template_work_dir = get_template_dir(template, root)
+
+    command_line = [
+        "otx",
+        "eval",
+        template.model_template_path,
+        "--test-data-roots",
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
+        "--load-weights",
+        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+        "--save-performance",
+        f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
+    ]
+    command_line.extend(["--work-dir", f"{template_work_dir}"])
+    command_line.extend(args.get("eval_params", []))
+    check_run(command_line)
+
+    performance_json_path = f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
+    assert os.path.exists(performance_json_path)
+
+    with open(performance_json_path) as read_file:
+        trained_performance = json.load(read_file)
+
+    model_criteria = criteria[template.name]
+    modified_criteria = model_criteria - (model_criteria * threshold)
+    for k in trained_performance.keys():
+        result_dict[k] = round(trained_performance[k], 3)
+        assert (
+            trained_performance[k] >= modified_criteria
+        ), f"Current model performance: ({trained_performance[k]}) < criteria: ({modified_criteria})."
+
+    result_dict["Model size (MB)"] = round(
+        os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth") / 1e6, 2
+    )
+
+
+def otx_eval_e2e_train_time(train_time_criteria, e2e_train_time, template, threshold=0.10):
+    """Measure train+val time and comapre with test criteria.
+
+    Test criteria was set by previous measurement.
+    """
+    e2e_train_time_criteria = train_time_criteria[template.name]
+    modified_train_criteria = e2e_train_time_criteria - (e2e_train_time_criteria * threshold)
+
+    assert (
+        e2e_train_time >= modified_train_criteria
+    ), f"Current model e2e time: ({e2e_train_time}) < criteria: ({modified_train_criteria})."
+
+
+def otx_eval_e2e_eval_time(eval_time_criteria, e2e_eval_time, template, threshold=0.10):
+    """Measure evaluation time and comapre with test criteria.
+
+    Test criteria was set by previous measurement.
+    """
+    e2e_eval_time_criteria = eval_time_criteria[template.name]
+    modified_eval_criteria = e2e_eval_time_criteria - (e2e_eval_time_criteria * threshold)
+
+    assert (
+        e2e_eval_time >= modified_eval_criteria
+    ), f"Current model e2e time: ({e2e_eval_time}) < criteria: ({modified_eval_criteria})."

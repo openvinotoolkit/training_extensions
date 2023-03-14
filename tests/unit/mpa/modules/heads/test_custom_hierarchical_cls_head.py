@@ -29,7 +29,7 @@ class TestCustomHierarchicalLinearClsHead:
         self.cls_heads_info = {
             "num_multiclass_heads": 1,
             "num_multilabel_classes": 1,
-            "head_idx_to_logits_range": {0: (0, 2)},
+            "head_idx_to_logits_range": {"0": (0, 2)},
             "num_single_label_classes": 2,
         }
         self.loss = dict(type="CrossEntropyLoss", use_sigmoid=False, reduction="mean", loss_weight=1.0)

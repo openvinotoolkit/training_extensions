@@ -220,10 +220,9 @@ def test_should_cluster_anchors(reclustering_anchors):
 @pytest.mark.parametrize("widths, heights", [([1, 10], [1, 10]), ([1, 3, 5, 7, 9], [1, 3, 5, 7, 9])])
 def test_cluster_anchors(widths, heights):
     """Test cluster_anchors function."""
-    model_config = Config(dict(model=dict(bbox_head=dict(anchor_generator=dict(widths=[widths], heights=[heights])))))
-
-    data_config = Config(
+    recipe_config = Config(
         dict(
+            model=dict(bbox_head=dict(anchor_generator=dict(widths=[widths], heights=[heights]))),
             data=dict(
                 test=dict(
                     pipeline=[
@@ -234,8 +233,8 @@ def test_cluster_anchors(widths, heights):
                         ),
                     ]
                 )
-            )
+            ),
         )
     )
     dataset, _ = generate_det_dataset(task_type=TaskType.DETECTION)
-    cluster_anchors(model_config, data_config, dataset)
+    cluster_anchors(recipe_config, dataset)

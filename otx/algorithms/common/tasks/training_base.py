@@ -106,7 +106,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # property below will be initialized by initialize()
         self._recipe_cfg = None
         self._stage_module = None
-        self._model_cfg = None
         self._precision = [ModelPrecision.FP32]
         self._data_cfg = None
         self._mode = None
@@ -136,16 +135,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
-        model_cfg = deepcopy(self._model_cfg)
         recipe_cfg = deepcopy(self._recipe_cfg)
         data_cfg = deepcopy(self._data_cfg)
-        assert model_cfg is not None, "'model_cfg' is not initialized."
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
-        model_cfg["model_classes"] = model_classes
+        recipe_cfg["model_classes"] = model_classes
         if dataset is not None:
             train_data_cfg = Stage.get_data_cfg(data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes
@@ -169,7 +166,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # run workflow with task specific model config and data config
         output = workflow.run(
-            model_cfg=model_cfg,
+            model_cfg=recipe_cfg,
             data_cfg=data_cfg,
             ir_model_path=None,
             ir_weight_path=None,
@@ -248,17 +245,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             self._recipe_cfg.merge_from_dict(self.override_configs)
             logger.info(f"after override configs merging = {self._recipe_cfg}")
 
-        # prepare model config
-        self._model_cfg = self._init_model_cfg()
-
         # Remove FP16 config if running on CPU device and revert to FP32
         # https://github.com/pytorch/pytorch/issues/23377
-        if not torch.cuda.is_available() and "fp16" in self._model_cfg:
+        if not torch.cuda.is_available() and "fp16" in self._recipe_cfg:
             logger.info("Revert FP16 to FP32 on CPU device")
-            if isinstance(self._model_cfg, Config):
-                del self._model_cfg._cfg_dict["fp16"]
-            elif isinstance(self._model_cfg, ConfigDict):
-                del self._model_cfg["fp16"]
+            if isinstance(self._recipe_cfg, Config):
+                del self._recipe_cfg._cfg_dict["fp16"]
+            elif isinstance(self._recipe_cfg, ConfigDict):
+                del self._recipe_cfg["fp16"]
 
         # default adaptive hook for evaluating before and after training
         add_custom_hook_if_not_exists(

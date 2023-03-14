@@ -17,6 +17,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
+    "../../../../recipes/stages/segmentation/incremental.py",
     "../../../common/adapters/mmcv/configs/backbones/lite_hrnet_s.py",
 ]
 
