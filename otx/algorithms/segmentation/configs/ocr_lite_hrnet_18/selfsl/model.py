@@ -17,8 +17,10 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../model.py",
+    "../../../../../recipes/stages/segmentation/selfsl.py",
+    "../../../../common/adapters/mmcv/configs/backbones/lite_hrnet_18.py",
 ]
+
 
 model = dict(
     type="DetConB",

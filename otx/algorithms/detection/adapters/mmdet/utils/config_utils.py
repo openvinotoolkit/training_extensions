@@ -288,7 +288,7 @@ def should_cluster_anchors(model_cfg: Config):
 
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-def cluster_anchors(model_config: Config, data_config: Config, dataset: DatasetEntity):
+def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
     """Update configs for cluster_anchors."""
     if not KMEANS_IMPORT:
         raise ImportError(
@@ -298,9 +298,11 @@ def cluster_anchors(model_config: Config, data_config: Config, dataset: DatasetE
 
     logger.info("Collecting statistics from training dataset to cluster anchor boxes...")
     [target_wh] = [
-        transforms.img_scale for transforms in data_config.data.test.pipeline if transforms.type == "MultiScaleFlipAug"
+        transforms.img_scale
+        for transforms in recipe_config.data.test.pipeline
+        if transforms.type == "MultiScaleFlipAug"
     ]
-    prev_generator = model_config.model.bbox_head.anchor_generator
+    prev_generator = recipe_config.model.bbox_head.anchor_generator
     group_as = [len(width) for width in prev_generator.widths]
     wh_stats = get_sizes_from_dataset_entity(dataset, list(target_wh))
 
@@ -320,7 +322,7 @@ def cluster_anchors(model_config: Config, data_config: Config, dataset: DatasetE
         f"Anchor boxes heights have been updated from {format_list_to_str(prev_generator.heights)} "
         f"to {format_list_to_str(heights)}"
     )
-    config_generator = model_config.model.bbox_head.anchor_generator
+    config_generator = recipe_config.model.bbox_head.anchor_generator
     config_generator.widths, config_generator.heights = widths, heights
 
-    model_config.model.bbox_head.anchor_generator = config_generator
+    recipe_config.model.bbox_head.anchor_generator = config_generator

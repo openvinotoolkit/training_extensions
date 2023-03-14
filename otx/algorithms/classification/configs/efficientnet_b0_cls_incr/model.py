@@ -2,7 +2,7 @@
 
 # pylint: disable=invalid-name
 
-_base_ = "../base/models/efficientnet.py"
+_base_ = ["../../../../recipes/stages/classification/incremental.yaml", "../base/models/efficientnet.py"]
 
 model = dict(
     type="SAMImageClassifier",

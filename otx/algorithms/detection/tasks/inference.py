@@ -75,7 +75,6 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
-from otx.mpa import MPAConstants
 from otx.mpa.utils.config_utils import MPAConfig
 from otx.mpa.utils.logger import get_logger
 
@@ -322,24 +321,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 
-        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/detection")
-        if self._task_type.domain in {
-            Domain.INSTANCE_SEGMENTATION,
-            Domain.ROTATED_DETECTION,
-        }:
-            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/instance-segmentation")
-
-        logger.info(f"train type = {self._train_type}")
-
-        # Incremental Learning Recipe is the default for Detection
-        if self._train_type in RECIPE_TRAIN_TYPE:
-            recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
-        else:
-            raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
-
-        logger.info(f"train type = {self._train_type} - loading {recipe}")
-
-        self._recipe_cfg = MPAConfig.fromfile(recipe)
+        self._recipe_cfg = self._init_model_cfg()
 
         options_for_patch_datasets = {"type": "OTXDetDataset"}
         patch_default_config(self._recipe_cfg)
@@ -351,7 +333,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             **options_for_patch_datasets,
         )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
-        logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
         model_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
@@ -522,13 +503,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         # if self._anchors are set somewhere, anchors had already been clusted
         # by this method or by loading trained model
-        if should_cluster_anchors(self._model_cfg) and len(self._anchors) == 0:
+        if should_cluster_anchors(self._recipe_cfg) and len(self._anchors) == 0:
             otx_dataset = get_configs_by_keys(self._data_cfg.data.train, "otx_dataset")
             assert len(otx_dataset) == 1
             otx_dataset = otx_dataset[0]
             cluster_anchors(
-                self._model_cfg,
                 self._recipe_cfg,
                 otx_dataset,
             )
-            self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
+            self._update_anchors(self._anchors, self._recipe_cfg.model.bbox_head.anchor_generator)

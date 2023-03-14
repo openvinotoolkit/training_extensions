@@ -42,7 +42,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disabl
     num_single_label_classes = 0
     last_logits_pos = 0
     for i, group in enumerate(exclusive_groups):
-        head_idx_to_logits_range[i] = (last_logits_pos, last_logits_pos + len(group))
+        head_idx_to_logits_range[str(i)] = (last_logits_pos, last_logits_pos + len(group))
         last_logits_pos += len(group)
         for j, c in enumerate(group):
             class_to_idx[c] = (i, j)  # group idx and idx inside group
