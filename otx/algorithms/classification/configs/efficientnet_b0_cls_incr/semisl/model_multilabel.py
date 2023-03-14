@@ -2,7 +2,7 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../../../../../recipes/stages/classification/semisl.yaml", "../../base/models/efficientnet.py"]
+_base_ = ["../../../../../recipes/stages/classification/multilabel/semisl.yaml", "../../base/models/efficientnet.py"]
 
 model = dict(
     task="classification",
