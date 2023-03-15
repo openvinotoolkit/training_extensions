@@ -12,7 +12,7 @@ from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import 
     CustomMultiLabelNonLinearClsHead,
 )
 
-from .utils import generate_aux_mlp, LossBalancer
+from .utils import LossBalancer, generate_aux_mlp
 
 
 class SemiMultilabelClsHead:
