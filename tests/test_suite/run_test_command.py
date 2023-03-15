@@ -232,9 +232,15 @@ def otx_export_testing_w_features(template, root):
         "--dump-features",
     ]
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
+
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/label_schema.json")
+
+    path_to_xml = f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml"
+    assert os.path.exists(path_to_xml)
+    with open(path_to_xml, encoding="utf-8") as stream:
+        xml_model = stream.read()
+    assert "feature_vector" in xml_model
 
 
 def otx_eval_testing(template, root, otx_dir, args):

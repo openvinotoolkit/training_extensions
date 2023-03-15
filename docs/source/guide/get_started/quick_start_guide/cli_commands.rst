@@ -426,7 +426,7 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Weight of the saliency map when overlaying the saliency map.
 
 
-The command below will generate saliency maps (heatmaps with read colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``save-explanation-to`` path:
+The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``save-explanation-to`` path:
 
 .. code-block::
 
@@ -440,7 +440,7 @@ The command below will generate saliency maps (heatmaps with read colored areas 
 
     It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
 
-By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the ``explain`` function. To use OpenVINO™ IR model, please first export it with `--dump-features`` parameter:
+By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the ``explain`` function. To use OpenVINO™ IR model in ``otx explain``, please first export it with ``--dump-features`` parameter:
 
 .. code-block::
 
