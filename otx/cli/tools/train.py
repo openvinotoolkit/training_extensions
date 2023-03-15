@@ -16,7 +16,6 @@
 
 # pylint: disable=too-many-locals
 
-import sys
 from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -247,10 +246,9 @@ def main():  # pylint: disable=too-many-branches
 
     if args.gpus:
         multigpu_manager.finalize()
-    elif is_multigpu_child_process():
-        sys.exit()
 
-    task.cleanup()
+    if not is_multigpu_child_process():
+        task.cleanup()
 
     return dict(retcode=0, template=template.name)
 
