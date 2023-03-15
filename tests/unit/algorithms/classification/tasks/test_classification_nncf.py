@@ -71,8 +71,9 @@ class TestOTXClsTaskNNCF:
     @e2e_pytest_unit
     def test_initialize(self, mocker):
         """Test initialize method in OTXDetTaskNNCF."""
+        dataset = None
         options = {}
-        self.cls_nncf_task._initialize(options)
+        self.cls_nncf_task._initialize(dataset, options)
 
         assert "model_builder" in options
         assert NNCFBaseTask.model_builder == options["model_builder"].func

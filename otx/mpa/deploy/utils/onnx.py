@@ -3,40 +3,110 @@
 #
 
 import onnx
+from typing import Callable
+from functools import partial
+
+
+def remove_nodes(model: onnx.ModelProto,
+                 predicate: Callable) -> onnx.ModelProto:
+    """Remove nodes from ONNX model.
+
+    Args:
+        model (onnx.ModelProto): Input onnx model.
+        predicate (Callable): A function to predicate a node.
+
+    Returns:
+        onnx.ModelProto: Modified onnx model.
+    """
+    # ! this doesn't handle inputs/outputs
+    while True:
+        connect = None
+        for i, node in enumerate(model.graph.node):
+            if predicate(node):
+                assert len(node.input) == 1
+                assert len(node.output) == 1
+                connect = (node.input[0], node.output[0])
+                del model.graph.node[i]
+                break
+        if not connect:
+            break
+        src, dst = connect
+        for node in model.graph.node:
+            for i, input in enumerate(node.input):
+                if input == dst:
+                    node.input[i] = src
+    return model
+
+
+def is_op(node: onnx.NodeProto, op_name) -> bool:
+    """Check if an op is identity."""
+    return node.op_type == op_name
+
+
+def remove_node(model: onnx.ModelProto, op_name: str) -> onnx.ModelProto:
+    """Remove identity node from an ONNX model.
+
+    Args:
+        model (onnx.ModelProto): Input onnx model.
+    """
+    graph = model.graph
+
+    def simplify_inputs():
+        connect = None
+        for input in graph.input:
+            for i, node in enumerate(graph.node):
+                if node.op_type == op_name and node.input[0] == input.name:
+                    connect = (node.input[0], node.output[0])
+                    del graph.node[i]
+                    break
+            if connect:
+                break
+        if not connect:
+            return False
+        src, dst = connect
+        for node in graph.node:
+            for i, input_name in enumerate(node.input):
+                if input_name == dst:
+                    node.input[i] = src
+        # the input just changed won't be an output
+        return True
+
+    def simplify_outputs():
+        connect = None
+        for output in graph.output:
+            for i, node in enumerate(graph.node):
+                if node.op_type == op_name and node.output[0] == output.name:
+                    connect = (node.input[0], node.output[0])
+                    del graph.node[i]
+                    break
+            if connect:
+                break
+        if not connect:
+            return False
+        src, dst = connect
+        for node in graph.node:
+            for i, output_name in enumerate(node.output):
+                if output_name == src:
+                    node.output[i] = dst
+            # the output just renamed may be someone's input
+            for i, input_name in enumerate(node.input):
+                if input_name == src:
+                    node.input[i] = dst
+        return True
+
+    while simplify_inputs():
+        pass
+
+    while simplify_outputs():
+        pass
+
+    new_op = partial(is_op, op_name=op_name)
+    remove_nodes(model, new_op)
 
 
 def remove_nodes_by_op_type(onnx_model, op_type):
     # TODO: support more nodes
-
-    supported_op_types = ["Mark", "Conv", "Gemm"]
-    assert op_type in supported_op_types
-
-    target_nodes = []
-    for node in onnx_model.graph.node:
-        if node.op_type == op_type:
-            target_nodes.append(node)
-
-    output_names = [i.name for i in onnx_model.graph.output]
-
-    for target_node in target_nodes:
-        in_port = target_node.input[0]
-        out_port = target_node.output[0]
-
-        out_nodes = [node for node in onnx_model.graph.node if out_port in node.input]
-        for out_node in out_nodes:
-            for i, j in enumerate(out_node.input):
-                if j == out_port:
-                    out_node.input[i] = in_port
-
-        if out_port in output_names:
-            in_nodes = [node for node in onnx_model.graph.node if in_port in node.output]
-            for in_node in in_nodes:
-                for i, j in enumerate(in_node.output):
-                    if j == in_port:
-                        in_node.output[i] = out_port
-
-        onnx_model.graph.node.remove(target_node)
-
+    remove_node(onnx_model, op_type)
     onnx.checker.check_model(onnx_model)
     return onnx_model
 

@@ -127,7 +127,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self.override_configs = {}  # type: Dict[str, str]
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
-        self._initialize(kwargs)
+        self._initialize(dataset, kwargs)
         stage_module = self._update_stage_module(stage_module)
 
         if mode is not None:
@@ -219,7 +219,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         return self._hyperparams
 
     # pylint: disable-next=too-many-branches,too-many-statements
-    def _initialize(self, options=None):  # noqa: C901
+    def _initialize(self, dataset, options=None):  # noqa: C901
         """Prepare configurations to run a task through MPA's stage."""
         if options is None:
             options = {}
@@ -228,7 +228,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         fp16_export = options.get("enable_fp16", False)
 
         logger.info("initializing....")
-        self._init_recipe()
+        self._init_recipe(dataset)
 
         if not export:
             # FIXME: Temporary remedy for CVS-88098
@@ -347,7 +347,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         pass
 
     @abc.abstractmethod
-    def _init_recipe(self):
+    def _init_recipe(self, dataset: Optional[DatasetEntity] = None):
         """Initialize the MPA's target recipe (inclusive of stage type)."""
         raise NotImplementedError("this method should be implemented")
 
@@ -404,7 +404,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     def _init_deploy_cfg(self) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        deploy_cfg_path = os.path.join(base_dir, "deployment.py")
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
+        else:
+            deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
@@ -481,18 +484,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
             # set confidence_threshold as well
             self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
-            if model_data.get("anchors"):
-                self._anchors = model_data["anchors"]
-
-            # Get config
-            if model_data.get("config"):
-                tiling_parameters = model_data.get("config").get("tiling_parameters")
-                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
-                    logger.info("Load tiling parameters")
-                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
-                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
-                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
-                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
             return model_data
         return None
 

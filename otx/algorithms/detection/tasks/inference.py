@@ -35,6 +35,7 @@ from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
+    patch_tiling,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -45,7 +46,7 @@ from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.api.configuration.helper.utils import config_to_bytes
 from otx.api.entities.annotation import Annotation
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import Domain, LabelEntity
@@ -95,6 +96,44 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         # self._should_stop = False
         super().__init__(DetectionConfig, task_environment, **kwargs)
         self.template_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+
+    def _load_model_ckpt(self, model: Optional[ModelEntity]):
+        """ Load model checkpoint from model entity.
+
+        Args:
+            model (Optional[ModelEntity]): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        model_data = super()._load_model_ckpt(model)
+        if model_data:
+            if model_data.get("anchors"):
+                self._anchors = model_data["anchors"]
+
+            # Load adaptive tiling parameters from PyTorch model
+            if model_data.get("config"):
+                loaded_tiling_parameters = model_data.get("config").get("tiling_parameters")
+                if loaded_tiling_parameters and loaded_tiling_parameters["enable_tiling"]["value"]:
+                    logger.info("Load tiling parameters")
+                    hparams = self._hyperparams
+                    hparams.tiling_parameters.enable_tiling = loaded_tiling_parameters["enable_tiling"]["value"]
+                    hparams.tiling_parameters.tile_size = loaded_tiling_parameters["tile_size"]["value"]
+                    hparams.tiling_parameters.tile_overlap = loaded_tiling_parameters["tile_overlap"]["value"]
+                    hparams.tiling_parameters.tile_max_number = loaded_tiling_parameters["tile_max_number"]["value"]
+                    # check backward compatibility
+                    if loaded_tiling_parameters.get("enable_tile_classifier"):
+                        if loaded_tiling_parameters["enable_tile_classifier"]["value"]:
+                            found_tile_classifier = False
+                            for layer_name in model_data['model']['state_dict'].keys():
+                                if layer_name.startswith('tile_classifier'):
+                                    found_tile_classifier = True
+                                    break
+                            if not found_tile_classifier:
+                                raise RuntimeError("Tile classifier is enabled but not found in the trained model. Please retrain your model.")
+                            hparams.tiling_parameters.enable_tile_classifier = loaded_tiling_parameters[
+                                "enable_tile_classifier"]["value"]
+        return model_data
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -177,7 +216,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
-
+        dataset.purpose = DatasetPurpose.INFERENCE
         results = self._run_task(
             stage_module,
             mode="train",
@@ -281,6 +320,20 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
+
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            tile_classifier = None
+            for partition in outputs.get("partitioned"):
+                if partition.get("tile_classifier"):
+                    tile_classifier = partition.get("tile_classifier")
+                    break
+            if tile_classifier is None:
+                raise RuntimeError("invalid status of exporting. tile_classifier should not be None")
+            with open(tile_classifier['bin'], "rb") as f:
+                output_model.set_data("tile_classifier.bin", f.read())
+            with open(tile_classifier['xml'], "rb") as f:
+                output_model.set_data("tile_classifier.xml", f.read())
+
         output_model.set_data(
             "confidence_threshold",
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
@@ -296,29 +349,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
-        # Update tiling parameters if tiling is enabled
-        if bool(self._hyperparams.tiling_parameters.enable_tiling):
-            logger.info("Tiling Enabled")
-            tiling_params = ConfigDict(
-                tile_size=int(self._hyperparams.tiling_parameters.tile_size),
-                overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
-                max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
-            )
-            configs.update(
-                ConfigDict(
-                    data=ConfigDict(
-                        train=tiling_params,
-                        val=tiling_params,
-                        test=tiling_params,
-                    )
-                )
-            )
-            configs.update(dict(evaluation=dict(iou_thr=[0.5])))
-
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 
-    def _init_recipe(self):
+    def _init_recipe(self, dataset: Optional[DatasetEntity] = None):
         logger.info("called _init_recipe()")
 
         self._recipe_cfg = self._init_model_cfg()
@@ -333,6 +367,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             **options_for_patch_datasets,
         )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
+        patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
 
     def _init_model_cfg(self):
         model_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))

@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import time
 import copy
 import io
 import json
@@ -139,10 +140,10 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
-    # TODO [Eugene]: implement unittest for tiling predict
+    # TODO[EUGENE]: implement unittest for tiling predict
     @check_input_parameters_type()
     def predict_tile(
-        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
+        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int, tile_classifier: Any = None
     ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
         """Run prediction by tiling image to small patches.
 
@@ -157,7 +158,8 @@ class BaseInferencerWithConverter(BaseInferencer):
             features: list including saliency map and feature vector
         """
         segm = isinstance(self.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=segm)
+        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=segm, 
+                      tile_classifier=tile_classifier)
         detections, features = tiler.predict(image)
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
@@ -282,6 +284,37 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
         super().__init__(configuration, model, converter)
 
 
+class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
+    """ Tile Classifier Wrapper using OpenVINO backend. """
+
+    @check_input_parameters_type()
+    def __init__(
+        self,
+        inferencer: BaseInferencerWithConverter,
+        tile_classifier_model_file: Union[str, bytes, None] = None,
+        tile_classifier_weight_file: Union[str, bytes, None] = None,
+        device: str = "CPU",
+        num_requests: int = 1,
+    ):
+        self.inferencer = inferencer
+        adapter = OpenvinoAdapter(
+            create_core(),
+            tile_classifier_model_file,
+            tile_classifier_weight_file,
+            device=device,
+            max_num_requests=num_requests,
+        )
+        self.tile_classifier = Model(model_adapter=adapter, preload=True)
+        super().__init__(inferencer.configuration, inferencer.model, inferencer.converter)
+
+    def predict_tile(self, image: np.ndarray, tile_size: int, overlap: float, max_number: int) -> np.ndarray:
+        """Predict tile."""
+        return self.inferencer.predict_tile(
+            image=image, tile_size=tile_size, overlap=overlap, max_number=max_number,
+            tile_classifier=self.tile_classifier
+        )
+
+
 class OTXOpenVinoDataLoader(DataLoader):
     """Data loader for OTXDetection using OpenVINO backend."""
 
@@ -315,6 +348,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.task_type = self.task_environment.model_template.task_type
         self.confidence_threshold: float = 0.0
         self.config = self.load_config()
+        self.tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
+        self.tile_classifier_enabled = self.config.get("tiling_parameters", {}).get("enable_tile_classifier", {}).get("value", False)
         self.inferencer = self.load_inferencer()
         logger.info("OpenVINO task initialization completed")
 
@@ -338,7 +373,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
     def load_inferencer(
         self,
-    ) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer]:
+    ) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer, OpenVINORotatedRectInferencer, OpenVINOTileClassifierWrapper]:
         """load_inferencer function of OpenVINO Detection Task."""
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
@@ -354,12 +389,20 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             self.model.get_data("openvino.bin"),
         ]
         if self.task_type == TaskType.DETECTION:
-            return OpenVINODetectionInferencer(*args)
+            inferencer = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
-            return OpenVINOMaskInferencer(*args)
+            inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
-            return OpenVINORotatedRectInferencer(*args)
-        raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
+            inferencer = OpenVINORotatedRectInferencer(*args)
+        if self.tile_enabled and self.tile_classifier_enabled:
+            logger.info("Tile classifier is enabled. Loading tile classifier model...")
+            inferencer = OpenVINOTileClassifierWrapper(
+                inferencer,
+                self.model.get_data("tile_classifier.xml"),
+                self.model.get_data("tile_classifier.bin"))
+        if not isinstance(inferencer, (OpenVINODetectionInferencer, OpenVINOMaskInferencer, OpenVINORotatedRectInferencer, OpenVINOTileClassifierWrapper)):
+            raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
+        return inferencer
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -381,17 +424,17 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             process_saliency_maps = False
             explain_predicted_classes = True
 
-        tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
-
-        if tile_enabled:
+        if self.tile_enabled:
             tile_size = self.config["tiling_parameters"]["tile_size"]["value"]
             tile_overlap = self.config["tiling_parameters"]["tile_overlap"]["value"]
             max_number = self.config["tiling_parameters"]["tile_max_number"]["value"]
             logger.info("Run inference with tiling")
 
+        total_time = 0
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            if tile_enabled:
+            start_time = time.perf_counter()
+            if self.tile_enabled:
                 predicted_scene, features = self.inferencer.predict_tile(
                     dataset_item.numpy,
                     tile_size=tile_size,
@@ -427,6 +470,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     process_saliency_maps=process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100), None)
+            end_time = time.perf_counter() - start_time
+            logger.info(f"{end_time} secs")
+            total_time += end_time
+        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        logger.info(f"Total time: {total_time} secs")
         logger.info("OpenVINO inference completed")
         return dataset
 
@@ -510,6 +558,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 raise ValueError("Deploy failed, model is None")
             arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
+            if self.tile_classifier_enabled:
+                arch.writestr(os.path.join("model", "tile_classifier.xml"), self.model.get_data("tile_classifier.xml"))
+                arch.writestr(os.path.join("model", "tile_classifier.bin"), self.model.get_data("tile_classifier.bin"))
             arch.writestr(
                 os.path.join("model", "config.json"),
                 json.dumps(parameters, ensure_ascii=False, indent=4),

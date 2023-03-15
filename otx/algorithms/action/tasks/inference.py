@@ -216,7 +216,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     # pylint: disable=attribute-defined-outside-init
     def _init_task(self, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
-        self._initialize(kwargs)
+        self._initialize(None, kwargs)
         logger.info(f"running task... kwargs = {kwargs}")
         if self._recipe_cfg is None:
             raise RuntimeError("'config' is not initialized yet. call prepare() method before calling this method")
@@ -388,7 +388,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 
-    def _init_recipe(self):
+    def _init_recipe(self, dataset: Optional[DatasetEntity] = None):
         logger.info("called _init_recipe()")
         recipe_root = os.path.abspath(os.path.dirname(self.template_file_path))
         recipe = os.path.join(recipe_root, "model.py")

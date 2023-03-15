@@ -7,6 +7,7 @@
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from typing import List
 
+from datumaro import Bbox, Polygon
 from datumaro.components.annotation import AnnotationType
 
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -40,8 +41,10 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                             self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
                             and ann.type == AnnotationType.polygon
                         ):
-                            if self._is_normal_polygon(ann):
+                            if isinstance(ann, Polygon):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
+                            if isinstance(ann, Bbox):
+                                continue
                         if self.task_type is TaskType.DETECTION and ann.type == AnnotationType.bbox:
                             if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))

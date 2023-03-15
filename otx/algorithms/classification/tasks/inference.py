@@ -435,7 +435,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             config.update(unlabeled_config)
         return config
 
-    def _init_recipe(self):
+    def _init_recipe(self, dataset: Optional[DatasetEntity] = None):
         logger.info("called _init_recipe()")
 
         logger.info(f"train type = {self._train_type}")

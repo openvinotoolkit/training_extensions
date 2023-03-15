@@ -192,7 +192,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
 
-    def _init_recipe(self):
+    def _init_recipe(self, dataset: Optional[DatasetEntity] = None):
         logger.info("called _init_recipe()")
         # TODO: Need to remove the hard coding for supcon only.
         if (
