@@ -60,11 +60,9 @@ Semi-SL (Semi-supervised Learning) is a type of machine learning algorithm that 
 
 To utilize unlabeled data during training, we use `BarlowTwins loss <https://arxiv.org/abs/2103.03230>`_ as an auxiliary loss for Semi-SL task solving. BarlowTwins enforces consistency across augmented versions of the same data (both labeled and unlabeled). Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.
 
-Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.
-
 .. _mlc_cls_semi_supervised_pipeline:
 
-- ``BarlowTwins loss``: A specific implementation of Semi-SL that combines the use of a consistency loss with strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.
+- ``BarlowTwins loss``: A specific implementation of Semi-SL that combines the use of a consistency loss with strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (`SAM <https://arxiv.org/abs/2010.01412>`_) to improve the performance of the model.
 
 - ``Adaptive loss auxiliary loss weighting``: A technique for assigning such a weight for an auxiliary loss that the resulting value is a predefined fraction of the EMA-smoothed main loss value. This method allows aligning contribution of the losses during different training phases.
 
@@ -75,7 +73,7 @@ Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improv
 Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` on how to train semi-supervised learning.
 Training time depends on the number of images and can be up to several times longer than conventional supervised learning.
 
-In the table below the mAP on some academic datasets using our pipeline is presented.
+In the table below the mAP metric on some public datasets using our pipeline is presented.
 
 +-----------------------+---------+----------------------+----------------+---------+----------------+---------+
 |        Dataset        | AerialMaritime 3 cls |         | VOC 2007 3 cls |         | COCO 14 3 cls  |         |
@@ -89,10 +87,10 @@ In the table below the mAP on some academic datasets using our pipeline is prese
 |  EfficientNet-V2-S    |  75.91               |  81.91  | 95.65          |  96.43  | 85.19          |  84.24  |
 +-----------------------+----------------------+---------+----------------+---------+----------------+---------+
 
-AerialMaritime was sampled with 5 images per label. VOC and COCO were sampled with 40 images per label.
+AerialMaritime was sampled with 5 images per class. VOC and COCO were sampled with 40 images per class.
 
 .. note::
-    This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm. Some models may require larger datasets for better results.
+    This result can vary depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm. Some models may require larger datasets for better results.
 
 .. ************************
 .. Self-supervised Learning
