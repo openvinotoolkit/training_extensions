@@ -236,7 +236,7 @@ As can be seen from the parameters list, the model can be trained using multiple
 
 .. note::
 
-    Multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We'll add support for them in the near future.
+    Multi-GPU training is currently supported for all tasks except for action tasks. We'll add support for them in the near future.
 
 **********
 Exporting
