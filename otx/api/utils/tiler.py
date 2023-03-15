@@ -22,8 +22,8 @@ class Tiler:
         overlap: Overlap between adjacent tile
         max_number: max number of prediction per image
         model: OpenVINO adaptor model
-        tile_classifier: Tile classifier OpenVINO adaptor model
         segm: enable instance segmentation mask output
+        tile_classifier: Tile classifier OpenVINO adaptor model
     """
 
     def __init__(
@@ -32,8 +32,8 @@ class Tiler:
         overlap: float,
         max_number: int,
         model: Any,
-        tile_classifier: Optional[Any] = None,
         segm: bool = False,
+        tile_classifier: Optional[Any] = None,
     ) -> None:
         self.tile_size = tile_size
         self.overlap = overlap

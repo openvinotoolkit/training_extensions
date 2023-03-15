@@ -131,7 +131,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                                     break
                             if not found_tile_classifier:
                                 raise RuntimeError(
-                                    "Tile classifier is enabled but not found in the trained model. Please retrain your model."
+                                    "Tile classifier is enabled but not found in the trained model. "
+                                    "Please retrain your model."
                                 )
                             hparams.tiling_parameters.enable_tile_classifier = loaded_tiling_parameters[
                                 "enable_tile_classifier"

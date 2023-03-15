@@ -453,7 +453,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             max_number = self.config["tiling_parameters"]["tile_max_number"]["value"]
             logger.info("Run inference with tiling")
 
-        total_time = 0
+        total_time = 0.0
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             start_time = time.perf_counter()
