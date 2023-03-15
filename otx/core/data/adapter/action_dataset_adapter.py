@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-arguments
 import os
 import os.path as osp
 from typing import Any, Dict, List, Optional

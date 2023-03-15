@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-return-statements, too-many-arguments
 import importlib
 import os
 
@@ -139,5 +139,5 @@ def get_dataset_adapter(
         test_data_roots=test_data_roots,
         test_ann_files=test_ann_files,
         unlabeled_data_roots=unlabeled_data_roots,
-        unlabeled_file_list=unlabeled_file_list
+        unlabeled_file_list=unlabeled_file_list,
     )

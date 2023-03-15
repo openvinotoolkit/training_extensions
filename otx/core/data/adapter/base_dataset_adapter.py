@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-instance-attributes, unused-argument
+# pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, unused-argument, too-many-arguments
 
 import abc
 from abc import abstractmethod
@@ -70,7 +70,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         test_data_roots: Optional[str] = None,
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None
+        unlabeled_file_list: Optional[str] = None,
     ):
         self.task_type = task_type
         self.domain = task_type.domain
@@ -85,7 +85,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             test_data_roots=test_data_roots,
             test_ann_files=test_ann_files,
             unlabeled_data_roots=unlabeled_data_roots,
-            unlabeled_file_list=unlabeled_file_list
+            unlabeled_file_list=unlabeled_file_list,
         )
 
         self.category_items: Dict[DatumaroAnnotationType, DatumaroCategories]
@@ -102,7 +102,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         test_data_roots: Optional[str] = None,
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None
+        unlabeled_file_list: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import dataset by using Datumaro.import_from() method.
 
@@ -319,14 +319,14 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         """Filter out unlabeled dataset which isn't included in unlabeled file list."""
         allowed_extensions = ["jpg", "png", "jpeg"]
         file_list = []
-        with open(unlabeled_file_list, 'r') as f:
+        with open(unlabeled_file_list, "r", encoding="utf-8") as f:
             for line in f.readlines():
-                file_ext = line.rstrip().split('.')[-1]
-                file_list.append(line.split('.')[0])
-                
+                file_ext = line.rstrip().split(".")[-1]
+                file_list.append(line.split(".")[0])
+
                 if file_ext.lower() not in allowed_extensions:
                     raise ValueError(f"{file_ext} is not supported type for unlabeled data.")
-                
+
         copy_dataset = deepcopy(unlabeled_dataset)
         for item in copy_dataset:
             if item.id not in file_list:

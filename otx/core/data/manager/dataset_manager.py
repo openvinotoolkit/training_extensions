@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name
 import os
-from typing import List, Tuple, Union, Optional
+from typing import List, Optional, Tuple, Union
 
 import datumaro
 from datumaro.components.dataset import Dataset, DatasetSubset

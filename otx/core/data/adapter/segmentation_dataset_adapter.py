@@ -5,8 +5,6 @@
 #
 
 import json
-
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches
 import os
 from typing import Dict, List, Optional
 
@@ -32,6 +30,9 @@ from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 from otx.mpa.utils.logger import get_logger
 
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches,
+# pylint: too-many-arguments
+
 
 class SegmentationDatasetAdapter(BaseDatasetAdapter):
     """Segmentation adapter inherited from BaseDatasetAdapter.
@@ -52,15 +53,15 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         unlabeled_file_list: Optional[str] = None,
     ):
         super().__init__(
-            task_type, 
-            train_data_roots, 
+            task_type,
+            train_data_roots,
             train_ann_files,
-            val_data_roots, 
-            val_ann_files, 
+            val_data_roots,
+            val_ann_files,
             test_data_roots,
-            test_ann_files, 
+            test_ann_files,
             unlabeled_data_roots,
-            unlabeled_file_list
+            unlabeled_file_list,
         )
         self.updated_label_id: Dict[int, int] = {}
 

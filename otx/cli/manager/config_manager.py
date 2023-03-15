@@ -169,8 +169,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
             # FIXME: Hardcoded for Self-Supervised Learning
             if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
-                splitted_dataset = self.auto_split_data(data_yaml["data"]["train"]["data-roots"], str(self.task_type), 
-                                                        self.args.train_ann_files)
+                splitted_dataset = self.auto_split_data(
+                    data_yaml["data"]["train"]["data-roots"], str(self.task_type), self.args.train_ann_files
+                )
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
@@ -234,7 +235,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         dataset = self.dataset_manager.import_dataset(data_root=data_roots, data_format=self.data_format)
         train_dataset = self.dataset_manager.get_train_dataset(dataset)
         if train_ann_file is not None:
-            train_dataset = self.dataset_manager.import_dataset(train_ann_file, data_format=self.data_format, subset="train")
+            train_dataset = self.dataset_manager.import_dataset(
+                train_ann_file, data_format=self.data_format, subset="train"
+            )
         val_dataset = self.dataset_manager.get_val_dataset(dataset)
         splitted_dataset = None
         if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
@@ -367,11 +370,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if data_yaml["data"]["train"]["data-roots"]:
             self.data_config["train_subset"] = {"data_roots": data_yaml["data"]["train"]["data-roots"]}
         if data_yaml["data"]["train"]["ann-files"]:
-            self.data_config["train_subset"] = {"ann_files":data_yaml["data"]["train"]["ann-files"]}
+            self.data_config["train_subset"] = {"ann_files": data_yaml["data"]["train"]["ann-files"]}
         if data_yaml["data"]["val"]["data-roots"]:
             self.data_config["val_subset"] = {"data_roots": data_yaml["data"]["val"]["data-roots"]}
         if data_yaml["data"]["val"]["ann-files"]:
-            self.data_config["val_subset"] = {"ann_files":data_yaml["data"]["val"]["ann-files"]}
+            self.data_config["val_subset"] = {"ann_files": data_yaml["data"]["val"]["ann-files"]}
         if data_yaml["data"]["test"]["data-roots"]:
             self.data_config["test_subset"] = {"data_roots": data_yaml["data"]["test"]["data-roots"]}
         if data_yaml["data"]["test"]["ann-files"]:
