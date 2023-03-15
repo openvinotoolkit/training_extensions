@@ -23,6 +23,7 @@ class SemiSLMultilabelClassifier(SAMImageClassifier):
         Args:
             imgs (list[Tensor]): List of tensors of shape (1, C, H, W)
                 Typically these should be mean centered and std scaled.
+            gt_label (Tensor): Ground truth labels for the input labeled images
             kwargs (keyword arguments): Specific to concrete implementation
         """
         if "extra_0" not in kwargs:
