@@ -70,7 +70,7 @@ class SemiMultilabelClsHead:
         return losses
 
     def forward_train_with_last_layers(self, x, gt_label, final_cls_layer, final_emb_layer):
-        """Forwards multilabel semi-ls head and losses
+        """Forwards multilabel semi-sl head and losses
 
         Args:
             x (dict): dict(labeled_weak. labeled_strong, unlabeled_weak, unlabeled_strong) or NxC input features.
