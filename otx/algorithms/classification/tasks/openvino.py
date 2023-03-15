@@ -33,7 +33,10 @@ from compression.pipeline.initializer import create_pipeline
 
 from otx.algorithms.classification.adapters.openvino import model_wrappers
 from otx.algorithms.classification.configs import ClassificationConfig
-from otx.algorithms.classification.utils import get_multihead_class_info
+from otx.algorithms.classification.utils import (
+    get_cls_deploy_config,
+    get_cls_inferencer_configuration,
+)
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -54,7 +57,7 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
-from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
+from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
 from otx.api.usecases.exportable_code.inference import BaseInferencer
@@ -107,24 +110,11 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         :param device: Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
         """
 
-        multilabel = len(label_schema.get_groups(False)) > 1 and len(label_schema.get_groups(False)) == len(
-            label_schema.get_labels(include_empty=False)
-        )
-        hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
-        multihead_class_info = {}
-        if hierarchical:
-            multihead_class_info = get_multihead_class_info(label_schema)
-
         self.label_schema = label_schema
-
         model_adapter = OpenvinoAdapter(
             create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
         )
-        self.configuration = {
-            "multilabel": multilabel,
-            "hierarchical": hierarchical,
-            "multihead_class_info": multihead_class_info,
-        }
+        self.configuration = get_cls_inferencer_configuration(self.label_schema)
         self.model = Model.create_model("otx_classification", model_adapter, self.configuration, preload=True)
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
@@ -310,11 +300,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         logger.info("Deploying the model")
 
         work_dir = os.path.dirname(demo.__file__)
-        parameters = {}  # type: Dict[Any, Any]
-        parameters["type_of_model"] = "otx_classification"
-        parameters["converter_type"] = "CLASSIFICATION"
-        parameters["model_parameters"] = self.inferencer.configuration
-        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
+        parameters = get_cls_deploy_config(self.task_environment.label_schema, self.inferencer.configuration)
 
         if self.model is None:
             raise RuntimeError("deploy failed, model is None")

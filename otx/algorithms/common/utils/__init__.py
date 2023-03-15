@@ -20,9 +20,11 @@ from .callback import (
     TrainingProgressCallback,
 )
 from .data import get_cls_img_indices, get_image, get_old_new_img_indices
+from .ir import embed_ir_model_data
 from .utils import UncopiableDefaultDict, get_arg_spec, get_task_class, load_template
 
 __all__ = [
+    "embed_ir_model_data",
     "get_cls_img_indices",
     "get_old_new_img_indices",
     "TrainingProgressCallback",

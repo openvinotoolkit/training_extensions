@@ -7,7 +7,7 @@
 import numpy as np
 import pytest
 import torch
-from mmcv.utils import ConfigDict
+from mmcv.utils import Config, ConfigDict
 from mmdet.models.detectors.faster_rcnn import FasterRCNN
 from torch import nn
 
@@ -21,7 +21,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 class MockDetector(nn.Module):
     """Mock class for person detector."""
 
-    def onnx_export(self, *args, **kwargs):
+    def simple_test(self, *args, **kwargs):
         """Return dummy person detection results."""
 
         sample_det_bboxes = torch.Tensor([[0.0, 0.0, 1.0, 1.0, 1.0]] * 100).unsqueeze(0)
@@ -48,10 +48,10 @@ class TestONNXPool3d:
     def test_init(self) -> None:
         """Test __init__ function."""
 
-        self.temporal_avg_pool.pool == nn.functional.avg_pool3d
-        self.temporal_max_pool.pool == nn.functional.max_pool3d
-        self.spatial_avg_pool.pool == nn.functional.avg_pool3d
-        self.spatial_max_pool.pool == nn.functional.max_pool3d
+        self.temporal_avg_pool.pool == torch.mean
+        self.temporal_max_pool.pool == torch.max
+        self.spatial_avg_pool.pool == torch.mean
+        self.spatial_max_pool.pool == torch.max
 
     @e2e_pytest_unit
     def test_forward(self) -> None:
@@ -71,8 +71,8 @@ class TestONNXPool3d:
 class TestAVAFastRCNN:
     """Test AVAFastRCNN class.
 
-    1. Check add_detector function
-    2. Check patch_pools function
+    1. Check _add_detector function
+    2. Check _patch_pools function
     3. Check forward_infer function
     """
 
@@ -103,6 +103,14 @@ class TestAVAFastRCNN:
         )
 
     @e2e_pytest_unit
+    def test_patch_for_export(self, mocker) -> None:
+        """Test patch_for_export function."""
+
+        mocker.patch.object(AVAFastRCNN, "_add_detector", return_value=True)
+        mocker.patch.object(AVAFastRCNN, "_patch_pools", return_value=True)
+        self.model.patch_for_export()
+
+    @e2e_pytest_unit
     def test_add_detector(self, mocker) -> None:
         """Test add_deector function.
 
@@ -113,11 +121,15 @@ class TestAVAFastRCNN:
             4. Check added detector raise exception if detector's first class is not person
         """
 
+        mock_deploy_cfg = Config(
+            dict(codebase_config=dict(type="mmdet", task="ObjectDetection"), backend_config=dict(type="openvino"))
+        )
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.models.detectors.fast_rcnn.load_checkpoint",
             return_value={"meta": {"CLASSES": ["person", "motorcycle", "car"]}},
         )
-        self.model.add_detector()
+        self.model.deploy_cfg = mock_deploy_cfg
+        self.model._add_detector()
         assert isinstance(self.model.detector, FasterRCNN)
         assert self.model.detector.roi_head.bbox_head.num_classes == 80
         assert self.model.detector.CLASSES == ["person", "motorcycle", "car"]
@@ -127,23 +139,23 @@ class TestAVAFastRCNN:
             return_value={"meta": {"CLASSES": ["motorcycle", "car", "person"]}},
         )
         with pytest.raises(Exception):
-            self.model.add_detector()
+            self.model._add_detector()
 
     @e2e_pytest_unit
     def test_patch_pools(self) -> None:
-        """Test patch_pools function.
+        """Test _patch_pools function.
 
         <Steps>
             1. Check bbox_head's temporal pool is avg_pool and it pools through temporal axis
             2. Check bbox_head's spatial pool is max_pool and it pools through spatial axis
         """
 
-        self.model.patch_pools()
+        self.model._patch_pools()
         assert isinstance(self.model.roi_head.bbox_head.temporal_pool, ONNXPool3D)
-        assert self.model.roi_head.bbox_head.temporal_pool.pool == nn.functional.avg_pool3d
+        assert self.model.roi_head.bbox_head.temporal_pool.pool == torch.mean
         assert self.model.roi_head.bbox_head.temporal_pool.dim == "temporal"
         assert isinstance(self.model.roi_head.bbox_head.spatial_pool, ONNXPool3D)
-        assert self.model.roi_head.bbox_head.spatial_pool.pool == nn.functional.max_pool3d
+        assert self.model.roi_head.bbox_head.spatial_pool.pool == torch.max
         assert self.model.roi_head.bbox_head.spatial_pool.dim == "spatial"
 
     @e2e_pytest_unit
@@ -161,24 +173,23 @@ class TestAVAFastRCNN:
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.models.heads.roi_head.is_in_onnx_export", return_value=True
         )
-        sample_imgs = [torch.randn(1, 3, 32, 256, 256)]
-        sample_img_metas = [
-            [
-                {
-                    "img_shape": torch.Tensor((256, 256)),
-                    "ori_shape": (192, 256),
-                    "pad_shape": (256, 256),
-                    "filename": "demo_vid.png",
-                    "scale_factor": np.array([256 / 256, 256 / 192, 256 / 256, 256 / 192]),
-                    "flip": False,
-                    "show_img": False,
-                    "flip_direction": None,
-                }
+        height = width = 256
+        sample_imgs = torch.randn(1, 3, 32, height, width)
+        sample_img_metas = {
+            "img_metas": [
+                [
+                    {
+                        "ori_shape": (height, width),
+                        "img_shape": (height, width),
+                        "pad_shape": (height, width),
+                        "scale_factor": np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32),
+                    }
+                ]
             ]
-        ]
+        }
         self.model.detector = MockDetector()
         with torch.no_grad():
-            bboxes, labels = self.model.forward_infer(sample_imgs, sample_img_metas)
+            bboxes, labels = self.model.forward_infer(self=self.model, imgs=sample_imgs, **sample_img_metas)
         assert bboxes.shape[-1] == 4
         assert labels.shape[-1] == self.model.roi_head.bbox_head.num_classes
         assert bboxes.shape[0] == labels.shape[0]
