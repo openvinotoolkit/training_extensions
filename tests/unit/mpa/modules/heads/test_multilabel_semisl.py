@@ -42,6 +42,7 @@ class TestSemiLinearMultilabelClsHead:
     def test_forward(self) -> None:
         result = self.default_head.forward_train(self.default_ssl_input, self.default_gt)
         assert "loss" in result
+        assert "unlabeled_loss" in result
         assert result["loss"] >= 0
 
     @e2e_pytest_unit
