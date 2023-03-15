@@ -28,6 +28,7 @@ from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.manager import ConfigManager
+from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
@@ -59,6 +60,12 @@ def get_args():
     parser.add_argument(
         "--unlabeled-file-list",
         help="Comma-separated paths to unlabeled file list",
+    )
+    parser.add_argument(
+        "--train-type",
+        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}.",
+        type=str,
+        default="incremental",
     )
     parser.add_argument(
         "--load-weights",

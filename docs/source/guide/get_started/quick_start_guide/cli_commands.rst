@@ -180,6 +180,8 @@ However, if you created a workspace with ``otx build``, the training process can
                             Comma-separated paths to unlabeled data folders
       --unlabeled-file-list UNLABELED_FILE_LIST
                             Comma-separated paths to unlabeled file list
+      --train-type TRAIN_TYPE
+                            The currently supported options: dict_keys(['INCREMENTAL', 'SEMISUPERVISED', 'SELFSUPERVISED']).
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
       --resume-from RESUME_FROM
