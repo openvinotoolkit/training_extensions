@@ -443,7 +443,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             (template_dir, "deployment.py", self.workspace_root),
             (template_dir, "hpo_config.yaml", self.workspace_root),
             (template_dir, "model_hierarchical.py", self.workspace_root),
-            (template_dir, "model_multilabel.py", self.workspace_root),
         ]
         for target_dir, file_name, dest_dir in config_files:
             self._copy_config_files(target_dir, file_name, dest_dir)
