@@ -259,10 +259,10 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx export --help
-    usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [template]
+    usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--dump-features] [--half-precision] [template]
 
     positional arguments:
-      template              Enter the path or ID or name of the template file.
+      template              Enter the path or ID or name of the template file. 
                             This can be omitted if you have train-data-roots or run inside a workspace.
 
     optional arguments:
@@ -271,6 +271,9 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Load model weights from previously saved checkpoint.
       --save-model-to SAVE_MODEL_TO
                             Location where exported model will be stored.
+      --work-dir WORK_DIR   Location where the intermediate output of the export will be stored.
+      --dump-features       Whether to return feature vector and saliency map for explanation purposes.
+      --half-precision      This flag indicated if model is exported in half precision (FP16).
 
 
 The command below performs exporting to the ``outputs/openvino`` path.
@@ -280,6 +283,12 @@ The command below performs exporting to the ``outputs/openvino`` path.
     (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --save-model-to outputs/openvino
 
 The command results in ``openvino.xml``, ``openvino.bin`` and ``label_schema.json``
+
+To use the exported model as an input for ``otx explain``, please dump additional outputs with internal information, using ``--dump-features``:
+
+.. code-block::
+
+    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --save-model-to outputs/openvino/with_features --dump-features 
 
 
 ************
@@ -430,6 +439,20 @@ The command below will generate saliency maps (heatmaps with read colored areas 
 .. note::
 
     It is possible to pass both PyTorch weights ``.pth`` or OpenVINO™ IR ``openvino.xml`` to ``--load-weights`` option.
+
+By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the ``explain`` function. To use OpenVINO™ IR model, please first export it with `--dump-features`` parameter:
+
+.. code-block::
+
+    (otx) ...$ otx export SSD --load-weights <path/to/trained/weights.pth> \
+                              --save-model-to outputs/openvino/with_features \
+                              --dump-features
+    (otx) ...$ otx explain SSD --explain-data-roots <path/to/explain/root> \
+                               --load-weights outputs/openvino/with_features \
+                               --save-explanation-to <path/to/output/root> \
+                               --explain-algorithm classwisesaliencymap \
+                               --overlay-weight 0.5
+
 
 
 *************
