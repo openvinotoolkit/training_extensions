@@ -70,8 +70,7 @@ class ExporterMixin(object):
                 "xml": os.path.join(cfg.work_dir, f"{model_name}.xml"),
                 "partitioned": [
                     {
-                        f"{os.path.splitext(name)[0]}":
-                        {
+                        f"{os.path.splitext(name)[0]}": {
                             "bin": os.path.join(cfg.work_dir, name.replace(".xml", ".bin")),
                             "xml": os.path.join(cfg.work_dir, name),
                         }

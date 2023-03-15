@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import onnx
-from typing import Callable
 from functools import partial
+from typing import Callable
+
+import onnx
 
 
-def remove_nodes(model: onnx.ModelProto,
-                 predicate: Callable) -> onnx.ModelProto:
+def remove_nodes(model: onnx.ModelProto, predicate: Callable) -> onnx.ModelProto:
     """Remove nodes from ONNX model.
 
     Args:

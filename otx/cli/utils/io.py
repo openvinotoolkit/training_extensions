@@ -91,7 +91,7 @@ def read_model(model_configuration: ModelConfiguration, path: str, train_dataset
         "config.json",
         # TODO[EUGENE]: HOW WOULD GETI HANDLE/READ THESE NEW MODELS?
         "tile_classifier.xml",
-        "tile_classifier.bin"
+        "tile_classifier.bin",
     )
 
     if path.endswith(".bin") or path.endswith(".xml"):

@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import time
 import copy
 import io
 import json
 import multiprocessing
 import os
 import tempfile
+import time
 import warnings
 from typing import Any, Dict, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -158,8 +158,14 @@ class BaseInferencerWithConverter(BaseInferencer):
             features: list including saliency map and feature vector
         """
         segm = isinstance(self.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=segm, 
-                      tile_classifier=tile_classifier)
+        tiler = Tiler(
+            tile_size=tile_size,
+            overlap=overlap,
+            max_number=max_number,
+            model=self.model,
+            segm=segm,
+            tile_classifier=tile_classifier,
+        )
         detections, features = tiler.predict(image)
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
@@ -285,7 +291,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
 
 
 class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
-    """ Tile Classifier Wrapper using OpenVINO backend. """
+    """Tile Classifier Wrapper using OpenVINO backend."""
 
     @check_input_parameters_type()
     def __init__(
@@ -310,8 +316,11 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
     def predict_tile(self, image: np.ndarray, tile_size: int, overlap: float, max_number: int) -> np.ndarray:
         """Predict tile."""
         return self.inferencer.predict_tile(
-            image=image, tile_size=tile_size, overlap=overlap, max_number=max_number,
-            tile_classifier=self.tile_classifier
+            image=image,
+            tile_size=tile_size,
+            overlap=overlap,
+            max_number=max_number,
+            tile_classifier=self.tile_classifier,
         )
 
 
@@ -349,7 +358,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.confidence_threshold: float = 0.0
         self.config = self.load_config()
         self.tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
-        self.tile_classifier_enabled = self.config.get("tiling_parameters", {}).get("enable_tile_classifier", {}).get("value", False)
+        self.tile_classifier_enabled = (
+            self.config.get("tiling_parameters", {}).get("enable_tile_classifier", {}).get("value", False)
+        )
         self.inferencer = self.load_inferencer()
         logger.info("OpenVINO task initialization completed")
 
@@ -373,7 +384,12 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
     def load_inferencer(
         self,
-    ) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer, OpenVINORotatedRectInferencer, OpenVINOTileClassifierWrapper]:
+    ) -> Union[
+        OpenVINODetectionInferencer,
+        OpenVINOMaskInferencer,
+        OpenVINORotatedRectInferencer,
+        OpenVINOTileClassifierWrapper,
+    ]:
         """load_inferencer function of OpenVINO Detection Task."""
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
@@ -397,10 +413,17 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.tile_enabled and self.tile_classifier_enabled:
             logger.info("Tile classifier is enabled. Loading tile classifier model...")
             inferencer = OpenVINOTileClassifierWrapper(
-                inferencer,
-                self.model.get_data("tile_classifier.xml"),
-                self.model.get_data("tile_classifier.bin"))
-        if not isinstance(inferencer, (OpenVINODetectionInferencer, OpenVINOMaskInferencer, OpenVINORotatedRectInferencer, OpenVINOTileClassifierWrapper)):
+                inferencer, self.model.get_data("tile_classifier.xml"), self.model.get_data("tile_classifier.bin")
+            )
+        if not isinstance(
+            inferencer,
+            (
+                OpenVINODetectionInferencer,
+                OpenVINOMaskInferencer,
+                OpenVINORotatedRectInferencer,
+                OpenVINOTileClassifierWrapper,
+            ),
+        ):
             raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
         return inferencer
 

@@ -125,7 +125,9 @@ class Tiler:
         run_prediction = True
         if not return_features:
             # TODO[EUGENE]: should we set the threshold (0.45) as a parameter?
-            run_prediction = self.tile_classifier.infer_sync(tile_dict)["tile_prob"] > 0.45 if self.tile_classifier else True
+            run_prediction = (
+                self.tile_classifier.infer_sync(tile_dict)["tile_prob"] > 0.45 if self.tile_classifier else True
+            )
 
         if run_prediction:
             raw_predictions = self.model.infer_sync(tile_dict)

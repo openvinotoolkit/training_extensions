@@ -98,7 +98,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self.template_dir = os.path.abspath(os.path.dirname(self.template_file_path))
 
     def _load_model_ckpt(self, model: Optional[ModelEntity]):
-        """ Load model checkpoint from model entity.
+        """Load model checkpoint from model entity.
 
         Args:
             model (Optional[ModelEntity]): _description_
@@ -125,14 +125,17 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     if loaded_tiling_parameters.get("enable_tile_classifier"):
                         if loaded_tiling_parameters["enable_tile_classifier"]["value"]:
                             found_tile_classifier = False
-                            for layer_name in model_data['model']['state_dict'].keys():
-                                if layer_name.startswith('tile_classifier'):
+                            for layer_name in model_data["model"]["state_dict"].keys():
+                                if layer_name.startswith("tile_classifier"):
                                     found_tile_classifier = True
                                     break
                             if not found_tile_classifier:
-                                raise RuntimeError("Tile classifier is enabled but not found in the trained model. Please retrain your model.")
+                                raise RuntimeError(
+                                    "Tile classifier is enabled but not found in the trained model. Please retrain your model."
+                                )
                             hparams.tiling_parameters.enable_tile_classifier = loaded_tiling_parameters[
-                                "enable_tile_classifier"]["value"]
+                                "enable_tile_classifier"
+                            ]["value"]
         return model_data
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
@@ -329,9 +332,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     break
             if tile_classifier is None:
                 raise RuntimeError("invalid status of exporting. tile_classifier should not be None")
-            with open(tile_classifier['bin'], "rb") as f:
+            with open(tile_classifier["bin"], "rb") as f:
                 output_model.set_data("tile_classifier.bin", f.read())
-            with open(tile_classifier['xml'], "rb") as f:
+            with open(tile_classifier["xml"], "rb") as f:
                 output_model.set_data("tile_classifier.xml", f.read())
 
         output_model.set_data(

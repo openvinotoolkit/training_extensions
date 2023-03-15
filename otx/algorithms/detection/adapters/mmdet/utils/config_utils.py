@@ -19,7 +19,6 @@ from typing import List, Optional, Union
 
 from mmcv import Config, ConfigDict
 
-from otx.api.entities.datasets import DatasetPurpose
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_keys,
     get_configs_by_pairs,
@@ -33,12 +32,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
+    adaptive_tile_params,
     format_list_to_str,
     get_anchor_boxes,
     get_sizes_from_dataset_entity,
-    adaptive_tile_params
 )
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
@@ -331,7 +330,7 @@ def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
 
 
 def patch_tiling(config, hyper_parameters, dataset: Optional[DatasetEntity] = None):
-    """ Update config for tiling
+    """Update config for tiling
 
     Args:
         config (_type_): _description_
@@ -344,13 +343,15 @@ def patch_tiling(config, hyper_parameters, dataset: Optional[DatasetEntity] = No
     if bool(hyper_parameters.tiling_parameters.enable_tiling):
         logger.info("Tiling Enabled")
         if dataset is not None:
-            if dataset.purpose != DatasetPurpose.INFERENCE and bool(hyper_parameters.tiling_parameters.enable_adaptive_params):
+            if dataset.purpose != DatasetPurpose.INFERENCE and bool(
+                hyper_parameters.tiling_parameters.enable_adaptive_params
+            ):
                 adaptive_tile_params(hyper_parameters.tiling_parameters, dataset)
                 tiling_params = ConfigDict(
-                        tile_size=int(hyper_parameters.tiling_parameters.tile_size),
-                        overlap_ratio=float(hyper_parameters.tiling_parameters.tile_overlap),
-                        max_per_img=int(hyper_parameters.tiling_parameters.tile_max_number),
-                    )
+                    tile_size=int(hyper_parameters.tiling_parameters.tile_size),
+                    overlap_ratio=float(hyper_parameters.tiling_parameters.tile_overlap),
+                    max_per_img=int(hyper_parameters.tiling_parameters.tile_max_number),
+                )
                 config.update(
                     ConfigDict(
                         data=ConfigDict(
@@ -362,6 +363,7 @@ def patch_tiling(config, hyper_parameters, dataset: Optional[DatasetEntity] = No
                 )
 
             if dataset.purpose is DatasetPurpose.INFERENCE:
+                # NOTE: tiling does not work with batch size > 1
                 config.data.val_dataloader.update(ConfigDict(samples_per_gpu=1))
                 config.data.test_dataloader.update(ConfigDict(samples_per_gpu=1))
                 config.data.samples_per_gpu = 1
@@ -371,7 +373,9 @@ def patch_tiling(config, hyper_parameters, dataset: Optional[DatasetEntity] = No
             logger.info(f"\tPatch model from: {config.model.type} to CustomMaskRCNNTileOptimised")
             config.model.type = "CustomMaskRCNNTileOptimised"
             if config.model.backbone.type == "efficientnet_b2b":
-                logger.info(f"\tPatch {config.model.backbone.type} LR from: {hyper_parameters.learning_parameters.learning_rate} to 0.002")
+                logger.info(
+                    f"\tPatch {config.model.backbone.type} LR from: {hyper_parameters.learning_parameters.learning_rate} to 0.002"
+                )
                 hyper_parameters.learning_parameters.learning_rate = 0.002
             config.data.train.filter_empty_gt = False
         config.update(dict(evaluation=dict(iou_thr=[0.5])))

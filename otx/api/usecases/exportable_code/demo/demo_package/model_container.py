@@ -6,7 +6,7 @@
 import importlib
 import json
 from pathlib import Path
-from typing import Any, Tuple, Optional
+from typing import Any, Optional, Tuple
 
 import numpy as np
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
@@ -59,7 +59,7 @@ class ModelContainer:
         self.tiler = self.setup_tiler(model_dir, device)
 
     def setup_tiler(self, model_dir, device) -> Optional[Tiler]:
-        """ Setup tiler for model.
+        """Setup tiler for model.
 
         Args:
             model_dir (str): model directory
