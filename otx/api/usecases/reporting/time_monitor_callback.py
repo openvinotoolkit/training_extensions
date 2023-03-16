@@ -9,9 +9,14 @@
 import logging
 import math
 import time
-from typing import List, Optional
+from typing import List
 
-from otx.api.entities.train_parameters import UpdateProgressCallback
+import dill
+
+from otx.api.entities.train_parameters import (
+    UpdateProgressCallback,
+    default_progress_callback,
+)
 from otx.api.usecases.reporting.callback import Callback
 
 logger = logging.getLogger(__name__)
@@ -27,7 +32,7 @@ class TimeMonitorCallback(Callback):
         num_test_steps (int): amount of testing steps
         epoch_history (int): Amount of previous epochs to calculate average epoch time over
         step_history (int): Amount of previous steps to calculate average steps time over
-        update_progress_callback (Optional[UpdateProgressCallback]): Callback to update progress
+        update_progress_callback (UpdateProgressCallback): Callback to update progress
     """
 
     def __init__(
@@ -38,7 +43,7 @@ class TimeMonitorCallback(Callback):
         num_test_steps: int = 0,
         epoch_history: int = 5,
         step_history: int = 50,
-        update_progress_callback: Optional[UpdateProgressCallback] = None,
+        update_progress_callback: UpdateProgressCallback = default_progress_callback,
     ):
 
         self.total_epochs = num_epoch
@@ -69,10 +74,26 @@ class TimeMonitorCallback(Callback):
 
     def __getstate__(self):
         """Return state values to be pickled."""
-        state = self.__dict__
-        # update_progress_callback is not pickable object
-        state["update_progress_callback"] = None
+        state = self.__dict__.copy()
+        # update_progress_callback is not always pickable object
+        # if it is not, replace it with default callback
+        if not dill.pickles(state["update_progress_callback"]):
+            state["update_progress_callback"] = default_progress_callback
         return state
+
+    def __deepcopy__(self, memo):
+        """Return deepcopy object."""
+        result = self.__class__(
+            self.total_epochs,
+            self.train_steps,
+            self.val_steps,
+            self.test_steps,
+            self.epoch_history,
+            self.step_history,
+            self.update_progress_callback,
+        )
+        memo[id(self)] = result
+        return result
 
     def on_train_batch_begin(self, batch, logs=None):
         """Set the value of current step and start the timer."""
@@ -138,8 +159,7 @@ class TimeMonitorCallback(Callback):
         """Computes the average time taken to complete an epoch based on a running average of `epoch_history` epochs."""
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
-        if self.update_progress_callback is not None:
-            self.update_progress_callback(self.get_progress())
+        self.update_progress_callback(self.get_progress())
 
     def _calculate_average_epoch(self):
         if len(self.past_epoch_duration) > self.epoch_history:
