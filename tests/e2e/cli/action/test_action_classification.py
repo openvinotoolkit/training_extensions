@@ -74,6 +74,8 @@ class TestToolsOTXActionClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
+        if template.name == "MoViNet":
+            pytest.skip(reason="[CVS-106020] MoViNet fails with POT")
         tmp_dir_path = tmp_dir_path / "action_cls"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -81,5 +83,7 @@ class TestToolsOTXActionClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
+        if template.name == "MoViNet":
+            pytest.skip(reason="[CVS-106020] MoViNet fails with POT")
         tmp_dir_path = tmp_dir_path / "action_cls"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
