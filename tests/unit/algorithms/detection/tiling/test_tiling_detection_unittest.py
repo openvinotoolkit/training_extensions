@@ -6,7 +6,7 @@ import torch
 from mmcv import ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 
-from otx.algorithms.detection.adapters.mmdet.data import (  # noqa: F401
+from otx.algorithms.detection.adapters.mmdet.datasets import (  # noqa: F401
     ImageTilingDataset,
 )
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
