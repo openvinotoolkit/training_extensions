@@ -5,8 +5,8 @@ All notable changes to this project will be documented in this file.
 ## \[v1.1.0\]
 
 ### Enhancements
-- Introduce new tile classifier to enhance tiling inference performance in MaskRCNN.
 
+- Introduce new tile classifier to enhance tiling inference performance in MaskRCNN.
 
 ## \[v1.0.0\]
 
