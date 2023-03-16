@@ -357,10 +357,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.task_type = self.task_environment.model_template.task_type
         self.confidence_threshold: float = 0.0
         self.config = self.load_config()
-        self.tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
-        self.tile_classifier_enabled = (
-            self.config.get("tiling_parameters", {}).get("enable_tile_classifier", {}).get("value", False)
-        )
         self.inferencer = self.load_inferencer()
         logger.info("OpenVINO task initialization completed")
 
@@ -369,18 +365,20 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         """Hparams of OpenVINO Detection Task."""
         return self.task_environment.get_hyper_parameters(DetectionConfig)
 
-    def load_config(self) -> Dict:
+    def load_config(self) -> ADDict:
         """Load configurable parameters from model adapter.
 
         Returns:
-            Dict: config dictionary
+            ADDict: config dictionary
         """
+        config = vars(self.hparams)
         try:
             if self.model is not None and self.model.get_data("config.json"):
-                return json.loads(self.model.get_data("config.json"))
+                config.update(json.loads(self.model.get_data("config.json")))
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Failed to load config.json: {e}")
-        return {}
+        config = ADDict(config)
+        return config
 
     def load_inferencer(
         self,
@@ -410,7 +408,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
-        if self.tile_enabled and self.tile_classifier_enabled:
+        if (
+            self.config.tiling_parameters.enable_tiling.value
+            and self.config.tiling_parameters.enable_tile_classifier.value
+        ):
             logger.info("Tile classifier is enabled. Loading tile classifier model...")
             inferencer = OpenVINOTileClassifierWrapper(
                 inferencer, self.model.get_data("tile_classifier.xml"), self.model.get_data("tile_classifier.bin")
@@ -447,17 +448,17 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             process_saliency_maps = False
             explain_predicted_classes = True
 
-        if self.tile_enabled:
-            tile_size = self.config["tiling_parameters"]["tile_size"]["value"]
-            tile_overlap = self.config["tiling_parameters"]["tile_overlap"]["value"]
-            max_number = self.config["tiling_parameters"]["tile_max_number"]["value"]
+        if self.config.tiling_parameters.enable_tiling.value:
+            tile_size = self.config.tiling_parameters.tile_size.value
+            tile_overlap = self.config.tiling_parameters.tile_overlap.value
+            max_number = self.config.tiling_parameters.tile_max_number.value
             logger.info("Run inference with tiling")
 
         total_time = 0.0
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             start_time = time.perf_counter()
-            if self.tile_enabled:
+            if self.config.tiling_parameters.enable_tiling:
                 predicted_scene, features = self.inferencer.predict_tile(
                     dataset_item.numpy,
                     tile_size=tile_size,
@@ -581,7 +582,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 raise ValueError("Deploy failed, model is None")
             arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
-            if self.tile_classifier_enabled:
+            if (
+                self.config.tiling_parameters.enable_tiling.value
+                and self.config.tiling_parameters.enable_tile_classifier.value
+            ):
                 arch.writestr(os.path.join("model", "tile_classifier.xml"), self.model.get_data("tile_classifier.xml"))
                 arch.writestr(os.path.join("model", "tile_classifier.bin"), self.model.get_data("tile_classifier.bin"))
             arch.writestr(

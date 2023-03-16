@@ -330,7 +330,7 @@ def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
 
 
 def patch_tiling(config, hyper_parameters, dataset: Optional[DatasetEntity] = None):
-    """Update config for tiling
+    """Update config for tiling.
 
     Args:
         config (_type_): _description_
