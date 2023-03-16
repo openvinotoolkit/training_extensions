@@ -717,9 +717,11 @@ args_selfsl = {
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
-        "10",
+        "1",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.learning_rate",
+        "1e-07",
         "--algo_backend.train_type",
         "SELFSUPERVISED",
     ],

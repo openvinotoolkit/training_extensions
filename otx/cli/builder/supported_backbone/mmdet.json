@@ -1,5 +1,112 @@
 {
+  "version": "2.28.1",
   "backbones": {
+    "mmdet.CSPDarknet": {
+      "required": ["arch"],
+      "options": {
+        "arch": ["P5", "P6"]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.Darknet": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.DetectoRS_ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.DetectoRS_ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.EfficientNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "b0",
+          "b1",
+          "b2",
+          "b3",
+          "b4",
+          "b5",
+          "b6",
+          "b7",
+          "b8",
+          "es",
+          "em",
+          "el"
+        ]
+      },
+      "available": ["CLASSIFICATION"]
+    },
+    "mmdet.HourglassNet": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.HRNet": {
+      "required": ["extra"],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.MobileNetV2": {
+      "required": [],
+      "options": {},
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.PyramidVisionTransformer": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
+    },
+    "mmdet.PyramidVisionTransformerV2": {
+      "required": [],
+      "options": {},
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
+    },
     "mmdet.RegNet": {
       "required": ["arch"],
       "options": {
@@ -15,11 +122,34 @@
         ]
       },
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.Res2Net": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
+      ]
+    },
+    "mmdet.ResNeSt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152, 200]
+      },
+      "available": [
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
     },
     "mmdet.ResNet": {
@@ -28,11 +158,10 @@
         "depth": [18, 34, 50, 101, 152]
       },
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
     },
     "mmdet.ResNetV1d": {
@@ -41,11 +170,10 @@
         "depth": [18, 34, 50, 101, 152]
       },
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
     },
     "mmdet.ResNeXt": {
@@ -54,11 +182,10 @@
         "depth": [50, 101, 152]
       },
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
     },
     "mmdet.SSDVGG": {
@@ -67,74 +194,34 @@
         "input_size": [300, 512],
         "depth": [11, 16, 19]
       },
-      "available": ["Classification", "ATSS", "Segmentation"]
-    },
-    "mmdet.HRNet": {
-      "required": ["extra"],
-      "options": {},
-      "available": []
-    },
-    "mmdet.Res2Net": {
-      "required": ["depth"],
-      "options": {
-        "depth": [50, 101, 152]
-      },
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
     },
-    "mmdet.DetectoRS_ResNet": {
-      "required": ["depth"],
-      "options": {
-        "depth": [50, 101, 152]
-      },
-      "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
-      ]
-    },
-    "mmdet.DetectoRS_ResNeXt": {
-      "required": ["depth"],
-      "options": {
-        "depth": [50, 101, 152]
-      },
-      "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
-      ]
-    },
-    "mmdet.Darknet": {
+    "mmdet.SwinTransformer": {
       "required": [],
       "options": {},
-      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
+      "available": ["CLASSIFICATION", "DETECTION", "SEGMENTATION"]
     },
-    "mmdet.ResNeSt": {
-      "required": ["depth"],
+    "mmdet.TridentResNet": {
+      "required": [
+        "depth",
+        "num_branch",
+        "test_branch_idx",
+        "trident_dilations"
+      ],
       "options": {
-        "depth": [50, 101, 152, 200]
+        "depth": [18, 34, 50, 101, 152]
       },
       "available": [
-        "Classification",
-        "ATSS",
-        "YOLOX",
-        "Segmentation",
-        "Mask-RCNN"
+        "CLASSIFICATION",
+        "DETECTION",
+        "INSTANCE_SEGMENTATION",
+        "SEGMENTATION"
       ]
-    },
-    "mmdet.CSPDarknet": {
-      "required": [],
-      "options": {},
-      "available": ["Classification", "ATSS", "YOLOX", "Mask-RCNN"]
     }
   }
 }

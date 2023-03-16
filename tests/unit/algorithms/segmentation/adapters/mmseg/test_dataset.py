@@ -13,6 +13,7 @@ from otx.api.entities.annotation import (
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -20,8 +21,8 @@ from otx.api.entities.shapes.rectangle import Rectangle
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-def label_entity(name="test label") -> LabelEntity:
-    return LabelEntity(name=name, domain=Domain.SEGMENTATION)
+def label_entity(name="test label", id="0") -> LabelEntity:
+    return LabelEntity(name=name, id=ID(id), domain=Domain.SEGMENTATION)
 
 
 def dataset_item() -> DatasetItemEntity:
@@ -35,15 +36,18 @@ def dataset_item() -> DatasetItemEntity:
 
 class TestMPASegDataset:
     @pytest.fixture(autouse=True)
-    def setUp(self) -> None:
+    def setUp(self, mocker) -> None:
         self.otx_dataset: DatasetEntity = DatasetEntity(items=[dataset_item()])
         self.pipeline: list[dict] = [{"type": "LoadImageFromOTXDataset", "to_float32": True}]
         self.classes: list[str] = ["class_1", "class_2"]
+        labels_entities = [label_entity(name, i) for i, name in enumerate(self.classes)]
+
+        mocker.patch.object(MPASegDataset, "filter_labels", return_value=labels_entities)
 
         self.dataset: MPASegDataset = MPASegDataset(
             otx_dataset=self.otx_dataset,
             pipeline=self.pipeline,
-            labels=[label_entity(name) for name in self.classes],
+            labels=labels_entities,
             new_classes=self.classes,
         )
 
@@ -57,6 +61,27 @@ class TestMPASegDataset:
 
         # Check if label_map is created as expected
         assert self.dataset.label_map == {0: 0, 1: 1, 2: 2}
+
+    @e2e_pytest_unit
+    def test_classes_sorted(self, mocker) -> None:
+        self.otx_dataset: DatasetEntity = DatasetEntity(items=[dataset_item()])
+        self.pipeline: list[dict] = [{"type": "LoadImageFromOTXDataset", "to_float32": True}]
+        self.classes: list[str] = [f"class_{i+1}" for i in range(11)]
+        labels_entities = [label_entity(name, i) for i, name in enumerate(self.classes)]
+
+        mocker.patch.object(MPASegDataset, "filter_labels", return_value=labels_entities)
+
+        self.dataset: MPASegDataset = MPASegDataset(
+            otx_dataset=self.otx_dataset,
+            pipeline=self.pipeline,
+            labels=labels_entities,
+            new_classes=self.classes,
+        )
+
+        assert self.dataset.CLASSES != ["background"] + self.classes
+        assert self.dataset.CLASSES == ["background"] + [label.name for label in sorted(labels_entities)]
+
+        assert self.dataset.label_map == {0: 0, 1: 1, 2: 2, 3: 11, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9, 11: 10}
 
     @e2e_pytest_unit
     def test_getitem_method(self) -> None:

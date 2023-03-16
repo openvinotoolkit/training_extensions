@@ -28,11 +28,13 @@ from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.manager import ConfigManager
+from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
-from otx.cli.utils.multi_gpu import MultiGPUManager
+from otx.cli.utils.multi_gpu import MultiGPUManager, is_multigpu_child_process
 from otx.cli.utils.parser import (
+    MemSizeAction,
     add_hyper_parameters_sub_parser,
     get_parser_and_hprams_data,
 )
@@ -58,6 +60,12 @@ def get_args():
     parser.add_argument(
         "--unlabeled-file-list",
         help="Comma-separated paths to unlabeled file list",
+    )
+    parser.add_argument(
+        "--train-type",
+        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}.",
+        type=str,
+        default="incremental",
     )
     parser.add_argument(
         "--load-weights",
@@ -110,6 +118,16 @@ def get_args():
         type=int,
         default=0,
         help="Total number of workers in a worker group.",
+    )
+    parser.add_argument(
+        "--mem-cache-size",
+        action=MemSizeAction,
+        dest="params.algo_backend.mem_cache_size",
+        type=str,
+        required=False,
+        help="Size of memory pool for caching decoded data to load data faster. "
+        "For example, you can use digits for bytes size (e.g. 1024) or a string with size units "
+        "(e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30).",
     )
     parser.add_argument(
         "--data",
@@ -226,10 +244,11 @@ def main():  # pylint: disable=too-many-branches
         assert resultset.performance is not None
         print(resultset.performance)
 
-    task.cleanup()
-
     if args.gpus:
         multigpu_manager.finalize()
+
+    if not is_multigpu_child_process():
+        task.cleanup()
 
     return dict(retcode=0, template=template.name)
 

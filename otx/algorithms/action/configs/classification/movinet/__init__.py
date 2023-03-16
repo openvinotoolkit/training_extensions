@@ -1,8 +1,6 @@
-"""
-Initialization of OTX Anomalib Test Helpers
-"""
+"""Initialization of MoViNet model for Action Classification Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

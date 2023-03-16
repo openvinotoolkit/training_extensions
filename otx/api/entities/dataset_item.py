@@ -110,6 +110,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 if Rectangle.is_full_box(annotation.shape):
                     roi = annotation
                     break
+        if roi is None:
+            roi = Annotation(Rectangle.generate_full_box(), labels=[])
         self.__roi = roi
 
         self.__metadata: List[MetadataItemEntity] = []
@@ -150,16 +152,13 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     def roi(self) -> Annotation:
         """Region Of Interest."""
         with self.__roi_lock:
-            if self.__roi is None:
-                requested_roi = Annotation(Rectangle.generate_full_box(), labels=[])
-                self.__roi = requested_roi
-            else:
-                requested_roi = self.__roi
-            return requested_roi
+            return self.__roi
 
     @roi.setter
     def roi(self, roi: Optional[Annotation]):
         with self.__roi_lock:
+            if roi is None:
+                roi = Annotation(Rectangle.generate_full_box(), labels=[])
             self.__roi = roi
 
     @property

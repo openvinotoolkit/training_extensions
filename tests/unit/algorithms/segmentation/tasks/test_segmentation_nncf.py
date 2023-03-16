@@ -34,8 +34,7 @@ class TestOTXSegTaskNNCF:
     @e2e_pytest_unit
     def test_save_model(self, mocker):
         mocker.patch("torch.load", return_value="")
-        self.seg_nncf_task._recipe_cfg = Config({})
-        self.seg_nncf_task._model_cfg = Config({"model": {}})
+        self.seg_nncf_task._recipe_cfg = Config({"model": {}})
         self.seg_nncf_task.save_model(self.model)
 
         assert self.model.get_data("weights.pth")

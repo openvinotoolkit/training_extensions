@@ -68,6 +68,7 @@ def main():
 
     name = parse_args().operation
     sys.argv[0] = f"otx {name}"
+
     del sys.argv[1]
 
     tm_session = telemetry.init_telemetry_session()

@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import argparse
+import re
 import sys
 from argparse import RawTextHelpFormatter
 from pathlib import Path
@@ -22,6 +23,52 @@ from typing import Dict, List, Optional, Union
 
 from otx.api.entities.model_template import ModelTemplate, parse_model_template
 from otx.cli.registry import find_and_parse_model_template
+
+
+class MemSizeAction(argparse.Action):
+    """Parser add on to parse memory size string."""
+
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        if nargs is not None:
+            raise ValueError("nargs not allowed")
+        expected_dest = "params.algo_backend.mem_cache_size"
+        if dest != expected_dest:
+            raise ValueError(f"dest should be {expected_dest}, but dest={dest}.")
+        super().__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        """Parse and set the attribute of namespace."""
+        setattr(namespace, self.dest, self._parse_mem_size_str(values))
+
+    @staticmethod
+    def _parse_mem_size_str(mem_size: str) -> int:
+        assert isinstance(mem_size, str)
+
+        match = re.match(r"^([\d\.]+)\s*([a-zA-Z]{0,3})$", mem_size.strip())
+
+        if match is None:
+            raise ValueError(f"Cannot parse {mem_size} string.")
+
+        units = {
+            "": 1,
+            "B": 1,
+            "KB": 2**10,
+            "MB": 2**20,
+            "GB": 2**30,
+            "KIB": 10**3,
+            "MIB": 10**6,
+            "GIB": 10**9,
+            "K": 2**10,
+            "M": 2**20,
+            "G": 2**30,
+        }
+
+        number, unit = int(match.group(1)), match.group(2).upper()
+
+        if unit not in units:
+            raise ValueError(f"{mem_size} has disallowed unit ({unit}).")
+
+        return number * units[unit]
 
 
 def gen_param_help(hyper_parameters: Dict) -> Dict:
@@ -67,27 +114,38 @@ def gen_params_dict_from_args(
 ) -> Dict[str, dict]:
     """Generates hyper parameters dict from parsed command line arguments."""
 
+    def _get_leaf_node(curr_dict: Dict[str, dict], curr_key: str):
+        split_key = curr_key.split(".")
+        node_key = split_key[0]
+
+        if len(split_key) == 1:
+            # It is leaf node
+            return curr_dict, node_key
+
+        # Dive deeper
+        curr_key = ".".join(split_key[1:])
+        if node_key not in curr_dict:
+            curr_dict[node_key] = {}
+        return _get_leaf_node(curr_dict[node_key], curr_key)
+
+    _prefix = "params."
     params_dict: Dict[str, dict] = {}
     for param_name in dir(args):
-        if not param_name.startswith("params."):
+        value = getattr(args, param_name)
+
+        if not param_name.startswith(_prefix) or value is None:
             continue
         if override_param and param_name not in override_param:
             continue
 
+        # param_name.removeprefix(_prefix)
+        origin_key = param_name[len(_prefix) :]
         value_type = None
-        cur_dict = params_dict
-        split_param_name = param_name.split(".")[1:]
-        if type_hint:
-            origin_key = ".".join(split_param_name)
-            value_type = type_hint[origin_key].get("type", None)
-        for i, k in enumerate(split_param_name):
-            if k not in cur_dict:
-                cur_dict[k] = {}
-            if i < len(split_param_name) - 1:
-                cur_dict = cur_dict[k]
-            else:
-                value = getattr(args, param_name)
-                cur_dict[k] = {"value": value_type(value) if value_type else value}
+        if type_hint is not None:
+            value_type = type_hint.get(origin_key, {}).get("type", None)
+
+        leaf_node_dict, node_key = _get_leaf_node(params_dict, origin_key)
+        leaf_node_dict[node_key] = {"value": value_type(value) if value_type else value}
 
     return params_dict
 

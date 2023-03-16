@@ -11,6 +11,7 @@ from otx.cli.utils.multi_gpu import (
     MultiGPUManager,
     _get_free_port,
     get_gpu_ids,
+    is_multigpu_child_process,
     set_arguments_to_argv,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -121,6 +122,27 @@ def test_set_arguments_to_argv_key_after_param_non_val(mock_argv_with_params):
 
     assert new_key_idx > param_idx
     assert "--other_key" in mock_argv_with_params
+
+
+@e2e_pytest_unit
+def test_is_multigpu_child_process(mocker):
+    mocker.patch.object(multi_gpu.dist, "is_initialized", return_value=True)
+    os.environ["LOCAL_RANK"] = "1"
+    assert is_multigpu_child_process()
+
+
+@e2e_pytest_unit
+def test_is_multigpu_child_process_no_initialized(mocker):
+    mocker.patch.object(multi_gpu.dist, "is_initialized", return_value=False)
+    os.environ["LOCAL_RANK"] = "1"
+    assert not is_multigpu_child_process()
+
+
+@e2e_pytest_unit
+def test_is_multigpu_child_process_rank0(mocker):
+    mocker.patch.object(multi_gpu.dist, "is_initialized", return_value=True)
+    os.environ["LOCAL_RANK"] = "0"
+    assert not is_multigpu_child_process()
 
 
 class TestMultiGPUManager:
