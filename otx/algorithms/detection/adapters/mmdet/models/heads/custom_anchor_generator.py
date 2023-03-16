@@ -19,7 +19,7 @@ from torch.nn.modules.utils import _pair
 class SSDAnchorGeneratorClustered(AnchorGenerator):
     """Custom Anchor Generator for SSD."""
 
-    def __init__(self, strides, widths, heights, _=False):
+    def __init__(self, strides, widths, heights, reclustering_anchors=False):  # pylint: disable=unused-argument
         self.strides = [_pair(stride) for stride in strides]
         self.widths = widths
         self.heights = heights

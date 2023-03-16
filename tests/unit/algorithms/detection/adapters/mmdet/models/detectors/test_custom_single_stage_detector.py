@@ -34,6 +34,7 @@ class TestCustomSingleStageDetector:
                 anchor_generator=dict(
                     type="SSDAnchorGeneratorClustered",
                     strides=(16, 32),
+                    reclustering_anchors=True,
                     widths=[
                         [
                             38.641007923271076,
