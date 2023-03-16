@@ -8,9 +8,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from otx.mpa.modules.datasets.pipelines.transforms.random_augment import (
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.random_augment import (
     CutoutAbs,
-    MPARandAugment,
+    OTXRandAugment,
     rand_augment_pool,
 )
 
@@ -43,10 +43,10 @@ def test_cutoutabs_transform(sample_pil_image: Image.Image) -> None:
     assert color == (127, 127, 127)
 
 
-class TestMPARandAugment:
+class TestOTXRandAugment:
     def test_with_default_arguments(self, sample_np_image: np.ndarray) -> None:
         """Test case with default arguments."""
-        transform = MPARandAugment(n=2, m=5, cutout=16)
+        transform = OTXRandAugment(n=2, m=5, cutout=16)
         data = {"img": sample_np_image}
         results = transform(data)
 
@@ -56,7 +56,7 @@ class TestMPARandAugment:
 
     def test_with_img_fields_argument(self, sample_np_image: np.ndarray) -> None:
         """Test case with img_fields argument."""
-        transform = MPARandAugment(n=2, m=5, cutout=16)
+        transform = OTXRandAugment(n=2, m=5, cutout=16)
         data = {
             "img1": sample_np_image,
             "img2": sample_np_image,
@@ -69,7 +69,7 @@ class TestMPARandAugment:
 
     def test_with_pil_image_input(self, sample_pil_image: Image.Image) -> None:
         """Test case with PIL.Image input."""
-        transform = MPARandAugment(n=2, m=5, cutout=16)
+        transform = OTXRandAugment(n=2, m=5, cutout=16)
         data = {"img": sample_pil_image}
         results = transform(data)
 

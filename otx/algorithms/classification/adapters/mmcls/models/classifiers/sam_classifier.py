@@ -1,7 +1,6 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# flake8: noqa: C901
 
 from functools import partial
 
@@ -128,7 +127,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         return state_dict
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):  # flake8: noqa: C901
+    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):
         """Redirect input state_dict to model for OTX model compatibility"""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:

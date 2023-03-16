@@ -5,7 +5,7 @@
 # flake8: noqa
 from otx import MMDET_AVAILABLE
 
-from . import (  # checkpoint_hook,; ib_loss_hook,; no_bias_decay_hook,; sam_optimizer_hook,; semisl_cls_hook,
+from . import (
     adaptive_training_hooks,
     composed_dataloaders_hook,
     early_stopping_hook,

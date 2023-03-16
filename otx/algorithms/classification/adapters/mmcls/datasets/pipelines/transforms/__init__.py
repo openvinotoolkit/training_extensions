@@ -6,7 +6,7 @@
 
 from .augmix import AugMixAugment
 from .otx_transforms import PILToTensor, RandomRotate, TensorNormalize
-from .random_augment import MPARandAugment
+from .random_augment import OTXRandAugment
 from .twocrop_transform import TwoCropTransform
 
 __all__ = [
@@ -14,6 +14,6 @@ __all__ = [
     "PILToTensor",
     "TensorNormalize",
     "RandomRotate",
-    "MPARandAugment",
+    "OTXRandAugment",
     "TwoCropTransform",
 ]

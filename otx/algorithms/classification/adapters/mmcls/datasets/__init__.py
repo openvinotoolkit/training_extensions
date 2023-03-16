@@ -30,7 +30,7 @@ from .otx_pipelines import (
 )
 from .pipelines.transforms import (
     AugMixAugment,
-    MPARandAugment,
+    OTXRandAugment,
     PILToTensor,
     RandomRotate,
     TensorNormalize,
@@ -42,7 +42,7 @@ __all__ = [
     "PILToTensor",
     "TensorNormalize",
     "RandomRotate",
-    "MPARandAugment",
+    "OTXRandAugment",
     "TwoCropTransform",
     "OTXClsDataset",
     "OTXMultilabelClsDataset",

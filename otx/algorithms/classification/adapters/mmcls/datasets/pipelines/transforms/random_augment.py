@@ -146,7 +146,7 @@ rand_augment_pool = [
 
 # TODO: [Jihwan]: Can be removed by mmcls.datasets.pipeline.auto_augment Line 95 RandAugment class
 @PIPELINES.register_module()
-class MPARandAugment(object):
+class OTXRandAugment(object):
     def __init__(self, n, m, cutout=16):
         assert n >= 1
         assert 1 <= m <= 10
