@@ -18,7 +18,6 @@
 import io
 import json
 import os
-from collections.abc import Mapping
 from copy import deepcopy
 from typing import Dict, List, Optional
 
@@ -347,7 +346,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
             "meta": {
                 "nncf_enable_compression": True,
             },
-        )
+        }
         self._save_model_post_hook(modelinfo)
 
         torch.save(modelinfo, buffer)
