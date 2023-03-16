@@ -89,7 +89,6 @@ def read_model(model_configuration: ModelConfiguration, path: str, train_dataset
         "min",
         "max",
         "config.json",
-        # TODO[EUGENE]: HOW WOULD GETI HANDLE/READ THESE NEW MODELS?
         "tile_classifier.xml",
         "tile_classifier.bin",
     )
