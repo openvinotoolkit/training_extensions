@@ -14,7 +14,7 @@ class UpdateProgressCallback(Protocol):
     `score: Optional[float] = None`
     """
 
-    def __call__(self, progress: int, score: Optional[float] = None):
+    def __call__(self, progress: float, score: Optional[float] = None):
         """Callback to provide updates about the progress of a task.
 
         It is recommended to call this function at least once per epoch.
@@ -30,7 +30,7 @@ class UpdateProgressCallback(Protocol):
 
 
 # pylint: disable=unused-argument
-def default_progress_callback(progress: int, score: Optional[float] = None):
+def default_progress_callback(progress: float, score: Optional[float] = None):
     """Default progress callback. It is a placeholder (does nothing) and is used in empty TrainParameters."""
 
 
