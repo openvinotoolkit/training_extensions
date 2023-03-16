@@ -9,6 +9,7 @@
 import logging
 import math
 import time
+from copy import deepcopy
 from typing import List
 
 import dill
@@ -83,15 +84,18 @@ class TimeMonitorCallback(Callback):
 
     def __deepcopy__(self, memo):
         """Return deepcopy object."""
-        result = self.__class__(
-            self.total_epochs,
-            self.train_steps,
-            self.val_steps,
-            self.test_steps,
-            self.epoch_history,
-            self.step_history,
-            self.update_progress_callback,
-        )
+
+        update_progress_callback = self.update_progress_callback
+        self.update_progress_callback = None
+        self.__dict__["__deepcopy__"] = None
+
+        result = deepcopy(self, memo)
+
+        self.__dict__.pop("__deepcopy__")
+        result.__dict__.pop("__deepcopy__")
+        result.update_progress_callback = update_progress_callback
+        self.update_progress_callback = update_progress_callback
+
         memo[id(self)] = result
         return result
 
