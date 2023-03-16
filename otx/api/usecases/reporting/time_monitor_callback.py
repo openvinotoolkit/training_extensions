@@ -67,6 +67,13 @@ class TimeMonitorCallback(Callback):
 
         self.update_progress_callback = update_progress_callback
 
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__
+        # update_progress_callback is not pickable object
+        state["update_progress_callback"] = None
+        return state
+
     def on_train_batch_begin(self, batch, logs=None):
         """Set the value of current step and start the timer."""
         self.current_step += 1
@@ -131,7 +138,8 @@ class TimeMonitorCallback(Callback):
         """Computes the average time taken to complete an epoch based on a running average of `epoch_history` epochs."""
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
-        self.update_progress_callback(self.get_progress())
+        if self.update_progress_callback is not None:
+            self.update_progress_callback(self.get_progress())
 
     def _calculate_average_epoch(self):
         if len(self.past_epoch_duration) > self.epoch_history:
