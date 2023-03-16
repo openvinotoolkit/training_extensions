@@ -180,6 +180,8 @@ However, if you created a workspace with ``otx build``, the training process can
                             Comma-separated paths to unlabeled data folders
       --unlabeled-file-list UNLABELED_FILE_LIST
                             Comma-separated paths to unlabeled file list
+      --train-type TRAIN_TYPE
+                            The currently supported options: dict_keys(['INCREMENTAL', 'SEMISUPERVISED', 'SELFSUPERVISED']).
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
       --resume-from RESUME_FROM
@@ -246,7 +248,7 @@ As can be seen from the parameters list, the model can be trained using multiple
 
 .. note::
 
-    Multi-GPU training is currently supported for all tasks except for action tasks and semi/self-supervised learning methods. We'll add support for them in the near future.
+    Multi-GPU training is currently supported for all tasks except for action tasks. We'll add support for them in the near future.
 
 **********
 Exporting

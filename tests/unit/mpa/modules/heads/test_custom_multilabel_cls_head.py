@@ -19,7 +19,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 class TestCustomMultiLabelLinearClsHead:
     @pytest.fixture(autouse=True)
-    def head_type(self) -> None:
+    def head_type(self):
         return CustomMultiLabelLinearClsHead
 
     @pytest.fixture(autouse=True)
@@ -57,7 +57,7 @@ class TestCustomMultiLabelLinearClsHead:
 
 class TestCustomMultiLabelNonLinearClsHead(TestCustomMultiLabelLinearClsHead):
     @pytest.fixture(autouse=True)
-    def head_type(self) -> None:
+    def head_type(self):
         return CustomMultiLabelNonLinearClsHead
 
     @e2e_pytest_unit

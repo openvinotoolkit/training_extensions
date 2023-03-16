@@ -116,3 +116,23 @@ class TestOTXSegTaskInference:
         self.seg_train_task.unload()
 
         mock_cleanup.assert_called_once()
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("model_dir", ["...", ".../supcon", ".../supcon/workspace"])
+    def test_init_recipe_supcon(self, mocker, model_dir: str):
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.SegmentationInferenceTask._init_model_cfg")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_default_config")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_runner")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_data_pipeline")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_datasets")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_evaluation")
+
+        self.seg_train_task._hyperparams.learning_parameters.enable_supcon = True
+        self.seg_train_task._model_dir = model_dir
+
+        self.seg_train_task._init_recipe()
+
+        assert self.seg_train_task._model_dir.endswith("supcon")
+
+        self.seg_train_task._hyperparams.learning_parameters.enable_supcon = False
+        self.seg_train_task._hyperparams._model_dir = os.path.abspath(DEFAULT_SEG_TEMPLATE_DIR)

@@ -199,7 +199,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             self._train_type in RECIPE_TRAIN_TYPE
             and self._train_type == TrainType.INCREMENTAL
             and self._hyperparams.learning_parameters.enable_supcon
-            and "supcon" not in self._model_dir
+            and not self._model_dir.endswith("supcon")
         ):
             self._model_dir = os.path.join(self._model_dir, "supcon")
 

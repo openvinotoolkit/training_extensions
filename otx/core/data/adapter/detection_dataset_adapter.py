@@ -14,6 +14,7 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.model_template import TaskType
+from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
@@ -51,8 +52,13 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
 
                         if ann.label not in used_labels:
                             used_labels.append(ann.label)
-                    dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
-                    dataset_items.append(dataset_item)
 
+                    if (
+                        len(shapes) > 0
+                        or subset == Subset.UNLABELED
+                        or (subset != Subset.TRAINING and len(datumaro_item.annotations) == 0)
+                    ):
+                        dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
+                        dataset_items.append(dataset_item)
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)

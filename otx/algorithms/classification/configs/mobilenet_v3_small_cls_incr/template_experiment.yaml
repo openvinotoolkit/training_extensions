@@ -15,7 +15,6 @@ entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.ClassificationNNCFTask
-base_model_path: ../../adapters/deep_object_reid/configs/mobilenet_v3_small/template_experimental.yaml
 
 # Capabilities.
 capabilities:

@@ -186,7 +186,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if arg_algo_backend:
                 train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})  # type: ignore
                 return train_type.get("value", "INCREMENTAL")
-            if self.mode in ("build") and self.args.train_type:
+            if hasattr(self.args, "train_type") and self.mode in ("build", "train") and self.args.train_type:
                 self.train_type = self.args.train_type.upper()
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
                     raise ValueError(f"{self.train_type} is not currently supported by otx.")
@@ -374,7 +374,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if not template_lst:
                 raise ValueError(
                     f"[*] {model} is not a type supported by OTX {task_type}."
-                    f"\n[*] Please refer to 'otx find --template --task_type {task_type}'"
+                    f"\n[*] Please refer to 'otx find --template --task {task_type}'"
                 )
             template = template_lst[0]
         else:
@@ -437,12 +437,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         # Copy config files
         config_files = [
             (model_dir, "model.py", train_type_dir),
+            (model_dir, "model_multilabel.py", train_type_dir),
             (model_dir, "data_pipeline.py", train_type_dir),
             (template_dir, "tile_pipeline.py", self.workspace_root),
             (template_dir, "deployment.py", self.workspace_root),
             (template_dir, "hpo_config.yaml", self.workspace_root),
             (template_dir, "model_hierarchical.py", self.workspace_root),
-            (template_dir, "model_multilabel.py", self.workspace_root),
         ]
         for target_dir, file_name, dest_dir in config_files:
             self._copy_config_files(target_dir, file_name, dest_dir)
