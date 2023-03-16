@@ -15,6 +15,7 @@ import otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head
 import otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head
 import otx.mpa.modules.models.heads.non_linear_cls_head
 import otx.mpa.modules.models.heads.semisl_cls_head
+import otx.mpa.modules.models.heads.semisl_multilabel_cls_head
 import otx.mpa.modules.models.heads.supcon_cls_head
 import otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore
 import otx.mpa.modules.models.losses.asymmetric_loss_with_ignore

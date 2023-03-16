@@ -105,12 +105,13 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
                 [ul_img_metas],
                 rescale=False,  # easy augmentation
             )
+        current_device = ul_img0[0].device
         pseudo_bboxes, pseudo_labels, pseudo_ratio = self.generate_pseudo_labels(
-            teacher_outputs, device=ul_img0.device, **kwargs
+            teacher_outputs, device=current_device, **kwargs
         )
         ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
-        losses.update(ps_recall=ps_recall)
-        losses.update(ps_ratio=torch.Tensor([pseudo_ratio]))
+        losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
+        losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         if not self.unlabeled_loss_enabled or self.unlabeled_loss_weight <= 0.001:  # TODO: move back
             return losses
@@ -160,7 +161,7 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
 
         img_num = len(all_gt_bboxes)
         if img_num == 0:
-            return torch.Tensor([0.0])
+            return [0.0]
         all_ious = np.ndarray((img_num,), dtype=object)
         for i in range(img_num):
             ps_bboxes = all_pseudo_bboxes[i]
@@ -175,7 +176,7 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
                 ious = bbox_overlaps(gt_bboxes.detach().cpu().numpy(), ps_bboxes.detach().cpu().numpy()[:prop_num, :4])
             all_ious[i] = ious
         recall = _recalls(all_ious, np.array([100]), np.array([0.5]))
-        return torch.Tensor(recall)
+        return recall
 
     @staticmethod
     def state_dict_hook(_, state_dict, prefix, *args, **kwargs):
