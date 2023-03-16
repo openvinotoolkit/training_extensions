@@ -15,5 +15,25 @@
 # and limitations under the License.
 
 from .contrastive_head import ConstrastiveHead
+from .custom_cls_head import CustomLinearClsHead, CustomNonLinearClsHead
+from .custom_hierarchical_linear_cls_head import CustomHierarchicalLinearClsHead
+from .custom_hierarchical_non_linear_cls_head import CustomHierarchicalNonLinearClsHead
+from .custom_multi_label_linear_cls_head import CustomMultiLabelLinearClsHead
+from .custom_multi_label_non_linear_cls_head import CustomMultiLabelNonLinearClsHead
+from .non_linear_cls_head import NonLinearClsHead
+from .semisl_cls_head import SemiLinearClsHead, SemiNonLinearClsHead
+from .supcon_cls_head import SupConClsHead
 
-__all__ = ["ConstrastiveHead"]
+__all__ = [
+    "ConstrastiveHead",
+    "CustomLinearClsHead",
+    "CustomNonLinearClsHead",
+    "CustomHierarchicalLinearClsHead",
+    "CustomHierarchicalNonLinearClsHead",
+    "CustomMultiLabelLinearClsHead",
+    "CustomMultiLabelNonLinearClsHead",
+    "NonLinearClsHead",
+    "SemiLinearClsHead",
+    "SemiNonLinearClsHead",
+    "SupConClsHead",
+]

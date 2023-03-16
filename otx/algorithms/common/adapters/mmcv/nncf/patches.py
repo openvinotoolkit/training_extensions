@@ -32,7 +32,9 @@ def _evaluation_wrapper(self, fn, runner, *args, **kwargs):
 
 
 NNCF_PATCHER.patch("mmcv.runner.EvalHook.evaluate", _evaluation_wrapper)
-NNCF_PATCHER.patch("otx.mpa.modules.hooks.eval_hook.CustomEvalHook.evaluate", _evaluation_wrapper)
+NNCF_PATCHER.patch(
+    "otx.algorithms.classification.adapters.mmcls.hooks.eval_hook.CustomEvalHook.evaluate", _evaluation_wrapper
+)
 
 NNCF_PATCHER.patch(
     "otx.mpa.modules.hooks.recording_forward_hooks.FeatureVectorHook.func",

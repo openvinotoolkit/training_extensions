@@ -5,9 +5,8 @@
 from os import path as osp
 
 import mmcv
-import numpy as np
 import torch
-from mmcv.runner import HOOKS, EvalHook, Hook
+from mmcv.runner import HOOKS, EvalHook
 from torch.utils.data import DataLoader
 
 
@@ -88,7 +87,7 @@ def single_gpu_test(model, data_loader):
     results = []
     dataset = data_loader.dataset
     prog_bar = mmcv.ProgressBar(len(dataset))
-    for i, data in enumerate(data_loader):
+    for data in data_loader:
         with torch.no_grad():
             result = model(return_loss=False, **data)
         results.append(result)
@@ -106,7 +105,7 @@ class DistCustomEvalHook(CustomEvalHook):
         if not isinstance(dataloader, DataLoader):
             raise TypeError("dataloader must be a pytorch DataLoader, but got " f"{type(dataloader)}")
         self.gpu_collect = gpu_collect
-        super(DistCustomEvalHook, self).__init__(dataloader, interval, by_epoch=by_epoch, **eval_kwargs)
+        super().__init__(dataloader, interval, by_epoch=by_epoch, **eval_kwargs)
 
     def _do_evaluate(self, runner):
         """perform evaluation"""

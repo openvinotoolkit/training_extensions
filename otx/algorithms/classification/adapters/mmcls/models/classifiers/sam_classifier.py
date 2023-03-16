@@ -1,12 +1,11 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+# flake8: noqa: C901
 
-from collections import OrderedDict
 from functools import partial
 
 from mmcls.models.builder import CLASSIFIERS
-from mmcls.models.classifiers.base import BaseClassifier
 from mmcls.models.classifiers.image import ImageClassifier
 
 from otx.mpa.deploy.utils import is_mmdeploy_enabled
@@ -129,7 +128,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         return state_dict
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):
+    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):  # flake8: noqa: C901
         """Redirect input state_dict to model for OTX model compatibility"""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
@@ -276,7 +275,7 @@ if is_mmdeploy_enabled():
     )
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.extract_feat"
+        "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.extract_feat"
     )
     def sam_image_classifier__extract_feat(ctx, self, img):
         feat = self.backbone(img)
@@ -290,7 +289,7 @@ if is_mmdeploy_enabled():
         return feat, backbone_feat
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.classifiers.sam_classifier.SAMImageClassifier.simple_test"
+        "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.simple_test"
     )
     def sam_image_classifier__simple_test(ctx, self, img, img_metas):
         feat, backbone_feat = self.extract_feat(img)

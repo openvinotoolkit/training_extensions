@@ -10,7 +10,9 @@ import numpy as np
 from mmcls.datasets.builder import PIPELINES
 from PIL import Image
 
-from otx.mpa.modules.datasets.pipelines.transforms.augments import CythonAugments
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.augments import (
+    CythonAugments,
+)
 
 _AUGMIX_TRANSFORMS_GREY = [
     "SharpnessIncreasing",  # not in paper

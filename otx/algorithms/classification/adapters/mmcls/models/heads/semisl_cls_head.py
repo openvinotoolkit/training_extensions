@@ -6,7 +6,9 @@ import torch
 from mmcls.models.builder import HEADS
 from mmcls.models.heads.linear_head import LinearClsHead
 
-from otx.mpa.modules.models.heads.non_linear_cls_head import NonLinearClsHead
+from otx.algorithms.classification.adapters.mmcls.models.heads.non_linear_cls_head import (
+    NonLinearClsHead,
+)
 
 
 class SemiClsHead:

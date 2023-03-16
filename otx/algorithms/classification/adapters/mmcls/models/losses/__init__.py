@@ -1,4 +1,4 @@
-"""OTX Algorithms - Classification Classifiers."""
+"""OTX Algorithms - Classification Losses."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,9 +14,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .byol import BYOL
-from .sam_classifier import SAMImageClassifier
-from .semisl_classifier import SemiSLClassifier
-from .supcon_classifier import SupConClassifier
+from .asymmetric_angular_loss_with_ignore import AsymmetricAngularLossWithIgnore
+from .asymmetric_loss_with_ignore import AsymmetricLossWithIgnore
+from .barlowtwins_loss import BarlowTwinsLoss
+from .cross_entropy_loss import CrossEntropyLossWithIgnore
+from .ib_loss import IBLoss
 
-__all__ = ["BYOL", "SAMImageClassifier", "SemiSLClassifier", "SupConClassifier"]
+__all__ = [
+    "AsymmetricAngularLossWithIgnore",
+    "AsymmetricLossWithIgnore",
+    "BarlowTwinsLoss",
+    "CrossEntropyLossWithIgnore",
+    "IBLoss",
+]

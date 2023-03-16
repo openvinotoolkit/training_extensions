@@ -73,6 +73,7 @@ class SAMOptimizerHook(OptimizerHook):
         # Shaprpness-aware param update
         runner.optimizer.step()  # param -= lr * sam_grad
         runner.log_buffer.update({"sharpness": float(max_loss - curr_loss), "max_loss": float(max_loss)})
+        return
 
     def _get_current_batch(self, model):
         if hasattr(model, "module"):

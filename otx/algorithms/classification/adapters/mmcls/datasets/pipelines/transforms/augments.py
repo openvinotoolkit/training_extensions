@@ -1,3 +1,4 @@
+# type: ignore
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,7 +10,9 @@ import numpy as np
 from PIL import Image, ImageEnhance, ImageOps
 from PIL.Image import Resampling
 
-import otx.mpa.modules.datasets.pipelines.transforms.cython_augments.pil_augment as pil_aug
+import otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.cython_augments.pil_augment as pil_aug
+
+# import otx.algorithms.classification.adapters.mmcls.datasets.cython_augments.pil_augment as pil_aug
 
 PILImage = Image.Image
 CvImage = np.ndarray

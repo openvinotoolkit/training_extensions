@@ -10,7 +10,7 @@ from torchvision.transforms import functional as F
 
 
 @PIPELINES.register_module()
-class PILToTensor(object):
+class PILToTensor:
     def __call__(self, results):
         for key in results.get("img_fields", ["img"]):
             img = results[key]
@@ -23,7 +23,7 @@ class PILToTensor(object):
 
 
 @PIPELINES.register_module()
-class TensorNormalize(object):
+class TensorNormalize:
     def __init__(self, mean, std, inplace=False):
         self.mean = mean
         self.std = std
@@ -40,12 +40,12 @@ class TensorNormalize(object):
 
 # TODO [Jihwan]: Can be removed by mmcls.dataset.pipelines.auto_augment L398, Roate class
 @PIPELINES.register_module()
-class RandomRotate(object):
+class RandomRotate:
     """Random rotate
     From torchreid.data.transforms
     """
 
-    def __init__(self, p=0.5, angle=(-5, 5), values=None, **kwargs):
+    def __init__(self, p=0.5, angle=(-5, 5), values=None):
         self.p = p
         self.angle = angle
         self.discrete = values is not None and len([v for v in values if v != 0]) > 0

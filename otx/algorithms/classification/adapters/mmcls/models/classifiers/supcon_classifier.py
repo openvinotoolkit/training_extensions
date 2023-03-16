@@ -5,7 +5,6 @@
 import torch
 from mmcls.models.builder import CLASSIFIERS
 from mmcls.models.classifiers.image import ImageClassifier
-from torch.nn.functional import sigmoid, softmax
 
 
 @CLASSIFIERS.register_module()
