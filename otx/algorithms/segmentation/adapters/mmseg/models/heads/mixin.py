@@ -9,7 +9,7 @@ from mmseg.core import add_prefix
 from mmseg.models.losses import accuracy
 from mmseg.ops import resize
 
-from otx.algorithms.segmentation.adapters.mmseg.utils.data_utils import get_valid_label_mask_per_batch
+from otx.algorithms.segmentation.adapters.mmseg.utils import get_valid_label_mask_per_batch
 from otx.mpa.modules.models.losses.utils import LossEqualizer
 from otx.mpa.modules.models.utils import IterativeAggregator
 

@@ -3,4 +3,11 @@
 #
 
 # flake8: noqa
+
+from .litehrnet import LiteHRNet
 from .mmov_backbone import MMOVBackbone
+
+__all__ = [
+    "LiteHRNet",
+    "MMOVBackbone",
+]

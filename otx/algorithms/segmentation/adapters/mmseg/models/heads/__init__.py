@@ -4,3 +4,6 @@
 
 # flake8: noqa
 from .mmov_decode_head import MMOVDecodeHead
+from .custom_fcn_head import CustomFCNHead
+
+__all__ = ["MMOVDecodeHead", "CustomFCNHead"]

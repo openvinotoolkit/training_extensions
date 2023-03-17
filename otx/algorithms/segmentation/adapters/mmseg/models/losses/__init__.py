@@ -15,5 +15,6 @@
 # and limitations under the License.
 
 from .detcon_loss import DetConLoss
+from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
 
-__all__ = ["DetConLoss"]
+__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore"]

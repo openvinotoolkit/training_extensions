@@ -3,8 +3,8 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .data import MPASegDataset
-from .models import DetConB, DetConLoss, SelfSLMLP, SupConDetConB
+from .datasets import MPASegDataset
+from .models import LiteHRNet, CustomFCNHead, DetConLoss, SelfSLMLP, DetConB, CrossEntropyLossWithIgnore, SupConDetConB, ClassIncrEncoderDecoder, MeanTeacherSegmentor
 
 # fmt: off
 # isort: off
@@ -16,4 +16,4 @@ get_root_logger().propagate = False
 # fmt: off
 # isort: on
 
-__all__ = ["MPASegDataset", "DetConLoss", "SelfSLMLP", "DetConB", "SupConDetConB"]
+__all__ = ["MPASegDataset","LiteHRNet", "CustomFCNHead", "DetConLoss", "SelfSLMLP", "DetConB", "CrossEntropyLossWithIgnore", "SupConDetConB", "ClassIncrEncoderDecoder", "MeanTeacherSegmentor"]
