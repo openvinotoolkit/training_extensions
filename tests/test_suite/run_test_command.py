@@ -212,12 +212,35 @@ def otx_export_testing(template, root):
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--save-model-to",
         f"{template_work_dir}/exported_{template.model_template_id}",
-        "--dump-features",
     ]
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/label_schema.json")
+
+
+def otx_export_testing_w_features(template, root):
+    template_work_dir = get_template_dir(template, root)
+    command_line = [
+        "otx",
+        "export",
+        template.model_template_path,
+        "--load-weights",
+        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+        "--save-model-to",
+        f"{template_work_dir}/exported_{template.model_template_id}_w_features",
+        "--dump-features",
+    ]
+    check_run(command_line)
+
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/label_schema.json")
+
+    path_to_xml = f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml"
+    assert os.path.exists(path_to_xml)
+    with open(path_to_xml, encoding="utf-8") as stream:
+        xml_model = stream.read()
+    assert "feature_vector" in xml_model
 
 
 def otx_eval_testing(template, root, otx_dir, args):
@@ -683,7 +706,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
+        f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
         "--explain-data-root",
         os.path.join(otx_dir, args["--input"]),
         "--save-explanation-to",
@@ -691,6 +714,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
         "--explain-algorithm",
         test_algorithm,
     ]
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
     check_run(command_line)
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
