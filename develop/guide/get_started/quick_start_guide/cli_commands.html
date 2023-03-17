@@ -686,7 +686,7 @@ For example, you can cache approximately 10,000 of <code class="docutils literal
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained model to the OpenVINO™ IR format to efficiently run it on Intel hardware.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --help
-usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [template]
+usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--dump-features] [--half-precision] [template]
 
 positional arguments:
   template              Enter the path or ID or name of the template file.
@@ -698,6 +698,9 @@ optional arguments:
                         Load model weights from previously saved checkpoint.
   --save-model-to SAVE_MODEL_TO
                         Location where exported model will be stored.
+  --work-dir WORK_DIR   Location where the intermediate output of the export will be stored.
+  --dump-features       Whether to return feature vector and saliency map for explanation purposes.
+  --half-precision      This flag indicated if model is exported in half precision (FP16).
 </pre></div>
 </div>
 <p>The command below performs exporting to the <code class="docutils literal notranslate"><span class="pre">outputs/openvino</span></code> path.</p>
@@ -705,6 +708,10 @@ optional arguments:
 </pre></div>
 </div>
 <p>The command results in <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code></p>
+<p>To use the exported model as an input for <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please dump additional outputs with internal information, using <code class="docutils literal notranslate"><span class="pre">--dump-features</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/trained/weights.pth&gt; --save-model-to outputs/openvino/with_features --dump-features
+</pre></div>
+</div>
 </section>
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
@@ -816,7 +823,7 @@ optional arguments:
                         Weight of the saliency map when overlaying the saliency map.
 </pre></div>
 </div>
-<p>The command below will generate saliency maps (heatmaps with read colored areas of focus) of the trained model on the provided dataset and save the resulting images to <code class="docutils literal notranslate"><span class="pre">save-explanation-to</span></code> path:</p>
+<p>The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to <code class="docutils literal notranslate"><span class="pre">save-explanation-to</span></code> path:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx explain SSD --explain-data-roots &lt;path/to/explain/root&gt; \
                            --load-weights &lt;path/to/model_weights&gt; \
                            --save-explanation-to &lt;path/to/output/root&gt; \
@@ -827,6 +834,17 @@ optional arguments:
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>It is possible to pass both PyTorch weights <code class="docutils literal notranslate"><span class="pre">.pth</span></code> or OpenVINO™ IR <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> to <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> option.</p>
+</div>
+<p>By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the <code class="docutils literal notranslate"><span class="pre">explain</span></code> function. To use OpenVINO™ IR model in <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please first export it with <code class="docutils literal notranslate"><span class="pre">--dump-features</span></code> parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export SSD --load-weights &lt;path/to/trained/weights.pth&gt; \
+                          --save-model-to outputs/openvino/with_features \
+                          --dump-features
+(otx) ...$ otx explain SSD --explain-data-roots &lt;path/to/explain/root&gt; \
+                           --load-weights outputs/openvino/with_features \
+                           --save-explanation-to &lt;path/to/output/root&gt; \
+                           --explain-algorithm classwisesaliencymap \
+                           --overlay-weight 0.5
+</pre></div>
 </div>
 </section>
 <section id="demonstration">
