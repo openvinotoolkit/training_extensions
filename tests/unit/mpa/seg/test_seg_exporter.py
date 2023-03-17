@@ -2,8 +2,8 @@ import os
 
 import pytest
 
+from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
-from otx.mpa.deploy.apis import NaiveExporter
 from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.seg.exporter import SegExporter
 from otx.mpa.utils.config_utils import MPAConfig

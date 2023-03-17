@@ -6,12 +6,15 @@ import importlib
 
 from mmcv.utils import Config
 
-from otx.mpa.deploy.utils.mmdeploy import (
+from otx.algorithms.common.adapters.mmdeploy.utils.mmdeploy import (
     is_mmdeploy_enabled,
     mmdeploy_init_model_helper,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.mpa.deploy.test_helpers import create_config, create_model
+from tests.unit.algorithms.common.adapters.mmdeploy.test_helpers import (
+    create_config,
+    create_model,
+)
 
 
 @e2e_pytest_unit

@@ -6,7 +6,7 @@ import torch
 from mmseg.models import SEGMENTORS
 from mmseg.models.segmentors.encoder_decoder import EncoderDecoder
 
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 
 
 @SEGMENTORS.register_module()
