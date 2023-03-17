@@ -6,21 +6,21 @@
       "options": {
         "version": ["b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8"]
       },
-      "available": ["Classification"]
+      "available": ["CLASSIFICATION"]
     },
     "otx.OTXEfficientNetV2": {
       "required": ["version"],
       "options": {
         "version": ["s_21k", "s_1k", "m_21k", "b0"]
       },
-      "available": ["Classification"]
+      "available": ["CLASSIFICATION"]
     },
     "otx.OTXMobileNetV3": {
       "required": ["mode"],
       "options": {
         "mode": ["small", "large"]
       },
-      "available": ["Classification"]
+      "available": ["CLASSIFICATION"]
     }
   }
 }

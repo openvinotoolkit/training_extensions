@@ -25,7 +25,7 @@ class IExportTask(metaclass=abc.ABCMeta):
         export_type: ExportType,
         output_model: ModelEntity,
         precision: ModelPrecision,
-        dump_features: bool = True,  # FIXME: False
+        dump_features: bool,
     ):
         """This method defines the interface for export.
 

@@ -13,9 +13,6 @@ Datasets
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.datasets.task_adapt_dataset
-   :members:
-   :undoc-members:
 
 .. automodule:: otx.mpa.modules.datasets.pipelines
    :members:
