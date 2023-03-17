@@ -18,7 +18,6 @@
 import io
 import json
 import os
-from collections.abc import Mapping
 from copy import deepcopy
 from typing import Dict, List, Optional
 
@@ -338,30 +337,16 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
 
-        config = deepcopy(self._recipe_cfg)
-        config.merge_from_dict(self._model_cfg)
-
-        def update(d, u):  # pylint: disable=invalid-name
-            for k, v in u.items():  # pylint: disable=invalid-name
-                if isinstance(v, Mapping):
-                    d[k] = update(d.get(k, {}), v)
-                else:
-                    d[k] = v
-            return d
-
-        modelinfo = torch.load(self._model_ckpt, map_location=torch.device("cpu"))
-        modelinfo = update(
-            dict(model=modelinfo),
-            {
-                "meta": {
-                    "nncf_enable_compression": True,
-                    "config": config,
-                },
-                "config": hyperparams_str,
-                "labels": labels,
-                "VERSION": 1,
+        model_ckpt = torch.load(self._model_ckpt, map_location=torch.device("cpu"))
+        modelinfo = {
+            "model": model_ckpt,
+            "config": hyperparams_str,
+            "labels": labels,
+            "VERSION": 1,
+            "meta": {
+                "nncf_enable_compression": True,
             },
-        )
+        }
         self._save_model_post_hook(modelinfo)
 
         torch.save(modelinfo, buffer)

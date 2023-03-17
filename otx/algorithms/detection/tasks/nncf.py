@@ -22,6 +22,9 @@ import otx.algorithms.detection.adapters.mmdet.nncf.patches  # noqa: F401  # pyl
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector
+from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    should_cluster_anchors,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
@@ -111,17 +114,8 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disabl
         output_model.performance = performance
 
     def _save_model_post_hook(self, modelinfo):
-        config = modelinfo["meta"]["config"]
-        if hasattr(config.model, "bbox_head") and hasattr(config.model.bbox_head, "anchor_generator"):
-            if getattr(
-                config.model.bbox_head.anchor_generator,
-                "reclustering_anchors",
-                False,
-            ):
-                generator = config.model.bbox_head.anchor_generator
-                modelinfo["anchors"] = {
-                    "heights": generator.heights,
-                    "widths": generator.widths,
-                }
+        if self._model_cfg is not None and should_cluster_anchors(self._model_cfg):
+            modelinfo["anchors"] = {}
+            self._update_anchors(modelinfo["anchors"], self._model_cfg.model.bbox_head.anchor_generator)
 
         modelinfo["confidence_threshold"] = self.confidence_threshold
