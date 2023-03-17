@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.algorithms.detection.adapters.mmdet.data.pipelines import (
+from otx.algorithms.detection.adapters.mmdet.datasets.pipelines import (
     LoadAnnotationFromOTXDataset,
     LoadImageFromOTXDataset,
 )

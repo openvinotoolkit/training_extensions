@@ -151,7 +151,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         export_type: ExportType,
         output_model: ModelEntity,
         precision: ModelPrecision = ModelPrecision.FP32,
-        dump_features: bool = True,
+        dump_features: bool = False,
     ):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
@@ -159,12 +159,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
-        # TODO: add dumping saliency maps and representation vectors according to dump_features flag
-        if not dump_features:
-            logger.warning(
-                "Ommitting feature dumping is not implemented."
-                "The saliency maps and representation vector outputs will be dumped in the exported model."
-            )
 
         stage_module = "SegExporter"
         results = self._run_task(
@@ -199,7 +193,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             self._train_type in RECIPE_TRAIN_TYPE
             and self._train_type == TrainType.INCREMENTAL
             and self._hyperparams.learning_parameters.enable_supcon
-            and "supcon" not in self._model_dir
+            and not self._model_dir.endswith("supcon")
         ):
             self._model_dir = os.path.join(self._model_dir, "supcon")
 

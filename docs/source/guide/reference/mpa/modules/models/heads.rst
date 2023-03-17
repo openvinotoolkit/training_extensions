@@ -13,17 +13,6 @@ Heads
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.models.heads.cross_dataset_detector_head
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.models.heads.custom_anchor_generator
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.models.heads.custom_atss_head
-   :members:
-   :undoc-members:
 
 .. automodule:: otx.mpa.modules.models.heads.custom_cls_head
    :members:
@@ -46,26 +35,6 @@ Heads
    :undoc-members:
 
 .. automodule:: otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.models.heads.custom_retina_head
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.models.heads.custom_roi_head
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.models.heads.custom_ssd_head
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.models.heads.custom_vfnet_head
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.models.heads.custom_yolox_head
    :members:
    :undoc-members:
 

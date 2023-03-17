@@ -22,6 +22,7 @@ from tests.test_suite.run_test_command import (
     otx_explain_openvino_testing,
     otx_explain_testing,
     otx_export_testing,
+    otx_export_testing_w_features,
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
@@ -118,6 +119,12 @@ class TestMultiClassClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_w_features(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_export_testing_w_features(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
@@ -187,10 +194,32 @@ class TestMultiClassClassificationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
+        args_semisl_multigpu = copy.deepcopy(args)
+        args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
+        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl_multigpu["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
+
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
+
+    @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_selfsl"
+        args_selfsl_multigpu = copy.deepcopy(args_selfsl)
+        args_selfsl_multigpu["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
 
 
 # Multi-label training w/ 'car', 'tree', 'bug' classes
@@ -221,6 +250,12 @@ class TestMultilabelClassificationCLI:
     def test_otx_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_export_testing(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_export_w_features(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_export_testing_w_features(template, tmp_dir_path)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -267,6 +302,15 @@ class TestMultilabelClassificationCLI:
 
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_semisl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls" / "test_semisl"
+        args_semisl = copy.deepcopy(args_m)
+        args_semisl["--unlabeled-data-roots"] = args_m["--train-data-roots"]
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
 
 args_h = {
     "--train-data-roots": "tests/assets/datumaro_h-label",
@@ -295,6 +339,12 @@ class TestHierarchicalClassificationCLI:
     def test_otx_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_export_testing(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_export_w_features(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_export_testing_w_features(template, tmp_dir_path)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
