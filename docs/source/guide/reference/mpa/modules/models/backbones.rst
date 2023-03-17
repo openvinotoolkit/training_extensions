@@ -9,10 +9,6 @@ Backbones
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.models.backbones.imgclsmob
-   :members:
-   :undoc-members:
-
 .. automodule:: otx.mpa.modules.models.backbones.litehrnet
    :members:
    :undoc-members:
