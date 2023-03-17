@@ -153,7 +153,8 @@ class DetectionExplainer(DetectionStage):
         eval_predictions = []
         with self.explainer_hook(feature_model) as saliency_hook:
             for data in test_dataloader:
-                result = model(return_loss=False, rescale=True, **data)
+                with torch.no_grad():
+                    result = model(return_loss=False, rescale=True, **data)
                 eval_predictions.extend(result)
             saliency_maps = saliency_hook.records
 
