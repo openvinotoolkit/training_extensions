@@ -392,7 +392,6 @@
 <li class="toctree-l3 has-children"><a class="reference internal" href="models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="models/backbones.html">Backbones</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/classifiers.html">Classifiers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/detectors.html">Detectors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/heads.html">Heads</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/losses.html">Losses</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/scalar_schedulers.html">Scalar Schedulers</a></li>
@@ -505,30 +504,6 @@ list of data loaders in the CDL</p>
 
 </dd></dl>
 
-<span class="target" id="module-otx.mpa.modules.datasets.task_adapt_dataset"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.task_adapt_dataset.AdaptClassLabels">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.task_adapt_dataset.</span></span><span class="sig-name descname"><span class="pre">AdaptClassLabels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_classes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.task_adapt_dataset.AdaptClassLabels" title="Permalink to this definition">#</a></dt>
-<dd><p>Data processor for task-adative annotation loading.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.task_adapt_dataset.</span></span><span class="sig-name descname"><span class="pre">TaskAdaptEvalDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset" title="Permalink to this definition">#</a></dt>
-<dd><p>Dataset wrapper for task-adaptive evaluation.</p>
-<dl class="simple">
-<dt>Attributes:</dt><dd><p>model_classes:
-<a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs:</p>
-</dd>
-<dt>Notes:</dt><dd><p>TODO[Eugene/Jaeguk]: check if this class is still valid in OTX</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset.evaluate" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <span class="target" id="module-otx.mpa.modules.datasets.pipelines"></span><span class="target" id="module-otx.mpa.modules.datasets.samplers"></span></section>
 
 
@@ -612,35 +587,6 @@ list of data loaders in the CDL</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        ComposedDL.sampler
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.task_adapt_dataset.AdaptClassLabels">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     AdaptClassLabels
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     TaskAdaptEvalDataset
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.task_adapt_dataset.TaskAdaptEvalDataset.evaluate">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       TaskAdaptEvalDataset.evaluate()
       </span>
      </code>
     </a>

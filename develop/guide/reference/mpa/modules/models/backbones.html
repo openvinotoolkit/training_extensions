@@ -392,7 +392,6 @@
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="index.html">Models</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">Backbones</a></li>
 <li class="toctree-l4"><a class="reference internal" href="classifiers.html">Classifiers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="detectors.html">Detectors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="heads.html">Heads</a></li>
 <li class="toctree-l4"><a class="reference internal" href="losses.html">Losses</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scalar_schedulers.html">Scalar Schedulers</a></li>
@@ -478,22 +477,7 @@
 <h1>Backbones<a class="headerlink" href="#backbones" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<span class="target" id="module-otx.mpa.modules.models.backbones"></span><span class="target" id="module-otx.mpa.modules.models.backbones.imgclsmob"></span><dl class="py function">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.imgclsmob.generate_backbones">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.imgclsmob.</span></span><span class="sig-name descname"><span class="pre">generate_backbones</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.imgclsmob.generate_backbones" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.imgclsmob.replace_activation">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.imgclsmob.</span></span><span class="sig-name descname"><span class="pre">replace_activation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.imgclsmob.replace_activation" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.imgclsmob.replace_norm">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.imgclsmob.</span></span><span class="sig-name descname"><span class="pre">replace_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.imgclsmob.replace_norm" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.backbones.litehrnet"></span><p>Modified from: <a class="github reference external" href="https://github.com/HRNet/Lite-HRNet">HRNet/Lite-HRNet</a></p>
+<span class="target" id="module-otx.mpa.modules.models.backbones"></span><span class="target" id="module-otx.mpa.modules.models.backbones.litehrnet"></span><p>Modified from: <a class="github reference external" href="https://github.com/HRNet/Lite-HRNet">HRNet/Lite-HRNet</a></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.backbones.litehrnet.</span></span><span class="sig-name descname"><span class="pre">ConditionalChannelWeighting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'BN'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_cp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weighting_module_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'v1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbour_weighting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dw_ksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting" title="Permalink to this definition">#</a></dt>
@@ -817,33 +801,6 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.backbones.imgclsmob.generate_backbones">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     generate_backbones()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.backbones.imgclsmob.replace_activation">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     replace_activation()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.backbones.imgclsmob.replace_norm">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     replace_norm()
-    </span>
-   </code>
-  </a>
- </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.mpa.modules.models.backbones.litehrnet.ConditionalChannelWeighting">
    <code class="docutils literal notranslate">

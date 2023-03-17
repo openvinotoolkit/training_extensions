@@ -392,7 +392,6 @@
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="index.html">Models</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="backbones.html">Backbones</a></li>
 <li class="toctree-l4"><a class="reference internal" href="classifiers.html">Classifiers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="detectors.html">Detectors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="heads.html">Heads</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">Losses</a></li>
 <li class="toctree-l4"><a class="reference internal" href="scalar_schedulers.html">Scalar Schedulers</a></li>
@@ -821,48 +820,6 @@ registered hooks while the latter silently ignores them.</p>
 <span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_entropy_loss.</span></span><span class="sig-name descname"><span class="pre">cross_entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss.cross_entropy" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
-<span class="target" id="module-otx.mpa.modules.models.losses.cross_focal_loss"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_focal_loss.</span></span><span class="sig-name descname"><span class="pre">CrossSigmoidFocalLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_sigmoid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_vfl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_focal_loss.cross_sigmoid_focal_loss">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_focal_loss.</span></span><span class="sig-name descname"><span class="pre">cross_sigmoid_focal_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_vfl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_focal_loss.cross_sigmoid_focal_loss" title="Permalink to this definition">#</a></dt>
-<dd><dl class="simple">
-<dt>Arguments:</dt><dd><ul class="simple">
-<li><p>inputs: inputs Tensor (N * C)</p></li>
-<li><p>targets: targets Tensor (N), if use_vfl, then Tensor (N * C)</p></li>
-<li><p>weights: weights Tensor (N), consists of (binarized label schema * weights)</p></li>
-<li><p>num_classes: number of classes for training</p></li>
-<li><p>alpha: focal loss alpha</p></li>
-<li><p>gamma: focal loss gamma</p></li>
-<li><p>reduction: default = mean</p></li>
-<li><p>avg_factor: average factors</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 <span class="target" id="module-otx.mpa.modules.models.losses.ib_loss"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.losses.ib_loss.IBLoss">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.ib_loss.</span></span><span class="sig-name descname"><span class="pre">IBLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss" title="Permalink to this definition">#</a></dt>
@@ -893,26 +850,6 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.losses.ib_loss.IBLoss.update_weight">
 <span class="sig-name descname"><span class="pre">update_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_num_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss.update_weight" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.losses.l2sp_loss"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.l2sp_loss.</span></span><span class="sig-name descname"><span class="pre">L2SPLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_ckpt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward function.</p>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>torch.Tensor: The calculated loss</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.training" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1307,44 +1244,6 @@ registered hooks while the latter silently ignores them.</p>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     CrossSigmoidFocalLoss
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.forward">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       CrossSigmoidFocalLoss.forward()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_focal_loss.CrossSigmoidFocalLoss.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       CrossSigmoidFocalLoss.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_focal_loss.cross_sigmoid_focal_loss">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     cross_sigmoid_focal_loss()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.ib_loss.IBLoss">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -1385,35 +1284,6 @@ registered hooks while the latter silently ignores them.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        IBLoss.update_weight()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     L2SPLoss
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.forward">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       L2SPLoss.forward()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.l2sp_loss.L2SPLoss.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       L2SPLoss.training
       </span>
      </code>
     </a>

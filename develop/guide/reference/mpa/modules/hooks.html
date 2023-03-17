@@ -393,7 +393,6 @@
 <li class="toctree-l3 has-children"><a class="reference internal" href="models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="models/backbones.html">Backbones</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/classifiers.html">Classifiers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/detectors.html">Detectors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/heads.html">Heads</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/losses.html">Losses</a></li>
 <li class="toctree-l4"><a class="reference internal" href="models/scalar_schedulers.html">Scalar Schedulers</a></li>
@@ -1036,7 +1035,7 @@ fpn_idx (int, optional): The layer index to be processed if the model is a FPN.<
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.func">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.func" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fpn_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#otx.mpa.modules.hooks.recording_forward_hooks.BaseRecordingForwardHook.func" title="Permalink to this definition">#</a></dt>
 <dd><p>This method get the feature vector or saliency map from the output of the module.
 Args:</p>
 <blockquote>

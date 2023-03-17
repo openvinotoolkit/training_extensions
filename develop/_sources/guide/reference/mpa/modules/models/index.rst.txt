@@ -6,7 +6,6 @@ Models
 
    backbones
    classifiers
-   detectors
    heads
    losses
    scalar_schedulers

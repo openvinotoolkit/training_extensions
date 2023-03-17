@@ -25,10 +25,6 @@ Models
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.models.mmdet
-   :members:
-   :undoc-members:
-
 .. automodule:: otx.mpa.modules.ov.models.mmseg
    :members:
    :undoc-members:
