@@ -1,3 +1,7 @@
+# Copyright (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: MIT
+
 import pytest
 
 from otx.mpa.cls.semisl.stage import SemiSLClsStage

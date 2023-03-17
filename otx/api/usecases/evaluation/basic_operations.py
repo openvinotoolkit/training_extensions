@@ -34,6 +34,8 @@ def get_intersections_and_cardinalities(
     Returns:
         Tuple[NumberPerLabel, NumberPerLabel]: (all_intersections, all_cardinalities)
     """
+
+    # TODO [Soobee] : Add score for background label and align the calculation method with validation
     all_intersections: NumberPerLabel = {label: 0 for label in labels}
     all_intersections[None] = 0
     all_cardinalities: NumberPerLabel = {label: 0 for label in labels}

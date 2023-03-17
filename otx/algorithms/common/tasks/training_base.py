@@ -45,6 +45,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.core.data import caching
 from otx.mpa.builder import build
 from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage
@@ -105,7 +106,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # property below will be initialized by initialize()
         self._recipe_cfg = None
         self._stage_module = None
-        self._model_cfg = None
         self._precision = [ModelPrecision.FP32]
         self._data_cfg = None
         self._mode = None
@@ -135,16 +135,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
-        model_cfg = deepcopy(self._model_cfg)
         recipe_cfg = deepcopy(self._recipe_cfg)
         data_cfg = deepcopy(self._data_cfg)
-        assert model_cfg is not None, "'model_cfg' is not initialized."
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
-        model_cfg["model_classes"] = model_classes
+        recipe_cfg["model_classes"] = model_classes
         if dataset is not None:
             train_data_cfg = Stage.get_data_cfg(data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes
@@ -168,7 +166,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # run workflow with task specific model config and data config
         output = workflow.run(
-            model_cfg=model_cfg,
+            model_cfg=recipe_cfg,
             data_cfg=data_cfg,
             ir_model_path=None,
             ir_weight_path=None,
@@ -227,6 +225,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             options = {}
 
         export = options.get("export", False)
+        fp16_export = options.get("enable_fp16", False)
 
         logger.info("initializing....")
         self._init_recipe()
@@ -246,17 +245,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             self._recipe_cfg.merge_from_dict(self.override_configs)
             logger.info(f"after override configs merging = {self._recipe_cfg}")
 
-        # prepare model config
-        self._model_cfg = self._init_model_cfg()
-
         # Remove FP16 config if running on CPU device and revert to FP32
         # https://github.com/pytorch/pytorch/issues/23377
-        if not torch.cuda.is_available() and "fp16" in self._model_cfg:
+        if not torch.cuda.is_available() and "fp16" in self._recipe_cfg:
             logger.info("Revert FP16 to FP32 on CPU device")
-            if isinstance(self._model_cfg, Config):
-                del self._model_cfg._cfg_dict["fp16"]
-            elif isinstance(self._model_cfg, ConfigDict):
-                del self._model_cfg["fp16"]
+            if isinstance(self._recipe_cfg, Config):
+                del self._recipe_cfg._cfg_dict["fp16"]
+            elif isinstance(self._recipe_cfg, ConfigDict):
+                del self._recipe_cfg["fp16"]
 
         # default adaptive hook for evaluating before and after training
         add_custom_hook_if_not_exists(
@@ -323,10 +319,15 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 dataloader_cfg["persistent_workers"] = False
                 data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
+        # Update recipe with caching modules
+        self._update_caching_modules(data_cfg)
+
         if self._data_cfg is not None:
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
         if export:
+            if fp16_export:
+                self._precision[0] = ModelPrecision.FP16
             options["deploy_cfg"] = self._init_deploy_cfg()
             if options.get("precision", None) is None:
                 assert len(self._precision) == 1
@@ -409,7 +410,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
-
                 normalize_cfg = get_configs_by_pairs(
                     self._recipe_cfg.data.test.pipeline,
                     dict(type="Normalize"),
@@ -617,3 +617,31 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 update_or_add_custom_hook(self._recipe_cfg, early_stop_hook)
             else:
                 remove_custom_hook(self._recipe_cfg, "LazyEarlyStoppingHook")
+
+    def _update_caching_modules(self, data_cfg: Config) -> None:
+        def _find_max_num_workers(cfg: dict):
+            num_workers = [0]
+            for key, value in cfg.items():
+                if key == "workers_per_gpu" and isinstance(value, int):
+                    num_workers += [value]
+                elif isinstance(value, dict):
+                    num_workers += [_find_max_num_workers(value)]
+
+            return max(num_workers)
+
+        def _get_mem_cache_size():
+            if not hasattr(self.hyperparams.algo_backend, "mem_cache_size"):
+                return 0
+
+            return self.hyperparams.algo_backend.mem_cache_size
+
+        max_num_workers = _find_max_num_workers(data_cfg)
+        mem_cache_size = _get_mem_cache_size()
+
+        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
+        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
+
+        update_or_add_custom_hook(
+            self._recipe_cfg,
+            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
+        )

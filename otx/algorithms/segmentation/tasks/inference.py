@@ -67,7 +67,6 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
-from otx.mpa import MPAConstants
 from otx.mpa.utils.config_utils import MPAConfig
 from otx.mpa.utils.logger import get_logger
 
@@ -93,7 +92,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._label_dictionary = {}  # type: Dict
 
         super().__init__(SegmentationConfig, task_environment, **kwargs)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
+        self._label_dictionary = dict(enumerate(sorted(self._labels), 1))
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -147,7 +146,13 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.cleanup()
 
     @check_input_parameters_type()
-    def export(self, export_type: ExportType, output_model: ModelEntity, dump_features: bool = True):
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = True,
+    ):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
@@ -167,6 +172,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             mode="train",
             export=True,
             dump_features=dump_features,
+            enable_fp16=(precision == ModelPrecision.FP16),
         )
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
@@ -181,30 +187,23 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
         output_model.optimization_methods = self._optimization_methods
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
 
     def _init_recipe(self):
         logger.info("called _init_recipe()")
+        # TODO: Need to remove the hard coding for supcon only.
+        if (
+            self._train_type in RECIPE_TRAIN_TYPE
+            and self._train_type == TrainType.INCREMENTAL
+            and self._hyperparams.learning_parameters.enable_supcon
+            and not self._model_dir.endswith("supcon")
+        ):
+            self._model_dir = os.path.join(self._model_dir, "supcon")
 
-        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
-        logger.info(f"train type = {self._train_type}")
-
-        if self._train_type in RECIPE_TRAIN_TYPE:
-            if self._train_type == TrainType.INCREMENTAL and self._hyperparams.learning_parameters.enable_supcon:
-                recipe = os.path.join(recipe_root, "supcon.py")
-                if "supcon" not in self._model_dir:
-                    self._model_dir = os.path.join(self._model_dir, "supcon")
-            else:
-                recipe = os.path.join(recipe_root, RECIPE_TRAIN_TYPE[self._train_type])
-        else:
-            raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
-
-        logger.info(f"train type = {self._train_type} - loading {recipe}")
-
-        self._recipe_cfg = MPAConfig.fromfile(recipe)
+        self._recipe_cfg = self._init_model_cfg()
         options_for_patch_datasets = {"type": "MPASegDataset"}
         patch_default_config(self._recipe_cfg)
         patch_runner(self._recipe_cfg)
@@ -223,7 +222,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         if not self.freeze:
             remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
-        logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):
         module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}

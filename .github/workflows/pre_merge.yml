@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - develop
-      - releases/v1.0.0
+      - releases/**
   pull_request:
     types:
       - opened
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - name: Install dependencies
@@ -61,7 +61,7 @@ jobs:
           # so we use the latest version of codecov uploader binary
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -Z true -U $HTTP_PROXY -f .tox/coverage.xml
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml
   Pre-Merge-Integration-Common-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test

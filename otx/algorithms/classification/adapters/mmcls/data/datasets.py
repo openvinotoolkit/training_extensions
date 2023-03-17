@@ -387,9 +387,9 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         for i in range(self.hierarchical_info["num_multiclass_heads"]):
             multiclass_logit = results[
                 :,
-                self.hierarchical_info["head_idx_to_logits_range"][i][0] : self.hierarchical_info[
+                self.hierarchical_info["head_idx_to_logits_range"][str(i)][0] : self.hierarchical_info[
                     "head_idx_to_logits_range"
-                ][i][1],
+                ][str(i)][1],
             ]  # noqa: E127
             multiclass_gt = gt_labels[:, i]
             cls_acc = self.mean_top_k_accuracy(multiclass_logit, multiclass_gt, k=1)

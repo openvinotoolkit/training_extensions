@@ -23,6 +23,7 @@ from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.model_template import TaskType
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 # pylint: disable=invalid-name
@@ -98,3 +99,26 @@ def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Dom
     label_schema.add_group(exclusive_group)
     label_schema.add_group(empty_group)
     return label_schema
+
+
+def get_det_model_api_configuration(label_schema: LabelSchemaEntity, task_type: TaskType, confidence_threshold: float):
+    """Get ModelAPI config."""
+    omz_config = {}
+    if task_type == TaskType.DETECTION:
+        omz_config[("model_info", "model_type")] = "ssd"
+    if task_type == TaskType.INSTANCE_SEGMENTATION:
+        omz_config[("model_info", "model_type")] = "MaskRCNN"
+    if task_type == TaskType.ROTATED_DETECTION:
+        omz_config[("model_info", "model_type")] = "rotated_detection"
+
+    omz_config[("model_info", "confidence_threshold")] = str(confidence_threshold)
+    omz_config[("model_info", "iou_threshold")] = str(0.5)
+
+    all_labels = ""
+    for lbl in label_schema.get_labels(include_empty=False):
+        all_labels += lbl.name.replace(" ", "_") + " "
+    all_labels = all_labels.strip()
+
+    omz_config[("model_info", "labels")] = all_labels
+
+    return omz_config

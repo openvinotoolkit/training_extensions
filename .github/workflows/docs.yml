@@ -51,7 +51,7 @@ jobs:
           echo '<html><head><meta http-equiv="refresh" content="0; url=stable/" /></head></html>' > index.html
           mkdir -p ${{ env.RELEASE_VERSION }}
           cp -r /tmp/docs_build/* ./${{ env.RELEASE_VERSION }}
-          ln -sf ${{ env.RELEASE_VERSION }} latest
+          ln -sfn ${{ env.RELEASE_VERSION }} latest
           rm -rf /tmp/docs_build
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"

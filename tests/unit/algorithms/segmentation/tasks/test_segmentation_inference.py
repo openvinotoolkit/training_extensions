@@ -14,6 +14,7 @@ from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
+from otx.api.entities.model import ModelPrecision
 from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -83,17 +84,19 @@ class TestOTXSegTaskInference:
 
         assert result_set.performance.score.value == 0.1
 
+    @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export(self, mocker):
+    def test_export(self, mocker, precision: ModelPrecision):
         fake_output = {"outputs": {"bin": None, "xml": None}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
 
         with pytest.raises(RuntimeError):
-            self.seg_train_task.export(ExportType.OPENVINO, self.model)
+            self.seg_train_task.export(ExportType.OPENVINO, self.model, precision)
             mock_run_task.assert_called_once()
 
+    @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export_with_model_files(self, mocker):
+    def test_export_with_model_files(self, mocker, precision: ModelPrecision):
         with open(f"{self.output_path}/model.xml", "wb") as f:
             f.write(b"foo")
         with open(f"{self.output_path}/model.bin", "wb") as f:
@@ -101,7 +104,7 @@ class TestOTXSegTaskInference:
 
         fake_output = {"outputs": {"bin": f"{self.output_path}/model.xml", "xml": f"{self.output_path}/model.bin"}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
-        self.seg_train_task.export(ExportType.OPENVINO, self.model)
+        self.seg_train_task.export(ExportType.OPENVINO, self.model, precision)
 
         mock_run_task.assert_called_once()
         assert self.model.get_data("openvino.bin")
@@ -113,3 +116,23 @@ class TestOTXSegTaskInference:
         self.seg_train_task.unload()
 
         mock_cleanup.assert_called_once()
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("model_dir", ["...", ".../supcon", ".../supcon/workspace"])
+    def test_init_recipe_supcon(self, mocker, model_dir: str):
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.SegmentationInferenceTask._init_model_cfg")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_default_config")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_runner")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_data_pipeline")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_datasets")
+        mocker.patch("otx.algorithms.segmentation.tasks.inference.patch_evaluation")
+
+        self.seg_train_task._hyperparams.learning_parameters.enable_supcon = True
+        self.seg_train_task._model_dir = model_dir
+
+        self.seg_train_task._init_recipe()
+
+        assert self.seg_train_task._model_dir.endswith("supcon")
+
+        self.seg_train_task._hyperparams.learning_parameters.enable_supcon = False
+        self.seg_train_task._hyperparams._model_dir = os.path.abspath(DEFAULT_SEG_TEMPLATE_DIR)

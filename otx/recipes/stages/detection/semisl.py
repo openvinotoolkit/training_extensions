@@ -29,3 +29,5 @@ custom_hooks = [
         priority=75,
     ),
 ]
+
+find_unused_parameters = True

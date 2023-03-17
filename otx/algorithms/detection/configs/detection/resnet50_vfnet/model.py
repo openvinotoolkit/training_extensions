@@ -16,7 +16,11 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../../../../common/adapters/mmcv/configs/backbones/resnet50.yaml", "../../base/models/detector.py"]
+_base_ = [
+    "../../../../../recipes/stages/detection/incremental.py",
+    "../../../../common/adapters/mmcv/configs/backbones/resnet50.yaml",
+    "../../base/models/detector.py",
+]
 
 model = dict(
     type="CustomVFNet",

@@ -30,11 +30,12 @@ __strong_pipeline = [
 
 __train_pipeline = [
     *__common_pipeline,
-    dict(type="PILImageToNDArray", keys=["img"]),
+    dict(type="PostAug", keys=dict(img_strong=__strong_pipeline)),
+    dict(type="PILImageToNDArray", keys=["img", "img_strong"]),
     dict(type="Normalize", **__img_norm_cfg),
-    dict(type="ImageToTensor", keys=["img"]),
+    dict(type="ImageToTensor", keys=["img", "img_strong"]),
     dict(type="ToTensor", keys=["gt_label"]),
-    dict(type="Collect", keys=["img", "gt_label"]),
+    dict(type="Collect", keys=["img", "img_strong", "gt_label"]),
 ]
 
 __unlabeled_pipeline = [
