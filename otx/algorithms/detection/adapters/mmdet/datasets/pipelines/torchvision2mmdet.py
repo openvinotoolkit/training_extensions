@@ -1,4 +1,4 @@
-"""Torchvision to MMDetection pipeline."""
+"""Torchvision transforms to MMDetection pipeline."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -6,17 +6,9 @@
 import numpy as np
 from mmcv.utils import build_from_cfg
 from mmdet.datasets import PIPELINES
-
-# import torchvision.transforms.functional as F
 from mmdet.datasets.pipelines.formatting import ImageToTensor, to_tensor
-
-# from mmdet.datasets.pipelines.transforms import Normalize
 from PIL import Image, ImageFilter
-
-# import cv2 as cv
 from torchvision import transforms as T
-
-# pylint: disable=
 
 
 @PIPELINES.register_module()

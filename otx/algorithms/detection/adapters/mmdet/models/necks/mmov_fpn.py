@@ -81,7 +81,7 @@ class MMOVFPN(FPN):
             else:
                 self.fpn_convs.append(nn.Identity())
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained=None):  # pylint: disable=unused-argument
         """Initial weights function of MMOVFPN."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return

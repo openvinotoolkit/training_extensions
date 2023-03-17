@@ -86,7 +86,7 @@ class MMOVBBoxHead(BBoxHead):
     def init_weights(self):
         """Initialize weights of MMOVBBoxHead."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return
 
     def forward(self, x):
         """Forward function of MMOVBBoxHead."""

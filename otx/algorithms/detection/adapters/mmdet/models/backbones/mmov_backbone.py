@@ -23,7 +23,7 @@ class MMOVBackbone(MMOVModel):
         # must return tuple
         return outputs
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained=None):  # pylint: disable=unused-argument
         """Initial weights function of MMOVBackbone."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return

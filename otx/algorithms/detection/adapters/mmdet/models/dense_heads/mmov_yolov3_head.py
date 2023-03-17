@@ -23,7 +23,7 @@ class MMOVYOLOV3Head(YOLOV3Head):
 
     def __init__(
         self,
-        model_path_or_model: Union[str, ov.Model] = None,
+        model_path_or_model: Union[str, ov.Model],
         weight_path: Optional[str] = None,
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
@@ -81,4 +81,4 @@ class MMOVYOLOV3Head(YOLOV3Head):
     def init_weights(self):
         """Initialize weights of MMOVYOLOV3Head."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return

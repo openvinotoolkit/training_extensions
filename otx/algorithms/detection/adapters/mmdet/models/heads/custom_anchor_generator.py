@@ -12,14 +12,14 @@ from mmdet.core.anchor.builder import PRIOR_GENERATORS
 from torch.nn.modules.utils import _pair
 
 # TODO: Need to fix pylint issues
-# pylint: disable=super-init-not-called
+# pylint: disable=super-init-not-called, unused-argument
 
 
 @PRIOR_GENERATORS.register_module()
 class SSDAnchorGeneratorClustered(AnchorGenerator):
     """Custom Anchor Generator for SSD."""
 
-    def __init__(self, strides, widths, heights, reclustering_anchors=False):  # pylint: disable=unused-argument
+    def __init__(self, strides, widths, heights, reclustering_anchors=False):
         self.strides = [_pair(stride) for stride in strides]
         self.widths = widths
         self.heights = heights

@@ -65,7 +65,7 @@ class MMOVYOLOV3Neck(YOLOV3Neck, ParserMixin):
 
         self.num_scales = len([key for key in inputs.keys() if key.startswith("detect")])
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained=None):  # pylint: disable=unused-argument
         """Initial weights of MMOVYOLOV3Neck."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return

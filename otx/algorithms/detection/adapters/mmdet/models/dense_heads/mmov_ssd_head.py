@@ -144,4 +144,4 @@ class MMOVSSDHead(SSDHead):
     def init_weights(self):
         """Initialize weights function of MMOVSSDHead."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return

@@ -64,7 +64,7 @@ class MMOVMaskHead(FCNMaskHead):
     def init_weights(self):
         """Initial weights of MMOVMaskHead."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return
 
     def forward(self, x):
         """Forward function of MMOVMaskHead."""

@@ -206,7 +206,7 @@ class MMOVSSDNeck(SSDNeck):
                     verify_shape=verify_shape,
                 )
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained=None):  # pylint: disable=unused-argument
         """Initial weights of MMOVSSDNeck."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return

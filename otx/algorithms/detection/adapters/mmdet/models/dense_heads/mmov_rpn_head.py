@@ -67,7 +67,7 @@ class MMOVRPNHead(RPNHead):
     def init_weights(self):
         """Initial weight function of MMOVRPNHead."""
         # TODO
-        pass  # pylint: disable=unnecessary-pass
+        return
 
     def forward_single(self, x):
         """Forward funtion for MMOVRPNHead."""

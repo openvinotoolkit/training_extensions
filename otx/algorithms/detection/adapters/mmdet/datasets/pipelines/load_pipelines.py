@@ -18,10 +18,11 @@ from typing import Any, Dict, Optional
 from mmdet.datasets.builder import PIPELINES
 
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
+    get_annotation_mmdet_format,
+)
 from otx.api.entities.label import Domain
 from otx.api.utils.argument_checks import check_input_parameters_type
-
-from ..dataset import get_annotation_mmdet_format
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
