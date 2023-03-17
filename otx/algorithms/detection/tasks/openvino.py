@@ -38,7 +38,7 @@ from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.api.configuration.helper.utils import config_to_bytes
+from otx.api.configuration.helper.utils import config_to_bytes, flatten_config_values
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -375,6 +375,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         try:
             if self.model is not None and self.model.get_data("config.json"):
                 config.update(json.loads(self.model.get_data("config.json")))
+                flatten_config_values(config)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Failed to load config.json: {e}")
         config = ADDict(config)
@@ -409,8 +410,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
         if (
-            self.config.tiling_parameters.enable_tiling.value
-            and self.config.tiling_parameters.enable_tile_classifier.value
+            self.config.tiling_parameters.enable_tiling
+            and self.config.tiling_parameters.enable_tile_classifier
         ):
             logger.info("Tile classifier is enabled. Loading tile classifier model...")
             inferencer = OpenVINOTileClassifierWrapper(
@@ -448,10 +449,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             process_saliency_maps = False
             explain_predicted_classes = True
 
-        if self.config.tiling_parameters.enable_tiling.value:
-            tile_size = self.config.tiling_parameters.tile_size.value
-            tile_overlap = self.config.tiling_parameters.tile_overlap.value
-            max_number = self.config.tiling_parameters.tile_max_number.value
+        if self.config.tiling_parameters.enable_tiling:
+            tile_size = self.config.tiling_parameters.tile_size
+            tile_overlap = self.config.tiling_parameters.tile_overlap
+            max_number = self.config.tiling_parameters.tile_max_number
             logger.info("Run inference with tiling")
 
         total_time = 0.0
@@ -573,7 +574,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters["converter_type"] = str(self.task_type)
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
-        parameters["tiling_parameters"] = self.config["tiling_parameters"]
+        parameters["tiling_parameters"] = self.config.tiling_parameters
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
@@ -583,8 +584,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
             if (
-                self.config.tiling_parameters.enable_tiling.value
-                and self.config.tiling_parameters.enable_tile_classifier.value
+                self.config.tiling_parameters.enable_tiling
+                and self.config.tiling_parameters.enable_tile_classifier
             ):
                 arch.writestr(os.path.join("model", "tile_classifier.xml"), self.model.get_data("tile_classifier.xml"))
                 arch.writestr(os.path.join("model", "tile_classifier.bin"), self.model.get_data("tile_classifier.bin"))

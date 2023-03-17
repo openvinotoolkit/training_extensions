@@ -187,3 +187,19 @@ def config_to_bytes(config: ConfigurableParameters) -> bytes:
     """
     config_dict = convert(config, dict, enum_to_str=True)
     return json.dumps(config_dict, indent=4).encode()
+
+
+def flatten_config_values(config: dict):
+    """Extracts the "value" field from any nested config.
+
+    Flattening the structure of the config dictionary. The original config dictionary is modified in-place.
+
+    Args:
+        config (dict): config dictionary
+    """
+    for key, value in config.items():
+        if isinstance(value, dict):
+            if "value" in value:
+                config[key] = value["value"]
+            else:
+                flatten_config_values(value)
