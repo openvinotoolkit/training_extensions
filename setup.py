@@ -174,7 +174,7 @@ def find_yaml_recipes():
     return results
 
 
-package_data = {"": ["requirements.txt", "README.md", "LICENSE"]}  # Needed for exportable code
+package_data = {"": ["requirements.txt", "README.md", "LICENSE", "py.typed"]}
 package_data.update(find_yaml_recipes())
 
 setup(

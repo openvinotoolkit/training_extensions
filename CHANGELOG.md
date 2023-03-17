@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.0.1\]
+
+### Enhancements
+
+- Refine documents by proof review
+- Separate installation for each tasks
+- Improve POT efficiency by setting stat_requests_number parameter to 1
+
+### Bug fixes
+
+- Fix missing classes in cls checkpoint
+- Fix action task sample codes
+- Fix label_scheme mismatch in classification
+- Fix training error when batch size is 1
+- Fix hang issue when tracing a stack in certain scenario
+- Fix pickling error by Removing mmcv cfg dump in ckpt
+
 ## \[v1.0.0\]
 
 > _**NOTES**_
