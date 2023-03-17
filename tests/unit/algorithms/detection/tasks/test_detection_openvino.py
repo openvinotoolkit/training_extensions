@@ -9,6 +9,8 @@ import numpy as np
 import pytest
 from openvino.model_zoo.model_api.models import Model
 
+
+from addict import Dict as ADDict
 import otx.algorithms.detection.tasks.openvino
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.tasks.openvino import (
@@ -167,7 +169,7 @@ class TestOpenVINODetectionTask:
         ov_inferencer.model.__model__ = "OTX_SSD"
         task_env.model = otx_model
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
-        mocker.patch.object(OpenVINODetectionTask, "load_config", return_value={})
+        mocker.patch.object(OpenVINODetectionTask, "load_config", return_value=ADDict(vars(params)))
 
         self.ov_task = OpenVINODetectionTask(task_env)
 
@@ -208,7 +210,6 @@ class TestOpenVINODetectionTask:
         output_model = copy.deepcopy(otx_model)
         self.ov_task.model.set_data("openvino.bin", b"foo")
         self.ov_task.model.set_data("openvino.xml", b"bar")
-        self.ov_task.config = {"tiling_parameters": None}
         self.ov_task.deploy(output_model)
 
         assert output_model.exportable_code is not None

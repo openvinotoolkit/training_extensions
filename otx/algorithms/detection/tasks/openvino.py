@@ -574,7 +574,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters["converter_type"] = str(self.task_type)
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
-        parameters["tiling_parameters"] = self.config.tiling_parameters
+        parameters["tiling_parameters"] = vars(self.config.tiling_parameters)
+        parameters["tiling_parameters"].pop('type')  # NOTE: type is not JSON serializable
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
