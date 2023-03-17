@@ -9,7 +9,7 @@ import openvino.runtime as ov
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
-from ...mmov_model import MMOVModel
+from otx.mpa.modules.ov.models.mmov_model import MMOVModel
 
 
 @HEADS.register_module()

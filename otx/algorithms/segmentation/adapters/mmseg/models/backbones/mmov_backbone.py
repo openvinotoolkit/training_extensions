@@ -4,7 +4,7 @@
 
 from mmseg.models.builder import BACKBONES
 
-from ...mmov_model import MMOVModel
+from otx.mpa.modules.ov.models.mmov_model import MMOVModel
 
 
 @BACKBONES.register_module()

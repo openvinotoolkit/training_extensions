@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from ..builder import SCALAR_SCHEDULERS
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import SCALAR_SCHEDULERS
+
 from .base import BaseScalarScheduler
 
 

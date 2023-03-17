@@ -8,8 +8,7 @@ import torch
 import torch.nn.functional as F
 from mmseg.models.losses.utils import weight_reduce_loss
 
-from otx.mpa.modules.models.builder import build_scalar_scheduler
-
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_scalar_scheduler
 from .base_weighted_loss import BaseWeightedLoss
 
 

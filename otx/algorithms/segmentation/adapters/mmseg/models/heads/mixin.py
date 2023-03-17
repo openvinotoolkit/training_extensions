@@ -1,16 +1,128 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+import torch
+import torch.nn.functional as F
 import torch.nn as nn
 from mmcv.runner import force_fp32
 from mmseg.core import add_prefix
 from mmseg.models.losses import accuracy
 from mmseg.ops import resize
 
-from otx.mpa.modules.utils.seg_utils import get_valid_label_mask_per_batch
+from otx.algorithms.segmentation.adapters.mmseg.utils.data_utils import get_valid_label_mask_per_batch
+from otx.mpa.modules.models.losses.utils import LossEqualizer
+from otx.mpa.modules.models.utils import IterativeAggregator
 
-from ..losses.utils import LossEqualizer
+from otx.mpa.modules.models.utils import AngularPWConv, normalize
+
+
+class SegmentOutNormMixin(nn.Module):
+    def __init__(self, *args, enable_out_seg=True, enable_out_norm=False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.enable_out_seg = enable_out_seg
+        self.enable_out_norm = enable_out_norm
+
+        if enable_out_seg:
+            if enable_out_norm:
+                self.conv_seg = AngularPWConv(self.channels, self.out_channels, clip_output=True)
+        else:
+            self.conv_seg = None
+
+    def cls_seg(self, feat):
+        """Classify each pixel."""
+        if self.dropout is not None:
+            feat = self.dropout(feat)
+        if self.enable_out_norm:
+            feat = normalize(feat, dim=1, p=2)
+        if self.conv_seg is not None:
+            return self.conv_seg(feat)
+        else:
+            return feat
+
+
+class AggregatorMixin(nn.Module):
+    def __init__(
+        self,
+        *args,
+        enable_aggregator=False,
+        aggregator_min_channels=None,
+        aggregator_merge_norm=None,
+        aggregator_use_concat=False,
+        **kwargs
+    ):
+
+        in_channels = kwargs.get("in_channels")
+        in_index = kwargs.get("in_index")
+        norm_cfg = kwargs.get("norm_cfg")
+        conv_cfg = kwargs.get("conv_cfg")
+        input_transform = kwargs.get("input_transform")
+
+        aggregator = None
+        if enable_aggregator:
+            assert isinstance(in_channels, (tuple, list))
+            assert len(in_channels) > 1
+
+            aggregator = IterativeAggregator(
+                in_channels=in_channels,
+                min_channels=aggregator_min_channels,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg,
+                merge_norm=aggregator_merge_norm,
+                use_concat=aggregator_use_concat,
+            )
+
+            aggregator_min_channels = aggregator_min_channels if aggregator_min_channels is not None else 0
+            # change arguments temporarily
+            kwargs["in_channels"] = max(in_channels[0], aggregator_min_channels)
+            kwargs["input_transform"] = None
+            if in_index is not None:
+                kwargs["in_index"] = in_index[0]
+
+        super(AggregatorMixin, self).__init__(*args, **kwargs)
+
+        self.aggregator = aggregator
+        # re-define variables
+        self.in_channels = in_channels
+        self.input_transform = input_transform
+        self.in_index = in_index
+
+    def _transform_inputs(self, inputs):
+        inputs = super()._transform_inputs(inputs)
+        if self.aggregator is not None:
+            inputs = self.aggregator(inputs)[0]
+        return inputs
+
+class MixLossMixin(nn.Module):
+    @staticmethod
+    def _mix_loss(logits, target, ignore_index=255):
+        num_samples = logits.size(0)
+        assert num_samples % 2 == 0
+
+        with torch.no_grad():
+            probs = F.softmax(logits, dim=1)
+            probs_a, probs_b = torch.split(probs, num_samples // 2)
+            mean_probs = 0.5 * (probs_a + probs_b)
+            trg_probs = torch.cat([mean_probs, mean_probs], dim=0)
+
+        log_probs = torch.log_softmax(logits, dim=1)
+        losses = torch.sum(trg_probs * log_probs, dim=1).neg()
+
+        valid_mask = target != ignore_index
+        valid_losses = torch.where(valid_mask, losses, torch.zeros_like(losses))
+
+        return valid_losses.mean()
+
+    @force_fp32(apply_to=("seg_logit",))
+    def losses(self, seg_logit, seg_label, train_cfg, *args, **kwargs):
+        loss = super().losses(seg_logit, seg_label, train_cfg, *args, **kwargs)
+        if train_cfg.get("mix_loss", None) and train_cfg.mix_loss.get("enable", False):
+            mix_loss = self._mix_loss(seg_logit, seg_label, ignore_index=self.ignore_index)
+
+            mix_loss_weight = train_cfg.mix_loss.get("weight", 1.0)
+            loss["loss_mix"] = mix_loss_weight * mix_loss
+
+        return loss
 
 
 class PixelWeightsMixin(nn.Module):

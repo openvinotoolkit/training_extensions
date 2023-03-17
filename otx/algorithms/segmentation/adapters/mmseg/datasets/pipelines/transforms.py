@@ -1,17 +1,13 @@
-"""Collection Pipeline for segmentation task."""
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+
+import mmcv
+import numpy as np
+from mmcv.parallel import DataContainer as DC
+from mmseg.datasets import PIPELINES
+from mmseg.datasets.pipelines.formatting import to_tensor
+
 from copy import deepcopy
 from typing import Any, Dict, List
 
@@ -26,40 +22,120 @@ from torchvision.transforms import functional as F
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
 from otx.api.utils.argument_checks import check_input_parameters_type
 
-from .dataset import get_annotation_mmseg_format
+from otx.algorithms.segmentation.adapters.mmseg.datasets import get_annotation_mmseg_format
 
+@PIPELINES.register_module(force=True)
+class Normalize(object):
+    """Normalize the image.
 
-# pylint: disable=too-many-instance-attributes, too-many-arguments
-@PIPELINES.register_module()
-class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
-    """Pipeline element that loads an image from a OTX Dataset on the fly."""
+    Added key is "img_norm_cfg".
 
-
-@PIPELINES.register_module()
-class LoadAnnotationFromOTXDataset:
-    """Pipeline element that loads an annotation from a OTX Dataset on the fly.
-
-    Expected entries in the 'results' dict that should be passed to this pipeline element are:
-        results['dataset_item']: dataset_item from which to load the annotation
-        results['ann_info']['label_list']: list of all labels in the project
-
+    Args:
+        mean (sequence): Mean values of 3 channels.
+        std (sequence): Std values of 3 channels.
+        to_rgb (bool): Whether to convert the image from BGR to RGB,
+            default is true.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, mean, std, to_rgb=True):
+        self.mean = np.array(mean, dtype=np.float32)
+        self.std = np.array(std, dtype=np.float32)
+        self.to_rgb = to_rgb
 
-    @check_input_parameters_type()
-    def __call__(self, results: Dict[str, Any]):
-        """Callback function of LoadAnnotationFromOTXDataset."""
-        dataset_item = results["dataset_item"]
-        labels = results["ann_info"]["labels"]
+    def __call__(self, results):
+        """Call function to normalize images.
 
-        ann_info = get_annotation_mmseg_format(dataset_item, labels)
+        Args:
+            results (dict): Result dict from loading pipeline.
 
-        results["gt_semantic_seg"] = ann_info["gt_semantic_seg"]
-        results["seg_fields"].append("gt_semantic_seg")
+        Returns:
+            dict: Normalized results, 'img_norm_cfg' key is added into
+                result dict.
+        """
+
+        for target in ["img", "ul_w_img", "aux_img"]:
+            if target in results:
+                results[target] = mmcv.imnormalize(results[target], self.mean, self.std, self.to_rgb)
+        results["img_norm_cfg"] = dict(mean=self.mean, std=self.std, to_rgb=self.to_rgb)
 
         return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f"(mean={self.mean}, std={self.std}, to_rgb=" f"{self.to_rgb})"
+        return repr_str
+
+
+@PIPELINES.register_module(force=True)
+class DefaultFormatBundle(object):
+    """Default formatting bundle.
+
+    It simplifies the pipeline of formatting common fields, including "img"
+    and "gt_semantic_seg". These fields are formatted as follows.
+
+    - img: (1)transpose, (2)to tensor, (3)to DataContainer (stack=True)
+    - gt_semantic_seg: (1)unsqueeze dim-0 (2)to tensor,
+                       (3)to DataContainer (stack=True)
+    """
+
+    def __call__(self, results):
+        """Call function to transform and format common fields in results.
+
+        Args:
+            results (dict): Result dict contains the data to convert.
+
+        Returns:
+            dict: The result dict contains the data that is formatted with
+                default bundle.
+        """
+        for target in ["img", "ul_w_img", "aux_img"]:
+            if target not in results:
+                continue
+
+            img = results[target]
+            if len(img.shape) < 3:
+                img = np.expand_dims(img, -1)
+
+            if len(img.shape) == 3:
+                img = np.ascontiguousarray(img.transpose(2, 0, 1)).astype(np.float32)
+            elif len(img.shape) == 4:
+                # for selfsl or supcon
+                img = np.ascontiguousarray(img.transpose(0, 3, 1, 2)).astype(np.float32)
+            else:
+                raise ValueError(f"img.shape={img.shape} is not supported.")
+
+            results[target] = DC(to_tensor(img), stack=True)
+
+        for trg_name in ["gt_semantic_seg", "gt_class_borders", "pixel_weights"]:
+            if trg_name not in results:
+                continue
+
+            out_type = np.float32 if trg_name == "pixel_weights" else np.int64
+            results[trg_name] = DC(to_tensor(results[trg_name][None, ...].astype(out_type)), stack=True)
+
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__
+
+
+@PIPELINES.register_module()
+class BranchImage(object):
+    def __init__(self, key_map={}):
+        self.key_map = key_map
+
+    def __call__(self, results):
+        for k1, k2 in self.key_map.items():
+            if k1 in results:
+                results[k2] = results[k1]
+            if k1 in results["img_fields"]:
+                results["img_fields"].append(k2)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        return repr_str
+
 
 
 @PIPELINES.register_module()

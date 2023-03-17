@@ -29,7 +29,7 @@ from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
 from mmseg.utils import get_root_logger
 
-from ..utils import (
+from otx.mpa.modules.models.utils import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
