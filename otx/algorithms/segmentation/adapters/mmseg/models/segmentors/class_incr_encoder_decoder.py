@@ -9,8 +9,8 @@ from mmseg.utils import get_root_logger
 
 from otx.mpa.modules.utils.task_adapt import map_class_names
 
-from .otx_encoder_decoder import OTXEncoderDecoder
 from .mixin import MixLossMixin, PixelWeightsMixin
+from .otx_encoder_decoder import OTXEncoderDecoder
 
 
 @SEGMENTORS.register_module()

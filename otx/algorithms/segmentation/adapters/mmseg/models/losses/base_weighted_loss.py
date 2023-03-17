@@ -9,8 +9,9 @@ import torch.nn as nn
 from mmseg.core import build_pixel_sampler
 from scipy.special import erfinv
 
-from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_scalar_scheduler
-
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import (
+    build_scalar_scheduler,
+)
 
 
 class BaseWeightedLoss(nn.Module, metaclass=ABCMeta):

@@ -14,12 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .loads import (
-    LoadAnnotationFromOTXDataset,
-    LoadImageFromOTXDataset,
-)
-
 from .compose import MaskCompose, ProbCompose
+from .loads import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset
 
 __all__ = [
     "MaskCompose",
@@ -27,4 +23,3 @@ __all__ = [
     "LoadImageFromOTXDataset",
     "LoadAnnotationFromOTXDataset",
 ]
-

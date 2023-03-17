@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .detcon_loss import DetConLoss
 from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
+from .detcon_loss import DetConLoss
 
 __all__ = ["DetConLoss", "CrossEntropyLossWithIgnore"]

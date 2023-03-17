@@ -18,9 +18,9 @@ import json
 import os
 from typing import List, Optional
 
-import torch
 import cv2
 import numpy as np
+import torch
 import tqdm
 from mmseg.datasets.custom import CustomDataset
 from skimage.segmentation import felzenszwalb
@@ -165,6 +165,7 @@ def get_valid_label_mask_per_batch(img_metas, num_classes):
             valid_label_mask[meta["ignored_labels"]] = 0
         valid_label_mask_per_batch.append(valid_label_mask)
     return valid_label_mask_per_batch
+
 
 @check_input_parameters_type()
 def create_pseudo_masks(ann_file_path: str, data_root_dir: str, mode="FH"):

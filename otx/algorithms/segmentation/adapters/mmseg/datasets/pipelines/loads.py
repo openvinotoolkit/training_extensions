@@ -24,9 +24,10 @@ from torchvision import transforms as T
 from torchvision.transforms import functional as F
 
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
+from otx.algorithms.segmentation.adapters.mmseg.datasets import (
+    get_annotation_mmseg_format,
+)
 from otx.api.utils.argument_checks import check_input_parameters_type
-
-from otx.algorithms.segmentation.adapters.mmseg.datasets import get_annotation_mmseg_format
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -60,4 +61,3 @@ class LoadAnnotationFromOTXDataset:
         results["seg_fields"].append("gt_semantic_seg")
 
         return results
-

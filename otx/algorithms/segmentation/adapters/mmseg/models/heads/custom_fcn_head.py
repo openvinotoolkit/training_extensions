@@ -5,7 +5,12 @@
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.fcn_head import FCNHead
 
-from .mixin import MixLossMixin, AggregatorMixin, PixelWeightsMixin2, SegmentOutNormMixin
+from .mixin import (
+    AggregatorMixin,
+    MixLossMixin,
+    PixelWeightsMixin2,
+    SegmentOutNormMixin,
+)
 
 
 @HEADS.register_module()

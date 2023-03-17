@@ -2,27 +2,27 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import mmcv
-import numpy as np
-from mmcv.parallel import DataContainer as DC
-from mmseg.datasets import PIPELINES
-from mmseg.datasets.pipelines.formatting import to_tensor
-
 from copy import deepcopy
 from typing import Any, Dict, List
 
+import mmcv
 import numpy as np
+from mmcv.parallel import DataContainer as DC
 from mmcv.utils import build_from_cfg
+from mmseg.datasets import PIPELINES
 from mmseg.datasets.builder import PIPELINES
 from mmseg.datasets.pipelines import Compose
+from mmseg.datasets.pipelines.formatting import to_tensor
 from PIL import Image
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
 
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
+from otx.algorithms.segmentation.adapters.mmseg.datasets import (
+    get_annotation_mmseg_format,
+)
 from otx.api.utils.argument_checks import check_input_parameters_type
 
-from otx.algorithms.segmentation.adapters.mmseg.datasets import get_annotation_mmseg_format
 
 @PIPELINES.register_module(force=True)
 class Normalize(object):
@@ -135,7 +135,6 @@ class BranchImage(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         return repr_str
-
 
 
 @PIPELINES.register_module()

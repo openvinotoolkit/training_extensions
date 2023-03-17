@@ -2,18 +2,18 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
+import torch.nn.functional as F
 from mmcv.runner import force_fp32
 from mmseg.core import add_prefix
 from mmseg.models.losses import accuracy
 from mmseg.ops import resize
 
-from otx.algorithms.segmentation.adapters.mmseg.utils import get_valid_label_mask_per_batch
+from otx.algorithms.segmentation.adapters.mmseg.utils import (
+    get_valid_label_mask_per_batch,
+)
 from otx.mpa.modules.models.losses.utils import LossEqualizer
-from otx.mpa.modules.models.utils import IterativeAggregator
-
-from otx.mpa.modules.models.utils import AngularPWConv, normalize
+from otx.mpa.modules.models.utils import AngularPWConv, IterativeAggregator, normalize
 
 
 class SegmentOutNormMixin(nn.Module):
@@ -49,7 +49,7 @@ class AggregatorMixin(nn.Module):
         aggregator_min_channels=None,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        **kwargs
+        **kwargs,
     ):
 
         in_channels = kwargs.get("in_channels")
@@ -92,6 +92,7 @@ class AggregatorMixin(nn.Module):
         if self.aggregator is not None:
             inputs = self.aggregator(inputs)[0]
         return inputs
+
 
 class MixLossMixin(nn.Module):
     @staticmethod

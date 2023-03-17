@@ -16,9 +16,31 @@
 
 from .backbones import LiteHRNet
 from .heads import CustomFCNHead
-from .losses import DetConLoss, CrossEntropyLossWithIgnore
+from .losses import CrossEntropyLossWithIgnore, DetConLoss
 from .necks import SelfSLMLP
-from .schedulers import ConstantScalarScheduler, PolyScalarScheduler, StepScalarScheduler
-from .segmentors import DetConB, SupConDetConB, ClassIncrEncoderDecoder, MeanTeacherSegmentor
+from .schedulers import (
+    ConstantScalarScheduler,
+    PolyScalarScheduler,
+    StepScalarScheduler,
+)
+from .segmentors import (
+    ClassIncrEncoderDecoder,
+    DetConB,
+    MeanTeacherSegmentor,
+    SupConDetConB,
+)
 
-__all__ = ["LiteHRNet", "CustomFCNHead", "DetConLoss", "SelfSLMLP", "ConstantScalarScheduler", "PolyScalarScheduler", "StepScalarScheduler", "DetConB", "CrossEntropyLossWithIgnore", "SupConDetConB", "ClassIncrEncoderDecoder", "MeanTeacherSegmentor"]
+__all__ = [
+    "LiteHRNet",
+    "CustomFCNHead",
+    "DetConLoss",
+    "SelfSLMLP",
+    "ConstantScalarScheduler",
+    "PolyScalarScheduler",
+    "StepScalarScheduler",
+    "DetConB",
+    "CrossEntropyLossWithIgnore",
+    "SupConDetConB",
+    "ClassIncrEncoderDecoder",
+    "MeanTeacherSegmentor",
+]

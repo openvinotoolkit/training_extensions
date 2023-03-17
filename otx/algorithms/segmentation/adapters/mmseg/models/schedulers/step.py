@@ -7,6 +7,7 @@ from typing import List
 import numpy as np
 
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import SCALAR_SCHEDULERS
+
 from .base import BaseScalarScheduler
 
 
