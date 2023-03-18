@@ -16,21 +16,13 @@
 
 import io
 import os
-import shutil
-import tempfile
 from copy import deepcopy
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
-import cv2
 import numpy as np
-import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import Config, ConfigDict
 
-# This should be removed
-# pylint: disable=unused-import
-import otx.mpa.det  # noqa
-from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     get_configs_by_keys,
@@ -40,11 +32,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
 )
 from otx.algorithms.common.configs.training_base import TrainType
-from otx.algorithms.common.utils import UncopiableDefaultDict
-from otx.algorithms.common.utils.callback import (
-    InferenceProgressCallback,
-    TrainingProgressCallback,
-)
+from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.detection.adapters.mmdet.utils import (
@@ -56,49 +44,26 @@ from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     cluster_anchors,
     should_cluster_anchors,
 )
-from otx.algorithms.detection.configs.base import DetectionConfig
+from otx.algorithms.detection.tasks import OTXDetectionTask
 from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.algorithms.detection.utils.data import adaptive_tile_params
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
-from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain, LabelEntity
-from otx.api.entities.metrics import (
-    BarChartInfo,
-    BarMetricsGroup,
-    CurveMetric,
-    LineChartInfo,
-    LineMetricsGroup,
-    MetricsGroup,
-    ScoreMetric,
-    VisualizationType,
-)
 from otx.api.entities.model import (
     ModelEntity,
     ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
-    OptimizationMethod,
 )
-from otx.api.entities.model_template import TaskType
-from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
-from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.entities.tensor import TensorEntity
-from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
-from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
-from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.entities.train_parameters import default_progress_callback
+from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.core.data import caching
 from otx.mpa.builder import build
-from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import (
     MPAConfig,
@@ -110,162 +75,18 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
-RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semisl.py",
-    TrainType.INCREMENTAL: "incremental.py",
-}
-
-TRAIN_TYPE_DIR_PATH = {
-    TrainType.INCREMENTAL.name: ".",
-    TrainType.SELFSUPERVISED.name: "selfsl",
-    TrainType.SEMISUPERVISED.name: "semisl",
-}
-
 # TODO Remove unnecessary pylint disable
 # pylint: disable=too-many-lines
 
 
-# This should be moved to OTX side
-class OnHookInitialized:
-    """OnHookInitialized class."""
-
-    def __init__(self, task_instance):
-        self.task_instance = task_instance
-        self.__findable = False  # a barrier to block segmentation fault
-
-    def __call__(self, cancel_interface):
-        """Function call in OnHookInitialized."""
-        if isinstance(self.task_instance, int) and self.__findable:
-            import ctypes
-
-            # NOTE: BE AWARE OF SEGMENTATION FAULT
-            self.task_instance = ctypes.cast(self.task_instance, ctypes.py_object).value
-        self.task_instance.cancel_hook_initialized(cancel_interface)
-
-    def __repr__(self):
-        """Function repr in OnHookInitialized."""
-        return f"'{__name__}.OnHookInitialized'"
-
-    def __deepcopy__(self, memo):
-        """Function deepcopy in OnHookInitialized."""
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        result.task_instance = self.task_instance
-        result.__findable = True  # pylint: disable=unused-private-member, protected-access
-        return result
-
-    def __reduce__(self):
-        """Function reduce in OnHookInitialized."""
-        return (self.__class__, (id(self.task_instance),))
-
-
-class MMDetectionTask:
+class MMDetectionTask(OTXDetectionTask):
     """Task class for OTX detection using mmdetection training backend."""
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
-        self._task_config = DetectionConfig
-        self._task_environment = task_environment
-        self._task_type = task_environment.model_template.task_type
-        self._labels = task_environment.get_labels(include_empty=False)
-        self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
-        self._train_type = self._hyperparams.algo_backend.train_type
-        self._model_dir = os.path.join(
-            os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),
-            TRAIN_TYPE_DIR_PATH[self._train_type.name],
-        )
-        if self._hyperparams.tiling_parameters.enable_tiling:
-            self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
-        else:
-            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
-        self._work_dir_is_temp = False
-        self._output_path = output_path
-        if self._output_path is None:
-            self._output_path = tempfile.mkdtemp(prefix="OTX-task-")
-            self._work_dir_is_temp = True
-        self._anchors: Dict[str, int] = {}
-        self._time_monitor = None
-        self.on_hook_initialized = OnHookInitialized(self)
-        self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
-        self._model_label_schema = []  # type: List[LabelEntity]
-        self._resume = False
-        self._should_stop = False
-        self.cancel_interface = None
-        self.reserved_cancel = False
-        self._model_ckpt = None
-        self._precision = [ModelPrecision.FP32]
-        self._data_cfg = None
-        self._optimization_methods = []  # type: List[OptimizationMethod]
+        super().__init__(task_environment, output_path)
+        self._data_cfg: Optional[Config] = None
         self._recipe_cfg: Optional[Config] = None
-        self._is_training = False
-        self._mode = ""
-
-        if hasattr(self._hyperparams, "postprocessing") and hasattr(
-            self._hyperparams.postprocessing, "confidence_threshold"
-        ):
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        else:
-            self.confidence_threshold = 0.0
-
-        # This should be removed
-        self.override_configs = {}  # type: Dict[str, str]
-
-        # This should be cleaned
-        if task_environment.model is not None:
-            logger.info("loading the model from the task env.")
-            state_dict = self._load_model_ckpt(self._task_environment.model)
-            if state_dict:
-                self._model_ckpt = os.path.join(self._output_path, "env_model_ckpt.pth")
-                if os.path.exists(self._model_ckpt):
-                    os.remove(self._model_ckpt)
-                torch.save(state_dict, self._model_ckpt)
-                self._model_label_schema = self._load_model_label_schema(self._task_environment.model)
-                self._resume = self._load_resume_info(self._task_environment.model)
-
-        # This is for hpo, and this should be removed
-        self.project_path = self._output_path
-
-    # This funciton should be moved to load_model
-    def _load_model_ckpt(self, model: Optional[ModelEntity]):
-        if model and "weights.pth" in model.model_adapters:
-            # If a model has been trained and saved for the task already, create empty model and load weights here
-            buffer = io.BytesIO(model.get_data("weights.pth"))
-            model_data = torch.load(buffer, map_location=torch.device("cpu"))
-
-            # set confidence_threshold as well
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
-            if model_data.get("anchors"):
-                self._anchors = model_data["anchors"]
-
-            # Get config
-            if model_data.get("config"):
-                tiling_parameters = model_data.get("config").get("tiling_parameters")
-                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
-                    logger.info("Load tiling parameters")
-                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
-                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
-                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
-                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
-            return model_data
-        return None
-
-    # This function should be moved to load_model
-    def _load_model_label_schema(self, model: Optional[ModelEntity]):
-        # If a model has been trained and saved for the task already, create empty model and load weights here
-        if model and "label_schema.json" in model.model_adapters:
-            import json
-
-            buffer = json.loads(model.get_data("label_schema.json").decode("utf-8"))
-            model_label_schema = LabelSchemaMapper().backward(buffer)
-            return model_label_schema.get_labels(include_empty=False)
-        return self._labels
-
-    # This function should be moved to load_model
-    def _load_resume_info(self, model: Optional[ModelEntity]):
-        if model and "resume" in model.model_adapters:
-            return model.model_adapters.get("resume", False)
-        return False
 
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def _init_task(self, export: bool = False):  # noqa
@@ -472,29 +293,11 @@ class MMDetectionTask:
         return
 
     # pylint: disable=too-many-branches, too-many-statements
-    def train(
+    def _train_model(
         self,
         dataset: DatasetEntity,
-        output_model: ModelEntity,
-        train_parameters: Optional[TrainParameters] = None,
     ):
         """Train function in DetectionTrainTask."""
-        logger.info("train()")
-        # Check for stop signal when training has stopped.
-        # If should_stop is true, training was cancelled and no new
-        if self._should_stop:
-            logger.info("Training cancelled.")
-            self._should_stop = False
-            self._is_training = False
-            return
-
-        # Set OTE LoggerHook & Time Monitor
-        if train_parameters:
-            update_progress_callback = train_parameters.update_progress
-        else:
-            update_progress_callback = default_progress_callback
-        self._time_monitor = TrainingProgressCallback(update_progress_callback)
-
         logger.info("init data cfg.")
         self._data_cfg = ConfigDict(data=ConfigDict())
 
@@ -566,89 +369,14 @@ class MMDetectionTask:
             mode=self._mode,
         )
         logger.info("run task done.")
+        return results
 
-        # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
-        if self._should_stop:
-            logger.info("Training cancelled.")
-            self._should_stop = False
-            self._is_training = False
-            return
-
-        # get output model
-        model_ckpt = results.get("final_ckpt")
-        if model_ckpt is None:
-            logger.error("cannot find final checkpoint from the results.")
-            # output_model.model_status = ModelStatus.FAILED
-            return
-        # update checkpoint to the newly trained model
-        self._model_ckpt = model_ckpt
-
-        # get prediction on validation set
-        self._is_training = False
-        val_dataset = dataset.get_subset(Subset.VALIDATION)
-        val_preds, val_map = self.infer(
-            val_dataset, InferenceParameters(is_evaluation=True), init_task=False, add_prediction=False
-        )
-
-        preds_val_dataset = val_dataset.with_empty_annotations()
-        self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
-
-        result_set = ResultSetEntity(
-            model=output_model,
-            ground_truth_dataset=val_dataset,
-            prediction_dataset=preds_val_dataset,
-        )
-
-        # adjust confidence threshold
-        if self._hyperparams.postprocessing.result_based_confidence_threshold:
-            best_confidence_threshold = None
-            logger.info("Adjusting the confidence threshold")
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
-            if metric.best_confidence_threshold:
-                best_confidence_threshold = metric.best_confidence_threshold.value
-            if best_confidence_threshold is None:
-                raise ValueError("Cannot compute metrics: Invalid confidence threshold!")
-            logger.info(f"Setting confidence threshold to {best_confidence_threshold} based on results")
-            self.confidence_threshold = best_confidence_threshold
-        else:
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
-
-        # compose performance statistics
-        # TODO[EUGENE]: HOW TO ADD A MAE CURVE FOR TaskType.COUNTING?
-        performance = metric.get_performance()
-        performance.dashboard_metrics.extend(self._generate_training_metrics(self._learning_curves, val_map))
-        logger.info(f"Final model performance: {str(performance)}")
-        # save resulting model
-        self.save_model(output_model)
-        output_model.performance = performance
-        logger.info("train done.")
-
-    def infer(
+    def _infer_model(
         self,
         dataset: DatasetEntity,
         inference_parameters: Optional[InferenceParameters] = None,
-        init_task: bool = True,
-        add_prediction: bool = True,
-    ) -> DatasetEntity:
+    ):
         """Main infer function."""
-        logger.info("infer()")
-        process_saliency_maps = False
-        explain_predicted_classes = True
-
-        if init_task:
-            update_progress_callback = default_progress_callback
-            if inference_parameters is not None:
-                update_progress_callback = inference_parameters.update_progress  # type: ignore
-                process_saliency_maps = inference_parameters.process_saliency_maps
-                explain_predicted_classes = inference_parameters.explain_predicted_classes
-
-            self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-            # If confidence threshold is adaptive then up-to-date value should be stored in the model
-            # and should not be changed during inference. Otherwise user-specified value should be taken.
-            if not self._hyperparams.postprocessing.result_based_confidence_threshold:
-                self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-            logger.info(f"Confidence threshold {self.confidence_threshold}")
-
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -724,13 +452,6 @@ class MMDetectionTask:
             f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
         )
         prediction_results = zip(predictions, output["feature_vectors"], output["saliency_maps"])
-
-        if add_prediction:
-            self._add_predictions_to_dataset(
-                prediction_results, dataset, self.confidence_threshold, process_saliency_maps, explain_predicted_classes
-            )
-            logger.info("Inference completed")
-            return dataset
         return prediction_results, metric
 
     # pylint: disable=too-many-statements
@@ -919,57 +640,12 @@ class MMDetectionTask:
         logger.info("Explain completed")
         return dataset
 
-    # This should be moved to OTXDetectionDataset
-    def evaluate(
-        self,
-        output_resultset: ResultSetEntity,
-        evaluation_metric: Optional[str] = None,
-    ):
-        """Evaluate function of OTX Detection Task."""
-        logger.info("called evaluate()")
-        if evaluation_metric is not None:
-            logger.warning(
-                f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
-            )
-        metric = MetricsHelper.compute_f_measure(output_resultset)
-        logger.info(f"F-measure after evaluation: {metric.f_measure.value}")
-        output_resultset.performance = metric.get_performance()
-        logger.info("Evaluation completed")
-
     # This should be removed
     def update_override_configurations(self, config):
         """Update override_configs."""
         logger.info(f"update override config with: {config}")
         config = ConfigDict(**config)
         self.override_configs.update(config)
-
-    def _update_caching_modules(self, data_cfg: Config) -> None:
-        def _find_max_num_workers(cfg: dict):
-            num_workers = [0]
-            for key, value in cfg.items():
-                if key == "workers_per_gpu" and isinstance(value, int):
-                    num_workers += [value]
-                elif isinstance(value, dict):
-                    num_workers += [_find_max_num_workers(value)]
-
-            return max(num_workers)
-
-        def _get_mem_cache_size():
-            if not hasattr(self._hyperparams.algo_backend, "mem_cache_size"):
-                return 0
-
-            return self._hyperparams.algo_backend.mem_cache_size
-
-        max_num_workers = _find_max_num_workers(data_cfg)
-        mem_cache_size = _get_mem_cache_size()
-
-        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
-        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
-
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
-        )
 
     # This should moved somewhere
     def _init_deploy_cfg(self) -> Union[Config, None]:
@@ -1043,167 +719,6 @@ class MMDetectionTask:
 
         return deploy_cfg
 
-    # Below functions should be moved to OTXDetectionTask
-    def _add_predictions_to_dataset(
-        self,
-        prediction_results,
-        dataset,
-        confidence_threshold=0.0,
-        process_saliency_maps=False,
-        explain_predicted_classes=True,
-    ):
-        """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
-        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
-            shapes = self._get_shapes(all_results, dataset_item.width, dataset_item.height, confidence_threshold)
-            dataset_item.append_annotations(shapes)
-
-            if feature_vector is not None:
-                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
-
-            if saliency_map is not None:
-                labels = self._labels.copy()
-                if saliency_map.shape[0] == len(labels) + 1:
-                    # Include the background as the last category
-                    labels.append(LabelEntity("background", Domain.DETECTION))
-
-                predicted_scored_labels = []
-                for shape in shapes:
-                    predicted_scored_labels += shape.get_labels()
-
-                add_saliency_maps_to_dataset_item(
-                    dataset_item=dataset_item,
-                    saliency_map=saliency_map,
-                    model=self._task_environment.model,
-                    labels=labels,
-                    predicted_scored_labels=predicted_scored_labels,
-                    explain_predicted_classes=explain_predicted_classes,
-                    process_saliency_maps=process_saliency_maps,
-                )
-
-    def _get_shapes(self, all_results, width, height, confidence_threshold):
-        if self._task_type == TaskType.DETECTION:
-            shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-        elif self._task_type in {
-            TaskType.INSTANCE_SEGMENTATION,
-            TaskType.ROTATED_DETECTION,
-        }:
-            shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-        else:
-            raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
-        return shapes
-
-    def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
-        shapes = []
-        for label_idx, detections in enumerate(all_results):
-            for i in range(detections.shape[0]):
-                probability = float(detections[i, 4])
-                coords = detections[i, :4].astype(float).copy()
-                coords /= np.array([width, height, width, height], dtype=float)
-                coords = np.clip(coords, 0, 1)
-
-                if probability < confidence_threshold:
-                    continue
-
-                assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                    continue
-
-                shapes.append(
-                    Annotation(
-                        Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
-                        labels=assigned_label,
-                    )
-                )
-        return shapes
-
-    def _ins_seg_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
-        shapes = []
-        for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
-            for mask, probability in zip(masks, boxes[:, 4]):
-                if isinstance(mask, dict):
-                    mask = mask_util.decode(mask)
-                mask = mask.astype(np.uint8)
-                probability = float(probability)
-                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-                if hierarchies is None:
-                    continue
-                for contour, hierarchy in zip(contours, hierarchies[0]):
-                    if hierarchy[3] != -1:
-                        continue
-                    if len(contour) <= 2 or probability < confidence_threshold:
-                        continue
-                    if self._task_type == TaskType.INSTANCE_SEGMENTATION:
-                        points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
-                    else:
-                        box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                        points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
-                    labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                    polygon = Polygon(points=points)
-                    if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
-                        shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
-        return shapes
-
-    def _add_explanations_to_dataset(
-        self, detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
-    ):
-        """Add saliency map to the dataset."""
-        for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
-            labels = self._labels.copy()
-            if saliency_map.shape[0] == len(labels) + 1:
-                # Include the background as the last category
-                labels.append(LabelEntity("background", Domain.DETECTION))
-
-            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4)
-            predicted_scored_labels = []
-            for shape in shapes:
-                predicted_scored_labels += shape.get_labels()
-
-            add_saliency_maps_to_dataset_item(
-                dataset_item=dataset_item,
-                saliency_map=saliency_map,
-                model=self._task_environment.model,
-                labels=labels,
-                predicted_scored_labels=predicted_scored_labels,
-                explain_predicted_classes=explain_predicted_classes,
-                process_saliency_maps=process_saliency_maps,
-            )
-
-    @staticmethod
-    def _generate_training_metrics(learning_curves, scores) -> Iterable[MetricsGroup[Any, Any]]:
-        """Get Training metrics (epochs & scores).
-
-        Parses the mmdetection logs to get metrics from the latest training run
-        :return output List[MetricsGroup]
-        """
-        output: List[MetricsGroup] = []
-
-        # Learning curves.
-        for key, curve in learning_curves.items():
-            len_x, len_y = len(curve.x), len(curve.y)
-            if len_x != len_y:
-                logger.warning(f"Learning curve {key} has inconsistent number of coordinates ({len_x} vs {len_y}.")
-                len_x = min(len_x, len_y)
-                curve.x = curve.x[:len_x]
-                curve.y = curve.y[:len_x]
-            metric_curve = CurveMetric(
-                xs=np.nan_to_num(curve.x).tolist(),
-                ys=np.nan_to_num(curve.y).tolist(),
-                name=key,
-            )
-            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
-            output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
-
-        # Final mAP value on the validation set.
-        output.append(
-            BarMetricsGroup(
-                metrics=[ScoreMetric(value=scores, name="mAP")],
-                visualization_info=BarChartInfo("Validation score", visualization_type=VisualizationType.RADIAL_BAR),
-            )
-        )
-
-        return output
-
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in DetectionTrainTask."""
         logger.info("called save_model")
@@ -1230,35 +745,31 @@ class MMDetectionTask:
         )
         output_model.precision = self._precision
 
-    def cancel_training(self):
-        """Cancel training function in DetectionTrainTask.
+    # These need to be moved somewhere
+    def _update_caching_modules(self, data_cfg: Config) -> None:
+        def _find_max_num_workers(cfg: dict):
+            num_workers = [0]
+            for key, value in cfg.items():
+                if key == "workers_per_gpu" and isinstance(value, int):
+                    num_workers += [value]
+                elif isinstance(value, dict):
+                    num_workers += [_find_max_num_workers(value)]
 
-        Sends a cancel training signal to gracefully stop the optimizer. The signal consists of creating a
-        '.stop_training' file in the current work_dir. The runner checks for this file periodically.
-        The stopping mechanism allows stopping after each iteration, but validation will still be carried out. Stopping
-        will therefore take some time.
-        """
-        logger.info("Cancel training requested.")
-        self._should_stop = True
-        if self.cancel_interface is not None:
-            self.cancel_interface.cancel()
-        else:
-            logger.info("but training was not started yet. reserved it to cancel")
-            self.reserved_cancel = True
+            return max(num_workers)
 
-    def cancel_hook_initialized(self, cancel_interface: CancelInterfaceHook):
-        """Initialization of cancel_interface hook."""
-        logger.info("cancel hook is initialized")
-        self.cancel_interface = cancel_interface
-        if self.reserved_cancel and self.cancel_interface:
-            self.cancel_interface.cancel()
+        def _get_mem_cache_size():
+            if not hasattr(self._hyperparams.algo_backend, "mem_cache_size"):
+                return 0
 
-    def cleanup(self):
-        """Clean up work directory if user specified it."""
-        if self._work_dir_is_temp:
-            self._delete_scratch_space()
+            return self._hyperparams.algo_backend.mem_cache_size
 
-    def _delete_scratch_space(self):
-        """Remove model checkpoints and mpa logs."""
-        if os.path.exists(self._output_path):
-            shutil.rmtree(self._output_path, ignore_errors=False)
+        max_num_workers = _find_max_num_workers(data_cfg)
+        mem_cache_size = _get_mem_cache_size()
+
+        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
+        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
+
+        update_or_add_custom_hook(
+            self._recipe_cfg,
+            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
+        )

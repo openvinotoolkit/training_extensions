@@ -12,7 +12,7 @@ framework: OTEDetection v2.9.1
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.detection.adapters.mmdet.MMDetectionTask
+  base: otx.algorithms.detection.adapters.mmdet.task.MMDetectionTask
   openvino: otx.algorithms.detection.tasks.OpenVINODetectionTask
 
 # Capabilities.

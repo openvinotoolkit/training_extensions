@@ -20,6 +20,7 @@ import otx.mpa.det as MPADetection
 from .inference import DetectionInferenceTask
 from .nncf import DetectionNNCFTask
 from .openvino import OpenVINODetectionTask
+from .task import OTXDetectionTask
 from .train import DetectionTrainTask
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "OpenVINODetectionTask",
     "MPADetection",
     "OTXBackbones",
+    "OTXDetectionTask",
 ]

@@ -5,7 +5,6 @@
 
 
 from .datasets.dataset import OTXDetDataset
-from .task import MMDetectionTask
 
 # fmt: off
 # isort: off
@@ -16,4 +15,4 @@ get_root_logger().propagate = False  # pylint: disable=wrong-import-order
 # isort:on
 # fmt: on
 
-__all__ = ["OTXDetDataset", "MMDetectionTask"]
+__all__ = ["OTXDetDataset"]
