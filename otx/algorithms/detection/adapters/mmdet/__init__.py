@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from .data import OTXDetDataset
+from .datasets.dataset import OTXDetDataset
 
 # fmt: off
 # isort: off

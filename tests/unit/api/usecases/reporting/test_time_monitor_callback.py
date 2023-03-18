@@ -93,7 +93,7 @@ class TestTimeMonitorCallback:
             actual_time_monitor_callback=time_monitor_callback,
             expected_epoch_history=5,
             expected_step_history=50,
-            expected_update_progress_callback=None,
+            expected_update_progress_callback=default_progress_callback,
         )
         # Checking attributes of "TimeMonitorCallback" initialized with specified optional parameters
         step_history = 10

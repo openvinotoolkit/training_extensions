@@ -9,9 +9,15 @@
 import logging
 import math
 import time
-from typing import List, Optional
+from copy import deepcopy
+from typing import List
 
-from otx.api.entities.train_parameters import UpdateProgressCallback
+import dill
+
+from otx.api.entities.train_parameters import (
+    UpdateProgressCallback,
+    default_progress_callback,
+)
 from otx.api.usecases.reporting.callback import Callback
 
 logger = logging.getLogger(__name__)
@@ -27,7 +33,7 @@ class TimeMonitorCallback(Callback):
         num_test_steps (int): amount of testing steps
         epoch_history (int): Amount of previous epochs to calculate average epoch time over
         step_history (int): Amount of previous steps to calculate average steps time over
-        update_progress_callback (Optional[UpdateProgressCallback]): Callback to update progress
+        update_progress_callback (UpdateProgressCallback): Callback to update progress
     """
 
     def __init__(
@@ -38,7 +44,7 @@ class TimeMonitorCallback(Callback):
         num_test_steps: int = 0,
         epoch_history: int = 5,
         step_history: int = 50,
-        update_progress_callback: Optional[UpdateProgressCallback] = None,
+        update_progress_callback: UpdateProgressCallback = default_progress_callback,
     ):
 
         self.total_epochs = num_epoch
@@ -66,6 +72,32 @@ class TimeMonitorCallback(Callback):
         self.is_training = False
 
         self.update_progress_callback = update_progress_callback
+
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        state = self.__dict__.copy()
+        # update_progress_callback is not always pickable object
+        # if it is not, replace it with default callback
+        if not dill.pickles(state["update_progress_callback"]):
+            state["update_progress_callback"] = default_progress_callback
+        return state
+
+    def __deepcopy__(self, memo):
+        """Return deepcopy object."""
+
+        update_progress_callback = self.update_progress_callback
+        self.update_progress_callback = None
+        self.__dict__["__deepcopy__"] = None
+
+        result = deepcopy(self, memo)
+
+        self.__dict__.pop("__deepcopy__")
+        result.__dict__.pop("__deepcopy__")
+        result.update_progress_callback = update_progress_callback
+        self.update_progress_callback = update_progress_callback
+
+        memo[id(self)] = result
+        return result
 
     def on_train_batch_begin(self, batch, logs=None):
         """Set the value of current step and start the timer."""
