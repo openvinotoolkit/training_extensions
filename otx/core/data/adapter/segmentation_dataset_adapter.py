@@ -92,6 +92,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                                 shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
                                 if d_polygon.label not in used_labels:
                                     used_labels.append(d_polygon.label)
+
                     if len(shapes) > 0 or subset == Subset.UNLABELED:
                         dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                         dataset_items.append(dataset_item)

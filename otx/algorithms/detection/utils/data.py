@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 from mmdet.datasets.api_wrappers.coco_api import COCO
 
-from otx.algorithms.detection.adapters.mmdet.data.dataset import (
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
     get_annotation_mmdet_format,
 )
 from otx.algorithms.detection.configs.base.configuration import DetectionConfig

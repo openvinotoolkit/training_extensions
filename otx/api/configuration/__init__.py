@@ -14,7 +14,7 @@ The configuration helper module can be imported as `otx_config_helper` and imple
 #
 
 
-import otx.api.configuration.helper as ote_config_helper  # for 'ote' backward compatibility
+import otx.api.configuration.helper as otx_config_helper  # for backward compatibility
 import otx.api.configuration.helper as cfg_helper  # pylint: disable=reimported
 from otx.api.configuration.elements import metadata_keys
 from otx.api.configuration.elements.configurable_enum import ConfigurableEnum
@@ -27,7 +27,7 @@ from .default_model_parameters import DefaultModelParameters
 __all__ = [
     "metadata_keys",
     "cfg_helper",
-    "ote_config_helper",
+    "otx_config_helper",
     "ConfigurableEnum",
     "ModelLifecycle",
     "Action",

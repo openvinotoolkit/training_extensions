@@ -49,7 +49,7 @@
           "omz://vgg19"
         ]
       },
-      "available": ["Classification"]
+      "available": ["CLASSIFICATION"]
     }
   }
 }
