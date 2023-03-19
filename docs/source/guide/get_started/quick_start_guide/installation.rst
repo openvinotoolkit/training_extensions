@@ -56,13 +56,20 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
     # or install command for torch==1.13.1 for CUDA 11.1:
     pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu111
 
+    # (Experimental) install command for torch==1.13.1 for OSX:
+    pip install torch==1.13.1 torchvision==0.14.1
+
 4. Install OpenVINO™ Training Extensions package from either:
 
 * A local source in development mode
 
 .. code-block::
 
+    # install command for Ubuntu machines:
     pip install -e .[full]
+
+    # (Experimental) install command for OSX machines:
+    pip3 install -e . --extras "full"
 
 * PyPI
 
@@ -83,7 +90,10 @@ Install ``tox`` and create a development environment:
 
     pip install tox
     # -- need to fix '38' in tox.ini if another python version needed
+    # For Ubuntu machines:
     tox devenv venv/otx -e pre-merge
+    # (Experimental) For OSX machines:
+    tox devenv venv/otx -e pre-merge-mac
     source venv/otx/bin/activate
 
 Then you may change code, and all fixes will be directly applied to the editable package.
