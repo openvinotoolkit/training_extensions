@@ -47,6 +47,8 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
 .. note::
 
     Currently, only torch==1.13.1 was fully validated, torch==2.x will be supported in the future (Previous versions are not supported due to security issues).
+    Although OSX machines are not fully validated, but you can try with below command.
+    Please note multiprocessing and MPS training are not supported yet. MPS is validated only with multi-class classification.
 
 .. code-block::
 
@@ -56,7 +58,7 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
     # or install command for torch==1.13.1 for CUDA 11.1:
     pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu111
 
-    # (Experimental) install command for torch==1.13.1 for OSX:
+    # (Experimental) install command for torch==1.13.1 for OSX machines:
     pip install torch==1.13.1 torchvision==0.14.1
 
 4. Install OpenVINO™ Training Extensions package from either:
@@ -69,7 +71,7 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
     pip install -e .[full]
 
     # (Experimental) install command for OSX machines:
-    pip3 install -e . --extras "full"
+    pip install -e . --extras "full"
 
 * PyPI
 
