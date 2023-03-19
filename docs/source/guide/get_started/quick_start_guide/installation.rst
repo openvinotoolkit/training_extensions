@@ -67,11 +67,7 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
 
 .. code-block::
 
-    # install command for Ubuntu machines:
-    pip install -e .[full]
-
-    # (Experimental) install command for OSX machines:
-    pip install -e . --extras "full"
+    pip install -e '.[full]'
 
 * PyPI
 
