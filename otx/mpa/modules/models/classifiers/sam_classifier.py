@@ -66,7 +66,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         losses = dict()
 
         if self.multilabel or self.hierarchical:
-            # FIXME: img_metas incomes as DataContainer in MacOS
+            # FIXME: img_metas incomes as DataContainer in OSX
             img_metas = kwargs.get("img_metas", None)
             if img_metas and isinstance(img_metas, DataContainer):
                 kwargs["img_metas"] = img_metas.data[0]

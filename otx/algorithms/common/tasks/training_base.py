@@ -312,7 +312,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             if subset not in data_cfg:
                 continue
             dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
-            # FIXME: Support multiprocessing in MacOS
+            # FIXME: Support multiprocessing for OSX
             if platform.system() == "Darwin":
                 dataloader_cfg.workers_per_gpu = 0
                 data_cfg.workers_per_gpu = 0
