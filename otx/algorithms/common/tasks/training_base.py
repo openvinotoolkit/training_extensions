@@ -308,13 +308,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # if num_workers is 0, persistent_workers must be False
         data_cfg = self._recipe_cfg.data
-        # FIXME: Support multiprocessing in MacOS
-        if platform.system() == "Darwin":
-            data_cfg.workers_per_gpu = 0
         for subset in ["train", "val", "test", "unlabeled"]:
             if subset not in data_cfg:
                 continue
             dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
+            # FIXME: Support multiprocessing in MacOS
+            if platform.system() == "Darwin":
+                dataloader_cfg.workers_per_gpu = 0
+                data_cfg.workers_per_gpu = 0
             workers_per_gpu = dataloader_cfg.get(
                 "workers_per_gpu",
                 data_cfg.get("workers_per_gpu", 0),
