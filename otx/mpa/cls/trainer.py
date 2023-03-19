@@ -48,10 +48,6 @@ class ClsTrainer(ClsStage):
         dash_line = "-" * 60 + "\n"
         logger.info("Environment info:\n" + dash_line + env_info + "\n" + dash_line)
 
-        # FIXME: MPS is supported only for multi-class classification
-        if IS_MPS_AVAILABLE and not cfg.model.get("multilabel", False) and not cfg.model.get("hierarhical", False):
-            cfg.device = "mps"
-
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
