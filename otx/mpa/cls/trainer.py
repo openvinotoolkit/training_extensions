@@ -10,6 +10,7 @@ from mmcls import __version__
 from mmcls.apis import train_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import collect_env
+from mmcv.utils import IS_MPS_AVAILABLE
 from torch import nn
 
 from otx.mpa.registry import STAGES
@@ -46,6 +47,10 @@ class ClsTrainer(ClsStage):
         env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
         dash_line = "-" * 60 + "\n"
         logger.info("Environment info:\n" + dash_line + env_info + "\n" + dash_line)
+
+        # FIXME: MPS is supported only for multi-class classification
+        if IS_MPS_AVAILABLE and not cfg.model.get("multilabel", False) and not cfg.model.get("hierarhical", False):
+            cfg.device = "mps"
 
         # Data
         datasets = [build_dataset(cfg.data.train)]
