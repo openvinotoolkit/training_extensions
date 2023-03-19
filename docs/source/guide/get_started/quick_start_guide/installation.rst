@@ -88,10 +88,7 @@ Install ``tox`` and create a development environment:
 
     pip install tox
     # -- need to fix '38' in tox.ini if another python version needed
-    # For Ubuntu machines:
     tox devenv venv/otx -e pre-merge
-    # (Experimental) For OSX machines:
-    tox devenv venv/otx -e pre-merge-mac
     source venv/otx/bin/activate
 
 Then you may change code, and all fixes will be directly applied to the editable package.
