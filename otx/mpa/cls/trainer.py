@@ -10,7 +10,6 @@ from mmcls import __version__
 from mmcls.apis import train_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import collect_env
-from mmcv.utils import IS_MPS_AVAILABLE
 from torch import nn
 
 from otx.mpa.registry import STAGES
