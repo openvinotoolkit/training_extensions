@@ -299,7 +299,7 @@
       "options": {
         "arch": ["base", "small"]
       },
-      "available": ["CLASSIFICATION"]
+      "available": []
     },
     "mmcls.PCPVT": {
       "required": ["arch"],

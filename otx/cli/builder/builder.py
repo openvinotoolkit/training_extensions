@@ -28,8 +28,8 @@ import torch
 from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
-from otx.api.entities.model_template import TaskType
 from otx.algorithms import TRANSFORMER_BACKBONES
+from otx.api.entities.model_template import TaskType
 from otx.cli.utils.importing import (
     get_backbone_list,
     get_backbone_registry,
@@ -102,8 +102,8 @@ def update_backbone_args(backbone_config: dict, registry: Registry, backend: str
 
 def update_channels(model_config: MPAConfig, out_channels: Any):
     """Update in_channel of head or neck."""
-    if hasattr(model_config.model, "neck"):
-        if model_config.model.neck.type == "GlobalAveragePooling":
+    if hasattr(model_config.model, "neck") and model_config.model.neck:
+        if model_config.model.neck.get("type", None) == "GlobalAveragePooling":
             model_config.model.neck.pop("in_channels", None)
         else:
             print(f"\tUpdate model.neck.in_channels: {out_channels}")

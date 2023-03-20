@@ -56,6 +56,7 @@ class ClsInferrer(ClsStage):
         dump_saliency_map = kwargs.get("dump_saliency_map", False)
         # TODO: It looks like we need to modify that code in an appropriate way.
         if model_cfg.model.head.get("type", None) == "VisionTransformerClsHead":
+            dump_features = False
             dump_saliency_map = False
         eval = kwargs.get("eval", False)
         outputs = self.infer(
