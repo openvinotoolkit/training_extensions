@@ -20,6 +20,7 @@ from typing import Sequence, Union
 import torch
 
 from otx import MMCLS_AVAILABLE
+from otx.algorithms import TRANSFORMER_BACKBONES
 
 if MMCLS_AVAILABLE:
     from mmcls.models.necks.gap import GlobalAveragePooling
@@ -116,10 +117,12 @@ class ActivationMapHook(BaseRecordingForwardHook):
 
 
 class FeatureVectorHook(BaseRecordingForwardHook):
-    @staticmethod
-    def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]]) -> torch.Tensor:
+    def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]]) -> torch.Tensor:
         """Generate the feature vector by average pooling feature maps."""
-        if isinstance(feature_map, (list, tuple)):
+        if self._module.backbone.__class__.__name__ in TRANSFORMER_BACKBONES and isinstance(feature_map[-1], (tuple, list)):
+            # mmcls.VisionTransformer outputs Tuple[List[...]] and the last index of List is the final logit.
+            feature_vector, _ = feature_map[-1]
+        elif isinstance(feature_map, (list, tuple)):
             # aggregate feature maps from Feature Pyramid Network
             feature_vector = [torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in feature_map]
             feature_vector = torch.cat(feature_vector, 1)
