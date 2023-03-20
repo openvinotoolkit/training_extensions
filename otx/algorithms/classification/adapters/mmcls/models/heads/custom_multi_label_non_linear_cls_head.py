@@ -1,9 +1,10 @@
+"""This module contains the CustomMultiLabelNonLinearClsHead implementation for MMClassification."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import torch
-import torch.nn as nn
+from torch import nn
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import MultiLabelClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
@@ -66,11 +67,11 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         self.classifier = nn.Sequential(*modules)
 
     def init_weights(self):
-        for m in self.classifier:
-            if isinstance(m, nn.Linear):
-                normal_init(m, mean=0, std=0.01, bias=0)
-            elif isinstance(m, nn.BatchNorm1d):
-                constant_init(m, 1)
+        for module in self.classifier:
+            if isinstance(module, nn.Linear):
+                normal_init(module, mean=0, std=0.01, bias=0)
+            elif isinstance(module, nn.BatchNorm1d):
+                constant_init(module, 1)
 
     def loss(self, cls_score, gt_label, valid_label_mask=None):
         gt_label = gt_label.type_as(cls_score)

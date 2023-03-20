@@ -2,10 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# code in this file is adpated from
-# https://github.com/ildoonet/pytorch-randaugment/blob/master/RandAugment/augmentations.py
-# https://github.com/google-research/fixmatch/blob/master/third_party/auto_augment/augmentations.py
-# https://github.com/google-research/fixmatch/blob/master/libml/ctaugment.py
+"""
+Code in this file is adapted from
+https://github.com/ildoonet/pytorch-randaugment/blob/master/RandAugment/augmentations.py
+https://github.com/google-research/fixmatch/blob/master/third_party/auto_augment/augmentations.py
+https://github.com/google-research/fixmatch/blob/master/libml/ctaugment.py
+"""
+
 import random
 
 import numpy as np
@@ -15,143 +18,159 @@ from mmcls.datasets.builder import PIPELINES
 PARAMETER_MAX = 10
 
 
-def AutoContrast(img, **kwarg):
+def auto_contrast(img, **kwarg):
+    """Applies auto contrast to an image."""
     return PIL.ImageOps.autocontrast(img), None
 
 
-def Brightness(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
-    return PIL.ImageEnhance.Brightness(img).enhance(v), v
+def brightness(img, value, max_value, bias=0):
+    """Applies brightness adjustment to an image."""
+    value = _float_parameter(value, max_value) + bias
+    return PIL.ImageEnhance.Brightness(img).enhance(value), value
 
 
-def Color(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
-    return PIL.ImageEnhance.Color(img).enhance(v), v
+def color(img, value, max_value, bias=0):
+    """Applies color adjustment to an image."""
+    value = _float_parameter(value, max_value) + bias
+    return PIL.ImageEnhance.Color(img).enhance(value), value
 
 
-def Contrast(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
-    return PIL.ImageEnhance.Contrast(img).enhance(v), v
+def contrast(img, value, max_value, bias=0):
+    """Applies contrast adjustment to an image."""
+    value = _float_parameter(value, max_value) + bias
+    return PIL.ImageEnhance.Contrast(img).enhance(value), value
 
 
-def Cutout(img, v, max_v, bias=0):
-    if v == 0:
+def cutout(img, value, max_value, bias=0):
+    """Applies cutout augmentation to an image."""
+    if value == 0:
         return img
-    v = _float_parameter(v, max_v) + bias
-    v = int(v * min(img.size))
-    return CutoutAbs(img, v), v
+    value = _float_parameter(value, max_value) + bias
+    value = int(value * min(img.size))
+    return cutout_abs(img, value), value
 
 
-def CutoutAbs(img, v, **kwarg):
+def cutout_abs(img, value, **kwarg):
+    """Applies cutout with absolute pixel size to an image."""
     w, h = img.size
     x0 = np.random.uniform(0, w)
     y0 = np.random.uniform(0, h)
-    x0 = int(max(0, x0 - v / 2.0))
-    y0 = int(max(0, y0 - v / 2.0))
-    x1 = int(min(w, x0 + v))
-    y1 = int(min(h, y0 + v))
+    x0 = int(max(0, x0 - value / 2.0))
+    y0 = int(max(0, y0 - value / 2.0))
+    x1 = int(min(w, x0 + value))
+    y1 = int(min(h, y0 + value))
     xy = (x0, y0, x1, y1)
     # gray
-    color = (127, 127, 127)
+    rec_color = (127, 127, 127)
     img = img.copy()
-    PIL.ImageDraw.Draw(img).rectangle(xy, color)
-    return img, xy, color
+    PIL.ImageDraw.Draw(img).rectangle(xy, rec_color)
+    return img, xy, rec_color
 
 
-def Equalize(img, **kwarg):
+def equalize(img, **kwarg):
+    """Applies equalization to an image."""
     return PIL.ImageOps.equalize(img), None
 
 
-def Identity(img, **kwarg):
+def identity(img, **kwarg):
+    """Returns the original image without any transformation."""
     return img, None
 
 
-def Posterize(img, v, max_v, bias=0):
-    v = _int_parameter(v, max_v) + bias
-    return PIL.ImageOps.posterize(img, v), v
+def posterize(img, value, max_value, bias=0):
+    """Applies posterization to an image."""
+    value = _int_parameter(value, max_value) + bias
+    return PIL.ImageOps.posterize(img, value), value
 
 
-def Rotate(img, v, max_v, bias=0):
-    v = _int_parameter(v, max_v) + bias
+def rotate(img, value, max_value, bias=0):
+    """Applies rotation to an image."""
+    value = _int_parameter(value, max_value) + bias
     if random.random() < 0.5:
-        v = -v
-    return img.rotate(v), v
+        value = -value
+    return img.rotate(value), value
 
 
-def Sharpness(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
-    return PIL.ImageEnhance.Sharpness(img).enhance(v), v
+def sharpness(img, value, max_value, bias=0):
+    """Applies Sharpness to an image."""
+    value = _float_parameter(value, max_value) + bias
+    return PIL.ImageEnhance.Sharpness(img).enhance(value), value
 
 
-def ShearX(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
+def shear_x(img, value, max_value, bias=0):
+    """Applies ShearX to an image."""
+    value = _float_parameter(value, max_value) + bias
     if random.random() < 0.5:
-        v = -v
-    return img.transform(img.size, PIL.Image.AFFINE, (1, v, 0, 0, 1, 0)), v
+        value = -value
+    return img.transform(img.size, PIL.Image.AFFINE, (1, value, 0, 0, 1, 0)), value
 
 
-def ShearY(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
+def shear_y(img, value, max_value, bias=0):
+    """Applies ShearY to an image."""
+    value = _float_parameter(value, max_value) + bias
     if random.random() < 0.5:
-        v = -v
-    return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, v, 1, 0)), v
+        value = -value
+    return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, value, 1, 0)), value
 
 
-def Solarize(img, v, max_v, bias=0):
-    v = _int_parameter(v, max_v) + bias
-    return PIL.ImageOps.solarize(img, 256 - v), v
+def solarize(img, value, max_value, bias=0):
+    """Applies Solarize to an image."""
+    value = _int_parameter(value, max_value) + bias
+    return PIL.ImageOps.solarize(img, 256 - value), value
 
 
-def TranslateX(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
+def translate_x(img, value, max_value, bias=0):
+    """Applies TranslateX to an image."""
+    value = _float_parameter(value, max_value) + bias
     if random.random() < 0.5:
-        v = -v
-    v = int(v * img.size[0])
-    return img.transform(img.size, PIL.Image.AFFINE, (1, 0, v, 0, 1, 0)), v
+        value = -value
+    value = int(value * img.size[0])
+    return img.transform(img.size, PIL.Image.AFFINE, (1, 0, value, 0, 1, 0)), value
 
 
-def TranslateY(img, v, max_v, bias=0):
-    v = _float_parameter(v, max_v) + bias
+def translate_y(img, value, max_value, bias=0):
+    """Applies TranslateX to an image."""
+    value = _float_parameter(value, max_value) + bias
     if random.random() < 0.5:
-        v = -v
-    v = int(v * img.size[1])
-    return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, 0, 1, v)), v
+        value = -value
+    value = int(value * img.size[1])
+    return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, 0, 1, value)), value
 
 
-def _float_parameter(v, max_v):
-    return float(v) * max_v / PARAMETER_MAX
+def _float_parameter(value, max_value):
+    return float(value) * max_value / PARAMETER_MAX
 
 
-def _int_parameter(v, max_v):
-    return int(v * max_v / PARAMETER_MAX)
+def _int_parameter(value, max_value):
+    return int(value * max_value / PARAMETER_MAX)
 
 
 rand_augment_pool = [
-    (AutoContrast, None, None),
-    (Brightness, 0.9, 0.05),
-    (Color, 0.9, 0.05),
-    (Contrast, 0.9, 0.05),
-    (Equalize, None, None),
-    (Identity, None, None),
-    (Posterize, 4, 4),
-    (Rotate, 30, 0),
-    (Sharpness, 0.9, 0.05),
-    (ShearX, 0.3, 0),
-    (ShearY, 0.3, 0),
-    (Solarize, 256, 0),
-    (TranslateX, 0.3, 0),
-    (TranslateY, 0.3, 0),
+    (auto_contrast, None, None),
+    (brightness, 0.9, 0.05),
+    (color, 0.9, 0.05),
+    (contrast, 0.9, 0.05),
+    (equalize, None, None),
+    (identity, None, None),
+    (posterize, 4, 4),
+    (rotate, 30, 0),
+    (sharpness, 0.9, 0.05),
+    (shear_x, 0.3, 0),
+    (shear_y, 0.3, 0),
+    (solarize, 256, 0),
+    (translate_x, 0.3, 0),
+    (translate_y, 0.3, 0),
 ]
 
 
 # TODO: [Jihwan]: Can be removed by mmcls.datasets.pipeline.auto_augment Line 95 RandAugment class
 @PIPELINES.register_module()
-class OTXRandAugment(object):
-    def __init__(self, n, m, cutout=16):
-        assert n >= 1
-        assert 1 <= m <= 10
-        self.n = n
-        self.m = m
+class OTXRandAugment:
+    def __init__(self, num_ops, magnitude, cutout=16):
+        assert num_ops >= 1
+        assert 1 <= magnitude <= 10
+        self.num_ops = num_ops
+        self.magnitude = magnitude
         self.cutout = cutout
         self.augment_pool = rand_augment_pool
 
@@ -160,13 +179,13 @@ class OTXRandAugment(object):
             img = results[key]
             if not PIL.Image.isImageType(img):
                 img = PIL.Image.fromarray(results[key])
-            ops = random.choices(self.augment_pool, k=self.n)
-            for op, max_v, bias in ops:
-                v = np.random.randint(1, self.m)
+            ops = random.choices(self.augment_pool, k=self.num_ops)
+            for op, max_value, bias in ops:
+                value = np.random.randint(1, self.magnitude)
                 if random.random() < 0.5:
-                    img, v = op(img, v=v, max_v=max_v, bias=bias)
-                    results["rand_mc_{}".format(op.__name__)] = v
-            img, xy, color = CutoutAbs(img, self.cutout)
+                    img, value = op(img, value=value, max_value=max_value, bias=bias)
+                    results["rand_mc_{}".format(op.__name__)] = value
+            img, xy, color = cutout_abs(img, self.cutout)
             results["CutoutAbs"] = (xy, self.cutout, color)
             results[key] = np.array(img)
         return results

@@ -1,3 +1,4 @@
+"""Module for defining a hook for IB loss using mmcls."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,9 +9,12 @@ from mmcv.runner import HOOKS, Hook
 
 @HOOKS.register_module()
 class IBLossHook(Hook):
+    """Hook for IB loss.
+    It passes the number of data per class and current epoch to IB loss class.
+    """
+
     def __init__(self, dst_classes):
-        """Hook for IB loss.
-        It passes the number of data per class and current epoch to IB loss class.
+        """Initialize the IBLossHook.
 
         Args:
             dst_classes (list): A list of classes including new_classes to be newly learned

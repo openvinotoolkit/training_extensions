@@ -1,3 +1,4 @@
+""" Module for defining a semi-supervised multi-label classifier using mmcls."""
 # Copyright (C) 2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -17,11 +18,11 @@ class SemiSLMultilabelClassifier(SAMImageClassifier):
     This classifier supports unlabeled data by overriding forward_train
     """
 
-    def forward_train(self, imgs, gt_label, **kwargs):
+    def forward_train(self, img, gt_label, **kwargs):
         """Data is transmitted as a classifier training function
 
         Args:
-            imgs (list[Tensor]): List of tensors of shape (1, C, H, W)
+            img (list[Tensor]): List of tensors of shape (1, C, H, W)
                 Typically these should be mean centered and std scaled.
             gt_label (Tensor): Ground truth labels for the input labeled images
             kwargs (keyword arguments): Specific to concrete implementation
@@ -34,7 +35,7 @@ class SemiSLMultilabelClassifier(SAMImageClassifier):
         target = gt_label.squeeze()
         unlabeled_data = kwargs["extra_0"]
         x = {}
-        x["labeled_weak"] = self.extract_feat(imgs)
+        x["labeled_weak"] = self.extract_feat(img)
         x["labeled_strong"] = self.extract_feat(kwargs["img_strong"])
 
         img_uw = unlabeled_data["img"]

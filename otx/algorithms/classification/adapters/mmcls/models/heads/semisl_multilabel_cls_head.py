@@ -5,7 +5,10 @@
 import torch
 from mmcls.models.builder import HEADS, build_loss
 
-from otx.algorithms.classification.adapters.mmcls.models.heads import CustomMultiLabelLinearClsHead, CustomMultiLabelNonLinearClsHead
+from otx.algorithms.classification.adapters.mmcls.models.heads import (
+    CustomMultiLabelLinearClsHead,
+    CustomMultiLabelNonLinearClsHead,
+)
 
 from .utils import LossBalancer, generate_aux_mlp
 
@@ -122,6 +125,9 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
 
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
+    def loss(self, logits, gt_label, features):
+        return SemiMultilabelClsHead.loss(self, logits, gt_label, features)
+
     def forward_train(self, x, gt_label):
         return self.forward_train_with_last_layers(x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp)
 
@@ -178,6 +184,9 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         SemiMultilabelClsHead.__init__(self, unlabeled_coef, use_dynamic_loss_weighting, aux_loss)
 
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
+
+    def loss(self, logits, gt_label, features):
+        return SemiMultilabelClsHead.loss(self, logits, gt_label, features)
 
     def forward_train(self, x, gt_label):
         return self.forward_train_with_last_layers(

@@ -1,3 +1,4 @@
+"""Module for defining a semi-supervised classifier using mmcls."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #

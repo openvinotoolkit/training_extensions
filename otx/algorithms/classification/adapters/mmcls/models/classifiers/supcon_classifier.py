@@ -1,3 +1,4 @@
+"""This module contains the SupConClassifier implementation for MMClassification."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,6 +10,7 @@ from mmcls.models.classifiers.image import ImageClassifier
 
 @CLASSIFIERS.register_module()
 class SupConClassifier(ImageClassifier):
+    """SupConClassifier with support for classification tasks."""
     def __init__(self, backbone, neck=None, head=None, pretrained=None, **kwargs):
         self.multilabel = kwargs.pop("multilabel", False)
         self.hierarchical = kwargs.pop("hierarchical", False)
