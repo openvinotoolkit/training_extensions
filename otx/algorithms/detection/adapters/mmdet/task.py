@@ -14,17 +14,27 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import glob
 import io
 import os
+import time
+from contextlib import nullcontext
 from copy import deepcopy
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import torch
-from mmcv.utils import Config, ConfigDict
+from mmcv.runner import wrap_fp16_model
+from mmcv.utils import Config, ConfigDict, get_git_hash
+from mmdet import __version__
+from mmdet.apis import single_gpu_test, train_detector
+from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
+from mmdet.models.detectors import TwoStageDetector
+from mmdet.utils import collect_env
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
+    build_data_parallel,
     get_configs_by_keys,
     get_configs_by_pairs,
     patch_data_pipeline,
@@ -32,9 +42,15 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
 )
 from otx.algorithms.common.configs.training_base import TrainType
+from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.ir import embed_ir_model_data
+from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
+from otx.algorithms.detection.adapters.mmdet.exporter import DetectionExporter
+from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
+    DetSaliencyMapHook,
+)
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
@@ -43,6 +59,11 @@ from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     cluster_anchors,
     should_cluster_anchors,
+)
+from otx.algorithms.detection.adapters.mmdet.utils.configurer import (
+    DetectionStage,
+    IncrDetectionStage,
+    SemiSLDetectionStage,
 )
 from otx.algorithms.detection.tasks import OTXDetectionTask
 from otx.algorithms.detection.utils import get_det_model_api_configuration
@@ -63,7 +84,11 @@ from otx.api.entities.train_parameters import default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
-from otx.mpa.builder import build
+from otx.mpa.modules.hooks.recording_forward_hooks import (
+    ActivationMapHook,
+    EigenCamHook,
+    FeatureVectorHook,
+)
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import (
     MPAConfig,
@@ -94,6 +119,8 @@ class MMDetectionTask(OTXDetectionTask):
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         if len(self._anchors) != 0:
             self._update_anchors(self._recipe_cfg.model.bbox_head.anchor_generator, self._anchors)
+
+        set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
 
         # This may go to the configure function
         options_for_patch_datasets = {"type": "OTXDetDataset"}
@@ -288,9 +315,16 @@ class MMDetectionTask(OTXDetectionTask):
         origin["heights"] = new["heights"]
         origin["widths"] = new["widths"]
 
-    def configure(self):
+    def configure(self, model_cfg, model_ckpt, data_cfg, training=True, subset="train", **kwargs):
         """Patch mmcv configs for OTX detection settings."""
-        return
+        if self._train_type == TrainType.INCREMENTAL:
+            configurer = IncrDetectionStage()
+        elif self._train_type == TrainType.SEMISUPERVISED:
+            configurer = SemiSLDetectionStage()
+        else:
+            configurer = DetectionStage()
+        cfg = configurer.configure(model_cfg, model_ckpt, data_cfg, training, subset, **kwargs)
+        return cfg
 
     # pylint: disable=too-many-branches, too-many-statements
     def _train_model(
@@ -325,14 +359,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task()
 
-        stage_module = "DetectionTrainer"
-        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
-        stage_module = module_prefix[self._train_type] + stage_module
-
-        mode = "train"
-        if mode is not None:
-            self._mode = mode
-
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
@@ -349,27 +375,90 @@ class MMDetectionTask(OTXDetectionTask):
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=self._resume))
+        recipe_cfg.work_dir = self._output_path
+        recipe_cfg.resume = self._resume
 
-        # build workflow using recipe configuration
-        workflow = build(
-            recipe_cfg,
-            self._mode,
-            stage_type=stage_module,
-            common_cfg=common_cfg,
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, True, "train")
+        logger.info("train!")
+
+        timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
+        # Environment
+        logger.info(f"cfg.gpu_ids = {cfg.gpu_ids}, distributed = {cfg.distributed}")
+        env_info_dict = collect_env()
+        env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
+        dash_line = "-" * 60 + "\n"
+        logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
+
+        # Data
+        datasets = [build_dataset(cfg.data.train)]
+
+        # FIXME: Currently detection do not support multi batch evaluation. This will be fixed
+        if "val" in cfg.data:
+            cfg.data.val_dataloader["samples_per_gpu"] = 1
+
+        # TODO. This should be moved to configurer
+        # TODO. Anchor clustering should be checked
+        # if hasattr(cfg, "hparams"):
+        #     if cfg.hparams.get("adaptive_anchor", False):
+        #         num_ratios = cfg.hparams.get("num_anchor_ratios", 5)
+        #         proposal_ratio = extract_anchor_ratio(datasets[0], num_ratios)
+        #         self.configure_anchor(cfg, proposal_ratio)
+
+        # Target classes
+        if "task_adapt" in cfg:
+            target_classes = cfg.task_adapt.get("final", [])
+        else:
+            target_classes = datasets[0].CLASSES
+
+        # Metadata
+        meta = dict()
+        meta["env_info"] = env_info
+        # meta['config'] = cfg.pretty_text
+        meta["seed"] = cfg.seed
+        meta["exp_name"] = cfg.work_dir
+        if cfg.checkpoint_config is not None:
+            cfg.checkpoint_config.meta = dict(
+                mmdet_version=__version__ + get_git_hash()[:7],
+                CLASSES=target_classes,
+            )
+            # if "proposal_ratio" in locals():
+            #     cfg.checkpoint_config.meta.update({"anchor_ratio": proposal_ratio})
+
+        # Model
+        model = build_detector(cfg)
+        if getattr(cfg, "fp16", False):
+            wrap_fp16_model(model)
+        model.train()
+        model.CLASSES = target_classes
+
+        if cfg.distributed:
+            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
+        # Save config
+        # cfg.dump(os.path.join(cfg.work_dir, 'config.py'))
+        # logger.info(f'Config:\n{cfg.pretty_text}')
+
+        validate = bool(cfg.data.get("val", None))
+        train_detector(
+            model,
+            datasets,
+            cfg,
+            distributed=cfg.distributed,
+            validate=validate,
+            timestamp=timestamp,
+            meta=meta,
         )
 
-        # run workflow with task specific model config and data config
-        results = workflow.run(
-            model_cfg=recipe_cfg,
-            data_cfg=data_cfg,
-            ir_model_path=None,
-            ir_weight_path=None,
-            model_ckpt=self._model_ckpt,
-            mode=self._mode,
-        )
+        # Save outputs
+        output_ckpt_path = os.path.join(cfg.work_dir, "latest.pth")
+        best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_*.pth"))
+        if len(best_ckpt_path) > 0:
+            output_ckpt_path = best_ckpt_path[0]
         logger.info("run task done.")
-        return results
+        return dict(
+            final_ckpt=output_ckpt_path,
+        )
 
     def _infer_model(
         self,
@@ -395,14 +484,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task()
 
-        stage_module = "DetectionInferrer"
-        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
-        stage_module = module_prefix[self._train_type] + stage_module
-
-        mode = "train"
-        if mode is not None:
-            self._mode = mode
-
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
@@ -419,31 +500,125 @@ class MMDetectionTask(OTXDetectionTask):
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=self._resume))
+        recipe_cfg.work_dir = self._output_path
+        recipe_cfg.resume = self._resume
 
-        # build workflow using recipe configuration
-        workflow = build(
-            recipe_cfg,
-            self._mode,
-            stage_type=stage_module,
-            common_cfg=common_cfg,
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test")
+        logger.info("infer!")
+
+        samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+
+        # Data loader
+        dataset = build_dataset(cfg.data.test)
+        dataloader = build_dataloader(
+            dataset,
+            samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
+            workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+            num_gpus=len(cfg.gpu_ids),
+            dist=cfg.distributed,
+            seed=cfg.get("seed", None),
+            shuffle=False,
         )
 
-        # run workflow with task specific model config and data config
-        results = workflow.run(
-            model_cfg=recipe_cfg,
-            data_cfg=data_cfg,
-            ir_model_path=None,
-            ir_weight_path=None,
-            model_ckpt=self._model_ckpt,
-            mode=self._mode,
-            eval=inference_parameters.is_evaluation if inference_parameters else False,
-            dump_features=dump_features,
-            dump_saliency_map=dump_saliency_map,
+        # Target classes
+        if "task_adapt" in cfg:
+            target_classes = cfg.task_adapt.final
+            if len(target_classes) < 1:
+                raise KeyError(
+                    f"target_classes={target_classes} is empty check the metadata from model ckpt or recipe "
+                    "configuration"
+                )
+        else:
+            target_classes = dataset.CLASSES
+
+        # Model
+        model = build_detector(cfg)
+        if getattr(cfg, "fp16", False):
+            wrap_fp16_model(model)
+        model.CLASSES = target_classes
+        model.eval()
+        feature_model = model.model_t if self._train_type == TrainType.SEMISUPERVISED else model
+        model = build_data_parallel(model, cfg, distributed=False)
+
+        # InferenceProgressCallback (Time Monitor enable into Infer task)
+        time_monitor = None
+        if cfg.get("custom_hooks", None):
+            time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
+            time_monitor = time_monitor[0] if time_monitor else None
+        if time_monitor is not None:
+
+            # pylint: disable=unused-argument
+            def pre_hook(module, inp):
+                time_monitor.on_test_batch_begin(None, None)
+
+            def hook(module, inp, outp):
+                time_monitor.on_test_batch_end(None, None)
+
+            model.register_forward_pre_hook(pre_hook)
+            model.register_forward_hook(hook)
+
+        # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
+        if not dump_saliency_map:
+            saliency_hook = nullcontext()
+        else:
+            raw_model = feature_model
+            if raw_model.__class__.__name__ == "NNCFNetwork":
+                raw_model = raw_model.get_nncf_wrapped_model()
+            if isinstance(raw_model, TwoStageDetector):
+                saliency_hook = ActivationMapHook(feature_model)
+            else:
+                saliency_hook = DetSaliencyMapHook(feature_model)
+
+        eval_predictions = []
+        with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
+            with saliency_hook:
+                eval_predictions = single_gpu_test(model, dataloader)
+                feature_vectors = feature_vector_hook.records if dump_features else [None] * len(dataset)
+                if isinstance(saliency_hook, nullcontext):
+                    saliency_maps = [None] * len(dataset)
+                else:
+                    saliency_maps = saliency_hook.records  # pylint: disable=no-member
+
+        for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
+            cfg.evaluation.pop(key, None)
+
+        metric = None
+        if inference_parameters and inference_parameters.is_evaluation:
+            metric = dataset.evaluate(eval_predictions, **cfg.evaluation)
+            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
+
+        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
+        while hasattr(dataset, "dataset") and not isinstance(dataset, ImageTilingDataset):
+            dataset = dataset.dataset
+
+        if isinstance(dataset, ImageTilingDataset):
+            feature_vectors = [feature_vectors[i] for i in range(dataset.num_samples)]
+            saliency_maps = [saliency_maps[i] for i in range(dataset.num_samples)]
+            if not dataset.merged_results:
+                eval_predictions = dataset.merge(eval_predictions)
+            else:
+                eval_predictions = dataset.merged_results
+
+        assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), (
+            "Number of elements should be the same, however, number of outputs are "
+            f"{len(eval_predictions)}, {len(feature_vectors)}, and {len(saliency_maps)}"
         )
+
+        results = dict(
+            outputs=dict(
+                classes=target_classes,
+                detections=eval_predictions,
+                metric=metric,
+                feature_vectors=feature_vectors,
+                saliency_maps=saliency_maps,
+            )
+        )
+
         logger.info("run task done.")
         # TODO: InferenceProgressCallback register
-        logger.debug(f"result of run_task {stage_module} module = {results}")
         output = results["outputs"]
         metric = output["metric"]
         predictions = output["detections"]
@@ -472,6 +647,21 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task(export=True)
 
+        # deepcopy all configs to make sure
+        # changes under MPA and below does not take an effect to OTX for clear distinction
+        recipe_cfg = deepcopy(self._recipe_cfg)
+        data_cfg = deepcopy(self._data_cfg)
+        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
+
+        # update model config -> model label schema
+        model_classes = [label.name for label in self._model_label_schema]
+        recipe_cfg["model_classes"] = model_classes
+
+        recipe_cfg.work_dir = self._output_path
+        recipe_cfg.resume = self._resume
+
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test")
+
         if precision == ModelPrecision.FP16:
             self._precision[0] = ModelPrecision.FP16
         export_options: Dict[str, Any] = {}
@@ -487,44 +677,12 @@ class MMDetectionTask(OTXDetectionTask):
                 export_options["deploy_cfg"]["ir_config"]["output_names"] += ["feature_vector", "saliency_map"]
         export_options["model_builder"] = build_detector
 
-        stage_module = "DetectionExporter"
-
-        mode = "train"
-        if mode is not None:
-            self._mode = mode
-
-        # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
-        recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
-        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
-
-        # update model config -> model label schema
-        model_classes = [label.name for label in self._model_label_schema]
-        recipe_cfg["model_classes"] = model_classes
-        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=self._resume))
-
-        # build workflow using recipe configuration
-        workflow = build(
-            recipe_cfg,
-            self._mode,
-            stage_type=stage_module,
-            common_cfg=common_cfg,
-        )
-
-        # run workflow with task specific model config and data config
-        results = workflow.run(
-            model_cfg=recipe_cfg,
-            data_cfg=data_cfg,
-            ir_model_path=None,
-            ir_weight_path=None,
-            model_ckpt=self._model_ckpt,
-            mode=self._mode,
-            export=True,
-            dump_features=dump_features,
-            enable_fp16=(precision == ModelPrecision.FP16),
+        exporter = DetectionExporter()
+        results = exporter.run(
+            cfg,
             **export_options,
         )
+
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
@@ -563,6 +721,12 @@ class MMDetectionTask(OTXDetectionTask):
         explain_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Detection."""
+
+        explainer_hook_selector = {
+            "classwisesaliencymap": DetSaliencyMapHook,
+            "eigencam": EigenCamHook,
+            "activationmap": ActivationMapHook,
+        }
         logger.info("explain()")
 
         update_progress_callback = default_progress_callback
@@ -575,9 +739,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
-        self._init_task()
-
-        stage_module = "DetectionExplainer"
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -590,9 +751,8 @@ class MMDetectionTask(OTXDetectionTask):
                 ),
             )
         )
-        mode = "train"
-        if mode is not None:
-            self._mode = mode
+
+        self._init_task()
 
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
@@ -610,29 +770,93 @@ class MMDetectionTask(OTXDetectionTask):
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=self._resume))
+        recipe_cfg.work_dir = self._output_path
+        recipe_cfg.resume = self._resume
 
-        # build workflow using recipe configuration
-        workflow = build(
-            recipe_cfg,
-            self._mode,
-            stage_type=stage_module,
-            common_cfg=common_cfg,
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test")
+
+        samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+
+        # Data loader
+        mm_dataset = build_dataset(cfg.data.test)
+        dataloader = build_dataloader(
+            mm_dataset,
+            samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
+            workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+            num_gpus=len(cfg.gpu_ids),
+            dist=cfg.distributed,
+            seed=cfg.get("seed", None),
+            shuffle=False,
         )
 
-        # run workflow with task specific model config and data config
-        results = workflow.run(
-            model_cfg=recipe_cfg,
-            data_cfg=data_cfg,
-            ir_model_path=None,
-            ir_weight_path=None,
-            model_ckpt=self._model_ckpt,
-            mode=self._mode,
-            explainer=explain_parameters.explainer if explain_parameters else None,
-        )
+        # Target classes
+        if "task_adapt" in cfg:
+            target_classes = cfg.task_adapt.final
+            if len(target_classes) < 1:
+                raise KeyError(
+                    f"target_classes={target_classes} is empty check the metadata from model ckpt or recipe "
+                    "configuration"
+                )
+        else:
+            target_classes = dataset.CLASSES
+
+        # TODO: Check Inference FP16 Support
+        model = build_detector(cfg)
+        if getattr(cfg, "fp16", False):
+            wrap_fp16_model(model)
+        model.CLASSES = target_classes
+        model.eval()
+        feature_model = model.model_t if self._train_type == TrainType.SEMISUPERVISED else model
+        model = build_data_parallel(model, cfg, distributed=False)
+
+        # InferenceProgressCallback (Time Monitor enable into Infer task)
+        time_monitor = None
+        if cfg.get("custom_hooks", None):
+            time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
+            time_monitor = time_monitor[0] if time_monitor else None
+        if time_monitor is not None:
+
+            # pylint: disable=unused-argument
+            def pre_hook(module, inp):
+                time_monitor.on_test_batch_begin(None, None)
+
+            def hook(module, inp, outp):
+                time_monitor.on_test_batch_end(None, None)
+
+            model.register_forward_pre_hook(pre_hook)
+            model.register_forward_hook(hook)
+
+        explainer = explain_parameters.explainer if explain_parameters else None
+        explainer_hook = explainer_hook_selector.get(explainer.lower(), None)
+        if explainer_hook is None:
+            raise NotImplementedError(f"Explainer algorithm {explainer} not supported!")
+        logger.info(f"Explainer algorithm: {explainer}")
+
+        # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
+        eval_predictions = []
+        with explainer_hook(feature_model) as saliency_hook:
+            for data in dataloader:
+                with torch.no_grad():
+                    result = model(return_loss=False, rescale=True, **data)
+                eval_predictions.extend(result)
+            saliency_maps = saliency_hook.records
+
+        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
+        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
+            mm_dataset = mm_dataset.dataset
+
+        # In the tiling case, select the first images which is map of the entire image
+        if isinstance(mm_dataset, ImageTilingDataset):
+            saliency_maps = [saliency_maps[i] for i in range(mm_dataset.num_samples)]
+
+        outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
+
         logger.info("run task done.")
-        detections = results["outputs"]["detections"]
-        explain_results = results["outputs"]["saliency_maps"]
+        detections = outputs["detections"]
+        explain_results = outputs["saliency_maps"]
 
         self._add_explanations_to_dataset(
             detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes

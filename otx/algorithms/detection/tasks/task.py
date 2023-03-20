@@ -132,15 +132,13 @@ class OTXDetectionTask:
             os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),
             TRAIN_TYPE_DIR_PATH[self._train_type.name],
         )
-        if self._hyperparams.tiling_parameters.enable_tiling:
-            self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
-        else:
-            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
         self._work_dir_is_temp = False
         self._output_path = output_path
         if self._output_path is None:
             self._output_path = tempfile.mkdtemp(prefix="OTX-task-")
             self._work_dir_is_temp = True
+        else:
+            os.makedirs(self._output_path, exist_ok=True)
         self._anchors: Dict[str, int] = {}
         self._time_monitor = None
         self.on_hook_initialized = OnHookInitialized(self)
@@ -154,7 +152,6 @@ class OTXDetectionTask:
         self._precision = [ModelPrecision.FP32]
         self._optimization_methods = []  # type: List[OptimizationMethod]
         self._is_training = False
-        self._mode = ""
 
         if hasattr(self._hyperparams, "postprocessing") and hasattr(
             self._hyperparams.postprocessing, "confidence_threshold"
@@ -166,9 +163,13 @@ class OTXDetectionTask:
         # This should be removed
         self.override_configs = {}  # type: Dict[str, str]
 
-        # This should be cleaned
         if task_environment.model is not None:
             self._load_model()
+
+        if self._hyperparams.tiling_parameters.enable_tiling:
+            self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
+        else:
+            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
         # This is for hpo, and this should be removed
         self.project_path = self._output_path
