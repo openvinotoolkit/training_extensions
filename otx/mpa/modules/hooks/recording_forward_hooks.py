@@ -20,7 +20,6 @@ from typing import Sequence, Union
 import torch
 
 from otx import MMCLS_AVAILABLE
-from otx.algorithms import TRANSFORMER_BACKBONES
 
 if MMCLS_AVAILABLE:
     from mmcls.models.necks.gap import GlobalAveragePooling
