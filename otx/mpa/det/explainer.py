@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import torch
 from mmcv.utils import Config, ConfigDict
 from mmdet.datasets import build_dataloader as mmdet_build_dataloader
 from mmdet.datasets import build_dataset as mmdet_build_dataset
