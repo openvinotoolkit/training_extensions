@@ -92,7 +92,7 @@ class ClsStage(Stage):
         if isinstance(output, (tuple, list)):
             output = output[-1]
 
-        if layer.__class__.__name__ in TRANSFORMER_BACKBONES:
+        if layer.__class__.__name__ in TRANSFORMER_BACKBONES and isinstance(output, (tuple, list)):
             # mmcls.VisionTransformer outputs Tuple[List[...]] and the last index of List is the final logit.
             _, output = output
 
