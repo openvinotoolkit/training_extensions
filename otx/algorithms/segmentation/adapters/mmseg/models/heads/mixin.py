@@ -16,7 +16,7 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 from otx.mpa.modules.models.losses.utils import LossEqualizer
 from otx.mpa.modules.models.utils import AngularPWConv, IterativeAggregator, normalize
 
-# pylint: disable=abstract-method, unused-argument
+# pylint: disable=abstract-method, unused-argument, keyword-arg-before-vararg
 
 
 class SegmentOutNormMixin(nn.Module):

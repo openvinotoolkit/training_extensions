@@ -11,7 +11,9 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, protected-access
+
+
 @SEGMENTORS.register_module()
 class MeanTeacherSegmentor(BaseSegmentor):
     """Mean teacher segmentor for semi-supervised learning.
@@ -61,7 +63,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
         self.count_iter += 1
         if self.semisl_start_iter > self.count_iter or "extra_0" not in kwargs:
             x = self.model_s.extract_feat(img)
-            loss_decode = self.model_s.decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+            loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
             return loss_decode
 
         ul_data = kwargs["extra_0"]
@@ -71,9 +73,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         with torch.no_grad():
             teacher_feat = self.model_t.extract_feat(ul_w_img)
-            teacher_logit = self.model_t._decode_head_forward_test(  # pylint: disable=protected-access
-                teacher_feat, ul_img_metas
-            )
+            teacher_logit = self.model_t._decode_head_forward_test(teacher_feat, ul_img_metas)
             teacher_logit = resize(
                 input=teacher_logit, size=ul_w_img.shape[2:], mode="bilinear", align_corners=self.align_corners
             )
@@ -83,8 +83,8 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         x = self.model_s.extract_feat(img)
         x_u = self.model_s.extract_feat(ul_s_img)
-        loss_decode = self.model_s.decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
-        loss_decode_u = self.model_s.decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
+        loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+        loss_decode_u = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
 
         for (key, value) in loss_decode_u.items():
             if value is None:

@@ -12,7 +12,7 @@ from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 from otx.mpa.modules.ov.models.mmov_model import MMOVModel
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, keyword-arg-before-vararg
 
 
 class MMOVDecodeHead(BaseDecodeHead):
@@ -22,13 +22,17 @@ class MMOVDecodeHead(BaseDecodeHead):
         self,
         model_path_or_model: Union[str, ov.Model] = None,
         weight_path: Optional[str] = None,
-        inputs: Dict[str, Union[str, List[str]]] = {},
-        outputs: Dict[str, Union[str, List[str]]] = {},
+        inputs: Optional[Dict[str, Union[str, List[str]]]] = None,
+        outputs: Optional[Dict[str, Union[str, List[str]]]] = None,
         init_weight: bool = False,
         verify_shape: bool = True,
         *args,
         **kwargs
     ):
+        if inputs is None:
+            inputs = {}
+        if outputs is None:
+            outputs = {}
         self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
         self._inputs = deepcopy(inputs)

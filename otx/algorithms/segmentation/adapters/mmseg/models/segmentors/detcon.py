@@ -516,17 +516,17 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
     # pylint: disable=arguments-renamed
     def forward_train(
         self,
-        img: torch.Tensor,
-        img_metas: List[Dict],
-        gt_semantic_seg: torch.Tensor,
-        pixel_weights: Optional[torch.Tensor] = None,
+        img,
+        img_metas,
+        gt_semantic_seg,
+        pixel_weights=None,
         **kwargs,
     ):
         """Forward function for training.
 
         Args:
             img (Tensor): Input images.
-            img_metas (list[dict]): Input information.
+            img_metas (Any): Input information.
             gt_semantic_seg (Tensor): Ground truth masks.
                 It is used to organize features among the same classes.
             pixel_weights (Tensor): Pixels weights.
@@ -548,7 +548,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             losses.update(dict(loss_detcon=loss_detcon["loss"]))
 
         # decode head
-        loss_decode, _ = self.decode_head_forward_train(
+        loss_decode, _ = self._decode_head_forward_train(
             embd, img_metas, gt_semantic_seg=mask, pixel_weights=pixel_weights
         )
         losses.update(loss_decode)

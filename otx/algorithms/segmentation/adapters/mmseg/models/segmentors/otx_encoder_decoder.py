@@ -38,8 +38,8 @@ class OTXEncoderDecoder(EncoderDecoder):
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
 
-    from otx.mpa.modules.hooks.recording_forward_hooks import (
-        FeatureVectorHook,  # pylint: disable=ungrouped-imports
+    from otx.mpa.modules.hooks.recording_forward_hooks import (  # pylint: disable=ungrouped-imports
+        FeatureVectorHook,
     )
 
     @FUNCTION_REWRITER.register_rewriter(

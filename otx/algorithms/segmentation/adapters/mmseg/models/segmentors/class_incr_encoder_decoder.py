@@ -6,17 +6,18 @@
 
 import functools
 
+import torch
 from mmseg.models import SEGMENTORS
 from mmseg.utils import get_root_logger
 
 from otx.mpa.modules.utils.task_adapt import map_class_names
 
-from .mixin import MixLossMixin, PixelWeightsMixin
+from .mixin import PixelWeightsMixin
 from .otx_encoder_decoder import OTXEncoderDecoder
 
 
 @SEGMENTORS.register_module()
-class ClassIncrEncoderDecoder(MixLossMixin, PixelWeightsMixin, OTXEncoderDecoder):
+class ClassIncrEncoderDecoder(PixelWeightsMixin, OTXEncoderDecoder):
     """Encoder-decoder for incremental learning."""
 
     def __init__(self, *args, task_adapt=None, **kwargs):
@@ -33,6 +34,44 @@ class ClassIncrEncoderDecoder(MixLossMixin, PixelWeightsMixin, OTXEncoderDecoder
                 task_adapt["src_classes"],  # chkpt_classes
             )
         )
+
+    def forward_train(
+        self,
+        img,
+        img_metas,
+        gt_semantic_seg,
+        aux_img=None,
+        **kwargs,
+    ):  # pylint: disable=arguments-renamed
+        """Forward function for training.
+
+        Args:
+            img (Tensor): Input images.
+            img_metas (list[dict]): List of image info dict where each dict
+                has: 'img_shape', 'scale_factor', 'flip', and may also contain
+                'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
+                For details on the values of these keys see
+                `mmseg/datasets/pipelines/formatting.py:Collect`.
+            gt_semantic_seg (Tensor): Semantic segmentation masks
+                used if the architecture supports semantic segmentation task.
+            aux_img (Tensor): Auxiliary images.
+
+        Returns:
+            dict[str, Tensor]: a dictionary of loss components
+        """
+        if aux_img is not None:
+            mix_loss_enabled = False
+            mix_loss_cfg = self.train_cfg.get("mix_loss", None)
+            if mix_loss_cfg is not None:
+                mix_loss_enabled = mix_loss_cfg.get("enable", False)
+            if mix_loss_enabled:
+                self.train_cfg.mix_loss.enable = mix_loss_enabled
+
+        if self.train_cfg.mix_loss.enable:
+            img = torch.cat([img, aux_img], dim=0)
+            gt_semantic_seg = torch.cat([gt_semantic_seg, gt_semantic_seg], dim=0)
+
+        return super().forward_train(img, img_metas, gt_semantic_seg, **kwargs)
 
     @staticmethod
     def load_state_dict_pre_hook(
