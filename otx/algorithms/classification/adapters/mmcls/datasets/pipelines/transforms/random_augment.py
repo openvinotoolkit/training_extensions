@@ -18,7 +18,7 @@ from mmcls.datasets.builder import PIPELINES
 PARAMETER_MAX = 10
 
 
-def auto_contrast(img, **kwarg):
+def auto_contrast(img, **kwargs):
     """Applies auto contrast to an image."""
     return PIL.ImageOps.autocontrast(img), None
 
@@ -50,7 +50,7 @@ def cutout(img, value, max_value, bias=0):
     return cutout_abs(img, value), value
 
 
-def cutout_abs(img, value, **kwarg):
+def cutout_abs(img, value, **kwargs):
     """Applies cutout with absolute pixel size to an image."""
     w, h = img.size
     x0 = np.random.uniform(0, w)
@@ -67,12 +67,12 @@ def cutout_abs(img, value, **kwarg):
     return img, xy, rec_color
 
 
-def equalize(img, **kwarg):
+def equalize(img, **kwargs):
     """Applies equalization to an image."""
     return PIL.ImageOps.equalize(img), None
 
 
-def identity(img, **kwarg):
+def identity(img, **kwargs):
     """Returns the original image without any transformation."""
     return img, None
 
