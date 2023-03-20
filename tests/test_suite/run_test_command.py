@@ -202,8 +202,9 @@ def otx_hpo_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/label_schema.json")
 
 
-def otx_export_testing(template, root):
+def otx_export_testing(template, root, dump_features=False, half_precision=False):
     template_work_dir = get_template_dir(template, root)
+    save_path = f"{template_work_dir}/exported_{template.model_template_id}"
     command_line = [
         "otx",
         "export",
@@ -211,36 +212,33 @@ def otx_export_testing(template, root):
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--save-model-to",
-        f"{template_work_dir}/exported_{template.model_template_id}",
+        save_path,
     ]
+
+    if dump_features:
+        command_line[-1] += "_w_features"
+        save_path = command_line[-1]
+        command_line.append("--dump-features")
+    if half_precision:
+        command_line[-1] += "_fp16"
+        save_path = command_line[-1]
+        command_line.append("--half-precision")
+
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml")
-    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin")
-    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/label_schema.json")
-
-
-def otx_export_testing_w_features(template, root):
-    template_work_dir = get_template_dir(template, root)
-    command_line = [
-        "otx",
-        "export",
-        template.model_template_path,
-        "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
-        "--save-model-to",
-        f"{template_work_dir}/exported_{template.model_template_id}_w_features",
-        "--dump-features",
-    ]
-    check_run(command_line)
-
-    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.bin")
-    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/label_schema.json")
-
-    path_to_xml = f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml"
+    path_to_xml = os.path.join(save_path, "openvino.xml")
     assert os.path.exists(path_to_xml)
-    with open(path_to_xml, encoding="utf-8") as stream:
-        xml_model = stream.read()
-    assert "feature_vector" in xml_model
+    assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+    assert os.path.exists(os.path.join(save_path, "label_schema.json"))
+
+    if dump_features:
+        with open(path_to_xml, encoding="utf-8") as stream:
+            xml_model = stream.read()
+            assert "feature_vector" in xml_model
+
+    if half_precision:
+        with open(path_to_xml, encoding="utf-8") as stream:
+            xml_model = stream.read()
+            assert "FP16" in xml_model
 
 
 def otx_eval_testing(template, root, otx_dir, args):
@@ -264,9 +262,24 @@ def otx_eval_testing(template, root, otx_dir, args):
 
 
 def otx_eval_openvino_testing(
-    template, root, otx_dir, args, threshold=0.0, criteria=None, reg_threshold=0.10, result_dict=None
+    template,
+    root,
+    otx_dir,
+    args,
+    threshold=0.0,
+    criteria=None,
+    reg_threshold=0.10,
+    result_dict=None,
+    half_precision=False,
 ):
     template_work_dir = get_template_dir(template, root)
+    weights_path = f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
+    perf_path = f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
+
+    if half_precision:
+        weights_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/openvino.xml"
+        perf_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/performance.json"
+
     command_line = [
         "otx",
         "eval",
@@ -274,16 +287,16 @@ def otx_eval_openvino_testing(
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
+        weights_path,
         "--save-performance",
-        f"{template_work_dir}/exported_{template.model_template_id}/performance.json",
+        perf_path,
     ]
     command_line.extend(["--work-dir", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/performance.json")
+    assert os.path.exists(perf_path)
     with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
         trained_performance = json.load(read_file)
-    with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
+    with open(perf_path) as read_file:
         exported_performance = json.load(read_file)
 
     if isinstance(criteria, dict) and template.name in criteria.keys():
