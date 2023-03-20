@@ -43,7 +43,7 @@ def test_patch_config() -> None:
     """
 
     cls_datapipeline_path = "otx/algorithms/action/configs/classification/x3d/data_pipeline.py"
-    work_dir = tempfile.mkdtemp("OTX-tempdir9104")
+    work_dir = tempfile.TemporaryDirectory("OTX-tempdir9104")
 
     with pytest.raises(NotImplementedError):
         patch_config(CLS_CONFIG, cls_datapipeline_path, work_dir, TaskType.CLASSIFICATION)
