@@ -200,7 +200,7 @@ if is_mmdeploy_enabled():
             )
             create_model("mmcls")
 
-            @FUNCTION_REWRITER.register_rewriter("tests.unit.mpa.deploy.test_helpers.MockModel.forward")
+            @FUNCTION_REWRITER.register_rewriter("tests.unit.algorithms.common.adapters.mmdeploy.test_helpers.MockModel.forward")
             @mark("test", inputs=["input"], outputs=["output"])
             def forward(ctx, self, *args, **kwargs):
                 return ctx.origin_func(self, *args, **kwargs)
