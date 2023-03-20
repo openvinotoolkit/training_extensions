@@ -15,12 +15,42 @@
 # and limitations under the License.
 
 from .classifiers import BYOL, SAMImageClassifier, SemiSLClassifier, SupConClassifier
-from .heads import ConstrastiveHead, CustomLinearClsHead, CustomNonLinearClsHead, CustomMultiLabelNonLinearClsHead, CustomMultiLabelLinearClsHead, CustomHierarchicalLinearClsHead, CustomHierarchicalNonLinearClsHead, SupConClsHead
-from .losses import AsymmetricAngularLossWithIgnore, AsymmetricLossWithIgnore, BarlowTwinsLoss, IBLoss, CrossEntropyLossWithIgnore
+from .heads import (
+    ConstrastiveHead,
+    CustomHierarchicalLinearClsHead,
+    CustomHierarchicalNonLinearClsHead,
+    CustomLinearClsHead,
+    CustomMultiLabelLinearClsHead,
+    CustomMultiLabelNonLinearClsHead,
+    CustomNonLinearClsHead,
+    SupConClsHead,
+)
+from .losses import (
+    AsymmetricAngularLossWithIgnore,
+    AsymmetricLossWithIgnore,
+    BarlowTwinsLoss,
+    CrossEntropyLossWithIgnore,
+    IBLoss,
+)
 from .necks import SelfSLMLP
 
-__all__ = ["BYOL", "SAMImageClassifier", "SemiSLClassifier", "SupConClassifier",
-           "CustomLinearClsHead", "CustomNonLinearClsHead", "CustomMultiLabelNonLinearClsHead",
-           "CustomMultiLabelLinearClsHead", "CustomHierarchicalLinearClsHead", "CustomHierarchicalNonLinearClsHead",
-           "AsymmetricAngularLossWithIgnore", "AsymmetricLossWithIgnore", "BarlowTwinsLoss", "IBLoss", "CrossEntropyLossWithIgnore",
-           "SelfSLMLP", "ConstrastiveHead"]
+__all__ = [
+    "BYOL",
+    "SAMImageClassifier",
+    "SemiSLClassifier",
+    "SupConClassifier",
+    "CustomLinearClsHead",
+    "CustomNonLinearClsHead",
+    "CustomMultiLabelNonLinearClsHead",
+    "CustomMultiLabelLinearClsHead",
+    "CustomHierarchicalLinearClsHead",
+    "CustomHierarchicalNonLinearClsHead",
+    "AsymmetricAngularLossWithIgnore",
+    "AsymmetricLossWithIgnore",
+    "BarlowTwinsLoss",
+    "IBLoss",
+    "CrossEntropyLossWithIgnore",
+    "SelfSLMLP",
+    "ConstrastiveHead",
+    "SupConClsHead",
+]

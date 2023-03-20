@@ -16,6 +16,4 @@
 
 from .mmov_backbone import MMOVBackbone
 
-__all__ = [
-    "MMOVBackbone"
-]
+__all__ = ["MMOVBackbone"]

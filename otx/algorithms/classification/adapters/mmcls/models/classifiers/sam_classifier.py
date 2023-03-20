@@ -73,7 +73,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         return losses
 
     @staticmethod
-    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):
+    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
         """Redirect model as output state_dict for OTX model compatibility"""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
@@ -127,7 +127,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         return state_dict
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):
+    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
         """Redirect input state_dict to model for OTX model compatibility"""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:

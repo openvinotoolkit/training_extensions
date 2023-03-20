@@ -5,8 +5,10 @@
 from typing import Dict, List
 
 from mmcls.models.builder import NECKS
+
 from otx.mpa.modules.ov.graph.parsers.cls.cls_base_parser import cls_base_parser
 from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+
 
 @NECKS.register_module()
 class MMOVNeck(MMOVModel):
