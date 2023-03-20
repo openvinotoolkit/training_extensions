@@ -47,7 +47,7 @@ class ClsExporter(ExporterMixin, ClsStage):
     def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
         from mmcls.datasets.pipelines import Compose
 
-        from ...algorithms.common.adapters.mmdeploy.apis import NaiveExporter
+        from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 
         def get_fake_data(cfg, orig_img_shape=(128, 128, 3)):
             pipeline = cfg.data.test.pipeline
