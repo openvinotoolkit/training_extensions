@@ -4,7 +4,7 @@ Original papers:
 - 'Efficient Visual Pretraining with Contrastive Detection', https://arxiv.org/abs/2103.10957
 """
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=unused-argument, invalid-name, unnecessary-pass, not-callable

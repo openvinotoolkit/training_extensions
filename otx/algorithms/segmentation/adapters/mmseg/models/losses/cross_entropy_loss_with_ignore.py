@@ -1,5 +1,5 @@
 """Cross entropy loss for ignored mode in class-incremental learning."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 

@@ -1,5 +1,5 @@
 """Modules for decode and loss reweighting/mix."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 from mmseg.core import add_prefix

@@ -10,7 +10,7 @@ Modified from:
 # Copyright (c) 2021 DeLightCMU
 # SPDX-License-Identifier: Apache-2.0
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
