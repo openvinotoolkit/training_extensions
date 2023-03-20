@@ -4,10 +4,10 @@
 #
 
 import torch
-from torch import nn
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import MultiLabelClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
+from torch import nn
 
 from .custom_multi_label_linear_cls_head import AnglularLinear
 

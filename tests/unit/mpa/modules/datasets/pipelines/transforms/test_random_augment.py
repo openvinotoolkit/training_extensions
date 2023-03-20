@@ -46,7 +46,7 @@ def test_cutoutabs_transform(sample_pil_image: Image.Image) -> None:
 class TestOTXRandAugment:
     def test_with_default_arguments(self, sample_np_image: np.ndarray) -> None:
         """Test case with default arguments."""
-        transform = OTXRandAugment(n=2, m=5, cutout=16)
+        transform = OTXRandAugment(num_ops=2, magnitude=5, cutout=16)
         data = {"img": sample_np_image}
         results = transform(data)
 
@@ -56,7 +56,7 @@ class TestOTXRandAugment:
 
     def test_with_img_fields_argument(self, sample_np_image: np.ndarray) -> None:
         """Test case with img_fields argument."""
-        transform = OTXRandAugment(n=2, m=5, cutout=16)
+        transform = OTXRandAugment(num_ops=2, magnitude=5, cutout=16)
         data = {
             "img1": sample_np_image,
             "img2": sample_np_image,
@@ -69,7 +69,7 @@ class TestOTXRandAugment:
 
     def test_with_pil_image_input(self, sample_pil_image: Image.Image) -> None:
         """Test case with PIL.Image input."""
-        transform = OTXRandAugment(n=2, m=5, cutout=16)
+        transform = OTXRandAugment(num_ops=2, magnitude=5, cutout=16)
         data = {"img": sample_pil_image}
         results = transform(data)
 
