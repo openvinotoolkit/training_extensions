@@ -49,7 +49,7 @@ def update_deploy_cfg(onnx_path, deploy_cfg, mo_options=None):
 
     onnx_model = onnx.load(onnx_path)
     ir_config = get_ir_config(deploy_cfg)
-    _ = get_backend_config(deploy_cfg)
+    get_backend_config(deploy_cfg)
 
     # update input
     input_names = [i.name for i in onnx_model.graph.input]
