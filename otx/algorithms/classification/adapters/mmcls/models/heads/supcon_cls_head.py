@@ -21,7 +21,7 @@ class SupConClsHead(BaseHead):
         topk (set): evaluation topk score, default is (1, )
     """
 
-    def __init__(self, num_classes: int, in_channels: int, aux_mlp, loss, aux_loss, topk=(1,), init_cfg=None, **kwargs):
+    def __init__(self, num_classes: int, in_channels: int, aux_mlp, loss, aux_loss, topk=(1,), init_cfg=None):
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:

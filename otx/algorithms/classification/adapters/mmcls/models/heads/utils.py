@@ -47,10 +47,10 @@ class LossBalancer:
 
     def balance_losses(self, losses):
         total_loss = 0.0
-        for i, l in enumerate(losses):
-            self.avg_estimators[i].update(float(l))
+        for i, loss in enumerate(losses):
+            self.avg_estimators[i].update(float(loss))
             total_loss += (
-                self.final_weights[i] * l / (self.avg_estimators[i].val + self.EPS) * self.avg_estimators[0].val
+                self.final_weights[i] * loss / (self.avg_estimators[i].val + self.EPS) * self.avg_estimators[0].val
             )
 
         return total_loss

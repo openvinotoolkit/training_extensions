@@ -1,12 +1,13 @@
+""""Non-linear classification head for hierarhical classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import torch
-import torch.nn as nn
 from mmcls.models.builder import HEADS, build_loss
 from mmcls.models.heads import MultiLabelClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
+from torch import nn
 
 
 @HEADS.register_module()
@@ -70,11 +71,11 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
             )
 
     def init_weights(self):
-        for m in self.classifier:
-            if isinstance(m, nn.Linear):
-                normal_init(m, mean=0, std=0.01, bias=0)
-            elif isinstance(m, nn.BatchNorm1d):
-                constant_init(m, 1)
+        for module in self.classifier:
+            if isinstance(module, nn.Linear):
+                normal_init(module, mean=0, std=0.01, bias=0)
+            elif isinstance(module, nn.BatchNorm1d):
+                constant_init(module, 1)
 
     def loss(self, cls_score, gt_label, multilabel=False, valid_label_mask=None):
         num_samples = len(cls_score)
@@ -92,10 +93,10 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
 
         return loss
 
-    def forward_train(self, x, gt_label, **kwargs):
+    def forward_train(self, cls_score, gt_label, **kwargs):
         img_metas = kwargs.get("img_metas", None)
-        gt_label = gt_label.type_as(x)
-        cls_score = self.classifier(x)
+        gt_label = gt_label.type_as(cls_score)
+        cls_score = self.classifier(cls_score)
 
         losses = dict(loss=0.0)
         for i in range(self.hierarchical_info["num_multiclass_heads"]):
@@ -131,7 +132,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
                 valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)[
                     :, self.hierarchical_info["num_single_label_classes"] :
                 ]
-                valid_label_mask = valid_label_mask.to(x.device)
+                valid_label_mask = valid_label_mask.to(cls_score.device)
                 valid_label_mask = valid_label_mask[valid_batch_mask]
             else:
                 valid_label_mask = None
@@ -178,7 +179,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
 
     def get_valid_label_mask(self, img_metas):
         valid_label_mask = []
-        for i, meta in enumerate(img_metas):
+        for meta in img_metas:
             mask = torch.Tensor([1 for _ in range(self.num_classes)])
             if "ignored_labels" in meta and meta["ignored_labels"]:
                 mask[meta["ignored_labels"]] = 0

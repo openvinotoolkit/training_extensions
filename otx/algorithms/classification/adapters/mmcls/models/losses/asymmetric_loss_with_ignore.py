@@ -3,9 +3,9 @@
 #
 
 import torch
-import torch.nn as nn
 from mmcls.models.builder import LOSSES
 from mmcls.models.losses.utils import weight_reduce_loss
+from torch import nn
 
 
 def asymmetric_loss_with_ignore(
@@ -49,11 +49,11 @@ def asymmetric_loss_with_ignore(
         avg_factor = None  # if we are not set this to None the exception will be throwed
 
     if clip and clip > 0:
-        pt = (1 - pred_sigmoid + clip).clamp(max=1) * (1 - target) + pred_sigmoid * target
+        pos_target = (1 - pred_sigmoid + clip).clamp(max=1) * (1 - target) + pred_sigmoid * target
     else:
-        pt = (1 - pred_sigmoid) * (1 - target) + pred_sigmoid * target
-    asymmetric_weight = (1 - pt).pow(gamma_pos * target + gamma_neg * (1 - target))
-    loss = -torch.log(pt.clamp(min=eps)) * asymmetric_weight
+        pos_target = (1 - pred_sigmoid) * (1 - target) + pred_sigmoid * target
+    asymmetric_weight = (1 - pos_target).pow(gamma_pos * target + gamma_neg * (1 - target))
+    loss = -torch.log(pos_target.clamp(min=eps)) * asymmetric_weight
 
     if valid_label_mask is not None:
         loss = loss * valid_label_mask

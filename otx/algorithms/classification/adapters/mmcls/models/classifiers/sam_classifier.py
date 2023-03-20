@@ -242,9 +242,9 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 
             # Mix weights
             chkpt_param = chkpt_dict[chkpt_name]
-            for m, c in enumerate(model2chkpt):
+            for module, c in enumerate(model2chkpt):
                 if c >= 0:
-                    model_param[m].copy_(chkpt_param[c])
+                    model_param[module].copy_(chkpt_param[c])
 
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param

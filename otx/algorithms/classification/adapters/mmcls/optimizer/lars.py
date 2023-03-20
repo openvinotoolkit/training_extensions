@@ -47,13 +47,13 @@ class LARS(Optimizer):
         exclude_bn_from_weight_decay=False,
     ):
         if lr is not required and lr < 0.0:
-            raise ValueError("Invalid learning rate: {}".format(lr))
+            raise ValueError(f"Invalid learning rate: {lr}")
         if momentum < 0.0:
-            raise ValueError("Invalid momentum value: {}".format(momentum))
+            raise ValueError(f"Invalid momentum value: {momentum}")
         if weight_decay < 0.0:
-            raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
+            raise ValueError(f"Invalid weight_decay value: {weight_decay}")
         if eta < 0.0:
-            raise ValueError("Invalid LARS coefficient value: {}".format(eta))
+            raise ValueError(f"Invalid LARS coefficient value: {eta}")
 
         defaults = dict(
             lr=lr, momentum=momentum, dampening=dampening, weight_decay=weight_decay, nesterov=nesterov, eta=eta
@@ -92,10 +92,10 @@ class LARS(Optimizer):
 
         self.mode = mode
 
-        super(LARS, self).__init__(new_param_groups, defaults)
+        super().__init__(new_param_groups, defaults)
 
     def __setstate__(self, state):
-        super(LARS, self).__setstate__(state)
+        super().__setstate__(state)
         for group in self.param_groups:
             group.setdefault("nesterov", False)
 

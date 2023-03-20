@@ -110,6 +110,9 @@ good-names = [
     "y2",
     "x",
     "y",
+    "xy",
+    "x0",
+    "y0",
     "r",
     "id",
     "type",
@@ -122,6 +125,7 @@ good-names = [
     "t",
     "w",
     "h",
+    "fc",
 ]
 
 [tool.pylint.imports]

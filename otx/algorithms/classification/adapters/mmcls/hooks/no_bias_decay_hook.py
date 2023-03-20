@@ -1,3 +1,4 @@
+"""Module for NoBiasDecayHook used in classification."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,7 +13,8 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class NoBiasDecayHook(Hook):
-    """Hook for No Bias Decay Method (Bag of Tricks for Image Classification)
+    """
+    Hook for No Bias Decay Method (Bag of Tricks for Image Classification)
 
     This hook divides model's weight & bias to 3 parameter groups
     [weight with decay, weight without decay, bias without decay]
@@ -21,7 +23,7 @@ class NoBiasDecayHook(Hook):
     def before_train_epoch(self, runner):
         weight_decay, bias_no_decay, weight_no_decay = [], [], []
         for module in runner.model.modules():
-            if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
+            if isinstance(module, (nn.Conv2d, nn.Linear)):
                 weight_decay.append(module.weight)
                 if module.bias is not None:
                     bias_no_decay.append(module.bias)
@@ -52,7 +54,7 @@ class NoBiasDecayHook(Hook):
     def after_train_epoch(self, runner):
         params = []
         for module in runner.model.modules():
-            if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
+            if isinstance(module, (nn.Conv2d, nn.Linear)):
                 params.append(module.weight)
                 if module.bias is not None:
                     params.append(module.bias)

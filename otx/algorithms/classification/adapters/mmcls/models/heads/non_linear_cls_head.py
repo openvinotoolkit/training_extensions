@@ -3,11 +3,11 @@
 #
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads.cls_head import ClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
+from torch import nn
 
 
 @HEADS.register_module()
@@ -37,7 +37,7 @@ class NonLinearClsHead(ClsHead):
         **kwargs,
     ):
         topk = (1,) if num_classes < 5 else (1, 5)
-        super(NonLinearClsHead, self).__init__(loss=loss, topk=topk, *args, **kwargs)
+        super().__init__(loss=loss, topk=topk, *args, **kwargs)
         self.in_channels = in_channels
         self.hid_channels = hid_channels
         self.num_classes = num_classes
@@ -67,11 +67,11 @@ class NonLinearClsHead(ClsHead):
             )
 
     def init_weights(self):
-        for m in self.classifier:
-            if isinstance(m, nn.Linear):
-                normal_init(m, mean=0, std=0.01, bias=0)
-            elif isinstance(m, nn.BatchNorm1d):
-                constant_init(m, 1)
+        for module in self.classifier:
+            if isinstance(module, nn.Linear):
+                normal_init(module, mean=0, std=0.01, bias=0)
+            elif isinstance(module, nn.BatchNorm1d):
+                constant_init(module, 1)
 
     def simple_test(self, img):
         """Test without augmentation."""
@@ -84,7 +84,7 @@ class NonLinearClsHead(ClsHead):
         pred = list(pred.detach().cpu().numpy())
         return pred
 
-    def forward_train(self, x, gt_label):
-        cls_score = self.classifier(x)
-        losses = self.loss(cls_score, gt_label)
+    def forward_train(self, cls_score, gt_label):
+        logit = self.classifier(cls_score)
+        losses = self.loss(logit, gt_label)
         return losses

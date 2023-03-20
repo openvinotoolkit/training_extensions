@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import ClsHead
+from torch import nn
 
 
 @HEADS.register_module()
@@ -36,7 +36,7 @@ class ConvClsHead(ClsHead):
             x = x[-1]
         return x
 
-    def simple_test(self, x, softmax=True, post_process=True):
+    def simple_test(self, cls_head, softmax=True, post_process=True):
         """Inference without augmentation.
 
         Args:
@@ -56,7 +56,7 @@ class ConvClsHead(ClsHead):
                 - If post processing, the output is a multi-dimentional list of
                   float and the dimensions are ``(num_samples, num_classes)``.
         """
-        x = self.pre_logits(x)
+        x = self.pre_logits(cls_head)
         cls_score = self.conv(x).squeeze()
 
         if softmax:
@@ -69,8 +69,8 @@ class ConvClsHead(ClsHead):
         else:
             return pred
 
-    def forward_train(self, x, gt_label, **kwargs):
-        x = self.pre_logits(x)
+    def forward_train(self, cls_score, gt_label, **kwargs):
+        x = self.pre_logits(cls_score)
         cls_score = self.conv(x).squeeze()
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses

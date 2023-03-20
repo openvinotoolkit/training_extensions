@@ -10,7 +10,7 @@ from mmcls.models.heads import ClsHead as OriginClsHead
 class ClsHead(OriginClsHead):
     def __init__(self, *args, **kwargs):
         do_squeeze = kwargs.pop("do_squeeze", False)
-        super(ClsHead, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._do_squeeze = do_squeeze
 
     def forward_train(self, cls_score, gt_label):

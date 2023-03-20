@@ -15,7 +15,7 @@ class CustomNonLinearClsHead(NonLinearClsHead):
     """Custom Nonlinear classifier head."""
 
     def __init__(self, *args, **kwargs):
-        super(CustomNonLinearClsHead, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
     def loss(self, cls_score, gt_label, feature=None):

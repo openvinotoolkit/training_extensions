@@ -3,9 +3,9 @@
 #
 
 import torch
-import torch.nn as nn
 from mmcls.models.builder import LOSSES
 from mmcls.models.losses.utils import weight_reduce_loss
+from torch import nn
 
 
 def asymmetric_angular_loss_with_ignore(
@@ -54,11 +54,11 @@ def asymmetric_angular_loss_with_ignore(
 
     asymmetric_focus = gamma_pos > 0 or gamma_neg > 0
     if asymmetric_focus:
-        pt0 = xs_neg * target
-        pt1 = xs_pos * anti_target
-        pt = pt0 + pt1
+        pos_target0 = xs_neg * target
+        pos_target1 = xs_pos * anti_target
+        pos_target = pos_target0 + pos_target1
         one_sided_gamma = gamma_pos * target + gamma_neg * anti_target
-        one_sided_w = torch.pow(pt, one_sided_gamma)
+        one_sided_w = torch.pow(pos_target, one_sided_gamma)
 
     loss = -k * target * torch.log(xs_pos.clamp(min=eps)) - (1 - k) * anti_target * torch.log(xs_neg.clamp(min=eps))
 

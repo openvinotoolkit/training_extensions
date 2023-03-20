@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import LOSSES
 from mmcls.models.losses.utils import weight_reduce_loss
+from torch import nn
 
 
 def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, class_weight=None, ignore_index=None):
@@ -26,7 +26,7 @@ def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, c
 @LOSSES.register_module()
 class CrossEntropyLossWithIgnore(nn.Module):
     def __init__(self, reduction="mean", loss_weight=1.0, ignore_index=None):
-        super(CrossEntropyLossWithIgnore, self).__init__()
+        super().__init__()
         self.reduction = reduction
         self.loss_weight = loss_weight
         self.ignore_index = ignore_index

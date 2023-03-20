@@ -48,14 +48,14 @@ class SemiClsHead:
         losses = dict()
 
         # compute supervised loss
-        lx = self.compute_loss(logits_x, gt_label, avg_factor=num_samples)
+        labeled_loss = self.compute_loss(logits_x, gt_label, avg_factor=num_samples)
 
-        lu = 0
+        unlabeled_loss = 0
         if len(logits_u_s) > 0:
             # compute unsupervised loss
-            lu = self.compute_loss(logits_u_s, pseudo_label, avg_factor=len(logits_u_s)) * mask
-        losses["loss"] = lx + self.unlabeled_coef * lu
-        losses["unlabeled_loss"] = self.unlabeled_coef * lu
+            unlabeled_loss = self.compute_loss(logits_u_s, pseudo_label, avg_factor=len(logits_u_s)) * mask
+        losses["loss"] = labeled_loss + self.unlabeled_coef * unlabeled_loss
+        losses["unlabeled_loss"] = self.unlabeled_coef * unlabeled_loss
 
         # compute accuracy
         acc = self.compute_accuracy(logits_x, gt_label)

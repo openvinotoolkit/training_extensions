@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-import torch.nn as nn
 from mmcls.models.builder import LOSSES
-from torch import Tensor
+from torch import Tensor, nn
 
 
 def off_diagonal(x: Tensor):
@@ -28,7 +27,7 @@ class BarlowTwinsLoss(nn.Module):
         self.penalty = off_diag_penality
         self.loss_weight = loss_weight
 
-    def forward(self, feats1: Tensor, feats2: Tensor, **kwargs):
+    def forward(self, feats1: Tensor, feats2: Tensor):
         """
         Compute Barlow Twins Loss and, if labels are not none,
         also the Cross-Entropy loss.
