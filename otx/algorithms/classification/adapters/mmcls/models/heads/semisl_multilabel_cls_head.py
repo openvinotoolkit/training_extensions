@@ -5,12 +5,7 @@
 import torch
 from mmcls.models.builder import HEADS, build_loss
 
-from otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head import (
-    CustomMultiLabelLinearClsHead,
-)
-from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import (
-    CustomMultiLabelNonLinearClsHead,
-)
+from otx.algorithms.classification.adapters.mmcls.models.heads import CustomMultiLabelLinearClsHead, CustomMultiLabelNonLinearClsHead
 
 from .utils import LossBalancer, generate_aux_mlp
 

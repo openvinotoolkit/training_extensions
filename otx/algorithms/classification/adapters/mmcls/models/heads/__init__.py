@@ -25,6 +25,10 @@ from .custom_multi_label_non_linear_cls_head import CustomMultiLabelNonLinearCls
 from .mmov_cls_head import MMOVClsHead
 from .non_linear_cls_head import NonLinearClsHead
 from .semisl_cls_head import SemiLinearClsHead, SemiNonLinearClsHead
+from .semisl_multilabel_cls_head import (
+    SemiLinearMultilabelClsHead,
+    SemiNonLinearMultilabelClsHead,
+)
 from .supcon_cls_head import SupConClsHead
 
 __all__ = [
@@ -35,6 +39,8 @@ __all__ = [
     "CustomHierarchicalNonLinearClsHead",
     "CustomMultiLabelLinearClsHead",
     "CustomMultiLabelNonLinearClsHead",
+    "SemiLinearMultilabelClsHead",
+    "SemiNonLinearMultilabelClsHead",
     "NonLinearClsHead",
     "SemiLinearClsHead",
     "SemiNonLinearClsHead",
