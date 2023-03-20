@@ -46,7 +46,7 @@ class DetectionExporter(ExporterMixin, DetectionStage):
         from mmdet.apis.inference import LoadImage
         from mmdet.datasets.pipelines import Compose
 
-        from ...algorithms.common.adapters.mmdeploy.apis import NaiveExporter
+        from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 
         def get_fake_data(cfg, orig_img_shape=(128, 128, 3)):
             pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
