@@ -1,3 +1,4 @@
+"""Modules for loss reweighting and mix."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,6 +12,8 @@ from otx.mpa.modules.models.losses.utils import LossEqualizer
 
 
 class MixLossMixin(object):
+    """A class that enables mix loss."""
+
     def forward_train(self, img, img_metas, gt_semantic_seg, aux_img=None, **kwargs):
         """Forward function for training.
 
@@ -45,6 +48,8 @@ class MixLossMixin(object):
 
 
 class PixelWeightsMixin(object):
+    """A mixin class that provides functionality for reweighting and computing mutual loss."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._init_train_components(self.train_cfg)
@@ -79,6 +84,7 @@ class PixelWeightsMixin(object):
         return arguments[trg_name]
 
     def set_step_params(self, init_iter, epoch_size):
+        """Sets the step params for the current object's decode head."""
         self.decode_head.set_step_params(init_iter, epoch_size)
 
         if getattr(self, "auxiliary_head", None) is not None:

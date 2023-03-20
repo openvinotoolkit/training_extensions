@@ -1,3 +1,5 @@
+"""Encoder-decoder for incremental learning."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -15,7 +17,7 @@ from .otx_encoder_decoder import OTXEncoderDecoder
 
 @SEGMENTORS.register_module()
 class ClassIncrEncoderDecoder(MixLossMixin, PixelWeightsMixin, OTXEncoderDecoder):
-    """ """
+    """Encoder-decoder for incremental learning."""
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,7 +36,7 @@ class ClassIncrEncoderDecoder(MixLossMixin, PixelWeightsMixin, OTXEncoderDecoder
 
     @staticmethod
     def load_state_dict_pre_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):
-        """Modify input state_dict according to class name matching before weight loading"""
+        """Modify input state_dict according to class name matching before weight loading."""
         logger = get_root_logger("INFO")
         logger.info(f"----------------- ClassIncrEncoderDecoder.load_state_dict_pre_hook() called w/ prefix: {prefix}")
 

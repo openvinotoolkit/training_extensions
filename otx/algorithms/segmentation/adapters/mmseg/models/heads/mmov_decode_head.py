@@ -1,3 +1,5 @@
+"""Decode-head used for openvino export."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -14,6 +16,8 @@ from otx.mpa.modules.ov.models.mmov_model import MMOVModel
 
 @HEADS.register_module()
 class MMOVDecodeHead(BaseDecodeHead):
+    """MMOVDecodeHead."""
+
     def __init__(
         self,
         model_path_or_model: Union[str, ov.Model] = None,
@@ -68,10 +72,12 @@ class MMOVDecodeHead(BaseDecodeHead):
         )
 
     def init_weights(self):
+        """Init weights."""
         # TODO
         pass
 
     def forward(self, inputs):
+        """Forward."""
         outputs = self._transform_inputs(inputs)
         if getattr(self, "extractor"):
             outputs = self.extractor(outputs)

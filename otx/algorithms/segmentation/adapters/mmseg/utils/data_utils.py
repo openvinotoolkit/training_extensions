@@ -158,6 +158,7 @@ def get_extended_label_names(labels: List[LabelEntity]):
 
 
 def get_valid_label_mask_per_batch(img_metas, num_classes):
+    """Get valid label mask removing ignored classes to zero mask in a batch."""
     valid_label_mask_per_batch = []
     for _, meta in enumerate(img_metas):
         valid_label_mask = torch.Tensor([1 for _ in range(num_classes)])

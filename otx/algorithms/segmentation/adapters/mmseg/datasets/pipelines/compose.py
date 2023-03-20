@@ -1,3 +1,5 @@
+"""Collection of compose pipelines for segmentation task."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -13,6 +15,8 @@ from scipy.ndimage import gaussian_filter
 
 @PIPELINES.register_module()
 class ProbCompose(object):
+    """Compose pipelines in a list and enable or disable them with the probability."""
+
     def __init__(self, transforms, probs):
         assert isinstance(transforms, Sequence)
         assert isinstance(probs, Sequence)
@@ -35,6 +39,7 @@ class ProbCompose(object):
                 raise TypeError(f"transform must be callable or a dict, but got {type(transform)}")
 
     def __call__(self, data):
+        """Callback function of ProbCompose."""
         rand_value = np.random.rand()
         transform_id = np.max(np.where(rand_value > self.limits)[0])
 
@@ -44,6 +49,7 @@ class ProbCompose(object):
         return data
 
     def __repr__(self):
+        """Repr."""
         format_string = self.__class__.__name__ + "("
         for t in self.transforms:
             format_string += "\n"
@@ -55,6 +61,8 @@ class ProbCompose(object):
 
 @PIPELINES.register_module()
 class MaskCompose(object):
+    """Compose mask-related pipelines in a list and enable or disable them with the probability."""
+
     def __init__(self, transforms, prob, lambda_limits=(4, 16), keep_original=False):
         self.keep_original = keep_original
         self.prob = prob
@@ -102,6 +110,7 @@ class MaskCompose(object):
         return np.where(np.expand_dims(mask, axis=2), main_img, aux_img)
 
     def __call__(self, data):
+        """Callback function of MaskCompose."""
         main_data = self._apply_transforms(deepcopy(data), self.transforms)
         assert main_data is not None
         if not self.keep_original and np.random.rand() > self.prob:
@@ -123,6 +132,7 @@ class MaskCompose(object):
         return main_data
 
     def __repr__(self):
+        """Repr."""
         format_string = self.__class__.__name__ + "("
         for t in self.transforms:
             format_string += "\n"

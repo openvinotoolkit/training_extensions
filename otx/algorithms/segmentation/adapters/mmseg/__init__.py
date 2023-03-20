@@ -13,6 +13,8 @@ from .models import (
     DetConLoss,
     LiteHRNet,
     MeanTeacherSegmentor,
+    MMOVBackbone,
+    MMOVDecodeHead,
     PolyScalarScheduler,
     SelfSLMLP,
     StepScalarScheduler,
@@ -32,7 +34,9 @@ get_root_logger().propagate = False
 __all__ = [
     "MPASegDataset",
     "LiteHRNet",
+    "MMOVBackbone",
     "CustomFCNHead",
+    "MMOVDecodeHead",
     "DetConLoss",
     "SelfSLMLP",
     "ConstantScalarScheduler",

@@ -1,4 +1,5 @@
-"""Collection Pipeline for segmentation task."""
+"""Collection of load pipelines for segmentation task."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-from copy import deepcopy
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-import numpy as np
-from mmcv.utils import build_from_cfg
 from mmseg.datasets.builder import PIPELINES
-from mmseg.datasets.pipelines import Compose
-from PIL import Image
-from torchvision import transforms as T
-from torchvision.transforms import functional as F
 
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
 from otx.algorithms.segmentation.adapters.mmseg.datasets import (

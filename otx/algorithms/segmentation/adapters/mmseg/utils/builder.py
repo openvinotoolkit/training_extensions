@@ -15,6 +15,7 @@ SCALAR_SCHEDULERS = MODELS
 
 
 def build_scalar_scheduler(cfg, default_value=None):
+    """Build scalar scheduler."""
     if cfg is None:
         if default_value is not None:
             assert isinstance(default_value, (int, float))

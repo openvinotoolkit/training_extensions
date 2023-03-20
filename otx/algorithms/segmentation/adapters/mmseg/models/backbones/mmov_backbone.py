@@ -1,3 +1,5 @@
+"""Backbone used for openvino export."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -13,6 +15,7 @@ class MMOVBackbone(MMOVModel):
         super().__init__(*args, **kwargs)
 
     def forward(self, *args, **kwargs):
+        """Forward."""
         outputs = super().forward(*args, **kwargs)
         if not isinstance(outputs, tuple):
             outputs = (outputs,)
@@ -20,5 +23,6 @@ class MMOVBackbone(MMOVModel):
         return outputs
 
     def init_weights(self, pretrained=None):
+        """Initialize the weights."""
         # TODO
         pass

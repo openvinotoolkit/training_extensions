@@ -1,3 +1,4 @@
+"""Base pixel loss."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -16,10 +17,13 @@ from .base_weighted_loss import BaseWeightedLoss
 
 
 def entropy(p, dim=1, keepdim=False):
+    """Calculates the entropy."""
     return -torch.where(p > 0.0, p * p.log(), torch.zeros_like(p)).sum(dim=dim, keepdim=keepdim)
 
 
 class BasePixelLoss(BaseWeightedLoss):
+    """Base pixel loss."""
+
     def __init__(self, scale_cfg=None, pr_product=False, conf_penalty_weight=None, border_reweighting=False, **kwargs):
         super(BasePixelLoss, self).__init__(**kwargs)
 
@@ -34,22 +38,27 @@ class BasePixelLoss(BaseWeightedLoss):
 
     @property
     def last_scale(self):
+        """Return last_scale."""
         return self._last_scale
 
     @property
     def last_reg_weight(self):
+        """Return last_reg_weight."""
         return self._last_reg_weight
 
     @property
     def with_regularization(self):
+        """Check regularization use."""
         return self._reg_weight_scheduler is not None
 
     @property
     def with_pr_product(self):
+        """Check pr_product."""
         return self._enable_pr_product
 
     @property
     def with_border_reweighting(self):
+        """Check border reweighting."""
         return self._border_reweighting
 
     @staticmethod

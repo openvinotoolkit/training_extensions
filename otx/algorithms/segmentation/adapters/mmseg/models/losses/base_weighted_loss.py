@@ -1,3 +1,4 @@
+"""Base weighted loss function for semantic segmentation."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -59,6 +60,7 @@ class BaseWeightedLoss(nn.Module, metaclass=ABCMeta):
         self._epoch_size = 1
 
     def set_step_params(self, init_iter, epoch_size):
+        """Set step parameters."""
         assert init_iter >= 0
         assert epoch_size > 0
 
@@ -67,18 +69,22 @@ class BaseWeightedLoss(nn.Module, metaclass=ABCMeta):
 
     @property
     def with_loss_jitter(self):
+        """Check loss jitter."""
         return self._jitter_sigma_factor is not None
 
     @property
     def iter(self):
+        """Return iteration."""
         return self._iter
 
     @property
     def epoch_size(self):
+        """Return epoch size."""
         return self._epoch_size
 
     @property
     def last_loss_weight(self):
+        """Return last loss weight."""
         return self._last_loss_weight
 
     @abstractmethod

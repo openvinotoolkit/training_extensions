@@ -1,3 +1,5 @@
+"""Collection of transfrom pipelines for segmentation task."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,7 +11,6 @@ import mmcv
 import numpy as np
 from mmcv.parallel import DataContainer as DC
 from mmcv.utils import build_from_cfg
-from mmseg.datasets import PIPELINES
 from mmseg.datasets.builder import PIPELINES
 from mmseg.datasets.pipelines import Compose
 from mmseg.datasets.pipelines.formatting import to_tensor
@@ -17,10 +18,6 @@ from PIL import Image
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
 
-import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
-from otx.algorithms.segmentation.adapters.mmseg.datasets import (
-    get_annotation_mmseg_format,
-)
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 
@@ -61,6 +58,7 @@ class Normalize(object):
         return results
 
     def __repr__(self):
+        """Repr."""
         repr_str = self.__class__.__name__
         repr_str += f"(mean={self.mean}, std={self.std}, to_rgb=" f"{self.to_rgb})"
         return repr_str
@@ -116,15 +114,30 @@ class DefaultFormatBundle(object):
         return results
 
     def __repr__(self):
+        """Repr."""
         return self.__class__.__name__
 
 
 @PIPELINES.register_module()
 class BranchImage(object):
+    """Branch images by copying with name of key.
+
+    Args:
+        key_map (dict): keys to name each image.
+    """
+
     def __init__(self, key_map={}):
         self.key_map = key_map
 
     def __call__(self, results):
+        """Call function to branch images in img_fields in results.
+
+        Args:
+            results (dict): Result dict contains the image data to branch.
+
+        Returns:
+            dict: The result dict contains the original image data and copied image data.
+        """
         for k1, k2 in self.key_map.items():
             if k1 in results:
                 results[k2] = results[k1]
@@ -133,6 +146,8 @@ class BranchImage(object):
         return results
 
     def __repr__(self):
+        """Repr."""
+
         repr_str = self.__class__.__name__
         return repr_str
 

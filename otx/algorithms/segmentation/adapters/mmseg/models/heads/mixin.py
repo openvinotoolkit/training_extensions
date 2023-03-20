@@ -1,3 +1,4 @@
+"""Modules for aggregator and loss mix."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -17,6 +18,8 @@ from otx.mpa.modules.models.utils import AngularPWConv, IterativeAggregator, nor
 
 
 class SegmentOutNormMixin(nn.Module):
+    """SegmentOutNormMixin."""
+
     def __init__(self, *args, enable_out_seg=True, enable_out_norm=False, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -42,6 +45,8 @@ class SegmentOutNormMixin(nn.Module):
 
 
 class AggregatorMixin(nn.Module):
+    """A class for creating an aggregator."""
+
     def __init__(
         self,
         *args,
@@ -95,6 +100,8 @@ class AggregatorMixin(nn.Module):
 
 
 class MixLossMixin(nn.Module):
+    """Loss mixing module."""
+
     @staticmethod
     def _mix_loss(logits, target, ignore_index=255):
         num_samples = logits.size(0)
@@ -116,6 +123,7 @@ class MixLossMixin(nn.Module):
 
     @force_fp32(apply_to=("seg_logit",))
     def losses(self, seg_logit, seg_label, train_cfg, *args, **kwargs):
+        """Loss computing."""
         loss = super().losses(seg_logit, seg_label, train_cfg, *args, **kwargs)
         if train_cfg.get("mix_loss", None) and train_cfg.mix_loss.get("enable", False):
             mix_loss = self._mix_loss(seg_logit, seg_label, ignore_index=self.ignore_index)
@@ -251,6 +259,8 @@ class PixelWeightsMixin(nn.Module):
 
 
 class PixelWeightsMixin2(PixelWeightsMixin):
+    """Pixel weight mixin class."""
+
     def forward_train(
         self,
         inputs,
@@ -261,6 +271,7 @@ class PixelWeightsMixin2(PixelWeightsMixin):
         return_logits=False,
     ):
         """Forward function for training.
+
         Args:
             inputs (list[Tensor]): List of multi-level img features.
             img_metas (list[dict]): List of image info dict where each dict

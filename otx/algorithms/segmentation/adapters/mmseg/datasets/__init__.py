@@ -20,6 +20,7 @@ from .pipelines import (
     LoadImageFromOTXDataset,
     MaskCompose,
     ProbCompose,
+    TwoCropTransform,
 )
 
 __all__ = [
@@ -27,6 +28,7 @@ __all__ = [
     "LoadImageFromOTXDataset",
     "MaskCompose",
     "ProbCompose",
+    "TwoCropTransform",
     "get_annotation_mmseg_format",
     "MPASegDataset",
 ]

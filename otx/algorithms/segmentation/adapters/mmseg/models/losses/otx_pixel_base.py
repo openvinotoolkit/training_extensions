@@ -1,3 +1,4 @@
+"""OTX pixel loss."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,9 +9,11 @@ from mmseg.models.losses.utils import weight_reduce_loss
 from .base_pixel_loss import BasePixelLoss
 
 
-class MPABasePixelLoss(BasePixelLoss):
+class OTXBasePixelLoss(BasePixelLoss):
+    """OTXBasePixelLoss."""
+
     def __init__(self, **kwargs):
-        super(MPABasePixelLoss, self).__init__(**kwargs)
+        super(OTXBasePixelLoss, self).__init__(**kwargs)
 
     def _forward(
         self,

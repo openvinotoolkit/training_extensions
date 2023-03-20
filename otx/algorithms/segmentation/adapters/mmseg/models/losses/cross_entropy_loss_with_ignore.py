@@ -1,3 +1,4 @@
+"""Cross entropy loss for ignored mode in class-incremental learning."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -7,11 +8,11 @@ import torch.nn.functional as F
 from mmseg.models.builder import LOSSES
 from mmseg.models.losses.utils import get_class_weight
 
-from .mpa_pixel_base import MPABasePixelLoss
+from .otx_pixel_base import OTXBasePixelLoss
 
 
 @LOSSES.register_module()
-class CrossEntropyLossWithIgnore(MPABasePixelLoss):
+class CrossEntropyLossWithIgnore(OTXBasePixelLoss):
     """CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.
 
     Args:
@@ -31,6 +32,7 @@ class CrossEntropyLossWithIgnore(MPABasePixelLoss):
 
     @property
     def name(self):
+        """name."""
         return "ce_with_ignore"
 
     def _calculate(self, cls_score, label, valid_label_mask, scale):

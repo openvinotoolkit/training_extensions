@@ -1,3 +1,4 @@
+"""OTX encoder decoder for semantic segmentation."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,6 +12,8 @@ from otx.mpa.deploy.utils import is_mmdeploy_enabled
 
 @SEGMENTORS.register_module()
 class OTXEncoderDecoder(EncoderDecoder):
+    """OTX encoder decoder."""
+
     def simple_test(self, img, img_meta, rescale=True, output_logits=False):
         """Simple test with single image."""
         seg_logit = self.inference(img, img_meta, rescale)
@@ -40,6 +43,7 @@ if is_mmdeploy_enabled():
         "otx.mpa.modules.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.extract_feat"
     )
     def single_stage_detector__extract_feat(ctx, self, img):
+        """Extract feature."""
         feat = self.backbone(img)
         self.feature_map = feat
         if self.with_neck:
@@ -50,6 +54,7 @@ if is_mmdeploy_enabled():
         "otx.mpa.modules.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.simple_test"
     )
     def single_stage_detector__simple_test(ctx, self, img, img_metas, **kwargs):
+        """Test."""
         # with output activation
         seg_logit = self.inference(img, img_metas, True)
         if ctx.cfg["dump_features"]:

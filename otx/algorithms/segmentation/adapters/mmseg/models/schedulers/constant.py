@@ -1,3 +1,4 @@
+"""Constant scheduler."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,6 +13,7 @@ class ConstantScalarScheduler(BaseScalarScheduler):
     """The learning rate remains constant over time.
 
     The learning rate equals the scale.
+
     Args:
         scale (float): The learning rate scale.
     """
