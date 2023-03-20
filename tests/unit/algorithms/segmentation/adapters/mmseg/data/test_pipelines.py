@@ -40,7 +40,7 @@ class TestTwoCropTransform:
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
         mocker.patch(
-            "otx.algorithms.segmentation.adapters.mmseg.data.pipelines.build_from_cfg", return_value=lambda x: x
+            "otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines.build_from_cfg", return_value=lambda x: x
         )
         self.two_crop_transform = TwoCropTransform(view0=[], view1=[])
 
