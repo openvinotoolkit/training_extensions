@@ -132,9 +132,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
                     labels=self._labels,
                 )
 
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
         return data_cfg
 
     def _init_nncf_cfg(self):
