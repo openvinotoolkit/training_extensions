@@ -20,7 +20,7 @@ import math
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from otx.algorithms.common.utils.utils import check_positive
+from otx.hpo.utils import check_positive
 
 logger = logging.getLogger(__name__)
 

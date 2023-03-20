@@ -17,7 +17,7 @@
 import importlib
 import inspect
 from collections import defaultdict
-from typing import Callable, Literal, Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import yaml
 
@@ -94,77 +94,3 @@ def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
             if spec.varkw is None and spec.varargs is None:
                 break
     return tuple(args)
-
-
-def left_vlaue_is_better(val1, val2, mode: Literal["max", "min"]) -> bool:
-    """Check left value is better than right value.
-
-    Whether check it's greather or lesser is changed depending on 'model'.
-
-    Args:
-        val1 : value to check that it's bigger than other value.
-        val2 : value to check that it's bigger than other value.
-        mode (Literal['max', 'min']): value to decide whether better means greater or lesser.
-
-    Returns:
-        bool: whether val1 is better than val2.
-    """
-    check_mode_input(mode)
-    if mode == "max":
-        return val1 > val2
-    return val1 < val2
-
-
-def check_positive(value, variable_name: Optional[str] = None, error_message: Optional[str] = None):
-    """Validate that value is positivle.
-
-    Args:
-        value (Any): value to validate.
-        variable_name (Optional[str], optional): name of value. It's used for error message. Defaults to None.
-        error_message (Optional[str], optional): Error message to use when type is different. Defaults to None.
-
-    Raises:
-        ValueError: If value isn't positive, the error is raised.
-    """
-    if value <= 0:
-        if error_message is not None:
-            message = error_message
-        elif variable_name:
-            message = f"{variable_name} should be positive.\n" f"your value : {value}"
-        else:
-            raise ValueError
-        raise ValueError(message)
-
-
-def check_not_negative(value, variable_name: Optional[str] = None, error_message: Optional[str] = None):
-    """Validate that value isn't negative.
-
-    Args:
-        value (Any): value to validate.
-        variable_name (Optional[str], optional): name of value. It's used for error message. Defaults to None.
-        error_message (Optional[str], optional): Error message to use when type is different. Defaults to None.
-
-    Raises:
-        ValueError: If value is negative, the error is raised.
-    """
-    if value < 0:
-        if error_message is not None:
-            message = error_message
-        elif variable_name:
-            message = f"{variable_name} should be positive.\n" f"your value : {value}"
-        else:
-            raise ValueError
-        raise ValueError(message)
-
-
-def check_mode_input(mode: str):
-    """Validate that mode is 'max' or 'min'.
-
-    Args:
-        mode (str): string to validate.
-
-    Raises:
-        ValueError: If 'mode' is not both 'max' and 'min', the error is raised.
-    """
-    if mode not in ["max", "min"]:
-        raise ValueError("mode should be max or min.\n" f"Your value : {mode}")
