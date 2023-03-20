@@ -172,18 +172,16 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             pos_centerness = centerness[pos_inds]
 
             centerness_targets = self.centerness_target(pos_anchors, pos_bbox_targets)
-            pos_decode_bbox_pred = self.bbox_coder.decode(pos_anchors, pos_bbox_pred)
-            pos_decode_bbox_targets = self.bbox_coder.decode(pos_anchors, pos_bbox_targets)
+            if self.reg_decoded_bbox:
+                pos_bbox_pred = self.bbox_coder.decode(pos_anchors, pos_bbox_pred)
 
             if self.use_qfl:
-                quality[pos_inds] = bbox_overlaps(
-                    pos_decode_bbox_pred.detach(), pos_decode_bbox_targets, is_aligned=True
-                ).clamp(min=1e-6)
+                quality[pos_inds] = bbox_overlaps(pos_bbox_pred.detach(), pos_bbox_targets, is_aligned=True).clamp(
+                    min=1e-6
+                )
 
             # regression loss
-            loss_bbox = self.loss_bbox(
-                pos_decode_bbox_pred, pos_decode_bbox_targets, weight=centerness_targets, avg_factor=1.0
-            )
+            loss_bbox = self.loss_bbox(pos_bbox_pred, pos_bbox_targets, weight=centerness_targets, avg_factor=1.0)
 
             # centerness loss
             loss_centerness = self.loss_centerness(pos_centerness, centerness_targets, avg_factor=num_total_samples)
