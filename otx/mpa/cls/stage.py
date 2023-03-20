@@ -15,6 +15,8 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
+TRANSFORMER_BACKBONES = ["VisionTransformer", "T2T_ViT", "TNT", "Conformer"]
+
 
 class ClsStage(Stage):
     MODEL_BUILDER = build_classifier
@@ -89,6 +91,11 @@ class ClsStage(Stage):
         output = layer(torch.rand([1] + list(input_shape)))
         if isinstance(output, (tuple, list)):
             output = output[-1]
+
+        if layer.__class__.__name__ in TRANSFORMER_BACKBONES:
+            # mmcls.VisionTransformer outputs Tuple[List[...]] and the last index of List is the final logit.
+            _, output = output
+
         in_channels = output.shape[1]
         if cfg.model.get("neck") is not None:
             if cfg.model.neck.get("in_channels") is not None:
