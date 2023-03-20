@@ -42,9 +42,9 @@ if is_mmdeploy_enabled():
         FeatureVectorHook,
     )
 
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.extract_feat"
-    )
+    BASE_CLASS = "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder"
+
+    @FUNCTION_REWRITER.register_rewriter(f"{BASE_CLASS}.extract_feat")
     def single_stage_detector__extract_feat(ctx, self, img):
         """Extract feature."""
         feat = self.backbone(img)
@@ -53,9 +53,7 @@ if is_mmdeploy_enabled():
             feat = self.neck(feat)
         return feat
 
-    @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.simple_test"
-    )
+    @FUNCTION_REWRITER.register_rewriter(f"{BASE_CLASS}.simple_test")
     def single_stage_detector__simple_test(ctx, self, img, img_metas, **kwargs):
         """Test."""
         # with output activation

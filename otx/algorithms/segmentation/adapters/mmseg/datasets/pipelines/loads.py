@@ -18,7 +18,7 @@ from typing import Any, Dict
 from mmseg.datasets.builder import PIPELINES
 
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
-from otx.algorithms.segmentation.adapters.mmseg.datasets import (
+from otx.algorithms.segmentation.adapters.mmseg.datasets.dataset import (
     get_annotation_mmseg_format,
 )
 from otx.api.utils.argument_checks import check_input_parameters_type
