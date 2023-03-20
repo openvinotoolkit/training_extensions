@@ -7,7 +7,7 @@ import openvino.runtime as ov
 import pytest
 import torch
 
-from otx.mpa.modules.ov.models.mmseg.decode_heads.mmov_decode_head import MMOVDecodeHead
+from otx.algorithms.segmentation.adapters.mmseg.models import MMOVDecodeHead
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

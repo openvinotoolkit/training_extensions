@@ -7,7 +7,7 @@ import openvino.runtime as ov
 import pytest
 import torch
 
-from otx.mpa.modules.ov.models.mmseg.backbones.mmov_backbone import MMOVBackbone
+from otx.algorithms.segmentation.adapters.mmseg.models.backbones import MMOVBackbone
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

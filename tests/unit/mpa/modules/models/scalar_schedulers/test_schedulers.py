@@ -6,7 +6,7 @@
 
 import pytest
 
-from otx.mpa.modules.models.scalar_schedulers import (
+from otx.algorithms.segmentation.adapters.mmseg.models.schedulers import (
     ConstantScalarScheduler,
     PolyScalarScheduler,
     StepScalarScheduler,

@@ -6,7 +6,7 @@ import torch
 from otx.algorithms.common.adapters.mmcv.configs.backbones.lite_hrnet_18 import (
     model as model_cfg,
 )
-from otx.mpa.modules.models.backbones.litehrnet import (
+from otx.algorithms.segmentation.adapters.mmseg.models.backbones.litehrnet import (
     LiteHRNet,
     NeighbourSupport,
     SpatialWeightingV2,

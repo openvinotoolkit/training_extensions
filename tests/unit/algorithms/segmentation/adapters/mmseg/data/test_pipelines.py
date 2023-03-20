@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from otx.algorithms.segmentation.adapters.mmseg.data.pipelines import (
+from otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines.transforms import (
     NDArrayToPILImage,
     PILImageToNDArray,
     RandomColorJitter,

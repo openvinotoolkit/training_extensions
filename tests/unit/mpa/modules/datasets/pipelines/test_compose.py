@@ -12,7 +12,7 @@ import pytest
 from mmseg.datasets.builder import PIPELINES
 from mmseg.datasets.pipelines import RandomCrop
 
-from otx.mpa.modules.datasets.pipelines.compose import MaskCompose, ProbCompose
+from otx.algorithms.segmentation.adapters.mmseg.datasets import MaskCompose, ProbCompose
 
 
 class TestProbCompose:

@@ -3,7 +3,7 @@ import pytest
 import torch
 from mmcv.parallel import DataContainer
 
-from otx.mpa.modules.datasets.pipelines.transforms.seg_custom_pipelines import (
+from otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines.transforms import (
     BranchImage,
     DefaultFormatBundle,
     Normalize,

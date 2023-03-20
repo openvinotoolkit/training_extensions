@@ -5,7 +5,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.segmentation.adapters.mmseg.data.dataset import MPASegDataset
+from otx.algorithms.segmentation.adapters.mmseg.datasets import MPASegDataset
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,

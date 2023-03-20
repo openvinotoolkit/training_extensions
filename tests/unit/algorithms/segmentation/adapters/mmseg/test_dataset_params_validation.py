@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.segmentation.adapters.mmseg.data.dataset import (
+from otx.algorithms.segmentation.adapters.mmseg.datasets.dataset import (
     OTXSegDataset,
     get_annotation_mmseg_format,
 )

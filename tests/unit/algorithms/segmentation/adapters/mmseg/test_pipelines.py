@@ -6,8 +6,9 @@ import numpy as np
 import PIL.Image
 import pytest
 
-from otx.algorithms.segmentation.adapters.mmseg.data.pipelines import (
-    LoadAnnotationFromOTXDataset,
+from otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines.loads import LoadAnnotationFromOTXDataset
+
+from otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines.transforms import (
     NDArrayToPILImage,
     PILImageToNDArray,
     RandomResizedCrop,

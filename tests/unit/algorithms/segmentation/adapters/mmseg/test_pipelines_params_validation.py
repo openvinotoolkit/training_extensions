@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.algorithms.segmentation.adapters.mmseg.data.pipelines import (
+from otx.algorithms.segmentation.adapters.mmseg.datasets.pipelines import (
     LoadAnnotationFromOTXDataset,
     LoadImageFromOTXDataset,
 )
