@@ -548,7 +548,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             losses.update(dict(loss_detcon=loss_detcon["loss"]))
 
         # decode head
-        loss_decode, _ = self._decode_head_forward_train(
+        loss_decode, _ = self.decode_head_forward_train(
             embd, img_metas, gt_semantic_seg=mask, pixel_weights=pixel_weights
         )
         losses.update(loss_decode)

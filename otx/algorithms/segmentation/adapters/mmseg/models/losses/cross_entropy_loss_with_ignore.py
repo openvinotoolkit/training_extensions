@@ -25,7 +25,7 @@ class CrossEntropyLossWithIgnore(OTXBasePixelLoss):
     """
 
     def __init__(self, reduction="mean", loss_weight=None, **kwargs):
-        super(CrossEntropyLossWithIgnore, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.reduction = reduction
         self.class_weight = get_class_weight(loss_weight)

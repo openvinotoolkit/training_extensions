@@ -22,7 +22,7 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 @PIPELINES.register_module(force=True)
-class Normalize(object):
+class Normalize:
     """Normalize the image.
 
     Added key is "img_norm_cfg".
@@ -65,7 +65,7 @@ class Normalize(object):
 
 
 @PIPELINES.register_module(force=True)
-class DefaultFormatBundle(object):
+class DefaultFormatBundle:
     """Default formatting bundle.
 
     It simplifies the pipeline of formatting common fields, including "img"
@@ -119,14 +119,14 @@ class DefaultFormatBundle(object):
 
 
 @PIPELINES.register_module()
-class BranchImage(object):
+class BranchImage:
     """Branch images by copying with name of key.
 
     Args:
         key_map (dict): keys to name each image.
     """
 
-    def __init__(self, key_map={}):
+    def __init__(self, key_map):
         self.key_map = key_map
 
     def __call__(self, results):
@@ -138,11 +138,11 @@ class BranchImage(object):
         Returns:
             dict: The result dict contains the original image data and copied image data.
         """
-        for k1, k2 in self.key_map.items():
-            if k1 in results:
-                results[k2] = results[k1]
-            if k1 in results["img_fields"]:
-                results["img_fields"].append(k2)
+        for key1, key2 in self.key_map.items():
+            if key1 in results:
+                results[key2] = results[key1]
+            if key1 in results["img_fields"]:
+                results["img_fields"].append(key2)
         return results
 
     def __repr__(self):

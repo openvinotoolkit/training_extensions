@@ -16,7 +16,9 @@ from .mixin import (
 
 
 @HEADS.register_module()
-class CustomFCNHead(SegmentOutNormMixin, AggregatorMixin, MixLossMixin, PixelWeightsMixin2, FCNHead):
+class CustomFCNHead(
+    SegmentOutNormMixin, AggregatorMixin, MixLossMixin, PixelWeightsMixin2, FCNHead
+):  # pylint: disable=too-many-ancestors
     """Custom Fully Convolution Networks for Semantic Segmentation."""
 
     def __init__(self, *args, **kwargs):

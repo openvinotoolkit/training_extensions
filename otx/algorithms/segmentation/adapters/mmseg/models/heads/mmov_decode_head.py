@@ -8,13 +8,13 @@ from copy import deepcopy
 from typing import Dict, List, Optional, Union
 
 import openvino.runtime as ov
-from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 from otx.mpa.modules.ov.models.mmov_model import MMOVModel
 
+# pylint: disable=too-many-instance-attributes
 
-@HEADS.register_module()
+
 class MMOVDecodeHead(BaseDecodeHead):
     """MMOVDecodeHead."""
 
@@ -27,7 +27,7 @@ class MMOVDecodeHead(BaseDecodeHead):
         init_weight: bool = False,
         verify_shape: bool = True,
         *args,
-        **kwargs,
+        **kwargs
     ):
         self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path
@@ -74,7 +74,7 @@ class MMOVDecodeHead(BaseDecodeHead):
     def init_weights(self):
         """Init weights."""
         # TODO
-        pass
+        return
 
     def forward(self, inputs):
         """Forward."""

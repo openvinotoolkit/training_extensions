@@ -26,7 +26,7 @@ class PolyScalarScheduler(BaseScalarScheduler):
     def __init__(
         self, start_scale: float, end_scale: float, num_iters: int, power: float = 1.2, by_epoch: bool = False
     ):
-        super(PolyScalarScheduler, self).__init__()
+        super().__init__()
 
         self._start_s = start_scale
         assert self._start_s >= 0.0

@@ -1,3 +1,9 @@
+"""HRNet network modules for base backbone.
+
+Modified from:
+- https://github.com/HRNet/Lite-HRNet
+"""
+
 # Copyright (c) 2018-2020 Open-MMLab.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,12 +14,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""Modified from: https://github.com/HRNet/Lite-HRNet"""
-
 
 import mmcv
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (
@@ -28,6 +31,7 @@ from mmcv.utils.parrots_wrapper import _BatchNorm
 from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
 from mmseg.utils import get_root_logger
+from torch import nn
 
 from otx.mpa.modules.models.utils import (
     AsymmetricPositionAttentionModule,
@@ -37,7 +41,11 @@ from otx.mpa.modules.models.utils import (
 )
 
 
+# pylint: disable=invalid-name, too-many-lines, too-many-instance-attributes, too-many-locals, too-many-arguments
+# pylint: disable=unused-argument, consider-using-enumerate, dangerous-default-value
 class NeighbourSupport(nn.Module):
+    """Neighbour support module."""
+
     def __init__(self, channels, kernel_size=3, key_ratio=8, value_ratio=8, conv_cfg=None, norm_cfg=None):
         super().__init__()
 
@@ -100,6 +108,7 @@ class NeighbourSupport(nn.Module):
         )
 
     def forward(self, x):
+        """Forward."""
         h, w = [int(_) for _ in x.size()[-2:]]
 
         key = self.key(x).view(-1, 1, self.kernel_size**2, h, w)
@@ -115,6 +124,8 @@ class NeighbourSupport(nn.Module):
 
 
 class CrossResolutionWeighting(nn.Module):
+    """Cross resolution weighting."""
+
     def __init__(
         self, channels, ratio=16, conv_cfg=None, norm_cfg=None, act_cfg=(dict(type="ReLU"), dict(type="Sigmoid"))
     ):
@@ -148,6 +159,7 @@ class CrossResolutionWeighting(nn.Module):
         )
 
     def forward(self, x):
+        """Forward."""
         min_size = [int(_) for _ in x[-1].size()[-2:]]
 
         out = [F.adaptive_avg_pool2d(s, min_size) for s in x[:-1]] + [x[-1]]
@@ -161,6 +173,8 @@ class CrossResolutionWeighting(nn.Module):
 
 
 class SpatialWeighting(nn.Module):
+    """Spatial weighting."""
+
     def __init__(self, channels, ratio=16, conv_cfg=None, act_cfg=(dict(type="ReLU"), dict(type="Sigmoid")), **kwargs):
         super().__init__()
 
@@ -188,6 +202,7 @@ class SpatialWeighting(nn.Module):
         )
 
     def forward(self, x):
+        """Forward."""
         out = self.global_avgpool(x)
         out = self.conv1(out)
         out = self.conv2(out)
@@ -196,7 +211,7 @@ class SpatialWeighting(nn.Module):
 
 
 class SpatialWeightingV2(nn.Module):
-    """The original repo: https://github.com/DeLightCMU/PSA"""
+    """The original repo: https://github.com/DeLightCMU/PSA."""
 
     def __init__(self, channels, ratio=16, conv_cfg=None, norm_cfg=None, enable_norm=False, **kwargs):
         super().__init__()
@@ -294,6 +309,7 @@ class SpatialWeightingV2(nn.Module):
         return out
 
     def forward(self, x):
+        """Forward."""
         y_channel = self._channel_weighting(x)
         y_spatial = self._spatial_weighting(x)
         out = y_channel + y_spatial
@@ -302,6 +318,8 @@ class SpatialWeightingV2(nn.Module):
 
 
 class ConditionalChannelWeighting(nn.Module):
+    """Conditional channel weighting module."""
+
     def __init__(
         self,
         in_channels,
@@ -389,6 +407,7 @@ class ConditionalChannelWeighting(nn.Module):
         return out
 
     def forward(self, x):
+        """Forward."""
         if self.with_cp and x.requires_grad:
             out = cp.checkpoint(self._inner_forward, x)
         else:
@@ -398,6 +417,8 @@ class ConditionalChannelWeighting(nn.Module):
 
 
 class Stem(nn.Module):
+    """Stem."""
+
     def __init__(
         self,
         in_channels,
@@ -535,6 +556,7 @@ class Stem(nn.Module):
         return out
 
     def forward(self, x):
+        """Forward."""
         if self.with_cp and x.requires_grad:
             out = cp.checkpoint(self._inner_forward, x)
         else:
@@ -544,6 +566,8 @@ class Stem(nn.Module):
 
 
 class StemV2(nn.Module):
+    """StemV2."""
+
     def __init__(
         self,
         in_channels,
@@ -689,6 +713,7 @@ class StemV2(nn.Module):
         return out_list
 
     def forward(self, x):
+        """Forward."""
         if self.with_cp and x.requires_grad:
             out = cp.checkpoint(self._inner_forward, x)
         else:
@@ -812,6 +837,7 @@ class ShuffleUnit(nn.Module):
         return out
 
     def forward(self, x):
+        """Forward."""
         if self.with_cp and x.requires_grad:
             out = cp.checkpoint(self._inner_forward, x)
         else:
@@ -821,6 +847,8 @@ class ShuffleUnit(nn.Module):
 
 
 class LiteHRModule(nn.Module):
+    """LiteHR module."""
+
     def __init__(
         self,
         num_branches,
@@ -871,7 +899,7 @@ class LiteHRModule(nn.Module):
 
     def _make_weighting_blocks(self, num_blocks, reduce_ratio, stride=1, dropout=None):
         layers = []
-        for i in range(num_blocks):
+        for _ in range(num_blocks):
             layers.append(
                 ConditionalChannelWeighting(
                     self.in_channels,
@@ -902,7 +930,7 @@ class LiteHRModule(nn.Module):
                 with_cp=self.with_cp,
             )
         ]
-        for i in range(1, num_blocks):
+        for _ in range(1, num_blocks):
             layers.append(
                 ShuffleUnit(
                     self.in_channels[branch_index],
@@ -1123,12 +1151,12 @@ class LiteHRNet(BaseModule):
             num_channels = self.stages_spec["num_channels"][i]
             num_channels = [num_channels[i] for i in range(len(num_channels))]
 
-            setattr(self, "transition{}".format(i), self._make_transition_layer(num_channels_last, num_channels))
+            setattr(self, f"transition{i}", self._make_transition_layer(num_channels_last, num_channels))
 
             stage, num_channels_last = self._make_stage(
                 self.stages_spec, i, num_channels, multiscale_output=True, dropout=dropout
             )
-            setattr(self, "stage{}".format(i), stage)
+            setattr(self, f"stage{i}", stage)
 
         self.out_modules = None
         if self.extra.get("out_modules") is not None:
@@ -1356,7 +1384,7 @@ class LiteHRNet(BaseModule):
 
         y_list = [y]
         for i in range(self.num_stages):
-            transition_modules = getattr(self, "transition{}".format(i))
+            transition_modules = getattr(self, f"transition{i}")
 
             stage_inputs = []
             for j in range(self.stages_spec["num_branches"][i]):
@@ -1368,7 +1396,7 @@ class LiteHRNet(BaseModule):
                 else:
                     stage_inputs.append(y_list[j])
 
-            stage_module = getattr(self, "stage{}".format(i))
+            stage_module = getattr(self, f"stage{i}")
             y_list = stage_module(stage_inputs)
 
         if self.out_modules is not None:

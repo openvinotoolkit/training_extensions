@@ -10,6 +10,7 @@ from mmseg.models.segmentors.encoder_decoder import EncoderDecoder
 from otx.mpa.deploy.utils import is_mmdeploy_enabled
 
 
+# pylint: disable=unused-argument, line-too-long
 @SEGMENTORS.register_module()
 class OTXEncoderDecoder(EncoderDecoder):
     """OTX encoder decoder."""
@@ -37,10 +38,12 @@ class OTXEncoderDecoder(EncoderDecoder):
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
 
-    from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
+    from otx.mpa.modules.hooks.recording_forward_hooks import (
+        FeatureVectorHook,  # pylint: disable=ungrouped-imports
+    )
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.extract_feat"
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.extract_feat"
     )
     def single_stage_detector__extract_feat(ctx, self, img):
         """Extract feature."""
@@ -51,7 +54,7 @@ if is_mmdeploy_enabled():
         return feat
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.simple_test"
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.simple_test"
     )
     def single_stage_detector__simple_test(ctx, self, img, img_metas, **kwargs):
         """Test."""
@@ -60,5 +63,4 @@ if is_mmdeploy_enabled():
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(self.feature_map)
             return seg_logit, feature_vector
-        else:
-            return seg_logit
+        return seg_logit

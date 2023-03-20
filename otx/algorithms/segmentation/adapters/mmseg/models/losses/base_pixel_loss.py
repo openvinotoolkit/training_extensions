@@ -25,7 +25,7 @@ class BasePixelLoss(BaseWeightedLoss):
     """Base pixel loss."""
 
     def __init__(self, scale_cfg=None, pr_product=False, conf_penalty_weight=None, border_reweighting=False, **kwargs):
-        super(BasePixelLoss, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self._enable_pr_product = pr_product
         self._border_reweighting = border_reweighting
@@ -110,7 +110,9 @@ class BasePixelLoss(BaseWeightedLoss):
 
         return out_ratio.item()
 
-    def _forward(self, output, labels, avg_factor=None, pixel_weights=None, reduction_override=None):
+    def _forward(
+        self, output, labels, avg_factor=None, pixel_weights=None, reduction_override=None
+    ):  # pylint: disable=too-many-locals
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
 

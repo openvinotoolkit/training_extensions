@@ -8,12 +8,14 @@ from mmseg.models.losses.utils import weight_reduce_loss
 
 from .base_pixel_loss import BasePixelLoss
 
+# pylint: disable=too-many-function-args, too-many-locals
 
-class OTXBasePixelLoss(BasePixelLoss):
+
+class OTXBasePixelLoss(BasePixelLoss):  # pylint: disable=abstract-method
     """OTXBasePixelLoss."""
 
     def __init__(self, **kwargs):
-        super(OTXBasePixelLoss, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _forward(
         self,
@@ -23,7 +25,7 @@ class OTXBasePixelLoss(BasePixelLoss):
         avg_factor=None,
         pixel_weights=None,
         reduction_override=None,
-    ):
+    ):  # pylint: disable=arguments-renamed
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
 

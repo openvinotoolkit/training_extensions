@@ -28,7 +28,7 @@ class StepScalarScheduler(BaseScalarScheduler):
     """
 
     def __init__(self, scales: List[float], num_iters: List[int], by_epoch: bool = False):
-        super(StepScalarScheduler, self).__init__()
+        super().__init__()
 
         self.by_epoch = by_epoch
 

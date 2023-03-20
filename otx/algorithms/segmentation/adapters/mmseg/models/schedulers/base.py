@@ -9,9 +9,6 @@ from abc import ABCMeta, abstractmethod
 class BaseScalarScheduler(metaclass=ABCMeta):
     """Base scalar scheduler."""
 
-    def __init__(self):
-        super(BaseScalarScheduler, self).__init__()
-
     def __call__(self, step, epoch_size) -> float:
         """Callback function of BaseScalarScheduler."""
         return self._get_value(step, epoch_size)

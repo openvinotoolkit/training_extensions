@@ -3,18 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.runner import force_fp32
 from mmseg.core import add_prefix
 from mmseg.models.losses import accuracy
 from mmseg.ops import resize
+from torch import nn
 
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     get_valid_label_mask_per_batch,
 )
 from otx.mpa.modules.models.losses.utils import LossEqualizer
 from otx.mpa.modules.models.utils import AngularPWConv, IterativeAggregator, normalize
+
+# pylint: disable=abstract-method, unused-argument
 
 
 class SegmentOutNormMixin(nn.Module):
@@ -40,8 +42,7 @@ class SegmentOutNormMixin(nn.Module):
             feat = normalize(feat, dim=1, p=2)
         if self.conv_seg is not None:
             return self.conv_seg(feat)
-        else:
-            return feat
+        return feat
 
 
 class AggregatorMixin(nn.Module):
@@ -84,7 +85,7 @@ class AggregatorMixin(nn.Module):
             if in_index is not None:
                 kwargs["in_index"] = in_index[0]
 
-        super(AggregatorMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.aggregator = aggregator
         # re-define variables
@@ -135,13 +136,9 @@ class MixLossMixin(nn.Module):
 
 
 class PixelWeightsMixin(nn.Module):
-    def __init__(
-        self,
-        enable_loss_equalizer=False,
-        loss_target="gt_semantic_seg",
-        *args,
-        **kwargs,
-    ):
+    """PixelWeightsMixin."""
+
+    def __init__(self, enable_loss_equalizer=False, loss_target="gt_semantic_seg", *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.enable_loss_equalizer = enable_loss_equalizer
@@ -155,10 +152,12 @@ class PixelWeightsMixin(nn.Module):
 
     @property
     def loss_target_name(self):
+        """Return loss target name."""
         return self.loss_target
 
     @property
     def last_scale(self):
+        """Return the last scale."""
         if not isinstance(self.loss_decode, nn.ModuleList):
             losses_decode = [self.loss_decode]
         else:
@@ -175,6 +174,7 @@ class PixelWeightsMixin(nn.Module):
         return loss_module.last_scale
 
     def set_step_params(self, init_iter, epoch_size):
+        """Set step parameters."""
         if not isinstance(self.loss_decode, nn.ModuleList):
             losses_decode = [self.loss_decode]
         else:
@@ -194,6 +194,7 @@ class PixelWeightsMixin(nn.Module):
         return_logits=False,
     ):
         """Forward function for training.
+
         Args:
             inputs (list[Tensor]): List of multi-level img features.
             img_metas (list[dict]): List of image info dict where each dict
@@ -300,7 +301,9 @@ class PixelWeightsMixin2(PixelWeightsMixin):
         return losses
 
     @force_fp32(apply_to=("seg_logit",))
-    def losses(self, seg_logit, seg_label, train_cfg, valid_label_mask, pixel_weights=None):
+    def losses(
+        self, seg_logit, seg_label, train_cfg, valid_label_mask, pixel_weights=None
+    ):  # pylint: disable=arguments-renamed
         """Compute segmentation loss."""
 
         loss = dict()

@@ -6,15 +6,16 @@
 from abc import ABCMeta, abstractmethod
 
 import torch
-import torch.nn as nn
 from mmseg.core import build_pixel_sampler
-from scipy.special import erfinv
+from scipy.special import erfinv  # pylint: disable=no-name-in-module
+from torch import nn
 
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import (
     build_scalar_scheduler,
 )
 
 
+# pylint: disable=too-many-instance-attributes, unused-argument
 class BaseWeightedLoss(nn.Module, metaclass=ABCMeta):
     """Base class for loss.
 
@@ -107,8 +108,8 @@ class BaseWeightedLoss(nn.Module, metaclass=ABCMeta):
         loss, meta = self._forward(*args, **kwargs)
         # make sure meta data are tensor as well for aggregation
         # when parsing loss in sgementator
-        for k, v in meta.items():
-            meta[k] = torch.tensor(v, dtype=loss.dtype, device=loss.device)
+        for key, val in meta.items():
+            meta[key] = torch.tensor(val, dtype=loss.dtype, device=loss.device)
 
         if self.with_loss_jitter and loss.numel() == 1:
             if self._smooth_loss is None:

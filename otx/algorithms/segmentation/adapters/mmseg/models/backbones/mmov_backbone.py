@@ -8,9 +8,13 @@ from mmseg.models.builder import BACKBONES
 
 from otx.mpa.modules.ov.models.mmov_model import MMOVModel
 
+# pylint: disable=unused-argument
+
 
 @BACKBONES.register_module()
 class MMOVBackbone(MMOVModel):
+    """MMOVBackbone."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -25,4 +29,4 @@ class MMOVBackbone(MMOVModel):
     def init_weights(self, pretrained=None):
         """Initialize the weights."""
         # TODO
-        pass
+        return

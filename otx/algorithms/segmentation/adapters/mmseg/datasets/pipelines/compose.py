@@ -13,8 +13,9 @@ from mmseg.datasets.builder import PIPELINES
 from scipy.ndimage import gaussian_filter
 
 
+# pylint: disable=consider-using-f-string
 @PIPELINES.register_module()
-class ProbCompose(object):
+class ProbCompose:
     """Compose pipelines in a list and enable or disable them with the probability."""
 
     def __init__(self, transforms, probs):
@@ -60,7 +61,7 @@ class ProbCompose(object):
 
 
 @PIPELINES.register_module()
-class MaskCompose(object):
+class MaskCompose:
     """Compose mask-related pipelines in a list and enable or disable them with the probability."""
 
     def __init__(self, transforms, prob, lambda_limits=(4, 16), keep_original=False):

@@ -19,7 +19,7 @@ class ConstantScalarScheduler(BaseScalarScheduler):
     """
 
     def __init__(self, scale: float = 30.0):
-        super(ConstantScalarScheduler, self).__init__()
+        super().__init__()
 
         self._end_s = scale
         assert self._end_s > 0.0

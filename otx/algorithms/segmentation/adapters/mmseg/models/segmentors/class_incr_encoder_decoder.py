@@ -35,7 +35,9 @@ class ClassIncrEncoderDecoder(MixLossMixin, PixelWeightsMixin, OTXEncoderDecoder
         )
 
     @staticmethod
-    def load_state_dict_pre_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):
+    def load_state_dict_pre_hook(
+        model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs
+    ):  # pylint: disable=too-many-locals, unused-argument
         """Modify input state_dict according to class name matching before weight loading."""
         logger = get_root_logger("INFO")
         logger.info(f"----------------- ClassIncrEncoderDecoder.load_state_dict_pre_hook() called w/ prefix: {prefix}")
@@ -60,9 +62,9 @@ class ClassIncrEncoderDecoder(MixLossMixin, PixelWeightsMixin, OTXEncoderDecoder
             # Mix weights
             model_param = model_dict[model_name].clone()
             chkpt_param = chkpt_dict[chkpt_name]
-            for m, c in enumerate(model2chkpt):
+            for model_key, c in enumerate(model2chkpt):
                 if c >= 0:
-                    model_param[m].copy_(chkpt_param[c])
+                    model_param[model_key].copy_(chkpt_param[c])
 
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param

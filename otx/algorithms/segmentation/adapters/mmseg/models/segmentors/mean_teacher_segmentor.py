@@ -11,7 +11,7 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
-
+# pylint: disable=too-many-locals
 @SEGMENTORS.register_module()
 class MeanTeacherSegmentor(BaseSegmentor):
     """Mean teacher segmentor for semi-supervised learning.
@@ -20,7 +20,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
     """
 
     def __init__(self, orig_type=None, unsup_weight=0.1, semisl_start_iter=30, **kwargs):
-        super(MeanTeacherSegmentor, self).__init__()
+        super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.semisl_start_iter = semisl_start_iter
         self.count_iter = 0
@@ -44,9 +44,9 @@ class MeanTeacherSegmentor(BaseSegmentor):
         """Extract feature."""
         return self.model_s.extract_feat(imgs)
 
-    def simple_test(self, img, img_metas, **kwargs):
+    def simple_test(self, img, img_meta, **kwargs):
         """Simple test."""
-        return self.model_s.simple_test(img, img_metas, **kwargs)
+        return self.model_s.simple_test(img, img_meta, **kwargs)
 
     def aug_test(self, imgs, img_metas, **kwargs):
         """Aug test."""
@@ -61,7 +61,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
         self.count_iter += 1
         if self.semisl_start_iter > self.count_iter or "extra_0" not in kwargs:
             x = self.model_s.extract_feat(img)
-            loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+            loss_decode = self.model_s.decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
             return loss_decode
 
         ul_data = kwargs["extra_0"]
@@ -71,47 +71,49 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         with torch.no_grad():
             teacher_feat = self.model_t.extract_feat(ul_w_img)
-            teacher_logit = self.model_t._decode_head_forward_test(teacher_feat, ul_img_metas)
+            teacher_logit = self.model_t._decode_head_forward_test(  # pylint: disable=protected-access
+                teacher_feat, ul_img_metas
+            )
             teacher_logit = resize(
                 input=teacher_logit, size=ul_w_img.shape[2:], mode="bilinear", align_corners=self.align_corners
             )
-            conf_from_teacher, pl_from_teacher = torch.max(torch.softmax(teacher_logit, axis=1), axis=1, keepdim=True)
+            _, pl_from_teacher = torch.max(torch.softmax(teacher_logit, axis=1), axis=1, keepdim=True)
 
         losses = dict()
 
         x = self.model_s.extract_feat(img)
         x_u = self.model_s.extract_feat(ul_s_img)
-        loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
-        loss_decode_u = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
+        loss_decode = self.model_s.decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+        loss_decode_u = self.model_s.decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
 
-        for (k, v) in loss_decode_u.items():
-            if v is None:
+        for (key, value) in loss_decode_u.items():
+            if value is None:
                 continue
-            losses[k] = loss_decode[k] + loss_decode_u[k] * self.unsup_weight
+            losses[key] = loss_decode[key] + loss_decode_u[key] * self.unsup_weight
 
         return losses
 
     @staticmethod
-    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):
+    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # pylint: disable=unused-argument
         """Redirect student model as output state_dict (teacher as auxilliary)."""
         logger.info("----------------- MeanTeacherSegmentor.state_dict_hook() called")
-        for k in list(state_dict.keys()):
-            v = state_dict.pop(k)
-            if not prefix or k.startswith(prefix):
-                k = k.replace(prefix, "", 1)
-                if k.startswith("model_s."):
-                    k = k.replace("model_s.", "", 1)
-                elif k.startswith("model_t."):
+        for key in list(state_dict.keys()):
+            value = state_dict.pop(key)
+            if not prefix or key.startswith(prefix):
+                key = key.replace(prefix, "", 1)
+                if key.startswith("model_s."):
+                    key = key.replace("model_s.", "", 1)
+                elif key.startswith("model_t."):
                     continue
-                k = prefix + k
-            state_dict[k] = v
+                key = prefix + key
+            state_dict[key] = value
         return state_dict
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):
+    def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):  # pylint: disable=unused-argument
         """Redirect input state_dict to teacher model."""
         logger.info("----------------- MeanTeacherSegmentor.load_state_dict_pre_hook() called")
-        for k in list(state_dict.keys()):
-            v = state_dict.pop(k)
-            state_dict["model_s." + k] = v
-            state_dict["model_t." + k] = v
+        for key in list(state_dict.keys()):
+            value = state_dict.pop(key)
+            state_dict["model_s." + key] = value
+            state_dict["model_t." + key] = value
