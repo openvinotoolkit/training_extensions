@@ -19,7 +19,9 @@ This PR introduces this capability to make the project better in this and that.
 not fully covered by unit tests or manual testing can be complicated. -->
 
 ### Checklist
+
 <!-- Put an 'x' in all the boxes that apply -->
+
 - [ ] I have added unit tests to cover my changes.​
 - [ ] I have added integration tests to cover my changes.​
 - [ ] I have added e2e tests for validation.
