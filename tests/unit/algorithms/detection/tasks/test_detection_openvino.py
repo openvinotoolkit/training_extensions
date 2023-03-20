@@ -7,10 +7,9 @@ import os
 
 import numpy as np
 import pytest
+from addict import Dict as ADDict
 from openvino.model_zoo.model_api.models import Model
 
-
-from addict import Dict as ADDict
 import otx.algorithms.detection.tasks.openvino
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.tasks.openvino import (

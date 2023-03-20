@@ -1,7 +1,8 @@
-import unittest
+import os
 from typing import List
 
 import numpy as np
+import pytest
 import torch
 from mmcv import ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
@@ -9,14 +10,22 @@ from mmdet.datasets import build_dataloader, build_dataset
 from otx.algorithms.detection.adapters.mmdet.data import (  # noqa: F401
     ImageTilingDataset,
 )
+from otx.algorithms.detection.adapters.mmdet.utils import build_detector
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.mpa.det.exporter import DetectionExporter
+from otx.mpa.exporter_mixin import ExporterMixin
+from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_helpers import generate_random_annotated_image
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.algorithms.detection.test_helpers import (
+    DEFAULT_ISEG_RECIPE_CONFIG_PATH,
+    DEFAULT_ISEG_TEMPLATE_DIR,
+)
 
 
 def create_otx_dataset(height: int, width: int, labels: List[str]):
@@ -40,9 +49,10 @@ def create_otx_dataset(height: int, width: int, labels: List[str]):
     return DatasetEntity([dataset_item]), labels
 
 
-class TestTilingDetection(unittest.TestCase):
+class TestTilingDetection:
     """Test the tiling functionality"""
 
+    @pytest.fixture(autouse=True)
     def setUp(self) -> None:
         """Setup the test case"""
         self.height = 1024
@@ -123,9 +133,9 @@ class TestTilingDetection(unittest.TestCase):
         dataset = build_dataset(self.train_data_cfg)
         train_dataloader = build_dataloader(dataset, **self.dataloader_cfg)
         for data in train_dataloader:
-            self.assertIsInstance(data["img"].data[0], torch.Tensor)
-            self.assertIsInstance(data["gt_bboxes"].data[0][0], torch.Tensor)
-            self.assertIsInstance(data["gt_labels"].data[0][0], torch.Tensor)
+            assert isinstance(data["img"].data[0], torch.Tensor)
+            assert isinstance(data["gt_bboxes"].data[0][0], torch.Tensor)
+            assert isinstance(data["gt_labels"].data[0][0], torch.Tensor)
 
     @e2e_pytest_unit
     def test_tiling_test_dataloader(self):
@@ -136,13 +146,13 @@ class TestTilingDetection(unittest.TestCase):
         num_tile_rows = ((self.height - self.tile_cfg["tile_size"]) // stride) + 1
         num_tile_cols = ((self.width - self.tile_cfg["tile_size"]) // stride) + 1
         # +1 for the original image
-        self.assertEqual(len(dataset), (num_tile_rows * num_tile_cols) + 1, "Incorrect number of tiles")
+        assert len(dataset) == (num_tile_rows * num_tile_cols) + 1, "Incorrect number of tiles"
 
         test_dataloader = build_dataloader(dataset, **self.dataloader_cfg)
         for data in test_dataloader:
-            self.assertIsInstance(data["img"][0], torch.Tensor)
-            self.assertNotIn("gt_bboxes", data)
-            self.assertNotIn("gt_labels", data)
+            assert isinstance(data["img"][0], torch.Tensor)
+            assert "gt_bboxes" not in data
+            assert "gt_labels" not in data
 
     @e2e_pytest_unit
     def test_inference_merge(self):
@@ -173,4 +183,16 @@ class TestTilingDetection(unittest.TestCase):
                 results[i][label_idx] = np.append(results[i][label_idx], [score_bbox], axis=0)
 
         merged_bbox_results = dataset.merge(results)
-        self.assertEqual(len(merged_bbox_results), dataset.num_samples)
+        assert len(merged_bbox_results) == dataset.num_samples
+
+    @e2e_pytest_unit
+    def test_tile_classifier_deployment(self, mocker, otx_model):
+        cfg = MPAConfig.fromfile(DEFAULT_ISEG_RECIPE_CONFIG_PATH)
+        exporter = DetectionExporter(name="", mode="train", config=cfg, common_cfg=None, index=0)
+        model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "data_pipeline.py"))
+        args = {"precision": "FP32", "model_builder": build_detector}
+        exporter.run = mocker.MagicMock(return_value=True)
+        returned_value = exporter.run(model_cfg, "", data_cfg, **args)
+        assert "model_builder" in args
+        assert returned_value is True

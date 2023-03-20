@@ -409,10 +409,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
-        if (
-            self.config.tiling_parameters.enable_tiling
-            and self.config.tiling_parameters.enable_tile_classifier
-        ):
+        if self.config.tiling_parameters.enable_tiling and self.config.tiling_parameters.enable_tile_classifier:
             logger.info("Tile classifier is enabled. Loading tile classifier model...")
             inferencer = OpenVINOTileClassifierWrapper(
                 inferencer, self.model.get_data("tile_classifier.xml"), self.model.get_data("tile_classifier.bin")
@@ -575,7 +572,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
         parameters["tiling_parameters"] = vars(self.config.tiling_parameters)
-        parameters["tiling_parameters"].pop('type')  # NOTE: type is not JSON serializable
+        parameters["tiling_parameters"].pop("type")  # NOTE: type is not JSON serializable
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
@@ -584,10 +581,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 raise ValueError("Deploy failed, model is None")
             arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
-            if (
-                self.config.tiling_parameters.enable_tiling
-                and self.config.tiling_parameters.enable_tile_classifier
-            ):
+            if self.config.tiling_parameters.enable_tiling and self.config.tiling_parameters.enable_tile_classifier:
                 arch.writestr(os.path.join("model", "tile_classifier.xml"), self.model.get_data("tile_classifier.xml"))
                 arch.writestr(os.path.join("model", "tile_classifier.bin"), self.model.get_data("tile_classifier.bin"))
             arch.writestr(

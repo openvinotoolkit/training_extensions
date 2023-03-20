@@ -178,7 +178,7 @@ class Tiler:
             out[:, 2:] += np.tile([offset_x, offset_y], 2)
         return out
 
-    def preprocess_tile(self, image: np.ndarray, coord: List[int]):
+    def preprocess_tile(self, image: np.ndarray, coord: List[int]) -> Tuple[int, int, dict, dict]:
         """Preprocess Tile by cropping.
 
         Args:
