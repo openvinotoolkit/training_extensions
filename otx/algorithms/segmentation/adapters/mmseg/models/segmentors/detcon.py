@@ -319,25 +319,24 @@ class DetConB(nn.Module):
             dict[str, Tensor]: A dictionary of loss components.
         """
         assert img.ndim == 5 and gt_semantic_seg.ndim == 5
-        img1, img2 = img[:, 0], img[:, 1]
-        mask1, mask2 = gt_semantic_seg[:, :, 0], gt_semantic_seg[:, :, 1]
+        batch_size = img.shape[0]
+        imgs = torch.cat((img[:, 0], img[:, 1]), dim=0)
+        masks = torch.cat((gt_semantic_seg[:, :, 0], gt_semantic_seg[:, :, 1]), dim=0)
 
-        embd1 = self.online_backbone(img1)
-        proj1, id1 = self.sample_masked_feats(embd1, mask1, self.online_projector)
-        proj2, id2 = self.sample_masked_feats(self.online_backbone(img2), mask2, self.online_projector)
+        embds = self.online_backbone(imgs)
+        projs, ids = self.sample_masked_feats(embds, masks, self.online_projector)
 
         with torch.no_grad():
             self._momentum_update()
-            proj1_tgt, id1_tgt = self.sample_masked_feats(self.target_backbone(img1), mask1, self.target_projector)
-            proj2_tgt, id2_tgt = self.sample_masked_feats(self.target_backbone(img2), mask2, self.target_projector)
+            projs_tgt, ids_tgt = self.sample_masked_feats(self.target_backbone(imgs), masks, self.target_projector)
 
         # predictor
         # TODO (sungchul): predictor + loss -> head?
-        pred1, pred2 = self.predictor(proj1), self.predictor(proj2)
-        pred1 = pred1.reshape((-1, self.num_samples, pred1.shape[-1]))
-        pred2 = pred2.reshape((-1, self.num_samples, pred2.shape[-1]))
-        proj1_tgt = proj1_tgt.reshape((-1, self.num_samples, proj1_tgt.shape[-1]))
-        proj2_tgt = proj2_tgt.reshape((-1, self.num_samples, proj2_tgt.shape[-1]))
+        preds = self.predictor(projs)
+        pred1, pred2 = torch.split(preds.reshape((-1, self.num_samples, preds.shape[-1])), batch_size)
+        id1, id2 = torch.split(ids, batch_size)
+        proj1_tgt, proj2_tgt = torch.split(projs_tgt.reshape((-1, self.num_samples, projs_tgt.shape[-1])), batch_size)
+        id1_tgt, id2_tgt = torch.split(ids_tgt, batch_size)
 
         # decon loss
         loss = self.detcon_loss(
@@ -352,7 +351,7 @@ class DetConB(nn.Module):
         )
 
         if return_embedding:
-            return loss, embd1
+            return loss, embds, masks
         return loss
 
     def forward(self, img, img_metas, return_loss=True, **kwargs):
@@ -537,19 +536,19 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
         losses = {}
         if img.ndim == 4:
             # supervised learning with interval
-            embd = self.detconb.online_backbone(img)
-            mask = gt_semantic_seg
+            embds = self.detconb.online_backbone(img)
+            masks = gt_semantic_seg
         else:
             # supcon training
-            mask = gt_semantic_seg[:, :, 0]
-            loss_detcon, embd = self.detconb.forward_train(
+            loss_detcon, embds, masks = self.detconb.forward_train(
                 img=img, img_metas=img_metas, gt_semantic_seg=gt_semantic_seg, return_embedding=True
             )
             losses.update(dict(loss_detcon=loss_detcon["loss"]))
+            img_metas += img_metas
 
         # decode head
         loss_decode, _ = self._decode_head_forward_train(
-            embd, img_metas, gt_semantic_seg=mask, pixel_weights=pixel_weights
+            embds, img_metas, gt_semantic_seg=masks, pixel_weights=pixel_weights
         )
         losses.update(loss_decode)
 
