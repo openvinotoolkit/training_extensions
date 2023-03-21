@@ -14,9 +14,9 @@ from .twocrop_transform import TwoCropTransform
 __all__ = [
     "AugMixAugment",
     "PILToTensor",
+    "pil_augment",
     "TensorNormalize",
     "RandomRotate",
     "OTXRandAugment",
     "TwoCropTransform",
-    "pil_augment",
 ]

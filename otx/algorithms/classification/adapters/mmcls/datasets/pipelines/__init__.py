@@ -18,7 +18,6 @@ from .transforms import (
     RandomRotate,
     TensorNormalize,
     TwoCropTransform,
-    pil_augment,
 )
 
 __all__ = [
@@ -29,7 +28,6 @@ __all__ = [
     "GaussianBlur",
     "OTXColorJitter",
     "AugMixAugment",
-    "pil_augment",
     "PILToTensor",
     "RandomRotate",
     "TensorNormalize",

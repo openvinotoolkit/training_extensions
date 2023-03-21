@@ -12,7 +12,9 @@ import numpy as np
 from PIL import Image, ImageEnhance, ImageOps
 from PIL.Image import Resampling
 
-import otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.cython_augments.pil_augment as pil_aug
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.cython_augments import (
+    pil_augment as pil_aug,
+)
 
 PILImage = Image.Image
 CvImage = np.ndarray
