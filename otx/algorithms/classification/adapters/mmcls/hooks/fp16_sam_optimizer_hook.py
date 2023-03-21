@@ -1,3 +1,4 @@
+"""Module for Sharpness-aware Minimization optimizer hook implementation for MMCV Runners with FP16 precision."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,7 +9,7 @@ from mmcv.runner import HOOKS, Fp16OptimizerHook
 
 @HOOKS.register_module()
 class Fp16SAMOptimizerHook(Fp16OptimizerHook):
-    """Sharpness-aware Minimization optimizer hook
+    """Sharpness-aware Minimization optimizer hook.
 
     Implemented as OptimizerHook for MMCV Runners
     - Paper ref: https://arxiv.org/abs/2010.01412
@@ -23,7 +24,8 @@ class Fp16SAMOptimizerHook(Fp16OptimizerHook):
             raise ValueError("rho should be greater than 0 for SAM optimizer")
 
     def after_train_iter(self, runner):
-        """Perform SAM optimization
+        """Perform SAM optimization.
+
         0. compute current loss (DONE IN model.train_step())
         1. compute current gradient
         2. move param to the approximate local maximum: w + e(w) = w + rho*norm_grad
@@ -77,6 +79,7 @@ class Fp16SAMOptimizerHook(Fp16OptimizerHook):
 
         runner.meta.setdefault("fp16", {})["loss_scaler"] = self.loss_scaler.state_dict()
         runner.log_buffer.update({"sharpness": float(max_loss - curr_loss), "max_loss": float(max_loss)})
+        return None
 
     def _get_current_batch(self, model):
         if hasattr(model, "module"):

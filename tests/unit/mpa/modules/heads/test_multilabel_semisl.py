@@ -5,14 +5,16 @@
 import pytest
 import torch
 
-from otx.mpa.modules.models.heads.semisl_multilabel_cls_head import (
+from otx.algorithms.classification.adapters.mmcls.models.heads.semisl_multilabel_cls_head import (
     SemiLinearMultilabelClsHead,
     SemiNonLinearMultilabelClsHead,
 )
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (
+from otx.algorithms.classification.adapters.mmcls.models.losses.asymmetric_loss_with_ignore import (
     AsymmetricLossWithIgnore,
 )
-from otx.mpa.modules.models.losses.barlowtwins_loss import BarlowTwinsLoss
+from otx.algorithms.classification.adapters.mmcls.models.losses.barlowtwins_loss import (
+    BarlowTwinsLoss,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

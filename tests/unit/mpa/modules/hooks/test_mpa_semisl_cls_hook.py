@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.mpa.modules.hooks.semisl_cls_hook import SemiSLClsHook
+from otx.algorithms.classification.adapters.mmcls.hooks.semisl_cls_hook import (
+    SemiSLClsHook,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

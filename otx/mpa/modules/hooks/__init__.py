@@ -7,7 +7,6 @@ from . import (
     adaptive_training_hooks,
     composed_dataloaders_hook,
     early_stopping_hook,
-    fp16_sam_optimizer_hook,
     logger_replace_hook,
     model_ema_hook,
     model_ema_v2_hook,

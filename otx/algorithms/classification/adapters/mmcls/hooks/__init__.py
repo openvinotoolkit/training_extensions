@@ -16,6 +16,7 @@
 
 from .checkpoint_hook import CheckpointHookWithValResults
 from .eval_hook import CustomEvalHook
+from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
 from .ib_loss_hook import IBLossHook
 from .no_bias_decay_hook import NoBiasDecayHook
 from .sam_optimizer_hook import SAMOptimizerHook
@@ -27,5 +28,6 @@ __all__ = [
     "IBLossHook",
     "NoBiasDecayHook",
     "SAMOptimizerHook",
+    "Fp16SAMOptimizerHook",
     "SemiSLClsHook",
 ]

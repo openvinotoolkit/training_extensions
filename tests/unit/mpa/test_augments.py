@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from otx.mpa.modules.datasets.pipelines.transforms.augments import (
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.augments import (
     Augments,
     CythonAugments,
 )

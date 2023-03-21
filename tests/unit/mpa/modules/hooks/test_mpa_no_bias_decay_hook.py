@@ -1,4 +1,4 @@
-"""Unit test for otx.mpa.modules.hooks.no_bias_decay_hook."""
+"""Unit test for otx.algorithms.classification.adapters.mmcls.hooks.no_bias_decay_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -6,7 +6,9 @@
 import torch
 from mmcv.utils import Config
 
-from otx.mpa.modules.hooks.no_bias_decay_hook import NoBiasDecayHook
+from otx.algorithms.classification.adapters.mmcls.hooks.no_bias_decay_hook import (
+    NoBiasDecayHook,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

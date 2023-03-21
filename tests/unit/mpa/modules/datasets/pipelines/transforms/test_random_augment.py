@@ -9,8 +9,8 @@ import pytest
 from PIL import Image
 
 from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.random_augment import (
-    CutoutAbs,
     OTXRandAugment,
+    cutout_abs,
     rand_augment_pool,
 )
 
@@ -27,15 +27,15 @@ def sample_pil_image() -> Image:
 
 def test_all_transforms_return_valid_image(sample_pil_image: Image.Image) -> None:
     """Test all transforms return valid image."""
-    for transform, v, max_v in rand_augment_pool:
-        img, *extra = transform(sample_pil_image, v=v, max_v=max_v)
+    for transform, value, max_value in rand_augment_pool:
+        img, *extra = transform(sample_pil_image, value=value, max_value=max_value)
         assert isinstance(img, Image.Image)
         assert img.size == sample_pil_image.size
 
 
 def test_cutoutabs_transform(sample_pil_image: Image.Image) -> None:
-    """Test CutoutAbs transform."""
-    img, (x0, y0, x1, y1), color = CutoutAbs(sample_pil_image, 2)
+    """Test cutout_abs transform."""
+    img, (x0, y0, x1, y1), color = cutout_abs(sample_pil_image, 2)
     assert isinstance(img, Image.Image)
     assert img.size == sample_pil_image.size
     assert x0 >= 0 and y0 >= 0
@@ -46,7 +46,7 @@ def test_cutoutabs_transform(sample_pil_image: Image.Image) -> None:
 class TestOTXRandAugment:
     def test_with_default_arguments(self, sample_np_image: np.ndarray) -> None:
         """Test case with default arguments."""
-        transform = OTXRandAugment(num_ops=2, magnitude=5, cutout=16)
+        transform = OTXRandAugment(num_aug=2, magnitude=5, cutout_value=16)
         data = {"img": sample_np_image}
         results = transform(data)
 
@@ -56,7 +56,7 @@ class TestOTXRandAugment:
 
     def test_with_img_fields_argument(self, sample_np_image: np.ndarray) -> None:
         """Test case with img_fields argument."""
-        transform = OTXRandAugment(num_ops=2, magnitude=5, cutout=16)
+        transform = OTXRandAugment(num_aug=2, magnitude=5, cutout_value=16)
         data = {
             "img1": sample_np_image,
             "img2": sample_np_image,
@@ -69,7 +69,7 @@ class TestOTXRandAugment:
 
     def test_with_pil_image_input(self, sample_pil_image: Image.Image) -> None:
         """Test case with PIL.Image input."""
-        transform = OTXRandAugment(num_ops=2, magnitude=5, cutout=16)
+        transform = OTXRandAugment(num_aug=2, magnitude=5, cutout_value=16)
         data = {"img": sample_pil_image}
         results = transform(data)
 

@@ -5,7 +5,9 @@
 import pytest
 import torch
 
-from otx.mpa.modules.models.losses.cross_entropy_loss import CrossEntropyLossWithIgnore
+from otx.algorithms.classification.adapters.mmcls.models.losses.cross_entropy_loss import (
+    CrossEntropyLossWithIgnore,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

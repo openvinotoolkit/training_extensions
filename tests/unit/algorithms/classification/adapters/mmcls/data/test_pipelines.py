@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from otx.algorithms.classification.adapters.mmcls.data.pipelines import (
+from otx.algorithms.classification.adapters.mmcls.datasets.otx_pipelines import (
     GaussianBlur,
     LoadImageFromOTXDataset,
     OTXColorJitter,
@@ -57,7 +57,9 @@ def test_load_image_from_otx_dataset_call(to_float32):
 @e2e_pytest_unit
 def test_random_applied_transforms(mocker, inputs_np):
     """Test RandomAppliedTrans."""
-    mocker.patch("otx.algorithms.classification.adapters.mmcls.data.pipelines.build_from_cfg", return_value=lambda x: x)
+    mocker.patch(
+        "otx.algorithms.classification.adapters.mmcls.datasets.otx_pipelines.build_from_cfg", return_value=lambda x: x
+    )
 
     random_applied_transforms = RandomAppliedTrans(transforms=[dict()])
 
@@ -106,7 +108,9 @@ def test_pil_image_to_nd_array(inputs_PIL) -> None:
 @e2e_pytest_unit
 def test_post_aug(mocker, inputs_np):
     """Test PostAug."""
-    mocker.patch("otx.algorithms.classification.adapters.mmcls.data.pipelines.Compose", return_value=lambda x: x)
+    mocker.patch(
+        "otx.algorithms.classification.adapters.mmcls.datasets.otx_pipelines.Compose", return_value=lambda x: x
+    )
 
     post_aug = PostAug(keys=dict(orig=lambda x: x))
 

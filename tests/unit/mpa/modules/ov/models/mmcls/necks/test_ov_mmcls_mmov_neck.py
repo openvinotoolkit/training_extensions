@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.mpa.modules.ov.models.mmcls.necks.mmov_neck import MMOVNeck
+from otx.algorithms.classification.adapters.mmcls.models.necks import MMOVNeck
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.mpa.modules.ov.models.mmcls.test_helpers import create_ov_model
 

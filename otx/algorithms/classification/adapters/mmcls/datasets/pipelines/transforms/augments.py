@@ -22,7 +22,8 @@ ImgTypes = Union[PILImage, CvImage]
 class Augments:
     """Augments class that implements various augmentations."""
 
-    def _check_args_tf(self, kwargs):
+    @staticmethod
+    def _check_args_tf(kwargs):
         def _interpolation(kwargs):
             interpolation = kwargs.pop("resample", Resampling.BILINEAR)
             if isinstance(interpolation, (list, tuple)):
@@ -110,25 +111,29 @@ class Augments:
 class CythonAugments(Augments):
     """CythonAugments class that support faster augmentation with cythonizing."""
 
-    def autocontrast(self, img: ImgTypes, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def autocontrast(img: ImgTypes, *args, **kwargs) -> ImgTypes:
         """Apply autocontrast for an given image."""
         if Image.isImageType(img):
             return pil_aug.autocontrast(img)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def equalize(self, img: ImgTypes, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def equalize(img: ImgTypes, *args, **kwargs) -> ImgTypes:
         """Apply equalize for an given image."""
         if Image.isImageType(img):
             return pil_aug.equalize(img)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def solarize(self, img: ImgTypes, threshold: int, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def solarize(img: ImgTypes, threshold: int, *args, **kwargs) -> ImgTypes:
         """Apply solarize for an given image."""
         if Image.isImageType(img):
             return pil_aug.solarize(img, threshold)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def posterize(self, img: ImgTypes, bits_to_keep: int, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def posterize(img: ImgTypes, bits_to_keep: int, *args, **kwargs) -> ImgTypes:
         """Apply posterize for an given image."""
         if Image.isImageType(img):
             if bits_to_keep >= 8:
@@ -136,31 +141,36 @@ class CythonAugments(Augments):
             return pil_aug.posterize(img, bits_to_keep)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def color(self, img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def color(img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
         """Apply color for an given image."""
         if Image.isImageType(img):
             return pil_aug.color(img, factor)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def contrast(self, img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def contrast(img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
         """Apply contrast for an given image."""
         if Image.isImageType(img):
             return pil_aug.contrast(img, factor)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def brightness(self, img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def brightness(img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
         """Apply brightness for an given image."""
         if Image.isImageType(img):
             return pil_aug.brightness(img, factor)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def sharpness(self, img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def sharpness(img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
         """Apply sharpness for an given image."""
         if Image.isImageType(img):
             return pil_aug.sharpness(img, factor)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def rotate(self, img: ImgTypes, degree: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def rotate(img: ImgTypes, degree: float, *args, **kwargs) -> ImgTypes:
         """Apply rotate for an given image."""
         Augments._check_args_tf(kwargs)
 
@@ -168,32 +178,37 @@ class CythonAugments(Augments):
             return pil_aug.rotate(img, degree)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def shear_x(self, img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def shear_x(img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
         """Apply shear_x for an given image."""
         Augments._check_args_tf(kwargs)
         if Image.isImageType(img):
             return pil_aug.shear_x(img, factor)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def shear_y(self, img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def shear_y(img: ImgTypes, factor: float, *args, **kwargs) -> ImgTypes:
         """Apply shear_y for an given image."""
         if Image.isImageType(img):
             return pil_aug.shear_y(img, factor)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def translate_x_rel(self, img: ImgTypes, pct: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def translate_x_rel(img: ImgTypes, pct: float, *args, **kwargs) -> ImgTypes:
         """Apply translate_x_rel for an given image."""
         if Image.isImageType(img):
             return pil_aug.translate_x_rel(img, pct)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def translate_y_rel(self, img: ImgTypes, pct: float, *args, **kwargs) -> ImgTypes:
+    @staticmethod
+    def translate_y_rel(img: ImgTypes, pct: float, *args, **kwargs) -> ImgTypes:
         """Apply translate_y_rel for an given image."""
         if Image.isImageType(img):
             return pil_aug.translate_y_rel(img, pct)
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
-    def blend(self, src: ImgTypes, dst: CvImage, weight: float = 0.0):
+    @staticmethod
+    def blend(src: ImgTypes, dst: CvImage, weight: float = 0.0):
         """Apply blend for an given image."""
         assert isinstance(dst, CvImage), f"Type of dst should be numpy array, but type(dst)={type(dst)}."
         if Image.isImageType(src):

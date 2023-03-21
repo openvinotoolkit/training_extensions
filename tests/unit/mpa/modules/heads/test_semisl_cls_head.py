@@ -2,7 +2,7 @@ import pytest
 import torch
 from mmcls.models.builder import build_head
 
-from otx.mpa.modules.models.heads.semisl_cls_head import (
+from otx.algorithms.classification.adapters.mmcls.models.heads.semisl_cls_head import (
     SemiLinearClsHead,
     SemiNonLinearClsHead,
 )
