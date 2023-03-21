@@ -526,7 +526,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
 
         Args:
             img (Tensor): Input images.
-            img_metas (Any): Input information.
+            img_metas (list[dict]): Input information.
             gt_semantic_seg (Tensor): Ground truth masks.
                 It is used to organize features among the same classes.
             pixel_weights (Tensor): Pixels weights.
