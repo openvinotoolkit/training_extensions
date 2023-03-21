@@ -58,7 +58,8 @@ def test_load_image_from_otx_dataset_call(to_float32):
 def test_random_applied_transforms(mocker, inputs_np):
     """Test RandomAppliedTrans."""
     mocker.patch(
-        "otx.algorithms.classification.adapters.mmcls.datasets.otx_pipelines.build_from_cfg", return_value=lambda x: x
+        "otx.algorithms.classification.adapters.mmcls.datasets.pipelines.otx_pipelines.build_from_cfg",
+        return_value=lambda x: x,
     )
 
     random_applied_transforms = RandomAppliedTrans(transforms=[dict()])

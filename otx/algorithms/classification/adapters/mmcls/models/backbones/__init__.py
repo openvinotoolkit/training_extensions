@@ -1,4 +1,4 @@
-"""OTX Algorithms - Classification Heads."""
+"""OTX Algorithms - Classification Backbones."""
 
 # Copyright (C) 2022 Intel Corporation
 #
