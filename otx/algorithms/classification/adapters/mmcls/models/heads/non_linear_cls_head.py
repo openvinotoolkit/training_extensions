@@ -1,3 +1,4 @@
+"""Module for defining non-linear classification head."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -33,11 +34,10 @@ class NonLinearClsHead(ClsHead):
         loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
         topk=(1,),
         dropout=False,
-        *args,
         **kwargs,
-    ):
+    ):  # pylint: disable=too-many-arguments, dangerous-default-value
         topk = (1,) if num_classes < 5 else (1, 5)
-        super().__init__(loss=loss, topk=topk, *args, **kwargs)
+        super().__init__(loss=loss, topk=topk, **kwargs)
         self.in_channels = in_channels
         self.hid_channels = hid_channels
         self.num_classes = num_classes
@@ -67,6 +67,7 @@ class NonLinearClsHead(ClsHead):
             )
 
     def init_weights(self):
+        """Initialize weights of head."""
         for module in self.classifier:
             if isinstance(module, nn.Linear):
                 normal_init(module, mean=0, std=0.01, bias=0)
@@ -85,6 +86,7 @@ class NonLinearClsHead(ClsHead):
         return pred
 
     def forward_train(self, cls_score, gt_label):
+        """Forward_train fuction of NonLinearClsHead class."""
         logit = self.classifier(cls_score)
         losses = self.loss(logit, gt_label)
         return losses

@@ -1,3 +1,4 @@
+"""Module for defining transforms used for OTX classification."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,7 +12,10 @@ from torchvision.transforms import functional as F
 
 @PIPELINES.register_module()
 class PILToTensor:
+    """Convert PIL image to Tensor."""
+
     def __call__(self, results):
+        """Call function of PILToTensor class."""
         for key in results.get("img_fields", ["img"]):
             img = results[key]
             if not Image.isImageType(img):
@@ -24,12 +28,15 @@ class PILToTensor:
 
 @PIPELINES.register_module()
 class TensorNormalize:
+    """Normalize tensor object."""
+
     def __init__(self, mean, std, inplace=False):
         self.mean = mean
         self.std = std
         self.inplace = inplace
 
     def __call__(self, results):
+        """Call function of TensorNormalize class."""
         for key in results.get("img_fields", ["img"]):
             img = results[key]
             img = F.normalize(img, self.mean, self.std, self.inplace)
@@ -41,9 +48,7 @@ class TensorNormalize:
 # TODO [Jihwan]: Can be removed by mmcls.dataset.pipelines.auto_augment L398, Roate class
 @PIPELINES.register_module()
 class RandomRotate:
-    """Random rotate
-    From torchreid.data.transforms
-    """
+    """Random rotate, from torchreid.data.transforms."""
 
     def __init__(self, p=0.5, angle=(-5, 5), values=None):
         self.p = p
@@ -52,6 +57,7 @@ class RandomRotate:
         self.values = values
 
     def __call__(self, results, *args, **kwargs):
+        """Call function of RandomRotate class."""
         if random.uniform(0, 1) > self.p:
             return results
         for key in results.get("img_fields", ["img"]):

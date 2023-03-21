@@ -1,3 +1,4 @@
+"""Module for defining ConvClsHead used for MMOV inference."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -20,8 +21,10 @@ class ConvClsHead(ClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(self, num_classes, in_channels, init_cfg=dict(type="Kaiming", layer=["Conv2d"]), *args, **kwargs):
-        super(ConvClsHead, self).__init__(init_cfg=init_cfg, *args, **kwargs)
+    def __init__(
+        self, num_classes, in_channels, init_cfg=dict(type="Kaiming", layer=["Conv2d"]), **kwargs
+    ):  # pylint: disable=dangerous-default-value
+        super().__init__(init_cfg=init_cfg, **kwargs)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -32,11 +35,12 @@ class ConvClsHead(ClsHead):
         self.conv = nn.Conv2d(self.in_channels, self.num_classes, (1, 1))
 
     def pre_logits(self, x):
+        """Preprocess logits."""
         if isinstance(x, tuple):
             x = x[-1]
         return x
 
-    def simple_test(self, cls_head, softmax=True, post_process=True):
+    def simple_test(self, cls_score, softmax=True, post_process=True):
         """Inference without augmentation.
 
         Args:
@@ -56,7 +60,7 @@ class ConvClsHead(ClsHead):
                 - If post processing, the output is a multi-dimentional list of
                   float and the dimensions are ``(num_samples, num_classes)``.
         """
-        x = self.pre_logits(cls_head)
+        x = self.pre_logits(cls_score)
         cls_score = self.conv(x).squeeze()
 
         if softmax:
@@ -66,10 +70,10 @@ class ConvClsHead(ClsHead):
 
         if post_process:
             return self.post_process(pred)
-        else:
-            return pred
+        return pred
 
     def forward_train(self, cls_score, gt_label, **kwargs):
+        """Forward_train fuction of ConvClsHead class."""
         x = self.pre_logits(cls_score)
         cls_score = self.conv(x).squeeze()
         losses = self.loss(cls_score, gt_label, **kwargs)

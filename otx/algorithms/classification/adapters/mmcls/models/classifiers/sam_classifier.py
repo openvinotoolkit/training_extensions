@@ -1,7 +1,8 @@
+"""Module for defining SAMClassifier for classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+# pylint: disable=too-many-branches, unused-argument, too-many-nested-blocks, too-many-locals
 from functools import partial
 
 from mmcls.models.builder import CLASSIFIERS
@@ -18,7 +19,7 @@ logger = get_logger()
 
 @CLASSIFIERS.register_module()
 class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
-    """SAM-enabled ImageClassifier"""
+    """SAM-enabled ImageClassifier."""
 
     def __init__(self, task_adapt=None, **kwargs):
         if "multilabel" in kwargs:
@@ -74,7 +75,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 
     @staticmethod
     def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
-        """Redirect model as output state_dict for OTX model compatibility"""
+        """Redirect model as output state_dict for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
@@ -128,7 +129,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 
     @staticmethod
     def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
-        """Redirect input state_dict to model for OTX model compatibility"""
+        """Redirect input state_dict to model for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
@@ -185,7 +186,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 
     @staticmethod
     def load_state_dict_mixing_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):
-        """Modify input state_dict according to class name matching before weight loading"""
+        """Modify input state_dict according to class name matching before weight loading."""
         backbone_type = type(model.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
@@ -250,7 +251,8 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
             chkpt_dict[chkpt_name] = model_param
 
     def extract_feat(self, img):
-        """Directly extract features from the backbone + neck
+        """Directly extract features from the backbone + neck.
+
         Overriding for OpenVINO export with features
         """
         x = self.backbone(img)
@@ -277,6 +279,7 @@ if is_mmdeploy_enabled():
         "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.extract_feat"
     )
     def sam_image_classifier__extract_feat(ctx, self, img):
+        """Feature extraction function for SAMClassifier with mmdeploy."""
         feat = self.backbone(img)
         # For Global Backbones (det/seg/etc..),
         # In case of tuple or list, only the feat of the last layer is used.
@@ -291,6 +294,7 @@ if is_mmdeploy_enabled():
         "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.simple_test"
     )
     def sam_image_classifier__simple_test(ctx, self, img, img_metas):
+        """Simple test function used for inference for SAMClassifier with mmdeploy."""
         feat, backbone_feat = self.extract_feat(img)
         logit = self.head.simple_test(feat)
 

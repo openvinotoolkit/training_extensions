@@ -1,9 +1,9 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+# pylint: disable=unused-argument
+"""Code in this file is adapted from.
 
-"""
-Code in this file is adapted from
 https://github.com/ildoonet/pytorch-randaugment/blob/master/RandAugment/augmentations.py
 https://github.com/google-research/fixmatch/blob/master/third_party/auto_augment/augmentations.py
 https://github.com/google-research/fixmatch/blob/master/libml/ctaugment.py
@@ -166,26 +166,29 @@ rand_augment_pool = [
 # TODO: [Jihwan]: Can be removed by mmcls.datasets.pipeline.auto_augment Line 95 RandAugment class
 @PIPELINES.register_module()
 class OTXRandAugment:
-    def __init__(self, num_ops, magnitude, cutout=16):
-        assert num_ops >= 1
+    """RandAugment class for OTX classification."""
+
+    def __init__(self, num_aug, magnitude, cutout_value=16):
+        assert num_aug >= 1
         assert 1 <= magnitude <= 10
-        self.num_ops = num_ops
+        self.num_aug = num_aug
         self.magnitude = magnitude
-        self.cutout = cutout
+        self.cutout_value = cutout_value
         self.augment_pool = rand_augment_pool
 
     def __call__(self, results):
+        """Call function of OTXRandAugment class."""
         for key in results.get("img_fields", ["img"]):
             img = results[key]
             if not PIL.Image.isImageType(img):
                 img = PIL.Image.fromarray(results[key])
-            ops = random.choices(self.augment_pool, k=self.num_ops)
-            for op, max_value, bias in ops:
+            augs = random.choices(self.augment_pool, k=self.num_aug)
+            for aug, max_value, bias in augs:
                 value = np.random.randint(1, self.magnitude)
                 if random.random() < 0.5:
-                    img, value = op(img, value=value, max_value=max_value, bias=bias)
-                    results["rand_mc_{}".format(op.__name__)] = value
-            img, xy, color = cutout_abs(img, self.cutout)
-            results["CutoutAbs"] = (xy, self.cutout, color)
+                    img, value = aug(img, value=value, max_value=max_value, bias=bias)
+                    results[f"rand_mc_{aug.__name__}"] = value
+            img, xy, rec_color = cutout_abs(img, self.cutout_value)
+            results["CutoutAbs"] = (xy, self.cutout_value, rec_color)
             results[key] = np.array(img)
         return results

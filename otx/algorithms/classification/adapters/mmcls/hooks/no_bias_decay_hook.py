@@ -13,14 +13,14 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class NoBiasDecayHook(Hook):
-    """
-    Hook for No Bias Decay Method (Bag of Tricks for Image Classification)
+    """Hook for No Bias Decay Method (Bag of Tricks for Image Classification).
 
     This hook divides model's weight & bias to 3 parameter groups
-    [weight with decay, weight without decay, bias without decay]
+    [weight with decay, weight without decay, bias without decay].
     """
 
     def before_train_epoch(self, runner):
+        """Split weights into decay/no-decay groups."""
         weight_decay, bias_no_decay, weight_no_decay = [], [], []
         for module in runner.model.modules():
             if isinstance(module, (nn.Conv2d, nn.Linear)):
@@ -52,6 +52,7 @@ class NoBiasDecayHook(Hook):
         runner.optimizer.param_groups = param_groups
 
     def after_train_epoch(self, runner):
+        """Merge splited groups before saving checkpoint."""
         params = []
         for module in runner.model.modules():
             if isinstance(module, (nn.Conv2d, nn.Linear)):

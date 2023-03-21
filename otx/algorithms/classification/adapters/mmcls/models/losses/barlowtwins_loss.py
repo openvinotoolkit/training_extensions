@@ -1,3 +1,4 @@
+"""Module for defining BarlowTwinsLoss for supcon in classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -7,17 +8,15 @@ from torch import Tensor, nn
 
 
 def off_diagonal(x: Tensor):
-    """
-    return a tensor containing all the elements outside the diagonal of x
-    """
+    """Return a tensor containing all the elements outside the diagonal of x."""
     assert x.shape[0] == x.shape[1]
     return x.flatten()[:-1].view(x.shape[0] - 1, x.shape[0] + 1)[:, 1:].flatten()
 
 
 @LOSSES.register_module()
 class BarlowTwinsLoss(nn.Module):
-    """
-    Barlow Twins Loss: https://arxiv.org/abs/2103.03230.
+    """Barlow Twins Loss: https://arxiv.org/abs/2103.03230.
+
     Self-Supervised Learning via Redundancy Reduction
     Code adapted from https://github.com/facebookresearch/barlowtwins.
     """
@@ -28,12 +27,12 @@ class BarlowTwinsLoss(nn.Module):
         self.loss_weight = loss_weight
 
     def forward(self, feats1: Tensor, feats2: Tensor):
-        """
-        Compute Barlow Twins Loss and, if labels are not none,
-        also the Cross-Entropy loss.
+        """Compute Barlow Twins Loss and, if labels are not none, also the Cross-Entropy loss.
+
         Args:
-            feats1, feats2: vectors of shape [bsz, ...]. Corresponding to
-                            two views of the same samples
+            feats1 (torch.Tensor): vectors of shape [bsz, ...]. Corresponding to one of two views of the same samples.
+            feats2 (torch.Tensor): vectors of shape [bsz, ...]. Corresponding to one of two views of the same samples.
+
         Returns:
             A floating point number describing the Barlow Twins loss
         """

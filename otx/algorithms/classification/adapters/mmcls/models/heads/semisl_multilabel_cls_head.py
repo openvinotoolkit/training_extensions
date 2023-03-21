@@ -1,3 +1,4 @@
+"""Module for defining semi-supervised classification head for multi-label classification task."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -26,7 +27,7 @@ class SemiMultilabelClsHead:
         unlabeled_coef=0.1,
         use_dynamic_loss_weighting=True,
         aux_loss=dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0),
-    ):
+    ):  # pylint: disable=dangerous-default-value
         self.unlabeled_coef = unlabeled_coef
         self.use_dynamic_loss_weighting = use_dynamic_loss_weighting
         self.aux_loss = build_loss(aux_loss)
@@ -37,7 +38,7 @@ class SemiMultilabelClsHead:
         self.num_pseudo_label = 0
 
     def loss(self, logits, gt_label, features):
-        """loss function in which unlabeled data is considered
+        """Loss function in which unlabeled data is considered.
 
         Args:
             logit (Tensor): Labeled data logits
@@ -69,7 +70,7 @@ class SemiMultilabelClsHead:
         return losses
 
     def forward_train_with_last_layers(self, x, gt_label, final_cls_layer, final_emb_layer):
-        """Forwards multilabel semi-sl head and losses
+        """Forwards multilabel semi-sl head and losses.
 
         Args:
             x (dict): dict(labeled_weak. labeled_strong, unlabeled_weak, unlabeled_strong) or NxC input features.
@@ -90,7 +91,7 @@ class SemiMultilabelClsHead:
 
 @HEADS.register_module()
 class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearClsHead):
-    """Linear multilabel classification head for Semi-SL
+    """Linear multilabel classification head for Semi-SL.
 
     Args:
         num_classes (int): The number of classes of dataset used for training
@@ -114,7 +115,7 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         unlabeled_coef=0.1,
         aux_loss=dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0),
         use_dynamic_loss_weighting=True,
-    ):
+    ):  # pylint: disable=too-many-arguments, dangerous-default-value
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -126,15 +127,19 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
     def loss(self, logits, gt_label, features):
+        """Calculate loss for given logits/gt_label."""
         return SemiMultilabelClsHead.loss(self, logits, gt_label, features)
 
-    def forward_train(self, x, gt_label):
-        return self.forward_train_with_last_layers(x, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp)
+    def forward_train(self, cls_score, gt_label):
+        """Forward_train fuction of SemiLinearMultilabelClsHead class."""
+        return self.forward_train_with_last_layers(
+            cls_score, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp
+        )
 
 
 @HEADS.register_module()
 class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonLinearClsHead):
-    """Non-linear classification head for Semi-SL
+    """Non-linear classification head for Semi-SL.
 
     Args:
         num_classes (int): The number of classes of dataset used for training
@@ -164,7 +169,7 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         dropout=False,
         unlabeled_coef=0.1,
         use_dynamic_loss_weighting=True,
-    ):
+    ):  # pylint: disable=too-many-arguments, dangerous-default-value
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -186,9 +191,11 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
     def loss(self, logits, gt_label, features):
+        """Calculate loss for given logits/gt_label."""
         return SemiMultilabelClsHead.loss(self, logits, gt_label, features)
 
-    def forward_train(self, x, gt_label):
+    def forward_train(self, cls_score, gt_label):
+        """Forward_train fuction of SemiNonLinearMultilabelClsHead class."""
         return self.forward_train_with_last_layers(
-            x, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp
+            cls_score, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp
         )

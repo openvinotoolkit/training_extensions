@@ -1,7 +1,4 @@
-"""
-This module contains the Sharpness-aware Minimization optimizer hook implementation
-for MMCV Runners.
-"""
+"""This module contains the Sharpness-aware Minimization optimizer hook implementation for MMCV Runners."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,7 +9,7 @@ from mmcv.runner import HOOKS, OptimizerHook
 
 @HOOKS.register_module()
 class SAMOptimizerHook(OptimizerHook):
-    """Sharpness-aware Minimization optimizer hook
+    """Sharpness-aware Minimization optimizer hook.
 
     Implemented as OptimizerHook for MMCV Runners
     - Paper ref: https://arxiv.org/abs/2010.01412
@@ -27,7 +24,8 @@ class SAMOptimizerHook(OptimizerHook):
             raise ValueError("rho should be greater than 0 for SAM optimizer")
 
     def after_train_iter(self, runner):
-        """Perform SAM optimization
+        """Perform SAM optimization.
+
         0. compute current loss (DONE IN model.train_step())
         1. compute current gradient
         2. move param to the approximate local maximum: w + e(w) = w + rho*norm_grad
@@ -77,7 +75,7 @@ class SAMOptimizerHook(OptimizerHook):
         # Shaprpness-aware param update
         runner.optimizer.step()  # param -= lr * sam_grad
         runner.log_buffer.update({"sharpness": float(max_loss - curr_loss), "max_loss": float(max_loss)})
-        return
+        return None
 
     def _get_current_batch(self, model):
         if hasattr(model, "module"):

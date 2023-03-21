@@ -15,6 +15,7 @@ from .custom_multi_label_linear_cls_head import AnglularLinear
 @HEADS.register_module()
 class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
     """Non-linear classification head for multilabel task.
+
     Args:
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
@@ -25,6 +26,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         normalized (bool): Normalize input features and weights in the last linar layer.
     """
 
+    # pylint: disable=too-many-arguments, dangerous-default-value
     def __init__(
         self,
         num_classes,
@@ -37,7 +39,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         normalized=False,
     ):
 
-        super(CustomMultiLabelNonLinearClsHead, self).__init__(loss=loss)
+        super().__init__(loss=loss)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -67,6 +69,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         self.classifier = nn.Sequential(*modules)
 
     def init_weights(self):
+        """Iniitalize weights of model."""
         for module in self.classifier:
             if isinstance(module, nn.Linear):
                 normal_init(module, mean=0, std=0.01, bias=0)
@@ -74,6 +77,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
                 constant_init(module, 1)
 
     def loss(self, cls_score, gt_label, valid_label_mask=None):
+        """Calculate loss for given cls_score/gt_label."""
         gt_label = gt_label.type_as(cls_score)
         num_samples = len(cls_score)
         losses = dict()
@@ -90,10 +94,11 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         losses["loss"] = loss / self.scale
         return losses
 
-    def forward_train(self, x, gt_label, **kwargs):
+    def forward_train(self, cls_score, gt_label, **kwargs):
+        """Forward_train fuction of CustomMultiLabelNonLinearClsHead."""
         img_metas = kwargs.get("img_metas", False)
-        gt_label = gt_label.type_as(x)
-        cls_score = self.classifier(x) * self.scale
+        gt_label = gt_label.type_as(cls_score)
+        cls_score = self.classifier(cls_score) * self.scale
 
         valid_batch_mask = gt_label >= 0
         gt_label = gt_label[
@@ -104,7 +109,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         ].view(cls_score.shape[0], -1)
         if img_metas:
             valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)
-            valid_label_mask = valid_label_mask.to(x.device)
+            valid_label_mask = valid_label_mask.to(cls_score.device)
             valid_label_mask = valid_label_mask[
                 valid_batch_mask,
             ].view(valid_label_mask.shape[0], -1)
@@ -125,8 +130,9 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         return pred
 
     def get_valid_label_mask(self, img_metas):
+        """Get valid label with ignored_label mask."""
         valid_label_mask = []
-        for i, meta in enumerate(img_metas):
+        for meta in img_metas:
             mask = torch.Tensor([1 for _ in range(self.num_classes)])
             if "ignored_labels" in meta and meta["ignored_labels"]:
                 mask[meta["ignored_labels"]] = 0

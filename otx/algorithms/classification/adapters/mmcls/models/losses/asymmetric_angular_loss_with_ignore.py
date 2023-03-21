@@ -1,3 +1,4 @@
+"""Module for defining AsymmetricAngularLossWithIgnore."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -19,8 +20,9 @@ def asymmetric_angular_loss_with_ignore(
     k=0.8,
     reduction="mean",
     avg_factor=None,
-):
-    """asymmetric angular loss
+):  # pylint: disable=too-many-arguments, too-many-locals
+    """Asymmetric angular loss.
+
     Args:
         pred (torch.Tensor): The prediction with shape (N, *).
         target (torch.Tensor): The ground truth label of the prediction with
@@ -37,6 +39,7 @@ def asymmetric_angular_loss_with_ignore(
              is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
+
     Returns:
         torch.Tensor: Loss.
     """
@@ -81,7 +84,8 @@ def asymmetric_angular_loss_with_ignore(
 
 @LOSSES.register_module()
 class AsymmetricAngularLossWithIgnore(nn.Module):
-    """Asymmetric angular loss
+    """Asymmetric angular loss.
+
     Args:
         gamma_pos (float): positive focusing parameter.
             Defaults to 0.0.
@@ -95,6 +99,7 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
     """
 
     def __init__(self, gamma_pos=0.0, gamma_neg=1.0, k=0.8, clip=0.05, reduction="mean", loss_weight=1.0):
+        """Init fuction of AsymmetricAngularLossWithIgnore class."""
         super().__init__()
         self.gamma_pos = gamma_pos
         self.gamma_neg = gamma_neg
@@ -104,7 +109,7 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         self.loss_weight = loss_weight
 
     def forward(self, pred, target, valid_label_mask=None, weight=None, avg_factor=None, reduction_override=None):
-        """asymmetric angular loss"""
+        """Asymmetric angular loss."""
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * asymmetric_angular_loss_with_ignore(

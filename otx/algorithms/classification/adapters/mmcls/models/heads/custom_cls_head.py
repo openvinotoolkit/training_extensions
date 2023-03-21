@@ -1,3 +1,4 @@
+"""Module defining for OTX Custom Non-linear classification head."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -19,6 +20,7 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
     def loss(self, cls_score, gt_label, feature=None):
+        """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
@@ -34,9 +36,10 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         losses["loss"] = loss
         return losses
 
-    def forward_train(self, x, gt_label):
-        cls_score = self.classifier(x)
-        losses = self.loss(cls_score, gt_label, feature=x)
+    def forward_train(self, cls_score, gt_label):
+        """Forward_train fuction of CustomNonLinearHead class."""
+        logit = self.classifier(cls_score)
+        losses = self.loss(logit, gt_label, feature=cls_score)
         return losses
 
 
@@ -53,12 +56,13 @@ class CustomLinearClsHead(LinearClsHead):
     """
 
     def __init__(
-        self, num_classes, in_channels, init_cfg=dict(type="Normal", layer="Linear", std=0.01), *args, **kwargs
-    ):
+        self, num_classes, in_channels, init_cfg=dict(type="Normal", layer="Linear", std=0.01), **kwargs
+    ):  # pylint: disable=dangerous-default-value
+        super().__init__(num_classes, in_channels, init_cfg=init_cfg, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
-        super(CustomLinearClsHead, self).__init__(num_classes, in_channels, init_cfg=init_cfg, *args, **kwargs)
 
     def loss(self, cls_score, gt_label, feature=None):
+        """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
@@ -86,6 +90,7 @@ class CustomLinearClsHead(LinearClsHead):
         return self.post_process(pred)
 
     def forward_train(self, x, gt_label):
+        """Forward_train fuction of CustomLinearHead class."""
         cls_score = self.fc(x)
         losses = self.loss(cls_score, gt_label, feature=x)
         return losses

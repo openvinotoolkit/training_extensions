@@ -1,3 +1,4 @@
+"""Module for defining IB Loss which alleviate effect of imbalanced dataset."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,9 +12,10 @@ from mmcls.models.losses import CrossEntropyLoss
 
 @LOSSES.register_module()
 class IBLoss(CrossEntropyLoss):
+    """IB Loss, Influence-Balanced Loss for Imbalanced Visual Classification, https://arxiv.org/abs/2110.02444."""
+
     def __init__(self, num_classes, start=5, alpha=1000.0):
-        """IB Loss
-        https://arxiv.org/abs/2110.02444
+        """Init fuction of IBLoss.
 
         Args:
             num_classes (int): Number of classes in dataset
@@ -32,6 +34,7 @@ class IBLoss(CrossEntropyLoss):
 
     @property
     def cur_epoch(self):
+        """Return current epoch."""
         return self._cur_epoch
 
     @cur_epoch.setter
@@ -39,6 +42,7 @@ class IBLoss(CrossEntropyLoss):
         self._cur_epoch = epoch
 
     def update_weight(self, cls_num_list):
+        """Update loss weight per class."""
         if len(cls_num_list) == 0:
             raise ValueError("Cannot compute the IB loss weight with empty cls_num_list.")
         per_cls_weights = 1.0 / np.array(cls_num_list)
@@ -47,6 +51,7 @@ class IBLoss(CrossEntropyLoss):
         self.weight = per_cls_weights
 
     def forward(self, x, target, feature):
+        """Forward fuction of IBLoss."""
         if self._cur_epoch < self._start_epoch:
             return super().forward(x, target)
         grads = torch.sum(torch.abs(F.softmax(x, dim=1) - F.one_hot(target, self.num_classes)), 1)

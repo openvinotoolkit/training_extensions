@@ -1,3 +1,4 @@
+"""Module for defining cross entropy loss for classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,6 +10,7 @@ from torch import nn
 
 
 def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, class_weight=None, ignore_index=None):
+    """Calculate cross entropy for given pred, label pairs."""
     # element-wise losses
     if ignore_index is not None:
         loss = F.cross_entropy(pred, label, reduction="none", weight=class_weight, ignore_index=ignore_index)
@@ -25,6 +27,8 @@ def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, c
 
 @LOSSES.register_module()
 class CrossEntropyLossWithIgnore(nn.Module):
+    """Defining CrossEntropyLossWothIgnore which supports ignored_label masking."""
+
     def __init__(self, reduction="mean", loss_weight=1.0, ignore_index=None):
         super().__init__()
         self.reduction = reduction
@@ -34,6 +38,7 @@ class CrossEntropyLossWithIgnore(nn.Module):
         self.cls_criterion = cross_entropy
 
     def forward(self, cls_score, label, weight=None, avg_factor=None, reduction_override=None, **kwargs):
+        """Forward function of CrossEntropyLossWithIgnore class."""
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * self.cls_criterion(

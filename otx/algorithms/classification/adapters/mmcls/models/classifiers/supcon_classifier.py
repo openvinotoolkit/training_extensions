@@ -18,7 +18,7 @@ class SupConClassifier(ImageClassifier):
         super().__init__(backbone, neck=neck, head=head, pretrained=pretrained, **kwargs)
 
     def forward_train(self, img, gt_label, **kwargs):
-        # concatenate the different image views along the batch size
+        """Concatenate the different image views along the batch size."""
         if len(img.shape) == 5:
             img = torch.cat([img[:, d, :, :, :] for d in range(img.shape[1])], dim=0)
         x = self.extract_feat(img)

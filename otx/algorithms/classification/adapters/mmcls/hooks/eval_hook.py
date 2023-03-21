@@ -1,3 +1,4 @@
+"""Module for definig CustomEvalHook for classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,7 +13,7 @@ from torch.utils.data import DataLoader
 
 @HOOKS.register_module()
 class CustomEvalHook(EvalHook):
-    """Custom Evaluation hook for the MPA
+    """Custom Evaluation hook for the MPA.
 
     Args:
         dataloader (DataLoader): A PyTorch dataloader.
@@ -43,7 +44,7 @@ class CustomEvalHook(EvalHook):
         self.save_mode = self.eval_kwargs.get("save_mode", "score")
 
     def _do_evaluate(self, runner, ema=False):
-        """perform evaluation"""
+        """Perform evaluation."""
         results = single_gpu_test(runner.model, self.dataloader)
         if ema and hasattr(runner, "ema_model") and (runner.epoch >= self.ema_eval_start_epoch):
             results_ema = single_gpu_test(runner.ema_model.module, self.dataloader)
@@ -52,17 +53,20 @@ class CustomEvalHook(EvalHook):
             self.evaluate(runner, results)
 
     def after_train_epoch(self, runner):
+        """Check whether current epoch is to be evaluated or not."""
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
         self._do_evaluate(runner, ema=True)
 
     def after_train_iter(self, runner):
+        """Check whether current iteration is to be evaluated or not."""
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
         runner.log_buffer.clear()
         self._do_evaluate(runner)
 
     def evaluate(self, runner, results, results_ema=None):
+        """Evaluate predictions from model with ground truth."""
         eval_res = self.dataloader.dataset.evaluate(results, logger=runner.logger, **self.eval_kwargs)
         score = eval_res[self.metric]
         for name, val in eval_res.items():
@@ -83,6 +87,7 @@ class CustomEvalHook(EvalHook):
 
 
 def single_gpu_test(model, data_loader):
+    """Single gpu test for inference."""
     model.eval()
     results = []
     dataset = data_loader.dataset
@@ -101,6 +106,8 @@ def single_gpu_test(model, data_loader):
 
 @HOOKS.register_module()
 class DistCustomEvalHook(CustomEvalHook):
+    """Distributed Custom Evaluation Hook for Multi-GPU environment."""
+
     def __init__(self, dataloader, interval=1, gpu_collect=False, by_epoch=True, **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
             raise TypeError("dataloader must be a pytorch DataLoader, but got " f"{type(dataloader)}")
@@ -108,7 +115,7 @@ class DistCustomEvalHook(CustomEvalHook):
         super().__init__(dataloader, interval, by_epoch=by_epoch, **eval_kwargs)
 
     def _do_evaluate(self, runner):
-        """perform evaluation"""
+        """Perform evaluation."""
         from mmcls.apis import multi_gpu_test
 
         results = multi_gpu_test(
@@ -119,11 +126,13 @@ class DistCustomEvalHook(CustomEvalHook):
             self.evaluate(runner, results)
 
     def after_train_epoch(self, runner):
+        """Check whether current epoch is to be evaluated or not."""
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
         self._do_evaluate(runner)
 
     def after_train_iter(self, runner):
+        """Check whether current iteration is to be evaluated or not."""
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
         runner.log_buffer.clear()

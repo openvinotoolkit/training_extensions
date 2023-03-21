@@ -1,6 +1,8 @@
+"""Module for defining AugMix class used for classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+# pylint: disable=too-many-instance-attributes, too-many-locals, too-many-arguments, unused-argument, invalid-name
 
 import random
 import re
@@ -39,13 +41,15 @@ _AUGMIX_TRANSFORMS = [
 
 
 class OpsFabric:
+    """OpsFabric class."""
+
     def __init__(self, name, magnitude, hparams, prob=1.0):
         self.max_level = 10
         self.prob = prob
         self.hparams = hparams
         # kwargs for augment functions
         self.aug_kwargs = dict(fillcolor=hparams["img_mean"], resample=(Image.BILINEAR, Image.BICUBIC))
-        self.LEVEL_TO_ARG = {
+        self.level_to_arg = {
             "AutoContrast": None,
             "Equalize": None,
             "Rotate": self._rotate_level_to_arg,
@@ -60,7 +64,7 @@ class OpsFabric:
             "TranslateXRel": self._translate_rel_level_to_arg,
             "TranslateYRel": self._translate_rel_level_to_arg,
         }
-        self.NAME_TO_OP = {
+        self.name_to_op = {
             "AutoContrast": CythonAugments.autocontrast,
             "Equalize": CythonAugments.equalize,
             "Rotate": CythonAugments.rotate,
@@ -75,14 +79,14 @@ class OpsFabric:
             "TranslateXRel": CythonAugments.translate_x_rel,
             "TranslateYRel": CythonAugments.translate_y_rel,
         }
-        self.aug_fn = self.NAME_TO_OP[name]
-        self.level_fn = self.LEVEL_TO_ARG[name]
+        self.aug_fn = self.name_to_op[name]
+        self.level_fn = self.level_to_arg[name]
         self.magnitude = magnitude
         self.magnitude_std = self.hparams.get("magnitude_std", float("inf"))
 
     @staticmethod
     def randomly_negate(v):
-        """With 50% prob, negate the value"""
+        """With 50% prob, negate the value."""
         return -v if random.random() > 0.5 else v
 
     def _rotate_level_to_arg(self, level, _hparams):
@@ -131,6 +135,7 @@ class OpsFabric:
         return (256 - self._solarize_level_to_arg(level, _hparams)[0],)
 
     def __call__(self, img):
+        """Call method of OpsFabric class."""
         if self.prob < 1.0 and random.random() > self.prob:
             return img
         magnitude = self.magnitude
@@ -145,14 +150,15 @@ class OpsFabric:
 
 
 @PIPELINES.register_module()
-class AugMixAugment(object):
-    """AugMix Transform
+class AugMixAugment:
+    """AugMix Transform.
+
     Adapted and improved from impl here: https://github.com/google-research/augmix/blob/master/imagenet.py
     From paper: 'AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty -
-    https://arxiv.org/abs/1912.02781
+    https://arxiv.org/abs/1912.02781.
     """
 
-    def __init__(self, config_str, image_mean=None, grey=False, **kwargs):
+    def __init__(self, config_str, image_mean=None, grey=False):
         self.ops, self.alpha, self.width, self.depth = self._augmix_ops(config_str, image_mean, grey=grey)
 
     def _apply_basic(self, img, mixing_weights, m):
@@ -180,17 +186,17 @@ class AugMixAugment(object):
         p = 1.0
         hparams = dict(
             translate_const=translate_const,
-            img_mean=tuple([int(c * 256) for c in image_mean]),
+            img_mean=tuple(int(c * 256) for c in image_mean),
             magnitude_std=float("inf"),
         )
         config = config_str.split("-")
         assert config[0] == "augmix"
         config = config[1:]
-        for c in config:
-            cs = re.split(r"(\d.*)", c)
-            if len(cs) < 2:
+        for cfg in config:
+            cfgs = re.split(r"(\d.*)", cfg)
+            if len(cfgs) < 2:
                 continue
-            key, val = cs[:2]
+            key, val = cfgs[:2]
             if key == "mstd":
                 hparams.setdefault("magnitude_std", float(val))
             elif key == "m":
@@ -214,6 +220,7 @@ class AugMixAugment(object):
         )
 
     def __call__(self, results):
+        """Call function applies augmix on image."""
         for key in results.get("img_fields", ["img"]):
             img = results[key]
             if not Image.isImageType(img):

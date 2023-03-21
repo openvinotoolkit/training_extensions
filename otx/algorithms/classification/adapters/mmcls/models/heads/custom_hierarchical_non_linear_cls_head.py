@@ -1,4 +1,4 @@
-""""Non-linear classification head for hierarhical classification task."""
+"""Non-linear classification head for hierarhical classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,8 +11,9 @@ from torch import nn
 
 
 @HEADS.register_module()
-class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
+class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):  # pylint: disable=too-many-instance-attributes
     """Custom NonLinear classification head for hierarchical classification task.
+
     Args:
         num_classes (int): Number of categories excluding the background
             category.
@@ -33,10 +34,10 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
         multilabel_loss=dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0),
         dropout=False,
         **kwargs,
-    ):
+    ):  # pylint: disable=too-many-arguments, dangerous-default-value
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
         assert self.hierarchical_info
-        super(CustomHierarchicalNonLinearClsHead, self).__init__(loss=loss)
+        super().__init__(loss=loss)
         if self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"] == 0:
             raise ValueError("Invalid classification heads configuration")
         self.compute_multilabel_loss = False
@@ -71,6 +72,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
             )
 
     def init_weights(self):
+        """Iniitialize weights of classification head."""
         for module in self.classifier:
             if isinstance(module, nn.Linear):
                 normal_init(module, mean=0, std=0.01, bias=0)
@@ -78,6 +80,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
                 constant_init(module, 1)
 
     def loss(self, cls_score, gt_label, multilabel=False, valid_label_mask=None):
+        """Calculate loss for given cls_score and gt_label."""
         num_samples = len(cls_score)
         # compute loss
         if multilabel:
@@ -94,6 +97,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
         return loss
 
     def forward_train(self, cls_score, gt_label, **kwargs):
+        """Forward_train fuction of CustomHierarchicalNonLinearClsHead class."""
         img_metas = kwargs.get("img_metas", None)
         gt_label = gt_label.type_as(cls_score)
         cls_score = self.classifier(cls_score)
@@ -178,6 +182,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
         return pred
 
     def get_valid_label_mask(self, img_metas):
+        """Get valid label mask with ignored_label."""
         valid_label_mask = []
         for meta in img_metas:
             mask = torch.Tensor([1 for _ in range(self.num_classes)])

@@ -1,3 +1,4 @@
+"""Module for defining AsymmetricLossWithIgnore."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,10 +19,9 @@ def asymmetric_loss_with_ignore(
     clip=0.05,
     reduction="none",
     avg_factor=None,
-):
-    """asymmetric loss
-    Please refer to the `paper <https://arxiv.org/abs/2009.14119>`_ for
-    details.
+):  # pylint: disable=too-many-arguments
+    """Asymmetric loss, please refer to the `paper <https://arxiv.org/abs/2009.14119>`_ for details.
+
     Args:
         pred (torch.Tensor): The prediction with shape (N, *).
         target (torch.Tensor): The ground truth label of the prediction with
@@ -37,6 +37,7 @@ def asymmetric_loss_with_ignore(
              is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
+
     Returns:
         torch.Tensor: Loss.
     """
@@ -69,7 +70,8 @@ def asymmetric_loss_with_ignore(
 
 @LOSSES.register_module()
 class AsymmetricLossWithIgnore(nn.Module):
-    """asymmetric loss
+    """Asymmetric loss.
+
     Args:
         gamma_pos (float): positive focusing parameter.
             Defaults to 0.0.
@@ -82,7 +84,7 @@ class AsymmetricLossWithIgnore(nn.Module):
     """
 
     def __init__(self, gamma_pos=0.0, gamma_neg=4.0, clip=0.05, reduction="none", loss_weight=1.0):
-        super(AsymmetricLossWithIgnore, self).__init__()
+        super().__init__()
         self.gamma_pos = gamma_pos
         self.gamma_neg = gamma_neg
         self.clip = clip
@@ -90,7 +92,7 @@ class AsymmetricLossWithIgnore(nn.Module):
         self.loss_weight = loss_weight
 
     def forward(self, pred, target, valid_label_mask=None, weight=None, avg_factor=None, reduction_override=None):
-        """asymmetric loss"""
+        """Forward fuction of asymmetric loss."""
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * asymmetric_loss_with_ignore(

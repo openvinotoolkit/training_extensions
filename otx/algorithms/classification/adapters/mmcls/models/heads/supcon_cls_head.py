@@ -1,3 +1,4 @@
+"""Module for defining classification head for supcon."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -10,8 +11,8 @@ from torch import nn
 
 @HEADS.register_module()
 class SupConClsHead(BaseHead):
-    """
-    Supervised Contrastive Learning head for Classification using SelfSL
+    """Supervised Contrastive Learning head for Classification using SelfSL.
+
     Args:
         num_classes (int): The number of classes of dataset used for training
         in_channels (int): The channels of input data from the backbone
@@ -21,7 +22,9 @@ class SupConClsHead(BaseHead):
         topk (set): evaluation topk score, default is (1, )
     """
 
-    def __init__(self, num_classes: int, in_channels: int, aux_mlp, loss, aux_loss, topk=(1,), init_cfg=None):
+    def __init__(
+        self, num_classes: int, in_channels: int, aux_mlp, loss, aux_loss, topk=(1,), init_cfg=None
+    ):  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -57,10 +60,11 @@ class SupConClsHead(BaseHead):
             self.aux_mlp = nn.Linear(in_features=in_channels, out_features=out_channels)
 
     def forward_train(self, x, gt_label):
-        """
-        Forward train head using the Supervised Contrastive Loss
+        """Forward train head using the Supervised Contrastive Loss.
+
         Args:
             x (Tensor): features from the backbone.
+
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
@@ -80,11 +84,8 @@ class SupConClsHead(BaseHead):
         return losses
 
     def simple_test(self, img):
-        """
-        Test without data augmentation.
-        """
+        """Test without data augmentation."""
         cls_score = self.fc(img)
-
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None

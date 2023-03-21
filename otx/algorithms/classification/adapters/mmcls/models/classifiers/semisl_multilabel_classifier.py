@@ -1,4 +1,4 @@
-""" Module for defining a semi-supervised multi-label classifier using mmcls."""
+"""Module for defining a semi-supervised multi-label classifier using mmcls."""
 # Copyright (C) 2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -14,12 +14,10 @@ logger = get_logger()
 
 @CLASSIFIERS.register_module()
 class SemiSLMultilabelClassifier(SAMImageClassifier):
-    """Semi-SL Multilabel Classifier
-    This classifier supports unlabeled data by overriding forward_train
-    """
+    """Semi-SL Multilabel Classifier which supports unlabeled data by overriding forward_train."""
 
     def forward_train(self, img, gt_label, **kwargs):
-        """Data is transmitted as a classifier training function
+        """Data is transmitted as a classifier training function.
 
         Args:
             img (list[Tensor]): List of tensors of shape (1, C, H, W)

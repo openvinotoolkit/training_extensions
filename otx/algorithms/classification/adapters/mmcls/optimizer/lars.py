@@ -1,6 +1,8 @@
+"""Module for defining LARS optimizer for classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+# pylint: disable=too-many-arguments, too-many-locals, too-many-branches
 
 import torch
 from mmcv.runner import OPTIMIZERS
@@ -95,6 +97,7 @@ class LARS(Optimizer):
         super().__init__(new_param_groups, defaults)
 
     def __setstate__(self, state):
+        """Set state for parameter groups."""
         super().__setstate__(state)
         for group in self.param_groups:
             group.setdefault("nesterov", False)

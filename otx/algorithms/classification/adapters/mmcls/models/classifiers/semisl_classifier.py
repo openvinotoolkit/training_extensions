@@ -15,12 +15,13 @@ logger = get_logger()
 
 @CLASSIFIERS.register_module()
 class SemiSLClassifier(SAMImageClassifier):
-    """Semi-SL Classifier
+    """Semi-SL Classifier.
+
     This classifier supports unlabeled data by overriding forward_train
     """
 
     def forward_train(self, imgs, **kwargs):
-        """Data is transmitted as a classifier training function
+        """Data is transmitted as a classifier training function.
 
         Args:
             imgs (list[Tensor]): List of tensors of shape (1, C, H, W)

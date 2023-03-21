@@ -16,8 +16,7 @@ from otx.mpa.modules.ov.models.mmov_model import MMOVModel
 
 @HEADS.register_module()
 class MMOVClsHead(ClsHead):
-    """
-    Head module for MMClassification that uses MMOV for inference.
+    """Head module for MMClassification that uses MMOV for inference.
 
     Args:
         model_path_or_model (Union[str, ov.Model]): Path to the ONNX model file or
@@ -43,7 +42,7 @@ class MMOVClsHead(ClsHead):
         verify_shape: bool = True,
         softmax_at_test: bool = True,
         **kwargs,
-    ):
+    ):  # pylint: disable=too-many-arguments
         kwargs.pop("in_channels", None)
         kwargs.pop("num_classes", None)
         super().__init__(**kwargs)
@@ -68,6 +67,7 @@ class MMOVClsHead(ClsHead):
         )
 
     def forward_train(self, cls_score, gt_label, **kwargs):
+        """Forward_train fuction of MMOVClsHead."""
         cls_score = self.model(cls_score)
         while cls_score.dim() > 2:
             cls_score = cls_score.squeeze(2)
@@ -75,6 +75,7 @@ class MMOVClsHead(ClsHead):
         return losses
 
     def simple_test(self, cls_score):
+        """Test without augmentation."""
         cls_score = self.model(cls_score)
         while cls_score.dim() > 2:
             cls_score = cls_score.squeeze(2)

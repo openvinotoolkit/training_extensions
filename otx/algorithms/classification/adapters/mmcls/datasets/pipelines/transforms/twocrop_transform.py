@@ -12,13 +12,14 @@ from mmcv.utils import build_from_cfg
 
 @PIPELINES.register_module()
 class TwoCropTransform:
-    """Generate two different cropped views of an image"""
+    """Generate two different cropped views of an image."""
 
     def __init__(self, pipeline):
         self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline])
         self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline])
 
     def __call__(self, data):
+        """Call method for TwoCropTransform class."""
         data1 = self.pipeline1(deepcopy(data))
         data2 = self.pipeline2(deepcopy(data))
 

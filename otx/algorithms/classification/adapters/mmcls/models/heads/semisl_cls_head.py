@@ -1,6 +1,8 @@
+"""Module for defining semi-supervised learning for multi-class classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+# pylint: disable=too-many-locals, too-many-arguments
 
 import torch
 from mmcls.models.builder import HEADS
@@ -32,7 +34,7 @@ class SemiClsHead:
             self.classwise_acc = self.classwise_acc.cuda()
 
     def loss(self, logits, gt_label, pseudo_label=None, mask=None):
-        """loss function in which unlabeled data is considered
+        """Loss function in which unlabeled data is considered.
 
         Args:
             logit (set): (labeled data logit, unlabeled data logit)
@@ -63,7 +65,7 @@ class SemiClsHead:
         return losses
 
     def forward_train(self, x, gt_label, final_layer=None):
-        """forward_train head using pseudo-label selected through threshold
+        """Forward_train head using pseudo-label selected through threshold.
 
         Args:
             x (dict or Tensor): dict(labeled, unlabeled_weak, unlabeled_strong) or NxC input features.
@@ -121,7 +123,7 @@ class SemiClsHead:
 
 @HEADS.register_module()
 class SemiLinearClsHead(SemiClsHead, LinearClsHead):
-    """Linear classification head for Semi-SL
+    """Linear classification head for Semi-SL.
 
     This head is designed to support FixMatch algorithm. (https://arxiv.org/abs/2001.07685)
         - [OTX] supports dynamic threshold based on confidence for each class
@@ -145,7 +147,7 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         unlabeled_coef=1.0,
         use_dynamic_threshold=True,
         min_threshold=0.5,
-    ):
+    ):  # pylint: disable=dangerous-default-value
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -156,12 +158,13 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
     def forward_train(self, x, gt_label):
+        """Forward_train fuction of SemiLinearClsHead class."""
         return SemiClsHead.forward_train(self, x, gt_label, final_layer=self.fc)
 
 
 @HEADS.register_module()
 class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
-    """Non-linear classification head for Semi-SL
+    """Non-linear classification head for Semi-SL.
 
     This head is designed to support FixMatch algorithm. (https://arxiv.org/abs/2001.07685)
         - [OTX] supports dynamic threshold based on confidence for each class
@@ -190,7 +193,7 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         unlabeled_coef=1.0,
         use_dynamic_threshold=True,
         min_threshold=0.5,
-    ):
+    ):  # pylint: disable=dangerous-default-value
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -210,4 +213,5 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
     def forward_train(self, x, gt_label):
+        """Forward_train fuction of SemiNonLinearClsHead class."""
         return SemiClsHead.forward_train(self, x, gt_label, final_layer=self.classifier)
