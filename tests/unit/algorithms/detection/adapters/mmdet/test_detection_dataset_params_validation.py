@@ -5,7 +5,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.detection.adapters.mmdet.data.dataset import (
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
     OTXDetDataset,
     get_annotation_mmdet_format,
 )

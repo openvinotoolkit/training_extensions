@@ -296,7 +296,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         export_type: ExportType,
         output_model: ModelEntity,
         precision: ModelPrecision = ModelPrecision.FP32,
-        dump_features: bool = True,
+        dump_features: bool = False,
     ):
         """Export function of OTX Detection Task."""
         # copied from OTX inference_task.py

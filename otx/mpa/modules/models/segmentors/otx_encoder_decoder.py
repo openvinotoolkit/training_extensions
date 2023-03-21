@@ -50,12 +50,10 @@ if is_mmdeploy_enabled():
         "otx.mpa.modules.models.segmentors.otx_encoder_decoder.OTXEncoderDecoder.simple_test"
     )
     def single_stage_detector__simple_test(ctx, self, img, img_metas, **kwargs):
-        # without output activation
-        #  seg_logit = self.encode_decode(img, img_metas)
-        #  feature_vector = FeatureVectorHook.func(self.feature_maps)
-        #  return seg_logit, feature_vector
-
         # with output activation
         seg_logit = self.inference(img, img_metas, True)
-        feature_vector = FeatureVectorHook.func(self.feature_map)
-        return seg_logit, feature_vector
+        if ctx.cfg["dump_features"]:
+            feature_vector = FeatureVectorHook.func(self.feature_map)
+            return seg_logit, feature_vector
+        else:
+            return seg_logit

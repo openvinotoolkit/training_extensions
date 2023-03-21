@@ -49,7 +49,7 @@ class BaseRecordingForwardHook(ABC):
         return self._records
 
     @abstractmethod
-    def func(x: torch.Tensor, fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: torch.Tensor, fpn_idx: int = -1) -> torch.Tensor:
         """This method get the feature vector or saliency map from the output of the module.
         Args:
             x (torch.Tensor): Feature map from the backbone module

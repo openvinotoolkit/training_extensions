@@ -3,7 +3,7 @@
 _base_ = ["../base/deployments/base_segmentation_dynamic.py"]
 
 ir_config = dict(
-    output_names=["output", "feature_vector"],
+    output_names=["output"],
 )
 
 backend_config = dict(

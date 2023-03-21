@@ -225,7 +225,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         export_type: ExportType,
         output_model: ModelEntity,
         precision: ModelPrecision = ModelPrecision.FP32,
-        dump_features: bool = True,
+        dump_features: bool = False,
     ):
         """Export function of OTX Classification Task."""
 
