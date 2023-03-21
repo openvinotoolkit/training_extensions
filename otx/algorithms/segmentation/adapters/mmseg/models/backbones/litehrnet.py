@@ -42,7 +42,7 @@ from otx.mpa.modules.models.utils import (
 
 
 # pylint: disable=invalid-name, too-many-lines, too-many-instance-attributes, too-many-locals, too-many-arguments
-# pylint: disable=unused-argument, consider-using-enumerate, dangerous-default-value
+# pylint: disable=unused-argument, consider-using-enumerate
 class NeighbourSupport(nn.Module):
     """Neighbour support module."""
 
@@ -326,7 +326,7 @@ class ConditionalChannelWeighting(nn.Module):
         stride,
         reduce_ratio,
         conv_cfg=None,
-        norm_cfg=dict(type="BN"),
+        norm_cfg=None,
         with_cp=False,
         dropout=None,
         weighting_module_version="v1",
@@ -334,6 +334,9 @@ class ConditionalChannelWeighting(nn.Module):
         dw_ksize=3,
     ):
         super().__init__()
+
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
 
         self.with_cp = with_cp
         self.stride = stride
@@ -426,13 +429,16 @@ class Stem(nn.Module):
         out_channels,
         expand_ratio,
         conv_cfg=None,
-        norm_cfg=dict(type="BN"),
+        norm_cfg=None,
         with_cp=False,
         strides=(2, 2),
         extra_stride=False,
         input_norm=False,
     ):
         super().__init__()
+
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
 
         assert isinstance(strides, (tuple, list))
         assert len(strides) == 2
@@ -575,7 +581,7 @@ class StemV2(nn.Module):
         out_channels,
         expand_ratio,
         conv_cfg=None,
-        norm_cfg=dict(type="BN"),
+        norm_cfg=None,
         with_cp=False,
         num_stages=1,
         strides=(2, 2),
@@ -583,6 +589,9 @@ class StemV2(nn.Module):
         input_norm=False,
     ):
         super().__init__()
+
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
 
         assert num_stages > 0
         assert isinstance(strides, (tuple, list))
@@ -745,11 +754,17 @@ class ShuffleUnit(nn.Module):
         out_channels,
         stride=1,
         conv_cfg=None,
-        norm_cfg=dict(type="BN"),
-        act_cfg=dict(type="ReLU"),
+        norm_cfg=None,
+        act_cfg=None,
         with_cp=False,
     ):
         super().__init__()
+
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
+        if act_cfg is None:
+            act_cfg = dict(type="ReLU")
+
         self.stride = stride
         self.with_cp = with_cp
 
@@ -859,13 +874,16 @@ class LiteHRModule(nn.Module):
         multiscale_output=False,
         with_fuse=True,
         conv_cfg=None,
-        norm_cfg=dict(type="BN"),
+        norm_cfg=None,
         with_cp=False,
         dropout=None,
         weighting_module_version="v1",
         neighbour_weighting=False,
     ):
         super().__init__()
+
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
         self._check_branches(num_branches, in_channels)
 
         self.in_channels = in_channels
@@ -1109,7 +1127,7 @@ class LiteHRNet(BaseModule):
         extra,
         in_channels=3,
         conv_cfg=None,
-        norm_cfg=dict(type="BN"),
+        norm_cfg=None,
         norm_eval=False,
         with_cp=False,
         zero_init_residual=False,
@@ -1117,6 +1135,9 @@ class LiteHRNet(BaseModule):
         init_cfg=None,
     ):
         super().__init__(init_cfg=init_cfg)
+
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
 
         self.extra = extra
         self.conv_cfg = conv_cfg
