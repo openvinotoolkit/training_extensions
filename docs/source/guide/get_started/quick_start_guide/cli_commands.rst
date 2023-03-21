@@ -399,7 +399,7 @@ The command below will evaluate the trained model on the provided dataset:
 Explanation
 ***********
 
-``otx explain`` runs the explanation algorithm of a model on the specific dataset. It helps explain the model's decision-making process in a way that is easily understood by humans.
+``otx explain`` runs the explainable AI (XAI) algorithm of a model on the specific dataset. It helps explain the model's decision-making process in a way that is easily understood by humans.
 
 With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
 

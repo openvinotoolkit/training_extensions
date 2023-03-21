@@ -56,6 +56,7 @@ with the following command:
   cd ..
 
 |
+
 .. image:: ../../../../../utils/images/flowers_example.jpg
   :width: 600
 
