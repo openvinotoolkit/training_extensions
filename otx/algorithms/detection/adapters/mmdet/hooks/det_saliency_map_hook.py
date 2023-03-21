@@ -7,6 +7,9 @@ from typing import List, Tuple, Union
 import torch
 import torch.nn.functional as F
 
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+    BaseRecordingForwardHook,
+)
 from otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head import (
     CustomATSSHead,
 )
@@ -19,7 +22,6 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head impo
 from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head import (
     CustomYOLOXHead,
 )
-from otx.mpa.modules.hooks.recording_forward_hooks import BaseRecordingForwardHook
 
 # pylint: disable=too-many-locals
 

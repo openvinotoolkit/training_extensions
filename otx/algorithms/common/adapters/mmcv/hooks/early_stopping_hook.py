@@ -201,10 +201,10 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
         return True
 
 
-@HOOKS.register_module()
+
+@HOOKS.register_module(force=True)
 class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
-    """
-    Reduce learning rate when a metric has stopped improving.
+    """Reduce learning rate when a metric has stopped improving.
 
     Models often benefit from reducing the learning rate by a factor of 2-10 once learning stagnates.
     This scheduler reads a metrics quantity and if no improvement is seen for a ‘patience’
@@ -233,9 +233,21 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
 
     rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
     init_value_map = {"greater": -inf, "less": inf}
-    greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc"]
+    greater_keys = [
+        "acc",
+        "top",
+        "AR@",
+        "auc",
+        "precision",
+        "mAP",
+        "mDice",
+        "mIoU",
+        "mAcc",
+        "aAcc",
+    ]
     less_keys = ["loss"]
 
+    @check_input_parameters_type()
     def __init__(
         self,
         min_lr: float,
@@ -256,7 +268,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.metric = metric
         self.bad_count = 0
         self.last_iter = 0
-        self.current_lr = None
+        self.current_lr = -1.0
+        self.base_lr = []  # type: List
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
 
@@ -295,36 +308,45 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
 
-    def _should_check_stopping(self, runner):
-        check_time = self.every_n_epochs if self.by_epoch else self.every_n_iters
-        if not check_time(runner, self.interval):
-            # No evaluation during the interval.
-            return False
-        return True
+    def _is_check_timing(self, runner: BaseRunner) -> bool:
+        """Check whether current epoch or iter is multiple of self.interval, skip during warmup interations."""
+        check_time = self.after_each_n_epochs if self.by_epoch else self.after_each_n_iters
+        return check_time(runner, self.interval) and (self.warmup_iters <= runner.iter)
 
+    def after_each_n_epochs(self, runner: BaseRunner, interval: int) -> bool:
+        """Check whether current epoch is a next epoch after multiples of interval."""
+        return runner.epoch % interval == 0 if interval > 0 and runner.epoch != 0 else False
+
+    def after_each_n_iters(self, runner: BaseRunner, interval: int) -> bool:
+        """Check whether current iter is a next iter after multiples of interval."""
+        return runner.iter % interval == 0 if interval > 0 and runner.iter != 0 else False
+
+    @check_input_parameters_type()
     def get_lr(self, runner: BaseRunner, base_lr: float):
-        if not self._should_check_stopping(runner) or self.warmup_iters > runner.iter:
-            return self.current_lr if self.current_lr is not None else base_lr
-
-        if self.current_lr is None:
+        """Called get_lr in ReduceLROnPlateauLrUpdaterHook."""
+        if self.current_lr < 0:
             self.current_lr = base_lr
 
-        if hasattr(runner, self.metric):
-            score = getattr(runner, self.metric, 0.0)
+        if not self._is_check_timing(runner):
+            return self.current_lr
+
+        if hasattr(runner, "all_metrics"):
+            score = runner.all_metrics.get(self.metric, 0.0)
         else:
             return self.current_lr
 
-        print_log(
-            f"\nBest Score: {self.best_score}, Current Score: {score}, Patience: {self.patience} "
-            f"Count: {self.bad_count}",
-            logger=runner.logger,
-        )
         if self.compare_func(score, self.best_score):
             self.best_score = score
             self.bad_count = 0
             self.last_iter = runner.iter
         else:
             self.bad_count += 1
+
+        print_log(
+            f"\nBest Score: {self.best_score}, Current Score: {score}, Patience: {self.patience} "
+            f"Count: {self.bad_count}",
+            logger=runner.logger,
+        )
 
         if self.bad_count >= self.patience:
             if runner.iter - self.last_iter < self.iteration_patience:
@@ -345,7 +367,9 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             self.current_lr = max(self.current_lr * self.factor, self.min_lr)
         return self.current_lr
 
+    @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
+        """Called before_run in ReduceLROnPlateauLrUpdaterHook."""
         # TODO: remove overloaded method after fixing the issue
         #  https://github.com/open-mmlab/mmdetection/issues/6572
         for group in runner.optimizer.param_groups:
@@ -353,13 +377,17 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.base_lr = [group["initial_lr"] for group in runner.optimizer.param_groups]
         self.bad_count = 0
         self.last_iter = 0
-        self.current_lr = None
+        self.current_lr = -1.0
         self.best_score = self.init_value_map[self.rule]
 
 
-@HOOKS.register_module()
+@HOOKS.register_module(force=True)
 class StopLossNanTrainingHook(Hook):
+    """StopLossNanTrainingHook."""
+
+    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
+        """Called after_train_iter in StopLossNanTrainingHook."""
         if isnan(runner.outputs["loss"].item()):
             logger.warning("Early Stopping since loss is NaN")
             runner.should_stop = True

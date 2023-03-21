@@ -6,7 +6,7 @@ import otx.mpa.modules.datasets.pipelines.transforms.augmix
 import otx.mpa.modules.datasets.pipelines.transforms.ote_transforms
 import otx.mpa.modules.datasets.pipelines.transforms.random_augment
 import otx.mpa.modules.datasets.pipelines.transforms.twocrop_transform
-import otx.mpa.modules.hooks
+import otx.algorithms.common.adapters.mmcv.hooks
 import otx.mpa.modules.models.classifiers
 import otx.mpa.modules.models.heads.custom_cls_head
 import otx.mpa.modules.models.heads.custom_hierarchical_linear_cls_head

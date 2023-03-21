@@ -270,7 +270,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
 
-    from otx.mpa.modules.hooks.recording_forward_hooks import (
+    from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
         FeatureVectorHook,
         ReciproCAMHook,
     )

@@ -1,9 +1,9 @@
-"""Unit test for otx.mpa.modules.hooks.save_initial_weight_hook."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.save_initial_weight_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.mpa.modules.hooks.save_initial_weight_hook import SaveInitialWeightHook
+from otx.algorithms.common.adapters.mmcv.hooks.save_initial_weight_hook import SaveInitialWeightHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

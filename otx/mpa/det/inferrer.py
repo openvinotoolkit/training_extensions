@@ -12,6 +12,10 @@ from mmdet.datasets import build_dataset as mmdet_build_dataset
 from mmdet.datasets import replace_ImageToTensor
 from mmdet.models.detectors import TwoStageDetector
 
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+    ActivationMapHook,
+    FeatureVectorHook,
+)
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
     build_dataloader,
@@ -20,10 +24,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
     DetSaliencyMapHook,
-)
-from otx.mpa.modules.hooks.recording_forward_hooks import (
-    ActivationMapHook,
-    FeatureVectorHook,
 )
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger

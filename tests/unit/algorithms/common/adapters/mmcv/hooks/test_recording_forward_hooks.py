@@ -1,4 +1,4 @@
-"""Unit test for otx.mpa.modules.hooks.recording_forward_hooks."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import torch
 
-from otx.mpa.modules.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
     ActivationMapHook,
     BaseRecordingForwardHook,
     EigenCamHook,

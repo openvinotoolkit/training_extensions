@@ -1,4 +1,4 @@
-"""Unit test for otx.mpa.modules.hooks.adaptive_training_hooks."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.adaptive_training_hooks."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,8 +8,8 @@ from mmcv.runner.hooks.checkpoint import CheckpointHook
 from mmcv.runner.hooks.evaluation import EvalHook
 from mmcv.utils import Config
 
-from otx.mpa.modules.hooks.adaptive_training_hooks import AdaptiveTrainSchedulingHook
-from otx.mpa.modules.hooks.early_stopping_hook import EarlyStoppingHook
+from otx.algorithms.common.adapters.mmcv.hooks.adaptive_training_hooks import AdaptiveTrainSchedulingHook
+from otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook import EarlyStoppingHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

@@ -12,14 +12,14 @@ from mmcls.datasets import build_dataset as mmcls_build_dataset
 from mmcv import Config, ConfigDict
 
 from otx.algorithms import TRANSFORMER_BACKBONES
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+    FeatureVectorHook,
+    ReciproCAMHook,
+)
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
     build_dataloader,
     build_dataset,
-)
-from otx.mpa.modules.hooks.recording_forward_hooks import (
-    FeatureVectorHook,
-    ReciproCAMHook,
 )
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger

@@ -1,9 +1,9 @@
-"""Unit test for otx.mpa.modules.hooks.workflow_hooks."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.workflow_hooks."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.mpa.modules.hooks.workflow_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.workflow_hooks import (
     AfterStageWFHook,
     SampleLoggingHook,
     WFProfileHook,

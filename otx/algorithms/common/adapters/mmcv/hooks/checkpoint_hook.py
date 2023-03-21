@@ -8,6 +8,8 @@ from typing import Optional
 
 from mmcv.runner.dist_utils import allreduce_params, master_only
 from mmcv.runner.hooks.hook import HOOKS, Hook
+from mmcv.runner import BaseRunner, EpochBasedRunner
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 @HOOKS.register_module()
@@ -136,3 +138,17 @@ class CheckpointHookWithValResults(Hook):
                     allreduce_params(runner.model.buffers())
                 self._save_checkpoint(runner)
             runner.save_ckpt = False
+
+
+@HOOKS.register_module()
+class EnsureCorrectBestCheckpointHook(Hook):
+    """EnsureCorrectBestCheckpointHook.
+
+    This hook makes sure that the 'best_mAP' checkpoint points properly to the best model, even if the best model is
+    created in the last epoch.
+    """
+
+    @check_input_parameters_type()
+    def after_run(self, runner: BaseRunner):
+        """Called after train epoch hooks."""
+        runner.call_hook("after_train_epoch")

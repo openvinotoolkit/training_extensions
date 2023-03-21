@@ -1,11 +1,11 @@
-"""Unit test for otx.mpa.modules.hooks.cancel_interface_hook."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.cancel_interface_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 from mmcv.runner import EpochBasedRunner
 
-from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
+from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

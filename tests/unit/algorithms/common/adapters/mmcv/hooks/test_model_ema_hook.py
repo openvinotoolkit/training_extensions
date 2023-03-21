@@ -1,4 +1,4 @@
-"""Unit test for otx.mpa.modules.hooks.model_ema_hook."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.model_ema_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,7 +9,7 @@ import torch
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks.ema import EMAHook
 
-from otx.mpa.modules.hooks.model_ema_hook import CustomModelEMAHook, DualModelEMAHook
+from otx.algorithms.common.adapters.mmcv.hooks.model_ema_hook import CustomModelEMAHook, DualModelEMAHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

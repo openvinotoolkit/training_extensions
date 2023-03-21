@@ -8,7 +8,7 @@ from mmcv.runner import HOOKS, Hook, LrUpdaterHook
 from mmcv.runner.hooks.checkpoint import CheckpointHook
 from mmcv.runner.hooks.evaluation import EvalHook
 
-from otx.mpa.modules.hooks.early_stopping_hook import EarlyStoppingHook
+from otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook import EarlyStoppingHook
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()

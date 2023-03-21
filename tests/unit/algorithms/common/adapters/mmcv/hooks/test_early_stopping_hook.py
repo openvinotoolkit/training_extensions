@@ -1,4 +1,4 @@
-"""Unit test for otx.mpa.modules.hooks.early_stopping_hook."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,7 +11,7 @@ import pytest
 from mmcv.runner import BaseRunner, LrUpdaterHook
 from mmcv.utils import Config
 
-from otx.mpa.modules.hooks.early_stopping_hook import (
+from otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook import (
     EarlyStoppingHook,
     LazyEarlyStoppingHook,
     ReduceLROnPlateauLrUpdaterHook,

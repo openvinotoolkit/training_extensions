@@ -1,17 +1,17 @@
-"""Unit test for otx.mpa.modules.hooks.fp16_sam_optimizer_hook."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.unbiased_teacher_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.mpa.modules.hooks.fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
+from otx.algorithms.common.adapters.mmcv.hooks.unbiased_teacher_hook import UnbiasedTeacherHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-class TestFp16SAMOptimizerHook:
+class TestUnbiasedTeacherHook:
     @e2e_pytest_unit
     def test_temp(self) -> None:
         try:
-            hook = Fp16SAMOptimizerHook()
+            hook = UnbiasedTeacherHook()
             assert hook is None
         except Exception as e:
             print(e)

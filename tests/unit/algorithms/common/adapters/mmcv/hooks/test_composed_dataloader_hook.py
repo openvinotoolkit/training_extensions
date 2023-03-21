@@ -1,17 +1,17 @@
-"""Unit test for otx.mpa.modules.hooks.semisl_cls_hook."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.composed_dataloaders_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.mpa.modules.hooks.semisl_cls_hook import SemiSLClsHook
+from otx.algorithms.common.adapters.mmcv.hooks.composed_dataloaders_hook import ComposedDataLoadersHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-class TestSemiSLClsHook:
+class TestComposedDataLoadersHook:
     @e2e_pytest_unit
     def test_temp(self) -> None:
         try:
-            hook = SemiSLClsHook()
+            hook = ComposedDataLoadersHook()
             assert hook is None
         except Exception as e:
             print(e)
