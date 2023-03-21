@@ -93,6 +93,7 @@ class TileClassifier(torch.nn.Module):
         return self.sigmoid(self.forward(img))[0][0]
 
 
+# pylint: disable=too-many-ancestors
 @DETECTORS.register_module()
 class CustomMaskRCNNTileOptimised(CustomMaskRCNN):
     """Custom MaskRCNN detector with tile classifier."""
@@ -186,6 +187,7 @@ if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER, mark
     from mmdeploy.utils import is_dynamic_shape
 
+    # pylint: disable=ungrouped-imports
     from otx.mpa.modules.hooks.recording_forward_hooks import (
         ActivationMapHook,
         FeatureVectorHook,
@@ -206,7 +208,7 @@ if is_mmdeploy_enabled():
         """
         return self.sigmoid(self.forward(img))[0][0]
 
-    # pylint: disable=line-too-long
+    # pylint: disable=line-too-long, unused-argument
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.TileClassifier.simple_test"  # noqa: E501
     )
@@ -224,6 +226,7 @@ if is_mmdeploy_enabled():
         """
         return tile_classifier__simple_test_impl(self, img)
 
+    # pylint: disable=protected-access
     @mark("custom_maskrcnn_forward", inputs=["input"], outputs=["dets", "labels", "masks", "feats", "saliencies"])
     def __forward_impl(ctx, self, img, img_metas, **kwargs):
         """Custom MaskRCNN Forward Impl with added mmdeploy marking for model partitioning.
