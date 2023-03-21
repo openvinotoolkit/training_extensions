@@ -6,9 +6,10 @@
 from pathlib import Path
 from typing import Optional
 
+from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.dist_utils import allreduce_params, master_only
 from mmcv.runner.hooks.hook import HOOKS, Hook
-from mmcv.runner import BaseRunner, EpochBasedRunner
+
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 

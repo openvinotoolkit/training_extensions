@@ -1,14 +1,15 @@
-
 from collections import defaultdict
 from typing import Any, Dict, Optional
 
 from mmcv.runner import BaseRunner
 from mmcv.runner.dist_utils import master_only
 from mmcv.runner.hooks import HOOKS, LoggerHook
+
 from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
+
 
 @HOOKS.register_module()
 class OTXLoggerHook(LoggerHook):

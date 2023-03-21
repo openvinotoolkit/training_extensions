@@ -7,18 +7,17 @@ from typing import Optional
 
 from mmcv.runner import BaseRunner, LrUpdaterHook
 from mmcv.runner.hooks import HOOKS, Hook
+from otx.api.utils.argument_checks import check_input_parameters_type
+
 from mmcv.utils import print_log
 
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
-
-# Temp copy from detection_task
-# TODO: refactoing
+@HOOKS.register_module()
 class EarlyStoppingHook(Hook):
-    """
-    Cancel training when a metric has stopped improving.
+    """Cancel training when a metric has stopped improving.
 
     Early Stopping hook monitors a metric quantity and if no improvement is seen for a ‘patience’
     number of epochs, the training is cancelled.
@@ -45,9 +44,22 @@ class EarlyStoppingHook(Hook):
 
     rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
     init_value_map = {"greater": -inf, "less": inf}
-    greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc", "MHAcc"]
+    greater_keys = [
+        "acc",
+        "top",
+        "AR@",
+        "auc",
+        "precision",
+        "mAP",
+        "mDice",
+        "mIoU",
+        "mAcc",
+        "aAcc",
+        "MHAcc"
+    ]
     less_keys = ["loss"]
 
+    @check_input_parameters_type()
     def __init__(
         self,
         interval: int,
@@ -67,6 +79,8 @@ class EarlyStoppingHook(Hook):
         self.min_delta *= 1 if self.rule == "greater" else -1
         self.last_iter = 0
         self.wait_count = 0
+        self.by_epoch = True
+        self.warmup_iters = 0
         self.best_score = self.init_value_map[self.rule]
 
     def _init_rule(self, rule, key_indicator):
@@ -104,26 +118,29 @@ class EarlyStoppingHook(Hook):
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
 
+    @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
-        self.by_epoch = False if runner.max_epochs is None else True
+        """Called before_run in EarlyStoppingHook."""
+        self.by_epoch = runner.max_epochs is not None
         for hook in runner.hooks:
             if isinstance(hook, LrUpdaterHook):
                 self.warmup_iters = hook.warmup_iters
                 break
-        if getattr(self, "warmup_iters", None) is None:
-            raise ValueError("LrUpdaterHook must be registered to runner.")
 
+    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
         """Called after every training iter to evaluate the results."""
         if not self.by_epoch:
             self._do_check_stopping(runner)
 
+    @check_input_parameters_type()
     def after_train_epoch(self, runner: BaseRunner):
         """Called after every training epoch to evaluate the results."""
         if self.by_epoch:
             self._do_check_stopping(runner)
 
     def _do_check_stopping(self, runner):
+        """Called _do_check_stopping in EarlyStoppingHook."""
         if not self._should_check_stopping(runner) or self.warmup_iters > runner.iter:
             return
 
@@ -159,6 +176,7 @@ class EarlyStoppingHook(Hook):
                     runner.should_stop = True
 
     def _should_check_stopping(self, runner):
+        """Called _should_check_stopping in EarlyStoppingHook."""
         check_time = self.every_n_epochs if self.by_epoch else self.every_n_iters
         if not check_time(runner, self.interval):
             # No evaluation during the interval.
@@ -199,7 +217,6 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
             if (current + 1 - self.start) % self.interval:
                 return False
         return True
-
 
 
 @HOOKS.register_module(force=True)

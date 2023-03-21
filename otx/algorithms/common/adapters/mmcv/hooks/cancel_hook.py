@@ -10,9 +10,12 @@ logger = get_logger()
 
 
 import os
+
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.hooks import HOOKS, Hook
+
 from otx.api.utils.argument_checks import check_input_parameters_type
+
 
 # pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments, unused-argument
 @HOOKS.register_module()
@@ -49,6 +52,7 @@ class CancelTrainingHook(Hook):
         if not self.every_n_iters(runner, self.interval):
             return
         self._check_for_stop_signal(runner)
+
 
 @HOOKS.register_module()
 class CancelInterfaceHook(Hook):

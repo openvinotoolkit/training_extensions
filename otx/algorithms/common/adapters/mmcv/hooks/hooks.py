@@ -390,4 +390,3 @@ class StopLossNanTrainingHook(Hook):
         if isnan(runner.outputs["loss"].item()):
             logger.warning("Early Stopping since loss is NaN")
             runner.should_stop = True
-

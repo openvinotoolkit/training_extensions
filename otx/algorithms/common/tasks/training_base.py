@@ -28,9 +28,7 @@ import torch
 from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import (
-    CancelInterfaceHook,
-)
+from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     get_configs_by_pairs,

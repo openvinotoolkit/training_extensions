@@ -19,9 +19,12 @@ from math import cos, pi
 from mmcv.parallel import is_module_wrapper
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
+
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
+
+
 @HOOKS.register_module()
 class EMAMomentumUpdateHook(Hook):
     """Exponential moving average (EMA) momentum update hook for self-supervised methods.
@@ -95,4 +98,3 @@ class EMAMomentumUpdateHook(Hook):
                 runner.model.module.momentum_update()
             else:
                 runner.model.momentum_update()
-

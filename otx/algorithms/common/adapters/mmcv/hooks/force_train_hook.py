@@ -48,4 +48,3 @@ class ForceTrainModeHook(Hook):
     def before_train_epoch(self, runner):
         """Make sure to put a model in a training mode before train epoch."""
         runner.model.train()
-

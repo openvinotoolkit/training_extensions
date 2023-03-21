@@ -1,7 +1,8 @@
-
 from typing import Any, Dict, List
+
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
+
 from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
 
