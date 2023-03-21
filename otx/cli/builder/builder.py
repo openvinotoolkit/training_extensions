@@ -28,6 +28,7 @@ import torch
 from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
+from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.api.entities.model_template import TaskType
 from otx.cli.utils.importing import (
     get_backbone_list,
@@ -101,8 +102,8 @@ def update_backbone_args(backbone_config: dict, registry: Registry, backend: str
 
 def update_channels(model_config: MPAConfig, out_channels: Any):
     """Update in_channel of head or neck."""
-    if hasattr(model_config.model, "neck"):
-        if model_config.model.neck.type == "GlobalAveragePooling":
+    if hasattr(model_config.model, "neck") and model_config.model.neck:
+        if model_config.model.neck.get("type", None) == "GlobalAveragePooling":
             model_config.model.neck.pop("in_channels", None)
         else:
             print(f"\tUpdate model.neck.in_channels: {out_channels}")
@@ -212,6 +213,12 @@ class Builder:
             out_channels = -1
             if hasattr(model_config.model, "head"):
                 model_config.model.head.in_channels = -1
+            # TODO: This is a hard coded part of the Transformer backbone and needs to be refactored.
+            if backend == "mmcls" and backbone_class in TRANSFORMER_BACKBONES:
+                if hasattr(model_config.model, "neck"):
+                    model_config.model.neck = None
+                if hasattr(model_config.model, "head"):
+                    model_config.model.head["type"] = "VisionTransformerClsHead"
         else:
             # Need to update in/out channel configuration here
             out_channels = get_backbone_out_channels(backbone)
