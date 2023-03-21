@@ -94,6 +94,10 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         losses["loss"] = loss / self.scale
         return losses
 
+    def forward(self, x):
+        """Forward fuction of CustomMultiLabelNonLinearClsHead."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of CustomMultiLabelNonLinearClsHead."""
         img_metas = kwargs.get("img_metas", False)

@@ -59,6 +59,10 @@ class SupConClsHead(BaseHead):
         else:
             self.aux_mlp = nn.Linear(in_features=in_channels, out_features=out_channels)
 
+    def forward(self, x):
+        """Forward fuction of SupConClsHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, x, gt_label):
         """Forward train head using the Supervised Contrastive Loss.
 

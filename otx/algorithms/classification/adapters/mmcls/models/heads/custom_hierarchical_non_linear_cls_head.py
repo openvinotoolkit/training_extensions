@@ -96,6 +96,10 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):  # pylint: disable=
 
         return loss
 
+    def forward(self, x):
+        """Forward fuction of CustomHierarchicalNonLinearClsHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of CustomHierarchicalNonLinearClsHead class."""
         img_metas = kwargs.get("img_metas", None)

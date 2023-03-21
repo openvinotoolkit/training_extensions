@@ -157,6 +157,10 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         LinearClsHead.__init__(self, num_classes, in_channels, loss=loss, topk=topk)
         SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
+    def forward(self, x):
+        """Forward fuction of SemiLinearClsHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, x, gt_label):
         """Forward_train fuction of SemiLinearClsHead class."""
         return SemiClsHead.forward_train(self, x, gt_label, final_layer=self.fc)
@@ -211,6 +215,10 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
             dropout=dropout,
         )
         SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
+
+    def forward(self, x):
+        """Forward fuction of SemiNonLinearClsHead class."""
+        return self.simple_test(x)
 
     def forward_train(self, x, gt_label):
         """Forward_train fuction of SemiNonLinearClsHead class."""

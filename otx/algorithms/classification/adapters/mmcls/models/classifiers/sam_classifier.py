@@ -2,7 +2,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=too-many-branches, unused-argument, too-many-nested-blocks, too-many-locals
+# pylint: disable=too-many-branches, unused-argument, too-many-nested-blocks, too-many-locals, ungrouped-imports
 from functools import partial
 
 from mmcls.models.builder import CLASSIFIERS
@@ -78,7 +78,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         """Redirect model as output state_dict for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
-            return
+            return None
 
         if backbone_type == "OTXMobileNetV3":
             for k in list(state_dict.keys()):

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=unused-argument, no-value-for-parameter
+# mypy: ignore-errors
 
 import random
 from typing import Union

@@ -16,6 +16,10 @@ class ClsHead(OriginClsHead):
         super().__init__(*args, **kwargs)
         self._do_squeeze = do_squeeze
 
+    def forward(self, x):
+        """Forward fuction of ClsHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label):
         """Forward_train fuction of ClsHead class."""
         if self._do_squeeze:

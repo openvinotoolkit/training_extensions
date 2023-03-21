@@ -36,6 +36,10 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         losses["loss"] = loss
         return losses
 
+    def forward(self, x):
+        """Forward fuction of CustomNonLinearHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label):
         """Forward_train fuction of CustomNonLinearHead class."""
         logit = self.classifier(cls_score)
@@ -88,6 +92,10 @@ class CustomLinearClsHead(LinearClsHead):
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
         return self.post_process(pred)
+
+    def forward(self, x):
+        """Forward fuction of CustomLinearHead class."""
+        return self.simple_test(x)
 
     def forward_train(self, x, gt_label):
         """Forward_train fuction of CustomLinearHead class."""

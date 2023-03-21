@@ -85,6 +85,10 @@ class NonLinearClsHead(ClsHead):
         pred = list(pred.detach().cpu().numpy())
         return pred
 
+    def forward(self, x):
+        """Forward fuction of NonLinearClsHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label):
         """Forward_train fuction of NonLinearClsHead class."""
         logit = self.classifier(cls_score)

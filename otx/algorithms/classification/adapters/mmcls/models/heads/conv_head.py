@@ -72,6 +72,10 @@ class ConvClsHead(ClsHead):
             return self.post_process(pred)
         return pred
 
+    def forward(self, x):
+        """Forward fuction of ConvClsHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of ConvClsHead class."""
         x = self.pre_logits(cls_score)

@@ -16,13 +16,18 @@
 
 from .classifiers import BYOL, SAMImageClassifier, SemiSLClassifier, SupConClassifier
 from .heads import (
+    ClsHead,
     ConstrastiveHead,
+    ConvClsHead,
     CustomHierarchicalLinearClsHead,
     CustomHierarchicalNonLinearClsHead,
     CustomLinearClsHead,
     CustomMultiLabelLinearClsHead,
     CustomMultiLabelNonLinearClsHead,
     CustomNonLinearClsHead,
+    MMOVClsHead,
+    SemiLinearMultilabelClsHead,
+    SemiNonLinearMultilabelClsHead,
     SupConClsHead,
 )
 from .losses import (
@@ -46,6 +51,11 @@ __all__ = [
     "CustomHierarchicalLinearClsHead",
     "CustomHierarchicalNonLinearClsHead",
     "AsymmetricAngularLossWithIgnore",
+    "SemiLinearMultilabelClsHead",
+    "SemiNonLinearMultilabelClsHead",
+    "MMOVClsHead",
+    "ConvClsHead",
+    "ClsHead",
     "AsymmetricLossWithIgnore",
     "BarlowTwinsLoss",
     "IBLoss",

@@ -69,6 +69,10 @@ class CustomHierarchicalLinearClsHead(MultiLabelClsHead):
 
         return loss
 
+    def forward(self, x):
+        """Forward fuction of CustomHierarchicalLinearClsHead."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of CustomHierarchicalLinearClsHead class."""
         img_metas = kwargs.get("img_metas", None)

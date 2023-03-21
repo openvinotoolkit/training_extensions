@@ -66,6 +66,10 @@ class MMOVClsHead(ClsHead):
             parser_kwargs=dict(component="head"),
         )
 
+    def forward(self, x):
+        """Forward fuction of MMOVClsHead class."""
+        return self.simple_test(x)
+
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of MMOVClsHead."""
         cls_score = self.model(cls_score)
