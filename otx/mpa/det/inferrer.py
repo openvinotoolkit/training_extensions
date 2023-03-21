@@ -183,8 +183,12 @@ class DetectionInferrer(DetectionStage):
         with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
             with saliency_hook:
                 eval_predictions = single_gpu_test(model, test_dataloader)
-                feature_vectors = feature_vector_hook.records if dump_features else [None] * len(self.dataset)
-                saliency_maps = saliency_hook.records if dump_saliency_map else [None] * len(self.dataset)
+                feature_vectors = [None] * len(self.dataset)
+                saliency_maps = [None] * len(self.dataset)
+                if dump_features and feature_vector_hook.records:
+                    feature_vectors = feature_vector_hook.records
+                if dump_saliency_map and saliency_hook.records:
+                    saliency_maps = saliency_hook.records
 
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
             cfg.evaluation.pop(key, None)

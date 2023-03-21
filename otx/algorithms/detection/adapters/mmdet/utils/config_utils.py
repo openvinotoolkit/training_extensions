@@ -375,7 +375,7 @@ def patch_tiling(config, hyper_parameters, dataset: Optional[DatasetEntity] = No
             if config.model.backbone.type == "efficientnet_b2b":
                 logger.info(
                     f"\tPatch {config.model.backbone.type} LR from: "
-                    "{hyper_parameters.learning_parameters.learning_rate} to 0.002"
+                    f"{hyper_parameters.learning_parameters.learning_rate} to 0.002"
                 )
                 hyper_parameters.learning_parameters.learning_rate = 0.002
             config.data.train.filter_empty_gt = False

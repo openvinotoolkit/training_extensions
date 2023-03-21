@@ -1,3 +1,4 @@
+import copy
 import os
 from typing import List
 
@@ -7,24 +8,26 @@ import torch
 from mmcv import ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 
-from otx.algorithms.detection.adapters.mmdet.data import (  # noqa: F401
-    ImageTilingDataset,
-)
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector
+from otx.algorithms.detection.tasks import DetectionTrainTask
+from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.model_template import parse_model_template
+from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.utils.shape_factory import ShapeFactory
 from otx.mpa.det.exporter import DetectionExporter
-from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_helpers import generate_random_annotated_image
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_ISEG_RECIPE_CONFIG_PATH,
     DEFAULT_ISEG_TEMPLATE_DIR,
+    init_environment,
 )
 
 
@@ -196,3 +199,33 @@ class TestTilingDetection:
         returned_value = exporter.run(model_cfg, "", data_cfg, **args)
         assert "model_builder" in args
         assert returned_value is True
+
+    @e2e_pytest_unit
+    def test_load_tiling_parameters(self, tmp_dir_path):
+        maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        detector = build_detector(maskrcnn_cfg)
+
+        # Enable tiling and save weights
+        model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
+        hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.tiling_parameters.enable_tiling = True
+        task_env = init_environment(hyper_parameters, model_template)
+        output_model = ModelEntity(self.otx_dataset, task_env.get_model_configuration())
+        task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+        model_ckpt = os.path.join(tmp_dir_path, "maskrcnn.pth")
+        torch.save(detector.state_dict(), model_ckpt)
+        task._model_ckpt = model_ckpt
+        task.save_model(output_model)
+        for filename, model_adapter in output_model.model_adapters.items():
+            with open(os.path.join(tmp_dir_path, filename), "wb") as write_file:
+                write_file.write(model_adapter.data)
+
+        # Read tiling parameters from weights
+        with open(os.path.join(tmp_dir_path, "weights.pth"), "rb") as f:
+            bin_data = f.read()
+            model = ModelEntity(
+                self.otx_dataset,
+                configuration=task_env.get_model_configuration(),
+                model_adapters={"weights.pth": ModelAdapter(bin_data)})
+        task_env.model = model
+        task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
