@@ -1,4 +1,7 @@
-import copy
+# Copyright (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: MIT
+
 import os
 from typing import List
 
@@ -226,6 +229,7 @@ class TestTilingDetection:
             model = ModelEntity(
                 self.otx_dataset,
                 configuration=task_env.get_model_configuration(),
-                model_adapters={"weights.pth": ModelAdapter(bin_data)})
+                model_adapters={"weights.pth": ModelAdapter(bin_data)},
+            )
         task_env.model = model
         task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))

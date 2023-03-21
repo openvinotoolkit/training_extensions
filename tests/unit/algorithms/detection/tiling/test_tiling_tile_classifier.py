@@ -1,3 +1,7 @@
+# Copyright (C) 2023 Intel Corporation
+#
+# SPDX-License-Identifier: MIT
+
 import copy
 import os
 
@@ -56,7 +60,7 @@ class TestTilingTileClassifier:
 
     @e2e_pytest_unit
     def test_openvino(self, mocker):
-        """ Test OpenVINO tile classifier
+        """Test OpenVINO tile classifier
 
         Args:
             mocker (_type_): pytest mocker from fixture
@@ -73,7 +77,7 @@ class TestTilingTileClassifier:
         )
         ov_inferencer = OpenVINOTileClassifierWrapper(ov_mask_inferencer, "", "")
         ov_inferencer.model.__model__ = "OTX_MaskRCNN"
-        mock_predict = mocker.patch.object(ov_inferencer.tile_classifier, "infer_sync", return_value={'tile_prob': 0.5})
+        mock_predict = mocker.patch.object(ov_inferencer.tile_classifier, "infer_sync", return_value={"tile_prob": 0.5})
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
         mocker.patch.object(OpenVINODetectionTask, "load_config", return_value=ADDict(vars(self.params)))
         ov_task = OpenVINODetectionTask(self.task_env)
@@ -96,7 +100,7 @@ class TestTilingTileClassifier:
         maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
         model_ckpt = os.path.join(tmp_dir_path, "maskrcnn_without_tile_classifier.pth")
-        torch.save({'state_dict': detector.state_dict()}, model_ckpt)
+        torch.save({"state_dict": detector.state_dict()}, model_ckpt)
 
         # Enable tiling and save weights
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
@@ -118,17 +122,21 @@ class TestTilingTileClassifier:
             model = ModelEntity(
                 self.dataset,
                 configuration=task_env.get_model_configuration(),
-                model_adapters={"weights.pth": ModelAdapter(bin_data)})
+                model_adapters={"weights.pth": ModelAdapter(bin_data)},
+            )
         task_env.model = model
         with pytest.raises(RuntimeError) as e:
             task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
-            assert str(e.value) == "Tile classifier is enabled but not found in the trained model. Please retrain your model."
+            assert (
+                str(e.value)
+                == "Tile classifier is enabled but not found in the trained model. Please retrain your model."
+            )
 
         maskrcnn_classifier_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         maskrcnn_classifier_cfg.model.type = "CustomMaskRCNNTileOptimised"
         tile_classifier_detector = build_detector(maskrcnn_classifier_cfg)
         tile_classifier_ckpt = os.path.join(tmp_dir_path, "maskrcnn_with_tile_classifier.pth")
-        torch.save({'state_dict': tile_classifier_detector.state_dict()}, tile_classifier_ckpt)
+        torch.save({"state_dict": tile_classifier_detector.state_dict()}, tile_classifier_ckpt)
 
         task_env = init_environment(hyper_parameters, model_template)
         output_model = ModelEntity(self.dataset, task_env.get_model_configuration())
@@ -145,6 +153,7 @@ class TestTilingTileClassifier:
             model = ModelEntity(
                 self.dataset,
                 configuration=task_env.get_model_configuration(),
-                model_adapters={"weights.pth": ModelAdapter(bin_data)})
+                model_adapters={"weights.pth": ModelAdapter(bin_data)},
+            )
         task_env.model = model
         task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
