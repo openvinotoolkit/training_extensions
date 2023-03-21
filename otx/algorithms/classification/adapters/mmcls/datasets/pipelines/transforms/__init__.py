@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # flake8: noqa
+# mypy: ignore-errors
 
 from .augmix import AugMixAugment
-from .cython_augments import pil_augment  # type: ignore
+from .cython_augments import pil_augment
 from .otx_transforms import PILToTensor, RandomRotate, TensorNormalize
 from .random_augment import OTXRandAugment
 from .twocrop_transform import TwoCropTransform
