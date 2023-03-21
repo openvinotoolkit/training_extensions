@@ -10,6 +10,7 @@ jobs:
   Daily-Tests:
     runs-on: [self-hosted, linux, x64, dev]
     timeout-minutes: 1440
+    if: github.ref == 'refs/heads/develop'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
