@@ -204,7 +204,7 @@ if is_mmdeploy_enabled():
         return self.sigmoid(self.forward(img))[0][0]
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.detectors.custom_maskrcnn_tile_optimised.TileClassifier.simple_test"
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.TileClassifier.simple_test"
     )
     def tile_classifier__simple_test(ctx, self, img, **kwargs):
         """Tile Classifier Simple Test Rewriter.
@@ -234,7 +234,7 @@ if is_mmdeploy_enabled():
         return self.simple_test(img, img_metas, **kwargs)
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.forward"
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.forward"
     )
     def custom_maskrcnn__forward(ctx, self, img, img_metas=None, return_loss=False, **kwargs):
         if img_metas is None:
@@ -249,7 +249,7 @@ if is_mmdeploy_enabled():
         return __forward_impl(ctx, self, img, img_metas=img_metas, **kwargs)
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.mpa.modules.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.simple_test"
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.simple_test"
     )
     def custom_mask_rcnn__simple_test(ctx, self, img, img_metas, proposals=None, **kwargs):
         """Custom Mask RCNN Simple Test Rewriter for ONNX tracing
