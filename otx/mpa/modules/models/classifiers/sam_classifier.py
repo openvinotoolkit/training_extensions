@@ -9,7 +9,7 @@ from mmcls.models.builder import CLASSIFIERS
 from mmcls.models.classifiers.base import BaseClassifier
 from mmcls.models.classifiers.image import ImageClassifier
 
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.mpa.modules.utils.task_adapt import map_class_names
 from otx.mpa.utils.logger import get_logger
 

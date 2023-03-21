@@ -9,10 +9,10 @@ import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.atss import ATSS
 
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
     DetSaliencyMapHook,
 )
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
 from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
 from otx.mpa.modules.utils.task_adapt import map_class_names
 from otx.mpa.utils.logger import get_logger

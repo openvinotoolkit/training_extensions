@@ -8,10 +8,13 @@ import tempfile
 import onnx
 import torch
 
-from otx.mpa.deploy.apis import NaiveExporter
-from otx.mpa.deploy.utils.onnx import prepare_onnx_for_openvino, remove_nodes_by_op_type
+from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
+from otx.algorithms.common.adapters.mmdeploy.utils.onnx import (
+    prepare_onnx_for_openvino,
+    remove_nodes_by_op_type,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.mpa.deploy.test_helpers import create_model
+from tests.unit.algorithms.common.adapters.mmdeploy.test_helpers import create_model
 
 
 @e2e_pytest_unit

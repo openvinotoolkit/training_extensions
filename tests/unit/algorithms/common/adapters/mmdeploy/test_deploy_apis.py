@@ -9,10 +9,13 @@ import numpy as np
 import torch
 from mmcv.utils import Config
 
-from otx.mpa.deploy.apis import NaiveExporter
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.mpa.deploy.test_helpers import create_config, create_model
+from tests.unit.algorithms.common.adapters.mmdeploy.test_helpers import (
+    create_config,
+    create_model,
+)
 
 
 class TestNaiveExporter:
@@ -58,7 +61,7 @@ class TestNaiveExporter:
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER, mark
 
-    from otx.mpa.deploy.apis import MMdeployExporter
+    from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
 
     class TestMMdeployExporter:
         @e2e_pytest_unit
@@ -197,7 +200,9 @@ if is_mmdeploy_enabled():
             )
             create_model("mmcls")
 
-            @FUNCTION_REWRITER.register_rewriter("tests.unit.mpa.deploy.test_helpers.MockModel.forward")
+            @FUNCTION_REWRITER.register_rewriter(
+                "tests.unit.algorithms.common.adapters.mmdeploy.test_helpers.MockModel.forward"
+            )
             @mark("test", inputs=["input"], outputs=["output"])
             def forward(ctx, self, *args, **kwargs):
                 return ctx.origin_func(self, *args, **kwargs)

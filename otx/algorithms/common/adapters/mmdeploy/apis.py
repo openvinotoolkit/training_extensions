@@ -1,3 +1,4 @@
+"""API of otx.algorithms.common.adapters.mmdeploy."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,20 +13,23 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
 import numpy as np
-import onnx
 import torch
 from mmcv.parallel import collate, scatter
 
-from .utils import numpy_2_list
 from .utils.mmdeploy import (
     is_mmdeploy_enabled,
     mmdeploy_init_model_helper,
     update_deploy_cfg,
 )
 from .utils.onnx import prepare_onnx_for_openvino
+from .utils.utils import numpy_2_list
+
+# pylint: disable=too-many-locals
 
 
 class NaiveExporter:
+    """NaiveExporter for non-mmdeploy export."""
+
     @staticmethod
     def export2openvino(
         output_dir: str,
@@ -38,13 +42,15 @@ class NaiveExporter:
         input_names: Optional[List[str]] = None,
         output_names: Optional[List[str]] = None,
         opset_version: int = 11,
-        dynamic_axes: Dict[Any, Any] = {},
+        dynamic_axes: Optional[Dict[Any, Any]] = None,
         mo_transforms: str = "",
     ):
+        """Function for exporting to openvino."""
         input_data = scatter(collate([input_data], samples_per_gpu=1), [-1])[0]
 
         model = model_builder(cfg)
         model = model.cpu().eval()
+        dynamic_axes = dynamic_axes if dynamic_axes else dict()
 
         onnx_path = NaiveExporter.torch2onnx(
             output_dir,
@@ -108,10 +114,11 @@ class NaiveExporter:
         input_names: Optional[List[str]] = None,
         output_names: Optional[List[str]] = None,
         opset_version: int = 11,
-        dynamic_axes: Dict[Any, Any] = {},
+        dynamic_axes: Optional[Dict[Any, Any]] = None,
         verbose: bool = False,
         **onnx_options,
     ) -> str:
+        """Function for torch to onnx exporting."""
 
         img_metas = input_data.get("img_metas")
         numpy_2_list(img_metas)
@@ -119,6 +126,7 @@ class NaiveExporter:
         model.forward = partial(model.forward, img_metas=img_metas, return_loss=False)
 
         onnx_file_name = model_name + ".onnx"
+        dynamic_axes = dynamic_axes if dynamic_axes else dict()
         torch.onnx.export(
             model,
             imgs,
@@ -143,6 +151,7 @@ class NaiveExporter:
         model_name: str = "model",
         **openvino_options,
     ) -> Tuple[str, str]:
+        """Function for onnx to openvino exporting."""
         from otx.mpa.utils import mo_wrapper
 
         mo_args = {
@@ -163,17 +172,15 @@ class NaiveExporter:
 
 if is_mmdeploy_enabled():
     import mmdeploy.apis.openvino as openvino_api
-    from mmdeploy.apis import (
-        build_task_processor,
-        extract_model,
-        get_predefined_partition_cfg,
-        torch2onnx,
-    )
+    from mmdeploy.apis import build_task_processor, extract_model, torch2onnx
     from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
-    from mmdeploy.core import FUNCTION_REWRITER
-    from mmdeploy.utils import get_backend_config, get_ir_config, get_partition_config
+
+    # from mmdeploy.core import FUNCTION_REWRITER
+    from mmdeploy.utils import get_ir_config, get_partition_config
 
     class MMdeployExporter:
+        """MMdeployExporter for mmdeploy exporting."""
+
         @staticmethod
         def export2openvino(
             output_dir: str,
@@ -183,6 +190,7 @@ if is_mmdeploy_enabled():
             *,
             model_name: str = "model",
         ):
+            """Function for exporting to openvino."""
 
             task_processor = build_task_processor(cfg, deploy_cfg, "cpu")
 
@@ -248,6 +256,7 @@ if is_mmdeploy_enabled():
             *,
             model_name: str = "model",
         ) -> str:
+            """Function for torch to onnx exporting."""
             onnx_file_name = model_name + ".onnx"
             torch2onnx(
                 input_data,
@@ -266,6 +275,7 @@ if is_mmdeploy_enabled():
             onnx_path: str,
             partition_cfgs: Union[mmcv.ConfigDict, List[mmcv.ConfigDict]],
         ) -> Tuple[str, ...]:
+            """Function for parition onnx."""
             partitioned_paths = []
 
             if not isinstance(partition_cfgs, list):
@@ -290,6 +300,7 @@ if is_mmdeploy_enabled():
             *,
             model_name: Optional[str] = None,
         ) -> Tuple[str, str]:
+            """Function for onnx to openvino exporting."""
 
             input_info = get_input_info_from_cfg(deploy_cfg)
             output_names = get_ir_config(deploy_cfg).output_names

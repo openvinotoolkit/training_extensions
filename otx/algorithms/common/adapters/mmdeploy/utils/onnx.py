@@ -1,3 +1,4 @@
+"""Functions for onnx adapters."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -6,6 +7,7 @@ import onnx
 
 
 def remove_nodes_by_op_type(onnx_model, op_type):
+    """Remove all nodes of a specified op type from the ONNX model."""
     # TODO: support more nodes
 
     supported_op_types = ["Mark", "Conv", "Gemm"]
@@ -42,6 +44,7 @@ def remove_nodes_by_op_type(onnx_model, op_type):
 
 
 def prepare_onnx_for_openvino(in_path, out_path):
+    """Modify the specified ONNX model to be compatible with OpenVINO by removing 'Mark' op nodes."""
     onnx_model = onnx.load(in_path)
     onnx_model = remove_nodes_by_op_type(onnx_model, "Mark")
     onnx.checker.check_model(onnx_model)

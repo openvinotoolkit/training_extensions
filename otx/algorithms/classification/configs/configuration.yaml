@@ -10,7 +10,7 @@ learning_parameters:
       stable. A larger batch size has higher memory requirements.
     editable: true
     header: Batch size
-    max_value: 512
+    max_value: 2048
     min_value: 1
     type: INTEGER
     ui_rules:
