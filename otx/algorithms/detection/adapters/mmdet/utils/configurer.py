@@ -8,12 +8,26 @@ import json
 import os
 from typing import Any, Dict
 
+import numpy as np
 import torch
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 from torch import distributed as dist
 
-from otx.algorithms.common.adapters.mmcv.utils import build_dataloader, build_dataset
+from otx.algorithms.common.adapters.mmcv.utils import (
+    align_data_config_with_recipe,
+    build_dataloader,
+    build_dataset,
+    patch_default_config,
+    patch_fp16,
+    patch_persistent_workers,
+    patch_runner,
+    update_basic_hooks,
+)
+from otx.algorithms.detection.adapters.mmdet.utils import (
+    patch_datasets,
+    patch_evaluation,
+)
 from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 
@@ -31,13 +45,24 @@ class DetectionStage:
         self.model_classes = []
         self.data_classes = []
 
-    def configure(self, model_cfg, model_ckpt, data_cfg, training=True, subset="train", ir_options=None):
+    # pylint: disable=too-many-arguments
+    def configure(
+        self,
+        cfg,
+        model_ckpt,
+        data_cfg,
+        training=True,
+        subset="train",
+        ir_options=None,
+        data_classes=None,
+        model_classes=None,
+    ):
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={training}")
 
-        cfg = model_cfg
+        self.base_configure(cfg, data_cfg, data_classes, model_classes)
         self.configure_device(cfg)
-        self.configure_model(cfg, model_cfg, ir_options)
+        self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, training, data_cfg)
         self.configure_regularization(cfg, training)
@@ -48,10 +73,40 @@ class DetectionStage:
         self.configure_compat_cfg(cfg)
         return cfg
 
-    def configure_model(self, cfg, model_cfg, ir_options):  # noqa: C901
+    def base_configure(self, cfg, data_cfg, data_classes, model_classes):
+        """Basic configuration work for recipe.
+
+        Patchings in this function are handled task level previously
+        This function might need to be re-orgianized
+        """
+
+        options_for_patch_datasets = {"type": "OTXDetDataset"}
+
+        patch_default_config(cfg)
+        patch_runner(cfg)
+        patch_datasets(
+            cfg,
+            **options_for_patch_datasets,
+        )  # for OTX compatibility
+        patch_evaluation(cfg)  # for OTX compatibility
+        patch_fp16(cfg)
+        update_basic_hooks(cfg)
+        patch_persistent_workers(cfg)
+
+        if data_cfg is not None:
+            align_data_config_with_recipe(data_cfg, cfg)
+
+        # update model config -> model label schema
+        cfg["model_classes"] = model_classes
+        if data_classes is not None:
+            train_data_cfg = self.get_data_cfg(data_cfg, "train")
+            train_data_cfg["data_classes"] = data_classes
+            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
+            train_data_cfg["new_classes"] = new_classes
+
+    def configure_model(self, cfg, ir_options):  # noqa: C901
         """Patch config's model.
 
-        Replace cfg.model to model_cfg
         Change model type to super type
         Patch for OMZ backbones
         """
@@ -59,17 +114,9 @@ class DetectionStage:
         if ir_options is None:
             ir_options = {"ir_model_path": None, "ir_weight_path": None, "ir_weight_init": False}
 
-        if model_cfg:
-            if hasattr(model_cfg, "model"):
-                cfg.merge_from_dict(model_cfg)
-            else:
-                raise ValueError(
-                    "Unexpected config was passed through 'model_cfg'. "
-                    "it should have 'model' attribute in the config"
-                )
-            cfg.model_task = cfg.model.pop("task", "detection")
-            if cfg.model_task != "detection":
-                raise ValueError(f"Given model_cfg ({model_cfg.filename}) is not supported by detection recipe")
+        cfg.model_task = cfg.model.pop("task", "detection")
+        if cfg.model_task != "detection":
+            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by detection recipe")
 
         super_type = cfg.model.pop("super_type", None)
         if super_type:

@@ -33,13 +33,10 @@ from mmdet.models.detectors import TwoStageDetector
 from mmdet.utils import collect_env
 
 from otx.algorithms.common.adapters.mmcv.utils import (
-    align_data_config_with_recipe,
     build_data_parallel,
-    get_configs_by_keys,
     get_configs_by_pairs,
     patch_data_pipeline,
-    patch_default_config,
-    patch_runner,
+    patch_from_hyperparams,
 )
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
@@ -51,13 +48,8 @@ from otx.algorithms.detection.adapters.mmdet.exporter import DetectionExporter
 from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
     DetSaliencyMapHook,
 )
-from otx.algorithms.detection.adapters.mmdet.utils import (
-    patch_datasets,
-    patch_evaluation,
-)
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
-    cluster_anchors,
     should_cluster_anchors,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.configurer import (
@@ -89,13 +81,7 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
     EigenCamHook,
     FeatureVectorHook,
 )
-from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import (
-    MPAConfig,
-    add_custom_hook_if_not_exists,
-    remove_custom_hook,
-    update_or_add_custom_hook,
-)
+from otx.mpa.utils.config_utils import MPAConfig, update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -116,81 +102,18 @@ class MMDetectionTask(OTXDetectionTask):
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def _init_task(self, export: bool = False):  # noqa
         """Initialize task."""
+
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
-        if len(self._anchors) != 0:
-            self._update_anchors(self._recipe_cfg.model.bbox_head.anchor_generator, self._anchors)
+        self._recipe_cfg.domain = self._task_type.domain
 
         set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
 
-        # This may go to the configure function
-        options_for_patch_datasets = {"type": "OTXDetDataset"}
-        patch_default_config(self._recipe_cfg)
-        patch_runner(self._recipe_cfg)
+        # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-        patch_datasets(
-            self._recipe_cfg,
-            self._task_type.domain,
-            **options_for_patch_datasets,
-        )  # for OTX compatibility
-        patch_evaluation(self._recipe_cfg)  # for OTX compatibility
 
-        # This may go to the configure function
         if not export:
-            params = self._hyperparams.learning_parameters
-            warmup_iters = int(params.learning_rate_warmup_iters)
-            lr_config = (
-                ConfigDict(warmup_iters=warmup_iters)
-                if warmup_iters > 0
-                else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-            )
+            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
 
-            if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
-                early_stop = ConfigDict(
-                    start=int(params.early_stop_start),
-                    patience=int(params.early_stop_patience),
-                    iteration_patience=int(params.early_stop_iteration_patience),
-                )
-            else:
-                early_stop = False
-
-            runner = ConfigDict(max_epochs=int(params.num_iters))
-            if self._recipe_cfg.get("runner", None) and self._recipe_cfg.runner.get("type").startswith(
-                "IterBasedRunner"
-            ):
-                runner = ConfigDict(max_iters=int(params.num_iters))
-
-            hparams = ConfigDict(
-                optimizer=ConfigDict(lr=params.learning_rate),
-                lr_config=lr_config,
-                early_stop=early_stop,
-                data=ConfigDict(
-                    samples_per_gpu=int(params.batch_size),
-                    workers_per_gpu=int(params.num_workers),
-                ),
-                runner=runner,
-            )
-            if bool(self._hyperparams.tiling_parameters.enable_tiling):
-                logger.info("Tiling Enabled")
-                tiling_params = ConfigDict(
-                    tile_size=int(self._hyperparams.tiling_parameters.tile_size),
-                    overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
-                    max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
-                )
-                hparams.update(
-                    ConfigDict(
-                        data=ConfigDict(
-                            train=tiling_params,
-                            val=tiling_params,
-                            test=tiling_params,
-                        )
-                    )
-                )
-                hparams.update(dict(evaluation=dict(iou_thr=[0.5])))
-
-            hparams["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
-            self._recipe_cfg.merge_from_dict(hparams)
-
-        # This may go to configure function
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
@@ -199,58 +122,6 @@ class MMDetectionTask(OTXDetectionTask):
             logger.info(f"before override configs merging = {self._recipe_cfg}")
             self._recipe_cfg.merge_from_dict(self.override_configs)
             logger.info(f"after override configs merging = {self._recipe_cfg}")
-
-        # Remove FP16 config if running on CPU device and revert to FP32
-        # https://github.com/pytorch/pytorch/issues/23377
-        if not torch.cuda.is_available() and "fp16" in self._recipe_cfg:
-            logger.info("Revert FP16 to FP32 on CPU device")
-            if isinstance(self._recipe_cfg, Config):
-                del self._recipe_cfg._cfg_dict["fp16"]  # pylint: disable=protected-access
-            elif isinstance(self._recipe_cfg, ConfigDict):
-                del self._recipe_cfg["fp16"]
-
-        # default adaptive hook for evaluating before and after training
-        add_custom_hook_if_not_exists(
-            self._recipe_cfg,
-            ConfigDict(
-                type="AdaptiveTrainSchedulingHook",
-                enable_adaptive_interval_hook=False,
-                enable_eval_before_run=True,
-            ),
-        )
-        # Add/remove adaptive interval hook
-        if self._recipe_cfg.get("use_adaptive_interval", False):
-            update_or_add_custom_hook(
-                self._recipe_cfg,
-                ConfigDict(
-                    {
-                        "type": "AdaptiveTrainSchedulingHook",
-                        "max_interval": 5,
-                        "enable_adaptive_interval_hook": True,
-                        "enable_eval_before_run": True,
-                        **self._recipe_cfg.pop("adaptive_validation_interval", {}),
-                    }
-                ),
-            )
-        else:
-            self._recipe_cfg.pop("adaptive_validation_interval", None)
-
-        if "early_stop" in self._recipe_cfg:
-            remove_custom_hook(self._recipe_cfg, "EarlyStoppingHook")
-            early_stop = self._recipe_cfg.get("early_stop", False)
-            if early_stop:
-                early_stop_hook = ConfigDict(
-                    type="LazyEarlyStoppingHook",
-                    start=early_stop.start,
-                    patience=early_stop.patience,
-                    iteration_patience=early_stop.iteration_patience,
-                    interval=1,
-                    metric=self._recipe_cfg.early_stop_metric,
-                    priority=75,
-                )
-                update_or_add_custom_hook(self._recipe_cfg, early_stop_hook)
-            else:
-                remove_custom_hook(self._recipe_cfg, "LazyEarlyStoppingHook")
 
         # add Cancel tranining hook
         update_or_add_custom_hook(
@@ -269,43 +140,8 @@ class MMDetectionTask(OTXDetectionTask):
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
-        # make sure model to be in a training mode even after model is evaluated (mmcv bug)
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="ForceTrainModeHook", priority="LOWEST"),
-        )
-
-        # if num_workers is 0, persistent_workers must be False
-        data_cfg = self._recipe_cfg.data
-        for subset in ["train", "val", "test", "unlabeled"]:
-            if subset not in data_cfg:
-                continue
-            dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
-            workers_per_gpu = dataloader_cfg.get(
-                "workers_per_gpu",
-                data_cfg.get("workers_per_gpu", 0),
-            )
-            if workers_per_gpu == 0:
-                dataloader_cfg["persistent_workers"] = False
-                data_cfg[f"{subset}_dataloader"] = dataloader_cfg
-
         # Update recipe with caching modules
-        self._update_caching_modules(data_cfg)
-
-        if self._data_cfg is not None:
-            align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
-
-            # if self._anchors are set somewhere, anchors had already been clusted
-            # by this method or by loading trained model
-            if should_cluster_anchors(self._recipe_cfg) and len(self._anchors) == 0:
-                otx_dataset = get_configs_by_keys(self._data_cfg.data.train, "otx_dataset")
-                assert len(otx_dataset) == 1
-                otx_dataset = otx_dataset[0]
-                cluster_anchors(
-                    self._recipe_cfg,
-                    otx_dataset,
-                )
-                self._update_anchors(self._anchors, self._recipe_cfg.model.bbox_head.anchor_generator)
+        self._update_caching_modules(self._recipe_cfg.data)
 
         logger.info("initialized.")
 
@@ -315,7 +151,18 @@ class MMDetectionTask(OTXDetectionTask):
         origin["heights"] = new["heights"]
         origin["widths"] = new["widths"]
 
-    def configure(self, model_cfg, model_ckpt, data_cfg, training=True, subset="train", **kwargs):
+    # pylint: disable=too-many-arguments
+    def configure(
+        self,
+        model_cfg,
+        model_ckpt,
+        data_cfg,
+        training=True,
+        subset="train",
+        ir_options=None,
+        data_classes=None,
+        model_classes=None,
+    ):
         """Patch mmcv configs for OTX detection settings."""
         if self._train_type == TrainType.INCREMENTAL:
             configurer = IncrDetectionStage()
@@ -323,7 +170,9 @@ class MMDetectionTask(OTXDetectionTask):
             configurer = SemiSLDetectionStage()
         else:
             configurer = DetectionStage()
-        cfg = configurer.configure(model_cfg, model_ckpt, data_cfg, training, subset, **kwargs)
+        cfg = configurer.configure(
+            model_cfg, model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
+        )
         return cfg
 
     # pylint: disable=too-many-branches, too-many-statements
@@ -368,17 +217,11 @@ class MMDetectionTask(OTXDetectionTask):
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
-        recipe_cfg["model_classes"] = model_classes
-        if dataset is not None:
-            train_data_cfg = Stage.get_data_cfg(data_cfg, "train")
-            train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
 
         recipe_cfg.work_dir = self._output_path
         recipe_cfg.resume = self._resume
 
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, True, "train")
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, True, "train", None, data_classes, model_classes)
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -493,17 +336,11 @@ class MMDetectionTask(OTXDetectionTask):
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
-        recipe_cfg["model_classes"] = model_classes
-        if dataset is not None:
-            train_data_cfg = Stage.get_data_cfg(data_cfg, "train")
-            train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
 
         recipe_cfg.work_dir = self._output_path
         recipe_cfg.resume = self._resume
 
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test")
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test", None, data_classes, model_classes)
         logger.info("infer!")
 
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
@@ -655,12 +492,11 @@ class MMDetectionTask(OTXDetectionTask):
 
         # update model config -> model label schema
         model_classes = [label.name for label in self._model_label_schema]
-        recipe_cfg["model_classes"] = model_classes
 
         recipe_cfg.work_dir = self._output_path
         recipe_cfg.resume = self._resume
 
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test")
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test", None, None, model_classes)
 
         if precision == ModelPrecision.FP16:
             self._precision[0] = ModelPrecision.FP16
@@ -763,17 +599,11 @@ class MMDetectionTask(OTXDetectionTask):
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
-        recipe_cfg["model_classes"] = model_classes
-        if dataset is not None:
-            train_data_cfg = Stage.get_data_cfg(data_cfg, "train")
-            train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
 
         recipe_cfg.work_dir = self._output_path
         recipe_cfg.resume = self._resume
 
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test")
+        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test", None, data_classes, model_classes)
 
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
         if samples_per_gpu > 1:

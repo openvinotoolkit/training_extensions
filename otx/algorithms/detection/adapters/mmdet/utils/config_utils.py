@@ -222,6 +222,10 @@ def patch_datasets(
     assert "data" in config
     assert "type" in kwargs
 
+    # This code is for nncf, if we don't consider nncf, this code could be
+    # domain = config.get("domain", Domain.DETECTION)
+    domain = config.get("domain", domain)
+
     if subsets is None:
         subsets = ["train", "val", "test", "unlabeled"]
 
