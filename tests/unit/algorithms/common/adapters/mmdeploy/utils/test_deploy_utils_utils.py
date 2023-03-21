@@ -5,7 +5,10 @@
 import numpy as np
 import torch
 
-from otx.mpa.deploy.utils.utils import numpy_2_list, sync_batchnorm_2_batchnorm
+from otx.algorithms.common.adapters.mmdeploy.utils.utils import (
+    numpy_2_list,
+    sync_batchnorm_2_batchnorm,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

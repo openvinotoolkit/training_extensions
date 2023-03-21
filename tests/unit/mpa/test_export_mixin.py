@@ -62,7 +62,7 @@ class TestExporterMixin:
 
     @e2e_pytest_unit
     def test_mmdeploy_export(self, mocker):
-        from otx.mpa.deploy.apis import MMdeployExporter
+        from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
 
         mock_export_openvino = mocker.patch.object(MMdeployExporter, "export2openvino")
 

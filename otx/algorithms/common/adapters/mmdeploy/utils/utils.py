@@ -1,3 +1,4 @@
+"""Util functions of otx.algorithms.common.adapters.mmdeploy."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,6 +10,7 @@ import torch
 
 
 def sync_batchnorm_2_batchnorm(module, dim=2):
+    """Syncs the BatchNorm layers in a model to use regular BatchNorm layers."""
     if dim == 1:
         bn = torch.nn.BatchNorm1d
     elif dim == 2:
@@ -48,6 +50,7 @@ def sync_batchnorm_2_batchnorm(module, dim=2):
 
 
 def numpy_2_list(data):
+    """Converts NumPy arrays to Python lists."""
 
     if isinstance(data, np.ndarray):
         return data.tolist()
