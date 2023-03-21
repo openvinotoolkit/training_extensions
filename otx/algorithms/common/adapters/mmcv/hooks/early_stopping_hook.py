@@ -12,6 +12,7 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 from mmcv.utils import print_log
 
 from otx.mpa.utils.logger import get_logger
+from typing import Any, Dict, List, Optional
 
 logger = get_logger()
 
@@ -261,6 +262,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         "mIoU",
         "mAcc",
         "aAcc",
+        "MHAcc"
     ]
     less_keys = ["loss"]
 

@@ -3,7 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.algorithms.common.adapters.mmcv.hooks.model_ema_v2_hook import ModelEmaV2, ModelEmaV2Hook
+from otx.algorithms.common.adapters.mmcv.hooks.model_ema_v2_hook import (
+    ModelEmaV2,
+    ModelEmaV2Hook,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

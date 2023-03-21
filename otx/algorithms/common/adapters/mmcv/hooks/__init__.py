@@ -9,12 +9,12 @@ from .early_stopping_hook import (
     EarlyStoppingHook,
     LazyEarlyStoppingHook,
     ReduceLROnPlateauLrUpdaterHook,
+    StopLossNanTrainingHook
 )
 from .ema_momentum_update_hook import EMAMomentumUpdateHook
 from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
-from .hooks import StopLossNanTrainingHook
 from .ib_loss_hook import IBLossHook
 from .logger_hook import OTXLoggerHook
 from .logger_replace_hook import LoggerReplaceHook

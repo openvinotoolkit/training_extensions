@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.algorithms.common.adapters.mmcv.hooks.composed_dataloaders_hook import ComposedDataLoadersHook
+from otx.algorithms.common.adapters.mmcv.hooks.composed_dataloaders_hook import (
+    ComposedDataLoadersHook,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

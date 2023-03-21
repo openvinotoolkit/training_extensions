@@ -5,7 +5,9 @@
 
 from mmcv.utils import Config
 
-from otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook import CheckpointHookWithValResults
+from otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook import (
+    CheckpointHookWithValResults,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
