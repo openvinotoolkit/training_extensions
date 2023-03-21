@@ -4,7 +4,7 @@ Original papers:
 - 'Efficient Visual Pretraining with Contrastive Detection', https://arxiv.org/abs/2103.10957
 """
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=unused-argument, invalid-name, unnecessary-pass, not-callable
@@ -24,10 +24,9 @@ from mmseg.models.builder import (  # pylint: disable=no-name-in-module
 from mmseg.ops import resize
 from torch import nn
 
-from otx.mpa.modules.models.segmentors.class_incr_encoder_decoder import (
-    ClassIncrEncoderDecoder,
-)
 from otx.mpa.utils.logger import get_logger
+
+from .class_incr_encoder_decoder import ClassIncrEncoderDecoder
 
 logger = get_logger()
 
@@ -517,10 +516,10 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
     # pylint: disable=arguments-renamed
     def forward_train(
         self,
-        img: torch.Tensor,
-        img_metas: List[Dict],
-        gt_semantic_seg: torch.Tensor,
-        pixel_weights: Optional[torch.Tensor] = None,
+        img,
+        img_metas,
+        gt_semantic_seg,
+        pixel_weights=None,
         **kwargs,
     ):
         """Forward function for training.

@@ -20,6 +20,7 @@ from typing import List, Optional
 
 import cv2
 import numpy as np
+import torch
 import tqdm
 from mmseg.datasets.custom import CustomDataset
 from skimage.segmentation import felzenszwalb
@@ -154,6 +155,17 @@ def get_extended_label_names(labels: List[LabelEntity]):
     target_labels = [v.name for v in sorted(labels, key=lambda x: x.id)]
     all_labels = ["background"] + target_labels
     return all_labels
+
+
+def get_valid_label_mask_per_batch(img_metas, num_classes):
+    """Get valid label mask removing ignored classes to zero mask in a batch."""
+    valid_label_mask_per_batch = []
+    for _, meta in enumerate(img_metas):
+        valid_label_mask = torch.Tensor([1 for _ in range(num_classes)])
+        if "ignored_labels" in meta and meta["ignored_labels"]:
+            valid_label_mask[meta["ignored_labels"]] = 0
+        valid_label_mask_per_batch.append(valid_label_mask)
+    return valid_label_mask_per_batch
 
 
 @check_input_parameters_type()

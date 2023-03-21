@@ -8,5 +8,4 @@ Model Preparation Algorithm
    classification
    detection
    segmentation
-   deploy
    utils

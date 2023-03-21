@@ -5,7 +5,7 @@
 import numpy as np
 from mmcv.runner import wrap_fp16_model
 
-from otx.mpa.deploy.utils import sync_batchnorm_2_batchnorm
+from otx.algorithms.common.adapters.mmdeploy.utils import sync_batchnorm_2_batchnorm
 from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
@@ -46,7 +46,7 @@ class SegExporter(ExporterMixin, SegStage):
         from mmseg.apis.inference import LoadImage
         from mmseg.datasets.pipelines import Compose
 
-        from ..deploy.apis import NaiveExporter
+        from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 
         def get_fake_data(cfg, orig_img_shape=(128, 128, 3)):
             pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
