@@ -6,6 +6,7 @@
 # flake8: noqa
 
 from .augmix import AugMixAugment
+from .cython_augments import pil_augment
 from .otx_transforms import PILToTensor, RandomRotate, TensorNormalize
 from .random_augment import OTXRandAugment
 from .twocrop_transform import TwoCropTransform
@@ -17,4 +18,5 @@ __all__ = [
     "RandomRotate",
     "OTXRandAugment",
     "TwoCropTransform",
+    "pil_augment",
 ]

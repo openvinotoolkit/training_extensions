@@ -5,7 +5,7 @@
 
 from mmcv.utils import Config
 
-from otx.algorithms.classification.adapters.mmcls.hooks.checkpoint_hook import (
+from otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook import (
     CheckpointHookWithValResults,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -54,9 +54,7 @@ class TestCheckpointHookWithValResults:
         """Test after_train_epoch function."""
 
         mocker.patch.object(CheckpointHookWithValResults, "every_n_epochs", return_value=True)
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.hooks.checkpoint_hook.allreduce_params", return_value=True
-        )
+        mocker.patch("otx.algorithms.common.adapters.mmcv.hooks.checkpoint_hook.allreduce_params", return_value=True)
         hook = CheckpointHookWithValResults(sync_buffer=True, out_dir="./tmp_dir/")
         runner = MockRunner()
         hook.after_train_epoch(runner)

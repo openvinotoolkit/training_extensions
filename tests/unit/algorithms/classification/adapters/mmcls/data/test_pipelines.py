@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from otx.algorithms.classification.adapters.mmcls.datasets.otx_pipelines import (
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.otx_pipelines import (
     GaussianBlur,
     LoadImageFromOTXDataset,
     OTXColorJitter,
@@ -109,7 +109,8 @@ def test_pil_image_to_nd_array(inputs_PIL) -> None:
 def test_post_aug(mocker, inputs_np):
     """Test PostAug."""
     mocker.patch(
-        "otx.algorithms.classification.adapters.mmcls.datasets.otx_pipelines.Compose", return_value=lambda x: x
+        "otx.algorithms.classification.adapters.mmcls.datasets.pipelines.otx_pipelines.Compose",
+        return_value=lambda x: x,
     )
 
     post_aug = PostAug(keys=dict(orig=lambda x: x))
