@@ -101,6 +101,7 @@ class CustomMaskRCNNTileOptimised(CustomMaskRCNN):
         super().__init__(*args, **kwargs)
         self.tile_classifier = TileClassifier()
 
+    # pylint: disable=too-many-arguments
     def forward_train(
         self, img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore=None, gt_masks=None, proposals=None, **kwargs
     ):
@@ -205,6 +206,7 @@ if is_mmdeploy_enabled():
         """
         return self.sigmoid(self.forward(img))[0][0]
 
+    # pylint: disable=line-too-long
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.TileClassifier.simple_test"  # noqa: E501
     )
@@ -245,6 +247,7 @@ if is_mmdeploy_enabled():
         img_metas[0]["img_shape"] = img_shape
         return self.simple_test(img, img_metas, **kwargs)
 
+    # pylint: disable=line-too-long
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.forward"  # noqa: E501
     )
@@ -271,6 +274,7 @@ if is_mmdeploy_enabled():
 
         return __forward_impl(ctx, self, img, img_metas=img_metas, **kwargs)
 
+    # pylint: disable=line-too-long
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.simple_test"  # noqa: E501
     )
