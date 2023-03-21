@@ -390,12 +390,9 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../mpa/index.html">Model Preparation Algorithm</a><input class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../mpa/modules/index.html">Modules</a><input class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../mpa/modules/models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../mpa/modules/models/backbones.html">Backbones</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../mpa/modules/models/classifiers.html">Classifiers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../mpa/modules/models/heads.html">Heads</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../mpa/modules/models/losses.html">Losses</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../mpa/modules/models/scalar_schedulers.html">Scalar Schedulers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../mpa/modules/models/segmentors.html">Segmentors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../mpa/modules/models/utils.html">Utils</a></li>
 </ul>
 </li>
@@ -475,6 +472,22 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="mmseg.html">mmsegmentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder"><code class="docutils literal notranslate"><span class="pre">ClassIncrEncoderDecoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.forward_train"><code class="docutils literal notranslate"><span class="pre">ClassIncrEncoderDecoder.forward_train()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.load_state_dict_pre_hook"><code class="docutils literal notranslate"><span class="pre">ClassIncrEncoderDecoder.load_state_dict_pre_hook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.training"><code class="docutils literal notranslate"><span class="pre">ClassIncrEncoderDecoder.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.ConstantScalarScheduler"><code class="docutils literal notranslate"><span class="pre">ConstantScalarScheduler</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore"><code class="docutils literal notranslate"><span class="pre">CrossEntropyLossWithIgnore</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.name"><code class="docutils literal notranslate"><span class="pre">CrossEntropyLossWithIgnore.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.training"><code class="docutils literal notranslate"><span class="pre">CrossEntropyLossWithIgnore.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead"><code class="docutils literal notranslate"><span class="pre">CustomFCNHead</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead.training"><code class="docutils literal notranslate"><span class="pre">CustomFCNHead.training</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB"><code class="docutils literal notranslate"><span class="pre">DetConB</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.extract_feat"><code class="docutils literal notranslate"><span class="pre">DetConB.extract_feat()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConB.forward"><code class="docutils literal notranslate"><span class="pre">DetConB.forward()</span></code></a></li>
@@ -495,13 +508,46 @@
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.DetConLoss.training"><code class="docutils literal notranslate"><span class="pre">DetConLoss.training</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.LiteHRNet"><code class="docutils literal notranslate"><span class="pre">LiteHRNet</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.LiteHRNet.forward"><code class="docutils literal notranslate"><span class="pre">LiteHRNet.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.LiteHRNet.init_weights"><code class="docutils literal notranslate"><span class="pre">LiteHRNet.init_weights()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.LiteHRNet.train"><code class="docutils literal notranslate"><span class="pre">LiteHRNet.train()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.LiteHRNet.training"><code class="docutils literal notranslate"><span class="pre">LiteHRNet.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone"><code class="docutils literal notranslate"><span class="pre">MMOVBackbone</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone.forward"><code class="docutils literal notranslate"><span class="pre">MMOVBackbone.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone.init_weights"><code class="docutils literal notranslate"><span class="pre">MMOVBackbone.init_weights()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVBackbone.training"><code class="docutils literal notranslate"><span class="pre">MMOVBackbone.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVDecodeHead"><code class="docutils literal notranslate"><span class="pre">MMOVDecodeHead</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVDecodeHead.forward"><code class="docutils literal notranslate"><span class="pre">MMOVDecodeHead.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVDecodeHead.init_weights"><code class="docutils literal notranslate"><span class="pre">MMOVDecodeHead.init_weights()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MMOVDecodeHead.training"><code class="docutils literal notranslate"><span class="pre">MMOVDecodeHead.training</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MPASegDataset"><code class="docutils literal notranslate"><span class="pre">MPASegDataset</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.aug_test"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.aug_test()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.encode_decode"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.encode_decode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.extract_feat"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.extract_feat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.forward_dummy"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.forward_dummy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.forward_train"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.forward_train()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.load_state_dict_pre_hook"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.load_state_dict_pre_hook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.simple_test"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.simple_test()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.state_dict_hook"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.state_dict_hook()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.training"><code class="docutils literal notranslate"><span class="pre">MeanTeacherSegmentor.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.PolyScalarScheduler"><code class="docutils literal notranslate"><span class="pre">PolyScalarScheduler</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SelfSLMLP"><code class="docutils literal notranslate"><span class="pre">SelfSLMLP</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SelfSLMLP.forward"><code class="docutils literal notranslate"><span class="pre">SelfSLMLP.forward()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SelfSLMLP.init_weights"><code class="docutils literal notranslate"><span class="pre">SelfSLMLP.init_weights()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SelfSLMLP.training"><code class="docutils literal notranslate"><span class="pre">SelfSLMLP.training</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.StepScalarScheduler"><code class="docutils literal notranslate"><span class="pre">StepScalarScheduler</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB"><code class="docutils literal notranslate"><span class="pre">SupConDetConB</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB.forward_train"><code class="docutils literal notranslate"><span class="pre">SupConDetConB.forward_train()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="mmseg.html#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB.training"><code class="docutils literal notranslate"><span class="pre">SupConDetConB.training</span></code></a></li>

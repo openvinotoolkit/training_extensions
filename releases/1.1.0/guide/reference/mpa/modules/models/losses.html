@@ -45,7 +45,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/mpa/modules/models/losses';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
-    <link rel="next" title="Scalar Schedulers" href="scalar_schedulers.html" />
+    <link rel="next" title="Utils" href="utils.html" />
     <link rel="prev" title="Heads" href="heads.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
@@ -390,12 +390,9 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">Model Preparation Algorithm</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html">Modules</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="index.html">Models</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="backbones.html">Backbones</a></li>
 <li class="toctree-l4"><a class="reference internal" href="classifiers.html">Classifiers</a></li>
 <li class="toctree-l4"><a class="reference internal" href="heads.html">Heads</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">Losses</a></li>
-<li class="toctree-l4"><a class="reference internal" href="scalar_schedulers.html">Scalar Schedulers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="segmentors.html">Segmentors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="utils.html">Utils</a></li>
 </ul>
 </li>
@@ -657,137 +654,6 @@ Args:</p>
 <dd><p>return a tensor containing all the elements outside the diagonal of x</p>
 </dd></dl>
 
-<span class="target" id="module-otx.mpa.modules.models.losses.base_pixel_loss"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.base_pixel_loss.</span></span><span class="sig-name descname"><span class="pre">BasePixelLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pr_product</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conf_penalty_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_reweighting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_reg_weight">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_reg_weight</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_reg_weight" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_scale">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_scale</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_scale" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_border_reweighting">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">with_border_reweighting</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_border_reweighting" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_pr_product">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">with_pr_product</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_pr_product" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_regularization">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">with_regularization</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_regularization" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_pixel_loss.entropy">
-<span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.base_pixel_loss.</span></span><span class="sig-name descname"><span class="pre">entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_pixel_loss.entropy" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.losses.base_weighted_loss"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.base_weighted_loss.</span></span><span class="sig-name descname"><span class="pre">BaseWeightedLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">255</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_jitter_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_jitter_momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss" title="Permalink to this definition">#</a></dt>
-<dd><p>Base class for loss.</p>
-<p>All subclass should overwrite the <code class="docutils literal notranslate"><span class="pre">_forward()</span></code> method which returns the
-normal loss without loss weights.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>loss_weight (float or dict): Factor scalar multiplied on the loss.</dt><dd><p>Default: 1.0.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.epoch_size">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">epoch_size</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.epoch_size" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.forward" title="Permalink to this definition">#</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt><a href="#id9"><span class="problematic" id="id10">*</span></a>args: The positional arguments for the corresponding</dt><dd><p>loss.</p>
-</dd>
-<dt><a href="#id11"><span class="problematic" id="id12">**</span></a>kwargs: The keyword arguments for the corresponding</dt><dd><p>loss.</p>
-</dd>
-</dl>
-</dd>
-<dt>Returns:</dt><dd><p>torch.Tensor: The calculated loss.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.iter">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iter</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.iter" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.last_loss_weight">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_loss_weight</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.last_loss_weight" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.set_step_params">
-<span class="sig-name descname"><span class="pre">set_step_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_iter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.set_step_params" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.with_loss_jitter">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">with_loss_jitter</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.with_loss_jitter" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.</span></span><span class="sig-name descname"><span class="pre">CrossEntropyLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore" title="Permalink to this definition">#</a></dt>
-<dd><p>CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.</p>
-<dl>
-<dt>Args:</dt><dd><p>model_classes (list[str]): Model classes
-bg_aware (bool, optional): Whether to enable BG-aware loss</p>
-<blockquote>
-<div><p>‘background’ class would be added the start of model classes/label schema</p>
-</div></blockquote>
-<dl class="simple">
-<dt>reduction (str, optional): . Defaults to ‘mean’.</dt><dd><p>Options are “none”, “mean” and “sum”.</p>
-</dd>
-</dl>
-<p>loss_weight (float, optional): Weight of the loss. Defaults to 1.0.</p>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.name" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <span class="target" id="module-otx.mpa.modules.models.losses.cross_entropy_loss"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.cross_entropy_loss.</span></span><span class="sig-name descname"><span class="pre">CrossEntropyLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore" title="Permalink to this definition">#</a></dt>
@@ -851,16 +717,6 @@ registered hooks while the latter silently ignores them.</p>
 
 </dd></dl>
 
-<span class="target" id="module-otx.mpa.modules.models.losses.mpa_pixel_base"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.mpa_pixel_base.</span></span><span class="sig-name descname"><span class="pre">MPABasePixelLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <span class="target" id="module-otx.mpa.modules.models.losses.utils"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.losses.utils.LossEqualizer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.losses.utils.</span></span><span class="sig-name descname"><span class="pre">LossEqualizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.losses.utils.LossEqualizer" title="Permalink to this definition">#</a></dt>
@@ -888,10 +744,10 @@ registered hooks while the latter silently ignores them.</p>
           <p class="prev-next-title">Heads</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="scalar_schedulers.html" title="next page">
+  <a class='right-next' id="next-link" href="utils.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Scalar Schedulers</p>
+      <p class="prev-next-title">Utils</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -1026,183 +882,6 @@ registered hooks while the latter silently ignores them.</p>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     BasePixelLoss
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_reg_weight">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BasePixelLoss.last_reg_weight
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.last_scale">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BasePixelLoss.last_scale
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BasePixelLoss.training
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_border_reweighting">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BasePixelLoss.with_border_reweighting
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_pr_product">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BasePixelLoss.with_pr_product
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.BasePixelLoss.with_regularization">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BasePixelLoss.with_regularization
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_pixel_loss.entropy">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     entropy()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     BaseWeightedLoss
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.epoch_size">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BaseWeightedLoss.epoch_size
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.forward">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BaseWeightedLoss.forward()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.iter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BaseWeightedLoss.iter
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.last_loss_weight">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BaseWeightedLoss.last_loss_weight
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.set_step_params">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BaseWeightedLoss.set_step_params()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BaseWeightedLoss.training
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.base_weighted_loss.BaseWeightedLoss.with_loss_jitter">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BaseWeightedLoss.with_loss_jitter
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     CrossEntropyLossWithIgnore
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.name">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       CrossEntropyLossWithIgnore.name
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_entropy_loss_with_ignore.CrossEntropyLossWithIgnore.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       CrossEntropyLossWithIgnore.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.cross_entropy_loss.CrossEntropyLossWithIgnore">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -1281,26 +960,6 @@ registered hooks while the latter silently ignores them.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        IBLoss.update_weight()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     MPABasePixelLoss
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.losses.mpa_pixel_base.MPABasePixelLoss.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       MPABasePixelLoss.training
       </span>
      </code>
     </a>

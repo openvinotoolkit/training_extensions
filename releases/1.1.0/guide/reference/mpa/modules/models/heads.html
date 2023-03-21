@@ -390,12 +390,9 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">Model Preparation Algorithm</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html">Modules</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="index.html">Models</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="backbones.html">Backbones</a></li>
 <li class="toctree-l4"><a class="reference internal" href="classifiers.html">Classifiers</a></li>
 <li class="toctree-l4 current active"><a class="current reference internal" href="#">Heads</a></li>
 <li class="toctree-l4"><a class="reference internal" href="losses.html">Losses</a></li>
-<li class="toctree-l4"><a class="reference internal" href="scalar_schedulers.html">Scalar Schedulers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="segmentors.html">Segmentors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="utils.html">Utils</a></li>
 </ul>
 </li>
@@ -474,17 +471,7 @@
 <h1>Heads<a class="headerlink" href="#heads" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<span class="target" id="module-otx.mpa.modules.models.heads"></span><span class="target" id="module-otx.mpa.modules.models.heads.aggregator_mixin"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.aggregator_mixin.AggregatorMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.aggregator_mixin.</span></span><span class="sig-name descname"><span class="pre">AggregatorMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_aggregator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator_min_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator_merge_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator_use_concat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.aggregator_mixin.AggregatorMixin" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.aggregator_mixin.AggregatorMixin.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.aggregator_mixin.AggregatorMixin.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.heads.custom_cls_head"></span><dl class="py class">
+<span class="target" id="module-otx.mpa.modules.models.heads"></span><span class="target" id="module-otx.mpa.modules.models.heads.custom_cls_head"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.heads.custom_cls_head.CustomLinearClsHead">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.custom_cls_head.</span></span><span class="sig-name descname"><span class="pre">CustomLinearClsHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'layer':</span> <span class="pre">'Linear',</span> <span class="pre">'std':</span> <span class="pre">0.01,</span> <span class="pre">'type':</span> <span class="pre">'Normal'}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.custom_cls_head.CustomLinearClsHead" title="Permalink to this definition">#</a></dt>
 <dd><p>Custom linear classifier head.</p>
@@ -540,17 +527,6 @@ init_cfg (dict | optional): The extra init config of layers.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.heads.custom_cls_head.CustomNonLinearClsHead.training">
 <span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.custom_cls_head.CustomNonLinearClsHead.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.heads.custom_fcn_head"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.custom_fcn_head.CustomFCNHead">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.custom_fcn_head.</span></span><span class="sig-name descname"><span class="pre">CustomFCNHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.custom_fcn_head.CustomFCNHead" title="Permalink to this definition">#</a></dt>
-<dd><p>Custom Fully Convolution Networks for Semantic Segmentation.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.custom_fcn_head.CustomFCNHead.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.custom_fcn_head.CustomFCNHead.training" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -776,21 +752,6 @@ init_cfg (dict | optional): The extra init config of layers.</p>
 
 </dd></dl>
 
-<span class="target" id="module-otx.mpa.modules.models.heads.mix_loss_mixin"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.mix_loss_mixin.</span></span><span class="sig-name descname"><span class="pre">MixLossMixin</span></span><a class="headerlink" href="#otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin.losses">
-<span class="sig-name descname"><span class="pre">losses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg_logit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin.losses" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <span class="target" id="module-otx.mpa.modules.models.heads.non_linear_cls_head"></span><dl class="py class">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.heads.non_linear_cls_head.NonLinearClsHead">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.non_linear_cls_head.</span></span><span class="sig-name descname"><span class="pre">NonLinearClsHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hid_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1280</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_cfg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'type':</span> <span class="pre">'ReLU'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'loss_weight':</span> <span class="pre">1.0,</span> <span class="pre">'type':</span> <span class="pre">'CrossEntropyLoss'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.non_linear_cls_head.NonLinearClsHead" title="Permalink to this definition">#</a></dt>
@@ -827,124 +788,6 @@ topk (int | tuple): Top-k accuracy.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.mpa.modules.models.heads.non_linear_cls_head.NonLinearClsHead.training">
 <span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.non_linear_cls_head.NonLinearClsHead.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.heads.pixel_weights_mixin"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.pixel_weights_mixin.</span></span><span class="sig-name descname"><span class="pre">PixelWeightsMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_loss_equalizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gt_semantic_seg'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.forward_train">
-<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_logits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.forward_train" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward function for training.
-Args:</p>
-<blockquote>
-<div><p>inputs (list[Tensor]): List of multi-level img features.
-img_metas (list[dict]): List of image info dict where each dict</p>
-<blockquote>
-<div><p>has: ‘img_shape’, ‘scale_factor’, ‘flip’, and may also contain
-‘filename’, ‘ori_shape’, ‘pad_shape’, and ‘img_norm_cfg’.
-For details on the values of these keys see
-<cite>mmseg/datasets/pipelines/formatting.py:Collect</cite>.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>gt_semantic_seg (Tensor): Semantic segmentation masks</dt><dd><p>used if the architecture supports semantic segmentation task.</p>
-</dd>
-</dl>
-<p>train_cfg (dict): The training config.
-pixel_weights (Tensor): Pixels weights.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>dict[str, Tensor]: a dictionary of loss components</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.last_scale">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">last_scale</span></span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.last_scale" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.loss_target_name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loss_target_name</span></span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.loss_target_name" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.losses">
-<span class="sig-name descname"><span class="pre">losses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg_logit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.losses" title="Permalink to this definition">#</a></dt>
-<dd><p>Compute segmentation loss.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.set_step_params">
-<span class="sig-name descname"><span class="pre">set_step_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_iter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.set_step_params" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.pixel_weights_mixin.</span></span><span class="sig-name descname"><span class="pre">PixelWeightsMixin2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_loss_equalizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gt_semantic_seg'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.forward_train">
-<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_logits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.forward_train" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward function for training.
-Args:</p>
-<blockquote>
-<div><p>inputs (list[Tensor]): List of multi-level img features.
-img_metas (list[dict]): List of image info dict where each dict</p>
-<blockquote>
-<div><p>has: ‘img_shape’, ‘scale_factor’, ‘flip’, and may also contain
-‘filename’, ‘ori_shape’, ‘pad_shape’, ‘img_norm_cfg’,
-and ‘ignored_labels’.
-For details on the values of these keys see
-<cite>mmseg/datasets/pipelines/formatting.py:Collect</cite>.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>gt_semantic_seg (Tensor): Semantic segmentation masks</dt><dd><p>used if the architecture supports semantic segmentation task.</p>
-</dd>
-</dl>
-<p>train_cfg (dict): The training config.
-pixel_weights (Tensor): Pixels weights.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>dict[str, Tensor]: a dictionary of loss components</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.losses">
-<span class="sig-name descname"><span class="pre">losses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg_logit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.losses" title="Permalink to this definition">#</a></dt>
-<dd><p>Compute segmentation loss.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<span class="target" id="module-otx.mpa.modules.models.heads.segment_out_norm_mixin"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.models.heads.segment_out_norm_mixin.</span></span><span class="sig-name descname"><span class="pre">SegmentOutNormMixin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_out_seg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_out_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin.cls_seg">
-<span class="sig-name descname"><span class="pre">cls_seg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin.cls_seg" title="Permalink to this definition">#</a></dt>
-<dd><p>Classify each pixel.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin.training" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1153,26 +996,6 @@ Args:</p>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.aggregator_mixin.AggregatorMixin">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     AggregatorMixin
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.aggregator_mixin.AggregatorMixin.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       AggregatorMixin.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.custom_cls_head.CustomLinearClsHead">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -1251,26 +1074,6 @@ Args:</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        CustomNonLinearClsHead.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.custom_fcn_head.CustomFCNHead">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     CustomFCNHead
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.custom_fcn_head.CustomFCNHead.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       CustomFCNHead.training
       </span>
      </code>
     </a>
@@ -1567,35 +1370,6 @@ Args:</p>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     MixLossMixin
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin.losses">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       MixLossMixin.losses()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.mix_loss_mixin.MixLossMixin.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       MixLossMixin.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.non_linear_cls_head.NonLinearClsHead">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -1636,138 +1410,6 @@ Args:</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        NonLinearClsHead.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     PixelWeightsMixin
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.forward_train">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin.forward_train()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.last_scale">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin.last_scale
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.loss_target_name">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin.loss_target_name
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.losses">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin.losses()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.set_step_params">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin.set_step_params()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     PixelWeightsMixin2
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.forward_train">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin2.forward_train()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.losses">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin2.losses()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.pixel_weights_mixin.PixelWeightsMixin2.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       PixelWeightsMixin2.training
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     SegmentOutNormMixin
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin.cls_seg">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SegmentOutNormMixin.cls_seg()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.models.heads.segment_out_norm_mixin.SegmentOutNormMixin.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       SegmentOutNormMixin.training
       </span>
      </code>
     </a>
