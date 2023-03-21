@@ -23,12 +23,10 @@ from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import parse_model_template
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.utils.shape_factory import ShapeFactory
-from otx.mpa.det.exporter import DetectionExporter
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_helpers import generate_random_annotated_image
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
-    DEFAULT_ISEG_RECIPE_CONFIG_PATH,
     DEFAULT_ISEG_TEMPLATE_DIR,
     init_environment,
 )
@@ -221,3 +219,13 @@ class TestTilingDetection:
             )
         task_env.model = model
         task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+
+    @e2e_pytest_unit
+    def test_openvino(self):
+        # TODO[EUGENE]: implement unittest for tiling prediction with openvino
+        pass
+
+    @e2e_pytest_unit
+    def test_patch_tiling_func(self):
+        # TODO[EUGENE]: implement unittest for patching tiling functions
+        pass

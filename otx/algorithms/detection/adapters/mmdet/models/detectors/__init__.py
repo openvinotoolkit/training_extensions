@@ -24,5 +24,5 @@ __all__ = [
     "L2SPDetectorMixin",
     "SAMDetectorMixin",
     "UnbiasedTeacher",
-    "CustomMaskRCNNTileOptimised"
+    "CustomMaskRCNNTileOptimised",
 ]

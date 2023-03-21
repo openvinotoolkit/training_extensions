@@ -1,3 +1,4 @@
+"""Custom MaskRCNN detector with tile classifier."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,8 +19,9 @@ logger = get_logger()
 
 
 class TileClassifier(torch.nn.Module):
+    """Tile classifier for the tile optimised MaskRCNN model."""
+
     def __init__(self):
-        """Tile classifier model"""
         super().__init__()
         self.fp16_enabled = False
         self.features = nn.Sequential(
@@ -190,7 +192,7 @@ if is_mmdeploy_enabled():
 
     @mark("tile_classifier", inputs=["image"], outputs=["tile_prob"])
     def tile_classifier__simple_test_impl(ctx, self, img):
-        """Tile Classifier Simple Test Impl with added mmdeploy marking for model partitioning
+        """Tile Classifier Simple Test Impl with added mmdeploy marking for model partitioning.
 
         Partition tile classifier by marking tile classifier in tracing.
 
@@ -204,7 +206,7 @@ if is_mmdeploy_enabled():
         return self.sigmoid(self.forward(img))[0][0]
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.TileClassifier.simple_test"
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.TileClassifier.simple_test"  # noqa: E501
     )
     def tile_classifier__simple_test(ctx, self, img, **kwargs):
         """Tile Classifier Simple Test Rewriter.
@@ -222,6 +224,16 @@ if is_mmdeploy_enabled():
 
     @mark("custom_maskrcnn_forward", inputs=["input"], outputs=["dets", "labels", "masks", "feats", "saliencies"])
     def __forward_impl(ctx, self, img, img_metas, **kwargs):
+        """Custom MaskRCNN Forward Impl with added mmdeploy marking for model partitioning.
+
+        Args:
+            ctx (object): object context
+            img (torch.Tensor): input image
+            img_metas (dict): _description_
+
+        Returns:
+            _type_: _description_
+        """
         assert isinstance(img, torch.Tensor)
 
         deploy_cfg = ctx.cfg
@@ -234,9 +246,20 @@ if is_mmdeploy_enabled():
         return self.simple_test(img, img_metas, **kwargs)
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.forward"
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.forward"  # noqa: E501
     )
     def custom_maskrcnn__forward(ctx, self, img, img_metas=None, return_loss=False, **kwargs):
+        """Custom MaskRCNN Forward Rewriter.
+
+        Args:
+            ctx (object): object context
+            img (torch.Tensor): input image
+            img_metas (dict, optional): _description_. Defaults to None.
+            return_loss (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            _type_: _description_
+        """
         if img_metas is None:
             img_metas = [{}]
         else:
@@ -249,10 +272,10 @@ if is_mmdeploy_enabled():
         return __forward_impl(ctx, self, img, img_metas=img_metas, **kwargs)
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.simple_test"
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.simple_test"  # noqa: E501
     )
     def custom_mask_rcnn__simple_test(ctx, self, img, img_metas, proposals=None, **kwargs):
-        """Custom Mask RCNN Simple Test Rewriter for ONNX tracing
+        """Custom Mask RCNN Simple Test Rewriter for ONNX tracing.
 
         Tile classifier is added to ONNX tracing in order to partition the model.
 
