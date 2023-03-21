@@ -192,18 +192,6 @@ class TestTilingDetection:
         assert len(merged_bbox_results) == dataset.num_samples
 
     @e2e_pytest_unit
-    def test_tile_classifier_deployment(self, mocker, otx_model):
-        cfg = MPAConfig.fromfile(DEFAULT_ISEG_RECIPE_CONFIG_PATH)
-        exporter = DetectionExporter(name="", mode="train", config=cfg, common_cfg=None, index=0)
-        model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
-        data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "data_pipeline.py"))
-        args = {"precision": "FP32", "model_builder": build_detector}
-        exporter.run = mocker.MagicMock(return_value=True)
-        returned_value = exporter.run(model_cfg, "", data_cfg, **args)
-        assert "model_builder" in args
-        assert returned_value is True
-
-    @e2e_pytest_unit
     def test_load_tiling_parameters(self, tmp_dir_path):
         maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
