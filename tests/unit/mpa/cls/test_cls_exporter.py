@@ -1,8 +1,8 @@
 import pytest
 
 from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
+from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 from otx.mpa.cls.exporter import ClsExporter
-from otx.mpa.deploy.apis import NaiveExporter
 from otx.mpa.exporter_mixin import ExporterMixin
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import setup_mpa_task_parameters

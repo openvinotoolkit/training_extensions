@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import tempfile
 from collections import defaultdict
 
 import pytest
@@ -42,7 +43,7 @@ def test_patch_config() -> None:
     """
 
     cls_datapipeline_path = "otx/algorithms/action/configs/classification/x3d/data_pipeline.py"
-    work_dir = "OTX-tempdir9104"
+    work_dir = str(tempfile.TemporaryDirectory("OTX-tempdir9104"))
 
     with pytest.raises(NotImplementedError):
         patch_config(CLS_CONFIG, cls_datapipeline_path, work_dir, TaskType.CLASSIFICATION)

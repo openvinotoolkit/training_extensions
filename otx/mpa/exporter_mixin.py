@@ -91,7 +91,7 @@ class ExporterMixin(object):
         deploy_cfg,
         model_name="model",
     ):
-        from .deploy.apis import MMdeployExporter
+        from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
 
         if precision == "FP16":
             deploy_cfg.backend_config.mo_options.flags.append("--compress_to_fp16")

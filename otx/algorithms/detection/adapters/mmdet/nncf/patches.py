@@ -19,6 +19,7 @@ from mmdet.models.roi_heads.bbox_heads.bbox_head import BBoxHead
 from mmdet.models.roi_heads.bbox_heads.sabl_head import SABLHead
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
     is_in_nncf_tracing,
@@ -26,7 +27,6 @@ from otx.algorithms.common.adapters.nncf import (
     no_nncf_trace_wrapper,
 )
 from otx.algorithms.common.adapters.nncf.patches import nncf_trace_context
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
 
 HEADS_TARGETS = dict(
     classes=(

@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.1.0\]
+
+### New features
+
+- Add FP16 IR export support (#1683)
+- Add in-memory caching in dataloader (#1694)
+- Add MoViNet template for action classification (#1742)
+- Add Semi-SL multilabel classification algorithm (#1805)
+- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (#1534)
+- Add train-type parameter to otx train (#1874)
+- Add embedding of inference configuration to IR for classification (#1842)
+- Enable VOC dataset in OTX (#1862)
+
+### Enhancements
+
+- Parametrize saliency maps dumping in export (#1888)
+- Bring mmdeploy to action recognition model export & Test optimization of action tasks (#1848)
+- Update backbone lists (#1835)
+
+### Bug fixes
+
+- Handle unpickable update_progress_callback (#1892)
+- Dataset Adapter: Avoid duplicated annotation and permit empty image (#1873)
+- Arrange scale between bbox preds and bbox targets in ATSS (#1880)
+- Fix label mismatch of evaluation and validation with large dataset in semantic segmentation (#1851)
+
 ## \[v1.0.1\]
 
 ### Enhancements
