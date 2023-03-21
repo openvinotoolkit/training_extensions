@@ -27,6 +27,7 @@ from .pipelines.transforms import (
     RandomRotate,
     TensorNormalize,
     TwoCropTransform,
+    pil_augment,
 )
 
 __all__ = [
@@ -39,5 +40,6 @@ __all__ = [
     "OTXClsDataset",
     "OTXMultilabelClsDataset",
     "OTXHierarchicalClsDataset",
+    "pil_augment",
     "SelfSLDataset",
 ]
