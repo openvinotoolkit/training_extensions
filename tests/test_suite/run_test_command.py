@@ -738,7 +738,7 @@ def otx_build_testing(root, args: Dict[str, str], expected: Dict[str, str]):
     assert template_config.name == expected["model"]
     assert (
         template_config.hyper_parameters.parameter_overrides.algo_backend.train_type.default_value
-        == expected["train_type"].upper()
+        == expected["train_type"]
     )
 
 
