@@ -3,18 +3,17 @@
 #
 
 from math import inf, isnan
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from mmcv.runner import BaseRunner, LrUpdaterHook
 from mmcv.runner.hooks import HOOKS, Hook
-from otx.api.utils.argument_checks import check_input_parameters_type
-
 from mmcv.utils import print_log
 
+from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
-from typing import Any, Dict, List, Optional
 
 logger = get_logger()
+
 
 @HOOKS.register_module()
 class EarlyStoppingHook(Hook):
@@ -45,19 +44,7 @@ class EarlyStoppingHook(Hook):
 
     rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
     init_value_map = {"greater": -inf, "less": inf}
-    greater_keys = [
-        "acc",
-        "top",
-        "AR@",
-        "auc",
-        "precision",
-        "mAP",
-        "mDice",
-        "mIoU",
-        "mAcc",
-        "aAcc",
-        "MHAcc"
-    ]
+    greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc", "MHAcc"]
     less_keys = ["loss"]
 
     @check_input_parameters_type()
@@ -80,8 +67,6 @@ class EarlyStoppingHook(Hook):
         self.min_delta *= 1 if self.rule == "greater" else -1
         self.last_iter = 0
         self.wait_count = 0
-        self.by_epoch = True
-        self.warmup_iters = 0
         self.best_score = self.init_value_map[self.rule]
 
     def _init_rule(self, rule, key_indicator):
@@ -122,11 +107,13 @@ class EarlyStoppingHook(Hook):
     @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
         """Called before_run in EarlyStoppingHook."""
-        self.by_epoch = runner.max_epochs is not None
+        self.by_epoch = False if runner.max_epochs is None else True
         for hook in runner.hooks:
             if isinstance(hook, LrUpdaterHook):
                 self.warmup_iters = hook.warmup_iters
                 break
+        if getattr(self, "warmup_iters", None) is None:
+            raise ValueError("LrUpdaterHook must be registered to runner.")
 
     @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
@@ -251,19 +238,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
 
     rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
     init_value_map = {"greater": -inf, "less": inf}
-    greater_keys = [
-        "acc",
-        "top",
-        "AR@",
-        "auc",
-        "precision",
-        "mAP",
-        "mDice",
-        "mIoU",
-        "mAcc",
-        "aAcc",
-        "MHAcc"
-    ]
+    greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc", "MHAcc"]
     less_keys = ["loss"]
 
     @check_input_parameters_type()

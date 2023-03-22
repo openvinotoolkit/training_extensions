@@ -9,7 +9,7 @@ from .early_stopping_hook import (
     EarlyStoppingHook,
     LazyEarlyStoppingHook,
     ReduceLROnPlateauLrUpdaterHook,
-    StopLossNanTrainingHook
+    StopLossNanTrainingHook,
 )
 from .ema_momentum_update_hook import EMAMomentumUpdateHook
 from .eval_hook import CustomEvalHook, DistCustomEvalHook
