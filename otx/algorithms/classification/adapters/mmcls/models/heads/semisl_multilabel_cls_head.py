@@ -87,8 +87,11 @@ class SemiMultilabelClsHead:
         self,
         unlabeled_coef=0.1,
         use_dynamic_loss_weighting=True,
-        aux_loss=dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0),
-    ):  # pylint: disable=dangerous-default-value
+        aux_loss=None,
+    ):
+        aux_loss = (
+            aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
+        )
         self.unlabeled_coef = unlabeled_coef
         self.use_dynamic_loss_weighting = use_dynamic_loss_weighting
         self.aux_loss = build_loss(aux_loss)
@@ -171,17 +174,19 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         in_channels,
         scale=1.0,
         normalized=False,
-        aux_mlp=dict(hid_channels=0, out_channels=1024),
-        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        aux_mlp=None,
+        loss=None,
         unlabeled_coef=0.1,
-        aux_loss=dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0),
+        aux_loss=None,
         use_dynamic_loss_weighting=True,
-    ):  # pylint: disable=too-many-arguments, dangerous-default-value
+    ):  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
             raise ValueError("at least one class must be exist num_classes.")
-
+        aux_mlp = aux_mlp if aux_mlp else dict(hid_channels=0, out_channels=1024)
+        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
+        aux_loss = aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penalty=1.0 / 128.0, loss_weight=1.0)
         CustomMultiLabelLinearClsHead.__init__(self, num_classes, in_channels, normalized, scale, loss)
         SemiMultilabelClsHead.__init__(self, unlabeled_coef, use_dynamic_loss_weighting, aux_loss)
 
@@ -227,19 +232,22 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         hid_channels=1280,
         scale=1.0,
         normalized=False,
-        aux_mlp=dict(hid_channels=0, out_channels=1024),
-        act_cfg=dict(type="ReLU"),
-        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
-        aux_loss=dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0),
+        aux_mlp=None,
+        act_cfg=None,
+        loss=None,
+        aux_loss=None,
         dropout=False,
         unlabeled_coef=0.1,
         use_dynamic_loss_weighting=True,
-    ):  # pylint: disable=too-many-arguments, dangerous-default-value
+    ):  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
             raise ValueError("at least one class must be exist num_classes.")
-
+        aux_mlp = aux_mlp if aux_mlp else dict(hid_channels=0, out_channels=1024)
+        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
+        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
+        aux_loss = aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penalty=1.0 / 128.0, loss_weight=1.0)
         CustomMultiLabelNonLinearClsHead.__init__(
             self,
             num_classes,

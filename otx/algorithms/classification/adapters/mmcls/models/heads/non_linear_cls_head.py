@@ -30,13 +30,15 @@ class NonLinearClsHead(ClsHead):
         num_classes,
         in_channels,
         hid_channels=1280,
-        act_cfg=dict(type="ReLU"),
-        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        act_cfg=None,
+        loss=None,
         topk=(1,),
         dropout=False,
         **kwargs,
-    ):  # pylint: disable=too-many-arguments, dangerous-default-value
+    ):  # pylint: disable=too-many-arguments
         topk = (1,) if num_classes < 5 else (1, 5)
+        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
+        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
         super().__init__(loss=loss, topk=topk, **kwargs)
         self.in_channels = in_channels
         self.hid_channels = hid_channels

@@ -25,10 +25,14 @@ class CustomHierarchicalLinearClsHead(MultiLabelClsHead):
         self,
         num_classes,
         in_channels,
-        loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
-        multilabel_loss=dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0),
+        loss=None,
+        multilabel_loss=None,
         **kwargs,
-    ):  # pylint: disable=dangerous-default-value
+    ):
+        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
+        multilabel_loss = (
+            multilabel_loss if multilabel_loss else dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0)
+        )
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
         assert self.hierarchical_info
         super().__init__(loss=loss)

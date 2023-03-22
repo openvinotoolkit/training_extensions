@@ -29,12 +29,17 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):  # pylint: disable=
         num_classes,
         in_channels,
         hid_channels=1280,
-        act_cfg=dict(type="ReLU"),
-        loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
-        multilabel_loss=dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0),
+        act_cfg=None,
+        loss=None,
+        multilabel_loss=None,
         dropout=False,
         **kwargs,
-    ):  # pylint: disable=too-many-arguments, dangerous-default-value
+    ):  # pylint: disable=too-many-arguments
+        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
+        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
+        multilabel_loss = (
+            multilabel_loss if multilabel_loss else dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0)
+        )
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
         assert self.hierarchical_info
         super().__init__(loss=loss)

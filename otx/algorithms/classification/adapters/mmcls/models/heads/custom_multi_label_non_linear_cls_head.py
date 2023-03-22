@@ -26,19 +26,20 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         normalized (bool): Normalize input features and weights in the last linar layer.
     """
 
-    # pylint: disable=too-many-arguments, dangerous-default-value
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         num_classes,
         in_channels,
         hid_channels=1280,
-        act_cfg=dict(type="ReLU"),
+        act_cfg=None,
         scale=1.0,
-        loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
+        loss=None,
         dropout=False,
         normalized=False,
     ):
-
+        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
+        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
         super().__init__(loss=loss)
 
         self.in_channels = in_channels

@@ -29,8 +29,9 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         in_channels,
         normalized=False,
         scale=1.0,
-        loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
-    ):  # pylint: disable=dangerous-default-value
+        loss=None,
+    ):
+        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
         super().__init__(loss=loss)
         if num_classes <= 0:
             raise ValueError(f"num_classes={num_classes} must be a positive integer")

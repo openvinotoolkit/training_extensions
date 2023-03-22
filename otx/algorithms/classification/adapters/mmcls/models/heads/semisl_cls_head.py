@@ -142,18 +142,19 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         self,
         num_classes,
         in_channels,
-        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
-        topk=(1,),
+        loss=None,
+        topk=None,
         unlabeled_coef=1.0,
         use_dynamic_threshold=True,
         min_threshold=0.5,
-    ):  # pylint: disable=dangerous-default-value
+    ):
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
             raise ValueError("at least one class must be exist num_classes.")
 
         topk = (1,) if num_classes < 5 else (1, 5)
+        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
         LinearClsHead.__init__(self, num_classes, in_channels, loss=loss, topk=topk)
         SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
@@ -190,20 +191,22 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         num_classes,
         in_channels,
         hid_channels=1280,
-        act_cfg=dict(type="ReLU"),
-        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
-        topk=(1,),
+        act_cfg=None,
+        loss=None,
+        topk=None,
         dropout=False,
         unlabeled_coef=1.0,
         use_dynamic_threshold=True,
         min_threshold=0.5,
-    ):  # pylint: disable=dangerous-default-value
+    ):
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
             raise ValueError("at least one class must be exist num_classes.")
 
         topk = (1,) if num_classes < 5 else (1, 5)
+        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
+        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
         NonLinearClsHead.__init__(
             self,
             num_classes,

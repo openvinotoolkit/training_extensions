@@ -59,9 +59,8 @@ class CustomLinearClsHead(LinearClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(
-        self, num_classes, in_channels, init_cfg=dict(type="Normal", layer="Linear", std=0.01), **kwargs
-    ):  # pylint: disable=dangerous-default-value
+    def __init__(self, num_classes, in_channels, init_cfg=None, **kwargs):
+        init_cfg = init_cfg if init_cfg else dict(type="Normal", layer="Linear", std=0.01)
         super().__init__(num_classes, in_channels, init_cfg=init_cfg, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 

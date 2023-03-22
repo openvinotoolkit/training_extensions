@@ -21,9 +21,8 @@ class ConvClsHead(ClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(
-        self, num_classes, in_channels, init_cfg=dict(type="Kaiming", layer=["Conv2d"]), **kwargs
-    ):  # pylint: disable=dangerous-default-value
+    def __init__(self, num_classes, in_channels, init_cfg=None, **kwargs):
+        init_cfg = init_cfg if init_cfg else dict(type="Kaiming", layer=["Conv2d"])
         super().__init__(init_cfg=init_cfg, **kwargs)
 
         self.in_channels = in_channels
