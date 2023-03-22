@@ -100,19 +100,20 @@ In the table below the test mAP on some academic datasets using our :ref:`superv
 For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights was shown. That means that weights are undertrained for COCO dataset and don't achieve the best result. 
 That is because the purpose of pretrained models is to learn basic features from a such large and diverse dataset as COCO and to use these weights to get good results for other custom datasets right from the start. 
 
-The results on `Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/>`_ and `MinneApple <https://rsn.umn.edu/projects/orchard-monitoring/minneapple>`_ were obtained on our templates without any changes.
+The results on `Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/>`_,  `BCCD <https://public.roboflow.com/object-detection/bccd/3>`_, `MinneApple <https://rsn.umn.edu/projects/orchard-monitoring/minneapple>`_ and `WGISD <https://github.com/thsant/wgisd>`_  were obtained on our templates without any changes.
+BCCD is an easy dataset with focused large objects, while MinneApple and WGISD have small objects that are hard to distinguish from the background.
 For hyperparameters, please, refer to the related template.
 We trained each model with a single Nvidia GeForce RTX3090.
 
-+-----------+------------+-----------+-----------+
-| Model name| COCO       | PASCAL VOC| MinneApple|
-+===========+============+===========+===========+
-| YOLOX     | 32.0       | 66.6      | 24.5      |
-+-----------+------------+-----------+-----------+
-| SSD       | 13.5       | 50.0      | 31.2      |
-+-----------+------------+-----------+-----------+
-| ATSS      | 32.5       | 68.7      | 42.5      |
-+-----------+------------+-----------+-----------+
++-----------+------------+-----------+-----------+-----------+-----------+
+| Model name| COCO       | PASCAL VOC| BCCD      | MinneApple| WGISD     |
++===========+============+===========+===========+===========+===========+
+| YOLOX     | 32.0       | 66.6      | 60.3      | 24.5      | 44.1      |
++-----------+------------+-----------+-----------+-----------+-----------+
+| SSD       | 13.5       | 50.0      | 54.2      | 31.2      | 45.9      |
++-----------+------------+-----------+-----------+-----------+-----------+
+| ATSS      | 32.5       | 68.7      | 61.5      | 42.5      | 57.5      |
++-----------+------------+-----------+-----------+-----------+-----------+
 
 
 
