@@ -92,7 +92,7 @@ Building workspace folder
                             Comma-separated paths to unlabeled file list
       --task TASK           The currently supported options: ('CLASSIFICATION', 'DETECTION', 'INSTANCE_SEGMENTATION', 'SEGMENTATION', 'ACTION_CLASSIFICATION', 'ACTION_DETECTION', 'ANOMALY_CLASSIFICATION', 'ANOMALY_DETECTION', 'ANOMALY_SEGMENTATION').
       --train-type TRAIN_TYPE
-                            The currently supported options: dict_keys(['INCREMENTAL', 'SEMISUPERVISED', 'SELFSUPERVISED']).
+                            The currently supported options: dict_keys(['Incremental', 'Semisupervised', 'Selfsupervised']).
       --work-dir WORK_DIR   Location where the workspace.
       --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
       --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'.
@@ -181,7 +181,7 @@ However, if you created a workspace with ``otx build``, the training process can
       --unlabeled-file-list UNLABELED_FILE_LIST
                             Comma-separated paths to unlabeled file list
       --train-type TRAIN_TYPE
-                            The currently supported options: dict_keys(['INCREMENTAL', 'SEMISUPERVISED', 'SELFSUPERVISED']).
+                            The currently supported options: dict_keys(['Incremental', 'Semisupervised', 'Selfsupervised']).
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
       --resume-from RESUME_FROM
