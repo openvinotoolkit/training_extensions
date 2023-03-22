@@ -208,8 +208,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             **options_for_patch_datasets,
         )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
-        if self._recipe_cfg is None:
-            self._recipe_cfg = {}
 
         if self._recipe_cfg.get("evaluation"):
             self.metric = self._recipe_cfg.evaluation.metric
