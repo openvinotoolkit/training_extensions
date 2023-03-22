@@ -36,9 +36,9 @@ rebuild_args = {
         "default": "EfficientNet-B0",
         "--task": "classification",
         "--model": "MobileNet-V3-large-1x",
-        "--train-type": "semisupervised",
+        "--train-type": "Semisupervised",
     },
-    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "semisupervised"},
+    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "Semisupervised"},
 }
 
 
