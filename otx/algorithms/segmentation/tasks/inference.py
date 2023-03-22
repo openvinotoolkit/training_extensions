@@ -209,14 +209,14 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
 
-        if self._recipe_cfg.get("evaluation"):
-            self.metric = self._recipe_cfg.evaluation.metric
+        if self._recipe_cfg.get("evaluation"):  # type: ignore
+            self.metric = self._recipe_cfg.evaluation.metric  # type: ignore
 
-        if self._recipe_cfg.get("override_configs"):
-            self.override_configs.update(self._recipe_cfg.override_configs)
+        if self._recipe_cfg.get("override_configs"):  # type: ignore
+            self.override_configs.update(self._recipe_cfg.override_configs)  # type: ignore
 
         if not self.freeze:
-            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
+            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")  # type: ignore
 
     def _update_stage_module(self, stage_module: str):
         module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
