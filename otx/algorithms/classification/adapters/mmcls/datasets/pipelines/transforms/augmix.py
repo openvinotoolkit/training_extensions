@@ -2,7 +2,6 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=too-many-instance-attributes, too-many-locals, too-many-arguments, unused-argument, invalid-name
 
 import random
 import re
@@ -10,9 +9,10 @@ from copy import deepcopy
 
 import numpy as np
 from mmcls.datasets.builder import PIPELINES
+from mmcv.utils import ConfigDict
 from PIL import Image
 
-from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.augments import (
+from otx.algorithms.common.adapters.mmcv.pipelines.transforms.augments import (
     CythonAugments,
 )
 
@@ -79,15 +79,17 @@ class OpsFabric:
             "TranslateXRel": CythonAugments.translate_x_rel,
             "TranslateYRel": CythonAugments.translate_y_rel,
         }
-        self.aug_fn = self.name_to_op[name]
-        self.level_fn = self.level_to_arg[name]
-        self.magnitude = magnitude
-        self.magnitude_std = self.hparams.get("magnitude_std", float("inf"))
+        self.aug_factory = ConfigDict(
+            aug_fn=self.name_to_op[name],
+            level_fn=self.level_to_arg[name],
+            magnitude=magnitude,
+            magnitude_std=self.hparams.get("magnitude_std", float("inf")),
+        )
 
     @staticmethod
-    def randomly_negate(v):
+    def randomly_negate(value):
         """With 50% prob, negate the value."""
-        return -v if random.random() > 0.5 else v
+        return -value if random.random() > 0.5 else value
 
     def _rotate_level_to_arg(self, level, _hparams):
         # range [-30, 30]
@@ -138,15 +140,17 @@ class OpsFabric:
         """Call method of OpsFabric class."""
         if self.prob < 1.0 and random.random() > self.prob:
             return img
-        magnitude = self.magnitude
-        if self.magnitude_std:
-            if self.magnitude_std == float("inf"):
+        magnitude = self.aug_factory.magnitude
+        magnitude_std = self.aug_factory.magnitude_std
+        level_fn = self.aug_factory.level_fn
+        if magnitude_std:
+            if magnitude_std == float("inf"):
                 magnitude = random.uniform(0, magnitude)
-            elif self.magnitude_std > 0:
-                magnitude = random.gauss(magnitude, self.magnitude_std)
+            elif magnitude_std > 0:
+                magnitude = random.gauss(magnitude, magnitude_std)
         magnitude = min(self.max_level, max(0, magnitude))  # clip to valid range
-        level_args = self.level_fn(magnitude, self.hparams) if self.level_fn is not None else tuple()
-        return self.aug_fn(img, *level_args, **self.aug_kwargs)
+        level_args = level_fn(magnitude, self.hparams) if level_fn is not None else tuple()
+        return self.aug_factory.aug_fn(img, *level_args, **self.aug_kwargs)
 
 
 @PIPELINES.register_module()
@@ -161,29 +165,25 @@ class AugMixAugment:
     def __init__(self, config_str, image_mean=None, grey=False):
         self.ops, self.alpha, self.width, self.depth = self._augmix_ops(config_str, image_mean, grey=grey)
 
-    def _apply_basic(self, img, mixing_weights, m):
+    def _apply_basic(self, img, mixing_weights, m):  # pylint: disable=invalid-name
         # This is a literal adaptation of the paper/official implementation without normalizations and
         # PIL <-> Numpy conversions between every op. It is still quite CPU compute heavy compared to the
         # typical augmentation transforms, could use a GPU / Kornia implementation.
         mixed = (1 - m) * np.array(img, dtype=np.float32)
-        for mw in mixing_weights:
+        for mix_weight in mixing_weights:
             depth = self.depth if self.depth > 0 else np.random.randint(1, 4)
             ops = np.random.choice(self.ops, depth, replace=True)
             img_aug = deepcopy(img)
-            for op in ops:
+            for op in ops:  # pylint: disable=invalid-name
                 img_aug = op(img_aug)
-            CythonAugments.blend(img_aug, mixed, mw * m)
+            CythonAugments.blend(img_aug, mixed, mix_weight * m)
         np.clip(mixed, 0, 255.0, out=mixed)
         return Image.fromarray(mixed.astype(np.uint8))
 
     def _augmix_ops(self, config_str, image_mean=None, translate_const=250, grey=False):
         if image_mean is None:
             image_mean = [0.485, 0.456, 0.406]  # imagenet mean
-        magnitude = 3
-        width = 3
-        depth = -1
-        alpha = 1.0
-        p = 1.0
+        aug_params = ConfigDict(magnitude=3, width=3, depth=-1, alpha=1.0, p=1.0)
         hparams = dict(
             translate_const=translate_const,
             img_mean=tuple(int(c * 256) for c in image_mean),
@@ -200,23 +200,23 @@ class AugMixAugment:
             if key == "mstd":
                 hparams.setdefault("magnitude_std", float(val))
             elif key == "m":
-                magnitude = int(val)
+                aug_params.magnitude = int(val)
             elif key == "w":
-                width = int(val)
+                aug_params.width = int(val)
             elif key == "d":
-                depth = int(val)
+                aug_params.depth = int(val)
             elif key == "a":
-                alpha = float(val)
+                aug_params.alpha = float(val)
             elif key == "p":
-                p = float(val)
+                aug_params.p = float(val)
             else:
                 assert False, "Unknown AugMix config section"
         aug_politics = _AUGMIX_TRANSFORMS_GREY if grey else _AUGMIX_TRANSFORMS
         return (
-            [OpsFabric(name, magnitude, hparams, p) for name in aug_politics],
-            alpha,
-            width,
-            depth,
+            [OpsFabric(name, aug_params.magnitude, hparams, aug_params.p) for name in aug_politics],
+            aug_params.alpha,
+            aug_params.width,
+            aug_params.depth,
         )
 
     def __call__(self, results):
@@ -226,7 +226,7 @@ class AugMixAugment:
             if not Image.isImageType(img):
                 img = Image.fromarray(img)
             mixing_weights = np.float32(np.random.dirichlet([self.alpha] * self.width))
-            m = np.float32(np.random.beta(self.alpha, self.alpha))
+            m = np.float32(np.random.beta(self.alpha, self.alpha))  # pylint: disable=invalid-name
             mixed = self._apply_basic(img, mixing_weights, m)
             results["augmix"] = True
             results[key] = mixed

@@ -2,27 +2,24 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=unused-argument, no-value-for-parameter
-# mypy: ignore-errors
 
 import random
 from typing import Union
 
-import numpy as np
+from numpy import ndarray as CvImage
 from PIL import Image, ImageEnhance, ImageOps
+from PIL.Image import Image as PILImage
 from PIL.Image import Resampling
 
-from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.cython_augments import (
+from otx.algorithms.common.adapters.mmcv.pipelines.transforms.cython_augments import (
     pil_augment as pil_aug,
 )
 
-PILImage = Image.Image
-CvImage = np.ndarray
 ImgTypes = Union[PILImage, CvImage]
 
 
-class Augments:
-    """Augments class that implements various augmentations."""
+class Augments:  # pylint: disable=unused-argument
+    """Augments class that implements various augmentations via plain PIL."""
 
     @staticmethod
     def _check_args_tf(kwargs):

@@ -2,7 +2,6 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=too-many-arguments, too-many-locals, too-many-branches
 
 import torch
 from mmcv.runner import OPTIMIZERS
@@ -47,7 +46,7 @@ class LARS(Optimizer):
         nesterov=False,
         mode=None,
         exclude_bn_from_weight_decay=False,
-    ):
+    ):  # pylint: disable=too-many-arguments, too-many-locals
         if lr is not required and lr < 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
         if momentum < 0.0:
@@ -118,10 +117,8 @@ class LARS(Optimizer):
         for group in self.param_groups:
             weight_decay = group["weight_decay"]
             momentum = group["momentum"]
-            dampening = group["dampening"]
             nesterov = group["nesterov"]
             eta = group["eta"]
-            lars_exclude = group.get("lars_exclude", False)
 
             for p in group["params"]:
                 if p.grad is None:
@@ -131,21 +128,15 @@ class LARS(Optimizer):
                 # Add weight decay before computing adaptive LR.
                 # Seems to be pretty important in SIMclr style models.
                 local_lr = 1.0
-                if self.mode == "selfsl":
-                    if weight_decay != 0:
-                        d_p = d_p.add(p, alpha=weight_decay)
-                    if not lars_exclude:
-                        weight_norm = torch.norm(p).item()
-                        grad_norm = torch.norm(d_p).item()
-                        if weight_norm > 0 and grad_norm > 0:
-                            local_lr = eta * weight_norm / grad_norm
+                if not group.get("lars_exclude", False):
+                    weight_norm = torch.norm(p).item()
+                    grad_norm = torch.norm(d_p).item()
+                if self.mode == "selfsl" and weight_norm > 0 and grad_norm > 0:
+                    local_lr = eta * weight_norm / grad_norm
                 else:
-                    if not lars_exclude:
-                        weight_norm = torch.norm(p).item()
-                        grad_norm = torch.norm(d_p).item()
-                        local_lr = eta * weight_norm / (grad_norm + weight_decay * weight_norm)
-                    if weight_decay != 0:
-                        d_p = d_p.add(p, alpha=weight_decay)
+                    local_lr = eta * weight_norm / (grad_norm + weight_decay * weight_norm)
+                if weight_decay != 0:
+                    d_p = d_p.add(p, alpha=weight_decay)
 
                 d_p = d_p.mul(local_lr)
 
@@ -155,12 +146,7 @@ class LARS(Optimizer):
                         buf = param_state["momentum_buffer"] = torch.clone(d_p).detach()
                     else:
                         buf = param_state["momentum_buffer"]
-                        buf.mul_(momentum).add_(d_p, alpha=1 - dampening)
-                    if nesterov:
-                        d_p = d_p.add(buf, alpha=momentum)
-                    else:
-                        d_p = buf
-
+                        buf.mul_(momentum).add_(d_p, alpha=1 - group["dampening"])
+                    d_p = d_p.add(buf, alpha=momentum) if nesterov else buf
                 p.add_(d_p, alpha=-group["lr"])
-
         return loss

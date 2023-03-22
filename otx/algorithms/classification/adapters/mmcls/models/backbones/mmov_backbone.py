@@ -17,9 +17,6 @@ class MMOVBackbone(MMOVModel):
         **kwargs: keyword arguments.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     @staticmethod
     def parser(graph, **kwargs) -> Dict[str, List[str]]:
         """Parses the input and output of the model.

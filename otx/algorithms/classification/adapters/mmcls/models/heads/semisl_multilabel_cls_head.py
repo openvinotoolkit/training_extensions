@@ -34,26 +34,57 @@ def generate_aux_mlp(aux_mlp_cfg: dict, in_channels: int):
 
 
 class EMAMeter:
-    """EMAMeter class for flexible EMA implementation."""
+    """Exponential Moving Average Meter class."""
 
     def __init__(self, alpha=0.9):
+        """Initialize the Exponential Moving Average Meter.
+
+        Args:
+        - alpha (float): Smoothing factor for the exponential moving average. Defaults to 0.9.
+
+        Returns:
+        - None
+        """
         self.alpha = alpha
         self.val = 0
 
     def reset(self):
-        """Reset EMA value."""
+        """Reset the Exponential Moving Average Meter.
+
+        Args:
+        - None
+
+        Returns:
+        - None
+        """
         self.val = 0
 
     def update(self, val):
-        """Update ema value."""
+        """Update the Exponential Moving Average Meter with new value.
+
+        Args:
+        - val (float): New value to update the meter.
+
+        Returns:
+        - None
+        """
         self.val = self.alpha * self.val + (1 - self.alpha) * val
 
 
 class LossBalancer:
-    """LossBalancer class."""
+    """Loss Balancer class."""
 
     def __init__(self, num_losses, weights=None, ema_weight=0.7) -> None:
-        """Init fuction of LossBalancer class."""
+        """Initialize the Loss Balancer.
+
+        Args:
+        - num_losses (int): Number of losses to balance.
+        - weights (list): List of weights to be applied to each loss. If None, equal weights are applied.
+        - ema_weight (float): Smoothing factor for the exponential moving average meter. Defaults to 0.7.
+
+        Returns:
+        - None
+        """
         self.epsilon = 1e-9
         self.avg_estimators = [EMAMeter(ema_weight) for _ in range(num_losses)]
 
@@ -64,14 +95,20 @@ class LossBalancer:
             self.final_weights = [1.0] * num_losses
 
     def balance_losses(self, losses):
-        """Balance loss using estimators."""
+        """Balance the given losses using the weights and exponential moving average.
+
+        Args:
+        - losses (list): List of losses to be balanced.
+
+        Returns:
+        - total_loss (float): Balanced loss value.
+        """
         total_loss = 0.0
         for i, loss in enumerate(losses):
             self.avg_estimators[i].update(float(loss))
             total_loss += (
                 self.final_weights[i] * loss / (self.avg_estimators[i].val + self.epsilon) * self.avg_estimators[0].val
             )
-
         return total_loss
 
 
@@ -186,7 +223,9 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
             raise ValueError("at least one class must be exist num_classes.")
         aux_mlp = aux_mlp if aux_mlp else dict(hid_channels=0, out_channels=1024)
         loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
-        aux_loss = aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penalty=1.0 / 128.0, loss_weight=1.0)
+        aux_loss = (
+            aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
+        )
         CustomMultiLabelLinearClsHead.__init__(self, num_classes, in_channels, normalized, scale, loss)
         SemiMultilabelClsHead.__init__(self, unlabeled_coef, use_dynamic_loss_weighting, aux_loss)
 
@@ -247,7 +286,9 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         aux_mlp = aux_mlp if aux_mlp else dict(hid_channels=0, out_channels=1024)
         act_cfg = act_cfg if act_cfg else dict(type="ReLU")
         loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
-        aux_loss = aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penalty=1.0 / 128.0, loss_weight=1.0)
+        aux_loss = (
+            aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
+        )
         CustomMultiLabelNonLinearClsHead.__init__(
             self,
             num_classes,

@@ -126,8 +126,6 @@ good-names = [
     "w",
     "h",
     "fc",
-    "k",
-    "v",
 ]
 
 [tool.pylint.imports]

@@ -1,4 +1,4 @@
-"""OTX Algorithms - Classification Dataset."""
+"""OTX Custom Classifiers."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,30 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .otx_datasets import (
-    OTXClsDataset,
-    OTXHierarchicalClsDataset,
-    OTXMultilabelClsDataset,
-    SelfSLDataset,
-)
-from .pipelines.transforms import (
-    AugMixAugment,
-    OTXRandAugment,
-    PILToTensor,
-    RandomRotate,
-    TensorNormalize,
-    TwoCropTransform,
-)
+from .sam_classifier_mixin import SAMClassifierMixin
 
-__all__ = [
-    "AugMixAugment",
-    "PILToTensor",
-    "TensorNormalize",
-    "RandomRotate",
-    "OTXRandAugment",
-    "TwoCropTransform",
-    "OTXClsDataset",
-    "OTXMultilabelClsDataset",
-    "OTXHierarchicalClsDataset",
-    "SelfSLDataset",
-]
+__all__ = ["SAMClassifierMixin"]

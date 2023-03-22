@@ -2,17 +2,15 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=too-many-branches, unused-argument, too-many-nested-blocks, too-many-locals, ungrouped-imports
 from functools import partial
 
 from mmcls.models.builder import CLASSIFIERS
 from mmcls.models.classifiers.image import ImageClassifier
 
+from otx.algorithms.common.adapters.mmcv.models.classifiers import SAMClassifierMixin
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.mpa.modules.utils.task_adapt import map_class_names
 from otx.mpa.utils.logger import get_logger
-
-from .sam_classifier_mixin import SAMClassifierMixin
 
 logger = get_logger()
 
@@ -75,117 +73,123 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 
     @staticmethod
     def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
+        # pylint: disable=unused-argument, too-many-branches
         """Redirect model as output state_dict for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return None
 
-        if backbone_type == "OTXMobileNetV3":
-            for k in list(state_dict.keys()):
-                v = state_dict.pop(k)
-                if not prefix or k.startswith(prefix):
-                    k = k.replace(prefix, "", 1)
-                    if k.startswith("backbone"):
-                        k = k.replace("backbone.", "", 1)
-                    elif k.startswith("head"):
-                        k = k.replace("head.", "", 1)
-                        if "3" in k:  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
-                            k = k.replace("3", "4")
+        if backbone_type == "OTXMobileNetV3":  # pylint: disable=too-many-nested-blocks
+            for key in list(state_dict.keys()):
+                val = state_dict.pop(key)
+                if not prefix or key.startswith(prefix):
+                    key = key.replace(prefix, "", 1)
+                    if key.startswith("backbone"):
+                        key = key.replace("backbone.", "", 1)
+                    elif key.startswith("head"):
+                        key = key.replace("head.", "", 1)
+                        if (
+                            "3" in key
+                        ):  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
+                            key = key.replace("3", "4")
                             if module.multilabel and not module.is_export:
-                                v = v.t()
-                    k = prefix + k
-                state_dict[k] = v
+                                val = val.t()
+                    key = prefix + key
+                state_dict[key] = val
 
         elif backbone_type == "OTXEfficientNet":
-            for k in list(state_dict.keys()):
-                v = state_dict.pop(k)
-                if not prefix or k.startswith(prefix):
-                    k = k.replace(prefix, "", 1)
-                    if k.startswith("backbone"):
-                        k = k.replace("backbone.", "", 1)
-                    elif k.startswith("head"):
-                        k = k.replace("head", "output", 1)
+            for key in list(state_dict.keys()):
+                val = state_dict.pop(key)
+                if not prefix or key.startswith(prefix):
+                    key = key.replace(prefix, "", 1)
+                    if key.startswith("backbone"):
+                        key = key.replace("backbone.", "", 1)
+                    elif key.startswith("head"):
+                        key = key.replace("head", "output", 1)
                         if not module.hierarchical and not module.is_export:
-                            k = k.replace("fc", "asl")
-                            v = v.t()
-                    k = prefix + k
-                state_dict[k] = v
+                            key = key.replace("fc", "asl")
+                            val = val.t()
+                    key = prefix + key
+                state_dict[key] = val
 
         elif backbone_type == "OTXEfficientNetV2":
-            for k in list(state_dict.keys()):
-                v = state_dict.pop(k)
-                if not prefix or k.startswith(prefix):
-                    k = k.replace(prefix, "", 1)
-                    if k.startswith("backbone"):
-                        k = k.replace("backbone.", "", 1)
-                    elif k == "head.fc.weight":
-                        k = k.replace("head.fc", "model.classifier")
+            for key in list(state_dict.keys()):
+                val = state_dict.pop(key)
+                if not prefix or key.startswith(prefix):
+                    key = key.replace(prefix, "", 1)
+                    if key.startswith("backbone"):
+                        key = key.replace("backbone.", "", 1)
+                    elif key == "head.fc.weight":
+                        key = key.replace("head.fc", "model.classifier")
                         if not module.hierarchical and not module.is_export:
-                            v = v.t()
-                    k = prefix + k
-                state_dict[k] = v
+                            val = val.t()
+                    key = prefix + key
+                state_dict[key] = val
 
         return state_dict
 
     @staticmethod
     def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
+        # pylint: disable=unused-argument, too-many-branches
         """Redirect input state_dict to model for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
 
-        if backbone_type == "OTXMobileNetV3":
-            for k in list(state_dict.keys()):
-                v = state_dict.pop(k)
-                if not prefix or k.startswith(prefix):
-                    k = k.replace(prefix, "", 1)
-                    if k.startswith("classifier."):
-                        if "4" in k:
-                            k = "head." + k.replace("4", "3")
+        if backbone_type == "OTXMobileNetV3":  # pylint: disable=too-many-nested-blocks
+            for key in list(state_dict.keys()):
+                val = state_dict.pop(key)
+                if not prefix or key.startswith(prefix):
+                    key = key.replace(prefix, "", 1)
+                    if key.startswith("classifier."):
+                        if "4" in key:
+                            key = "head." + key.replace("4", "3")
                             if module.multilabel:
-                                v = v.t()
+                                val = val.t()
                         else:
-                            k = "head." + k
-                    elif k.startswith("act"):
-                        k = "head." + k
-                    elif not k.startswith("backbone."):
-                        k = "backbone." + k
-                    k = prefix + k
-                state_dict[k] = v
+                            key = "head." + key
+                    elif key.startswith("act"):
+                        key = "head." + key
+                    elif not key.startswith("backbone."):
+                        key = "backbone." + key
+                    key = prefix + key
+                state_dict[key] = val
 
         elif backbone_type == "OTXEfficientNet":
-            for k in list(state_dict.keys()):
-                v = state_dict.pop(k)
-                if not prefix or k.startswith(prefix):
-                    k = k.replace(prefix, "", 1)
-                    if k.startswith("features.") and "activ" not in k:
-                        k = "backbone." + k
-                    elif k.startswith("output."):
-                        k = k.replace("output", "head")
+            for key in list(state_dict.keys()):
+                val = state_dict.pop(key)
+                if not prefix or key.startswith(prefix):
+                    key = key.replace(prefix, "", 1)
+                    if key.startswith("features.") and "activ" not in key:
+                        key = "backbone." + key
+                    elif key.startswith("output."):
+                        key = key.replace("output", "head")
                         if not module.hierarchical:
-                            k = k.replace("asl", "fc")
-                            v = v.t()
-                    k = prefix + k
-                state_dict[k] = v
+                            key = key.replace("asl", "fc")
+                            val = val.t()
+                    key = prefix + key
+                state_dict[key] = val
 
         elif backbone_type == "OTXEfficientNetV2":
-            for k in list(state_dict.keys()):
-                v = state_dict.pop(k)
-                if not prefix or k.startswith(prefix):
-                    k = k.replace(prefix, "", 1)
-                    if k.startswith("model.classifier"):
-                        k = k.replace("model.classifier", "head.fc")
+            for key in list(state_dict.keys()):
+                val = state_dict.pop(key)
+                if not prefix or key.startswith(prefix):
+                    key = key.replace(prefix, "", 1)
+                    if key.startswith("model.classifier"):
+                        key = key.replace("model.classifier", "head.fc")
                         if not module.hierarchical:
-                            v = v.t()
-                    elif k.startswith("model"):
-                        k = "backbone." + k
-                    k = prefix + k
-                state_dict[k] = v
+                            val = val.t()
+                    elif key.startswith("model"):
+                        key = "backbone." + key
+                    key = prefix + key
+                state_dict[key] = val
         else:
             logger.info("conversion is not required.")
 
     @staticmethod
-    def load_state_dict_mixing_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):
+    def load_state_dict_mixing_hook(
+        model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs
+    ):  # pylint: disable=unused-argument, too-many-branches, too-many-locals
         """Modify input state_dict according to class name matching before weight loading."""
         backbone_type = type(model.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
@@ -270,7 +274,7 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
 
-    from otx.mpa.modules.hooks.recording_forward_hooks import (
+    from otx.mpa.modules.hooks.recording_forward_hooks import (  # pylint: disable=ungrouped-imports
         FeatureVectorHook,
         ReciproCAMHook,
     )
@@ -278,7 +282,7 @@ if is_mmdeploy_enabled():
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.extract_feat"
     )
-    def sam_image_classifier__extract_feat(ctx, self, img):
+    def sam_image_classifier__extract_feat(ctx, self, img):  # pylint: disable=unused-argument
         """Feature extraction function for SAMClassifier with mmdeploy."""
         feat = self.backbone(img)
         # For Global Backbones (det/seg/etc..),
@@ -293,7 +297,7 @@ if is_mmdeploy_enabled():
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.simple_test"
     )
-    def sam_image_classifier__simple_test(ctx, self, img, img_metas):
+    def sam_image_classifier__simple_test(ctx, self, img, img_metas):  # pylint: disable=unused-argument
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
         feat, backbone_feat = self.extract_feat(img)
         logit = self.head.simple_test(feat)

@@ -2,7 +2,6 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=too-many-locals, too-many-arguments
 
 import torch
 from mmcls.models.builder import HEADS
@@ -64,7 +63,7 @@ class SemiClsHead:
         losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         return losses
 
-    def forward_train(self, x, gt_label, final_layer=None):
+    def forward_train(self, x, gt_label, final_layer=None):  # pylint: disable=too-many-locals
         """Forward_train head using pseudo-label selected through threshold.
 
         Args:
@@ -147,7 +146,7 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         unlabeled_coef=1.0,
         use_dynamic_threshold=True,
         min_threshold=0.5,
-    ):
+    ):  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -198,7 +197,7 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         unlabeled_coef=1.0,
         use_dynamic_threshold=True,
         min_threshold=0.5,
-    ):
+    ):  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
