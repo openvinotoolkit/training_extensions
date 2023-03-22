@@ -5,7 +5,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.models.heads.custom_cls_head import (
+from otx.algorithms.classification.adapters.mmcls.models.heads.custom_cls_head import (
     CustomLinearClsHead,
     CustomNonLinearClsHead,
 )
