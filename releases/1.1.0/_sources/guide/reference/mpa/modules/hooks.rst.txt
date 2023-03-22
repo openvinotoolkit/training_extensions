@@ -17,27 +17,11 @@ Hooks
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.hooks.checkpoint_hook
-   :members:
-   :undoc-members:
-
 .. automodule:: otx.mpa.modules.hooks.composed_dataloaders_hook
    :members:
    :undoc-members:
 
 .. automodule:: otx.mpa.modules.hooks.early_stopping_hook
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.hooks.eval_hook
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.hooks.fp16_sam_optimizer_hook
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.hooks.ib_loss_hook
    :members:
    :undoc-members:
 
@@ -53,23 +37,11 @@ Hooks
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.hooks.no_bias_decay_hook
-   :members:
-   :undoc-members:
-
 .. automodule:: otx.mpa.modules.hooks.recording_forward_hooks
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.hooks.sam_optimizer_hook
-   :members:
-   :undoc-members:
-
 .. automodule:: otx.mpa.modules.hooks.save_initial_weight_hook
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.hooks.semisl_cls_hook
    :members:
    :undoc-members:
 
