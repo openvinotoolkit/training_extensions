@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Code Quality Checks
-        run: tox -re pre-commit
+        run: tox -e pre-commit
   Pre-Merge-Unit-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Code-Quality-Checks
@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Unit-testing
-        run: tox -re pre-merge -- tests/unit
+        run: tox -e pre-merge -- tests/unit
       - name: Upload coverage reports to Codecov
         run: |
           # If the workflow is triggered from PR then it gets the commit id from the PR.
@@ -72,7 +72,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
-        run: tox -re pre-merge -- tests/integration/cli/test_cli.py
+        run: tox -e pre-merge -- tests/integration/cli/test_cli.py
   Pre-Merge-Integration-Cls-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -83,7 +83,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
-        run: tox -re pre-merge-cls
+        run: tox -e pre-merge-cls
   Pre-Merge-Integration-Det-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -94,7 +94,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
-        run: tox -re pre-merge-det
+        run: tox -e pre-merge-det
   Pre-Merge-Integration-Seg-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -105,7 +105,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
-        run: tox -re pre-merge-seg
+        run: tox -e pre-merge-seg
   Pre-Merge-Integration-Action-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -116,7 +116,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
-        run: tox -re pre-merge-action
+        run: tox -e pre-merge-action
   Pre-Merge-Integration-Anomaly-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -127,4 +127,4 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Integration-testing
-        run: tox -re pre-merge-anomaly
+        run: tox -e pre-merge-anomaly
