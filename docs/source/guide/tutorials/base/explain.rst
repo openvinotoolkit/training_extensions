@@ -37,7 +37,10 @@ we can define the ``--explain-algorithm`` parameter.
 - ``eigencam`` -  for Eigen-Cam classification algorithm
 - ``classwisesaliencymap`` -  for Recipro-CAM classification algorithm, this is a default method
 
-For detection task, the ``classwisesaliencymap`` is only supported, so we don't need to specify it.
+For detection task, we can choose between the following methods:
+
+- ``activationmap`` - for activation map detection algorithm
+- ``classwisesaliencymap`` - for DetClassProbabilityMap algorithm (works for single-stage detectors only)
 
 .. note::
 
