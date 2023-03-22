@@ -65,9 +65,9 @@ logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semisl.yaml",
-    TrainType.INCREMENTAL: "incremental.yaml",
-    TrainType.SELFSUPERVISED: "selfsl.yaml",
+    TrainType.Semisupervised: "semisl.yaml",
+    TrainType.Incremental: "incremental.yaml",
+    TrainType.Selfsupervised: "selfsl.yaml",
 }
 
 
@@ -108,7 +108,7 @@ class ClassificationInferenceTask(
         if not self._multilabel and not self._hierarchical:
             logger.info("Classification mode: multiclass")
 
-        if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
+        if self._hyperparams.algo_backend.train_type == TrainType.Selfsupervised:
             self._selfsl = True
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
@@ -399,7 +399,7 @@ class ClassificationInferenceTask(
             runner=runner,
         )
 
-        if self._train_type.value == "SEMISUPERVISED":
+        if self._train_type.value == "Semisupervised":
             unlabeled_config = ConfigDict(
                 data=ConfigDict(
                     unlabeled_dataloader=ConfigDict(
@@ -424,7 +424,7 @@ class ClassificationInferenceTask(
         if self._train_type in RECIPE_TRAIN_TYPE:
             # TODO: this condition will be simplified after adding support for multlabel and hierarchical to SupCon.
             if (
-                self._train_type == TrainType.INCREMENTAL
+                self._train_type == TrainType.Incremental
                 and not self._multilabel
                 and not self._hierarchical
                 and self._hyperparams.learning_parameters.enable_supcon
@@ -441,7 +441,7 @@ class ClassificationInferenceTask(
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
 
-        # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
+        # FIXME[Soobee] : if train type is not in cfg, it raises an error in default Incremental mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = self._train_type.name
 
@@ -468,7 +468,7 @@ class ClassificationInferenceTask(
         logger.info(f"initialized recipe = {recipe}")
 
     # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
-    # model.py contains heads/classifier only for INCREMENTAL setting
+    # model.py contains heads/classifier only for Incremental setting
     # error log : ValueError: Unexpected type of 'data_loader' parameter
     def _init_model_cfg(self):
         if self._multilabel:
@@ -501,7 +501,7 @@ class ClassificationInferenceTask(
         return data_cfg
 
     def _update_stage_module(self, stage_module):
-        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
+        module_prefix = {TrainType.Incremental: "Incr", TrainType.Semisupervised: "SemiSL"}
         if self._train_type in module_prefix and stage_module in ["ClsTrainer", "ClsInferrer"]:
             stage_module = module_prefix[self._train_type] + stage_module
         return stage_module
