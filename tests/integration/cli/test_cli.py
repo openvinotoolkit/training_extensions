@@ -36,9 +36,9 @@ rebuild_args = {
         "default": "EfficientNet-B0",
         "--task": "classification",
         "--model": "MobileNet-V3-large-1x",
-        "--train-type": "semisupervised",
+        "--train-type": "Semisupervised",
     },
-    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "semisupervised"},
+    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "Semisupervised"},
 }
 
 
@@ -59,19 +59,19 @@ class TestToolsOTXCLI:
         tmp_dir_path = tmp_dir_path / "test_rebuild" / case
         # 1. Only Task
         build_arg = {"--task": rebuild_args[case]["--task"]}
-        expected = {"model": rebuild_args[case]["default"], "train_type": "INCREMENTAL"}
+        expected = {"model": rebuild_args[case]["default"], "train_type": "Incremental"}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
         # 2. Change Model
         build_arg = {"--model": rebuild_args[case]["--model"]}
-        expected = {"model": rebuild_args[case]["--model"], "train_type": "INCREMENTAL"}
+        expected = {"model": rebuild_args[case]["--model"], "train_type": "Incremental"}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
         # 3. Change Train-type
         build_arg = {"--train-type": rebuild_args[case]["--train-type"]}
         expected = {"model": rebuild_args[case]["--model"], "train_type": rebuild_args[case]["--train-type"]}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
         # 4. Change to Default
-        build_arg = {"--model": rebuild_args[case]["default"], "--train-type": "INCREMENTAL"}
-        expected = {"model": rebuild_args[case]["default"], "train_type": "INCREMENTAL"}
+        build_arg = {"--model": rebuild_args[case]["default"], "--train-type": "Incremental"}
+        expected = {"model": rebuild_args[case]["default"], "train_type": "Incremental"}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
 
 

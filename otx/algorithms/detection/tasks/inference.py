@@ -80,8 +80,8 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semisl.py",
-    TrainType.INCREMENTAL: "incremental.py",
+    TrainType.Semisupervised: "semisl.py",
+    TrainType.Incremental: "incremental.py",
 }
 
 
@@ -360,8 +360,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         return data_cfg
 
     def _update_stage_module(self, stage_module):
-        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
-        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "DetectionExporter":
+        module_prefix = {TrainType.Incremental: "Incr", TrainType.Semisupervised: "SemiSL"}
+        if self._train_type == TrainType.Semisupervised and stage_module == "DetectionExporter":
             stage_module = "SemiSLDetectionExporter"
         elif self._train_type in module_prefix and stage_module in [
             "DetectionTrainer",

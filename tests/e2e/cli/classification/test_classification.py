@@ -295,7 +295,7 @@ class TestToolsMultiClassSemiSLClassification:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args0)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
@@ -721,7 +721,7 @@ args_selfsl = {
         "--learning_parameters.batch_size",
         "4",
         "--algo_backend.train_type",
-        "SELFSUPERVISED",
+        "Selfsupervised",
     ],
 }
 
