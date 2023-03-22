@@ -176,7 +176,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if self.mode in ("train", "build"):
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
             # FIXME: Hardcoded for Self-Supervised Learning
-            if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
+            if use_auto_split and str(self.train_type).upper() != "SELFSUPPERVISED":
                 splitted_dataset = self.auto_split_data(data_yaml["data"]["train"]["data-roots"], str(self.task_type))
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
@@ -363,7 +363,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 "file_list": data_yaml["data"]["unlabeled"]["file-list"],
             }
         # FIXME: Hardcoded for Self-Supervised Learning
-        if self.mode == "train" and str(self.train_type).upper() == "SELFSUPERVISED":
+        if self.mode == "train" and str(self.train_type).upper() == "SELFSUPPERVISED":
             self.data_config["val_subset"] = {"data_root": None}
 
     def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:

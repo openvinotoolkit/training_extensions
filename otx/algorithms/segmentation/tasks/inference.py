@@ -191,7 +191,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         # TODO: Need to remove the hard coding for supcon only.
         if (
             self._train_type in RECIPE_TRAIN_TYPE
-            and self._train_type == TrainType.INCREMENTAL
+            and self._train_type == TrainType.Incremental
             and self._hyperparams.learning_parameters.enable_supcon
             and not self._model_dir.endswith("supcon")
         ):

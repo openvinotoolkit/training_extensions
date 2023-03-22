@@ -443,7 +443,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         # pylint: disable=too-many-boolean-expressions
         if (
             self._train_type in RECIPE_TRAIN_TYPE
-            and self._train_type == TrainType.INCREMENTAL
+            and self._train_type == TrainType.Incremental
             and not self._multilabel
             and not self._hierarchical
             and self._hyperparams.learning_parameters.enable_supcon

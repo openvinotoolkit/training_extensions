@@ -322,7 +322,7 @@ class TestToolsMultiClassSemiSLClassification:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args0)
         args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         args_semisl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
 
