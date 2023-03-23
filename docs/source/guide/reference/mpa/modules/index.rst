@@ -6,6 +6,5 @@ Modules
 
    models/index
    datasets
-   hooks
    ov/index
    utils

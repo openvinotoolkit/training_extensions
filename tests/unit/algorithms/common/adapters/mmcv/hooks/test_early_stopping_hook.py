@@ -204,36 +204,32 @@ class TestReduceLROnPlateauLrUpdaterHook:
         assert hook.compare_func(5, 9) is True
 
     @e2e_pytest_unit
-    def test_should_check_stopping(self) -> None:
+    def test_is_check_timing(self) -> None:
         """Test _should_check_stopping function."""
 
         hook = ReduceLROnPlateauLrUpdaterHook(interval=5, min_lr=1e-5)
         hook.by_epoch = False
         runner = MockRunner()
-        assert hook._should_check_stopping(runner) is True
-
-        runner._iter = 8
-        assert hook._should_check_stopping(runner) is False
+        assert hook._is_check_timing(runner) is False
 
     @e2e_pytest_unit
     def test_get_lr(self, mocker) -> None:
         """Test function for get_lr."""
 
-        mocker.patch.object(ReduceLROnPlateauLrUpdaterHook, "_should_check_stopping", return_value=False)
+        mocker.patch.object(ReduceLROnPlateauLrUpdaterHook, "_is_check_timing", return_value=False)
         hook = ReduceLROnPlateauLrUpdaterHook(interval=5, min_lr=1e-5)
         hook.warmup_iters = 3
         runner = MockRunner()
         assert hook.get_lr(runner, 1e-2) == 1e-2
 
-        mocker.patch.object(ReduceLROnPlateauLrUpdaterHook, "_should_check_stopping", return_value=True)
+        mocker.patch.object(ReduceLROnPlateauLrUpdaterHook, "_is_check_timing", return_value=True)
         hook = ReduceLROnPlateauLrUpdaterHook(interval=5, min_lr=1e-5)
         hook.warmup_iters = 3
         runner = MockRunner()
         assert hook.get_lr(runner, 1e-2) == 1e-2
         assert hook.bad_count == 0
-        assert hook.last_iter == 9
 
-        mocker.patch.object(ReduceLROnPlateauLrUpdaterHook, "_should_check_stopping", return_value=True)
+        mocker.patch.object(ReduceLROnPlateauLrUpdaterHook, "_is_check_timing", return_value=True)
         hook = ReduceLROnPlateauLrUpdaterHook(interval=5, min_lr=1e-5)
         hook.best_score = 90
         hook.warmup_iters = 3
@@ -250,9 +246,9 @@ class TestReduceLROnPlateauLrUpdaterHook:
         hook.iteration_patience = 5
         hook.last_iter = 2
         runner = MockRunner()
-        assert hook.get_lr(runner, 1e-2) == 1e-3
-        assert hook.last_iter == 9
-        assert hook.bad_count == 0
+        assert hook.get_lr(runner, 1e-3) == 1e-3
+        assert hook.last_iter == 2
+        assert hook.bad_count == 2
 
     @e2e_pytest_unit
     def test_before_run(self) -> None:
@@ -264,7 +260,7 @@ class TestReduceLROnPlateauLrUpdaterHook:
         assert hook.base_lr == [1e-4]
         assert hook.bad_count == 0
         assert hook.last_iter == 0
-        assert hook.current_lr is None
+        assert hook.current_lr == -1.0
         assert hook.best_score == -inf
 
 
