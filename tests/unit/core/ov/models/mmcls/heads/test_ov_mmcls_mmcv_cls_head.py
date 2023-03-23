@@ -9,7 +9,7 @@ from otx.algorithms.classification.adapters.mmcls.models.heads.mmov_cls_head imp
     MMOVClsHead,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.mpa.modules.ov.models.mmcls.test_helpers import create_ov_model
+from tests.unit.core.ov.models.mmcls.test_helpers import create_ov_model
 
 
 class TestMMOVClsHead:

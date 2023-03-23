@@ -5,18 +5,18 @@ Models
    :maxdepth: 3
    :caption: Contents:
 
-.. automodule:: otx.mpa.modules.ov.models
+.. automodule:: otx.core.ov.models
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.models.mmov_model
+.. automodule:: otx.core.ov.models.mmov_model
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.models.ov_model
+.. automodule:: otx.core.ov.models.ov_model
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.models.parser_mixin
+.. automodule:: otx.core.ov.models.parser_mixin
    :members:
    :undoc-members:
