@@ -8,8 +8,8 @@ import tempfile
 import openvino.runtime as ov
 import pytest
 
-from otx.mpa.modules.ov.omz_wrapper import get_omz_model
-from otx.mpa.modules.ov.ops import ParameterV0
+from otx.core.ov.omz_wrapper import get_omz_model
+from otx.core.ov.ops.infrastructures import ParameterV0
 from otx.mpa.modules.ov.utils import (
     convert_op_to_torch,
     convert_op_to_torch_module,

@@ -6,7 +6,8 @@ import openvino.runtime as ov
 import pytest
 import torch
 
-from otx.mpa.modules.ov.ops.utils import get_dynamic_shape, get_torch_padding
+from otx.core.ov.ops.movements import get_torch_padding
+from otx.core.ov.ops.utils import get_dynamic_shape
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

@@ -5,13 +5,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.ops.arithmetics import (
-    AddV1,
-    DivideV1,
-    MultiplyV1,
-    SubtractV1,
-    TanV0,
-)
+from otx.core.ov.ops.arithmetics import AddV1, DivideV1, MultiplyV1, SubtractV1, TanV0
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

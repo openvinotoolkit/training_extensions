@@ -6,10 +6,11 @@ from typing import List
 
 import torch
 
+from otx.core.ov.ops.builder import OPS
+from otx.core.ov.ops.infrastructures import ConstantV0
+from otx.core.ov.ops.op import Operation
 from otx.mpa.utils.logger import get_logger
 
-from ..ops import OPS, Operation
-from ..ops.infrastructures import ConstantV0
 from .graph import Graph
 
 logger = get_logger()

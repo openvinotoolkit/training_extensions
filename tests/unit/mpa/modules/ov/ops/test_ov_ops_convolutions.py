@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch.nn import functional as F
 
-from otx.mpa.modules.ov.ops.convolutions import ConvolutionV1, GroupConvolutionV1
+from otx.core.ov.ops.convolutions import ConvolutionV1, GroupConvolutionV1
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

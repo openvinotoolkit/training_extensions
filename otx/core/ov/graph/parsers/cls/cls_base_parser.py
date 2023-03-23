@@ -1,15 +1,17 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Class base parser for otx.core.ov.graph.parsers.cls.cls_base_parser."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from typing import Dict, List, Optional
 
+from otx.mpa.modules.ov.graph.parsers.builder import PARSERS
+from otx.mpa.modules.ov.graph.parsers.parser import parameter_parser
 from otx.mpa.utils.logger import get_logger
 
-from ..builder import PARSERS
-from ..parser import parameter_parser
-
 logger = get_logger()
+
+# pylint: disable=too-many-return-statements, too-many-branches
 
 
 NECK_INPUT_TYPES = ["ReduceMean", "MaxPool", "AvgPool"]
@@ -27,6 +29,7 @@ NECK_TYPES = [
 
 @PARSERS.register()
 def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, List[str]]]:
+    """Class base parser for OMZ models."""
     assert component in ["backbone", "neck", "head"]
 
     result_nodes = graph.get_nodes_by_types(["Result"])
@@ -73,13 +76,13 @@ def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, Li
             outputs=outputs,
         )
 
-    elif component == "neck":
+    if component == "neck":
         return dict(
             inputs=[neck_input.name],
             outputs=[neck_output.name],
         )
 
-    elif component == "head":
+    if component == "head":
         inputs = list(graph.successors(neck_output))
         #  if len(inputs) != 1:
         #      logger.debug(f"neck_output {neck_output.name} has more than one successors.")
@@ -102,3 +105,4 @@ def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, Li
             inputs=[input.name for input in inputs],
             outputs=[output.name for output in outputs],
         )
+    return None

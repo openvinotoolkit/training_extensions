@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from otx.core.ov.graph.parsers.cls import cls_base_parser
 from otx.mpa.modules.ov.graph.graph import Graph
-from otx.mpa.modules.ov.graph.parsers.cls.cls_base_parser import cls_base_parser
 from otx.mpa.modules.ov.utils import load_ov_model
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 

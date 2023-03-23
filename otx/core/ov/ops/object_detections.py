@@ -1,16 +1,21 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Object-detection-related modules for otx.core.ov.ops."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from .builder import OPS
-from .op import Attribute, Operation
+from otx.core.ov.ops.builder import OPS
+from otx.core.ov.ops.op import Attribute, Operation
+
+# pylint: disable=too-many-instance-attributes
 
 
 @dataclass
 class ProposalV4Attribute(Attribute):
+    """ProposalV4Attribute class."""
+
     base_size: int
     pre_nms_topn: int
     post_nms_topn: int
@@ -27,6 +32,7 @@ class ProposalV4Attribute(Attribute):
     framework: str = field(default="")
 
     def __post_init__(self):
+        """ProposalV4Attribute's post-init function."""
         super().__post_init__()
         valid_framework = ["", "tensorflow"]
         if self.framework not in valid_framework:
@@ -35,32 +41,21 @@ class ProposalV4Attribute(Attribute):
 
 @OPS.register()
 class ProposalV4(Operation[ProposalV4Attribute]):
+    """ProposalV4 class."""
+
     TYPE = "Proposal"
     VERSION = 4
     ATTRIBUTE_FACTORY = ProposalV4Attribute
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        #  from mmdet.core.anchor.anchor_generator import AnchorGenerator
-        #  self._anchor_generator = AnchorGenerator(
-        #      strides=[attrs["feat_stride"]],
-        #      ratios=attrs["ratio"],
-        #      scales=attrs["scale"],
-        #      base_sizes=[attrs["base_size"]],
-        #  )
-
-        #  from torchvision.models.detection.anchor_utils import AnchorGenerator
-        #  self._anchor_generator = AnchorGenerator(
-        #      sizes=(self.attrs["base_size"],),
-        #      aspect_ratios=
-
     def forward(self, class_probs, bbox_deltas, image_shape):
+        """ProposalV4's forward function."""
         raise NotImplementedError
 
 
 @dataclass
 class ROIPoolingV0Attribute(Attribute):
+    """ROIPoolingV0Attribute class."""
+
     pooled_h: int
     pooled_w: int
     spatial_scale: float
@@ -68,6 +63,7 @@ class ROIPoolingV0Attribute(Attribute):
     output_size: List[int] = field(default_factory=lambda: [])
 
     def __post_init__(self):
+        """ROIPoolingV0Attribute's post-init function."""
         super().__post_init__()
         valid_method = ["max", "bilinear"]
         if self.method not in valid_method:
@@ -76,16 +72,21 @@ class ROIPoolingV0Attribute(Attribute):
 
 @OPS.register()
 class ROIPoolingV0(Operation[ROIPoolingV0Attribute]):
+    """ROIPoolingV0 class."""
+
     TYPE = "ROIPooling"
     VERSION = 0
     ATTRIBUTE_FACTORY = ROIPoolingV0Attribute
 
-    def forward(self, input, boxes):
+    def forward(self, inputs, boxes):
+        """ROIPoolingV0's forward function."""
         raise NotImplementedError
 
 
 @dataclass
 class DetectionOutputV0Attribute(Attribute):
+    """DetectionOutputV0Attribute class."""
+
     keep_top_k: List[int]
     nms_threshold: float
     background_label_id: int = field(default=0)
@@ -103,6 +104,7 @@ class DetectionOutputV0Attribute(Attribute):
     objectness_score: float = field(default=0)
 
     def __post_init__(self):
+        """DetectionOutputV0Attribute's post-init function."""
         super().__post_init__()
         valid_code_type = [
             "caffe.PriorBoxParameter.CORNER",
@@ -114,16 +116,21 @@ class DetectionOutputV0Attribute(Attribute):
 
 @OPS.register()
 class DetectionOutputV0(Operation[DetectionOutputV0Attribute]):
+    """DetectionOutputV0 class."""
+
     TYPE = "DetectionOutput"
     VERSION = 0
     ATTRIBUTE_FACTORY = DetectionOutputV0Attribute
 
     def forward(self, loc_data, conf_data, prior_data, arm_conf_data=None, arm_loc_data=None):
+        """DetectionOutputV0's forward."""
         raise NotImplementedError
 
 
 @dataclass
 class RegionYoloV0Attribute(Attribute):
+    """RegionYoloV0Attribute class."""
+
     axis: int
     coords: int
     classes: int
@@ -136,16 +143,21 @@ class RegionYoloV0Attribute(Attribute):
 
 @OPS.register()
 class RegionYoloV0(Operation[RegionYoloV0Attribute]):
+    """RegionYoloV0 class."""
+
     TYPE = "RegionYolo"
     VERSION = 0
     ATTRIBUTE_FACTORY = RegionYoloV0Attribute
 
-    def forward(self, input):
+    def forward(self, inputs):
+        """RegionYoloV0's forward function."""
         raise NotImplementedError
 
 
 @dataclass
 class PriorBoxV0Attribute(Attribute):
+    """PriorBoxV0Attribute class."""
+
     offset: float
     min_size: List[float] = field(default_factory=lambda: [])
     max_size: List[float] = field(default_factory=lambda: [])
@@ -162,16 +174,21 @@ class PriorBoxV0Attribute(Attribute):
 
 @OPS.register()
 class PriorBoxV0(Operation[PriorBoxV0Attribute]):
+    """PriorBoxV0 class."""
+
     TYPE = "PriorBox"
     VERSION = 0
     ATTRIBUTE_FACTORY = PriorBoxV0Attribute
 
     def forward(self, output_size, image_size):
+        """PriorBoxV0's forward function."""
         raise NotImplementedError
 
 
 @dataclass
 class PriorBoxClusteredV0Attribute(Attribute):
+    """PriorBoxClusteredV0Attribute class."""
+
     offset: float
     width: List[float] = field(default_factory=lambda: [1.0])
     height: List[float] = field(default_factory=lambda: [1.0])
@@ -184,9 +201,12 @@ class PriorBoxClusteredV0Attribute(Attribute):
 
 @OPS.register()
 class PriorBoxClusteredV0(Operation[PriorBoxClusteredV0Attribute]):
+    """PriorBoxClusteredV0 class."""
+
     TYPE = "PriorBoxClustered"
     VERSION = 0
     ATTRIBUTE_FACTORY = PriorBoxClusteredV0Attribute
 
     def forward(self, output_size, image_size):
+        """PriorBoxClusteredV0's forward function."""
         raise NotImplementedError

@@ -7,7 +7,7 @@ import tempfile
 
 from openvino.model_zoo._configuration import Model
 
-from otx.mpa.modules.ov.omz_wrapper import (
+from otx.core.ov.omz_wrapper import (
     download_model,
     get_model_configuration,
     get_omz_model,

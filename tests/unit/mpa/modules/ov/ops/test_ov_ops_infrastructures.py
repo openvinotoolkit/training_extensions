@@ -7,7 +7,7 @@ import openvino.runtime as ov
 import pytest
 import torch
 
-from otx.mpa.modules.ov.ops.infrastructures import ConstantV0, ParameterV0, ResultV0
+from otx.core.ov.ops.infrastructures import ConstantV0, ParameterV0, ResultV0
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

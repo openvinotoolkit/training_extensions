@@ -9,7 +9,8 @@ import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import ClsHead
 
-from ....graph.parsers.cls import cls_base_parser
+from otx.core.ov.graph.parsers.cls import cls_base_parser
+
 from ...mmov_model import MMOVModel
 
 

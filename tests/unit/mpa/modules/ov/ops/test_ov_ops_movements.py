@@ -5,7 +5,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.ops.movements import (
+from otx.core.ov.ops.movements import (
     BroadcastV3,
     ConcatV0,
     GatherV0,

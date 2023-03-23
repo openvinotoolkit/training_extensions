@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.mpa.modules.ov.registry import Registry
+from otx.core.ov.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

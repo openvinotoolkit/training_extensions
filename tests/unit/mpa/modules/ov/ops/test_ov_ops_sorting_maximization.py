@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.mpa.modules.ov.ops.sorting_maximization import (
+from otx.core.ov.ops.sorting_maximization import (
     NonMaxSuppressionV5,
     NonMaxSuppressionV9,
     TopKV3,

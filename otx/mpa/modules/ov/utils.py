@@ -9,9 +9,8 @@ from typing import List, Optional
 from openvino.pyopenvino import Model, Node
 from openvino.runtime import Core
 
+from otx.core.ov.omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
 from otx.mpa.utils.logger import get_logger
-
-from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
 
 logger = get_logger()
 
@@ -125,7 +124,7 @@ def get_op_name(op: Node) -> str:
 
 def convert_op_to_torch(op: Node):
 
-    from .ops import OPS
+    from otx.core.ov.ops.builder import OPS
 
     op_type = op.get_type_name()
     op_version = op.get_version()
@@ -143,7 +142,7 @@ def convert_op_to_torch(op: Node):
 
 
 def convert_op_to_torch_module(target_op: Node):
-    from .ops.modules import OperationModule
+    from otx.core.ov.ops.modules.op_module import OperationModule
 
     dependent_modules = []
     for in_port in target_op.inputs():

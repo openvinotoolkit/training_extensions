@@ -8,7 +8,7 @@ import pytest
 import torch
 from torch.nn import functional as F
 
-from otx.mpa.modules.ov.ops.activations import (
+from otx.core.ov.ops.activations import (
     ClampV0,
     EluV0,
     ExpV0,

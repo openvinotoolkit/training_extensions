@@ -4,7 +4,7 @@
 
 import openvino.runtime as ov
 
-from otx.mpa.modules.ov.ops.arithmetics import MultiplyV1
+from otx.core.ov.ops.arithmetics import MultiplyV1
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

@@ -4,7 +4,7 @@
 
 import torch
 
-from otx.mpa.modules.ov.ops.reductions import (
+from otx.core.ov.ops.reductions import (
     ReduceMeanV1,
     ReduceMinV1,
     ReduceProdV1,

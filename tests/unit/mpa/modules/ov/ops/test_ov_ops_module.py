@@ -5,8 +5,8 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.ops import OPS
-from otx.mpa.modules.ov.ops.modules.op_module import OperationModule
+from otx.core.ov.ops.builder import OPS
+from otx.core.ov.ops.modules.op_module import OperationModule
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

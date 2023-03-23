@@ -2,6 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from ...registry import Registry
+from otx.core.ov.registry import Registry
 
 PARSERS = Registry("ov graph parsers")

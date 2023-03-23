@@ -1,6 +1,7 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Infrastructure-related modules for otx.core.ov.ops."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
@@ -9,13 +10,12 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
+from otx.core.ov.ops.builder import OPS
+from otx.core.ov.ops.op import Attribute, Operation
+from otx.core.ov.ops.type_conversions import ConvertV0
+from otx.core.ov.ops.utils import get_dynamic_shape
+from otx.mpa.modules.ov.utils import get_op_name
 from otx.mpa.utils.logger import get_logger
-
-from ..utils import get_op_name
-from .builder import OPS
-from .op import Attribute, Operation
-from .type_conversions import ConvertV0
-from .utils import get_dynamic_shape
 
 logger = get_logger()
 
@@ -36,6 +36,8 @@ NODE_TYPES_WITH_WEIGHT = set(
 
 @dataclass
 class ParameterV0Attribute(Attribute):
+    """ParameterV0Attribute class."""
+
     element_type: Optional[str] = field(default=None)
 
     layout: Optional[Tuple[str]] = field(default=None)
@@ -43,6 +45,7 @@ class ParameterV0Attribute(Attribute):
     verify_shape: bool = field(default=True)
 
     def __post_init__(self):
+        """ParameterV0Attribute's post-init function."""
         super().__post_init__()
         # fmt: off
         valid_element_type = [
@@ -57,29 +60,33 @@ class ParameterV0Attribute(Attribute):
 
 @OPS.register()
 class ParameterV0(Operation[ParameterV0Attribute]):
+    """ParameterV0 class."""
+
     TYPE = "Parameter"
     VERSION = 0
     ATTRIBUTE_FACTORY = ParameterV0Attribute
 
-    def forward(self, input):
+    def forward(self, inputs):
+        """ParameterV0's forward function."""
         # TODO: validate shape
         # need to handle new generated op from reshaped model
         if self.attrs.verify_shape:
             assert self.shape is not None
             ov_shape = self.shape[0]
-            torch_shape = list(input.shape)
+            torch_shape = list(inputs.shape)
             for ov_shape_, torch_shape_ in zip(ov_shape, torch_shape):
                 if ov_shape_ == -1:
                     continue
                 assert ov_shape_ == torch_shape_, f"input shape {torch_shape} does not match with ov shape {ov_shape}"
 
         if self.attrs.permute:
-            input = input.permute(self.attrs.permute)
+            inputs = inputs.permute(self.attrs.permute)
 
-        return input
+        return inputs
 
     @classmethod
     def from_ov(cls, ov_op):
+        """ParameterV0's from_ov function."""
         op_type = ov_op.get_type_name()
         op_version = ov_op.get_version()
         op_name = get_op_name(ov_op)
@@ -122,8 +129,8 @@ class ParameterV0(Operation[ParameterV0Attribute]):
             new_shape = []
             for shape in attrs["shape"]:
                 new_shape.append([-1 if j == i else k for j, k in enumerate(shape)])
-            new_shape = tuple(tuple(shape) for shape in new_shape)
-            attrs["shape"] = new_shape
+            new_shape = [tuple(shape) for shape in new_shape]
+            attrs["shape"] = tuple(new_shape)
 
             # change shape and layout based on permute
             if "permute" in attrs and attrs["permute"] != (0, 1, 2, 3):
@@ -135,28 +142,35 @@ class ParameterV0(Operation[ParameterV0Attribute]):
                 for shape in attrs["shape"]:
                     new_shape.append([shape[i] for i in permute])
                 attrs["shape"] = tuple(tuple(shape) for shape in new_shape)
-                attrs["layout"] = tuple([attrs["layout"][i] for i in permute])
+                attrs["layout"] = tuple(attrs["layout"][i] for i in permute)
 
         return cls(name=op_name, **attrs)
 
 
 @dataclass
 class ResultV0Attribute(Attribute):
-    pass
+    """ResultV0Attribute class."""
+
+    pass  # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
 class ResultV0(Operation[ResultV0Attribute]):
+    """ResultV0 class."""
+
     TYPE = "Result"
     VERSION = 0
     ATTRIBUTE_FACTORY = ResultV0Attribute
 
-    def forward(self, input):
-        return input
+    def forward(self, inputs):
+        """ResultV0's forward function."""
+        return inputs
 
 
 @dataclass
 class ConstantV0Attribute(Attribute):
+    """ConstantV0Attribute class."""
+
     element_type: str
     offset: int = field(default=0)
     size: int = field(default=0)
@@ -164,6 +178,7 @@ class ConstantV0Attribute(Attribute):
     is_parameter: bool = field(default=False)
 
     def __post_init__(self):
+        """ConstantV0Attribute's post-init function."""
         super().__post_init__()
         # fmt: off
         valid_element_type = [
@@ -177,6 +192,8 @@ class ConstantV0Attribute(Attribute):
 
 @OPS.register()
 class ConstantV0(Operation[ConstantV0Attribute]):
+    """ConstantV0 class."""
+
     TYPE = "Constant"
     VERSION = 0
     ATTRIBUTE_FACTORY = ConstantV0Attribute
@@ -194,10 +211,12 @@ class ConstantV0(Operation[ConstantV0Attribute]):
             self.register_buffer("data", data)
 
     def forward(self):
+        """ConstantV0's forward function."""
         return self.data
 
     @classmethod
     def from_ov(cls, ov_op):
+        """ConstantV0's from_ov function."""
         op_type = ov_op.get_type_name()
         op_version = ov_op.get_version()
         op_name = get_op_name(ov_op)
@@ -228,6 +247,7 @@ class ConstantV0(Operation[ConstantV0Attribute]):
 
         # FIXME: need a better way to distinghish if it is parameter or no
         is_parameter = False
+        # pylint: disable=too-many-boolean-expressions
         if (
             set(op_node_types).intersection(NODE_TYPES_WITH_WEIGHT)
             and len(in_port_indices) == 1

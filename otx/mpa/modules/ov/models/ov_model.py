@@ -13,6 +13,8 @@ import openvino.runtime as ov
 import torch
 from torch.nn import init
 
+from otx.core.ov.ops.builder import OPS
+from otx.mpa.modules.ov.utils import load_ov_model, normalize_name
 from otx.mpa.utils.logger import get_logger
 
 from ..graph import Graph
@@ -21,8 +23,6 @@ from ..graph.utils import (
     handle_paired_batchnorm,
     handle_reshape,
 )
-from ..ops import OPS
-from ..utils import load_ov_model, normalize_name
 
 logger = get_logger()
 
@@ -102,7 +102,7 @@ class OVModel(torch.nn.Module):
 
                 # internal init weight
                 def init_weight(m, graph):
-                    from ..ops.op import Operation
+                    from .....core.ov.ops.op import Operation
 
                     if not isinstance(m, Operation):
                         return

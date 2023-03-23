@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch.nn import functional as F
 
-from otx.mpa.modules.ov.ops.image_processings import InterpolateV4
+from otx.core.ov.ops.image_processings import InterpolateV4
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

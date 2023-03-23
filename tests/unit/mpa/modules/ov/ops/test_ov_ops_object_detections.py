@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.mpa.modules.ov.ops.object_detections import (
+from otx.core.ov.ops.object_detections import (
     DetectionOutputV0,
     PriorBoxClusteredV0,
     PriorBoxV0,

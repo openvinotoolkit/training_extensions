@@ -1,19 +1,24 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Pooling-related modules for otx.core.ov.ops."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass, field
 from typing import Callable, List
 
 from torch.nn import functional as F
 
-from .builder import OPS
-from .op import Attribute, Operation
-from .utils import get_torch_padding
+from otx.core.ov.ops.builder import OPS
+from otx.core.ov.ops.movements import get_torch_padding
+from otx.core.ov.ops.op import Attribute, Operation
+
+# pylint: disable=too-many-instance-attributes
 
 
 @dataclass
 class MaxPoolV0Attribute(Attribute):
+    """MaxPoolV0Attribute class."""
+
     strides: List[int]
     pads_begin: List[int]
     pads_end: List[int]
@@ -25,6 +30,7 @@ class MaxPoolV0Attribute(Attribute):
     axis: int = field(default=0)
 
     def __post_init__(self):
+        """MaxPoolV0Attribute's post-init functions."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
         if self.auto_pad not in valid_auto_pad:
@@ -50,17 +56,19 @@ class MaxPoolV0Attribute(Attribute):
 
 @OPS.register()
 class MaxPoolV0(Operation[MaxPoolV0Attribute]):
+    """MaxPoolV0 class."""
+
     TYPE = "MaxPool"
     VERSION = 0
     ATTRIBUTE_FACTORY = MaxPoolV0Attribute
 
-    def forward(self, input):
-
-        if input.dim() == 3:
+    def forward(self, inputs):
+        """MaxPoolV0's forward function."""
+        if inputs.dim() == 3:
             func = F.max_pool1d
-        elif input.dim() == 4:
+        elif inputs.dim() == 4:
             func = F.max_pool2d
-        elif input.dim() == 5:
+        elif inputs.dim() == 5:
             func = F.max_pool3d
         else:
             raise NotImplementedError
@@ -69,16 +77,16 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
             self.attrs.pads_begin,
             self.attrs.pads_end,
             self.attrs.auto_pad,
-            list(input.shape[2:]),
+            list(inputs.shape[2:]),
             self.attrs.kernel,
             self.attrs.strides,
         )
         if isinstance(padding, Callable):
-            input = padding(input=input)
+            inputs = padding(input=inputs)
             padding = 0
 
         return func(
-            input=input,
+            input=inputs,
             kernel_size=self.attrs.kernel,
             stride=self.attrs.strides,
             padding=padding,
@@ -90,6 +98,8 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
 
 @dataclass
 class AvgPoolV1Attribute(Attribute):
+    """AvgPoolV1Attribute class."""
+
     exclude_pad: bool
     strides: List[int]
     pads_begin: List[int]
@@ -99,6 +109,7 @@ class AvgPoolV1Attribute(Attribute):
     auto_pad: str = field(default="explicit")
 
     def __post_init__(self):
+        """AvgPoolV1Attribute's post-init function."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
         if self.auto_pad not in valid_auto_pad:
@@ -112,6 +123,8 @@ class AvgPoolV1Attribute(Attribute):
 
 @OPS.register()
 class AvgPoolV1(Operation[AvgPoolV1Attribute]):
+    """AvgPoolV1 class."""
+
     TYPE = "AvgPool"
     VERSION = 1
     ATTRIBUTE_FACTORY = AvgPoolV1Attribute
@@ -121,12 +134,13 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
             kwargs["exclude_pad"] = kwargs.pop("exclude-pad")
         super().__init__(*args, **kwargs)
 
-    def forward(self, input):
-        if input.dim() == 3:
+    def forward(self, inputs):
+        """AvgPoolV1's forward function."""
+        if inputs.dim() == 3:
             func = F.avg_pool1d
-        elif input.dim() == 4:
+        elif inputs.dim() == 4:
             func = F.avg_pool2d
-        elif input.dim() == 5:
+        elif inputs.dim() == 5:
             func = F.avg_pool3d
         else:
             raise NotImplementedError
@@ -135,16 +149,16 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
             self.attrs.pads_begin,
             self.attrs.pads_end,
             self.attrs.auto_pad,
-            list(input.shape[2:]),
+            list(inputs.shape[2:]),
             self.attrs.kernel,
             self.attrs.strides,
         )
         if isinstance(padding, Callable):
-            input = padding(input=input)
+            inputs = padding(input=inputs)
             padding = 0
 
         return func(
-            input=input,
+            input=inputs,
             kernel_size=self.attrs.kernel,
             stride=self.attrs.strides,
             padding=padding,

@@ -6,7 +6,8 @@ from typing import Dict, List
 
 from mmcls.models.builder import NECKS
 
-from ....graph.parsers.cls.cls_base_parser import cls_base_parser
+from otx.core.ov.graph.parsers.cls import cls_base_parser
+
 from ...mmov_model import MMOVModel
 
 

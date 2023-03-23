@@ -1,11 +1,14 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Registry Class for otx.core.ov."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from typing import Any, Dict, Optional
 
 
 class Registry:
+    """Registry Class for OMZ model."""
+
     REGISTERED_NAME_ATTR = "_registered_name"
 
     def __init__(self, name, add_name_as_attr=False):
@@ -15,14 +18,18 @@ class Registry:
 
     @property
     def registry_dict(self) -> Dict[Any, Any]:
+        """Dictionary of registered module."""
         return self._registry_dict
 
     def _register(self, obj: Any, name: Any):
+        """Register obj with name."""
         if name in self._registry_dict:
-            raise KeyError("{} is already registered in {}".format(name, self._name))
+            raise KeyError(f"{name} is already registered in {self._name}")
         self._registry_dict[name] = obj
 
     def register(self, name: Optional[Any] = None):
+        """Register from name."""
+
         def wrap(obj):
             cls_name = name
             if cls_name is None:
@@ -35,12 +42,15 @@ class Registry:
         return wrap
 
     def get(self, key: Any) -> Any:
+        """Get from module name (key)."""
         if key not in self._registry_dict:
             self._key_not_found(key)
         return self._registry_dict[key]
 
     def _key_not_found(self, key: Any):
-        raise KeyError("{} is not found in {}".format(key, self._name))
+        """Raise KeyError when key not founded."""
+        raise KeyError(f"{key} is not found in {self._name}")
 
     def __contains__(self, item):
+        """Check containing of item."""
         return item in self._registry_dict.values()

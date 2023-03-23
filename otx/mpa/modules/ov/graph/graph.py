@@ -12,10 +12,9 @@ import _collections_abc
 import networkx as nx
 from openvino.pyopenvino import Model
 
+from otx.core.ov.ops.op import Operation
+from otx.mpa.modules.ov.utils import convert_op_to_torch, get_op_name
 from otx.mpa.utils.logger import get_logger
-
-from ..ops.op import Operation
-from ..utils import convert_op_to_torch, get_op_name
 
 logger = get_logger()
 

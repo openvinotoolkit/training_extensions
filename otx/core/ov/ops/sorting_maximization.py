@@ -1,21 +1,25 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Sorting-maximization-related modules for otx.core.ov.ops."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass, field
 
-from .builder import OPS
-from .op import Attribute, Operation
+from otx.core.ov.ops.builder import OPS
+from otx.core.ov.ops.op import Attribute, Operation
 
 
 @dataclass
 class TopKV3Attribute(Attribute):
+    """TopKV3Attribute class."""
+
     axis: int
     mode: str
     sort: str
     index_element_type: str = field(default="i32")
 
     def __post_init__(self):
+        """TopKV3Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["min", "max"]
         if self.mode not in valid_mode:
@@ -35,30 +39,21 @@ class TopKV3Attribute(Attribute):
 
 @OPS.register()
 class TopKV3(Operation[TopKV3Attribute]):
+    """TopKV3 class."""
+
     TYPE = "TopK"
     VERSION = 3
     ATTRIBUTE_FACTORY = TopKV3Attribute
 
-    def forward(self, input, k):
+    def forward(self, inputs, k):
+        """TopKV3's forward function."""
         raise NotImplementedError
-        #  values, indices = torch.topk(
-        #      input=input,
-        #      k=k,
-        #      dim=self.attrs.axis,
-        #      largest=self.attrs.mode == "max",
-        #      sorted=True,
-        #  )
-        #
-        #  if self.attrs.sort == "index":
-        #      sorted = torch.argsort(indices)
-        #      indices = indices[sorted]
-        #      values = values[sorted]
-        #
-        #  return values, indices
 
 
 @dataclass
 class NonMaxSuppressionV5Attribute(Attribute):
+    """NonMaxSuppressionV5Attribute class."""
+
     box_encoding: str = field(default="corner")
     sort_result_descending: bool = field(default=True)
     output_type: str = field(default="i64")
@@ -66,6 +61,8 @@ class NonMaxSuppressionV5Attribute(Attribute):
 
 @OPS.register()
 class NonMaxSuppressionV5(Operation[NonMaxSuppressionV5Attribute]):
+    """NonMaxSuppressionV5 class."""
+
     TYPE = "NonMaxSuppression"
     VERSION = 5
     ATTRIBUTE_FACTORY = NonMaxSuppressionV5Attribute
@@ -79,11 +76,14 @@ class NonMaxSuppressionV5(Operation[NonMaxSuppressionV5Attribute]):
         score_threshold=0,
         soft_nms_sigma=0,
     ):
+        """NonMaxSuppressionV5's forward function."""
         raise NotImplementedError
 
 
 @dataclass
 class NonMaxSuppressionV9Attribute(Attribute):
+    """NonMaxSuppressionV9Attribute class."""
+
     box_encoding: str = field(default="corner")
     sort_result_descending: bool = field(default=True)
     output_type: str = field(default="i64")
@@ -91,6 +91,8 @@ class NonMaxSuppressionV9Attribute(Attribute):
 
 @OPS.register()
 class NonMaxSuppressionV9(Operation[NonMaxSuppressionV9Attribute]):
+    """NonMaxSuppressionV9 class."""
+
     TYPE = "NonMaxSuppression"
     VERSION = 9
     ATTRIBUTE_FACTORY = NonMaxSuppressionV9Attribute
@@ -104,4 +106,5 @@ class NonMaxSuppressionV9(Operation[NonMaxSuppressionV9Attribute]):
         score_threshold=0,
         soft_nms_sigma=0,
     ):
+        """NonMaxSuppressionV9's forward function."""
         raise NotImplementedError

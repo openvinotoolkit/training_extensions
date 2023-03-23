@@ -1,6 +1,7 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Image Processings-related code for otx.core.ov.ops."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass, field
 from typing import List
@@ -12,9 +13,13 @@ from .builder import OPS
 from .movements import PadV1
 from .op import Attribute, Operation
 
+# pylint: disable=too-many-instance-attributes, too-many-branches
+
 
 @dataclass
 class InterpolateV4Attribute(Attribute):
+    """InterpolateV4Attribute class."""
+
     mode: str
     shape_calculation_mode: str
     coordinate_transformation_mode: str = field(default="half_pixel")
@@ -25,6 +30,7 @@ class InterpolateV4Attribute(Attribute):
     cube_coeff: float = field(default=-0.75)
 
     def __post_init__(self):
+        """InterpolateV4Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["nearest", "linear", "linear_onnx", "cubic"]
         if self.mode not in valid_mode:
@@ -60,6 +66,8 @@ class InterpolateV4Attribute(Attribute):
 
 @OPS.register()
 class InterpolateV4(Operation[InterpolateV4Attribute]):
+    """InterpolateV4 class."""
+
     TYPE = "Interpolate"
     VERSION = 4
     ATTRIBUTE_FACTORY = InterpolateV4Attribute
@@ -68,7 +76,8 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
         super().__init__(*args, **kwargs)
         self.pad = PadV1("tmp", shape=self.shape, pad_mode="constant")
 
-    def forward(self, input, sizes, scales, axes=None):
+    def forward(self, inputs, sizes, scales, axes=None):
+        """InterpolateV4's forward function."""
         # TODO list
         # - handle 'linear_onnx' mode
         # - coordinate_transformation_mode
@@ -77,14 +86,14 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
         # - antialias
 
         if axes is None:
-            axes = list(range(input.dim()))
+            axes = list(range(inputs.dim()))
         else:
             axes = axes.detach().cpu().tolist()
 
-        output = self.pad(input, self.attrs.pads_begin, self.attrs.pads_end, 0)
+        output = self.pad(inputs, self.attrs.pads_begin, self.attrs.pads_end, 0)
 
         mode = self.attrs.mode
-        if mode == "linear" or mode == "linear_onnx":
+        if mode in ("linear", "linear_onnx"):
             align_corners = False
             if output.dim() == 3:
                 pass
@@ -96,13 +105,13 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
             align_corners = False
             if output.dim() == 3:
                 raise NotImplementedError
-            elif output.dim() == 4:
+            if output.dim() == 4:
                 mode = "bicubic"
             elif output.dim() == 5:
                 raise NotImplementedError
         elif mode == "nearest":
             align_corners = None
-            pass
+            pass  # pylint: disable=unnecessary-pass
         else:
             raise NotImplementedError
 
@@ -119,16 +128,15 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
                 mode=mode,
                 align_corners=align_corners,
             )
-        else:
-            scales = scales.detach().cpu().numpy()
-            scales = scales[np.argsort(axes)].tolist()
-            if output.dim() == len(scales):
-                scales = scales[2:]
+        scales = scales.detach().cpu().numpy()
+        scales = scales[np.argsort(axes)].tolist()
+        if output.dim() == len(scales):
+            scales = scales[2:]
 
-            return F.interpolate(
-                input=output,
-                size=None,
-                scale_factor=scales,
-                mode=mode,
-                align_corners=align_corners,
-            )
+        return F.interpolate(
+            input=output,
+            size=None,
+            scale_factor=scales,
+            mode=mode,
+            align_corners=align_corners,
+        )

@@ -5,7 +5,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.ops.type_conversions import ConvertV0
+from otx.core.ov.ops.type_conversions import ConvertV0
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

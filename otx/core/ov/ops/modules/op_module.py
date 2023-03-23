@@ -1,6 +1,7 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Operation module for otx.core.ov.ops.modeuls."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 import inspect
 from typing import Dict, List, Optional, Union
@@ -11,17 +12,19 @@ from ..op import Operation
 
 
 class OperationModule(torch.nn.Module):
+    """OperationModule class."""
+
     def __init__(
         self,
-        op: Operation,
-        dependent_ops: Union[List[Optional[Operation]], Dict[str, Optional[Operation]]],
+        op_v: Operation,
+        dependent_ops: Union[List[Operation], Dict[str, Optional[Operation]]],
     ):
         super().__init__()
 
-        self.op = op
+        self.op_v = op_v
         self._dependent_ops = torch.nn.ModuleDict()
 
-        spec = inspect.getfullargspec(op.forward)
+        spec = inspect.getfullargspec(op_v.forward)
         kwargs = spec.args[1:]
 
         self._dependents_with_defaults = []
@@ -30,8 +33,8 @@ class OperationModule(torch.nn.Module):
 
         if isinstance(dependent_ops, list):
             assert len(dependent_ops) == len(kwargs)
-            for op, kwarg in zip(dependent_ops, kwargs):
-                self._dependent_ops[kwarg] = op
+            for op_, kwarg in zip(dependent_ops, kwargs):
+                self._dependent_ops[kwarg] = op_
         elif isinstance(dependent_ops, dict):
             for kwarg in kwargs:
                 self._dependent_ops[kwarg] = dependent_ops[kwarg]
@@ -39,6 +42,7 @@ class OperationModule(torch.nn.Module):
             raise NotImplementedError
 
     def forward(self, *args, **kwargs):
+        """Operationmodule's forward function."""
         inputs = {k: v() if v is not None else None for k, v in self._dependent_ops.items()}
 
         if args:
@@ -53,24 +57,29 @@ class OperationModule(torch.nn.Module):
 
         assert all(v is not None for v in inputs.values() if v not in self._dependents_with_defaults)
 
-        return self.op(**inputs)
+        return self.op_v(**inputs)
 
     @property
-    def type(self):
-        return self.op.type
+    def type(self):  # pylint: disable=invalid-overridden-method
+        """Operationmodule's type property."""
+        return self.op_v.type
 
     @property
     def version(self):
-        return self.op.version
+        """Operationmodule's version property."""
+        return self.op_v.version
 
     @property
     def name(self):
-        return self.op.name
+        """Operationmodule's name property."""
+        return self.op_v.name
 
     @property
     def shape(self):
-        return self.op.shape
+        """Operationmodule's shape property."""
+        return self.op_v.shape
 
     @property
     def attrs(self):
-        return self.op.attrs
+        """Operationmodule's attrs property."""
+        return self.op_v.attrs

@@ -5,7 +5,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.ops.shape_manipulations import (
+from otx.core.ov.ops.shape_manipulations import (
     ReshapeV1,
     ShapeOfV0,
     ShapeOfV3,

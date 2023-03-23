@@ -1,25 +1,30 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Normalization-related modules for otx.core.ov.ops."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from dataclasses import dataclass, field
 
 import torch
 from torch.nn import functional as F
 
-from .builder import OPS
-from .op import Attribute, Operation
-from .poolings import AvgPoolV1
+from otx.core.ov.ops.builder import OPS
+from otx.core.ov.ops.op import Attribute, Operation
+from otx.core.ov.ops.poolings import AvgPoolV1
 
 
 @dataclass
 class BatchNormalizationV0Attribute(Attribute):
+    """BatchNormalizationV0Attribute class."""
+
     epsilon: float
     max_init_iter: int = field(default=2)
 
 
 @OPS.register()
 class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
+    """BatchNormalizationV0 class."""
+
     TYPE = "BatchNormInference"
     VERSION = 0
     ATTRIBUTE_FACTORY = BatchNormalizationV0Attribute
@@ -28,10 +33,11 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
         super().__init__(*args, **kwargs)
         self.register_buffer("_num_init_iter", torch.tensor(0))
 
-    def forward(self, input, gamma, beta, mean, variance):
+    def forward(self, inputs, gamma, beta, mean, variance):
+        """BatchNormalizationV0's forward function."""
 
         output = F.batch_norm(
-            input=input,
+            input=inputs,
             running_mean=mean,
             running_var=variance,
             weight=gamma,
@@ -42,13 +48,13 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
         )
 
         if self.training and self._num_init_iter < self.attrs.max_init_iter:
-            n_dims = input.dim() - 2
+            n_dims = inputs.dim() - 2
             gamma = gamma.unsqueeze(0)
             beta = beta.unsqueeze(0)
             for _ in range(n_dims):
                 gamma = gamma.unsqueeze(-1)
                 beta = beta.unsqueeze(-1)
-            output = input * gamma + beta
+            output = inputs * gamma + beta
             self._num_init_iter += 1
             if self._num_init_iter >= self.attrs.max_init_iter:
                 # Adapt weight & bias using the first batch statistics
@@ -61,6 +67,8 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
 
 @dataclass
 class LocalResponseNormalizationV0Attribute(Attribute):
+    """LocalResponseNormalizationV0Attribute class."""
+
     alpha: float
     beta: float
     bias: float
@@ -69,12 +77,15 @@ class LocalResponseNormalizationV0Attribute(Attribute):
 
 @OPS.register()
 class LocalResponseNormalizationV0(Operation[LocalResponseNormalizationV0Attribute]):
+    """LocalResponseNormalizationV0 class."""
+
     TYPE = "LRN"
     VERSION = 0
     ATTRIBUTE_FACTORY = LocalResponseNormalizationV0Attribute
 
-    def forward(self, input, axes):
-        dim = input.dim()
+    def forward(self, inputs, axes):
+        """LocalResponseNormalizationV0's forward function."""
+        dim = inputs.dim()
 
         axes = axes.detach().cpu().tolist()
         assert all(ax >= 1 for ax in axes)
@@ -84,10 +95,10 @@ class LocalResponseNormalizationV0(Operation[LocalResponseNormalizationV0Attribu
         stride = [1 for _ in range(dim - 1)]
         pads_begin = [0 for _ in range(dim - 1)]
         pads_end = [0 for _ in range(dim - 1)]
-        for ax in axes:
-            kernel[ax] = self.attrs.size
-            pads_begin[ax] = self.attrs.size // 2
-            pads_end[ax] = (self.attrs.size - 1) // 2
+        for axe in axes:
+            kernel[axe] = self.attrs.size
+            pads_begin[axe] = self.attrs.size // 2
+            pads_end[axe] = (self.attrs.size - 1) // 2
 
         avg_attrs = {
             "auto_pad": "explicit",
@@ -100,20 +111,23 @@ class LocalResponseNormalizationV0(Operation[LocalResponseNormalizationV0Attribu
         }
         avg_pool = AvgPoolV1("temp", **avg_attrs)
 
-        div = input.mul(input).unsqueeze(1)
+        div = inputs.mul(inputs).unsqueeze(1)
         div = avg_pool(div)
         div = div.squeeze(1)
         div = div.mul(self.attrs.alpha).add(self.attrs.bias).pow(self.attrs.beta)
-        output = input / div
+        output = inputs / div
         return output
 
 
 @dataclass
 class NormalizeL2V0Attribute(Attribute):
+    """NormalizeL2V0Attribute class."""
+
     eps: float
     eps_mode: str
 
     def __post_init__(self):
+        """NormalizeL2V0Attribute post-init function."""
         super().__post_init__()
         valid_eps_mode = ["add", "max"]
         if self.eps_mode not in valid_eps_mode:
@@ -122,11 +136,14 @@ class NormalizeL2V0Attribute(Attribute):
 
 @OPS.register()
 class NormalizeL2V0(Operation[NormalizeL2V0Attribute]):
+    """NormalizeL2V0 class."""
+
     TYPE = "NormalizeL2"
     VERSION = 0
     ATTRIBUTE_FACTORY = NormalizeL2V0Attribute
 
-    def forward(self, input, axes):
+    def forward(self, inputs, axes):
+        """NormalizeL2V0's forward function."""
         eps = self.attrs.eps
         eps_mode = self.attrs.eps_mode
 
@@ -136,7 +153,7 @@ class NormalizeL2V0(Operation[NormalizeL2V0Attribute]):
             axes = [axes]
 
         # normalization layer convert to FP32 in FP16 training
-        input_float = input.float()
+        input_float = inputs.float()
         if axes:
             norm = input_float.pow(2).sum(axes, keepdim=True)
         else:
@@ -147,16 +164,19 @@ class NormalizeL2V0(Operation[NormalizeL2V0Attribute]):
         elif eps_mode == "max":
             norm = torch.clamp(norm, max=eps)
 
-        return (input_float / norm.sqrt()).type_as(input)
+        return (input_float / norm.sqrt()).type_as(inputs)
 
 
 @dataclass
 class MVNV6Attribute(Attribute):
+    """MVNV6Attribute class."""
+
     normalize_variance: bool
     eps: float
     eps_mode: str
 
     def __post_init__(self):
+        """MVNV6Attribute's post-init function."""
         super().__post_init__()
         valid_eps_mode = ["INSIDE_SQRT", "OUTSIDE_SQRT"]
         if self.eps_mode not in valid_eps_mode:
@@ -165,12 +185,15 @@ class MVNV6Attribute(Attribute):
 
 @OPS.register()
 class MVNV6(Operation[MVNV6Attribute]):
+    """MVNV6 class."""
+
     TYPE = "MVN"
     VERSION = 6
     ATTRIBUTE_FACTORY = MVNV6Attribute
 
-    def forward(self, input, axes):
-        output = input - input.mean(axes.tolist(), keepdim=True)
+    def forward(self, inputs, axes):
+        """MVNV6's forward function."""
+        output = inputs - inputs.mean(axes.tolist(), keepdim=True)
         if self.attrs.normalize_variance:
             eps_mode = self.attrs.eps_mode
             eps = self.attrs.eps

@@ -6,8 +6,8 @@ from dataclasses import dataclass
 
 import pytest
 
-from otx.mpa.modules.ov.ops.builder import OperationRegistry
-from otx.mpa.modules.ov.ops.op import Attribute, Operation
+from otx.core.ov.ops.builder import OperationRegistry
+from otx.core.ov.ops.op import Attribute, Operation
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

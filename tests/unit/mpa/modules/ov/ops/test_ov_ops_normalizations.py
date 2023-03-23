@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch.nn import functional as F
 
-from otx.mpa.modules.ov.ops.normalizations import (
+from otx.core.ov.ops.normalizations import (
     MVNV6,
     BatchNormalizationV0,
     LocalResponseNormalizationV0,
