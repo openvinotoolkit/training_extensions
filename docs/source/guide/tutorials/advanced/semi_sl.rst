@@ -44,7 +44,7 @@ This tutorial explains how to train a model in semi-supervised learning mode and
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` 
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 2. Activate your virtual 
@@ -128,7 +128,7 @@ Enable via ``otx train``
 ***************************
 
 1. To enable semi-supervised learning directly via ``otx train``, we need to add arguments ``--unlabeled-data-roots`` and ``--algo_backend.train_type`` 
-which is one of template-specific parameters (details are provided in `quick start guide <../../get_started/quick_start_guide/cli_commands.html#training>`__.)
+which is one of template-specific parameters (details are provided in `quick start guide <../../get_started/quick_start_guide/cli_commands.html#training>`__).
 
 .. code-block::
 

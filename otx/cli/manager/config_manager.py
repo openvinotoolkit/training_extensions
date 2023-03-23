@@ -32,7 +32,7 @@ DEFAULT_MODEL_TEMPLATE_ID = {
     "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
     "ROTATED_DETECTION": "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50",
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
-    "ACTION_CLASSIFICATION": "Custom_Action_Classificaiton_X3D",
+    "ACTION_CLASSIFICATION": "Custom_Action_Classification_X3D",
     "ACTION_DETECTION": "Custom_Action_Detection_X3D_FAST_RCNN",
     "ANOMALY_CLASSIFICATION": "ote_anomaly_classification_padim",
     "ANOMALY_DETECTION": "ote_anomaly_detection_padim",
