@@ -3,3 +3,7 @@
 #
 
 # flake8: noqa
+
+from .composed_dataloader import ComposedDL
+
+__all__ = ['ComposedDL']

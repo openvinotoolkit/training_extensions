@@ -1,7 +1,7 @@
 import pytest
 from torch.utils.data import Dataset
 
-from otx.mpa.modules.datasets.samplers.cls_incr_sampler import ClsIncrSampler
+from otx.algorithms.common.adapters.torch.dataloaders.samplers import ClsIncrSampler
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -17,7 +17,7 @@ class TestClsIncrSampler:
 
         self.mock_dataset = MockDataset()
         mocker.patch(
-            "otx.mpa.modules.datasets.samplers.cls_incr_sampler.unwrap_dataset", return_value=(self.mock_dataset, 1)
+            "otx.algorithms.common.adapters.torch.dataloaders.samplers.cls_incr_sampler.unwrap_dataset", return_value=(self.mock_dataset, 1)
         )
 
     @e2e_pytest_unit

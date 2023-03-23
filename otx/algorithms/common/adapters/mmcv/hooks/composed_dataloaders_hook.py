@@ -8,7 +8,7 @@ from typing import List, Sequence, Union
 from mmcv.runner import HOOKS, Hook
 from torch.utils.data import DataLoader
 
-from otx.mpa.modules.datasets.composed_dataloader import ComposedDL
+from otx.algorithms.common.adapters.torch.dataloaders import ComposedDL
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()

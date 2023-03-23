@@ -1,7 +1,7 @@
 import pytest
 from torch.utils.data import Dataset
 
-from otx.mpa.modules.datasets.samplers.balanced_sampler import BalancedSampler
+from otx.algorithms.common.adapters.torch.dataloaders.samplers import BalancedSampler
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
