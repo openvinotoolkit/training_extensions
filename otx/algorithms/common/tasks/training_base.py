@@ -22,9 +22,11 @@ import shutil
 import tempfile
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
+from datetime import timedelta
 
 import numpy as np
 import torch
+from torch import distributed as dist
 from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
@@ -125,6 +127,18 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # to override configuration at runtime
         self.override_configs = {}  # type: Dict[str, str]
+
+        if self._is_multi_gpu_training():
+            self._setup_multigpu_training()
+
+    @staticmethod
+    def _is_multi_gpu_training():
+        return "LOCAL_RANK" in os.environ
+
+    @staticmethod
+    def _setup_multigpu_training():
+        torch.cuda.set_device(os.environ["LOCAL_RANK"])
+        dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=10))
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(kwargs)

@@ -209,8 +209,6 @@ class MultiGPUManager:
         os.environ["WORLD_SIZE"] = str(world_size)
         os.environ["LOCAL_RANK"] = str(local_rank)
         os.environ["RANK"] = str(rank)
-        torch.cuda.set_device(gpu_ids[local_rank])
-        dist.init_process_group(backend="nccl", world_size=world_size, rank=rank)
         logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     @staticmethod
