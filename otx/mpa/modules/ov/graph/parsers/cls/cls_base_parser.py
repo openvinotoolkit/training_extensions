@@ -4,7 +4,7 @@
 
 from typing import Dict, List, Optional
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from ..builder import PARSERS
 from ..parser import parameter_parser

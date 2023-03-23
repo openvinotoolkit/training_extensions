@@ -16,8 +16,8 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader,
     build_dataset,
 )
+from otx.algorithms.common.utils.logger import get_logger
 from otx.mpa.registry import STAGES
-from otx.mpa.utils.logger import get_logger
 
 from .stage import ClsStage
 

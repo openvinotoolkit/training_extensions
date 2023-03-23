@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from ..utils import get_op_name
 from .builder import OPS

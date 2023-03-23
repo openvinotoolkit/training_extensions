@@ -152,7 +152,7 @@ class NaiveExporter:
         **openvino_options,
     ) -> Tuple[str, str]:
         """Function for onnx to openvino exporting."""
-        from otx.mpa.utils import mo_wrapper
+        from otx.algorithms.common.utils import mo_wrapper
 
         mo_args = {
             "input_model": onnx_path,

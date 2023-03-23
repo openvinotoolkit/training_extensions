@@ -6,7 +6,7 @@ from typing import List
 
 import torch
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from ..ops import OPS, Operation
 from ..ops.infrastructures import ConstantV0

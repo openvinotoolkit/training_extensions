@@ -18,7 +18,7 @@ from openvino.model_zoo.download_engine.postprocessing import PostprocUnpackArch
 from openvino.model_zoo.omz_converter import ModelOptimizerProperties, convert_to_onnx
 from requests.exceptions import HTTPError
 
-from otx.mpa.utils.file import MPA_CACHE
+from otx.algorithms.common.utils.file import MPA_CACHE
 
 MPA_OMZ_CACHE = os.path.join(MPA_CACHE, "omz")
 os.makedirs(MPA_OMZ_CACHE, exist_ok=True)

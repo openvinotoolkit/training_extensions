@@ -2,11 +2,11 @@ import os
 
 import pytest
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.seg.exporter import SegExporter
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.segmentation.test_helpers import (
     DEFAULT_RECIPE_CONFIG_PATH,

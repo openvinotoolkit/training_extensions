@@ -25,6 +25,7 @@ import tqdm
 from mmseg.datasets.custom import CustomDataset
 from skimage.segmentation import felzenszwalb
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -43,7 +44,6 @@ from otx.api.utils.argument_checks import (
     OptionalDirectoryPathCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

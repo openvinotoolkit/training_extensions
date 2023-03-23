@@ -10,8 +10,8 @@ from mmcv.runner import BaseRunner, LrUpdaterHook
 from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.utils.argument_checks import check_input_parameters_type
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

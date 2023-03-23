@@ -4,10 +4,12 @@
 
 from mmcv import ConfigDict
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    recursively_update_cfg,
+)
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import recursively_update_cfg
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
