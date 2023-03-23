@@ -7,8 +7,10 @@ import inspect
 from typing import Dict, List, Optional, Union
 
 import torch
+from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
 
 from ..op import Operation
+from ..utils import convert_op_to_torch
 
 
 class OperationModule(torch.nn.Module):
@@ -83,3 +85,20 @@ class OperationModule(torch.nn.Module):
     def attrs(self):
         """Operationmodule's attrs property."""
         return self.op_v.attrs
+
+
+def convert_op_to_torch_module(target_op: Node):
+    """Convert op Node to torch module."""
+    dependent_modules = []
+    for in_port in target_op.inputs():
+        out_port = in_port.get_source_output()
+        parent = out_port.get_node()
+
+        parent_type = parent.get_type_name()
+        if parent_type == "Constant":
+            dependent_modules.append(convert_op_to_torch(parent))
+        else:
+            dependent_modules.append(None)
+    module = convert_op_to_torch(target_op)
+    module = OperationModule(module, dependent_modules)
+    return module

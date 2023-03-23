@@ -1,31 +1,36 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""Utils for otx.core.ov.graph."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
-from typing import List
+from typing import Any, List
 
 import torch
 
+from otx.core.ov.graph import Graph
 from otx.core.ov.ops.builder import OPS
 from otx.core.ov.ops.infrastructures import ConstantV0
 from otx.core.ov.ops.op import Operation
 from otx.mpa.utils.logger import get_logger
 
-from .graph import Graph
-
 logger = get_logger()
+
+# pylint: disable=too-many-locals, protected-access, too-many-branches, too-many-statements, too-many-nested-blocks
 
 
 def get_constant_input_nodes(graph: Graph, node: Operation) -> List[Operation]:
+    """Getter constant input nodes from graph, node."""
     found = []
-    for node in graph.predecessors(node):
-        if node.type == "Constant":
-            found.append(node)
+    for node_ in graph.predecessors(node):
+        if node_.type == "Constant":
+            found.append(node_)
     return found
 
 
-def handle_merging_into_batchnorm(graph, type_patterns=[["Multiply", "Add"]], type_mappings=[{"gamma": 0, "beta": 1}]):
-
+def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None):  # noqa: C901
+    """Merge function graph into batchnorm."""
+    type_patterns = type_patterns if type_patterns else [["Multiply", "Add"]]
+    type_mappings = type_mappings if type_mappings else [{"gamma": 0, "beta": 1}]
     assert len(type_patterns) == len(type_mappings)
     batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
     constant_cls = OPS.get_by_type_version("Constant", 0)
@@ -153,7 +158,9 @@ def handle_merging_into_batchnorm(graph, type_patterns=[["Multiply", "Add"]], ty
         graph.add_edge(running_variance, batchnorm)
 
 
-def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["Convolution", "GroupConvolution"]):
+def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = None):
+    """Handle function paired batchnorm."""
+    types = types if types else ["Convolution", "GroupConvolution"]
     batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
     constant_cls = OPS.get_by_type_version("Constant", 0)
 
@@ -172,9 +179,9 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["C
             )
             continue
 
-        bias_node = [n for n in graph.successors(node) if n.type == "Add"]
-        if len(bias_node) == 1:
-            bias_node = bias_node[0]
+        bias_node_list: List[Any] = [n for n in graph.successors(node) if n.type == "Add"]
+        if len(bias_node_list) == 1:
+            bias_node = bias_node_list[0]
         else:
             bias_node = None
 
@@ -183,10 +190,9 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["C
             logger.info(f"Skip a paired batch normalization for {node.name} " "becuase it has no bias add node.")
             continue
         # if add node is not bias add node
-        elif not isinstance(list(graph.predecessors(bias_node))[1], ConstantV0):
+        if not isinstance(list(graph.predecessors(bias_node))[1], ConstantV0):
             logger.info(
-                f"Skip a pared batch normalization for {node.name } "
-                f"because {bias_node.name} is not a bias add node."
+                f"Skip a pared batch normalization for {node.name} " f"because {bias_node.name} is not a bias add node."
             )
             continue
 
@@ -270,7 +276,7 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["C
 
 
 def handle_reshape(graph):
-
+    """Reshape function."""
     for result in graph.get_nodes_by_types(["Result"]):
         for node in graph.predecessors(result):
             # some models, for example, dla-34, have reshape node as its predecessor
@@ -281,5 +287,5 @@ def handle_reshape(graph):
                     for shape_ in input_node.shape[0][::-1]:
                         if shape_ != 1:
                             break
-                    logger.info(f"Change reshape to [-1, {shape_}]")
-                    shape.data = torch.tensor([-1, shape_])
+                    logger.info(f"Change reshape to [-1, {shape_}]")  # pylint: disable=undefined-loop-variable
+                    shape.data = torch.tensor([-1, shape_])  # pylint: disable=undefined-loop-variable

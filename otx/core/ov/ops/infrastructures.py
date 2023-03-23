@@ -10,12 +10,13 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
-from otx.core.ov.ops.builder import OPS
-from otx.core.ov.ops.op import Attribute, Operation
-from otx.core.ov.ops.type_conversions import ConvertV0
-from otx.core.ov.ops.utils import get_dynamic_shape
-from otx.mpa.modules.ov.utils import get_op_name
 from otx.mpa.utils.logger import get_logger
+
+from ..utils import get_op_name  # type: ignore[attr-defined]
+from .builder import OPS
+from .op import Attribute, Operation
+from .type_conversions import ConvertV0
+from .utils import get_dynamic_shape
 
 logger = get_logger()
 

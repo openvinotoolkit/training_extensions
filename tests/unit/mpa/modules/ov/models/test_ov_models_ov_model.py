@@ -6,7 +6,7 @@ import numpy as np
 import openvino.runtime as ov
 import torch
 
-from otx.mpa.modules.ov.models.ov_model import OVModel
+from otx.core.ov.models.ov_model import OVModel
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

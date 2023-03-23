@@ -1,6 +1,9 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+# type: ignore
+# TODO: Need to remove line 1 (ignore mypy) and fix mypy issues
+"""Modules for otx.core.ov.models.ov_model."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 import math
 import os
@@ -13,8 +16,6 @@ import openvino.runtime as ov
 import torch
 from torch.nn import init
 
-from otx.core.ov.ops.builder import OPS
-from otx.mpa.modules.ov.utils import load_ov_model, normalize_name
 from otx.mpa.utils.logger import get_logger
 
 from ..graph import Graph
@@ -23,20 +24,26 @@ from ..graph.utils import (
     handle_paired_batchnorm,
     handle_reshape,
 )
+from ..ops.builder import OPS
+from ..utils import load_ov_model, normalize_name
 
 logger = get_logger()
 
 
 CONNECTION_SEPARATOR = "||"
 
+# pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
 
-class OVModel(torch.nn.Module):
-    def __init__(
+
+class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
+    """OVModel class."""
+
+    def __init__(  # noqa: C901
         self,
         model_path_or_model: Union[str, ov.Model] = None,
         weight_path: Optional[str] = None,
-        inputs: Union[str, List[str]] = [],
-        outputs: Union[str, List[str]] = [],
+        inputs: Optional[Union[str, List[str]]] = None,
+        outputs: Optional[Union[str, List[str]]] = None,
         features_to_keep: Optional[List] = None,
         remove_normalize: bool = False,
         merge_bn: bool = True,
@@ -54,8 +61,8 @@ class OVModel(torch.nn.Module):
         self._init_weight = init_weight
         self._verify_shape = verify_shape
 
-        self._inputs = []
-        self._outputs = []
+        self._inputs: List[str] = []
+        self._outputs: List[str] = []
         self._feature_dict = OrderedDict()
 
         # build graph
@@ -101,40 +108,42 @@ class OVModel(torch.nn.Module):
             if not isinstance(init_weight, Callable):
 
                 # internal init weight
-                def init_weight(m, graph):
-                    from .....core.ov.ops.op import Operation
+                def init_weight(module, graph):  # pylint: disable=function-redefined
+                    from ..ops.op import Operation
 
-                    if not isinstance(m, Operation):
+                    if not isinstance(module, Operation):
                         return
 
-                    if m.TYPE == "BatchNormInference":
-                        _, gamma, beta, mean, var = list(graph.predecessors(m))
+                    if module.TYPE == "BatchNormInference":
+                        _, gamma, beta, mean, var = list(graph.predecessors(module))
                         init.ones_(gamma.data)
                         init.zeros_(beta.data)
                         mean.data.zero_()
                         var.data.fill_(1)
-                        logger.info(f"Initialize {m.TYPE} -> {m.name}")
-                    elif m.TYPE in [
+                        logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                    elif module.TYPE in [
                         "Convolution",
                         "GroupConvolution",
                         "MatMul",
                     ]:
-                        for weight in graph.predecessors(m):
+                        for weight in graph.predecessors(module):
                             if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
                                 init.kaiming_uniform_(weight.data, a=math.sqrt(5))
-                                logger.info(f"Initialize {m.TYPE} -> {m.name}")
-                    elif m.TYPE in [
+                                logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                    elif module.TYPE in [
                         "Multiply",
                         "Divide",
                         "Add",
                         "Subtract",
                     ]:
-                        for weight in graph.predecessors(m):
+                        for weight in graph.predecessors(module):
                             if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
-                                fan_in, _ = init._calculate_fan_in_and_fan_out(weight.data)
+                                fan_in, _ = init._calculate_fan_in_and_fan_out(  # pylint: disable=protected-access
+                                    weight.data
+                                )
                                 bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
                                 init.uniform_(weight.data, -bound, bound)
-                                logger.info(f"Initialize {m.TYPE} -> {m.name}")
+                                logger.info(f"Initialize {module.TYPE} -> {module.name}")
 
             self.model.apply(lambda m: init_weight(m, graph))
 
@@ -150,33 +159,39 @@ class OVModel(torch.nn.Module):
                 output_shapes[node.name] = node.shape[0]
         self._input_shapes = OrderedDict()
         self._output_shapes = OrderedDict()
-        for input in self._inputs:
-            self._input_shapes[input] = input_shapes[input]
+        for input_ in self._inputs:
+            self._input_shapes[input_] = input_shapes[input_]
         for output in self._outputs:
             self._output_shapes[output] = output_shapes[output]
 
     @property
     def inputs(self):
+        """Property inputs."""
         return self._inputs
 
     @property
     def outputs(self):
+        """Property outputs."""
         return self._outputs
 
     @property
     def features(self):
+        """Property features."""
         return self._feature_dict
 
     @property
     def input_shapes(self):
+        """Property input_shapes."""
         return self._input_shapes
 
     @property
     def output_shapes(self):
+        """Property output_shapes."""
         return self._output_shapes
 
     @staticmethod
     def build_graph(model_path_or_model, weight_path=None):
+        """Function build_graph."""
         with tempfile.TemporaryDirectory() as tempdir:
             if isinstance(model_path_or_model, ov.Model):
                 assert weight_path is None, "if openvino model is given 'weight_path' must be None"
@@ -193,7 +208,8 @@ class OVModel(torch.nn.Module):
         return graph
 
     @staticmethod
-    def build_custom_outputs(graph, outputs):
+    def build_custom_outputs(graph, outputs):  # noqa: C901
+        """Function build_custom_outputs."""
         cls_result = OPS.get_by_type_version("Result", 0)
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
 
@@ -262,7 +278,7 @@ class OVModel(torch.nn.Module):
             for edges in edges_to_add.values():
                 for edge in edges:
                     edge["in_port"] = 0
-            assert set([len(edges) for edges in edges_to_add.values()]) == {1}
+            assert {len(edges) for edges in edges_to_add.values()} == {1}
             edges_to_add = [edge for edges in edges_to_add.values() for edge in edges]
         else:
             edges_to_add = []
@@ -274,7 +290,8 @@ class OVModel(torch.nn.Module):
         return outputs
 
     @staticmethod
-    def build_custom_inputs(graph, inputs: Union[str, List[str]]):
+    def build_custom_inputs(graph, inputs: Union[str, List[str]]):  # noqa: C901
+        """Function build_custom_inputs."""
         cls_param = OPS.get_by_type_version("Parameter", 0)
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
 
@@ -283,16 +300,16 @@ class OVModel(torch.nn.Module):
 
         edges_to_add = {}
         nodes_to_remove = []
-        for i, input in enumerate(inputs):
-            input = normalize_name(input)
-            input = input.split(CONNECTION_SEPARATOR)
+        for i, input_ in enumerate(inputs):
+            input_ = normalize_name(input_)
+            input_ = input_.split(CONNECTION_SEPARATOR)
             explicit_src = False
 
-            if len(input) == 1:
+            if len(input_) == 1:
                 src = None
-                tgt = input[0]
-            elif len(input) == 2:
-                src, tgt = input
+                tgt = input_[0]
+            elif len(input_) == 2:
+                src, tgt = input_
                 explicit_src = True
             else:
                 raise ValueError()
@@ -353,7 +370,7 @@ class OVModel(torch.nn.Module):
             for edges in edges_to_add.values():
                 for edge in edges:
                     edge["out_port"] = 0
-            assert set([len(edges) for edges in edges_to_add.values()]) == {1}
+            assert {len(edges) for edges in edges_to_add.values()} == {1}
             edges_to_add = [edge for edges in edges_to_add.values() for edge in edges]
         else:
             edges_to_add = []
@@ -365,14 +382,18 @@ class OVModel(torch.nn.Module):
         return inputs
 
     @staticmethod
-    def clean_up(graph, inputs=[], outputs=[]):
+    def clean_up(graph, inputs=None, outputs=None):
+        """Function clean_up."""
+        inputs = inputs if inputs else []
+        outputs = outputs if outputs else []
         nodes = list(graph.topological_sort())
         nodes_to_keep = []
         for node in nodes:
             if node.name in inputs or node.name in outputs:
                 nodes_to_keep.append(node)
 
-        def get_nodes_without_successors(graph, ignores=[]):
+        def get_nodes_without_successors(graph, ignores=None):
+            ignores = ignores if ignores else []
             outputs = []
             for node in reversed(list(graph.topological_sort())):
                 if not list(graph.successors(node)) and node not in ignores:
@@ -388,10 +409,12 @@ class OVModel(torch.nn.Module):
 
     @staticmethod
     def build_torch_module(graph):
+        """Function build_torch_module."""
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
         return torch.nn.ModuleDict(list(node_dict.items()))
 
     def _build_forward_inputs(self, *args, **kwargs):
+        """Function _build_forward_inputs."""
         inputs = {}
         if args:
             for key, arg in zip(self._inputs, args):
@@ -404,6 +427,7 @@ class OVModel(torch.nn.Module):
         return inputs
 
     def forward(self, *args, **kwargs):
+        """Function forward."""
         self._feature_dict.clear()
         inputs = self._build_forward_inputs(*args, **kwargs)
 

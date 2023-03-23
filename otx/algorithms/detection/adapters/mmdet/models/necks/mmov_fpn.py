@@ -10,7 +10,7 @@ from mmdet.models.builder import NECKS
 from mmdet.models.necks.fpn import FPN
 from torch import nn
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 # TODO: Need to fix pylint issues
 # pylint: disable=keyword-arg-before-vararg, too-many-locals

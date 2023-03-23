@@ -5,9 +5,10 @@
 
 from typing import Dict, List, Optional
 
-from otx.mpa.modules.ov.graph.parsers.builder import PARSERS
-from otx.mpa.modules.ov.graph.parsers.parser import parameter_parser
 from otx.mpa.utils.logger import get_logger
+
+from ..builder import PARSERS
+from ..parser import parameter_parser
 
 logger = get_logger()
 
@@ -83,26 +84,23 @@ def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, Li
         )
 
     if component == "head":
-        inputs = list(graph.successors(neck_output))
-        #  if len(inputs) != 1:
-        #      logger.debug(f"neck_output {neck_output.name} has more than one successors.")
-        #      return None
+        head_inputs = list(graph.successors(neck_output))
 
         outputs = graph.get_nodes_by_types(["Result"])
         if len(outputs) != 1:
-            logger.debug("more than one network output are found.")
+            logger.debug("More than one network output is found.")
             return None
         for node_from, node_to in graph.bfs(outputs[0], True, 5):
             if node_to.type == "Softmax":
                 outputs = [node_from]
                 break
 
-        if not graph.has_path(inputs[0], outputs[0]):
-            logger.debug(f"input({inputs[0].name}) and output({outputs[0].name}) are reversed")
+        if not graph.has_path(head_inputs[0], outputs[0]):
+            logger.debug(f"input({head_inputs[0].name}) and output({outputs[0].name}) are reversed")
             return None
 
         return dict(
-            inputs=[input.name for input in inputs],
+            inputs=[input_.name for input_ in head_inputs],
             outputs=[output.name for output in outputs],
         )
     return None

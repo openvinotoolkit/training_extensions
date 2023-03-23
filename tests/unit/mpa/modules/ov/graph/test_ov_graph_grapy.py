@@ -9,7 +9,7 @@ import numpy as np
 import openvino.runtime as ov
 import pytest
 
-from otx.mpa.modules.ov.graph.graph import Graph, SortedDict
+from otx.core.ov.graph.graph import Graph, SortedDict
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

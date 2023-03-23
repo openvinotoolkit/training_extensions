@@ -9,8 +9,7 @@ from typing import Generic, Optional, Tuple, Type, TypeVar, Union
 
 import torch
 
-from otx.mpa.modules.ov.utils import get_op_name
-
+from ..utils import get_op_name  # type: ignore[attr-defined]
 from .utils import get_dynamic_shape
 
 

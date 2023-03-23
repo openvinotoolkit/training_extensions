@@ -1,17 +1,24 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+"""MMOVModel for otx.core.ov.models.mmov_model."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from typing import Dict, List, Optional, Union
 
 import openvino.runtime as ov
 import torch
 
-from .ov_model import OVModel
-from .parser_mixin import ParserMixin
+# TODO: Need to remove line 1 (ignore mypy) and fix mypy issues
+from .ov_model import OVModel  # type: ignore[attr-defined]
+from .parser_mixin import ParserMixin  # type: ignore[attr-defined]
+
+# TODO: Need to fix pylint issues
+# pylint: disable=keyword-arg-before-vararg
 
 
 class MMOVModel(OVModel, ParserMixin):
+    """MMOVModel for OMZ model type."""
+
     def __init__(
         self,
         model_path_or_model: Union[str, ov.Model],
@@ -42,12 +49,13 @@ class MMOVModel(OVModel, ParserMixin):
         )
 
     def forward(self, inputs, gt_label=None):
+        """Function forward."""
         if isinstance(inputs, torch.Tensor):
             inputs = (inputs,)
         assert len(inputs) == len(self.inputs)
         feed_dict = dict()
-        for key, input in zip(self.inputs, inputs):
-            feed_dict[key] = input
+        for key, input_ in zip(self.inputs, inputs):
+            feed_dict[key] = input_
 
         if gt_label is not None:
             assert "gt_label" not in self.features

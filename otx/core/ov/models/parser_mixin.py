@@ -1,6 +1,9 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+# type: ignore
+# TODO: Need to remove line 1 (ignore mypy) and fix mypy issues
+"""Parser mixin modules for otx.core.ov.models."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -15,6 +18,8 @@ logger = get_logger()
 
 
 class ParserMixin:
+    """ParserMixin class."""
+
     def parse(
         self,
         model_path_or_model: Union[str, ov.Model],
@@ -24,7 +29,7 @@ class ParserMixin:
         parser: Optional[Union[str, Callable]] = None,
         **kwargs,
     ) -> Tuple[Union[str, List[str]], Union[str, List[str]]]:
-
+        """Parse function of ParserMixin class."""
         parser = self.parser if parser is None else parser
         if isinstance(parser, str):
             parser = PARSERS.get(parser)
@@ -52,5 +57,6 @@ class ParserMixin:
         return inputs, outputs
 
     @staticmethod
-    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
+    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:  # pylint: disable=unused-argument
+        """Function parser."""
         return dict(inputs=[], outputs=[])

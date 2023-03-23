@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.mpa.modules.ov.graph.graph import Graph
-from otx.mpa.modules.ov.graph.utils import (
+from otx.core.ov.graph.graph import Graph
+from otx.core.ov.graph.utils import (
     get_constant_input_nodes,
     handle_paired_batchnorm,
     handle_reshape,
 )
-from otx.mpa.modules.ov.utils import load_ov_model
+from otx.core.ov.utils import load_ov_model
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

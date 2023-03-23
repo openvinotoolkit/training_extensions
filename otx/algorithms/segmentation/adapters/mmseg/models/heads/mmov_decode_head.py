@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Union
 import openvino.runtime as ov
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 # pylint: disable=too-many-instance-attributes, keyword-arg-before-vararg
 

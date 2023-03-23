@@ -1,11 +1,11 @@
 """Module for the MMOVBackbone class."""
 
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from mmcls.models.builder import BACKBONES
 
 from otx.core.ov.graph.parsers.cls import cls_base_parser
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 
 @BACKBONES.register_module()
@@ -18,7 +18,7 @@ class MMOVBackbone(MMOVModel):
     """
 
     @staticmethod
-    def parser(graph, **kwargs) -> Dict[str, List[str]]:
+    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
         """Parses the input and output of the model.
 
         Args:

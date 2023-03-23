@@ -1,21 +1,28 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+# type: ignore
+# TODO: Need to remove line 1 (ignore mypy) and fix mypy issues
+"""Utils for otx.core.ov."""
+# Copyright (C) 2023 Intel Corporation
 #
+# SPDX-License-Identifier: MIT
 
 import errno
 import os
-from typing import List, Optional
+from typing import Optional
 
-from openvino.pyopenvino import Model, Node
+from openvino.pyopenvino import Model, Node  # pylint: disable=no-name-in-module
 from openvino.runtime import Core
 
-from otx.core.ov.omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
 from otx.mpa.utils.logger import get_logger
+
+from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
 
 logger = get_logger()
 
+# pylint: disable=too-many-locals
+
 
 def to_dynamic_model(ov_model: Model) -> Model:
+    """Convert ov_model to dynamic Model."""
     assert isinstance(ov_model, Model)
 
     shapes = {}
@@ -56,14 +63,13 @@ def to_dynamic_model(ov_model: Model) -> Model:
         try:
             ov_model.reshape(shapes)
             return True
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
     pop_targets = [["height", "width"], ["batch"]]
     pop_targets = pop_targets[::-1]
     while not reshape_model(ov_model, shapes):
-        for key in shapes.keys():
-            shape = shapes[key]
+        for key, shape in shapes.items():
             target_layout = target_layouts[key]
 
             targets = pop_targets.pop()
@@ -80,6 +86,7 @@ def to_dynamic_model(ov_model: Model) -> Model:
 
 
 def load_ov_model(model_path: str, weight_path: Optional[str] = None, convert_dynamic: bool = False) -> Model:
+    """Load ov_model from model_path."""
     model_path = str(model_path)
     if model_path.startswith("omz://"):
         model_path = model_path.replace("omz://", "")
@@ -96,8 +103,8 @@ def load_ov_model(model_path: str, weight_path: Optional[str] = None, convert_dy
     if not os.path.exists(weight_path):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), weight_path)
 
-    ie = Core()
-    ov_model = ie.read_model(model=model_path, weights=weight_path)
+    ie_core = Core()
+    ov_model = ie_core.read_model(model=model_path, weights=weight_path)
 
     if convert_dynamic:
         ov_model = to_dynamic_model(ov_model)
@@ -106,54 +113,20 @@ def load_ov_model(model_path: str, weight_path: Optional[str] = None, convert_dy
 
 
 def normalize_name(name: str) -> str:
+    """Normalize name string."""
     # ModuleDict does not allow '.' in module name string
     name = name.replace(".", "#")
-    return name
+    return f"{name}"
 
 
 def unnormalize_name(name: str) -> str:
+    """Unnormalize name string."""
     name = name.replace("#", ".")
     return name
 
 
-def get_op_name(op: Node) -> str:
-    op_name = op.get_friendly_name()
+def get_op_name(op_node: Node) -> str:
+    """Get op name string."""
+    op_name = op_node.get_friendly_name()
     op_name = normalize_name(op_name)
     return op_name
-
-
-def convert_op_to_torch(op: Node):
-
-    from otx.core.ov.ops.builder import OPS
-
-    op_type = op.get_type_name()
-    op_version = op.get_version()
-
-    try:
-        torch_module = OPS.get_by_type_version(op_type, op_version).from_ov(op)
-    except Exception as e:
-        logger.error(e)
-        logger.error(op_type)
-        logger.error(op_version)
-        logger.error(op.get_attributes())
-        raise e
-
-    return torch_module
-
-
-def convert_op_to_torch_module(target_op: Node):
-    from otx.core.ov.ops.modules.op_module import OperationModule
-
-    dependent_modules = []
-    for in_port in target_op.inputs():
-        out_port = in_port.get_source_output()
-        parent = out_port.get_node()
-
-        parent_type = parent.get_type_name()
-        if parent_type == "Constant":
-            dependent_modules.append(convert_op_to_torch(parent))
-        else:
-            dependent_modules.append(None)
-    module = convert_op_to_torch(target_op)
-    module = OperationModule(module, dependent_modules)
-    return module

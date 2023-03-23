@@ -11,7 +11,7 @@ from mmcls.models.builder import HEADS
 from mmcls.models.heads import ClsHead
 
 from otx.core.ov.graph.parsers.cls import cls_base_parser
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 
 @HEADS.register_module()

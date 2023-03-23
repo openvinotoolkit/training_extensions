@@ -10,9 +10,9 @@ import pytest
 
 from otx.core.ov.omz_wrapper import get_omz_model
 from otx.core.ov.ops.infrastructures import ParameterV0
-from otx.mpa.modules.ov.utils import (
-    convert_op_to_torch,
-    convert_op_to_torch_module,
+from otx.core.ov.ops.modules.op_module import convert_op_to_torch_module
+from otx.core.ov.ops.utils import convert_op_to_torch
+from otx.core.ov.utils import (
     get_op_name,
     load_ov_model,
     normalize_name,
