@@ -8,7 +8,11 @@ import time
 
 from mmcv import Config, ConfigDict, build_from_cfg
 
-from .modules.hooks.workflow_hooks import WorkflowHook, build_workflow_hook
+from otx.algorithms.common.adapters.mmcv.hooks.workflow_hook import (
+    WorkflowHook,
+    build_workflow_hook,
+)
+
 from .registry import STAGES
 from .stage import get_available_types
 from .utils.config_utils import MPAConfig

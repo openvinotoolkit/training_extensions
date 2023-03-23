@@ -10,12 +10,14 @@ from mmcv.utils import Config, ConfigDict
 from mmseg.datasets import build_dataloader as mmseg_build_dataloader
 from mmseg.datasets import build_dataset as mmseg_build_dataset
 
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    FeatureVectorHook,
+)
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
     build_dataloader,
     build_dataset,
 )
-from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
 from otx.mpa.registry import STAGES
 from otx.mpa.stage import Stage
 from otx.mpa.utils.logger import get_logger
