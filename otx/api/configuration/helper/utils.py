@@ -205,19 +205,6 @@ def flatten_config_values(config: dict):
                 flatten_config_values(value)
 
 
-def enum_to_string(config: dict):
-    """Converts all Enum values in a config dictionary to their string representation.
-
-    Args:
-        config (dict): config dictionary
-    """
-    for key, value in config.items():
-        if isinstance(value, dict):
-            enum_to_string(value)
-        elif isinstance(value, Enum):
-            config[key] = value.name
-
-
 def group_to_dict(config: dict):
     """Converts all Detection Config Group objects in a config dictionary to their dictionary representation.
 

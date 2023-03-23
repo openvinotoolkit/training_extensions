@@ -40,7 +40,6 @@ from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import (
     config_to_bytes,
-    enum_to_string,
     flatten_config_values,
     group_to_dict,
 )
@@ -377,7 +376,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         """
         config = vars(self.hparams)
         group_to_dict(config)
-        enum_to_string(config)
         try:
             if self.model is not None and self.model.get_data("config.json"):
                 config.update(json.loads(self.model.get_data("config.json")))
@@ -577,6 +575,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters["converter_type"] = str(self.task_type)
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
+        if self.config.tiling_parameters.get("type"):
+            self.config.tiling_parameters["type"] = self.config.tiling_parameters["type"].name
         parameters["tiling_parameters"] = self.config.tiling_parameters
 
         zip_buffer = io.BytesIO()
