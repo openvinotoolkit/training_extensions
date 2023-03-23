@@ -32,15 +32,17 @@ from otx.api.configuration.model_lifecycle import ModelLifecycle
 
 from .configuration_enums import POTQuantizationPreset
 
+# pylint: disable=invalid-name
+
 
 class TrainType(ConfigurableEnum):
     """TrainType for OTX Algorithms."""
 
-    FINETUNE = "FINETUNE"
-    SEMISUPERVISED = "SEMISUPERVISED"
-    SELFSUPERVISED = "SELFSUPERVISED"
-    INCREMENTAL = "INCREMENTAL"
-    FUTUREWORK = "FUTUREWORK"
+    Finetune = "Finetune"
+    Semisupervised = "Semisupervised"
+    Selfsupervised = "Selfsupervised"
+    Incremental = "Incremental"
+    Futurework = "Futurework"
 
 
 class LearningRateSchedule(ConfigurableEnum):
@@ -275,7 +277,7 @@ class BaseConfig(ConfigurableParameters):
         """BaseAlgoBackendParameters for OTX Algorithms."""
 
         train_type = selectable(
-            default_value=TrainType.INCREMENTAL,
+            default_value=TrainType.Incremental,
             header="train type",
             description="Training scheme option that determines how to train the model",
             editable=False,
