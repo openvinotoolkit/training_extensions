@@ -74,9 +74,9 @@ logger = get_logger()
 
 
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semisl.py",
-    TrainType.INCREMENTAL: "incremental.py",
-    TrainType.SELFSUPERVISED: "selfsl.py",
+    TrainType.Semisupervised: "semisl.py",
+    TrainType.Incremental: "incremental.py",
+    TrainType.Selfsupervised: "selfsl.py",
 }
 
 
@@ -191,7 +191,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         # TODO: Need to remove the hard coding for supcon only.
         if (
             self._train_type in RECIPE_TRAIN_TYPE
-            and self._train_type == TrainType.INCREMENTAL
+            and self._train_type == TrainType.Incremental
             and self._hyperparams.learning_parameters.enable_supcon
             and not self._model_dir.endswith("supcon")
         ):
@@ -218,8 +218,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
 
     def _update_stage_module(self, stage_module: str):
-        module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
-        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "SegExporter":
+        module_prefix = {TrainType.Semisupervised: "SemiSL", TrainType.Incremental: "Incr"}
+        if self._train_type == TrainType.Semisupervised and stage_module == "SegExporter":
             stage_module = "SemiSLSegExporter"
         elif self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
             stage_module = module_prefix[self._train_type] + stage_module

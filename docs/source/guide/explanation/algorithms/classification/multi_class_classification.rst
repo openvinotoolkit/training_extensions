@@ -206,7 +206,7 @@ Unlike other tasks, ``--val-data-root`` is not needed.
   $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
               --train-data-root=tests/assets/imagenet_dataset_class_incremental \
               params \
-              --algo_backend.train_type=SELFSUPERVISED
+              --algo_backend.train_type=Selfsupervised
 
 After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:
 
