@@ -10,11 +10,15 @@ from mmseg.models.losses import accuracy
 from mmseg.ops import resize
 from torch import nn
 
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
+    AngularPWConv,
+    IterativeAggregator,
+    LossEqualizer,
+    normalize,
+)
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     get_valid_label_mask_per_batch,
 )
-from otx.algorithms.segmentation.adapters.mmseg.models.utils import LossEqualizer
-from otx.algorithms.segmentation.adapters.mmseg.models.utils import AngularPWConv, IterativeAggregator, normalize
 
 # pylint: disable=abstract-method, unused-argument, keyword-arg-before-vararg
 

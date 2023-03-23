@@ -6,4 +6,4 @@
 
 from .composed_dataloader import ComposedDL
 
-__all__ = ['ComposedDL']
+__all__ = ["ComposedDL"]
