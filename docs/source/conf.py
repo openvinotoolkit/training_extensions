@@ -52,7 +52,15 @@ html_theme_options = {
    "logo": {
       "image_light": 'logos/otx-logo.png',
       "image_dark": 'logos/otx-logo.png',
-   }
+    },
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/openvinotoolkit/training_extensions",
+            "icon": "_static/logos/github_icon.png",
+            "type": "local",
+        },
+    ],
 }
 html_css_files = [
     'css/custom.css',
