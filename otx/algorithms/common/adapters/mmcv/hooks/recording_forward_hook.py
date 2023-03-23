@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Sequence, Union
+from typing import List, Sequence, Union
 
 import torch
 
@@ -44,7 +44,7 @@ class BaseRecordingForwardHook(ABC):
     def __init__(self, module: torch.nn.Module, fpn_idx: int = -1) -> None:
         self._module = module
         self._handle = None
-        self._records = []
+        self._records = []  # type: List[torch.Tensor]
         self._fpn_idx = fpn_idx
 
     @property
@@ -66,7 +66,9 @@ class BaseRecordingForwardHook(ABC):
         """
         raise NotImplementedError
 
-    def _recording_forward(self, _: torch.nn.Module, input: torch.Tensor, output: torch.Tensor):
+    def _recording_forward(
+        self, _: torch.nn.Module, x: torch.Tensor, output: torch.Tensor
+    ):  # pylint: disable=unused-argument
         tensors = self.func(output)
         tensors = tensors.detach().cpu().numpy()
         for tensor in tensors:
@@ -92,15 +94,15 @@ class EigenCamHook(BaseRecordingForwardHook):
             feature_map = feature_map[fpn_idx]
 
         x = feature_map.type(torch.float)
-        bs, c, h, w = x.size()
-        reshaped_fmap = x.reshape((bs, c, h * w)).transpose(1, 2)
+        batch_size, channel, h, w = x.size()
+        reshaped_fmap = x.reshape((batch_size, channel, h * w)).transpose(1, 2)
         reshaped_fmap = reshaped_fmap - reshaped_fmap.mean(1)[:, None, :]
-        U, S, V = torch.linalg.svd(reshaped_fmap, full_matrices=True)
-        saliency_map = (reshaped_fmap @ V[:, 0][:, :, None]).squeeze(-1)
+        _, _, vh = torch.linalg.svd(reshaped_fmap, full_matrices=True)  # pylint: disable=invalid-name
+        saliency_map = (reshaped_fmap @ vh[:, 0][:, :, None]).squeeze(-1)
         max_values, _ = torch.max(saliency_map, -1)
         min_values, _ = torch.min(saliency_map, -1)
         saliency_map = 255 * (saliency_map - min_values[:, None]) / ((max_values - min_values + 1e-12)[:, None])
-        saliency_map = saliency_map.reshape((bs, h, w))
+        saliency_map = saliency_map.reshape((batch_size, h, w))
         saliency_map = saliency_map.to(torch.uint8)
         return saliency_map
 
@@ -117,13 +119,13 @@ class ActivationMapHook(BaseRecordingForwardHook):
             ), f"fpn_idx: {fpn_idx} is out of scope of feature_map length {len(feature_map)}!"
             feature_map = feature_map[fpn_idx]
 
-        bs, c, h, w = feature_map.size()
+        batch_size, _, h, w = feature_map.size()
         activation_map = torch.mean(feature_map, dim=1)
-        activation_map = activation_map.reshape((bs, h * w))
+        activation_map = activation_map.reshape((batch_size, h * w))
         max_values, _ = torch.max(activation_map, -1)
         min_values, _ = torch.min(activation_map, -1)
         activation_map = 255 * (activation_map - min_values[:, None]) / (max_values - min_values + 1e-12)[:, None]
-        activation_map = activation_map.reshape((bs, h, w))
+        activation_map = activation_map.reshape((batch_size, h, w))
         activation_map = activation_map.to(torch.uint8)
         return activation_map
 
@@ -132,7 +134,7 @@ class FeatureVectorHook(BaseRecordingForwardHook):
     """FeatureVectorHook."""
 
     @staticmethod
-    def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]]) -> torch.Tensor:
+    def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the feature vector by average pooling feature maps."""
         if isinstance(feature_map, (list, tuple)):
             # aggregate feature maps from Feature Pyramid Network
@@ -170,18 +172,18 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         if isinstance(feature_map, (list, tuple)):
             feature_map = feature_map[fpn_idx]
 
-        bs, c, h, w = feature_map.size()
-        saliency_maps = torch.empty(bs, self._num_classes, h, w)
-        for f in range(bs):
-            mosaic_feature_map = self._get_mosaic_feature_map(feature_map[f], c, h, w)
+        batch_size, channel, h, w = feature_map.size()
+        saliency_maps = torch.empty(batch_size, self._num_classes, h, w)
+        for f in range(batch_size):
+            mosaic_feature_map = self._get_mosaic_feature_map(feature_map[f], channel, h, w)
             mosaic_prediction = self._predict_from_feature_map(mosaic_feature_map)
             saliency_maps[f] = mosaic_prediction.transpose(0, 1).reshape((self._num_classes, h, w))
 
-        saliency_maps = saliency_maps.reshape((bs, self._num_classes, h * w))
+        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
         max_values, _ = torch.max(saliency_maps, -1)
         min_values, _ = torch.min(saliency_maps, -1)
         saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
-        saliency_maps = saliency_maps.reshape((bs, self._num_classes, h, w))
+        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
         saliency_maps = saliency_maps.to(torch.uint8)
         return saliency_maps
 
@@ -196,11 +198,9 @@ class ReciproCAMHook(BaseRecordingForwardHook):
 
     def _get_mosaic_feature_map(self, feature_map: torch.Tensor, c: int, h: int, w: int) -> torch.Tensor:
         if MMCLS_AVAILABLE and self._neck is not None and isinstance(self._neck, GlobalAveragePooling):
-            """
-            Optimization workaround for the GAP case (simulate GAP with more simple compute graph)
-            Possible due to static sparsity of mosaic_feature_map
-            Makes the downstream GAP operation to be dummy
-            """
+            # Optimization workaround for the GAP case (simulate GAP with more simple compute graph)
+            # Possible due to static sparsity of mosaic_feature_map
+            # Makes the downstream GAP operation to be dummy
             feature_map_transposed = torch.flatten(feature_map, start_dim=1).transpose(0, 1)[:, :, None, None]
             mosaic_feature_map = feature_map_transposed / (h * w)
         else:

@@ -8,11 +8,12 @@ import math
 import torch
 from mmcv.parallel import is_module_wrapper
 from mmcv.runner import HOOKS, Hook
-from mmcv.runner.hooks.ema import EMAHook
 
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
+
+# pylint: disable=too-many-instance-attributes
 
 
 @HOOKS.register_module()
@@ -56,8 +57,12 @@ class DualModelEMAHook(Hook):
         self.epoch_momentum = epoch_momentum
         self.interval = interval
         self.start_epoch = start_epoch
+        self.src_model = None
+        self.dst_model = None
         self.src_model_name = src_model_name
         self.dst_model_name = dst_model_name
+        self.src_params = None
+        self.dst_params = None
         self.enabled = False
 
     def before_run(self, runner):

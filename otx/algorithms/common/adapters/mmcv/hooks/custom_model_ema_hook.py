@@ -4,14 +4,11 @@
 #
 
 import math
-
-import torch
-from mmcv.parallel import is_module_wrapper
-from mmcv.runner import HOOKS, Hook
-from mmcv.runner.hooks.ema import EMAHook
-
 from math import cos, pi
-from mmcv.runner import BaseRunner
+
+from mmcv.parallel import is_module_wrapper
+from mmcv.runner import HOOKS, BaseRunner, Hook
+from mmcv.runner.hooks.ema import EMAHook
 
 from otx.mpa.utils.logger import get_logger
 
@@ -54,7 +51,7 @@ class EMAMomentumUpdateHook(Hook):
     :param by_epoch: Whether updating momentum by epoch or not, defaults to False.
     """
 
-    def __init__(self, end_momentum: float = 1.0, update_interval: int = 1, by_epoch: bool = False, **kwargs):
+    def __init__(self, end_momentum: float = 1.0, update_interval: int = 1, by_epoch: bool = False):
         self.by_epoch = by_epoch
         self.end_momentum = end_momentum
         self.update_interval = update_interval

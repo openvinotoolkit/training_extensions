@@ -16,6 +16,8 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
+# pylint: disable=too-many-arguments, too-many-instance-attributes
+
 
 @HOOKS.register_module()
 class AdaptiveTrainSchedulingHook(Hook):

@@ -14,6 +14,8 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 WORKFLOW_HOOKS = Registry("workflow_hooks")
 
+# pylint: disable=unused-argument
+
 
 def build_workflow_hook(config, *args, **kwargs):
     """Build a workflow hook."""
@@ -22,8 +24,7 @@ def build_workflow_hook(config, *args, **kwargs):
     # event = config.pop('event')
     if whook_type not in WORKFLOW_HOOKS:
         raise KeyError(f"not supported workflow hook type {whook_type}")
-    else:
-        whook_cls = WORKFLOW_HOOKS.get(whook_type)
+    whook_cls = WORKFLOW_HOOKS.get(whook_type)
     return whook_cls(*args, **kwargs, **config)
 
 
@@ -35,19 +36,19 @@ class WorkflowHook:
 
     def before_workflow(self, workflow, idx=-1, results=None):
         """Before workflow."""
-        pass
+        return
 
     def after_workflow(self, workflow, idx=-1, results=None):
         """After workflow."""
-        pass
+        return
 
     def before_stage(self, workflow, idx, results=None):
         """Before stage."""
-        pass
+        return
 
     def after_stage(self, workflow, idx, results=None):
         """After stage."""
-        pass
+        return
 
 
 @WORKFLOW_HOOKS.register_module()
@@ -55,14 +56,14 @@ class SampleLoggingHook(WorkflowHook):
     """Sample logging hook."""
 
     def __init__(self, name=__name__, log_level="DEBUG"):
-        super(SampleLoggingHook, self).__init__(name)
+        super().__init__(name)
         self.logging = getattr(logger, log_level.lower())
 
-    def before_stage(self, wf, stage_idx, results):
+    def before_stage(self, workflow, idx, results=None):
         """Before stage."""
         self.logging(f"called {self.name}.run()")
-        self.logging(f"stage index {stage_idx}, results keys = {results.keys()}")
-        result_key = f"{self.name}|{stage_idx}"
+        self.logging(f"stage index {idx}, results keys = {results.keys()}")
+        result_key = f"{self.name}|{idx}"
         results[result_key] = dict(message=f"this is a sample result of the {__name__} hook")
 
 
@@ -71,16 +72,16 @@ class WFProfileHook(WorkflowHook):
     """Workflow profile hook."""
 
     def __init__(self, name=__name__, output_path=None):
-        super(WFProfileHook, self).__init__(name)
+        super().__init__(name)
         self.output_path = output_path
         self.profile = dict(start=0, end=0, elapsed=0, stages=dict())
         logger.info(f"initialized {__name__}....")
 
-    def before_workflow(self, wf, idx=-1, results=None):
+    def before_workflow(self, workflow, idx=-1, results=None):
         """Before workflow."""
         self.profile["start"] = datetime.datetime.now()
 
-    def after_workflow(self, wf, idx=-1, results=None):
+    def after_workflow(self, workflow, idx=-1, results=None):
         """After workflow."""
         self.profile["end"] = datetime.datetime.now()
         self.profile["elapsed"] = self.profile["end"] - self.profile["start"]
@@ -89,16 +90,16 @@ class WFProfileHook(WorkflowHook):
         logger.info("** workflow profile results **")
         logger.info(str_dumps)
         if self.output_path is not None:
-            with open(self.output_path, "w") as f:
+            with open(self.output_path, "w") as f:  # pylint: disable=unspecified-encoding
                 f.write(str_dumps)
 
-    def before_stage(self, wf, idx=-1, results=None):
+    def before_stage(self, workflow, idx=-1, results=None):
         """Before stage."""
         stages = self.profile.get("stages")
         stages[f"{idx}"] = {}
         stages[f"{idx}"]["start"] = datetime.datetime.now()
 
-    def after_stage(self, wf, idx=-1, results=None):
+    def after_stage(self, workflow, idx=-1, results=None):
         """After stage."""
         stages = self.profile.get("stages")
         stages[f"{idx}"]["end"] = datetime.datetime.now()
