@@ -9,10 +9,12 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import openvino.runtime as ov
 
+from otx.algorithms.common.utils.logger import get_logger
+
 from ..graph.parsers.builder import PARSERS
 from .ov_model import OVModel
 
-# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
+logger = get_logger()
 
 
 class ParserMixin:
@@ -49,8 +51,8 @@ class ParserMixin:
 
             inputs = parsed["inputs"] if not inputs else inputs
             outputs = parsed["outputs"] if not outputs else outputs
-            # logger.info(f"inputs: {inputs}")
-            # logger.info(f"outputs: {outputs}")
+            logger.info(f"inputs: {inputs}")
+            logger.info(f"outputs: {outputs}")
 
         return inputs, outputs
 

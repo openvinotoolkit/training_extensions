@@ -21,6 +21,7 @@ from typing import Optional
 import otx.algorithms.detection.adapters.mmdet.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,
@@ -32,7 +33,6 @@ from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
 from .train import DetectionTrainTask

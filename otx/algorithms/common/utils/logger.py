@@ -1,3 +1,4 @@
+"""Module for defining custom logger."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -27,11 +28,11 @@ def _get_logger():
     logger = logging.getLogger("mpa")
     logger.propagate = False
 
-    def print(message, *args, **kws):
+    def logger_print(message, *args, **kws):
         if logger.isEnabledFor(_CUSTOM_LOG_LEVEL):
             logger.log(_CUSTOM_LOG_LEVEL, message, *args, **kws)
 
-    logger.print = print
+    logger.print = logger_print
 
     logger.setLevel(LEVEL)
     console = logging.StreamHandler(sys.stdout)
@@ -53,7 +54,13 @@ _logger = _get_logger()
 
 
 def config_logger(log_file, level="WARNING"):
-    global _LOG_DIR, _FILE_HANDLER
+    """A function that configures the logging system.
+
+    :param log_file: str, a string representing the path to the log file.
+    :param level: str, a string representing the log level. Default is "WARNING".
+    :return: None
+    """
+    global _LOG_DIR, _FILE_HANDLER  # pylint: disable=global-statement
     if _FILE_HANDLER is not None:
         _logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
@@ -75,36 +82,49 @@ def _get_log_level(level):
     # get level number
     level_number = logging.getLevelName(level.upper())
     if level_number not in [0, 10, 20, 30, 40, 50, _CUSTOM_LOG_LEVEL]:
-        msg = "Log level must be one of DEBUG/INFO/WARN/ERROR/CRITICAL/LOG" ", but {} is given.".format(level)
+        msg = f"Log level must be one of DEBUG/INFO/WARN/ERROR/CRITICAL/LOG, but {level} is given."
         raise ValueError(msg)
 
     return level_number
 
 
 def get_log_dir():
+    """A function that retrieves the directory path of the log file.
+
+    :return: str, a string representing the directory path of the log file.
+    """
     return _LOG_DIR
 
 
 class _DummyLogger(logging.Logger):
-    def debug(message, *args, **kws):
+    def debug(self, message, *args, **kws):
         pass
 
-    def info(message, *args, **kws):
+    def info(self, message, *args, **kws):
         pass
 
-    def warning(message, *args, **kws):
+    def warning(self, message, *args, **kws):
         pass
 
-    def critical(message, *args, **kws):
+    def critical(self, message, *args, **kws):
         pass
 
-    def error(message, *args, **kws):
+    def error(self, message, *args, **kws):
         pass
 
 
 def local_master_only(func: Callable) -> Callable:
+    """A decorator that allows a function to be executed only by the local master process in distributed training setup.
+
+    Args:
+        func: the function to be decorated.
+
+    Returns:
+        A wrapped function that can only be executed by the local master process.
+    """
+
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
         local_rank = 0
         if dist.is_available() and dist.is_initialized():
             local_rank = int(os.environ["LOCAL_RANK"])
@@ -121,6 +141,7 @@ for fn in _logging_methods:
 
 
 def get_logger():
+    """Return logger."""
     # if dist.is_available() and dist.is_initialized():
     #     rank = dist.get_rank()
     # else:

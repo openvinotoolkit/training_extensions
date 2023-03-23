@@ -5,7 +5,7 @@
 
 from mmcls.models.builder import CLASSIFIERS
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from .sam_classifier import SAMImageClassifier
 

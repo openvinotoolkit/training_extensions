@@ -9,7 +9,7 @@ import json
 
 from mmcv.utils import Registry
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 WORKFLOW_HOOKS = Registry("workflow_hooks")

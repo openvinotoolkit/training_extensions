@@ -6,7 +6,7 @@
 from mmcv.runner import HOOKS, Hook
 from torch import nn
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 

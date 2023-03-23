@@ -30,6 +30,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     remove_from_config,
     update_config,
 )
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     format_list_to_str,
@@ -43,7 +44,6 @@ from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
 try:
     from sklearn.cluster import KMeans

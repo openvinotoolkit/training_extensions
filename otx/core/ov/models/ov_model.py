@@ -16,6 +16,8 @@ import openvino.runtime as ov
 import torch
 from torch.nn import init
 
+from otx.algorithms.common.utils.logger import get_logger
+
 from ..graph import Graph
 from ..graph.utils import (
     handle_merging_into_batchnorm,
@@ -27,8 +29,8 @@ from ..utils import load_ov_model, normalize_name
 
 CONNECTION_SEPARATOR = "||"
 
-# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
+logger = get_logger()
 
 
 class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
@@ -116,7 +118,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                         init.zeros_(beta.data)
                         mean.data.zero_()
                         var.data.fill_(1)
-                        # logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                        logger.info(f"Initialize {module.TYPE} -> {module.name}")
                     elif module.TYPE in [
                         "Convolution",
                         "GroupConvolution",
@@ -125,7 +127,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                         for weight in graph.predecessors(module):
                             if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
                                 init.kaiming_uniform_(weight.data, a=math.sqrt(5))
-                                # logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                                logger.info(f"Initialize {module.TYPE} -> {module.name}")
                     elif module.TYPE in [
                         "Multiply",
                         "Divide",
@@ -139,7 +141,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                                 )
                                 bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
                                 init.uniform_(weight.data, -bound, bound)
-                                # logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                                logger.info(f"Initialize {module.TYPE} -> {module.name}")
 
             self.model.apply(lambda m: init_weight(m, graph))
 

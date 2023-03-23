@@ -6,9 +6,9 @@
 from mmcv.runner import HOOKS, Hook, get_dist_info
 from torch.utils.data import DataLoader
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.mpa.modules.datasets.samplers.balanced_sampler import BalancedSampler
 from otx.mpa.modules.datasets.samplers.cls_incr_sampler import ClsIncrSampler
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

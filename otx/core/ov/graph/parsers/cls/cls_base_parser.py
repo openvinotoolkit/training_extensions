@@ -5,12 +5,14 @@
 
 from typing import Dict, List, Optional
 
+from otx.algorithms.common.utils.logger import get_logger
+
 from ..builder import PARSERS
 from ..parser import parameter_parser
 
-# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 # pylint: disable=too-many-return-statements, too-many-branches
 
+logger = get_logger()
 
 NECK_INPUT_TYPES = ["ReduceMean", "MaxPool", "AvgPool"]
 NECK_TYPES = [
@@ -32,14 +34,14 @@ def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, Li
 
     result_nodes = graph.get_nodes_by_types(["Result"])
     if len(result_nodes) != 1:
-        # logger.debug("More than one reulst nodes are found.")
+        logger.debug("More than one reulst nodes are found.")
         return None
     result_node = result_nodes[0]
 
     neck_input = None
     for _, node_to in graph.bfs(result_node, True, 20):
         if node_to.type in NECK_INPUT_TYPES:
-            # logger.debug(f"Found neck_input: {node_to.name}")
+            logger.debug(f"Found neck_input: {node_to.name}")
             neck_input = node_to
             break
 
@@ -61,12 +63,12 @@ def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, Li
     if component == "backbone":
         outputs = [node.name for node in graph.predecessors(neck_input) if node.type != "Constant"]
         if len(outputs) != 1:
-            # logger.debug(f"neck_input {neck_input.name} has more than one predecessors.")
+            logger.debug(f"neck_input {neck_input.name} has more than one predecessors.")
             return None
 
         inputs = parameter_parser(graph)
         if len(inputs) != 1:
-            # logger.debug("More than on parameter nodes are found.")
+            logger.debug("More than on parameter nodes are found.")
             return None
 
         return dict(
@@ -85,7 +87,7 @@ def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, Li
 
         outputs = graph.get_nodes_by_types(["Result"])
         if len(outputs) != 1:
-            # logger.debug("More than one network output is found.")
+            logger.debug("More than one network output is found.")
             return None
         for node_from, node_to in graph.bfs(outputs[0], True, 5):
             if node_to.type == "Softmax":
@@ -93,7 +95,7 @@ def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, Li
                 break
 
         if not graph.has_path(head_inputs[0], outputs[0]):
-            # logger.debug(f"input({head_inputs[0].name}) and output({outputs[0].name}) are reversed")
+            logger.debug(f"input({head_inputs[0].name}) and output({outputs[0].name}) are reversed")
             return None
 
         return dict(

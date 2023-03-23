@@ -5,9 +5,11 @@
 import numpy as np
 from mmcv import ConfigDict
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    update_or_add_custom_hook,
+)
+from otx.algorithms.common.utils.logger import get_logger
 from otx.mpa.seg.stage import SegStage
-from otx.mpa.utils.config_utils import update_or_add_custom_hook
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

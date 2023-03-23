@@ -28,10 +28,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_default_config,
     patch_runner,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.common.utils.ir import embed_ir_model_data
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
@@ -75,8 +77,6 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
-from otx.mpa.utils.config_utils import MPAConfig
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
