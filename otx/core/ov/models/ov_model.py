@@ -16,8 +16,6 @@ import openvino.runtime as ov
 import torch
 from torch.nn import init
 
-from otx.mpa.utils.logger import get_logger
-
 from ..graph import Graph
 from ..graph.utils import (
     handle_merging_into_batchnorm,
@@ -26,9 +24,6 @@ from ..graph.utils import (
 )
 from ..ops.builder import OPS
 from ..utils import load_ov_model, normalize_name
-
-logger = get_logger()
-
 
 CONNECTION_SEPARATOR = "||"
 
@@ -120,7 +115,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                         init.zeros_(beta.data)
                         mean.data.zero_()
                         var.data.fill_(1)
-                        logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                        # logger.info(f"Initialize {module.TYPE} -> {module.name}")
                     elif module.TYPE in [
                         "Convolution",
                         "GroupConvolution",
@@ -129,7 +124,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                         for weight in graph.predecessors(module):
                             if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
                                 init.kaiming_uniform_(weight.data, a=math.sqrt(5))
-                                logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                                # logger.info(f"Initialize {module.TYPE} -> {module.name}")
                     elif module.TYPE in [
                         "Multiply",
                         "Divide",
@@ -143,7 +138,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                                 )
                                 bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
                                 init.uniform_(weight.data, -bound, bound)
-                                logger.info(f"Initialize {module.TYPE} -> {module.name}")
+                                # logger.info(f"Initialize {module.TYPE} -> {module.name}")
 
             self.model.apply(lambda m: init_weight(m, graph))
 

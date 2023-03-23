@@ -11,9 +11,6 @@ from otx.core.ov.graph import Graph
 from otx.core.ov.ops.builder import OPS
 from otx.core.ov.ops.infrastructures import ConstantV0
 from otx.core.ov.ops.op import Operation
-from otx.mpa.utils.logger import get_logger
-
-logger = get_logger()
 
 # pylint: disable=too-many-locals, protected-access, too-many-branches, too-many-statements, too-many-nested-blocks
 
@@ -55,10 +52,10 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
                 is_normalize = True
                 break
         if is_normalize:
-            logger.info(
-                f"Skip merging {[i.name for i in nodes]} "
-                f"becuase they are part of normalization (preprocessing of IR)"
-            )
+            # logger.info(
+            #     f"Skip merging {[i.name for i in nodes]} "
+            #     f"becuase they are part of normalization (preprocessing of IR)"
+            # )
             continue
 
         shapes = []
@@ -73,19 +70,20 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
             shapes.append(constant.shape)
             constants.append(constant)
         if not is_valid:
-            logger.info(
-                f"Skip merging {[i.name for i in nodes]} " f"becuase it has more than one weights for node {node.name}."
-            )
+            # logger.info(
+            #     f"Skip merging {[i.name for i in nodes]} "
+            #     f"becuase it has more than one weights for node {node.name}."
+            # )
             continue
 
         if len(set(shapes)) != 1:
-            logger.info(
-                f"Skip merging {[i.name for i in nodes]} " f"becuase shape of weights are not the same. ({shapes})"
-            )
+            # logger.info(
+            #     f"Skip merging {[i.name for i in nodes]} " f"becuase shape of weights are not the same. ({shapes})"
+            # )
             continue
 
         if len(set(shapes[0][2:])) != 1 or shapes[0][2] != 1:
-            logger.info(f"Skip merging {[i.name for i in nodes]} " f"becuase shape of weights are not 1. ({shapes})")
+            # logger.info(f"Skip merging {[i.name for i in nodes]} " f"becuase shape of weights are not 1. ({shapes})")
             continue
 
         channel_dim = shapes[0][1]
@@ -135,7 +133,7 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
             is_parameter=False,
         )
 
-        logger.info(f"Merge {[i.name for i in nodes]} into batch normalization.")
+        # logger.info(f"Merge {[i.name for i in nodes]} into batch normalization.")
         edges = []
         for predecessor in graph.predecessors(nodes[0]):
             if predecessor.type != "Constant":
@@ -174,9 +172,9 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = Non
         edge = edge[0]
         input_shape = input_node.shape[edge["out_port"]][2:]
         if len(set(input_shape)) == 1 and input_shape[0] == 1:
-            logger.info(
-                f"Skip a paired batch normalization for {node.name} " f"becuase input shape to it is {input_shape}."
-            )
+            # logger.info(
+            #     f"Skip a paired batch normalization for {node.name} " f"becuase input shape to it is {input_shape}."
+            # )
             continue
 
         bias_node_list: List[Any] = [n for n in graph.successors(node) if n.type == "Add"]
@@ -187,13 +185,14 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = Non
 
         # if bias node is not found we do not need to add batchnorm
         if bias_node is None:
-            logger.info(f"Skip a paired batch normalization for {node.name} " "becuase it has no bias add node.")
+            # logger.info(f"Skip a paired batch normalization for {node.name} " "becuase it has no bias add node.")
             continue
         # if add node is not bias add node
         if not isinstance(list(graph.predecessors(bias_node))[1], ConstantV0):
-            logger.info(
-                f"Skip a pared batch normalization for {node.name} " f"because {bias_node.name} is not a bias add node."
-            )
+            # logger.info(
+            #     f"Skip a pared batch normalization for {node.name} "
+            #     f"because {bias_node.name} is not a bias add node."
+            # )
             continue
 
         node_name = node.name
@@ -234,7 +233,7 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = Non
         )
 
         if replace and bias_node is not None:
-            logger.info(f"Replace {bias_node.name} with a paired batch normalization.")
+            # logger.info(f"Replace {bias_node.name} with a paired batch normalization.")
             edges = []
             for successor in graph.successors(bias_node):
                 edges_attrs = graph.get_edge_data(bias_node, successor)
@@ -257,7 +256,7 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = Non
             for edge in edges:
                 graph.add_edge(**edge)
         else:
-            logger.info(f"Append a paired batch normalization after {node.name}")
+            # logger.info(f"Append a paired batch normalization after {node.name}")
             edges = []
             for successor in graph.successors(node):
                 edges_attrs = graph.get_edge_data(node, successor)
@@ -287,5 +286,5 @@ def handle_reshape(graph):
                     for shape_ in input_node.shape[0][::-1]:
                         if shape_ != 1:
                             break
-                    logger.info(f"Change reshape to [-1, {shape_}]")  # pylint: disable=undefined-loop-variable
+                    # logger.info(f"Change reshape to [-1, {shape_}]")  # pylint: disable=undefined-loop-variable
                     shape.data = torch.tensor([-1, shape_])  # pylint: disable=undefined-loop-variable

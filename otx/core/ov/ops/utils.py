@@ -5,11 +5,7 @@
 
 from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
 
-from otx.mpa.utils.logger import get_logger
-
 from .builder import OPS
-
-logger = get_logger()
 
 
 def get_dynamic_shape(output):
@@ -32,10 +28,10 @@ def convert_op_to_torch(op_node: Node):
     try:
         torch_module = OPS.get_by_type_version(op_type, op_version).from_ov(op_node)
     except Exception as e:
-        logger.error(e)
-        logger.error(op_type)
-        logger.error(op_version)
-        logger.error(op_node.get_attributes())
+        # logger.error(e)
+        # logger.error(op_type)
+        # logger.error(op_version)
+        # logger.error(op_node.get_attributes())
         raise e
 
     return torch_module

@@ -12,11 +12,7 @@ from typing import Optional
 from openvino.pyopenvino import Model, Node  # pylint: disable=no-name-in-module
 from openvino.runtime import Core
 
-from otx.mpa.utils.logger import get_logger
-
 from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
-
-logger = get_logger()
 
 # pylint: disable=too-many-locals
 

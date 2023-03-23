@@ -10,16 +10,11 @@ from typing import Optional, Tuple
 import numpy as np
 import torch
 
-from otx.mpa.utils.logger import get_logger
-
 from ..utils import get_op_name  # type: ignore[attr-defined]
 from .builder import OPS
 from .op import Attribute, Operation
 from .type_conversions import ConvertV0
 from .utils import get_dynamic_shape
-
-logger = get_logger()
-
 
 NODE_TYPES_WITH_WEIGHT = set(
     [
@@ -231,8 +226,8 @@ class ConstantV0(Operation[ConstantV0Attribute]):
         data = ov_op.get_data()
         if data.dtype == np.uint64:
             data_ = data.astype(np.int64)
-            if not np.array_equal(data, data_):
-                logger.warning(f"Overflow detected in {op_name}")
+            # if not np.array_equal(data, data_):
+            #     logger.warning(f"Overflow detected in {op_name}")
             data = torch.from_numpy(data_)
         else:
             data = torch.from_numpy(data)

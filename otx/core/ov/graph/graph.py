@@ -15,13 +15,9 @@ import _collections_abc
 import networkx as nx
 from openvino.pyopenvino import Model  # pylint: disable=no-name-in-module
 
-from otx.mpa.utils.logger import get_logger
-
 from ..ops.op import Operation
 from ..ops.utils import convert_op_to_torch
 from ..utils import get_op_name
-
-logger = get_logger()
 
 # pylint: disable=too-many-locals, too-many-nested-blocks, arguments-renamed, too-many-branches, too-many-statements
 
@@ -602,10 +598,10 @@ class Graph(nx.MultiDiGraph):
             elif second_node is None:
                 second_node = first_node
             self.remove_node(first_node, keep_connect=True)
-            logger.info(f"Remove normalize node {first_node.name}")
+            # logger.info(f"Remove normalize node {first_node.name}")
             try:
                 self.remove_node(second_node, keep_connect=True)
-                logger.info(f"Remove normalize node {second_node.name}")
+                # logger.info(f"Remove normalize node {second_node.name}")
             except Exception:  # pylint: disable=broad-exception-caught
                 pass
         self._normalize_nodes = []
