@@ -576,7 +576,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
         if self.config.tiling_parameters.get("type"):
-            self.config.tiling_parameters["type"] = self.config.tiling_parameters["type"].name
+            self.config.tiling_parameters["type"] = str(self.config.tiling_parameters["type"])
         parameters["tiling_parameters"] = self.config.tiling_parameters
 
         zip_buffer = io.BytesIO()
