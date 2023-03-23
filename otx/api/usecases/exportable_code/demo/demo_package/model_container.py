@@ -67,10 +67,7 @@ class ModelContainer:
         Returns:
             Optional: Tiler object or None
         """
-        if (
-            not self.parameters.get("tiling_parameters")
-            or not self.parameters["tiling_parameters"]["enable_tiling"]["value"]
-        ):
+        if not self.parameters.get("tiling_parameters") or not self.parameters["tiling_parameters"]["enable_tiling"]:
             return None
 
         tile_classifier = None
@@ -78,9 +75,9 @@ class ModelContainer:
             adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "tile_classifier.xml"), device=device)
             tile_classifier = Model(model_adapter=adapter, preload=True)
 
-        tile_size = self.parameters["tiling_parameters"]["tile_size"]["value"]
-        tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]["value"]
-        max_number = self.parameters["tiling_parameters"]["tile_max_number"]["value"]
+        tile_size = self.parameters["tiling_parameters"]["tile_size"]
+        tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]
+        max_number = self.parameters["tiling_parameters"]["tile_max_number"]
         tiler = Tiler(tile_size, tile_overlap, max_number, self.core_model, self.segm, tile_classifier)
         return tiler
 
