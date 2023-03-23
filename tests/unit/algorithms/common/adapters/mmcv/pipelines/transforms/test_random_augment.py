@@ -44,8 +44,9 @@ def test_cutoutabs_transform(sample_pil_image: Image.Image) -> None:
 
 
 class TestOTXRandAugment:
-    def test_with_default_arguments(self, sample_np_image: np.ndarray) -> None:
+    def test_with_default_arguments(self, mocker, sample_np_image: np.ndarray) -> None:
         """Test case with default arguments."""
+        mocker.patch("random.random", return_value=0.1)  # RandAugment is applied only when random.random() < 0.5
         transform = OTXRandAugment(num_aug=2, magnitude=5, cutout_value=16)
         data = {"img": sample_np_image}
         results = transform(data)
@@ -54,8 +55,9 @@ class TestOTXRandAugment:
         assert any(item.startswith("rand_mc_") for item in results.keys())
         assert "CutoutAbs" in results
 
-    def test_with_img_fields_argument(self, sample_np_image: np.ndarray) -> None:
+    def test_with_img_fields_argument(self, mocker, sample_np_image: np.ndarray) -> None:
         """Test case with img_fields argument."""
+        mocker.patch("random.random", return_value=0.1)  # RandAugment is applied only when random.random() < 0.5
         transform = OTXRandAugment(num_aug=2, magnitude=5, cutout_value=16)
         data = {
             "img1": sample_np_image,
