@@ -35,14 +35,14 @@ NNCF_PATCHER.patch("mmcv.runner.EvalHook.evaluate", _evaluation_wrapper)
 NNCF_PATCHER.patch("otx.algorithms.common.adapters.mmcv.hooks.eval_hook.CustomEvalHook.evaluate", _evaluation_wrapper)
 
 NNCF_PATCHER.patch(
-    "otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks.FeatureVectorHook.func",
+    "otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook.FeatureVectorHook.func",
     no_nncf_trace_wrapper,
 )
 NNCF_PATCHER.patch(
-    "otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks.ActivationMapHook.func",
+    "otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook.ActivationMapHook.func",
     no_nncf_trace_wrapper,
 )
 NNCF_PATCHER.patch(
-    "otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks.ReciproCAMHook.func",
+    "otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook.ReciproCAMHook.func",
     no_nncf_trace_wrapper,
 )

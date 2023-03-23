@@ -1,4 +1,4 @@
-"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
