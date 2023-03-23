@@ -162,8 +162,6 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                     labels=self._labels,
                 )
 
-        for label in self._labels:
-            label.hotkey = "a"
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves):

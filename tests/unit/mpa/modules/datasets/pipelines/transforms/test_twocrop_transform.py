@@ -9,7 +9,7 @@ from mmcls.datasets.builder import PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcv.utils import build_from_cfg
 
-from otx.mpa.modules.datasets.pipelines.transforms.twocrop_transform import (
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.twocrop_transform import (
     TwoCropTransform,
 )
 

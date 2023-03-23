@@ -31,12 +31,11 @@ not fully covered by unit tests or manual testing can be complicated. -->
 
 ### License
 
-- [ ] I submit _my code changes_ under the same [MIT License](https://github.com/openvinotoolkit/training_extensions/blob/develop/LICENSE) that covers the project.
+- [ ] I submit _my code changes_ under the same [Apache License](https://github.com/openvinotoolkit/training_extensions/blob/develop/LICENSE) that covers the project.
       Feel free to contact the maintainers if that's a concern.
 - [ ] I have updated the license header for each file (see an example below).
 
 ```python
-# Copyright (C) 2023 Intel Corporation
-#
-# SPDX-License-Identifier: MIT
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 ```

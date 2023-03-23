@@ -16,6 +16,12 @@ from otx.api.configuration.helper import create
 from otx.api.entities.model_template import ModelTemplate, parse_model_template
 from otx.cli.registry import Registry as OTXRegistry
 from otx.cli.utils.config import configure_dataset, override_parameters
+from otx.cli.utils.errors import (
+    CliException,
+    ConfigValueError,
+    FileNotExistError,
+    NotSupportedError,
+)
 from otx.cli.utils.importing import get_otx_root_path
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
@@ -112,7 +118,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if "data" in self.args and self.args.data:
             if Path(self.args.data).exists():
                 return Path(self.args.data)
-            raise FileNotFoundError(f"Not found: {self.args.data}")
+            raise FileNotExistError(f"Not found: {self.args.data}")
         return self.workspace_root / "data.yaml"
 
     def check_workspace(self) -> bool:
@@ -140,6 +146,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         else:
             task_type = self.task_type
             if not task_type and not model:
+                if not hasattr(self.args, "train_data_roots"):
+                    raise ConfigValueError("Can't find the argument 'train_data_roots'")
                 task_type = self.auto_task_detection(self.args.train_data_roots)
             self.template = self._get_template(task_type, model=model)
         self.task_type = self.template.task_type
@@ -149,7 +157,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
     def _check_rebuild(self):
         """Checking for Rebuild status."""
         if self.args.task and str(self.template.task_type) != self.args.task.upper():
-            raise NotImplementedError("Task Update is not yet supported.")
+            raise NotSupportedError("Task Update is not yet supported.")
         result = False
         if self.args.model and self.template.name != self.args.model.upper():
             print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
@@ -189,7 +197,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if hasattr(self.args, "train_type") and self.mode in ("build", "train") and self.args.train_type:
                 self.train_type = self.args.train_type.upper()
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
-                    raise ValueError(f"{self.train_type} is not currently supported by otx.")
+                    raise NotSupportedError(f"{self.train_type} is not currently supported by otx.")
             if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
                 return self.train_type
 
@@ -202,7 +210,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
     def auto_task_detection(self, data_roots: str) -> str:
         """Detect task type automatically."""
         if not data_roots:
-            raise ValueError("Workspace must already exist or one of {task or model or train-data-roots} must exist.")
+            raise CliException("Workspace must already exist or one of {task or model or train-data-roots} must exist.")
         self.data_format = self.dataset_manager.get_data_format(data_roots)
         return self._get_task_type_from_data_format(self.data_format)
 
@@ -225,7 +233,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self.task_type = task_key
                 print(f"[*] Detected task type: {self.task_type}")
                 return task_key
-        raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
+        raise ConfigValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
     def auto_split_data(self, data_roots: str, task: str):
         """Automatically Split train data --> train/val dataset."""
@@ -372,7 +380,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if model:
             template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model.lower()]
             if not template_lst:
-                raise ValueError(
+                raise NotSupportedError(
                     f"[*] {model} is not a type supported by OTX {task_type}."
                     f"\n[*] Please refer to 'otx find --template --task {task_type}'"
                 )
@@ -426,7 +434,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         model_dir = template_dir.absolute() / train_type_rel_path
         if not model_dir.exists():
-            raise ValueError(f"[*] {self.train_type} is not a type supported by OTX {self.task_type}")
+            raise NotSupportedError(f"[*] {self.train_type} is not a type supported by OTX {self.task_type}")
         train_type_dir = self.workspace_root / train_type_rel_path
         train_type_dir.mkdir(exist_ok=True)
 
@@ -479,7 +487,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     config = MPAConfig.fromfile(str(target_dir / file_name))
                     config.dump(str(dest_dir / file_name))
                 except Exception as exc:
-                    raise ImportError(f"{self.task_type} requires mmcv-full to be installed.") from exc
+                    raise CliException(f"{self.task_type} requires mmcv-full to be installed.") from exc
             elif file_name.endswith((".yml", ".yaml")):
                 config = OmegaConf.load(str(target_dir / file_name))
                 (dest_dir / file_name).write_text(OmegaConf.to_yaml(config))

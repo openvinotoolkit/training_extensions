@@ -5,10 +5,10 @@
 import pytest
 import torch
 
-from otx.mpa.modules.models.losses.asymmetric_angular_loss_with_ignore import (
+from otx.algorithms.classification.adapters.mmcls.models.losses.asymmetric_angular_loss_with_ignore import (
     AsymmetricAngularLossWithIgnore,
 )
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (
+from otx.algorithms.classification.adapters.mmcls.models.losses.asymmetric_loss_with_ignore import (
     AsymmetricLossWithIgnore,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
