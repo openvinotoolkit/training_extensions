@@ -5,7 +5,9 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.models.mmcls.backbones.mmov_backbone import MMOVBackbone
+from otx.algorithms.classification.adapters.mmcls.models.backbones.mmov_backbone import (
+    MMOVBackbone,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.mpa.modules.ov.models.mmcls.test_helpers import create_ov_model
 

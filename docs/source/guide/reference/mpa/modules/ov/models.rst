@@ -20,11 +20,3 @@ Models
 .. automodule:: otx.mpa.modules.ov.models.parser_mixin
    :members:
    :undoc-members:
-
-.. automodule:: otx.mpa.modules.ov.models.mmcls
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.mpa.modules.ov.models.mmseg
-   :members:
-   :undoc-members:

@@ -11,6 +11,7 @@ from mmcls.datasets import build_dataloader as mmcls_build_dataloader
 from mmcls.datasets import build_dataset as mmcls_build_dataset
 from mmcv import Config, ConfigDict
 
+from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
     build_dataloader,
@@ -53,6 +54,10 @@ class ClsInferrer(ClsStage):
         model_builder = kwargs.get("model_builder", None)
         dump_features = kwargs.get("dump_features", False)
         dump_saliency_map = kwargs.get("dump_saliency_map", False)
+        # TODO: It looks like we need to modify that code in an appropriate way.
+        if model_cfg.model.head.get("type", None) == "VisionTransformerClsHead":
+            dump_features = False
+            dump_saliency_map = False
         eval = kwargs.get("eval", False)
         outputs = self.infer(
             cfg,

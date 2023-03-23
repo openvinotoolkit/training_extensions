@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.mpa.modules.hooks.ib_loss_hook import IBLossHook
+from otx.algorithms.common.adapters.mmcv.hooks.ib_loss_hook import IBLossHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

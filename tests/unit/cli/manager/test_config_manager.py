@@ -10,6 +10,12 @@ from otx.cli.manager.config_manager import (
     set_workspace,
 )
 from otx.cli.registry import Registry
+from otx.cli.utils.errors import (
+    CliException,
+    ConfigValueError,
+    FileNotExistError,
+    NotSupportedError,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -319,7 +325,7 @@ class TestConfigManager:
         expected_file_path = tmp_dir_path / "data.yaml"
         args = parser.parse_args(["--data", str(expected_file_path)])
         config_manager.args = args
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileNotExistError):
             config_manager.data_config_file_path
 
         mock_exists.return_value = True
@@ -389,7 +395,7 @@ class TestConfigManager:
         mock_args.template = mock_template
 
         config_manager = ConfigManager(mock_args)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotSupportedError):
             config_manager._check_rebuild()
 
         config_manager.template.task_type = "DETECTION"
@@ -466,13 +472,13 @@ class TestConfigManager:
     def test_auto_task_detection(self, mocker):
         mock_args = mocker.MagicMock()
         config_manager = ConfigManager(args=mock_args)
-        with pytest.raises(ValueError):
+        with pytest.raises(CliException):
             config_manager.auto_task_detection("")
 
         mock_get_data_format = mocker.patch(
             "otx.cli.manager.config_manager.DatasetManager.get_data_format", return_value="Unexpected"
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ConfigValueError):
             config_manager.auto_task_detection("data/roots")
 
         mock_get_data_format.return_value = "coco"

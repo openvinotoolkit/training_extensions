@@ -2,8 +2,8 @@ import os
 
 import pytest
 
+from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
-from otx.mpa.deploy.apis import NaiveExporter
 from otx.mpa.det.exporter import DetectionExporter
 from otx.mpa.exporter_mixin import ExporterMixin
 from otx.mpa.utils.config_utils import MPAConfig

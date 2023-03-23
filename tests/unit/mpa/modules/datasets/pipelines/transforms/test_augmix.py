@@ -10,10 +10,12 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from otx.mpa.modules.datasets.pipelines.transforms.augments import CythonAugments
-from otx.mpa.modules.datasets.pipelines.transforms.augmix import (
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.augmix import (
     AugMixAugment,
     OpsFabric,
+)
+from otx.algorithms.common.adapters.mmcv.pipelines.transforms.augments import (
+    CythonAugments,
 )
 
 
@@ -32,10 +34,10 @@ class TestOpsFabric:
             "fillcolor": 128,
             "resample": (Image.BILINEAR, Image.BICUBIC),
         }
-        assert ops_fabric.magnitude == 5
-        assert ops_fabric.magnitude_std == float("inf")
-        assert ops_fabric.level_fn == ops_fabric._rotate_level_to_arg
-        assert ops_fabric.aug_fn == CythonAugments.rotate
+        assert ops_fabric.aug_factory.magnitude == 5
+        assert ops_fabric.aug_factory.magnitude_std == float("inf")
+        assert ops_fabric.aug_factory.level_fn == ops_fabric._rotate_level_to_arg
+        assert ops_fabric.aug_factory.aug_fn == CythonAugments.rotate
 
     def test_randomly_negate(self) -> None:
         """Test randomly_negate function."""

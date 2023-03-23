@@ -65,7 +65,7 @@ class BaseConfig(ConfigurableParameters):
         batch_size = configurable_integer(
             default_value=5,
             min_value=1,
-            max_value=512,
+            max_value=2048,
             header="Batch size",
             description="The number of training samples seen in each iteration of training. Increasing thisvalue "
             "improves training time and may make the training more stable. A larger batch size has higher "

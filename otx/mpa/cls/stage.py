@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from mmcv import ConfigDict, build_from_cfg
 
+from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
@@ -89,6 +90,13 @@ class ClsStage(Stage):
         output = layer(torch.rand([1] + list(input_shape)))
         if isinstance(output, (tuple, list)):
             output = output[-1]
+
+        if layer.__class__.__name__ in TRANSFORMER_BACKBONES and isinstance(output, (tuple, list)):
+            # mmcls.VisionTransformer outputs Tuple[List[...]] and the last index of List is the final logit.
+            _, output = output
+            if cfg.model.head.type != "VisionTransformerClsHead":
+                raise ValueError(f"{layer.__class__.__name__ } needs VisionTransformerClsHead as head")
+
         in_channels = output.shape[1]
         if cfg.model.get("neck") is not None:
             if cfg.model.neck.get("in_channels") is not None:

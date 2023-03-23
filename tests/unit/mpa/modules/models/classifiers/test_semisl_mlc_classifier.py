@@ -5,7 +5,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.models.classifiers.semisl_multilabel_classifier import (
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.semisl_multilabel_classifier import (
     SAMImageClassifier,
     SemiSLMultilabelClassifier,
 )

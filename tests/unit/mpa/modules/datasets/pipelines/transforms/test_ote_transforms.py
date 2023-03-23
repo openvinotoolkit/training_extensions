@@ -11,7 +11,7 @@ import torch
 from PIL import Image
 from torchvision.transforms import functional as F
 
-from otx.mpa.modules.datasets.pipelines.transforms.ote_transforms import (
+from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.otx_transforms import (
     PILToTensor,
     RandomRotate,
     TensorNormalize,

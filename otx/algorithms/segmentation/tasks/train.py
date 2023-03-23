@@ -169,9 +169,6 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
                     labels=self._labels,
                 )
 
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves):

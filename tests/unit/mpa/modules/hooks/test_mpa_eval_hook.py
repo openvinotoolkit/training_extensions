@@ -1,4 +1,4 @@
-"""Unit test for otx.mpa.modules.hooks.eval_hook."""
+"""Unit test for otx.algorithms.common.adapters.mmcv.hooks.eval_hook."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,7 +8,7 @@ import torch
 from mmcv.runner import BaseRunner
 from torch.utils.data import DataLoader
 
-from otx.mpa.modules.hooks.eval_hook import (
+from otx.algorithms.common.adapters.mmcv.hooks.eval_hook import (
     CustomEvalHook,
     DistCustomEvalHook,
     single_gpu_test,
@@ -100,7 +100,7 @@ class TestCustomEvalHook:
 
         hook = CustomEvalHook(metric="accuracy", dataloader=MockDataloader())
         runner = MockRunner()
-        mocker.patch("otx.mpa.modules.hooks.eval_hook.single_gpu_test", return_value=[])
+        mocker.patch("otx.algorithms.common.adapters.mmcv.hooks.eval_hook.single_gpu_test", return_value=[])
         mocker.patch.object(CustomEvalHook, "evaluate", return_value=True)
         hook._do_evaluate(runner, ema=False)
         hook.ema_eval_start_epoch = 3

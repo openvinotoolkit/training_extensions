@@ -104,8 +104,8 @@ def get_extensions():
         package_root = os.path.dirname(__file__)
 
         cython_files = [
-            "otx/mpa/modules/datasets/pipelines/transforms/cython_augments/pil_augment.pyx",
-            "otx/mpa/modules/datasets/pipelines/transforms/cython_augments/cv_augment.pyx",
+            "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/pil_augment.pyx",
+            "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/cv_augment.pyx"
         ]
 
         ext_modules = [

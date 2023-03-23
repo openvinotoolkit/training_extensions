@@ -9,7 +9,7 @@ import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.mask_rcnn import MaskRCNN
 
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
     FeatureVectorHook,
