@@ -12,6 +12,7 @@ from otx.core.ov.ops.builder import OPS
 from otx.core.ov.ops.infrastructures import ConstantV0
 from otx.core.ov.ops.op import Operation
 
+# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 # pylint: disable=too-many-locals, protected-access, too-many-branches, too-many-statements, too-many-nested-blocks
 
 

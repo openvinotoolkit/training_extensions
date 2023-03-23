@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from ..builder import PARSERS
 from ..parser import parameter_parser
 
+# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 # pylint: disable=too-many-return-statements, too-many-branches
 
 

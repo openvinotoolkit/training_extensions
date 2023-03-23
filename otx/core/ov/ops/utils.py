@@ -7,6 +7,8 @@ from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
 
 from .builder import OPS
 
+# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
+
 
 def get_dynamic_shape(output):
     """Getter function for dynamic shape."""

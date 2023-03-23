@@ -19,6 +19,7 @@ from ..ops.op import Operation
 from ..ops.utils import convert_op_to_torch
 from ..utils import get_op_name
 
+# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 # pylint: disable=too-many-locals, too-many-nested-blocks, arguments-renamed, too-many-branches, too-many-statements
 
 

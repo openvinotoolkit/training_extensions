@@ -27,6 +27,7 @@ from ..utils import load_ov_model, normalize_name
 
 CONNECTION_SEPARATOR = "||"
 
+# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
 
 
