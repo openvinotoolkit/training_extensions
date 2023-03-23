@@ -14,12 +14,15 @@ All notable changes to this project will be documented in this file.
 - Add train-type parameter to otx train (#1874)
 - Add embedding of inference configuration to IR for classification (#1842)
 - Enable VOC dataset in OTX (#1862)
+- Add mmcls.VisionTransformer backbone support (#1908)
 
 ### Enhancements
 
 - Parametrize saliency maps dumping in export (#1888)
 - Bring mmdeploy to action recognition model export & Test optimization of action tasks (#1848)
 - Update backbone lists (#1835)
+- Add explanation for XAI & minor doc fixes (#1923)
+- Refactor phase#1: MPA modules
 
 ### Bug fixes
 

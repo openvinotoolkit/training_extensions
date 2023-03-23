@@ -101,7 +101,19 @@ You can find more details with examples in the [CLI command intro](https://openv
 - Integrate hyper-parameter optimizations
 - Support action recognition task
 
-### v1.1+ (2Q23)
+### v1.1.0 (1Q23)
+
+- Add FP16 IR export support (#1683)
+- Add in-memory caching in dataloader (#1694)
+- Add MoViNet template for action classification (#1742)
+- Add Semi-SL multilabel classification algorithm (#1805)
+- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (#1534)
+- Add train-type parameter to otx train (#1874)
+- Add embedding of inference configuration to IR for classification (#1842)
+- Enable VOC dataset in OTX (#1862)
+- Add mmcls.VisionTransformer backbone support (#1908)
+
+### v1.2+ (2Q23)
 
 - In planning
 
