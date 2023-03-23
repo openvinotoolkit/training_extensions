@@ -38,7 +38,12 @@ from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.api.configuration.helper.utils import config_to_bytes, flatten_config_values
+from otx.api.configuration.helper.utils import (
+    config_to_bytes,
+    enum_to_string,
+    flatten_config_values,
+    group_to_dict,
+)
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -371,6 +376,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             ADDict: config dictionary
         """
         config = vars(self.hparams)
+        group_to_dict(config)
+        enum_to_string(config)
         try:
             if self.model is not None and self.model.get_data("config.json"):
                 config.update(json.loads(self.model.get_data("config.json")))
@@ -571,8 +578,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
         parameters["tiling_parameters"] = self.config.tiling_parameters
-        if parameters["tiling_parameters"].get("type"):
-            parameters["tiling_parameters"].pop("type")  # NOTE: type is not JSON serializable
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:

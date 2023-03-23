@@ -8,7 +8,6 @@ import os
 import numpy as np
 import pytest
 import torch
-from addict import Dict as ADDict
 from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector
@@ -47,12 +46,11 @@ class TestTilingTileClassifier:
         self.ov_inferencer = dict()
         task_type = TaskType.INSTANCE_SEGMENTATION
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
-        hyper_parameters = create(model_template.hyper_parameters.data)
+        self.hyper_parameters = create(model_template.hyper_parameters.data)
+        self.hyper_parameters.tiling_parameters.enable_tiling = True
+        self.hyper_parameters.tiling_parameters.enable_tile_classifier = True
         self.label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
-        self.task_env = init_environment(hyper_parameters, model_template, task_type=task_type)
-        self.params = DetectionConfig(header=hyper_parameters.header)
-        self.params.tiling_parameters.enable_tiling = True
-        self.params.tiling_parameters.enable_tile_classifier = True
+        self.task_env = init_environment(self.hyper_parameters, model_template, task_type=task_type)
         self.task_env.model = otx_model
         dataset, labels = generate_det_dataset(task_type=TaskType.INSTANCE_SEGMENTATION)
         self.dataset = dataset
@@ -67,7 +65,8 @@ class TestTilingTileClassifier:
         """
         mocker.patch("otx.algorithms.detection.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model", return_value=mocker.MagicMock(spec=Model))
-        ov_mask_inferencer = OpenVINOMaskInferencer(self.params, self.label_schema, "")
+        params = DetectionConfig(header=self.hyper_parameters.header)
+        ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
         ov_mask_inferencer.model.preprocess.return_value = ({"foo": "bar"}, {"baz": "qux"})
         ov_mask_inferencer.model.postprocess.return_value = (
             np.array([], dtype=np.float32),
@@ -79,7 +78,6 @@ class TestTilingTileClassifier:
         ov_inferencer.model.__model__ = "OTX_MaskRCNN"
         mock_predict = mocker.patch.object(ov_inferencer.tile_classifier, "infer_sync", return_value={"tile_prob": 0.5})
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
-        mocker.patch.object(OpenVINODetectionTask, "load_config", return_value=ADDict(vars(self.params)))
         ov_task = OpenVINODetectionTask(self.task_env)
         updated_dataset = ov_task.infer(self.dataset)
 
