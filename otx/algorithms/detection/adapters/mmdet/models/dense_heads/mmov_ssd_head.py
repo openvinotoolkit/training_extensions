@@ -12,7 +12,7 @@ from mmdet.core import build_anchor_generator
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.ssd_head import SSDHead
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 # TODO: Need to fix pylint issues
 # pylint: disable=redefined-argument-from-local, too-many-instance-attributes

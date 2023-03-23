@@ -12,7 +12,7 @@ from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.rpn_head import RPNHead
 
 from otx.algorithms.common.utils.logger import get_logger
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 logger = get_logger()
 
