@@ -6,7 +6,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.models.losses.utils import LossEqualizer
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import LossEqualizer
 
 
 class TestLossEqualizer:

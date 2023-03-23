@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 
-from ..utils import normalize
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import normalize
 
 
 class IterativeAggregator(nn.Module):

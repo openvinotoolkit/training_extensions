@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .normalize import normalize
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import normalize
 
 
 class AngularPWConv(nn.Module):

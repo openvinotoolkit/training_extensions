@@ -7,7 +7,7 @@ from mmseg.models.builder import build_loss
 from mmseg.ops import resize
 from torch import nn
 
-from otx.mpa.modules.models.losses.utils import LossEqualizer
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import LossEqualizer
 
 # pylint: disable=too-many-locals
 
