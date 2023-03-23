@@ -170,9 +170,8 @@ if is_mmdeploy_enabled():
         torch2onnx,
     )
     from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
-    from mmdeploy.core import FUNCTION_REWRITER
+    from mmdeploy.core import FUNCTION_REWRITER, reset_mark_function_count
     from mmdeploy.utils import get_backend_config, get_ir_config, get_partition_config
-    from mmdeploy.core import reset_mark_function_count
 
     class MMdeployExporter:
         @staticmethod
@@ -213,7 +212,8 @@ if is_mmdeploy_enabled():
                     input_data,
                     cfg,
                     deploy_cfg,
-                    model_name=model_name,)
+                    model_name=model_name,
+                )
 
             onnx_paths = []
             onnx_paths.append(
@@ -237,28 +237,29 @@ if is_mmdeploy_enabled():
 
         @staticmethod
         def extract_partition(
-                output_dir: str,
-                input_data: Any,
-                cfg: mmcv.Config,
-                deploy_cfg: mmcv.Config,
-                *,
-                model_name: str = "model",):
+            output_dir: str,
+            input_data: Any,
+            cfg: mmcv.Config,
+            deploy_cfg: mmcv.Config,
+            *,
+            model_name: str = "model",
+        ):
 
             model_onnx = MMdeployExporter.torch2onnx(
-                    output_dir,
-                    input_data,
-                    cfg,
-                    deploy_cfg,
-                    model_name=model_name,
-                )
+                output_dir,
+                input_data,
+                cfg,
+                deploy_cfg,
+                model_name=model_name,
+            )
 
             partition_cfgs = get_partition_config(deploy_cfg)
             partition_cfgs = partition_cfgs.get("partition_cfg", None)
             partition_onnx = MMdeployExporter.partition_onnx(
-                    output_dir,
-                    model_onnx,
-                    partition_cfgs,
-                )
+                output_dir,
+                model_onnx,
+                partition_cfgs,
+            )
 
             deploy_cfg_ = deepcopy(deploy_cfg)
             update_deploy_cfg(partition_onnx[0], deploy_cfg_)
