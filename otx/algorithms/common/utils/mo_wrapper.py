@@ -113,9 +113,9 @@ def generate_ir(output_path, model_path, silent, save_xml=True, **mo_kwargs):
         if key not in MO_ARGS:
             return -1, "Not supported argument: {key}"
         if value is not None:
-            mo_args.append("--{key}={value}")
+            mo_args.append(f"--{key}={value}")
         else:
-            mo_args.append("--{key}")
+            mo_args.append(f"--{key}")
 
     is_output_dir_provided = False
     for mo_arg in mo_args:
