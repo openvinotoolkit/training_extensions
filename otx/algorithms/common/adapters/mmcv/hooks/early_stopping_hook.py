@@ -1,9 +1,10 @@
+"""Early stopping hooks."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 from math import inf, isnan
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from mmcv.runner import BaseRunner, LrUpdaterHook
 from mmcv.runner.hooks import HOOKS, Hook
@@ -174,6 +175,8 @@ class EarlyStoppingHook(Hook):
 
 @HOOKS.register_module()
 class LazyEarlyStoppingHook(EarlyStoppingHook):
+    """Lazy early stop hook."""
+
     def __init__(
         self,
         interval: int,

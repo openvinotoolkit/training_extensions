@@ -1,3 +1,4 @@
+"""Recording forward hooks for explain mode."""
 # Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +28,7 @@ if MMCLS_AVAILABLE:
 
 class BaseRecordingForwardHook(ABC):
     """While registered with the designated PyTorch module, this class caches feature vector during forward pass.
+
     Example::
         with BaseRecordingForwardHook(model.module.backbone) as hook:
             with torch.no_grad():
@@ -46,15 +48,19 @@ class BaseRecordingForwardHook(ABC):
 
     @property
     def records(self):
+        """Return records."""
         return self._records
 
     @abstractmethod
     def func(self, feature_map: torch.Tensor, fpn_idx: int = -1) -> torch.Tensor:
         """This method get the feature vector or saliency map from the output of the module.
+
+
         Args:
             x (torch.Tensor): Feature map from the backbone module
             fpn_idx (int, optional): The layer index to be processed if the model is a FPN.
                                     Defaults to 0 which uses the largest feature map from FPN.
+        
         Returns:
             torch.Tensor (torch.Tensor): Saliency map for feature vector
         """
@@ -67,16 +73,21 @@ class BaseRecordingForwardHook(ABC):
             self._records.append(tensor)
 
     def __enter__(self) -> BaseRecordingForwardHook:
+        """Enter."""
         self._handle = self._module.backbone.register_forward_hook(self._recording_forward)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """Exit."""
         self._handle.remove()
 
 
 class EigenCamHook(BaseRecordingForwardHook):
+    """EigenCamHook."""
+
     @staticmethod
     def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+        """Generate the saliency map."""
         if isinstance(feature_map, (list, tuple)):
             feature_map = feature_map[fpn_idx]
 
@@ -95,6 +106,8 @@ class EigenCamHook(BaseRecordingForwardHook):
 
 
 class ActivationMapHook(BaseRecordingForwardHook):
+    """ActivationMapHook."""
+
     @staticmethod
     def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
@@ -116,6 +129,8 @@ class ActivationMapHook(BaseRecordingForwardHook):
 
 
 class FeatureVectorHook(BaseRecordingForwardHook):
+    """FeatureVectorHook."""
+
     @staticmethod
     def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]]) -> torch.Tensor:
         """Generate the feature vector by average pooling feature maps."""
@@ -129,8 +144,8 @@ class FeatureVectorHook(BaseRecordingForwardHook):
 
 
 class ReciproCAMHook(BaseRecordingForwardHook):
-    """
-    Implementation of recipro-cam for class-wise saliency map
+    """Implementation of recipro-cam for class-wise saliency map.
+
     recipro-cam: gradient-free reciprocal class activation map (https://arxiv.org/pdf/2209.14074.pdf)
     """
 
@@ -141,8 +156,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         self._num_classes = module.head.num_classes
 
     def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
-        """
-        Generate the class-wise saliency maps using Recipro-CAM and then normalizing to (0, 255).
+        """Generate the class-wise saliency maps using Recipro-CAM and then normalizing to (0, 255).
 
         Args:
             feature_map (Union[torch.Tensor, List[torch.Tensor]]): feature maps from backbone or list of feature maps

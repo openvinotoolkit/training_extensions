@@ -1,3 +1,4 @@
+"""Task adapt hook which selects a proper sampler."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -14,7 +15,7 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class TaskAdaptHook(Hook):
-    """Task Adaptation Hook for Task-Inc & Class-Inc
+    """Task Adaptation Hook for Task-Inc & Class-Inc.
 
     Args:
         src_classes (list): A list of old classes used in the existing model
@@ -46,6 +47,7 @@ class TaskAdaptHook(Hook):
         logger.info(f"- Sampler flag: {self.sampler_flag}")
 
     def before_epoch(self, runner):
+        """Produce a proper sampler for task-adaptation."""
         if self.sampler_flag:
             dataset = runner.data_loader.dataset
             batch_size = runner.data_loader.batch_size

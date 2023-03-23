@@ -19,6 +19,7 @@ from .cancel_hook import CancelInterfaceHook, CancelTrainingHook
 from .checkpoint_hook import (
     CheckpointHookWithValResults,
     EnsureCorrectBestCheckpointHook,
+    SaveInitialWeightHook,
 )
 from .composed_dataloaders_hook import ComposedDataLoadersHook
 from .early_stopping_hook import (
@@ -32,8 +33,7 @@ from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
 from .ib_loss_hook import IBLossHook
-from .logger_hook import OTXLoggerHook
-from .logger_replace_hook import LoggerReplaceHook
+from .logger_hook import LoggerReplaceHook, OTXLoggerHook
 from .model_ema_hook import CustomModelEMAHook, DualModelEMAHook
 from .model_ema_v2_hook import ModelEmaV2Hook
 from .no_bias_decay_hook import NoBiasDecayHook
@@ -45,7 +45,6 @@ from .recording_forward_hooks import (
     FeatureVectorHook,
 )
 from .sam_optimizer_hook import SAMOptimizerHook
-from .save_initial_weight_hook import SaveInitialWeightHook
 from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
 from .two_crop_transform_hook import TwoCropTransformHook

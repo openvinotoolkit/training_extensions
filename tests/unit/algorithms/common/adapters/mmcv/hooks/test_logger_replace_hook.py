@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.algorithms.common.adapters.mmcv.hooks.logger_replace_hook import (
-    LoggerReplaceHook,
-)
+from otx.algorithms.common.adapters.mmcv.hooks import LoggerReplaceHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

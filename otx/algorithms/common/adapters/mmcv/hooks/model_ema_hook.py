@@ -1,3 +1,4 @@
+"""EMA hooks."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -16,7 +17,7 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class DualModelEMAHook(Hook):
-    """Generalized re-implementation of mmcv.runner.EMAHook
+    r"""Generalized re-implementation of mmcv.runner.EMAHook.
 
     Source model paramters would be exponentially averaged
     onto destination model pararmeters on given intervals
@@ -78,6 +79,7 @@ class DualModelEMAHook(Hook):
                 logger.info(f"model_s model_t diff: {self._diff_model()}")
 
     def before_train_epoch(self, runner):
+        """Momentum update."""
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum
@@ -104,6 +106,7 @@ class DualModelEMAHook(Hook):
         self._ema_model()
 
     def after_train_epoch(self, runner):
+        """Log difference between models if enabled."""
         if self.enabled:
             logger.info(f"model_s model_t diff: {self._diff_model()}")
 
@@ -145,6 +148,8 @@ class DualModelEMAHook(Hook):
 
 @HOOKS.register_module()
 class CustomModelEMAHook(EMAHook):
+    """Custom EMAHook to update momentum for ema over training."""
+
     def __init__(self, momentum=0.0002, epoch_momentum=0.0, interval=1, **kwargs):
         super().__init__(momentum=momentum, interval=interval, **kwargs)
         self.momentum = momentum
@@ -152,6 +157,7 @@ class CustomModelEMAHook(EMAHook):
         self.interval = interval
 
     def before_train_epoch(self, runner):
+        """Update the momentum."""
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum

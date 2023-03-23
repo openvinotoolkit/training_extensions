@@ -1,9 +1,10 @@
+"""Logger hooks."""
 from collections import defaultdict
 from typing import Any, Dict, Optional
 
 from mmcv.runner import BaseRunner
 from mmcv.runner.dist_utils import master_only
-from mmcv.runner.hooks import HOOKS, LoggerHook
+from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
 
 from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
@@ -67,3 +68,20 @@ class OTXLoggerHook(LoggerHook):
         runner._iter -= 1
         super().after_train_epoch(runner)
         runner._iter += 1
+
+
+@HOOKS.register_module()
+class LoggerReplaceHook(Hook):
+    """replace logger in the runner to the MPA logger.
+
+    DO NOT INCLUDE this hook to the recipe directly.
+    mpa will add this hook to all recipe internally.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def before_run(self, runner):
+        """Replace logger."""
+        runner.logger = logger
+        logger.info("logger in the runner is replaced to the MPA logger")

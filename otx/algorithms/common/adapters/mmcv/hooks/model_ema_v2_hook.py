@@ -1,3 +1,4 @@
+"""Model EMA V2 hooks."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -15,7 +16,8 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class ModelEmaV2Hook(Hook):
-    """
+    r"""ModelEmaV2Hook.
+
     Source model paramters would be exponentially averaged
     onto destination model pararmeters on given intervals
         .. math::
@@ -39,6 +41,7 @@ class ModelEmaV2Hook(Hook):
         self.dataset_len_thr = dataset_len_thr
 
     def before_train_epoch(self, runner):
+        """Make emav2 model before run epoch."""
         if not hasattr(self, "use_ema"):
             self.use_ema = len(runner.data_loader.dataset) > self.dataset_len_thr
 
@@ -48,6 +51,7 @@ class ModelEmaV2Hook(Hook):
             runner.ema_model = ema_model
 
     def before_run(self, runner):
+        """Log before run."""
         logger.info("\t* EMA V2 Enable")
 
     def after_train_iter(self, runner):
@@ -67,7 +71,8 @@ class ModelEmaV2Hook(Hook):
 
 
 class ModelEmaV2(nn.Module):
-    """Model Exponential Moving Average V2
+    """Model Exponential Moving Average V2.
+
     Keep a moving average of everything in the model state_dict (parameters and buffers).
     V2 of this module is simpler, it does not match params/buffers based on name but simply
     iterates in order. It works with torchscript (JIT of full model).
@@ -106,4 +111,5 @@ class ModelEmaV2(nn.Module):
                 ema_v.copy_(update_fn(ema_v, model_v))
 
     def update(self):
+        """Update."""
         self._update(update_fn=lambda e, m: self.decay * e + (1.0 - self.decay) * m)

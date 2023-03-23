@@ -1,4 +1,5 @@
-from typing import Any, Dict, List
+"""Two crop transform hook."""
+from typing import List
 
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook

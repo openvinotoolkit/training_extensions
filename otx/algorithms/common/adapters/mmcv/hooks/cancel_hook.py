@@ -1,12 +1,7 @@
+"""Cancel hooks."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
-from mmcv.runner import HOOKS, EpochBasedRunner, Hook
-
-from otx.mpa.utils.logger import get_logger
-
-logger = get_logger()
 
 
 import os
@@ -15,6 +10,9 @@ from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.hooks import HOOKS, Hook
 
 from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.mpa.utils.logger import get_logger
+
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments, unused-argument
@@ -56,12 +54,15 @@ class CancelTrainingHook(Hook):
 
 @HOOKS.register_module()
 class CancelInterfaceHook(Hook):
+    """Cancel interface. If called, running job will be terminated."""
+
     def __init__(self, init_callback: callable, interval=5):
         self.on_init_callback = init_callback
         self.runner = None
         self.interval = interval
 
     def cancel(self):
+        """Cancel."""
         logger.info("CancelInterfaceHook.cancel() is called.")
         if self.runner is None:
             logger.warning("runner is not configured yet. ignored this request.")
@@ -78,8 +79,10 @@ class CancelInterfaceHook(Hook):
         logger.info("requested stopping to the runner")
 
     def before_run(self, runner):
+        """Before run."""
         self.runner = runner
         self.on_init_callback(self)
 
     def after_run(self, runner):
+        """After run."""
         self.runner = None

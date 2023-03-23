@@ -1,3 +1,4 @@
+"""Composed dataloader hook."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -15,6 +16,11 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class ComposedDataLoadersHook(Hook):
+    """Composed dataloader hook, which makes a composed dataloader which can combine multiple data loaders.
+
+    Especially used for semi-supervised learning to aggregate a unlabeled dataloader and a labeled dataloader.
+    """
+
     def __init__(
         self,
         data_loaders: Union[Sequence[DataLoader], DataLoader],
@@ -25,6 +31,7 @@ class ComposedDataLoadersHook(Hook):
         self.add_dataloaders(data_loaders)
 
     def add_dataloaders(self, data_loaders: Union[Sequence[DataLoader], DataLoader]):
+        """Create data_loaders to be added into composed dataloader."""
         if isinstance(data_loaders, DataLoader):
             data_loaders = [data_loaders]
         else:
@@ -34,6 +41,7 @@ class ComposedDataLoadersHook(Hook):
         self.composed_loader = None
 
     def before_epoch(self, runner):
+        """Create composedDL before running epoch."""
         if self.composed_loader is None:
             logger.info(
                 "Creating ComposedDL "

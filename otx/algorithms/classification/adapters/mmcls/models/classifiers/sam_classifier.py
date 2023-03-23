@@ -274,10 +274,12 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
 
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
+
     from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
         FeatureVectorHook,
         ReciproCAMHook,
     )
+
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.extract_feat"
     )

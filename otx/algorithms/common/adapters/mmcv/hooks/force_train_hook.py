@@ -14,20 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import math
-import os
-from collections import defaultdict
-from math import cos, inf, isnan, pi
-from typing import Any, Dict, List, Optional
+from mmcv.runner.hooks import HOOKS, Hook
 
-from mmcv.parallel import is_module_wrapper
-from mmcv.runner import BaseRunner, EpochBasedRunner
-from mmcv.runner.dist_utils import master_only
-from mmcv.runner.hooks import HOOKS, Hook, LoggerHook, LrUpdaterHook
-from mmcv.utils import print_log
-
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()

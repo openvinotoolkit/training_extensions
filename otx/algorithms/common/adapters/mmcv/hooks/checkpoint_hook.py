@@ -7,7 +7,7 @@
 from pathlib import Path
 from typing import Optional
 
-from mmcv.runner import BaseRunner, EpochBasedRunner
+from mmcv.runner import BaseRunner
 from mmcv.runner.dist_utils import allreduce_params, master_only
 from mmcv.runner.hooks.hook import HOOKS, Hook
 
@@ -157,3 +157,20 @@ class EnsureCorrectBestCheckpointHook(Hook):
     def after_run(self, runner: BaseRunner):
         """Called after train epoch hooks."""
         runner.call_hook("after_train_epoch")
+
+
+@HOOKS.register_module()
+class SaveInitialWeightHook(Hook):
+    """Save the initial weights before training."""
+
+    def __init__(self, save_path, file_name: str = "weights.pth", **kwargs):
+        self._save_path = save_path
+        self._file_name = file_name
+        self._args = kwargs
+
+    def before_run(self, runner):
+        """Save initial the weights before training."""
+        runner.logger.info("Saving weight before training")
+        runner.save_checkpoint(
+            self._save_path, filename_tmpl=self._file_name, save_optimizer=False, create_symlink=False, **self._args
+        )

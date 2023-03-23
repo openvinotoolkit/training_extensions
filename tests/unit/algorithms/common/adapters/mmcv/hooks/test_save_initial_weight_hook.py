@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.algorithms.common.adapters.mmcv.hooks.save_initial_weight_hook import (
-    SaveInitialWeightHook,
-)
+from otx.algorithms.common.adapters.mmcv.hooks import SaveInitialWeightHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

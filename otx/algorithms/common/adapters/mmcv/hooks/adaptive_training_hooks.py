@@ -1,3 +1,4 @@
+"""Adaptive training schedule hook."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,7 +19,7 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class AdaptiveTrainSchedulingHook(Hook):
-    """Adaptive Training Scheduling Hook
+    """Adaptive Training Scheduling Hook.
 
     Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
 
@@ -60,6 +61,7 @@ class AdaptiveTrainSchedulingHook(Hook):
         self._original_interval = None
 
     def before_run(self, runner):
+        """Before run."""
         if self.enable_eval_before_run:
             hook = self.get_evalhook(runner)
             if hook is None:
@@ -70,6 +72,7 @@ class AdaptiveTrainSchedulingHook(Hook):
             hook.start = 0
 
     def before_train_iter(self, runner):
+        """Before train iter."""
         if self.enable_eval_before_run and self._original_interval is not None:
             hook = self.get_evalhook(runner)
             hook.interval = self._original_interval
@@ -112,10 +115,12 @@ class AdaptiveTrainSchedulingHook(Hook):
             self._initialized = True
 
     def get_adaptive_interval(self, iter_per_epoch):
+        """Get adaptive interval."""
         adaptive_interval = max(round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1)
         return adaptive_interval
 
     def get_evalhook(self, runner):
+        """Get evaluation hook."""
         target_hook = None
         for hook in runner.hooks:
             if isinstance(hook, EvalHook):
