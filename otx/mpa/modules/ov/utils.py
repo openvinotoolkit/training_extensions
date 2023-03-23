@@ -9,7 +9,7 @@ from typing import List, Optional
 from openvino.pyopenvino import Model, Node
 from openvino.runtime import Core
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
 

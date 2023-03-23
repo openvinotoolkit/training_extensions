@@ -10,7 +10,7 @@ import torch
 from mmseg.models import SEGMENTORS
 from mmseg.utils import get_root_logger
 
-from otx.mpa.modules.utils.task_adapt import map_class_names
+from otx.algorithms.common.utils.task_adapt import map_class_names
 
 from .mixin import PixelWeightsMixin
 from .otx_encoder_decoder import OTXEncoderDecoder

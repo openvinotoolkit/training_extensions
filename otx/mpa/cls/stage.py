@@ -10,9 +10,12 @@ from mmcv import ConfigDict, build_from_cfg
 
 from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    recursively_update_cfg,
+    update_or_add_custom_hook,
+)
+from otx.algorithms.common.utils.logger import get_logger
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

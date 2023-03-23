@@ -29,13 +29,13 @@ from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
 from otx.algorithms import TRANSFORMER_BACKBONES
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.api.entities.model_template import TaskType
 from otx.cli.utils.importing import (
     get_backbone_list,
     get_backbone_registry,
     get_module_args,
 )
-from otx.mpa.utils.config_utils import MPAConfig
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 

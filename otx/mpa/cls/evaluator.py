@@ -4,8 +4,8 @@
 
 import os.path as osp
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.mpa.registry import STAGES
-from otx.mpa.utils.logger import get_logger
 
 from .inferrer import ClsInferrer
 

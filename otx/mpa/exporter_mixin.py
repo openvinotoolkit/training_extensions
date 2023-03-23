@@ -5,7 +5,7 @@
 import os
 import traceback
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 

@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.mpa.registry import STAGES
 from otx.mpa.seg.exporter import SegExporter
-from otx.mpa.utils.logger import get_logger
 
 from .stage import SemiSLSegStage
 

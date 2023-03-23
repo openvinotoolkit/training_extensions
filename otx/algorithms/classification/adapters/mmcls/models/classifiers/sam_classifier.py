@@ -8,8 +8,8 @@ from mmcls.models.builder import CLASSIFIERS
 from mmcls.models.classifiers.image import ImageClassifier
 
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
-from otx.mpa.modules.utils.task_adapt import map_class_names
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.task_adapt import map_class_names
 
 from .sam_classifier_mixin import SAMClassifierMixin
 

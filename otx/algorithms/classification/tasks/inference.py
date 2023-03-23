@@ -30,9 +30,11 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_default_config,
     patch_runner,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils import embed_ir_model_data
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -62,8 +64,6 @@ from otx.api.utils.argument_checks import (
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
-from otx.mpa.utils.config_utils import MPAConfig
-from otx.mpa.utils.logger import get_logger
 
 # pylint: disable=invalid-name
 

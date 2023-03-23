@@ -14,10 +14,10 @@ from otx.algorithms.classification.tasks import ClassificationInferenceTask  # n
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.hooks import DetSaliencyMapHook
 from otx.cli.registry import Registry
 from otx.mpa.det.stage import DetectionStage  # noqa
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates

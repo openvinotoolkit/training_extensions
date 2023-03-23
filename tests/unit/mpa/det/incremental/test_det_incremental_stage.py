@@ -1,7 +1,7 @@
 import pytest
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.mpa.det.incremental.stage import IncrDetectionStage
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

@@ -6,7 +6,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import openvino.runtime as ov
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from ..graph.parsers.builder import PARSERS
 from .ov_model import OVModel

@@ -4,10 +4,13 @@
 
 from mmcv.utils import ConfigDict
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    recursively_update_cfg,
+    update_or_add_custom_hook,
+)
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

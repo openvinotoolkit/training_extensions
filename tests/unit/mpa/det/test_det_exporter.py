@@ -2,11 +2,11 @@ import os
 
 import pytest
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.mpa.det.exporter import DetectionExporter
 from otx.mpa.exporter_mixin import ExporterMixin
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_RECIPE_CONFIG_PATH,

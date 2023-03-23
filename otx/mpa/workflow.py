@@ -4,8 +4,9 @@
 
 # from datetime import datetime as dt
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import copy_config
+
 from .stage import Stage
-from .utils.config_utils import copy_config
 
 
 class Workflow(object):

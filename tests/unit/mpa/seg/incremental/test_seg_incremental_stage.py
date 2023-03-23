@@ -1,7 +1,7 @@
 import pytest
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.mpa.seg.incremental.stage import IncrSegStage
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.segmentation.test_helpers import DEFAULT_RECIPE_CONFIG_PATH
 
