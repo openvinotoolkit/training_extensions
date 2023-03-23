@@ -1,4 +1,5 @@
-# Copyright (C) 2022 Intel Corporation
+"""Workflow hooks."""
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -15,6 +16,7 @@ WORKFLOW_HOOKS = Registry("workflow_hooks")
 
 
 def build_workflow_hook(config, *args, **kwargs):
+    """Build a workflow hook."""
     logger.info(f"called build_workflow_hook({config})")
     whook_type = config.pop("type")
     # event = config.pop('event')
@@ -26,29 +28,38 @@ def build_workflow_hook(config, *args, **kwargs):
 
 
 class WorkflowHook:
+    """Workflow hook."""
+
     def __init__(self, name):
         self.name = name
 
     def before_workflow(self, workflow, idx=-1, results=None):
+        """Before workflow."""
         pass
 
     def after_workflow(self, workflow, idx=-1, results=None):
+        """After workflow."""
         pass
 
     def before_stage(self, workflow, idx, results=None):
+        """Before stage."""
         pass
 
     def after_stage(self, workflow, idx, results=None):
+        """After stage."""
         pass
 
 
 @WORKFLOW_HOOKS.register_module()
 class SampleLoggingHook(WorkflowHook):
+    """Sample logging hook."""
+
     def __init__(self, name=__name__, log_level="DEBUG"):
         super(SampleLoggingHook, self).__init__(name)
         self.logging = getattr(logger, log_level.lower())
 
     def before_stage(self, wf, stage_idx, results):
+        """Before stage."""
         self.logging(f"called {self.name}.run()")
         self.logging(f"stage index {stage_idx}, results keys = {results.keys()}")
         result_key = f"{self.name}|{stage_idx}"
@@ -57,6 +68,8 @@ class SampleLoggingHook(WorkflowHook):
 
 @WORKFLOW_HOOKS.register_module()
 class WFProfileHook(WorkflowHook):
+    """Workflow profile hook."""
+
     def __init__(self, name=__name__, output_path=None):
         super(WFProfileHook, self).__init__(name)
         self.output_path = output_path
@@ -64,9 +77,11 @@ class WFProfileHook(WorkflowHook):
         logger.info(f"initialized {__name__}....")
 
     def before_workflow(self, wf, idx=-1, results=None):
+        """Before workflow."""
         self.profile["start"] = datetime.datetime.now()
 
     def after_workflow(self, wf, idx=-1, results=None):
+        """After workflow."""
         self.profile["end"] = datetime.datetime.now()
         self.profile["elapsed"] = self.profile["end"] - self.profile["start"]
 
@@ -78,11 +93,13 @@ class WFProfileHook(WorkflowHook):
                 f.write(str_dumps)
 
     def before_stage(self, wf, idx=-1, results=None):
+        """Before stage."""
         stages = self.profile.get("stages")
         stages[f"{idx}"] = {}
         stages[f"{idx}"]["start"] = datetime.datetime.now()
 
     def after_stage(self, wf, idx=-1, results=None):
+        """After stage."""
         stages = self.profile.get("stages")
         stages[f"{idx}"]["end"] = datetime.datetime.now()
         stages[f"{idx}"]["elapsed"] = stages[f"{idx}"]["end"] - stages[f"{idx}"]["start"]
@@ -90,11 +107,14 @@ class WFProfileHook(WorkflowHook):
 
 @WORKFLOW_HOOKS.register_module()
 class AfterStageWFHook(WorkflowHook):
+    """After stage workflow hook."""
+
     def __init__(self, name, stage_cfg_updated_callback):
         self.callback = stage_cfg_updated_callback
         super().__init__(name)
 
     def after_stage(self, workflow, idx, results=None):
+        """After stage."""
         logger.info(f"{__name__}: called after_stage()")
         name = copy.deepcopy(workflow.stages[idx].name)
         cfg = copy.deepcopy(workflow.stages[idx].cfg)

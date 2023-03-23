@@ -2,7 +2,7 @@ import copy
 
 import pytest
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
 )
 from otx.mpa.cls.explainer import ClsExplainer

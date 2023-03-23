@@ -6,7 +6,7 @@ import torch
 from mmcls.datasets import build_dataloader as mmcls_build_dataloader
 from mmcls.datasets import build_dataset as mmcls_build_dataset
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     EigenCamHook,
     ReciproCAMHook,

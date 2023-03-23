@@ -9,7 +9,7 @@ import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.mask_rcnn import MaskRCNN
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     FeatureVectorHook,
 )

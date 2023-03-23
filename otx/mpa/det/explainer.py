@@ -8,7 +8,7 @@ from mmdet.datasets import build_dataloader as mmdet_build_dataloader
 from mmdet.datasets import build_dataset as mmdet_build_dataset
 from mmdet.datasets import replace_ImageToTensor
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     EigenCamHook,
 )

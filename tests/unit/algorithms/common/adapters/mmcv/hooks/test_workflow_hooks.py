@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.algorithms.common.adapters.mmcv.hooks.workflow_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.workflow_hook import (
     AfterStageWFHook,
     SampleLoggingHook,
     WFProfileHook,

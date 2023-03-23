@@ -9,7 +9,7 @@ import torch
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks.ema import EMAHook
 
-from otx.algorithms.common.adapters.mmcv.hooks.model_ema_hook import (
+from otx.algorithms.common.adapters.mmcv.hooks import (
     CustomModelEMAHook,
     DualModelEMAHook,
 )

@@ -1,9 +1,9 @@
 """Composed dataloader hook."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Sequence, Union
+from typing import List, Sequence, Union
 
 from mmcv.runner import HOOKS, Hook
 from torch.utils.data import DataLoader
@@ -25,7 +25,7 @@ class ComposedDataLoadersHook(Hook):
         self,
         data_loaders: Union[Sequence[DataLoader], DataLoader],
     ):
-        self.data_loaders = []
+        self.data_loaders = []  # type: List[DataLoader]
         self.composed_loader = None
 
         self.add_dataloaders(data_loaders)
@@ -43,11 +43,7 @@ class ComposedDataLoadersHook(Hook):
     def before_epoch(self, runner):
         """Create composedDL before running epoch."""
         if self.composed_loader is None:
-            logger.info(
-                "Creating ComposedDL "
-                f"(runner's -> {runner.data_loader}, "
-                f"hook's -> {[i for i in self.data_loaders]})"
-            )
+            logger.info("Creating ComposedDL " f"(runner's -> {runner.data_loader}, " f"hook's -> {self.data_loaders})")
             self.composed_loader = ComposedDL([runner.data_loader, *self.data_loaders])
         # Per-epoch replacement: train-only loader -> train loader + additional loaders
         # (It's similar to local variable in epoch. Need to update every epoch...)

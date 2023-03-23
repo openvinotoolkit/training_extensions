@@ -12,7 +12,7 @@ from mmcls.datasets import build_dataset as mmcls_build_dataset
 from mmcv import Config, ConfigDict
 
 from otx.algorithms import TRANSFORMER_BACKBONES
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
     ReciproCAMHook,
 )

@@ -1,13 +1,13 @@
 """Model EMA V2 hooks."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 from copy import deepcopy
 
 import torch
-import torch.nn as nn
 from mmcv.runner import HOOKS, Hook
+from torch import nn
 
 from otx.mpa.utils.logger import get_logger
 
@@ -39,6 +39,7 @@ class ModelEmaV2Hook(Hook):
         self.interval = interval
         self.start_epoch = start_epoch
         self.dataset_len_thr = dataset_len_thr
+        self.use_ema = None
 
     def before_train_epoch(self, runner):
         """Make emav2 model before run epoch."""
@@ -91,7 +92,7 @@ class ModelEmaV2(nn.Module):
     """
 
     def __init__(self, model, decay=0.9999, dataset_len_thr=None, device=None):
-        super(ModelEmaV2, self).__init__()
+        super().__init__()
         # make a copy of the model for accumulating moving average of weights
         self.module = deepcopy(model)
         self.module.eval()
@@ -102,6 +103,10 @@ class ModelEmaV2(nn.Module):
         self.dataset_len_thr = dataset_len_thr
         if self.device is not None:
             self.module.to(device=device)
+
+    def forward(self):
+        """Forward."""
+        return
 
     def _update(self, update_fn):
         with torch.no_grad():

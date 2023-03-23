@@ -1,5 +1,5 @@
 """Early stopping hooks."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -14,6 +14,8 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
+
+# pylint: disable=too-many-arguments, too-many-instance-attributes
 
 
 @HOOKS.register_module()
@@ -69,6 +71,8 @@ class EarlyStoppingHook(Hook):
         self.last_iter = 0
         self.wait_count = 0
         self.best_score = self.init_value_map[self.rule]
+        self.warmup_iters = None
+        self.by_epoch = True
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
@@ -108,7 +112,8 @@ class EarlyStoppingHook(Hook):
     @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
         """Called before_run in EarlyStoppingHook."""
-        self.by_epoch = False if runner.max_epochs is None else True
+        if runner.max_epochs is None:
+            self.by_epoch = False
         for hook in runner.hooks:
             if isinstance(hook, LrUpdaterHook):
                 self.warmup_iters = hook.warmup_iters
@@ -188,7 +193,7 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
         start: int = None,
     ):
         self.start = start
-        super(LazyEarlyStoppingHook, self).__init__(interval, metric, rule, patience, iteration_patience, min_delta)
+        super().__init__(interval, metric, rule, patience, iteration_patience, min_delta)
 
     def _should_check_stopping(self, runner):
         if self.by_epoch:

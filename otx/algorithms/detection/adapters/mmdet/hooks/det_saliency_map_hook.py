@@ -7,7 +7,7 @@ from typing import List, Tuple, Union
 import torch
 import torch.nn.functional as F
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     BaseRecordingForwardHook,
 )
 from otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head import (

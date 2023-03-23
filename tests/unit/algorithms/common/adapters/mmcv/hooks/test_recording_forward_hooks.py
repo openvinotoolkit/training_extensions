@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import torch
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     BaseRecordingForwardHook,
     EigenCamHook,

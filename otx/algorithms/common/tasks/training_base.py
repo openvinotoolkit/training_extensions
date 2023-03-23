@@ -113,7 +113,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._is_training = False
         self._should_stop = False
-        self.cancel_interface = None
+        self.cancel_interface = None  # type: Optional[CancelInterfaceHook]
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
 

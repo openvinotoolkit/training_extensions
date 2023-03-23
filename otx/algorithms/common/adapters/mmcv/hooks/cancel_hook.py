@@ -1,10 +1,11 @@
 """Cancel hooks."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 
 import os
+from typing import Callable
 
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.hooks import HOOKS, Hook
@@ -56,7 +57,7 @@ class CancelTrainingHook(Hook):
 class CancelInterfaceHook(Hook):
     """Cancel interface. If called, running job will be terminated."""
 
-    def __init__(self, init_callback: callable, interval=5):
+    def __init__(self, init_callback: Callable, interval=5):
         self.on_init_callback = init_callback
         self.runner = None
         self.interval = interval

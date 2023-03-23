@@ -9,7 +9,7 @@ import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.single_stage import SingleStageDetector
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled

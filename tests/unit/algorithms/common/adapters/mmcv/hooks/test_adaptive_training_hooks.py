@@ -8,7 +8,7 @@ from mmcv.runner.hooks.checkpoint import CheckpointHook
 from mmcv.runner.hooks.evaluation import EvalHook
 from mmcv.utils import Config
 
-from otx.algorithms.common.adapters.mmcv.hooks.adaptive_training_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.adaptive_training_hook import (
     AdaptiveTrainSchedulingHook,
 )
 from otx.algorithms.common.adapters.mmcv.hooks.early_stopping_hook import (

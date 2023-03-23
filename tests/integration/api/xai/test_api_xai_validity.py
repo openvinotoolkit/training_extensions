@@ -11,7 +11,7 @@ from mmcls.models import build_classifier
 from mmdet.models import build_detector
 
 from otx.algorithms.classification.tasks import ClassificationInferenceTask  # noqa
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
 )
 from otx.algorithms.detection.adapters.mmdet.hooks import DetSaliencyMapHook

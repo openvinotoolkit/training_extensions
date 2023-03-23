@@ -1,5 +1,5 @@
 """Module for defining hook for semi-supervised learning for classification task."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 

@@ -10,7 +10,7 @@ from mmcv.utils import Config, ConfigDict
 from mmseg.datasets import build_dataloader as mmseg_build_dataloader
 from mmseg.datasets import build_dataset as mmseg_build_dataset
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (

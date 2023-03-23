@@ -1,24 +1,29 @@
-# Copyright (C) 2022 Intel Corporation
+"""Unbiased-teacher hook."""
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 from mmcv.runner import HOOKS
 
+from otx.algorithms.common.adapters.mmcv.hooks.dual_model_ema_hook import (
+    DualModelEMAHook,
+)
 from otx.mpa.utils.logger import get_logger
-
-from .model_ema_hook import DualModelEMAHook
 
 logger = get_logger()
 
 
 @HOOKS.register_module()
 class UnbiasedTeacherHook(DualModelEMAHook):
+    """UnbiasedTeacherHook for semi-supervised learnings."""
+
     def __init__(self, min_pseudo_label_ratio=0.1, **kwargs):
         super().__init__(**kwargs)
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
         self.unlabeled_loss_enabled = False
 
     def before_train_epoch(self, runner):
+        """Enable unlabeled loss if over start epoch."""
         super().before_train_epoch(runner)
 
         if runner.epoch + 1 < self.start_epoch:

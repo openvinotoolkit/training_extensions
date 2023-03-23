@@ -8,7 +8,7 @@ import time
 
 from mmcv import Config, ConfigDict, build_from_cfg
 
-from otx.algorithms.common.adapters.mmcv.hooks.workflow_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.workflow_hook import (
     WorkflowHook,
     build_workflow_hook,
 )

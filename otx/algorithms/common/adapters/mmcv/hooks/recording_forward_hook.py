@@ -1,5 +1,5 @@
 """Recording forward hooks for explain mode."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ class BaseRecordingForwardHook(ABC):
             with torch.no_grad():
                 result = model(return_loss=False, **data)
             print(hook.records)
+
     Args:
         module (torch.nn.Module): The PyTorch module to be registered in forward pass
         fpn_idx (int, optional): The layer index to be processed if the model is a FPN.
@@ -55,12 +56,11 @@ class BaseRecordingForwardHook(ABC):
     def func(self, feature_map: torch.Tensor, fpn_idx: int = -1) -> torch.Tensor:
         """This method get the feature vector or saliency map from the output of the module.
 
-
         Args:
             x (torch.Tensor): Feature map from the backbone module
             fpn_idx (int, optional): The layer index to be processed if the model is a FPN.
                                     Defaults to 0 which uses the largest feature map from FPN.
-        
+
         Returns:
             torch.Tensor (torch.Tensor): Saliency map for feature vector
         """

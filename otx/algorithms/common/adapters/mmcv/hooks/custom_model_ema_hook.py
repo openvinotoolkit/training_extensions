@@ -1,28 +1,44 @@
-"""Collections of hooks for common OTX algorithms."""
+"""EMA hooks."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
-# Copyright (C) 2021-2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+import math
+
+import torch
+from mmcv.parallel import is_module_wrapper
+from mmcv.runner import HOOKS, Hook
+from mmcv.runner.hooks.ema import EMAHook
 
 from math import cos, pi
-
-from mmcv.parallel import is_module_wrapper
 from mmcv.runner import BaseRunner
-from mmcv.runner.hooks import HOOKS, Hook
 
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
+
+
+@HOOKS.register_module()
+class CustomModelEMAHook(EMAHook):
+    """Custom EMAHook to update momentum for ema over training."""
+
+    def __init__(self, momentum=0.0002, epoch_momentum=0.0, interval=1, **kwargs):
+        super().__init__(momentum=momentum, interval=interval, **kwargs)
+        self.momentum = momentum
+        self.epoch_momentum = epoch_momentum
+        self.interval = interval
+
+    def before_train_epoch(self, runner):
+        """Update the momentum."""
+        if self.epoch_momentum > 0.0:
+            iter_per_epoch = len(runner.data_loader)
+            epoch_decay = 1 - self.epoch_momentum
+            iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
+            self.momentum = 1 - iter_decay
+            logger.info(f"Update EMA momentum: {self.momentum}")
+            self.epoch_momentum = 0.0  # disable re-compute
+
+        super().before_train_epoch(runner)
 
 
 @HOOKS.register_module()

@@ -12,7 +12,7 @@ from mmdet.datasets import build_dataset as mmdet_build_dataset
 from mmdet.datasets import replace_ImageToTensor
 from mmdet.models.detectors import TwoStageDetector
 
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     FeatureVectorHook,
 )

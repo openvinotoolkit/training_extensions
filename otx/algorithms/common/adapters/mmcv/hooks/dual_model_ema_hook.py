@@ -1,5 +1,5 @@
-"""EMA hooks."""
-# Copyright (C) 2022 Intel Corporation
+"""Dual model EMA hooks."""
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -144,26 +144,3 @@ class DualModelEMAHook(Hook):
                 diff = ((src_param - dst_param) ** 2).sum()
                 diff_sum += diff
         return diff_sum
-
-
-@HOOKS.register_module()
-class CustomModelEMAHook(EMAHook):
-    """Custom EMAHook to update momentum for ema over training."""
-
-    def __init__(self, momentum=0.0002, epoch_momentum=0.0, interval=1, **kwargs):
-        super().__init__(momentum=momentum, interval=interval, **kwargs)
-        self.momentum = momentum
-        self.epoch_momentum = epoch_momentum
-        self.interval = interval
-
-    def before_train_epoch(self, runner):
-        """Update the momentum."""
-        if self.epoch_momentum > 0.0:
-            iter_per_epoch = len(runner.data_loader)
-            epoch_decay = 1 - self.epoch_momentum
-            iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
-            self.momentum = 1 - iter_decay
-            logger.info(f"Update EMA momentum: {self.momentum}")
-            self.epoch_momentum = 0.0  # disable re-compute
-
-        super().before_train_epoch(runner)
