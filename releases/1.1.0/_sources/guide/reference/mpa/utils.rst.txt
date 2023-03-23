@@ -21,9 +21,6 @@ Utils
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.utils.file
-   :members:
-   :undoc-members:
 
 .. automodule:: otx.mpa.utils.mo_wrapper
    :members:

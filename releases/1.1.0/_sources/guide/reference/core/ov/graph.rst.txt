@@ -5,18 +5,18 @@ Graph
    :maxdepth: 3
    :caption: Contents:
 
-.. automodule:: otx.mpa.modules.ov.graph
+.. automodule:: otx.core.ov.graph
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.graph.graph
+.. automodule:: otx.core.ov.graph.graph
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.graph.utils
+.. automodule:: otx.core.ov.graph.utils
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.graph.parsers
+.. automodule:: otx.core.ov.graph.parsers
    :members:
    :undoc-members:

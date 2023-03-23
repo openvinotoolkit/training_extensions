@@ -30,7 +30,7 @@ Guide
 
   reference/api/index
   reference/algorithm/index
-  reference/core/data
+  reference/core/index
   reference/hpo/hpo
   reference/mpa/index
 
