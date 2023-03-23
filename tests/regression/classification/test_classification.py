@@ -170,7 +170,7 @@ class TestRegressionMultiClassClassification:
             "--learning_parameters.num_iters",
             REGRESSION_TEST_EPOCHS,
             "--algo_backend.train_type",
-            "SEMISUPERVISED",
+            "Semisupervised",
         ]
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
@@ -228,7 +228,7 @@ class TestRegressionMultiClassClassification:
             "--learning_parameters.num_iters",
             "10",
             "--algo_backend.train_type",
-            "SELFSUPERVISED",
+            "Selfsupervised",
         ]
 
         # Self-supervised Training

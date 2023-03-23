@@ -11,10 +11,12 @@ from mmcls.models import build_classifier
 from mmdet.models import build_detector
 
 from otx.algorithms.classification.tasks import ClassificationInferenceTask  # noqa
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    ReciproCAMHook,
+)
 from otx.algorithms.detection.adapters.mmdet.hooks import DetSaliencyMapHook
 from otx.cli.registry import Registry
 from otx.mpa.det.stage import DetectionStage  # noqa
-from otx.mpa.modules.hooks.recording_forward_hooks import ReciproCAMHook
 from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 

@@ -32,7 +32,7 @@ DEFAULT_MODEL_TEMPLATE_ID = {
     "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
     "ROTATED_DETECTION": "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50",
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
-    "ACTION_CLASSIFICATION": "Custom_Action_Classificaiton_X3D",
+    "ACTION_CLASSIFICATION": "Custom_Action_Classification_X3D",
     "ACTION_DETECTION": "Custom_Action_Detection_X3D_FAST_RCNN",
     "ANOMALY_CLASSIFICATION": "ote_anomaly_classification_padim",
     "ANOMALY_DETECTION": "ote_anomaly_detection_padim",
@@ -60,9 +60,9 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
 }
 
 TASK_TYPE_TO_SUB_DIR_NAME = {
-    "INCREMENTAL": "",
-    "SEMISUPERVISED": "semisl",
-    "SELFSUPERVISED": "selfsl",
+    "Incremental": "",
+    "Semisupervised": "semisl",
+    "Selfsupervised": "selfsl",
 }
 
 
@@ -163,8 +163,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
             result = True
         template_train_type = self._get_train_type(ignore_args=True)
-        if self.args.train_type and template_train_type != self.args.train_type.upper():
-            self.train_type = self.args.train_type.upper()
+        if self.args.train_type and template_train_type != self.args.train_type:
+            self.train_type = self.args.train_type
             print(f"[*] Rebuild train-type: {template_train_type} -> {self.train_type}")
             result = True
         return result
@@ -192,10 +192,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             args_hyper_parameters = gen_params_dict_from_args(self.args)
             arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
             if arg_algo_backend:
-                train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})  # type: ignore
-                return train_type.get("value", "INCREMENTAL")
+                train_type = arg_algo_backend.get("train_type", {"value": "Incremental"})  # type: ignore
+                return train_type.get("value", "Incremental")
             if hasattr(self.args, "train_type") and self.mode in ("build", "train") and self.args.train_type:
-                self.train_type = self.args.train_type.upper()
+                self.train_type = self.args.train_type
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
                     raise NotSupportedError(f"{self.train_type} is not currently supported by otx.")
             if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
@@ -203,9 +203,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         algo_backend = self.template.hyper_parameters.parameter_overrides.get("algo_backend", False)
         if algo_backend:
-            train_type = algo_backend.get("train_type", {"default_value": "INCREMENTAL"})
-            return train_type.get("default_value", "INCREMENTAL")
-        return "INCREMENTAL"
+            train_type = algo_backend.get("train_type", {"default_value": "Incremental"})
+            return train_type.get("default_value", "Incremental")
+        return "Incremental"
 
     def auto_task_detection(self, data_roots: str) -> str:
         """Detect task type automatically."""

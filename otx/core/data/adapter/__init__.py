@@ -23,53 +23,53 @@ from otx.api.entities.model_template import TaskType
 
 ADAPTERS = {
     TaskType.CLASSIFICATION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "classification_dataset_adapter",
             "class": "ClassificationDatasetAdapter",
         }
     },
     TaskType.DETECTION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "detection_dataset_adapter",
             "class": "DetectionDatasetAdapter",
         }
     },
     TaskType.ROTATED_DETECTION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "detection_dataset_adapter",
             "class": "DetectionDatasetAdapter",
         }
     },
     TaskType.INSTANCE_SEGMENTATION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "detection_dataset_adapter",
             "class": "DetectionDatasetAdapter",
         }
     },
     TaskType.SEGMENTATION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "segmentation_dataset_adapter",
             "class": "SegmentationDatasetAdapter",
         },
-        "SELFSUPERVISED": {
+        "Selfsupervised": {
             "module_name": "segmentation_dataset_adapter",
             "class": "SelfSLSegmentationDatasetAdapter",
         },
     },
     TaskType.ANOMALY_CLASSIFICATION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "anomaly_dataset_adapter",
             "class": "AnomalyClassificationDatasetAdapter",
         }
     },
     TaskType.ANOMALY_DETECTION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "anomaly_dataset_adapter",
             "class": "AnomalyDetectionDatasetAdapter",
         }
     },
     TaskType.ANOMALY_SEGMENTATION: {
-        "INCREMENTAL": {
+        "Incremental": {
             "module_name": "anomaly_dataset_adapter",
             "class": "AnomalySegmentationDatasetAdapter",
         }
@@ -79,13 +79,13 @@ if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
     ADAPTERS.update(
         {
             TaskType.ACTION_CLASSIFICATION: {
-                "INCREMENTAL": {
+                "Incremental": {
                     "module_name": "action_dataset_adapter",
                     "class": "ActionClassificationDatasetAdapter",
                 }
             },
             TaskType.ACTION_DETECTION: {
-                "INCREMENTAL": {
+                "Incremental": {
                     "module_name": "action_dataset_adapter",
                     "class": "ActionDetectionDatasetAdapter",
                 }
@@ -107,18 +107,18 @@ def get_dataset_adapter(
     Args:
         task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
             CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
-        train_type: train type such as INCREMENTAL and SELFSUPERVISED.
-            SELFSUPERVISED is only supported for SEGMENTATION.
+        train_type: train type such as Incremental and Selfsupervised.
+            Selfsupervised is only supported for SEGMENTATION.
         train_data_roots: the path of data root for training data
         val_data_roots: the path of data root for validation data
         test_data_roots: the path of data root for test data
         unlabeled_data_roots: the path of data root for unlabeled data
     """
 
-    train_type_to_be_called = TrainType.INCREMENTAL.value
+    train_type_to_be_called = TrainType.Incremental.value
     # FIXME : Hardcoded solution for self-sl for seg
-    if task_type == TaskType.SEGMENTATION and train_type == TrainType.SELFSUPERVISED.value:
-        train_type_to_be_called = TrainType.SELFSUPERVISED.value
+    if task_type == TaskType.SEGMENTATION and train_type == TrainType.Selfsupervised.value:
+        train_type_to_be_called = TrainType.Selfsupervised.value
     module_root = "otx.core.data.adapter."
     module = importlib.import_module(module_root + ADAPTERS[task_type][train_type_to_be_called]["module_name"])
 

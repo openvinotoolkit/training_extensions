@@ -2,9 +2,11 @@ import copy
 
 import pytest
 
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    ActivationMapHook,
+)
 from otx.mpa.cls.explainer import ClsExplainer
 from otx.mpa.cls.stage import ClsStage
-from otx.mpa.modules.hooks.recording_forward_hooks import ActivationMapHook
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import (
     generate_cls_dataset,
