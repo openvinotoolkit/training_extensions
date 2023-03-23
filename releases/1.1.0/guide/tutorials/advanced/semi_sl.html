@@ -269,6 +269,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
 </ul>
 </li>
 </ul>
@@ -490,7 +491,7 @@
 <p>This tutorial explains how to train a model in semi-supervised learning mode and how to evaluate the resulting model.</p>
 <section id="setup-virtual-environment">
 <h2>Setup virtual environment<a class="headerlink" href="#setup-virtual-environment" title="Permalink to this heading">#</a></h2>
-<p>1. You can follow the installation process from a <span class="xref std std-doc">quick start guide</span>
+<p>1. You can follow the installation process from a <a class="reference internal" href="../../get_started/quick_start_guide/installation.html"><span class="doc">quick start guide</span></a>
 to create a universal virtual environment for OpenVINO™ Training Extensions.</p>
 <p>2. Activate your virtual
 environment:</p>
@@ -552,7 +553,7 @@ command in our workspace:</p>
 <section id="enable-via-otx-train">
 <h2>Enable via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code><a class="headerlink" href="#enable-via-otx-train" title="Permalink to this heading">#</a></h2>
 <p>1. To enable semi-supervised learning directly via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>, we need to add arguments <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code> and <code class="docutils literal notranslate"><span class="pre">--algo_backend.train_type</span></code>
-which is one of template-specific parameters (details are provided in <a class="reference external" href="../../get_started/quick_start_guide/cli_commands.html#training">quick start guide</a>.)</p>
+which is one of template-specific parameters (details are provided in <a class="reference external" href="../../get_started/quick_start_guide/cli_commands.html#training">quick start guide</a>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                     --train-data-roots data/flower_photos \
                     --unlabeled-data-roots tests/assets/imagenet_dataset \

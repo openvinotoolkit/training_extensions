@@ -60,7 +60,7 @@ Dataset preparation
 
 .. code-block::
 
-  cd data
+  mkdir data ; cd data
   git clone https://github.com/thsant/wgisd.git
   cd wgisd
   git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
@@ -107,7 +107,7 @@ We can do that by running these commands:
 .. code-block::
 
   # format images folder
-  mkdir data images
+  mv data images
 
   # format annotations folder
   mv coco_annotations annotations
@@ -115,6 +115,8 @@ We can do that by running these commands:
   # rename annotations to meet *_train.json pattern
   mv annotations/train_bbox_instances.json annotations/instances_train.json
   mv annotations/test_bbox_instances.json annotations/instances_val.json
+
+  cd ../..
 
 *********
 Training
@@ -183,9 +185,9 @@ Let's prepare the object detection workspace running the following command:
 
 
 
-.. note::
+.. warning::
   
-  If you want to update your current workspace by running ``otx build`` with other parameters, it's better to delete the original workplace before that to prevent mistakes.
+  If you want to rebuild your current workspace by running ``otx build`` with other parameters, it's better to delete the original workplace before that to prevent mistakes.
 
 Check ``otx-workspace-DETECTION/data.yaml`` to ensure, which data subsets will be used for training and validation, and update it if necessary.
 

@@ -269,6 +269,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
 </ul>
 </li>
 </ul>
@@ -784,7 +785,7 @@ optional arguments:
 </section>
 <section id="explanation">
 <h2>Explanation<a class="headerlink" href="#explanation" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explanation algorithm of a model on the specific dataset. It helps explain the model’s decision-making process in a way that is easily understood by humans.</p>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explainable AI (XAI) algorithm of a model on the specific dataset. It helps explain the model’s decision-making process in a way that is easily understood by humans.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx explain --help
 usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...

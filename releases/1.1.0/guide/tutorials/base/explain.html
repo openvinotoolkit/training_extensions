@@ -269,6 +269,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
 </ul>
 </li>
 </ul>
@@ -478,10 +479,28 @@ created in the previous step.</p>
 </div>
 <p>2. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> returns saliency maps (heatmaps with red colored areas of focus)
 at the path specified by <code class="docutils literal notranslate"><span class="pre">--save-explanation-to</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">explain</span> <span class="o">--</span><span class="n">explain</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span><span class="o">/</span><span class="n">splitted_dataset</span><span class="o">/</span><span class="n">val</span><span class="o">/</span> <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">explanation</span><span class="o">-</span><span class="n">to</span> <span class="n">outputs</span><span class="o">/</span><span class="n">explanation</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">outputs</span><span class="o">/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">explain</span> <span class="o">--</span><span class="n">explain</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span><span class="o">/</span><span class="n">splitted_dataset</span><span class="o">/</span><span class="n">val</span><span class="o">/</span> \
+            <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">explanation</span><span class="o">-</span><span class="n">to</span> <span class="n">outputs</span><span class="o">/</span><span class="n">explanation</span> \
+            <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">outputs</span><span class="o">/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span>
 </pre></div>
 </div>
-<p>3. As a result we will get a folder with a pair of generated
+<p>3. To specify the algorithm of saliency map creation for classification,
+we can define the <code class="docutils literal notranslate"><span class="pre">--explain-algorithm</span></code> parameter.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">activationmap</span></code> - for activation map classification algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eigencam</span></code> -  for Eigen-Cam classification algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">classwisesaliencymap</span></code> -  for Recipro-CAM classification algorithm, this is a default method</p></li>
+</ul>
+<p>For detection task, we can choose between the following methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">activationmap</span></code> - for activation map detection algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">classwisesaliencymap</span></code> - for DetClassProbabilityMap algorithm (works for single-stage detectors only)</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Learn more about Explainable AI and its algorithms in <a class="reference internal" href="../../explanation/additional_features/xai.html"><span class="doc">XAI explanation section</span></a></p>
+</div>
+<p>4. As a result we will get a folder with a pair of generated
 images for each image in <code class="docutils literal notranslate"><span class="pre">--explain-data-roots</span></code>:</p>
 <ul class="simple">
 <li><p>saliency map - where red color means more attention of the model</p></li>

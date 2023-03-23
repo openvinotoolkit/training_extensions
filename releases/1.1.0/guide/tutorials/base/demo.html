@@ -269,6 +269,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
 </ul>
 </li>
 </ul>
@@ -467,7 +468,7 @@ It allows you to apply the model on the custom data or the online footage from a
 <p class="admonition-title">Note</p>
 <p>This tutorial uses an object detection model for example, however for other tasks the functionality remains the same - you just need to replace the input dataset with your own.</p>
 </div>
-<p>For visualization you use images from WGISD dataset from the :doc: <cite>object detection tutorial &lt;how_to_train/detection&gt;</cite>.</p>
+<p>For visualization you use images from WGISD dataset from the <a class="reference internal" href="how_to_train/detection.html"><span class="doc">object detection tutorial</span></a>.</p>
 <p>1. Activate the virtual environment
 created in the previous step.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">.</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
@@ -503,8 +504,8 @@ we can run the following line:</p>
 </div>
 <p>6. To run a demo on a web camera, you need to know its ID.
 You can check a list of camera devices by running the command line below on Linux system:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">v4l</span><span class="o">-</span><span class="n">utils</span>
-<span class="n">v4l2</span><span class="o">-</span><span class="n">ctl</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">devices</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ sudo apt-get install v4l-utils
+(demo) ...$ v4l2-ctl --list-devices
 </pre></div>
 </div>
 <p>The output will look like this:</p>
