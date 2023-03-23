@@ -1,3 +1,4 @@
+"""Module for defining a hook for IB loss using mmcls."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,9 +9,13 @@ from mmcv.runner import HOOKS, Hook
 
 @HOOKS.register_module()
 class IBLossHook(Hook):
+    """Hook for IB loss.
+
+    It passes the number of data per class and current epoch to IB loss class.
+    """
+
     def __init__(self, dst_classes):
-        """Hook for IB loss.
-        It passes the number of data per class and current epoch to IB loss class.
+        """Initialize the IBLossHook.
 
         Args:
             dst_classes (list): A list of classes including new_classes to be newly learned
@@ -19,10 +24,8 @@ class IBLossHook(Hook):
         self.dst_classes = dst_classes
 
     def before_train_epoch(self, runner):
-        # get loss from model
+        """Get loss from model and pass the number of data per class and current epoch to IB loss."""
         model_loss = self._get_model_loss(runner)
-
-        # pass the number of data per class and current epoch to IB loss
         if runner.epoch == 0:
             dataset = runner.data_loader.dataset
             num_data = self._get_num_data(dataset)

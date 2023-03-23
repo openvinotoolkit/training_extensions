@@ -5,7 +5,9 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.models.mmcls.heads.mmov_cls_head import MMOVClsHead
+from otx.algorithms.classification.adapters.mmcls.models.heads.mmov_cls_head import (
+    MMOVClsHead,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.mpa.modules.ov.models.mmcls.test_helpers import create_ov_model
 

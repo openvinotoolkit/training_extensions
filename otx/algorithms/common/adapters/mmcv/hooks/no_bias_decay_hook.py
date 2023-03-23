@@ -1,9 +1,10 @@
+"""Module for NoBiasDecayHook used in classification."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch.nn as nn
 from mmcv.runner import HOOKS, Hook
+from torch import nn
 
 from otx.mpa.utils.logger import get_logger
 
@@ -12,26 +13,27 @@ logger = get_logger()
 
 @HOOKS.register_module()
 class NoBiasDecayHook(Hook):
-    """Hook for No Bias Decay Method (Bag of Tricks for Image Classification)
+    """Hook for No Bias Decay Method (Bag of Tricks for Image Classification).
 
     This hook divides model's weight & bias to 3 parameter groups
-    [weight with decay, weight without decay, bias without decay]
+    [weight with decay, weight without decay, bias without decay].
     """
 
     def before_train_epoch(self, runner):
+        """Split weights into decay/no-decay groups."""
         weight_decay, bias_no_decay, weight_no_decay = [], [], []
-        for m in runner.model.modules():
-            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                weight_decay.append(m.weight)
-                if m.bias is not None:
-                    bias_no_decay.append(m.bias)
-            elif hasattr(m, "weight") or hasattr(m, "bias"):
-                if hasattr(m, "weight"):
-                    weight_no_decay.append(m.weight)
-                if hasattr(m, "bias"):
-                    bias_no_decay.append(m.bias)
-            elif len(list(m.children())) == 0:
-                for p in m.parameters():
+        for module in runner.model.modules():
+            if isinstance(module, (nn.Conv2d, nn.Linear)):
+                weight_decay.append(module.weight)
+                if module.bias is not None:
+                    bias_no_decay.append(module.bias)
+            elif hasattr(module, "weight") or hasattr(module, "bias"):
+                if hasattr(module, "weight"):
+                    weight_no_decay.append(module.weight)
+                if hasattr(module, "bias"):
+                    bias_no_decay.append(module.bias)
+            elif len(list(module.children())) == 0:
+                for p in module.parameters():
                     weight_decay.append(p)
 
         weight_decay_group = runner.optimizer.param_groups[0].copy()
@@ -50,19 +52,20 @@ class NoBiasDecayHook(Hook):
         runner.optimizer.param_groups = param_groups
 
     def after_train_epoch(self, runner):
+        """Merge splited groups before saving checkpoint."""
         params = []
-        for m in runner.model.modules():
-            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                params.append(m.weight)
-                if m.bias is not None:
-                    params.append(m.bias)
-            elif hasattr(m, "weight") or hasattr(m, "bias"):
-                if hasattr(m, "weight"):
-                    params.append(m.weight)
-                if hasattr(m, "bias"):
-                    params.append(m.bias)
-            elif len(list(m.children())) == 0:
-                for p in m.parameters():
+        for module in runner.model.modules():
+            if isinstance(module, (nn.Conv2d, nn.Linear)):
+                params.append(module.weight)
+                if module.bias is not None:
+                    params.append(module.bias)
+            elif hasattr(module, "weight") or hasattr(module, "bias"):
+                if hasattr(module, "weight"):
+                    params.append(module.weight)
+                if hasattr(module, "bias"):
+                    params.append(module.bias)
+            elif len(list(module.children())) == 0:
+                for p in module.parameters():
                     params.append(p)
 
         param_groups = runner.optimizer.param_groups[0].copy()

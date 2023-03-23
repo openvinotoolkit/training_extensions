@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 import torch
 
-from otx.mpa.modules.models.classifiers.sam_classifier import (
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import (
     ImageClassifier,
     SAMImageClassifier,
 )

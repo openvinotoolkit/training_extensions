@@ -7,6 +7,5 @@ Modules
    models/index
    datasets
    hooks
-   optimizer
    ov/index
    utils

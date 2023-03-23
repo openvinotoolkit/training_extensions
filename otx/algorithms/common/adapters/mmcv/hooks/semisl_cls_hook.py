@@ -1,3 +1,4 @@
+"""Module for defining hook for semi-supervised learning for classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -10,7 +11,7 @@ from mmcv.runner import HOOKS, Hook
 
 @HOOKS.register_module()
 class SemiSLClsHook(Hook):
-    """Hook for SemiSL for classification
+    """Hook for SemiSL for classification.
 
     This hook includes unlabeled warm-up loss coefficient (default: True):
         unlabeled_coef = (0.5 - cos(min(pi, 2 * pi * k) / K)) / 2
@@ -25,14 +26,14 @@ class SemiSLClsHook(Hook):
             If False, Semi-SL uses 1 as unlabeled loss coefficient
     """
 
-    def __init__(self, total_steps=0, unlabeled_warmup=True, **kwargs):
+    def __init__(self, total_steps=0, unlabeled_warmup=True):
         self.unlabeled_warmup = unlabeled_warmup
         self.total_steps = total_steps
         self.current_step, self.unlabeled_coef = 0, 0
         self.num_pseudo_label = 0
 
     def before_train_iter(self, runner):
-        # Calculate the unlabeled warm-up loss coefficient before training iteration
+        """Calculate the unlabeled warm-up loss coefficient before training iteration."""
         if self.unlabeled_warmup and self.unlabeled_coef < 1.0:
             if self.total_steps == 0:
                 self.total_steps = runner.max_iters
@@ -44,12 +45,12 @@ class SemiSLClsHook(Hook):
         self.current_step += 1
 
     def after_train_iter(self, runner):
+        """Add the number of pseudo-labels correctly selected from iteration."""
         model = self._get_model(runner)
-        # Add the number of pseudo-labels currently selected from iteration
         self.num_pseudo_label += int(model.head.num_pseudo_label)
 
     def after_epoch(self, runner):
-        # Add data related to Semi-SL to the log
+        """Add data related to Semi-SL to the log."""
         if self.unlabeled_warmup:
             runner.log_buffer.output.update({"unlabeled_coef": round(self.unlabeled_coef, 4)})
         runner.log_buffer.output.update({"pseudo_label": self.num_pseudo_label})

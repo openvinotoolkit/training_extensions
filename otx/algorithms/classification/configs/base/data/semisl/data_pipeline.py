@@ -25,7 +25,7 @@ __common_pipeline = [
 ]
 
 __strong_pipeline = [
-    dict(type="MPARandAugment", n=8, m=10),
+    dict(type="OTXRandAugment", num_aug=8, magnitude=10),
 ]
 
 __train_pipeline = [

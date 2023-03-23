@@ -5,13 +5,13 @@
 import pytest
 import torch
 
-from otx.mpa.modules.models.heads.custom_multi_label_linear_cls_head import (
+from otx.algorithms.classification.adapters.mmcls.models.heads.custom_multi_label_linear_cls_head import (
     CustomMultiLabelLinearClsHead,
 )
-from otx.mpa.modules.models.heads.custom_multi_label_non_linear_cls_head import (
+from otx.algorithms.classification.adapters.mmcls.models.heads.custom_multi_label_non_linear_cls_head import (
     CustomMultiLabelNonLinearClsHead,
 )
-from otx.mpa.modules.models.losses.asymmetric_loss_with_ignore import (
+from otx.algorithms.classification.adapters.mmcls.models.losses.asymmetric_loss_with_ignore import (
     AsymmetricLossWithIgnore,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit

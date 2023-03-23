@@ -5,7 +5,7 @@
 import pytest
 import torch
 
-from otx.mpa.modules.ov.models.mmcls.heads.cls_head import ClsHead
+from otx.algorithms.classification.adapters.mmcls.models.heads.cls_head import ClsHead
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

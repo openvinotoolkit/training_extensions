@@ -1,3 +1,4 @@
+"""CheckpointHook with validation results for classification task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -14,7 +15,7 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 @HOOKS.register_module()
-class CheckpointHookWithValResults(Hook):
+class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-attributes
     """Save checkpoints periodically.
 
     Args:
@@ -56,10 +57,12 @@ class CheckpointHookWithValResults(Hook):
         self._best_model_weight: Optional[Path] = None
 
     def before_run(self, runner):
+        """Set output directopy if not set."""
         if not self.out_dir:
             self.out_dir = runner.work_dir
 
     def after_train_epoch(self, runner):
+        """Checkpoint stuffs after train epoch."""
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
 
@@ -129,6 +132,7 @@ class CheckpointHookWithValResults(Hook):
             runner.meta["hook_msgs"]["last_ckpt"] = str(self.out_dir / cur_ckpt_filename)
 
     def after_train_iter(self, runner):
+        """Checkpoint stuffs after train iteration."""
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
 

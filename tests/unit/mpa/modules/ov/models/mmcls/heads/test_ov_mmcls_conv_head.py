@@ -6,7 +6,9 @@ import numpy as np
 import pytest
 import torch
 
-from otx.mpa.modules.ov.models.mmcls.heads.conv_head import ConvClsHead
+from otx.algorithms.classification.adapters.mmcls.models.heads.conv_head import (
+    ConvClsHead,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
