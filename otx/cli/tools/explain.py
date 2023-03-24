@@ -16,7 +16,7 @@
 
 from pathlib import Path
 
-from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
@@ -65,11 +65,22 @@ def get_args():
         "For Openvino task, default method will be selected.",
     )
     parser.add_argument(
-        # "-w",
+        "--process-saliency-maps",
+        action="store_true",
+        help="Processing of saliency map includes (1) resize to input image resolution and (2) apply a colormap."
+        "Depending on the number of targets to explain, this might take significant time.",
+    )
+    parser.add_argument(
+        "--explain-all-classes",
+        action="store_true",
+        help="Provides explanations for all classes. Otherwise, explains only predicted classes."
+        "This feature supported by algorithms that can generate explanations per class.",
+    )
+    parser.add_argument(
         "--overlay-weight",
         type=float,
         default=0.5,
-        help="weight of the saliency map when overlaying the saliency map",
+        help="Weight of the saliency map when overlaying the input image with saliency map",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
@@ -121,19 +132,44 @@ def main():
 
     image_files = get_image_files(args.explain_data_roots)
     dataset_to_explain = get_explain_dataset_from_filelist(image_files)
-    explain_parameters = InferenceParameters(
-        is_evaluation=False,
+    explain_predicted_classes = not args.explain_all_classes
+    explain_parameters = ExplainParameters(
         explainer=args.explain_algorithm,
-        explain_predicted_classes=False,
+        process_saliency_maps=args.process_saliency_maps,
+        explain_predicted_classes=explain_predicted_classes,
     )
     explained_dataset = task.explain(
         dataset_to_explain.with_empty_annotations(),
         explain_parameters,
     )
+    assert len(explained_dataset) == len(image_files)
 
+    if args.process_saliency_maps:
+        print(
+            "Postprocessing applied. (1) saliency maps resized to the input image resolution "
+            "and (2) color map applied."
+        )
+    else:
+        print("No postprocessing applied. Raw low-resolution saliency maps saved as .tiff format images.")
+
+    if args.explain_all_classes:
+        print(f"Saliency maps generated for each class, per each of {len(image_files)} images.")
+    else:
+        print(
+            "Saliency maps generated ONLY for predicted class, if any. "
+            "Use --explain-all-classes flag to generate explanations for all classes."
+        )
+
+    explained_image_counter = 0
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
-        for metadata in explained_data.get_metadata():
-            saliency_data = metadata.data
+        metadata = explained_data.get_metadata()
+        if len(metadata) > 0:
+            explained_image_counter += 1
+        else:
+            if explain_predicted_classes:  # Explain only predictions
+                print(f"No saliency maps generated for {filename} - model predicted nothing.")
+        for m in metadata:
+            saliency_data = m.data
             fname = f"{Path(Path(filename).name).stem}_{saliency_data.name}".replace(" ", "_")
             save_saliency_output(
                 process_saliency_maps=explain_parameters.process_saliency_maps,
@@ -144,7 +180,16 @@ def main():
                 weight=args.overlay_weight,
             )
 
-    print(f"Saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
+    if explain_predicted_classes and explained_image_counter == 0:
+        print(
+            "No predictions were made for provided model-data pair -> no saliency maps generated. "
+            "Please adjust training pipeline or use different model-data pair."
+        )
+    if explained_image_counter > 0:
+        print(
+            f"Saliency maps saved to {args.save_explanation_to} for {explained_image_counter} "
+            f"out of {len(image_files)} images."
+        )
 
     return dict(retcode=0, template=template.name)
 

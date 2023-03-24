@@ -39,6 +39,7 @@ from otx.algorithms.classification.utils import (
 )
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
@@ -254,7 +255,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Explain function of ClassificationOpenVINOTask."""
 
@@ -269,6 +270,12 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, _, saliency_map, _, _ = self.inferencer.predict(dataset_item.numpy)
+            if saliency_map is None:
+                raise RuntimeError(
+                    "There is no Saliency Map in OpenVINO IR model output. "
+                    "Please export model to OpenVINO IR with dump_features"
+                )
+
             item_labels = predicted_scene.annotations[0].get_labels()
             dataset_item.append_labels(item_labels)
             add_saliency_maps_to_dataset_item(

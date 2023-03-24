@@ -18,8 +18,12 @@ from tests.test_suite.run_test_command import (
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_explain_all_classes_openvino_testing,
     otx_explain_openvino_testing,
+    otx_explain_process_saliency_maps_openvino_testing,
     otx_explain_testing,
+    otx_explain_testing_all_classes,
+    otx_explain_testing_process_saliency_maps,
     otx_export_testing,
     otx_hpo_testing,
     otx_resume_testing,
@@ -32,6 +36,12 @@ args = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+}
+
+num_iters_per_model = {
+    "Custom_Object_Detection_YOLOX": "10",
+    "Custom_Object_Detection_Gen3_ATSS": "30",
+    "Custom_Object_Detection_Gen3_SSD": "10",
 }
 
 args_semisl = {
@@ -78,7 +88,9 @@ class TestDetectionCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args)
+        args1 = copy.deepcopy(args)
+        args1["train_params"][2] = num_iters_per_model[template.model_template_id]
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -127,9 +139,33 @@ class TestDetectionCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "detection"
+        otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "detection"
+        otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "detection"
+        otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "detection"
+        otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

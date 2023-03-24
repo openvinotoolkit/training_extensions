@@ -15,8 +15,8 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
-from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
-    DetSaliencyMapHook,
+from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
+    DetClassProbabilityMap,
 )
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
@@ -137,7 +137,7 @@ if is_mmdeploy_enabled():
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(feat)
             cls_scores = outs[0]
-            saliency_map = DetSaliencyMapHook(self).func(cls_scores, cls_scores_provided=True)
+            saliency_map = DetClassProbabilityMap(self).func(cls_scores, cls_scores_provided=True)
             return (*bbox_results, feature_vector, saliency_map)
 
         return bbox_results

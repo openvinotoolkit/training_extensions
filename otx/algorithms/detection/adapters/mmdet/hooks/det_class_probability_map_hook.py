@@ -26,7 +26,7 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 # pylint: disable=too-many-locals
 
 
-class DetSaliencyMapHook(BaseRecordingForwardHook):
+class DetClassProbabilityMap(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
     def __init__(self, module: torch.nn.Module) -> None:
@@ -116,7 +116,7 @@ class DetSaliencyMapHook(BaseRecordingForwardHook):
             else:
                 raise NotImplementedError(
                     "Not supported detection head provided. "
-                    "DetSaliencyMapHook supports only the following single stage detectors: "
+                    "DetClassProbabilityMap supports only the following single stage detectors: "
                     "YOLOXHead, ATSSHead, SSDHead, VFNetHead."
                 )
         return cls_scores

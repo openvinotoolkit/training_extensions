@@ -684,6 +684,7 @@ def otx_explain_testing(template, root, otx_dir, args):
 
     save_dir = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
+    explain_data_root = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
@@ -691,7 +692,7 @@ def otx_explain_testing(template, root, otx_dir, args):
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth",
         "--explain-data-root",
-        os.path.join(otx_dir, args["--input"]),
+        explain_data_root,
         "--save-explanation-to",
         output_dir,
         "--explain-algorithm",
@@ -700,6 +701,89 @@ def otx_explain_testing(template, root, otx_dir, args):
     check_run(command_line)
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
+    assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
+
+
+def otx_explain_testing_all_classes(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    if "RCNN" in template.model_template_id:
+        test_algorithm = "ActivationMap"
+    else:
+        test_algorithm = "ClassWiseSaliencyMap"
+
+    train_ann_file = args.get("--train-ann-file", "")
+    if "hierarchical" in train_ann_file:
+        train_type = "hierarchical"
+    elif "multilabel" in train_ann_file:
+        train_type = "multilabel"
+    else:
+        train_type = "default"
+
+    save_dir = f"explain_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir = os.path.join(template_work_dir, save_dir)
+    explain_data_root = os.path.join(otx_dir, args["--input"])
+    command_line = [
+        "otx",
+        "explain",
+        template.model_template_path,
+        "--load-weights",
+        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+        "--explain-data-root",
+        explain_data_root,
+        "--save-explanation-to",
+        output_dir,
+        "--explain-algorithm",
+        test_algorithm,
+        "--explain-all-classes",
+    ]
+    check_run(command_line)
+    assert os.path.exists(output_dir)
+
+    save_dir_explain_only_predicted_classes = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir_explain_only_predicted_classes = os.path.join(template_work_dir, save_dir_explain_only_predicted_classes)
+    if test_algorithm == "ActivationMap":
+        assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
+    else:
+        assert len(os.listdir(output_dir)) >= len(os.listdir(output_dir_explain_only_predicted_classes))
+    assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
+
+
+def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    if "RCNN" in template.model_template_id:
+        test_algorithm = "ActivationMap"
+    else:
+        test_algorithm = "ClassWiseSaliencyMap"
+
+    train_ann_file = args.get("--train-ann-file", "")
+    if "hierarchical" in train_ann_file:
+        train_type = "hierarchical"
+    elif "multilabel" in train_ann_file:
+        train_type = "multilabel"
+    else:
+        train_type = "default"
+
+    save_dir = f"explain_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir = os.path.join(template_work_dir, save_dir)
+    explain_data_root = os.path.join(otx_dir, args["--input"])
+    command_line = [
+        "otx",
+        "explain",
+        template.model_template_path,
+        "--load-weights",
+        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+        "--explain-data-root",
+        explain_data_root,
+        "--save-explanation-to",
+        output_dir,
+        "--explain-algorithm",
+        test_algorithm,
+        "--process-saliency-maps",
+    ]
+    check_run(command_line)
+    assert os.path.exists(output_dir)
+    assert len(os.listdir(output_dir)) > 0
+    assert all([fname.split(".")[-1] == "png" for fname in os.listdir(output_dir)])
 
 
 def otx_explain_openvino_testing(template, root, otx_dir, args):
@@ -717,8 +801,9 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
     else:
         train_type = "default"
 
-    save_dir = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    save_dir = f"explain_ov_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
+    explain_data_root = os.path.join(otx_dir, args["--input"])
     command_line = [
         "otx",
         "explain",
@@ -726,7 +811,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
         "--explain-data-root",
-        os.path.join(otx_dir, args["--input"]),
+        explain_data_root,
         "--save-explanation-to",
         output_dir,
         "--explain-algorithm",
@@ -736,6 +821,91 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
     check_run(command_line)
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
+    assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
+
+
+def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    if "RCNN" in template.model_template_id:
+        test_algorithm = "ActivationMap"
+    else:
+        test_algorithm = "ClassWiseSaliencyMap"
+
+    train_ann_file = args.get("--train-ann-file", "")
+    if "hierarchical" in train_ann_file:
+        train_type = "hierarchical"
+    elif "multilabel" in train_ann_file:
+        train_type = "multilabel"
+    else:
+        train_type = "default"
+
+    save_dir = f"explain_ov_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir = os.path.join(template_work_dir, save_dir)
+    explain_data_root = os.path.join(otx_dir, args["--input"])
+    command_line = [
+        "otx",
+        "explain",
+        template.model_template_path,
+        "--load-weights",
+        f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
+        "--explain-data-root",
+        explain_data_root,
+        "--save-explanation-to",
+        output_dir,
+        "--explain-algorithm",
+        test_algorithm,
+        "--explain-all-classes",
+    ]
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
+    check_run(command_line)
+    assert os.path.exists(output_dir)
+
+    save_dir_explain_only_predicted_classes = f"explain_ov_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir_explain_only_predicted_classes = os.path.join(template_work_dir, save_dir_explain_only_predicted_classes)
+    if test_algorithm == "ActivationMap":
+        assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
+    else:
+        assert len(os.listdir(output_dir)) >= len(os.listdir(output_dir_explain_only_predicted_classes))
+    assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
+
+
+def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    if "RCNN" in template.model_template_id:
+        test_algorithm = "ActivationMap"
+    else:
+        test_algorithm = "ClassWiseSaliencyMap"
+
+    train_ann_file = args.get("--train-ann-file", "")
+    if "hierarchical" in train_ann_file:
+        train_type = "hierarchical"
+    elif "multilabel" in train_ann_file:
+        train_type = "multilabel"
+    else:
+        train_type = "default"
+
+    save_dir = f"explain_ov_process_saliency_maps_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir = os.path.join(template_work_dir, save_dir)
+    explain_data_root = os.path.join(otx_dir, args["--input"])
+    command_line = [
+        "otx",
+        "explain",
+        template.model_template_path,
+        "--load-weights",
+        f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml",
+        "--explain-data-root",
+        explain_data_root,
+        "--save-explanation-to",
+        output_dir,
+        "--explain-algorithm",
+        test_algorithm,
+        "--process-saliency-maps",
+    ]
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
+    check_run(command_line)
+    assert os.path.exists(output_dir)
+    assert len(os.listdir(output_dir)) > 0
+    assert all([fname.split(".")[-1] == "png" for fname in os.listdir(output_dir)])
 
 
 def otx_find_testing():

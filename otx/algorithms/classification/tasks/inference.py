@@ -36,6 +36,7 @@ from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
@@ -163,7 +164,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Classification Task."""
         logger.info("called explain()")

@@ -1,0 +1,59 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
+import os
+
+import numpy as np
+import pytest
+import torch
+from mmcls.models import build_classifier
+
+from otx.algorithms.classification.tasks import ClassificationInferenceTask  # noqa
+from otx.cli.registry import Registry
+from otx.mpa.cls.stage import ClsStage
+from otx.mpa.det.stage import DetectionStage  # noqa
+from otx.mpa.modules.hooks.recording_forward_hooks import ReciproCAMHook
+from otx.mpa.utils.config_utils import MPAConfig
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
+templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates
+templates_cls_ids = [template.model_template_id for template in templates_cls]
+
+templates_det = Registry("otx/algorithms").filter(task_type="DETECTION").templates
+templates_det_ids = [template.model_template_id for template in templates_det]
+
+
+class TestExplainMethods:
+    ref_saliency_vals_cls = {
+        "EfficientNet-B0": np.array([57, 0, 161, 127, 102, 96, 92], dtype=np.uint8),
+        "MobileNet-V3-large-1x": np.array([140, 82, 87, 81, 79, 117, 254], dtype=np.uint8),
+        "EfficientNet-V2-S": np.array([125, 42, 24, 21, 27, 55, 145], dtype=np.uint8),
+    }
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("template", templates_cls, ids=templates_cls_ids)
+    def test_saliency_map_cls(self, template):
+        torch.manual_seed(0)
+
+        base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
+        cfg_path = os.path.join(base_dir, "model.py")
+        cfg = MPAConfig.fromfile(cfg_path)
+
+        cfg.model.pop("task")
+        ClsStage.configure_in_channel(cfg)
+        model = build_classifier(cfg.model)
+        model = model.eval()
+
+        img = torch.ones(2, 3, 224, 224) - 0.5
+        data = {"img_metas": {}, "img": img}
+
+        with ReciproCAMHook(model) as rcam_hook:
+            with torch.no_grad():
+                _ = model(return_loss=False, **data)
+        saliency_maps = rcam_hook.records
+
+        assert len(saliency_maps) == 2
+        assert saliency_maps[0].ndim == 3
+        assert saliency_maps[0].shape == (1000, 7, 7)
+        assert (saliency_maps[0][0][0] == self.ref_saliency_vals_cls[template.name]).all()
