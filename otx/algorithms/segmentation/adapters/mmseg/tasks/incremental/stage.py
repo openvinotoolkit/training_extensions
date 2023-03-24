@@ -29,7 +29,7 @@ class IncrSegStage(SegStage):
 
         # FIXME : can be naive supervised learning (from-scratch ver.)
         # Check if new classes are added
-        has_new_class = len(new_classes)
+        has_new_class = len(new_classes) > 0
         if has_new_class is False:
             raise ValueError("Incremental learning should have at least one new class!")
 
