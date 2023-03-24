@@ -21,13 +21,13 @@ import os
 import shutil
 import tempfile
 from copy import deepcopy
-from typing import Dict, List, Optional, Union
 from datetime import timedelta
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
-from torch import distributed as dist
 from mmcv.utils.config import Config, ConfigDict
+from torch import distributed as dist
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
@@ -137,8 +137,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     @staticmethod
     def _setup_multigpu_training():
-        torch.cuda.set_device(os.environ["LOCAL_RANK"])
-        dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=10))
+        if not dist.is_initialized():
+            torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
+            dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
+            logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(kwargs)

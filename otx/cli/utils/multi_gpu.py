@@ -19,6 +19,7 @@ import os
 import signal
 import socket
 import sys
+import tempfile
 import threading
 import time
 from contextlib import closing
@@ -157,15 +158,22 @@ class MultiGPUManager:
 
     def setup_multi_gpu_train(
         self,
-        output_path: str,
+        output_path: Optional[str] = None,
         optimized_hyper_parameters: Optional[ConfigurableParameters] = None,
-    ):
+    ) -> str:
         """Carry out what should be done to run multi GPU training.
 
         Args:
             output_path (str): output path where task output are saved.
             optimized_hyper_parameters (ConfigurableParameters or None): hyper parameters reflecting HPO result.
+
+        Returns:
+            str:
+                If output_path is None, make a temporary directory and return it.
         """
+        if output_path is None:
+            output_path = tempfile.mkdtemp(prefix="OTX-multi-gpu-")
+
         if optimized_hyper_parameters is not None:  # if HPO is executed, optimized HPs are applied to child processes
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
 
@@ -177,6 +185,8 @@ class MultiGPUManager:
         self.initialize_multigpu_train(self._rdzv_endpoint, self._base_rank, 0, self._gpu_ids, self._world_size)
 
         threading.Thread(target=self._check_child_processes_alive, daemon=True).start()
+
+        return output_path
 
     def finalize(self):
         """Join all child processes."""
@@ -209,7 +219,6 @@ class MultiGPUManager:
         os.environ["WORLD_SIZE"] = str(world_size)
         os.environ["LOCAL_RANK"] = str(local_rank)
         os.environ["RANK"] = str(rank)
-        logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     @staticmethod
     def run_child_process(

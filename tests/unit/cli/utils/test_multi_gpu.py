@@ -2,6 +2,7 @@ import os
 import socket
 from contextlib import closing
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 import torch
@@ -218,7 +219,10 @@ class TestMultiGPUManager:
         fake_output_path = "fake"
 
         # run
-        self.multigpu_manager.setup_multi_gpu_train(fake_output_path, mock_hyper_parameters)
+        output_path = self.multigpu_manager.setup_multi_gpu_train(fake_output_path, mock_hyper_parameters)
+
+        # check output_path is same
+        assert fake_output_path == output_path
 
         # check spwaning child process
         assert self.mock_process.call_count == self.num_gpu - 1
@@ -250,6 +254,23 @@ class TestMultiGPUManager:
         assert mock_sys.argv[mock_sys.argv.index("--learning_parameters.learning_rate") + 1] == "0.01"
         assert "--learning_parameters.batch_size" in mock_sys.argv
         assert mock_sys.argv[mock_sys.argv.index("--learning_parameters.batch_size") + 1] == "8"
+
+    @e2e_pytest_unit
+    def test_setup_multi_gpu_train_no_output_path(self, mocker):
+        """Check setup_multi_gpu_train without output_path"""
+        # prepare
+        mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
+        mock_hyper_parameters = mocker.MagicMock()
+        mock_hyper_parameters.learning_parameters.learning_rate = 0.01
+        mock_hyper_parameters.learning_parameters.batch_size = 8
+        mock_sys = mocker.patch.object(multi_gpu, "sys")
+        mock_sys.argv = []
+
+        # run
+        output_path = self.multigpu_manager.setup_multi_gpu_train(None, mock_hyper_parameters)
+
+        # check output_path exists
+        assert Path(output_path).exists()
 
     @e2e_pytest_unit
     def test_check_child_processes_alive(self, mocker, process_arr):
@@ -334,8 +355,6 @@ class TestMultiGPUManager:
         # prepare
         mock_os = mocker.patch.object(multi_gpu, "os")
         mock_os.environ = {}
-        mock_set_device = mocker.patch.object(multi_gpu.torch.cuda, "set_device")
-        mock_init_process_group = mocker.patch.object(multi_gpu.dist, "init_process_group")
         mocker.patch.object(multi_gpu.dist, "get_world_size", return_value=2)
         mocker.patch.object(multi_gpu.dist, "get_rank", return_value=0)
 
@@ -355,8 +374,6 @@ class TestMultiGPUManager:
         assert mock_os.environ["WORLD_SIZE"] == "2"
         assert mock_os.environ["LOCAL_RANK"] == "0"
         assert mock_os.environ["RANK"] == "0"
-        mock_set_device.assert_called_once()
-        mock_init_process_group.assert_called_once()
 
     @e2e_pytest_unit
     def test_run_child_process(self, mocker):
