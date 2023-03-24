@@ -525,7 +525,7 @@ class Stage:
             def pre_hook(*args, **kwargs):
                 time_monitor.on_test_batch_begin(None, None)
 
-            def hook(*args):
+            def hook(*args, **kwargs):
                 time_monitor.on_test_batch_end(None, None)
 
             model.register_forward_pre_hook(pre_hook)
