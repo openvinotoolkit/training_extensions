@@ -27,11 +27,8 @@ class IncrSegStage(SegStage):
 
         new_classes = np.setdiff1d(self.model_classes, self.org_model_classes).tolist()
 
-        # FIXME : can be naive supervised learning (from-scratch ver.)
         # Check if new classes are added
         has_new_class = len(new_classes) > 0
-        if has_new_class is False:
-            raise ValueError("Incremental learning should have at least one new class!")
 
         # Update TaskAdaptHook (use incremental sampler)
         task_adapt_hook = ConfigDict(
