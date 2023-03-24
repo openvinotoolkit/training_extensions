@@ -11,7 +11,7 @@ from PIL import Image, ImageEnhance, ImageOps
 from PIL.Image import Image as PILImage
 from PIL.Image import Resampling
 
-from .cython_augments import pil_augment as pil_aug
+from .cython_augments import pil_augment as pil_aug  # type: ignore[attr-defined]
 
 ImgTypes = Union[PILImage, CvImage]
 
