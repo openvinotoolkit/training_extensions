@@ -115,7 +115,7 @@ def get_extensions():
         ext_modules = [
             Extension(
                 cython_file.rstrip(".pyx").replace("/", "."),
-                [os.path.join(package_root, cython_file)],
+                [cython_file],
                 include_dirs=[numpy.get_include()],
                 extra_compile_args=["-O3"],
             )

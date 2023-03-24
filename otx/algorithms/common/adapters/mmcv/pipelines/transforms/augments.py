@@ -11,9 +11,7 @@ from PIL import Image, ImageEnhance, ImageOps
 from PIL.Image import Image as PILImage
 from PIL.Image import Resampling
 
-from otx.algorithms.common.adapters.mmcv.pipelines.transforms.cython_augments import (
-    pil_augment as pil_aug,
-)
+from .cython_augments import pil_augment as pil_aug
 
 ImgTypes = Union[PILImage, CvImage]
 
