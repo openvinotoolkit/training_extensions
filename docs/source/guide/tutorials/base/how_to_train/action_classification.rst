@@ -134,11 +134,12 @@ To see the list of supported templates, run the following command:
 
   (otx) ...$ otx find --task action_classification
 
-  +-----------------------+----------------------------------+------+----------------------------------------------------------------+
-  |          TASK         |                ID                | NAME |                           BASE PATH                            |
-  +-----------------------+----------------------------------+------+----------------------------------------------------------------+
-  | ACTION_CLASSIFICATION | Custom_Action_Classification_X3D | X3D  | otx/algorithms/action/configs/classification/x3d/template.yaml |
-  +-----------------------+----------------------------------+------+----------------------------------------------------------------+
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
+  |          TASK         |                  ID                  |   NAME  |                               BASE PATH                               |
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
+  | ACTION_CLASSIFICATION |   Custom_Action_Classification_X3D   |   X3D   |   ../otx/algorithms/action/configs/classification/x3d/template.yaml   |
+  | ACTION_CLASSIFICATION | Custom_Action_Classification_MoViNet | MoViNet | ../otx/algorithms/action/configs/classification/movinet/template.yaml |
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
