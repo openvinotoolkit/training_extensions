@@ -11,12 +11,12 @@ import torch
 from mmcv import ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 
-from otx.algorithms.detection.adapters.mmdet.utils import build_detector
+from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from otx.algorithms.detection.tasks import DetectionTrainTask
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.model import ModelEntity
@@ -221,11 +221,20 @@ class TestTilingDetection:
         task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
 
     @e2e_pytest_unit
-    def test_openvino(self):
-        # TODO[EUGENE]: implement unittest for tiling prediction with openvino
-        pass
+    def test_patch_tiling_func(self):
+        """Test that patch_tiling function works correctly"""
+        cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
+        hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.tiling_parameters.enable_tiling = True
+
+        self.otx_dataset.purpose = DatasetPurpose.TRAINING
+        patch_tiling(cfg, hyper_parameters, self.otx_dataset)
+
+        self.otx_dataset.purpose = DatasetPurpose.INFERENCE
+        patch_tiling(cfg, hyper_parameters, self.otx_dataset)
 
     @e2e_pytest_unit
-    def test_patch_tiling_func(self):
-        # TODO[EUGENE]: implement unittest for patching tiling functions
+    def test_openvino(self):
+        # TODO[EUGENE]: implement unittest for tiling prediction with openvino
         pass

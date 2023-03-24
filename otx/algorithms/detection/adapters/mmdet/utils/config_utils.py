@@ -329,55 +329,56 @@ def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
     recipe_config.model.bbox_head.anchor_generator = config_generator
 
 
-def patch_tiling(config, hyper_parameters, dataset: Optional[DatasetEntity] = None):
+def patch_tiling(config, hparams, dataset=None):
     """Update config for tiling.
 
     Args:
-        config (_type_): _description_
-        hyper_parameters (_type_): _description_
-        dataset (_type_): _description_
+        config (dict): MPA config containing configuration settings.
+        hparams (DetectionConfig): DetectionConfig containing hyperparameters.
+        dataset (DatasetEntity, optional): A dataset entity. Defaults to None.
 
     Returns:
-        _type_: _description_
+        dict: The updated configuration dictionary.
     """
-    if bool(hyper_parameters.tiling_parameters.enable_tiling):
-        logger.info("Tiling Enabled")
-        if dataset is not None:
-            if dataset.purpose != DatasetPurpose.INFERENCE and bool(
-                hyper_parameters.tiling_parameters.enable_adaptive_params
-            ):
-                adaptive_tile_params(hyper_parameters.tiling_parameters, dataset)
-                tiling_params = ConfigDict(
-                    tile_size=int(hyper_parameters.tiling_parameters.tile_size),
-                    overlap_ratio=float(hyper_parameters.tiling_parameters.tile_overlap),
-                    max_per_img=int(hyper_parameters.tiling_parameters.tile_max_number),
-                )
-                config.update(
-                    ConfigDict(
-                        data=ConfigDict(
-                            train=tiling_params,
-                            val=tiling_params,
-                            test=tiling_params,
-                        )
+    if hparams.tiling_parameters.enable_tiling:
+        logger.info("Tiling enabled")
+
+        if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
+            adaptive_tile_params(hparams.tiling_parameters, dataset)
+            tiling_params = ConfigDict(
+                tile_size=int(hparams.tiling_parameters.tile_size),
+                overlap_ratio=float(hparams.tiling_parameters.tile_overlap),
+                max_per_img=int(hparams.tiling_parameters.tile_max_number),
+            )
+            config.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        train=tiling_params,
+                        val=tiling_params,
+                        test=tiling_params,
                     )
                 )
+            )
 
-            if dataset.purpose is DatasetPurpose.INFERENCE:
-                # NOTE: tiling does not work with batch size > 1
-                config.data.val_dataloader.update(ConfigDict(samples_per_gpu=1))
-                config.data.test_dataloader.update(ConfigDict(samples_per_gpu=1))
-                config.data.samples_per_gpu = 1
+        if dataset and dataset.purpose == DatasetPurpose.INFERENCE:
+            config.get("data", ConfigDict()).get("val_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
+            config.get("data", ConfigDict()).get("test_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
+            config.get("data", ConfigDict(samples_per_gpu=1))
 
-        if bool(hyper_parameters.tiling_parameters.enable_tile_classifier):
-            logger.info("Tile Classifier Enabled:")
-            logger.info(f"\tPatch model from: {config.model.type} to CustomMaskRCNNTileOptimised")
+        if hparams.tiling_parameters.enable_tile_classifier:
+            logger.info("Tile classifier enabled")
+            logger.info(f"Patch model from: {config.model.type} to CustomMaskRCNNTileOptimised")
             config.model.type = "CustomMaskRCNNTileOptimised"
+
             if config.model.backbone.type == "efficientnet_b2b":
+                lr = 0.002  # pylint: disable=invalid-name
                 logger.info(
-                    f"\tPatch {config.model.backbone.type} LR from: "
-                    f"{hyper_parameters.learning_parameters.learning_rate} to 0.002"
+                    f"Patch {config.model.backbone.type} LR from: {hparams.learning_parameters.learning_rate} to {lr}"
                 )
-                hyper_parameters.learning_parameters.learning_rate = 0.002
+                hparams.learning_parameters.learning_rate = lr
+
             config.data.train.filter_empty_gt = False
+
         config.update(dict(evaluation=dict(iou_thr=[0.5])))
+
     return config
