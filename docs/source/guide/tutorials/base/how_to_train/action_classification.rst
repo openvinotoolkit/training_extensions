@@ -74,7 +74,6 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
     │   │   │   │   ├── 20060723sfjffbartsinger_wave_f_cm_np1_ba_med_0
     │   │   │   │   ├── ...
     │   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
-    |
 
 Once you have the dataset structured properly, copy ``mmaction2/data`` folder, which contains hmdb51 dataset, to ``training_extensions/data``. 
 Then, you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
@@ -128,7 +127,7 @@ To see the list of supported templates, run the following command:
 
 .. note::
 
-  OpenVINO™ Training Extensions is supporting only X3D model template now, other architecture will be supported in near future.
+  OpenVINO™ Training Extensions supports X3D and MoViNet template now, other architecture will be supported in future.
 
 .. code-block::
 
@@ -255,7 +254,7 @@ Optimization
 *************
 
 1. You can further optimize the model with ``otx optimize``.
-Currently, only POT is supported for action classsification. NNCF will be supported in near future.
+Currently, quantization jobs that include POT is supported for X3D template. MoViNet will be supported in near future.
 Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
 2. Example command for optimizing
