@@ -11,10 +11,8 @@ from torch.utils.data.sampler import Sampler
 
 from otx.algorithms.common.utils.task_adapt import unwrap_dataset
 
-# pylint: disable=too-many-instance-attributes
 
-
-class ClsIncrSampler(Sampler):
+class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     """Sampler for Class-Incremental Task.
 
     This sampler is a sampler that creates an effective batch

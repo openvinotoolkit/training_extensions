@@ -8,10 +8,8 @@ from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 
-# pylint: disable=too-many-instance-attributes
 
-
-class BalancedSampler(Sampler):
+class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     """Balanced sampler for imbalanced data for class-incremental task.
 
     This sampler is a sampler that creates an effective batch
