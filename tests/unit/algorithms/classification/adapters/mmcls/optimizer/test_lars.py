@@ -5,7 +5,7 @@ import torch.nn as nn
 
 from otx.algorithms.classification.adapters.mmcls.optimizer.lars import LARS
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.mpa.test_helpers import (
+from tests.unit.algorithms.common.adapters.mmcv.tasks.test_helpers import (
     generate_random_torch_image,
     generate_toy_cnn_model,
 )
