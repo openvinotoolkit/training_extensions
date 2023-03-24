@@ -32,6 +32,9 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     get_parser_and_hprams_data,
 )
+from otx.mpa.utils.logger import get_logger
+
+logger = get_logger()
 
 ESC_BUTTON = 27
 SUPPORTED_EXPLAIN_ALGORITHMS = ["activationmap", "eigencam", "classwisesaliencymap"]
@@ -86,6 +89,38 @@ def get_args():
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
 
     return parser.parse_args(), override_param
+
+
+def _log_prior_to_saving(args, num_images):
+    logger.info("Explain report:")
+    if args.process_saliency_maps:
+        logger.info(
+            "Postprocessing applied. (1) saliency maps resized to the input image resolution "
+            "and (2) color map applied."
+        )
+    else:
+        logger.info("No postprocessing applied. Raw low-resolution saliency maps saved as .tiff format images.")
+
+    if args.explain_all_classes:
+        logger.info(f"Saliency maps generated for each class, per each of {num_images} images.")
+    else:
+        logger.info(
+            "Saliency maps generated ONLY for predicted class(es), if any. "
+            "Use --explain-all-classes flag to generate explanations for all classes."
+        )
+
+
+def _log_after_saving(explain_predicted_classes, explained_image_counter, args, num_images):
+    if explain_predicted_classes and explained_image_counter == 0:
+        logger.info(
+            "No predictions were made for provided model-data pair -> no saliency maps generated. "
+            "Please adjust training pipeline or use different model-data pair."
+        )
+    if explained_image_counter > 0:
+        logger.info(
+            f"Saliency maps saved to {args.save_explanation_to} for {explained_image_counter} "
+            f"out of {num_images} images."
+        )
 
 
 def main():
@@ -144,22 +179,7 @@ def main():
     )
     assert len(explained_dataset) == len(image_files)
 
-    if args.process_saliency_maps:
-        print(
-            "Postprocessing applied. (1) saliency maps resized to the input image resolution "
-            "and (2) color map applied."
-        )
-    else:
-        print("No postprocessing applied. Raw low-resolution saliency maps saved as .tiff format images.")
-
-    if args.explain_all_classes:
-        print(f"Saliency maps generated for each class, per each of {len(image_files)} images.")
-    else:
-        print(
-            "Saliency maps generated ONLY for predicted class, if any. "
-            "Use --explain-all-classes flag to generate explanations for all classes."
-        )
-
+    _log_prior_to_saving(args, len(image_files))
     explained_image_counter = 0
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
         metadata_list = explained_data.get_metadata()
@@ -167,7 +187,7 @@ def main():
             explained_image_counter += 1
         else:
             if explain_predicted_classes:  # Explain only predictions
-                print(f"No saliency maps generated for {filename} - model predicted nothing.")
+                logger.info(f"No saliency maps generated for {filename} - due to lack of confident predictions.")
         for metadata in metadata_list:
             saliency_data = metadata.data
             fname = f"{Path(Path(filename).name).stem}_{saliency_data.name}".replace(" ", "_")
@@ -179,17 +199,7 @@ def main():
                 fname=fname,
                 weight=args.overlay_weight,
             )
-
-    if explain_predicted_classes and explained_image_counter == 0:
-        print(
-            "No predictions were made for provided model-data pair -> no saliency maps generated. "
-            "Please adjust training pipeline or use different model-data pair."
-        )
-    if explained_image_counter > 0:
-        print(
-            f"Saliency maps saved to {args.save_explanation_to} for {explained_image_counter} "
-            f"out of {len(image_files)} images."
-        )
+    _log_after_saving(explain_predicted_classes, explained_image_counter, args, len(image_files))
 
     return dict(retcode=0, template=template.name)
 
