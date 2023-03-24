@@ -522,7 +522,7 @@ class Stage:
             time_monitor = time_monitor[0] if time_monitor else None
         if time_monitor is not None:
 
-            def pre_hook(*args):
+            def pre_hook(*args, **kwargs):
                 time_monitor.on_test_batch_begin(None, None)
 
             def hook(*args):
