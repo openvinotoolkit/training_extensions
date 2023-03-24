@@ -33,6 +33,20 @@ class OTXMaskRCNNModel(MaskRCNNModel):
 
     __model__ = "OTX_MaskRCNN"
 
+    def _check_io_number(self, number_of_inputs, number_of_outputs):
+        """Checks whether the number of model inputs/outputs is supported.
+
+        Args:
+            number_of_inputs (int, Tuple(int)): number of inputs supported by wrapper.
+              Use -1 to omit the check
+            number_of_outputs (int, Tuple(int)): number of outputs supported by wrapper.
+              Use -1 to omit the check
+
+        Raises:
+            WrapperError: if the model has unsupported number of inputs/outputs
+        """
+        super()._check_io_number(number_of_inputs, -1)
+
     def _get_outputs(self):
         output_match_dict = {}
         output_names = ["boxes", "labels", "masks", "feature_vector", "saliency_map"]

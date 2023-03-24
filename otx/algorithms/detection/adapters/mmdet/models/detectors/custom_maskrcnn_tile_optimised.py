@@ -227,7 +227,11 @@ if is_mmdeploy_enabled():
         return tile_classifier__simple_test_impl(self, img)
 
     # pylint: disable=protected-access
-    @mark("custom_maskrcnn_forward", inputs=["input"], outputs=["dets", "labels", "masks", "feats", "saliencies"])
+    @mark(
+        "custom_maskrcnn_forward",
+        inputs=["input"],
+        outputs=["dets", "labels", "masks", "tile_prob", "feats", "saliencies"],
+    )
     def __forward_impl(ctx, self, img, img_metas, **kwargs):
         """Custom MaskRCNN Forward Impl with added mmdeploy marking for model partitioning.
 
@@ -306,6 +310,6 @@ if is_mmdeploy_enabled():
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(x)
             saliency_map = ActivationMapHook.func(x[-1])
-            return (*out, feature_vector, saliency_map)
+            return (*out, tile_prob, feature_vector, saliency_map)
 
         return (*out, tile_prob)
