@@ -107,7 +107,7 @@ class DetectionTrainer(DetectionStage):
         # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
         # logger.info(f'Config:\n{cfg.pretty_text}')
 
-        validate = cfg.data.get("val", None)
+        validate = "val" in cfg.data
         train_detector(
             model,
             datasets,
