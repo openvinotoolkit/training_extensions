@@ -23,10 +23,13 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataset,
     get_data_cfg,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    MPAConfig,
+    update_or_add_custom_hook,
+)
+from otx.algorithms.common.utils.logger import config_logger, get_logger
 
 from .registry import STAGES
-from .utils.config_utils import MPAConfig, update_or_add_custom_hook
-from .utils.logger import config_logger, get_logger
 
 logger = get_logger()
 

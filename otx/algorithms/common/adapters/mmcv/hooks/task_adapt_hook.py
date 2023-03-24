@@ -10,7 +10,7 @@ from otx.algorithms.common.adapters.torch.dataloaders.samplers import (
     BalancedSampler,
     ClsIncrSampler,
 )
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 

@@ -4,9 +4,9 @@
 
 # flake8: noqa
 
-try:
-    import openvino
-except ImportError:
-    pass
-else:
-    from . import ov
+# try:
+#     import openvino
+# except ImportError:
+#     pass
+# else:
+#     from . import ov

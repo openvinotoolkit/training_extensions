@@ -12,11 +12,11 @@ from otx.algorithms.common.adapters.mmcv.hooks.workflow_hook import (
     WorkflowHook,
     build_workflow_hook,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.utils.logger import config_logger, get_logger
 
 from .registry import STAGES
 from .stage import get_available_types
-from .utils.config_utils import MPAConfig
-from .utils.logger import config_logger, get_logger
 from .workflow import Workflow
 
 # from collections import defaultdict

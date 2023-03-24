@@ -32,6 +32,7 @@ from compression.pipeline.initializer import create_pipeline
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.openvino import model_wrappers
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
@@ -75,7 +76,6 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

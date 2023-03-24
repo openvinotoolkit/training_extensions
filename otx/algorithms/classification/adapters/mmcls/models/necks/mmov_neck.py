@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from mmcls.models.builder import NECKS
 
-from otx.mpa.modules.ov.graph.parsers.cls.cls_base_parser import cls_base_parser
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.graph.parsers.cls import cls_base_parser
+from otx.core.ov.models.mmov_model import MMOVModel
 
 
 @NECKS.register_module()
@@ -19,7 +19,7 @@ class MMOVNeck(MMOVModel):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def parser(graph, **kwargs) -> Dict[str, List[str]]:
+    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
         """Parser function returns base_parser for given graph."""
         output = cls_base_parser(graph, "neck")
         if output is None:

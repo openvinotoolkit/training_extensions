@@ -7,7 +7,10 @@
 import numpy as np
 from mmdet.datasets import DATASETS, PIPELINES, build_dataset
 
-from otx.mpa.modules.utils.task_adapt import map_cat_and_cls_as_order, map_class_names
+from otx.algorithms.common.utils.task_adapt import (
+    map_cat_and_cls_as_order,
+    map_class_names,
+)
 
 
 # pylint: disable=invalid-name

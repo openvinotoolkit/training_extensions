@@ -1,8 +1,8 @@
 import pytest
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.mpa.det.semisl.stage import SemiSLDetectionStage
 from otx.mpa.det.stage import DetectionStage
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 SEMISL_RECIPE_CONFIG_PATH = "otx/recipes/stages/detection/semisl.py"

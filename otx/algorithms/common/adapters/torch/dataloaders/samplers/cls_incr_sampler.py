@@ -8,7 +8,7 @@ import random
 import numpy as np
 from torch.utils.data.sampler import Sampler
 
-from otx.mpa.modules.utils.task_adapt import unwrap_dataset
+from otx.algorithms.common.utils.task_adapt import unwrap_dataset
 
 
 class ClsIncrSampler(Sampler):

@@ -16,7 +16,7 @@
 
 from mmcv.runner.hooks import HOOKS, Hook
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 

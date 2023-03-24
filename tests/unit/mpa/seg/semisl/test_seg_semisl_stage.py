@@ -1,8 +1,8 @@
 import pytest
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.mpa.seg.semisl.stage import SemiSLSegStage
 from otx.mpa.seg.stage import SegStage
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 SEMISL_RECIPE_CONFIG_PATH = "otx/recipes/stages/segmentation/semisl.py"
