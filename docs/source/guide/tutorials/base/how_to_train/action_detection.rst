@@ -223,4 +223,4 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
 3. Now, you have fully trained, optimized and exported an
-efficient model representation ready-to-use action classification model.
+efficient model representation ready-to-use action detection model.
