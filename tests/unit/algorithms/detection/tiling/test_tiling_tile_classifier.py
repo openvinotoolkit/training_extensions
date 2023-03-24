@@ -42,6 +42,11 @@ class TestTilingTileClassifier:
 
     @pytest.fixture(autouse=True)
     def setUp(self, otx_model) -> None:
+        """Set up the test
+
+        Args:
+            otx_model (mocker): Mocked model
+        """
         classes = ("rectangle", "ellipse", "triangle")
         self.ov_inferencer = dict()
         task_type = TaskType.INSTANCE_SEGMENTATION
@@ -95,6 +100,11 @@ class TestTilingTileClassifier:
 
     @e2e_pytest_unit
     def test_load_tile_classifier_parameters(self, tmp_dir_path):
+        """Test loading tile classifier parameters
+
+        Args:
+            tmp_dir_path (str): Path to temporary directory
+        """
         maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
         model_ckpt = os.path.join(tmp_dir_path, "maskrcnn_without_tile_classifier.pth")

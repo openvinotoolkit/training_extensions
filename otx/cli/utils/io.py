@@ -16,6 +16,7 @@
 
 import json
 import os
+import os.path as osp
 import re
 import struct
 import tempfile
@@ -40,6 +41,17 @@ from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.utils.nncf import is_checkpoint_nncf
 
+model_adapter_keys = (
+    "confidence_threshold",
+    "image_threshold",
+    "pixel_threshold",
+    "min",
+    "max",
+    "config.json",
+    "tile_classifier.xml",
+    "tile_classifier.bin",
+)
+
 
 def save_model_data(model: ModelEntity, folder: str) -> None:
     """Saves model data to folder. Folder is created if it does not exist.
@@ -51,7 +63,7 @@ def save_model_data(model: ModelEntity, folder: str) -> None:
 
     os.makedirs(folder, exist_ok=True)
     for filename, model_adapter in model.model_adapters.items():
-        with open(os.path.join(folder, filename), "wb") as write_file:
+        with open(osp.join(folder, filename), "wb") as write_file:
             write_file.write(model_adapter.data)
 
 
@@ -80,66 +92,55 @@ def read_model(model_configuration: ModelConfiguration, path: str, train_dataset
     Returns:
         ModelEntity: ModelEntity object.
     """
-    optimization_type = ModelOptimizationType.NONE
-
-    model_adapter_keys = (
-        "confidence_threshold",
-        "image_threshold",
-        "pixel_threshold",
-        "min",
-        "max",
-        "config.json",
-        "tile_classifier.xml",
-        "tile_classifier.bin",
-    )
 
     if path.endswith(".bin") or path.endswith(".xml"):
-        # Openvino IR.
-        model_adapters = {
-            "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
-            "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
-        }
-        for key in model_adapter_keys:
-            full_path = os.path.join(os.path.dirname(path), key)
-            if os.path.exists(full_path):
-                model_adapters[key] = ModelAdapter(read_binary(full_path))
-            else:
-                model_adapters[key] = ModelAdapter(bytes())
-    elif path.endswith(".pth"):
-        # PyTorch
-        model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
+        return read_openvino_model(model_configuration, path, train_dataset)
+    if path.endswith(".pth"):
+        return read_pytorch_model(model_configuration, path, train_dataset)
+    if path.endswith(".zip"):
+        return read_deployed_model(model_configuration, path, train_dataset)
+    raise ValueError(f"Unknown file type: {path}")
 
-        if is_checkpoint_nncf(path):
-            optimization_type = ModelOptimizationType.NNCF
 
-        # Weights of auxiliary models
-        for key in os.listdir(os.path.dirname(path)):
-            if re.match(r"aux_model_[0-9]+\.pth", key):
-                full_path = os.path.join(os.path.dirname(path), key)
-                model_adapters[key] = ModelAdapter(read_binary(full_path))
+def read_openvino_model(
+    model_configuration: ModelConfiguration, path: str, train_dataset: DatasetEntity
+) -> ModelEntity:
+    """Reads an OpenVINO model from disk and returns a ModelEntity object."""
 
-    elif path.endswith(".zip"):
-        # Deployed code.
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with ZipFile(path) as myzip:
-                myzip.extractall(temp_dir)
+    model_adapters = {
+        "openvino.xml": ModelAdapter(read_binary(path[:-4] + ".xml")),
+        "openvino.bin": ModelAdapter(read_binary(path[:-4] + ".bin")),
+    }
+    for key in model_adapter_keys:
+        full_path = osp.join(osp.dirname(path), key)
+        if osp.exists(full_path):
+            model_adapters[key] = ModelAdapter(read_binary(full_path))
+        else:
+            model_adapters[key] = ModelAdapter(bytes())
 
-            model_path = os.path.join(temp_dir, "model", "model")
-            model_adapters = {
-                "openvino.xml": ModelAdapter(read_binary(model_path + ".xml")),
-                "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
-            }
+    model = ModelEntity(
+        configuration=model_configuration,
+        model_adapters=model_adapters,
+        train_dataset=train_dataset,
+    )
 
-            config_path = os.path.join(temp_dir, "model", "config.json")
-            with open(config_path, encoding="UTF-8") as f:
-                model_parameters = json.load(f)["model_parameters"]
-            model_adapters["config.json"] = ModelAdapter(read_binary(config_path))
+    return model
 
-            for key in model_adapter_keys:
-                if key in model_parameters:
-                    model_adapters[key] = ModelAdapter(struct.pack("f", model_parameters[key]))
-    else:
-        raise ValueError(f"Unknown file type: {path}")
+
+def read_pytorch_model(model_configuration: ModelConfiguration, path: str, train_dataset: DatasetEntity) -> ModelEntity:
+    """Reads a PyTorch model from disk and returns a ModelEntity object."""
+    optimization_type = ModelOptimizationType.NONE
+
+    model_adapters = {"weights.pth": ModelAdapter(read_binary(path))}
+
+    if is_checkpoint_nncf(path):
+        optimization_type = ModelOptimizationType.NNCF
+
+    # Weights of auxiliary models
+    for key in os.listdir(osp.dirname(path)):
+        if re.match(r"aux_model_[0-9]+\.pth", key):
+            full_path = osp.join(osp.dirname(path), key)
+            model_adapters[key] = ModelAdapter(read_binary(full_path))
 
     model = ModelEntity(
         configuration=model_configuration,
@@ -148,6 +149,38 @@ def read_model(model_configuration: ModelConfiguration, path: str, train_dataset
         optimization_type=optimization_type,
     )
 
+    return model
+
+
+def read_deployed_model(
+    model_configuration: ModelConfiguration, path: str, train_dataset: DatasetEntity
+) -> ModelEntity:
+    """Reads a deployed model from disk and returns a ModelEntity object."""
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        with ZipFile(path) as myzip:
+            myzip.extractall(temp_dir)
+
+    model_path = os.path.join(temp_dir, "model", "model")
+    model_adapters = {
+        "openvino.xml": ModelAdapter(read_binary(model_path + ".xml")),
+        "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
+    }
+
+    config_path = os.path.join(temp_dir, "model", "config.json")
+    with open(config_path, encoding="UTF-8") as f:
+        model_parameters = json.load(f)["model_parameters"]
+    model_adapters["config.json"] = ModelAdapter(read_binary(config_path))
+
+    for key in model_adapter_keys:
+        if key in model_parameters:
+            model_adapters[key] = ModelAdapter(struct.pack("f", model_parameters[key]))
+
+    model = ModelEntity(
+        configuration=model_configuration,
+        model_adapters=model_adapters,
+        train_dataset=train_dataset,
+    )
     return model
 
 
@@ -162,11 +195,11 @@ def read_label_schema(path: str) -> LabelSchemaEntity:
     """
 
     if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
-        with open(os.path.join(os.path.dirname(path), "label_schema.json"), encoding="UTF-8") as read_file:
+        with open(osp.join(osp.dirname(path), "label_schema.json"), encoding="UTF-8") as read_file:
             serialized_label_schema = json.load(read_file)
     elif path.endswith(".zip"):
         with ZipFile(path) as read_zip_file:
-            with read_zip_file.open(os.path.join("model", "config.json")) as read_file:
+            with read_zip_file.open(osp.join("model", "config.json")) as read_file:
                 serialized_label_schema = json.load(read_file)["model_parameters"]["labels"]
     return LabelSchemaMapper().backward(serialized_label_schema)
 
@@ -215,11 +248,11 @@ def save_saliency_output(
         overlay[overlay > 255] = 255
         overlay = overlay.astype(np.uint8)
 
-        cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", saliency_map)
-        cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
+        cv2.imwrite(f"{osp.join(save_dir, fname)}_saliency_map.png", saliency_map)
+        cv2.imwrite(f"{osp.join(save_dir, fname)}_overlay_img.png", overlay)
     else:
         # Saves raw, low-resolution saliency map
-        cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.tiff", saliency_map)
+        cv2.imwrite(f"{osp.join(save_dir, fname)}_saliency_map.tiff", saliency_map)
 
 
 def get_explain_dataset_from_filelist(image_files: list):
@@ -227,7 +260,7 @@ def get_explain_dataset_from_filelist(image_files: list):
     empty_annotation = AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.PREDICTION)
     items = []
     for root_dir, filename in image_files:
-        frame = cv2.imread(os.path.join(root_dir, filename))
+        frame = cv2.imread(osp.join(root_dir, filename))
         item = DatasetItemEntity(
             media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
             annotation_scene=empty_annotation,
