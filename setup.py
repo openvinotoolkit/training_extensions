@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import platform
 import subprocess
 import sys
 import warnings
@@ -100,6 +101,9 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 
 
 def get_extensions():
+    if platform.system() == "Windows":
+        return []
+
     def _cython_modules():
         package_root = os.path.dirname(__file__)
 
