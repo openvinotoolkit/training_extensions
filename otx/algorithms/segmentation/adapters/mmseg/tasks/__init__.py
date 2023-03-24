@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import otx.algorithms.common.adapters.mmcv.hooks
 import otx.algorithms.segmentation.adapters.mmseg
 import otx.algorithms.segmentation.adapters.mmseg.models
 import otx.algorithms.segmentation.adapters.mmseg.models.schedulers
-import otx.mpa.modules.hooks
 from otx.algorithms.segmentation.adapters.mmseg.tasks.incremental import (
     IncrSegInferrer,
     IncrSegTrainer,

@@ -71,7 +71,7 @@ MODEL_TASK = {"classification": "mmcls", "detection": "mmdet", "segmentation": "
 class Stage:
     """Class for base stage of OTX tasks."""
 
-    MODEL_BUILDER = None
+    MODEL_BUILDER: Optional[Callable] = None
 
     # pylint: disable=too-many-branches, too-many-statements
     def __init__(self, name, mode, config, common_cfg=None, index=0, **kwargs):
