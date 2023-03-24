@@ -162,14 +162,14 @@ def main():
 
     explained_image_counter = 0
     for explained_data, (_, filename) in zip(explained_dataset, image_files):
-        metadata = explained_data.get_metadata()
-        if len(metadata) > 0:
+        metadata_list = explained_data.get_metadata()
+        if len(metadata_list) > 0:
             explained_image_counter += 1
         else:
             if explain_predicted_classes:  # Explain only predictions
                 print(f"No saliency maps generated for {filename} - model predicted nothing.")
-        for m in metadata:
-            saliency_data = m.data
+        for metadata in metadata_list:
+            saliency_data = metadata.data
             fname = f"{Path(Path(filename).name).stem}_{saliency_data.name}".replace(" ", "_")
             save_saliency_output(
                 process_saliency_maps=explain_parameters.process_saliency_maps,
