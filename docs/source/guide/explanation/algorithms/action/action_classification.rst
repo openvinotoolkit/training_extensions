@@ -27,16 +27,20 @@ Refer to our tutorial for more information on how to train, validate, and optimi
 Models
 ******
 
-We support `X3D <https://arxiv.org/abs/2004.04730>`_ for action classification. X3D is a deep learning model that was proposed in the paper "X3D: Expanding Architectures for Efficient Video Recognition" by Christoph Feichtenhofer. The model is an extension of the popular 2D convolutional neural network (CNN) architectures to the 3D domain, allowing it to efficiently process spatiotemporal information in videos. 
+We support `X3D <https://arxiv.org/abs/2004.04730>`_ and `MoViNet <https://arxiv.org/pdf/2103.11511.pdf>`_ for action classification.
 
 Currenly OpenVINO™ Training Extensions supports X3D-S model with below template:
 
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
-| Template ID                                                                                                                                                                   | Name    | Complexity (GFLOPs) | Model size (MB)         |
-+===============================================================================================================================================================================+=========+=====================+=========================+
-| `Custom_Action_Classification_X3D <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/configs/classification/x3d/template.yaml>`_      | X3D     | 2.49                | 3.79                    |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
+.. code-block::
 
+  (otx) ...$ otx find --task action_classification
+
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
+  |          TASK         |                  ID                  |   NAME  |                               BASE PATH                               |
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
+  | ACTION_CLASSIFICATION |   Custom_Action_Classification_X3D   |   X3D   |   ../otx/algorithms/action/configs/classification/x3d/template.yaml   |
+  | ACTION_CLASSIFICATION | Custom_Action_Classification_MoViNet | MoViNet | ../otx/algorithms/action/configs/classification/movinet/template.yaml |
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
 
 In the table below the **top-1 accuracy** on some academic datasets are presented. Each model is trained with single Nvidia GeForce RTX3090.
 
@@ -44,4 +48,6 @@ In the table below the **top-1 accuracy** on some academic datasets are presente
 | Model name            | HMDB51     | UCF101          |
 +=======================+============+=================+
 | X3D                   | 67.19      | 87.89           |
++-----------------------+------------+-----------------+
+| MoViNet               | 62.74      | 81.32           |
 +-----------------------+------------+-----------------+
