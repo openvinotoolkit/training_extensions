@@ -76,9 +76,11 @@ def read_binary(path: str) -> bytes:
     Returns:
         bytes: Binary data.
     """
-
-    with open(path, "rb") as read_file:
-        return read_file.read()
+    try:
+        with open(path, "rb") as read_file:
+            return read_file.read()
+    except FileNotFoundError:
+        return b""
 
 
 def read_model(model_configuration: ModelConfiguration, path: str, train_dataset: DatasetEntity) -> ModelEntity:
@@ -113,10 +115,7 @@ def read_openvino_model(
     }
     for key in model_adapter_keys:
         full_path = osp.join(osp.dirname(path), key)
-        if osp.exists(full_path):
-            model_adapters[key] = ModelAdapter(read_binary(full_path))
-        else:
-            model_adapters[key] = ModelAdapter(bytes())
+        model_adapters[key] = ModelAdapter(read_binary(full_path))
 
     model = ModelEntity(
         configuration=model_configuration,
@@ -161,20 +160,22 @@ def read_deployed_model(
         with ZipFile(path) as myzip:
             myzip.extractall(temp_dir)
 
-    model_path = os.path.join(temp_dir, "model", "model")
-    model_adapters = {
-        "openvino.xml": ModelAdapter(read_binary(model_path + ".xml")),
-        "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
-    }
+        model_path = osp.join(temp_dir, "model")
+        model_adapters = {
+            "openvino.xml": ModelAdapter(read_binary(osp.join(model_path, "model.xml"))),
+            "openvino.bin": ModelAdapter(read_binary(osp.join(model_path, "model.bin"))),
+        }
 
-    config_path = os.path.join(temp_dir, "model", "config.json")
-    with open(config_path, encoding="UTF-8") as f:
-        model_parameters = json.load(f)["model_parameters"]
-    model_adapters["config.json"] = ModelAdapter(read_binary(config_path))
+        config_path = osp.join(model_path, "config.json")
+        with open(config_path, encoding="UTF-8") as f:
+            model_parameters = json.load(f)["model_parameters"]
+        model_adapters["config.json"] = ModelAdapter(read_binary(config_path))
 
-    for key in model_adapter_keys:
-        if key in model_parameters:
-            model_adapters[key] = ModelAdapter(struct.pack("f", model_parameters[key]))
+        for key in model_adapter_keys:
+            if key in model_parameters:
+                model_adapters[key] = ModelAdapter(struct.pack("f", model_parameters[key]))
+            if key.endswith(".xml") or key.endswith(".bin"):
+                model_adapters[key] = ModelAdapter(read_binary(osp.join(model_path, key)))
 
     model = ModelEntity(
         configuration=model_configuration,
