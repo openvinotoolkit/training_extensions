@@ -1,3 +1,4 @@
+"""Balanced sampler for imbalanced data."""
 import math
 
 import numpy as np
@@ -7,9 +8,12 @@ from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 
+# pylint: disable=too-many-instance-attributes
+
 
 class BalancedSampler(Sampler):
-    """Sampler for Class-Incremental Task
+    """Balanced sampler for imbalanced data for class-incremental task.
+
     This sampler is a sampler that creates an effective batch
     In reduce mode,
     reduce the iteration size by estimating the trials
@@ -39,7 +43,7 @@ class BalancedSampler(Sampler):
 
         if efficient_mode:
             # Reduce the # of sampling (sampling data for a single epoch)
-            self.num_tail = min([len(cls_indices) for cls_indices in self.img_indices.values()])
+            self.num_tail = min(len(cls_indices) for cls_indices in self.img_indices.values())
             base = 1 - (1 / self.num_tail)
             if base == 0:
                 raise ValueError("Required more than one sample per class")
@@ -75,9 +79,10 @@ class BalancedSampler(Sampler):
         return num_samples
 
     def __iter__(self):
+        """Iter."""
         indices = []
         for _ in range(self.repeat):
-            for i in range(self.num_trials):
+            for _ in range(self.num_trials):
                 indice = np.concatenate(
                     [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices.keys()]
                 )
@@ -110,4 +115,5 @@ class BalancedSampler(Sampler):
         return iter(indices)
 
     def __len__(self):
+        """Return length of selected samples."""
         return self.num_samples

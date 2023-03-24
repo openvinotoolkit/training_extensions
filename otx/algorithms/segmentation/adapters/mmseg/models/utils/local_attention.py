@@ -1,19 +1,25 @@
+"""Local attention module."""
 # Copyright (C) 2019-2021 Xiangtai Lee
 # SPDX-License-Identifier: MIT
 #
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule
+from torch import nn
 
 
 class LocalAttentionModule(nn.Module):
-    """Reference: https://github.com/lxtGH/GALD-DGCNet"""
+    """LocalAttentionModule.
 
-    def __init__(self, num_channels, conv_cfg=None, norm_cfg=dict(type="BN")):
+    Reference: https://github.com/lxtGH/GALD-DGCNet.
+    """
+
+    def __init__(self, num_channels, conv_cfg=None, norm_cfg=None):
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
         super().__init__()
 
         self.num_channels = num_channels
@@ -56,6 +62,7 @@ class LocalAttentionModule(nn.Module):
         self.sigmoid_spatial = nn.Sigmoid()
 
     def forward(self, x):
+        """Forward."""
         _, _, h, w = x.size()
 
         y = self.dwconv1(x)

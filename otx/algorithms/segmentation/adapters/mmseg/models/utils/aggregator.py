@@ -1,21 +1,26 @@
-# Copyright (C) 2022 Intel Corporation
+"""Aggregators."""
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
+from torch import nn
 
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import normalize
 
 
+# pylint: disable=invalid-name
 class IterativeAggregator(nn.Module):
-    """Based on: https://github.com/HRNet/Lite-HRNet"""
+    """IterativeAggregator.
 
-    def __init__(
-        self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=dict(type="BN"), merge_norm=None, use_concat=False
-    ):
+    Based on: https://github.com/HRNet/Lite-HRNet.
+    """
+
+    def __init__(self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=None, merge_norm=None, use_concat=False):
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
         super().__init__()
 
         self.use_concat = use_concat
@@ -101,6 +106,7 @@ class IterativeAggregator(nn.Module):
         return out
 
     def forward(self, x):
+        """Forward."""
         x = x[::-1]
 
         y_list = []
@@ -130,7 +136,12 @@ class IterativeAggregator(nn.Module):
 
 
 class IterativeConcatAggregator(nn.Module):
-    def __init__(self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=dict(type="BN"), merge_norm=None):
+    """IterativeConcatAggregator."""
+
+    def __init__(self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=None, merge_norm=None):
+        if norm_cfg is None:
+            norm_cfg = dict(type="BN")
+
         super().__init__()
 
         num_branches = len(in_channels)
@@ -180,6 +191,7 @@ class IterativeConcatAggregator(nn.Module):
         return out
 
     def forward(self, x):
+        """Forward."""
         x = x[::-1]
 
         y_list = []

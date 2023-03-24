@@ -1,9 +1,12 @@
+"""Loss equalizer."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 
 class LossEqualizer:
+    """Loss equalizer."""
+
     def __init__(self, weights=None, momentum=0.1):
         self.momentum = momentum
 
@@ -23,6 +26,7 @@ class LossEqualizer:
         self._smoothed_values = dict()
 
     def reweight(self, losses):
+        """Reweight."""
         assert isinstance(losses, dict)
 
         if len(losses) == 0:

@@ -1,17 +1,20 @@
-# Copyright (C) 2022 Intel Corporation
+"""Angular pw conv."""
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import normalize
 
 
 class AngularPWConv(nn.Module):
+    """AngularPWConv."""
+
     def __init__(self, in_features, out_features, clip_output=False):
-        super(AngularPWConv, self).__init__()
+        super().__init__()
 
         self.in_features = in_features
         assert in_features > 0
@@ -23,6 +26,7 @@ class AngularPWConv(nn.Module):
         self.weight.data.normal_().renorm_(2, 1, 1e-5).mul_(1e5)
 
     def forward(self, x):
+        """Forward."""
         weight = normalize(self.weight, dim=1, p=2).view(self.out_features, self.in_features, 1, 1)
         out = F.conv2d(x, weight)
 

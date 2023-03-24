@@ -1,4 +1,5 @@
-# Copyright (C) 2022 Intel Corporation
+"""Class incremental sampler for cls-incremental learning."""
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -10,9 +11,12 @@ from torch.utils.data.sampler import Sampler
 
 from otx.algorithms.common.utils.task_adapt import unwrap_dataset
 
+# pylint: disable=too-many-instance-attributes
+
 
 class ClsIncrSampler(Sampler):
-    """Sampler for Class-Incremental Task
+    """Sampler for Class-Incremental Task.
+
     This sampler is a sampler that creates an effective batch
     For default setting,
     the square root of (number of old data/number of new data) is used as the ratio of old data
@@ -83,9 +87,10 @@ class ClsIncrSampler(Sampler):
         return num_samples
 
     def __iter__(self):
+        """Iter."""
         indices = []
         for _ in range(self.repeat):
-            for i in range(int(self.data_length / (1 + self.old_new_ratio))):
+            for _ in range(int(self.data_length / (1 + self.old_new_ratio))):
                 indice = np.concatenate(
                     [np.random.choice(self.new_indices, 1), np.random.choice(self.old_indices, self.old_new_ratio)]
                 )
@@ -123,4 +128,5 @@ class ClsIncrSampler(Sampler):
         return iter(indices)
 
     def __len__(self):
+        """Return length of selected samples."""
         return self.num_samples
