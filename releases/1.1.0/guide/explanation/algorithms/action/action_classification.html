@@ -481,8 +481,7 @@
 </section>
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this heading">#</a></h2>
-<p>We support <a class="reference external" href="https://arxiv.org/abs/2004.04730">X3D</a> for action classification. X3D is a deep learning model that was proposed in the paper “X3D: Expanding Architectures for Efficient Video Recognition” by Christoph Feichtenhofer. The model is an extension of the popular 2D convolutional neural network (CNN) architectures to the 3D domain, allowing it to efficiently process spatiotemporal information in videos.</p>
-<p>Currenly OpenVINO™ Training Extensions supports X3D-S model with below template:</p>
+<p>Currently OpenVINO™ Training Extensions supports <a class="reference external" href="https://arxiv.org/abs/2004.04730">X3D</a> and <a class="reference external" href="https://arxiv.org/pdf/2103.11511.pdf">MoViNet</a> for action classification.</p>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Template ID</p></th>
@@ -497,9 +496,14 @@
 <td><p>2.49</p></td>
 <td><p>3.79</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/configs/classification/movinet/template.yaml">Custom_Action_Classificaiton_MoViNet</a></p></td>
+<td><p>MoViNet</p></td>
+<td><p>2.71</p></td>
+<td><p>3.10</p></td>
+</tr>
 </tbody>
 </table>
-<p>In the table below the <strong>top-1 accuracy</strong> on some academic datasets are presented. Each model is trained with single Nvidia GeForce RTX3090.</p>
+<p>In the table below the <strong>top-1 accuracy</strong> on some academic datasets are presented. Each model is trained with single NVIDIA GeForce RTX 3090.</p>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Model name</p></th>
@@ -511,6 +515,10 @@
 <tr class="row-even"><td><p>X3D</p></td>
 <td><p>67.19</p></td>
 <td><p>87.89</p></td>
+</tr>
+<tr class="row-odd"><td><p>MoViNet</p></td>
+<td><p>62.74</p></td>
+<td><p>81.32</p></td>
 </tr>
 </tbody>
 </table>
