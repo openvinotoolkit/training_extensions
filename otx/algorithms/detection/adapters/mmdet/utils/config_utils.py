@@ -373,7 +373,8 @@ def patch_tiling(config, hparams, dataset=None):
             if config.model.backbone.type == "efficientnet_b2b":
                 learning_rate = 0.002
                 logger.info(
-                    f"Patch {config.model.backbone.type} LR from: {hparams.learning_parameters.learning_rate} to {learning_rate}"
+                    f"Patched {config.model.backbone.type} LR: "
+                    f"{hparams.learning_parameters.learning_rate} -> {learning_rate}"
                 )
                 hparams.learning_parameters.learning_rate = learning_rate
 
