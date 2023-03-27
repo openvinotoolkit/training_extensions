@@ -26,7 +26,8 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 # pylint: disable=too-many-locals
 
 
-class DetClassProbabilityMap(BaseRecordingForwardHook):
+
+class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
     def __init__(self, module: torch.nn.Module) -> None:

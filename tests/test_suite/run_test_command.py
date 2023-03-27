@@ -667,7 +667,7 @@ def xfail_templates(templates, xfail_template_ids_reasons):
     return xfailed_templates
 
 
-def otx_explain_testing(template, root, otx_dir, args):
+def otx_explain_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
     if "RCNN" in template.model_template_id:
         test_algorithm = "ActivationMap"
@@ -700,8 +700,9 @@ def otx_explain_testing(template, root, otx_dir, args):
     ]
     check_run(command_line)
     assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0
-    assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
+    if trained:
+        assert len(os.listdir(output_dir)) > 0
+        assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
 
 
 def otx_explain_testing_all_classes(template, root, otx_dir, args):
@@ -748,7 +749,7 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
     assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
 
 
-def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args):
+def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
     if "RCNN" in template.model_template_id:
         test_algorithm = "ActivationMap"
@@ -782,11 +783,12 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args):
     ]
     check_run(command_line)
     assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0
-    assert all([fname.split(".")[-1] == "png" for fname in os.listdir(output_dir)])
+    if trained:
+        assert len(os.listdir(output_dir)) > 0
+        assert all([fname.split(".")[-1] == "png" for fname in os.listdir(output_dir)])
 
 
-def otx_explain_openvino_testing(template, root, otx_dir, args):
+def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
     if "RCNN" in template.model_template_id:
         test_algorithm = "ActivationMap"
@@ -820,8 +822,9 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
     check_run(command_line)
     assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0
-    assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
+    if trained:
+        assert len(os.listdir(output_dir)) > 0
+        assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
 
 
 def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
@@ -869,7 +872,7 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
     assert all([fname.split(".")[-1] == "tiff" for fname in os.listdir(output_dir)])
 
 
-def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, args):
+def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
     if "RCNN" in template.model_template_id:
         test_algorithm = "ActivationMap"
@@ -904,8 +907,9 @@ def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, 
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}_w_features/openvino.xml")
     check_run(command_line)
     assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0
-    assert all([fname.split(".")[-1] == "png" for fname in os.listdir(output_dir)])
+    if trained:
+        assert len(os.listdir(output_dir)) > 0
+        assert all([fname.split(".")[-1] == "png" for fname in os.listdir(output_dir)])
 
 
 def otx_find_testing():

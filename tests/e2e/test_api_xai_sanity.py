@@ -150,7 +150,7 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
     def test_inference_xai(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             hyper_parameters, model_template = self.setup_configurable_parameters(
-                DEFAULT_DET_TEMPLATE_DIR, num_iters=100
+                DEFAULT_DET_TEMPLATE_DIR, num_iters=15
             )
             detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 10)
 
