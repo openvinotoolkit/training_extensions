@@ -371,11 +371,11 @@ def patch_tiling(config, hparams, dataset=None):
             config.model.type = "CustomMaskRCNNTileOptimised"
 
             if config.model.backbone.type == "efficientnet_b2b":
-                lr = 0.002  # pylint: disable=invalid-name
+                learning_rate = 0.002
                 logger.info(
-                    f"Patch {config.model.backbone.type} LR from: {hparams.learning_parameters.learning_rate} to {lr}"
+                    f"Patch {config.model.backbone.type} LR from: {hparams.learning_parameters.learning_rate} to {learning_rate}"
                 )
-                hparams.learning_parameters.learning_rate = lr
+                hparams.learning_parameters.learning_rate = learning_rate
 
             config.data.train.filter_empty_gt = False
 
