@@ -223,9 +223,8 @@ class Rung:
         if asynchronous_sha:
             if (num_promoted_trial + num_finished_trial) // self._reduction_factor > num_promoted_trial:
                 return best_trial
-        else:
-            if self.is_done() and self._num_required_trial // self._reduction_factor > num_promoted_trial:
-                return best_trial
+        elif self.is_done() and self._num_required_trial // self._reduction_factor > num_promoted_trial:
+            return best_trial
 
         return None
 

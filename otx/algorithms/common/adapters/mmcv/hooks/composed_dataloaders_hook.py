@@ -25,7 +25,7 @@ class ComposedDataLoadersHook(Hook):
         self,
         data_loaders: Union[Sequence[DataLoader], DataLoader],
     ):
-        self.data_loaders = []  # type: List[DataLoader]
+        self.data_loaders: List[DataLoader] = []
         self.composed_loader = None
 
         self.add_dataloaders(data_loaders)

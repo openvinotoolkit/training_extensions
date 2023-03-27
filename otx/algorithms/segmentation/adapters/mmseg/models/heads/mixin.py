@@ -210,6 +210,7 @@ class PixelWeightsMixin(nn.Module):
                 used if the architecture supports semantic segmentation task.
             train_cfg (dict): The training config.
             pixel_weights (Tensor): Pixels weights.
+            return_logits (bool): Flag to retun the logit with losses.
 
         Returns:
             dict[str, Tensor]: a dictionary of loss components
@@ -289,6 +290,7 @@ class PixelWeightsMixin2(PixelWeightsMixin):
                 used if the architecture supports semantic segmentation task.
             train_cfg (dict): The training config.
             pixel_weights (Tensor): Pixels weights.
+            return_logits (bool): Flag to retun the logit with losses.
 
         Returns:
             dict[str, Tensor]: a dictionary of loss components

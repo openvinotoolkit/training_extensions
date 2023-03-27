@@ -124,7 +124,9 @@ class MaskPooling(nn.Module):
 # pylint: disable=too-many-arguments, dangerous-default-value, too-many-instance-attributes
 @SEGMENTORS.register_module()
 class DetConB(nn.Module):
-    """Implementation of 'Efficient Visual Pretraining with Contrastive Detection' \
+    """DetCon Implementation.
+
+    Implementation of 'Efficient Visual Pretraining with Contrastive Detection'
         (https://arxiv.org/abs/2103.10957).
 
     Args:
@@ -359,6 +361,7 @@ class DetConB(nn.Module):
             optimizer (:obj:`torch.optim.Optimizer` | dict): The optimizer of
                 runner is passed to ``train_step()``. This argument is unused
                 and reserved.
+            **kwargs (Any): Addition keyword arguments.
 
         Returns:
             dict: It should contain at least 3 keys: ``loss``, ``log_vars``,
@@ -505,6 +508,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             gt_semantic_seg (Tensor): Ground truth masks.
                 It is used to organize features among the same classes.
             pixel_weights (Tensor): Pixels weights.
+            **kwargs (Any): Addition keyword arguments.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.

@@ -105,17 +105,17 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         self._time_monitor: Optional[TimeMonitorCallback] = None
         self.on_hook_initialized = OnHookInitialized(self)
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
-        self._model_label_schema = []  # type: List[LabelEntity]
+        self._model_label_schema: List[LabelEntity] = []
         self._resume = False
         self._should_stop = False
         self.cancel_interface: Optional[CancelInterfaceHook] = None
         self.reserved_cancel = False
         self._model_ckpt = None
         self._precision = [ModelPrecision.FP32]
-        self._optimization_methods = []  # type: List[OptimizationMethod]
+        self._optimization_methods: List[OptimizationMethod] = []
         self._is_training = False
 
-        self.override_configs = {}  # type: Dict[str, str]
+        self.override_configs: Dict[str, str] = {}
 
         # This is for hpo, and this should be removed
         self.project_path = self._output_path

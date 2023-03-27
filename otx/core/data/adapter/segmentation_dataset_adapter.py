@@ -153,6 +153,9 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         Args:
             train_data_roots (Optional[str]): Path for training data.
+            val_data_roots (Optional[str]): Path for validation data
+            test_data_roots (Optional[str]): Path for test data.
+            unlabeled_data_roots (Optional[str]): Path for unlabeled data.
             pseudo_mask_dir (str): Directory to save pseudo masks. Defaults to "detcon_mask".
 
         Returns:

@@ -75,17 +75,17 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def __init__(self, task_config, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         self._task_config = task_config
         self._task_environment = task_environment
-        self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
+        self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(self._task_config)
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
-        self._model_label_schema = []  # type: List[LabelEntity]
-        self._optimization_methods = []  # type: List[OptimizationMethod]
+        self._model_label_schema: List[LabelEntity] = []
+        self._optimization_methods: List[OptimizationMethod] = []
         self._model_ckpt = None
         self._resume = False
-        self._anchors = {}  # type: Dict[str, int]
+        self._anchors: Dict[str, int] = {}
         self._work_dir_is_temp = False
         if output_path is None:
             output_path = tempfile.mkdtemp(prefix="OTX-task-")
@@ -109,11 +109,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._precision = [ModelPrecision.FP32]
         self._data_cfg = None
         self._mode = None
-        self._time_monitor = None  # type: Optional[TimeMonitorCallback]
+        self._time_monitor: Optional[TimeMonitorCallback] = None
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._is_training = False
         self._should_stop = False
-        self.cancel_interface = None  # type: Optional[CancelInterfaceHook]
+        self.cancel_interface: Optional[CancelInterfaceHook] = None
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
 
@@ -124,7 +124,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         )
 
         # to override configuration at runtime
-        self.override_configs = {}  # type: Dict[str, str]
+        self.override_configs: Dict[str, str] = {}
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(kwargs)

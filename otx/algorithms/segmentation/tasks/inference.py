@@ -89,7 +89,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         # self._should_stop = False
         self.freeze = True
         self.metric = "mDice"
-        self._label_dictionary = {}  # type: Dict
+        self._label_dictionary: Dict = {}
 
         super().__init__(SegmentationConfig, task_environment, **kwargs)
         self._label_dictionary = dict(enumerate(sorted(self._labels), 1))

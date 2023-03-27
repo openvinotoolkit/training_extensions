@@ -134,6 +134,7 @@ class PixelWeightsMixin:
             gt_semantic_seg (Tensor): Semantic segmentation masks
                 used if the architecture supports semantic segmentation task.
             pixel_weights (Tensor): Pixels weights.
+            **kwargs (Any): Addition keyword arguments.
 
         Returns:
             dict[str, Tensor]: a dictionary of loss components
