@@ -93,9 +93,9 @@ class Exporter:
     def _get_inputs(self) -> Tuple[torch.Tensor, Optional[Dict[str, Any]]]:
         """Prepare torch model's input and input_metas."""
 
-        height, width = self.deploy_cfg.backend_config.model_inputs[0]["opt_shapes"]["input"][-2:]
+        clip_len, height, width = self.deploy_cfg.backend_config.model_inputs[0]["opt_shapes"]["input"][-3:]
         if isinstance(self.model, AVAFastRCNN):
-            input_tensor = torch.randn(1, 3, 32, height, width)
+            input_tensor = torch.randn(1, 3, clip_len, height, width)
             input_metas = {
                 "img_metas": [
                     [
@@ -109,7 +109,7 @@ class Exporter:
                 ]
             }
         else:
-            input_tensor = torch.randn(1, 1, 3, 32, height, width)
+            input_tensor = torch.randn(1, 1, 3, clip_len, height, width)
             input_metas = None
         return input_tensor, input_metas
 

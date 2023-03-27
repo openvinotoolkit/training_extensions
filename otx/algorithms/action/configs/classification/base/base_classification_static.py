@@ -15,5 +15,5 @@ codebase_config = dict(type="mmaction", task="VideoRecognition")
 backend_config = dict(
     type="openvino",
     mo_options=dict(args=dict({"--source_layout": "?bctwh"})),
-    model_inputs=[dict(opt_shapes=dict(input=[1, 1, 3, 32, 224, 224]))],
+    model_inputs=[dict(opt_shapes=dict(input=[1, 1, 3, 8, 224, 224]))],
 )
