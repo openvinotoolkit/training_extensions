@@ -77,13 +77,13 @@ def get_args():
         "--explain-all-classes",
         action="store_true",
         help="Provides explanations for all classes. Otherwise, explains only predicted classes."
-        "This feature supported by algorithms that can generate explanations per class.",
+        "This feature is supported by algorithms that can generate explanations per each class.",
     )
     parser.add_argument(
         "--overlay-weight",
         type=float,
         default=0.5,
-        help="Weight of the saliency map when overlaying the input image with saliency map",
+        help="Weight of the saliency map when overlaying the input image with saliency map.",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]

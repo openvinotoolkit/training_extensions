@@ -38,12 +38,6 @@ args = {
     "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
-num_iters_per_model = {
-    "Custom_Object_Detection_YOLOX": "10",
-    "Custom_Object_Detection_Gen3_ATSS": "30",
-    "Custom_Object_Detection_Gen3_SSD": "10",
-}
-
 args_semisl = {
     "--train-data-roots": "tests/assets/car_tree_bug",
     "--val-data-roots": "tests/assets/car_tree_bug",
@@ -88,9 +82,7 @@ class TestDetectionCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        args1 = copy.deepcopy(args)
-        args1["train_params"][2] = num_iters_per_model[template.model_template_id]
-        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
