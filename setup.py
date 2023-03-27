@@ -122,7 +122,7 @@ def get_extensions():
             for cython_file in cython_files
         ]
 
-        return cythonize(ext_modules, annotate=True)
+        return cythonize(ext_modules)
 
     extensions = []
     extensions.extend(_cython_modules())
