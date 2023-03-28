@@ -150,7 +150,7 @@ Training
 - ``weights.pth`` - a model snapshot
 - ``label_schema.json`` - a label schema used in training, created from a dataset
 
-The results will be saved in ``./model`` folder by default. The output folder can be modified by ``--output`` option. These files are used by other commands: ``export``, ``eval``, ``demo``, etc.
+The results will be saved in ``./outputs/`` folder by default. The output folder can be modified by ``--output`` option. These files are used by other commands: ``export``, ``eval``, ``demo``, etc.
 
 ``otx train`` receives ``template`` as a positional argument. ``template`` can be a path to the specific ``template.yaml`` file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.
 
@@ -160,7 +160,7 @@ However, if you created a workspace with ``otx build``, the training process can
 
     otx train --help
     usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS] [--unlabeled-file-list UNLABELED_FILE_LIST]
-                    [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [--output OUTPUT] [--workspace WORKSPACE] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
+                    [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [-o OUTPUT] [--workspace WORKSPACE] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
                     [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE] [--mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE] [--data DATA]
                     [template] {params} ...
 
@@ -186,7 +186,7 @@ However, if you created a workspace with ``otx build``, the training process can
                             Load model weights from previously saved checkpoint.
       --resume-from RESUME_FROM
                             Resume training from previously saved checkpoint
-      --output OUTPUT
+      -o OUTPUT, --output OUTPUT
                             Location where trained model will be stored.
       --workspace WORKSPACE   Location where the intermediate output of the training will be stored.
       --enable-hpo          Execute hyper parameters optimization (HPO) before training.
@@ -261,7 +261,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx export --help
-    usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--output OUTPUT] [--workspace WORKSPACE] [--dump-features] [--half-precision] [template]
+    usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [--dump-features] [--half-precision] [template]
 
     positional arguments:
       template              Enter the path or ID or name of the template file. 
@@ -271,7 +271,7 @@ With the ``--help`` command, you can list additional information, such as its pa
       -h, --help            show this help message and exit
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
-      --output OUTPUT
+      -o OUTPUT, --output OUTPUT
                             Location where exported model will be stored.
       --workspace WORKSPACE   Location where the intermediate output of the export will be stored.
       --dump-features       Whether to return feature vector and saliency map for explanation purposes.
@@ -306,7 +306,7 @@ With the ``--help`` command, you can list additional information:
 
 .. code-block::
 
-    usage: otx optimize [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--output OUTPUT]
+    usage: otx optimize [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT]
                         [--workspace WORKSPACE]
                         [template] {params} ...
 
@@ -324,7 +324,7 @@ With the ``--help`` command, you can list additional information:
                             Comma-separated paths to validation data folders.
       --load-weights LOAD_WEIGHTS
                             Load weights of trained model
-      --output OUTPUT
+      -o OUTPUT, --output OUTPUT
                             Location where optimized model will be stored.
       --workspace WORKSPACE   Location where the intermediate output of the task will be stored.
 
@@ -361,7 +361,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx eval --help
-    usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--output OUTPUT] [--workspace WORKSPACE] [template] {params} ...
+    usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [template] {params} ...
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -375,7 +375,7 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Comma-separated paths to test data folders.
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.It could be a trained/optimized model (POT only) or exported model.
-      --output OUTPUT
+      -o OUTPUT, --output OUTPUT
                             Location where the intermediate output of the task will be stored.
       --workspace WORKSPACE   Path to the workspace where the command will run.
 
@@ -519,7 +519,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx deploy --help
-    usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [--output OUTPUT] [template]
+    usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [template]
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -529,7 +529,7 @@ With the ``--help`` command, you can list additional information, such as its pa
       -h, --help            show this help message and exit
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
-      --output OUTPUT
+      -o OUTPUT, --output OUTPUT
                             Location where openvino.zip will be stored.
 
 
