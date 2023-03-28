@@ -10,12 +10,9 @@ from mmcv.runner import auto_fp16
 from mmdet.models.builder import DETECTORS
 from torch import nn
 
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.adapters.mmdeploy import is_mmdeploy_enabled
 
 from .custom_maskrcnn_detector import CustomMaskRCNN
-
-logger = get_logger()
 
 
 class TileClassifier(torch.nn.Module):
@@ -188,7 +185,7 @@ if is_mmdeploy_enabled():
     from mmdeploy.utils import is_dynamic_shape
 
     # pylint: disable=ungrouped-imports
-    from otx.mpa.modules.hooks.recording_forward_hooks import (
+    from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
         ActivationMapHook,
         FeatureVectorHook,
     )

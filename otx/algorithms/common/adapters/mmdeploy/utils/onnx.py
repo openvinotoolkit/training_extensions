@@ -7,9 +7,10 @@ from functools import partial
 from typing import Callable
 
 import onnx
+from onnx import ModelProto, NodeProto
 
 
-def remove_nodes(model: onnx.ModelProto, predicate: Callable) -> onnx.ModelProto:
+def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:
     """Remove nodes from ONNX model.
 
     Args:
@@ -39,16 +40,17 @@ def remove_nodes(model: onnx.ModelProto, predicate: Callable) -> onnx.ModelProto
     return model
 
 
-def is_op(node: onnx.NodeProto, op_name) -> bool:
+def is_op(node: NodeProto, op_name) -> bool:
     """Check if an op is identity."""
     return node.op_type == op_name
 
 
-def remove_node(model: onnx.ModelProto, op_name: str) -> onnx.ModelProto:
+def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
     """Remove identity node from an ONNX model.
 
     Args:
         model (onnx.ModelProto): Input onnx model.
+        op_name (str): Operation name.
     """
     graph = model.graph
 
