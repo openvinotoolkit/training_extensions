@@ -128,7 +128,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             output_path = Path(self.args.output)
         else:
             output_path = self.workspace_root / "outputs" / self.create_date
-        output_path.mkdir(exist_ok=True, parents=True)
+        if not output_path.exists():
+            output_path.mkdir(exist_ok=True, parents=True)
         return output_path
 
     def check_workspace(self) -> bool:
