@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
 from pathlib import Path
 
 from otx.api.configuration.helper import create
@@ -35,7 +34,8 @@ def get_args():
         help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
-        "--save-model-to",
+        "-o",
+        "--output",
         help="Location where openvino.zip will be stored.",
     )
 
@@ -59,9 +59,9 @@ def main():
     assert hyper_parameters
 
     if not args.load_weights and config_manager.check_workspace():
-        exported_weight_path = config_manager.workspace_root / "models-exported/openvino.xml"
+        exported_weight_path = config_manager.workspace_root / "latest/openvino_models/openvino.xml"
         if not exported_weight_path.exists():
-            raise RuntimeError("OpenVINO-exported models are supported.")
+            raise RuntimeError("No appropriate OpenVINO exported model was found.")
         args.load_weights = str(exported_weight_path)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
@@ -82,11 +82,10 @@ def main():
 
     deployed_model = ModelEntity(None, environment.get_model_configuration())
 
-    if "save_model_to" not in args or not args.save_model_to:
-        args.save_model_to = str(config_manager.workspace_root / "model-deployed")
-    os.makedirs(args.save_model_to, exist_ok=True)
+    output_path = Path(args.output) if args.output else config_manager.output_path
+    output_path.mkdir(exist_ok=True, parents=True)
     task.deploy(deployed_model)
-    with open(Path(args.save_model_to) / "openvino.zip", "wb") as write_file:
+    with open(output_path / "openvino.zip", "wb") as write_file:
         write_file.write(deployed_model.exportable_code)
 
     return dict(retcode=0, template=template.name)

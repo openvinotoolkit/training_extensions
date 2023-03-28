@@ -83,7 +83,7 @@ def otx_pytest_addoption_insertion(parser):
     )
 
     parser.addoption(
-        "--test-work-dir",
+        "--test-workspace",
         type=str,
         default=None,
         help="OTX test requires a certain amount of storage in the test work directory. "

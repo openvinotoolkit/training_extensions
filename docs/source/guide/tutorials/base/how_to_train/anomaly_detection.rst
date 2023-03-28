@@ -138,7 +138,7 @@ Now we have trained the model, let's see how it performs on a specific dataset. 
     (otx) ...$ otx eval ote_anomaly_detection_padim \
                         --test-data-roots datasets/MVTec/bottle/test \
                         --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-                        --save-performance otx-workspace-ANOMALY_DETECTION/performance.json
+                        --output otx-workspace-ANOMALY_DETECTION/outputs
 
 You should see an output similar to the following::
 
@@ -165,7 +165,7 @@ and save the exported model to the ``openvino_models`` folder:
 
     otx export ote_anomaly_detection_padim \
         --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-        --save-model-to otx-workspace-ANOMALY_DETECTION/openvino_models
+        --output otx-workspace-ANOMALY_DETECTION/openvino_models
 
 You will see the outputs similar to the following:
 
@@ -188,7 +188,7 @@ Now that we have the exported model, let's check its performance using ``otx eva
     otx eval ote_anomaly_detection_padim \
         --test-data-roots datasets/MVTec/bottle/test \
         --load-weights otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml \
-        --save-performance otx-workspace-ANOMALY_DETECTION/openvino_models/performance.json
+        --output otx-workspace-ANOMALY_DETECTION/openvino_models
 
 This gives the following results:
 
@@ -211,7 +211,7 @@ optimization.
     otx optimize ote_anomaly_detection_padim \
         --train-data-roots datasets/MVTec/bottle/train \
         --load-weights otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml \
-        --save-model-to otx-workspace-ANOMALY_DETECTION/pot_model
+        --output otx-workspace-ANOMALY_DETECTION/pot_model
 
 This command generates the following files that can be used to run :doc:`otx demo <../demo>`:
 
@@ -231,7 +231,7 @@ weights to the ``opitmize`` command:
     otx optimize ote_anomaly_detection_padim \
         --train-data-roots datasets/MVTec/bottle/train \
         --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-        --save-model-to otx-workspace-ANOMALY_DETECTION/nncf_model
+        --output otx-workspace-ANOMALY_DETECTION/nncf_model
 
 Similar to POT optimization, it generates the following files:
 

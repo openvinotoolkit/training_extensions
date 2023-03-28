@@ -104,7 +104,7 @@ class TestToolsMPADetection:
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -116,7 +116,9 @@ class TestToolsMPADetection:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component

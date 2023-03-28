@@ -633,7 +633,7 @@ def test_run_hpo(mocker, mock_environment):
 
         mock_args = mocker.MagicMock()
         mock_args.hpo_time_ratio = "4"
-        mock_args.save_model_to = save_model_to_path
+        mock_args.output = save_model_to_path
 
         mock_environment.model_template.task_type = TaskType.CLASSIFICATION
 

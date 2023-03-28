@@ -191,6 +191,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         return self._output_path
 
     @property
+    def config(self):
+        """Return output configs used in task."""
+        return self._recipe_cfg
+
+    @property
     def model_name(self):
         """Name of Model Template."""
         return self._task_environment.model_template.name

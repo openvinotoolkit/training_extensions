@@ -114,7 +114,9 @@ class TestRegressionDetection:
         tmp_dir_path = tmp_dir_path / "det_incr"
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
-        args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr[
+            "--load-weights"
+        ] = f"{sl_template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
         train_start_time = timer()

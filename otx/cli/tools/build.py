@@ -68,8 +68,8 @@ def get_args():
         default="incremental",
     )
     parser.add_argument(
-        "--work-dir",
-        help="Location where the workspace.",
+        "--workspace",
+        help="Path to the workspace where the command will run.",
         default=None,
     )
     parser.add_argument(
@@ -91,13 +91,13 @@ def main():
     config_manager = ConfigManager(args, mode="build")
     if args.task:
         config_manager.task_type = args.task.upper()
-    if args.work_dir:
-        config_manager.workspace_root = Path(args.work_dir)
+    if args.workspace:
+        config_manager.workspace_root = Path(args.workspace)
 
     # Auto-Configuration for model template
     config_manager.configure_template(model=args.model)
 
-    config_manager.build_workspace(new_workspace_path=args.work_dir)
+    config_manager.build_workspace(new_workspace_path=args.workspace)
 
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config()

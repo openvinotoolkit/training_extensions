@@ -186,13 +186,13 @@ Keep in mind that ``label_schema.json`` file contains meta information about the
 ``otx eval`` will output a frame-wise accuracy for action classification. Note, that top-1 accuracy during training is video-wise accuracy.
 
 2. The command below will run validation on the dataset
-and save performance results in ``performance.json`` file:
+and save performance results in ``outputs/performance.json`` file:
 
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --output outputs
 
 You will get a similar validation output:
 
@@ -220,7 +220,7 @@ and save the exported model to the ``openvino_models`` folder.
 .. code-block::
 
   (otx) ...$ otx export --load-weights models/weights.pth \
-                        --save-model-to openvino_models
+                        --output openvino_models
 
   ...
   2023-02-21 22:54:32,518 - mmaction - INFO - Model architecture: X3D
@@ -242,7 +242,7 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
   (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                       --load-weights openvino_models/openvino.xml \
-                      --save-performance openvino_models/performance.json
+                      --output outputs/openvino_models
 
   ...
 
@@ -263,7 +263,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
-                          --save-model-to pot_model
+                          --output pot_model
 
   ...
 

@@ -114,7 +114,9 @@ class TestRegressionMultiClassClassification:
         tmp_dir_path = tmp_dir_path / "multi_class_cls_incr"
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
-        args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr[
+            "--load-weights"
+        ] = f"{sl_template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
         train_start_time = timer()
@@ -242,7 +244,7 @@ class TestRegressionMultiClassClassification:
         args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         args_selfsl["--val-data-roots"] = multi_class_data_args["--val-data-roots"]
         args_selfsl["--test-data-roots"] = multi_class_data_args["--test-data-roots"]
-        args_selfsl["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_selfsl["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, new_tmp_dir_path, otx_dir, args_selfsl)
 
         # Evaluation with self + supervised training model
@@ -460,7 +462,9 @@ class TestRegressionMultiLabelClassification:
         tmp_dir_path = tmp_dir_path / "multi_label_cls_incr"
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
-        args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr[
+            "--load-weights"
+        ] = f"{sl_template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
         train_start_time = timer()

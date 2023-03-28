@@ -25,7 +25,7 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def tmp_dir_path(request) -> Generator[Path, None, None]:
-    prefix = request.config.getoption("--test-work-dir")
+    prefix = request.config.getoption("--test-workspace")
     with TemporaryDirectory(prefix=prefix) as tmp_dir:
         yield Path(tmp_dir)
 

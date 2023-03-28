@@ -128,13 +128,13 @@ Please note, ``label_schema.json`` file contains meta information about the data
 ``otx eval`` will output a mAP score for spatio-temporal action detection.
 
 2. The command below will run validation on our dataset
-and save performance results in ``performance.json`` file:
+and save performance results in ``outputs/performance.json`` file:
 
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots ../data/JHMDB_5%/test \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --output outputs
 
 We will get a similar to this validation output after some validation time (about 2 minutes):
 

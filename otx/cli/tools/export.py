@@ -37,12 +37,13 @@ def get_args():
         help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
-        "--save-model-to",
+        "-o",
+        "--output",
         help="Location where exported model will be stored.",
     )
     parser.add_argument(
-        "--work-dir",
-        help="Location where the intermediate output of the export will be stored.",
+        "--workspace",
+        help="Path to the workspace where the command will run.",
         default=None,
     )
     parser.add_argument(
@@ -62,7 +63,7 @@ def get_args():
 def main():
     """Main function that is used for model exporting."""
     args = get_args()
-    config_manager = ConfigManager(args, mode="eval", workspace_root=args.work_dir)
+    config_manager = ConfigManager(args, mode="eval", workspace_root=args.workspace)
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -71,7 +72,8 @@ def main():
 
     # Get class for Task.
     if not args.load_weights and config_manager.check_workspace():
-        args.load_weights = str(config_manager.workspace_root / "models/weights.pth")
+        args.load_weights = str(config_manager.workspace_root / "latest" / "weights.pth")
+
     is_nncf = is_checkpoint_nncf(args.load_weights)
     task_class = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
 
@@ -95,17 +97,23 @@ def main():
     )
     environment.model = model
 
-    task = task_class(task_environment=environment, output_path=args.work_dir)
+    (config_manager.output_path / "logs").mkdir(exist_ok=True, parents=True)
+    task = task_class(task_environment=environment, output_path=str(config_manager.output_path / "logs"))
 
     exported_model = ModelEntity(None, environment.get_model_configuration())
 
     export_precision = ModelPrecision.FP16 if args.half_precision else ModelPrecision.FP32
     task.export(ExportType.OPENVINO, exported_model, export_precision, args.dump_features)
 
-    if "save_model_to" not in args or not args.save_model_to:
-        args.save_model_to = str(config_manager.workspace_root / "model-exported")
-    Path(args.save_model_to).mkdir(exist_ok=True, parents=True)
-    save_model_data(exported_model, args.save_model_to)
+    output_path = config_manager.output_path / "openvino_models"
+    output_path.mkdir(exist_ok=True, parents=True)
+    save_model_data(exported_model, str(output_path))
+
+    # Softlink to weights & openvino_models
+    pre_weight_path = Path(args.load_weights).resolve().parent / "openvino_models"
+    if pre_weight_path.exists():
+        pre_weight_path.unlink()
+    pre_weight_path.symlink_to(output_path.resolve())
 
     return dict(retcode=0, template=template.name)
 

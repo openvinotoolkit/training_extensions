@@ -17,7 +17,7 @@ def test_get_args(mocker):
         "--unlabeled-file-list": "unlabeled/file/list",
         "--task": "detection",
         "--train-type": "SEMISUPERVISED",
-        "--work-dir": "work/dir/path",
+        "--workspace": "work/dir/path",
         "--model": "SSD",
         "--backbone": "torchvision.resnet18",
     }
@@ -35,7 +35,7 @@ def test_get_args(mocker):
     assert parsed_args.test_data_roots == "test/data/root"
     assert parsed_args.unlabeled_data_roots == "unlabeled/data/root"
     assert parsed_args.unlabeled_file_list == "unlabeled/file/list"
-    assert parsed_args.work_dir == "work/dir/path"
+    assert parsed_args.workspace == "work/dir/path"
     assert parsed_args.task == "detection"
     assert parsed_args.train_type == "SEMISUPERVISED"
     assert parsed_args.model == "SSD"
@@ -52,7 +52,7 @@ def mock_args(mocker, tmp_path):
     mock_args.unlabeled_file_list = None
     mock_args.task = ""
     mock_args.train_type = "incremental"
-    mock_args.work_dir = tmp_path / "work_dir"
+    mock_args.workspace = tmp_path / "work_dir"
     mock_args.model = ""
     mock_args.backbone = "torchvision.resnet18"
 

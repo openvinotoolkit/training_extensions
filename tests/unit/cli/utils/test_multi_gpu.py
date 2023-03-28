@@ -375,8 +375,8 @@ class TestMultiGPUManager:
         # check
         assert mock_set_start_method.call_args.kwargs["method"] is None
         assert "--gpus" not in mock_sys.argv
-        assert "--work-dir" in mock_sys.argv
-        assert mock_sys.argv[mock_sys.argv.index("--work-dir") + 1] == output_path
+        assert "--workspace" in mock_sys.argv
+        assert mock_sys.argv[mock_sys.argv.index("--workspace") + 1] == output_path
         assert "--rdzv-endpoint" in mock_sys.argv
         assert mock_sys.argv[mock_sys.argv.index("--rdzv-endpoint") + 1] == rdzv_endpoint
         mock_initialize_multigpu_train.assert_called_once()

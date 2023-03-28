@@ -238,7 +238,7 @@ class MultiGPUManager:
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove("--enable-hpo")
-        set_arguments_to_argv("--work-dir", output_path)
+        set_arguments_to_argv("--workspace", output_path)
         set_arguments_to_argv("--rdzv-endpoint", rdzv_endpoint)
 
         MultiGPUManager.initialize_multigpu_train(rdzv_endpoint, rank, local_rank, gpu_ids, world_size)

@@ -87,7 +87,7 @@ class TestToolsMPASegmentation:
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -99,7 +99,9 @@ class TestToolsMPASegmentation:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -330,7 +332,7 @@ class TestToolsMPASelfSLSegmentation:
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         tmp_dir_path_2 = tmp_dir_path / "segmentation/test_selfsl_sl"
         otx_train_testing(template, tmp_dir_path_2, otx_dir, args1)
 

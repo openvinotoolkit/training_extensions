@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -88,6 +89,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.workspace_root = Path(workspace_root) if workspace_root else Path(".")
         self.mode = mode
         self.rebuild: bool = False
+        self.create_date: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         self.args = args
         self.template = args.template
@@ -114,6 +116,20 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 return Path(self.args.data)
             raise FileNotFoundError(f"Not found: {self.args.data}")
         return self.workspace_root / "data.yaml"
+
+    @property
+    def output_path(self) -> Path:
+        """The path of output directory for workspace.
+
+        Returns:
+            Path: Path of output directory.
+        """
+        if "output" in self.args and self.args.output:
+            output_path = Path(self.args.output)
+        else:
+            output_path = self.workspace_root / "outputs" / self.create_date
+        output_path.mkdir(exist_ok=True, parents=True)
+        return output_path
 
     def check_workspace(self) -> bool:
         """Check that the class's workspace_root is an actual workspace folder.

@@ -554,7 +554,7 @@ def run_hpo(
         )
         return None
 
-    hpo_save_path = (Path(args.save_model_to).parent / "hpo").absolute()
+    hpo_save_path = (Path(args.output) / "hpo").absolute()
     hpo_runner = HpoRunner(
         environment,
         len(dataset.get_subset(Subset.TRAINING)),
