@@ -22,7 +22,7 @@ import sys
 import threading
 import time
 from contextlib import closing
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import psutil
 import torch
@@ -74,29 +74,34 @@ def get_gpu_ids(gpus: str) -> List[int]:
     return gpu_ids
 
 
-def set_arguments_to_argv(key: str, value: Optional[str] = None, after_params: bool = False):
+def set_arguments_to_argv(keys: Union[str, List[str]], value: Optional[str] = None, after_params: bool = False):
     """Add arguments at proper position in `sys.argv`.
 
     Args:
-        key (str): arguement key.
+        keys (str or List[str]): arguement keys.
         value (str or None): argument value.
         after_params (bool): whether argument should be after `param` or not.
     """
-    if key in sys.argv:
+    if not isinstance(keys, list):
+        keys = [keys]
+    for key in keys:
+        if key in sys.argv:
+            if value is not None:
+                sys.argv[sys.argv.index(key) + 1] = value
+            return
+
+    key = keys[0]
+    if not after_params and "params" in sys.argv:
+        sys.argv.insert(sys.argv.index("params"), key)
         if value is not None:
-            sys.argv[sys.argv.index(key) + 1] = value
+            sys.argv.insert(sys.argv.index("params"), value)
     else:
-        if not after_params and "params" in sys.argv:
-            sys.argv.insert(sys.argv.index("params"), key)
-            if value is not None:
-                sys.argv.insert(sys.argv.index("params"), value)
+        if after_params and "params" not in sys.argv:
+            sys.argv.append("params")
+        if value is not None:
+            sys.argv.extend([key, value])
         else:
-            if after_params and "params" not in sys.argv:
-                sys.argv.append("params")
-            if value is not None:
-                sys.argv.extend([key, value])
-            else:
-                sys.argv.append(key)
+            sys.argv.append(key)
 
 
 def is_multigpu_child_process():

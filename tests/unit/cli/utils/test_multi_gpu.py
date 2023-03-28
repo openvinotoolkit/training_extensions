@@ -68,6 +68,15 @@ def test_set_arguments_to_argv_key_exist(mock_argv_without_params):
 
 
 @e2e_pytest_unit
+def test_set_arguments_to_argv_keys_exist(mock_argv_without_params):
+    """Test a case where key already exists and value exists."""
+    other_val = "other_val"
+    set_arguments_to_argv(["--a_key", "-a"], other_val)
+
+    assert mock_argv_without_params[1] == other_val
+
+
+@e2e_pytest_unit
 def test_set_arguments_to_argv_key_exist_none_val(mock_argv_without_params):
     """Test a case where key already exists in argv and value doesn't exists."""
     expected_result = deepcopy(mock_argv_without_params)
@@ -375,8 +384,8 @@ class TestMultiGPUManager:
         # check
         assert mock_set_start_method.call_args.kwargs["method"] is None
         assert "--gpus" not in mock_sys.argv
-        assert "--workspace" in mock_sys.argv
-        assert mock_sys.argv[mock_sys.argv.index("--workspace") + 1] == output_path
+        assert "--output" in mock_sys.argv
+        assert mock_sys.argv[mock_sys.argv.index("--output") + 1] == output_path
         assert "--rdzv-endpoint" in mock_sys.argv
         assert mock_sys.argv[mock_sys.argv.index("--rdzv-endpoint") + 1] == rdzv_endpoint
         mock_initialize_multigpu_train.assert_called_once()

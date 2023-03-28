@@ -631,7 +631,6 @@ def test_run_hpo(mocker, mock_environment):
         mocker.patch("otx.cli.utils.hpo.read_model", mock_read_model)
 
         hpo_time_ratio = "4"
-
         mock_environment.model_template.task_type = TaskType.CLASSIFICATION
 
         # run
