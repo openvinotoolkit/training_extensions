@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import tempfile
 from collections import defaultdict
 
 import pytest
@@ -42,29 +43,28 @@ def test_patch_config() -> None:
     """
 
     cls_datapipeline_path = "otx/algorithms/action/configs/classification/x3d/data_pipeline.py"
-    work_dir = "OTX-tempdir9104"
+    with tempfile.TemporaryDirectory() as work_dir:
+        with pytest.raises(NotImplementedError):
+            patch_config(CLS_CONFIG, cls_datapipeline_path, work_dir, TaskType.CLASSIFICATION)
 
-    with pytest.raises(NotImplementedError):
-        patch_config(CLS_CONFIG, cls_datapipeline_path, work_dir, TaskType.CLASSIFICATION)
+        patch_config(CLS_CONFIG, cls_datapipeline_path, work_dir, TaskType.ACTION_CLASSIFICATION)
+        assert CLS_CONFIG.work_dir == work_dir
+        assert CLS_CONFIG.get("train_pipeline", None)
+        for subset in ("train", "val", "test", "unlabeled"):
+            cfg = CLS_CONFIG.data.get(subset, None)
+            if not cfg:
+                continue
+            assert cfg.type == "OTXActionClsDataset"
 
-    patch_config(CLS_CONFIG, cls_datapipeline_path, work_dir, TaskType.ACTION_CLASSIFICATION)
-    assert CLS_CONFIG.work_dir == work_dir
-    assert CLS_CONFIG.get("train_pipeline", None)
-    for subset in ("train", "val", "test", "unlabeled"):
-        cfg = CLS_CONFIG.data.get(subset, None)
-        if not cfg:
-            continue
-        assert cfg.type == "OTXActionClsDataset"
-
-    det_datapipeline_path = "otx/algorithms/action/configs/detection/x3d_fast_rcnn/data_pipeline.py"
-    patch_config(DET_CONFIG, det_datapipeline_path, work_dir, TaskType.ACTION_DETECTION)
-    assert DET_CONFIG.work_dir == work_dir
-    assert DET_CONFIG.get("train_pipeline", None)
-    for subset in ("train", "val", "test", "unlabeled"):
-        cfg = DET_CONFIG.data.get(subset, None)
-        if not cfg:
-            continue
-        assert cfg.type == "OTXActionDetDataset"
+        det_datapipeline_path = "otx/algorithms/action/configs/detection/x3d_fast_rcnn/data_pipeline.py"
+        patch_config(DET_CONFIG, det_datapipeline_path, work_dir, TaskType.ACTION_DETECTION)
+        assert DET_CONFIG.work_dir == work_dir
+        assert DET_CONFIG.get("train_pipeline", None)
+        for subset in ("train", "val", "test", "unlabeled"):
+            cfg = DET_CONFIG.data.get(subset, None)
+            if not cfg:
+                continue
+            assert cfg.type == "OTXActionDetDataset"
 
 
 @e2e_pytest_unit

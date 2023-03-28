@@ -28,12 +28,22 @@ import torch
 from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
+from otx.algorithms.common.adapters.mmcv.tasks.builder import build
+from otx.algorithms.common.adapters.mmcv.tasks.stage import Stage
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     get_configs_by_pairs,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    MPAConfig,
+    add_custom_hook_if_not_exists,
+    remove_custom_hook,
+    update_or_add_custom_hook,
+)
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.utils import UncopiableDefaultDict
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -46,22 +56,12 @@ from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.core.data import caching
-from otx.mpa.builder import build
-from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
-from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import (
-    MPAConfig,
-    add_custom_hook_if_not_exists,
-    remove_custom_hook,
-    update_or_add_custom_hook,
-)
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 TRAIN_TYPE_DIR_PATH = {
-    TrainType.INCREMENTAL.name: ".",
-    TrainType.SELFSUPERVISED.name: "selfsl",
-    TrainType.SEMISUPERVISED.name: "semisl",
+    TrainType.Incremental.name: ".",
+    TrainType.Selfsupervised.name: "selfsl",
+    TrainType.Semisupervised.name: "semisl",
 }
 
 
@@ -113,7 +113,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._is_training = False
         self._should_stop = False
-        self.cancel_interface = None
+        self.cancel_interface = None  # type: Optional[CancelInterfaceHook]
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
 

@@ -1,6 +1,6 @@
 """OTX Algorithms - Classification Classifiers."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,5 +15,9 @@
 # and limitations under the License.
 
 from .byol import BYOL
+from .sam_classifier import SAMImageClassifier
+from .semisl_classifier import SemiSLClassifier
+from .semisl_multilabel_classifier import SemiSLMultilabelClassifier
+from .supcon_classifier import SupConClassifier
 
-__all__ = ["BYOL"]
+__all__ = ["BYOL", "SAMImageClassifier", "SemiSLClassifier", "SemiSLMultilabelClassifier", "SupConClassifier"]
