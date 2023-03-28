@@ -31,10 +31,10 @@ from tests.test_suite.run_test_command import (
 )
 
 args = {
-    "--train-data-roots": "tests/assets/anomaly/shapes/train",
-    "--val-data-roots": "tests/assets/anomaly/shapes/test",
-    "--test-data-roots": "tests/assets/anomaly/shapes/test",
-    "--input": "tests/assets/anomaly/shapes/test/hexagon",
+    "--train-data-roots": "tests/assets/anomaly/hazelnut/train",
+    "--val-data-roots": "tests/assets/anomaly/hazelnut/test",
+    "--test-data-roots": "tests/assets/anomaly/hazelnut/test",
+    "--input": "tests/assets/anomaly/hazelnut/test/hexagon",
     "train_params": [],
 }
 

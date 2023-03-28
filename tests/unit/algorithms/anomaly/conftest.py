@@ -10,7 +10,7 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.task_environment import TaskEnvironment
-from tests.unit.algorithms.anomaly.helpers.dummy_dataset import get_shapes_dataset
+from tests.unit.algorithms.anomaly.helpers.dummy_dataset import get_hazelnut_dataset
 from tests.unit.algorithms.anomaly.helpers.utils import create_task_environment
 
 
@@ -30,7 +30,7 @@ class TestEnvironment:
 def setup_task_environment(request):
     """Returns a task environment, a model and datset."""
     task_type = request.param
-    dataset: DatasetEntity = get_shapes_dataset(task_type, one_each=True)
+    dataset: DatasetEntity = get_hazelnut_dataset(task_type, one_each=True)
     task_environment = create_task_environment(dataset, task_type)
     output_model = ModelEntity(
         dataset,

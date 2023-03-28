@@ -40,8 +40,8 @@ from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 
 
-def get_shapes_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEntity:
-    """Get shapes dataset.
+def get_hazelnut_dataset(task_type: TaskType, one_each: bool = False) -> DatasetEntity:
+    """Get hazelnut dataset.
 
     Args:
         task_type (TaskType): Task type.
@@ -144,8 +144,8 @@ class DummyDataModule(LightningDataModule):
         return DataLoader(self.dataset, shuffle=False, pin_memory=True)
 
 
-class ShapesDataModule(OTXAnomalyDataModule):
-    """Creates datamodule with shapes dataset.
+class HazelnutDataModule(OTXAnomalyDataModule):
+    """Creates datamodule with hazelnut dataset.
 
     Args:
         task_type (TaskType): Task type (classification, detection, segmentation)
@@ -164,14 +164,13 @@ class ShapesDataModule(OTXAnomalyDataModule):
                 }
             }
         )
-        # self.dataset = ShapesDataset(get_shapes_dataset(task_type), task_type, self.config)
-        self.dataset = get_shapes_dataset(task_type)
+        self.dataset = get_hazelnut_dataset(task_type)
         super().__init__(config=self.config, dataset=self.dataset, task_type=task_type)
 
 
 def _get_annotations(task: str) -> Tuple[Dict, Dict, Dict]:
     ann_file_root = Path("tests", "assets", "anomaly", task)
-    data_root = Path("tests", "assets", "anomaly", "shapes")
+    data_root = Path("tests", "assets", "anomaly", "hazelnut")
 
     train_subset = {"ann_file": str(ann_file_root / "train.json"), "data_root": str(data_root)}
     test_subset = {"ann_file": str(ann_file_root / "test.json"), "data_root": str(data_root)}
