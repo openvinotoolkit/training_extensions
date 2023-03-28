@@ -34,7 +34,7 @@ args = {
     "--train-data-roots": "tests/assets/anomaly/hazelnut/train",
     "--val-data-roots": "tests/assets/anomaly/hazelnut/test",
     "--test-data-roots": "tests/assets/anomaly/hazelnut/test",
-    "--input": "tests/assets/anomaly/hazelnut/test/hexagon",
+    "--input": "tests/assets/anomaly/hazelnut/test/colour",
     "train_params": [],
 }
 
