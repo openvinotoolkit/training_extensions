@@ -613,8 +613,7 @@ class TestHpoDataset:
 def test_run_hpo(mocker, mock_environment):
     with TemporaryDirectory() as tmp_dir:
         # prepare
-        save_model_to_path = Path(tmp_dir) / "fake"
-
+        output = Path(tmp_dir) / "fake"
         mock_get_best_hpo_weight = mocker.patch("otx.cli.utils.hpo.get_best_hpo_weight")
         mock_get_best_hpo_weight.return_value = "mock_best_weight_path"
 
@@ -631,14 +630,11 @@ def test_run_hpo(mocker, mock_environment):
 
         mocker.patch("otx.cli.utils.hpo.read_model", mock_read_model)
 
-        mock_args = mocker.MagicMock()
-        mock_args.hpo_time_ratio = "4"
-        mock_args.output = save_model_to_path
-
+        hpo_time_ratio = "4"
         mock_environment.model_template.task_type = TaskType.CLASSIFICATION
 
         # run
-        environment = run_hpo(mock_args, mock_environment, mocker.MagicMock(), mocker.MagicMock())
+        environment = run_hpo(hpo_time_ratio, output, mock_environment, mocker.MagicMock(), mocker.MagicMock())
 
         # check
         mock_hpo_runner_instance.run_hpo.assert_called()  # Check that HpoRunner.run_hpo is called
@@ -653,8 +649,10 @@ def test_run_hpo_not_supported_task(mocker, action_task_env):
     mock_hpo_runner_instance = mocker.MagicMock()
     mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
     mock_hpo_runner_class.return_value = mock_hpo_runner_instance
+    hpo_time_ratio = "4"
+    output = "fake"
 
-    run_hpo(mocker.MagicMock(), action_task_env, mocker.MagicMock(), mocker.MagicMock())
+    run_hpo(hpo_time_ratio, output, action_task_env, mocker.MagicMock(), mocker.MagicMock())
     mock_hpo_runner_instance.run_hpo.assert_not_called()
 
 
