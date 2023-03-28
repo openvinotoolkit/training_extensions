@@ -30,6 +30,11 @@ All notable changes to this project will be documented in this file.
 - Dataset Adapter: Avoid duplicated annotation and permit empty image (#1873)
 - Arrange scale between bbox preds and bbox targets in ATSS (#1880)
 - Fix label mismatch of evaluation and validation with large dataset in semantic segmentation (#1851)
+- Fix packaging errors including cython module build / import issues (#1936)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
 
 ## \[v1.0.1\]
 
