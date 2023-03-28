@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Datasets &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
+    <title>OpenVINO &#8212; OpenVINO™ Training Extensions 1.0.0 documentation</title>
   
   
   
@@ -42,11 +42,11 @@
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/mpa/modules/datasets';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/reference/core/ov/index';</script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Hooks" href="hooks.html" />
-    <link rel="prev" title="Utils" href="models/utils.html" />
+    <link rel="next" title="Graph" href="graph.html" />
+    <link rel="prev" title="Data" href="../data.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -135,6 +135,16 @@
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
       </ul>
       </div>
       
@@ -185,6 +195,16 @@
       
       <div class="navbar-end-item">
         <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/openvinotoolkit/training_extensions" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-toggle="tooltip"><img src="../../../../_static/logos/github_icon.png" class="icon-link-image" alt="GitHub"/></a>
+        </li>
       </ul>
       </div>
       
@@ -269,6 +289,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../explanation/additional_features/models_optimization.html">Models Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
 </ul>
 </li>
 </ul>
@@ -381,65 +402,34 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../core/data.html">Data</a><input class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-41"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Core</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-41"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../data.html">Data</a><input class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-42"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../hpo/hpo.html">HPO</a><input class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-42"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">OpenVINO</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="graph.html">Graph</a><input class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Model Preparation Algorithm</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-43"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Modules</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-44" name="toctree-checkbox-44" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-44"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l3 has-children"><a class="reference internal" href="models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="models/backbones.html">Backbones</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/classifiers.html">Classifiers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/heads.html">Heads</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/losses.html">Losses</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/scalar_schedulers.html">Scalar Schedulers</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/segmentors.html">Segmentors</a></li>
-<li class="toctree-l4"><a class="reference internal" href="models/utils.html">Utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="models.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-45" name="toctree-checkbox-45" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-45"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l3 current active has-children"><a class="current reference internal" href="#">Datasets</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="hooks.html">Hooks</a><input class="toctree-checkbox" id="toctree-checkbox-47" name="toctree-checkbox-47" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-47"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="optimizer.html">Optimizer</a><input class="toctree-checkbox" id="toctree-checkbox-48" name="toctree-checkbox-48" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-48"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="ov/index.html">OpenVINO</a><input class="toctree-checkbox" id="toctree-checkbox-49" name="toctree-checkbox-49" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-49"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="ov/graph.html">Graph</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ov/models.html">Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="ov/ops.html">OPS</a></li>
-</ul>
-</li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-50" name="toctree-checkbox-50" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-50"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l3 has-children"><a class="reference internal" href="ops.html">OPS</a><input class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../classification.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-51" name="toctree-checkbox-51" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-51"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../detection.html">Detection</a><input class="toctree-checkbox" id="toctree-checkbox-52" name="toctree-checkbox-52" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-52"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../hpo/hpo.html">HPO</a><input class="toctree-checkbox" id="toctree-checkbox-47" name="toctree-checkbox-47" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-47"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../segmentation.html">Segmentation</a><input class="toctree-checkbox" id="toctree-checkbox-53" name="toctree-checkbox-53" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-53"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../deploy.html">Deploy</a><input class="toctree-checkbox" id="toctree-checkbox-54" name="toctree-checkbox-54" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-54"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../utils.html">Utils</a><input class="toctree-checkbox" id="toctree-checkbox-55" name="toctree-checkbox-55" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-55"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
-</ul>
-</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../mpa/index.html">Model Preparation Algorithm</a><input class="toctree-checkbox" id="toctree-checkbox-48" name="toctree-checkbox-48" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-48"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Release Notes</a><input class="toctree-checkbox" id="toctree-checkbox-56" name="toctree-checkbox-56" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-56"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../release_notes/index.html">Release Notes</a><input class="toctree-checkbox" id="toctree-checkbox-49" name="toctree-checkbox-49" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-49"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -473,38 +463,109 @@
             
             <article class="bd-article" role="main">
               
-  <section id="datasets">
-<h1>Datasets<a class="headerlink" href="#datasets" title="Permalink to this heading">#</a></h1>
+  <section id="openvino">
+<h1>OpenVINO<a class="headerlink" href="#openvino" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="graph.html">Graph</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ops.html">OPS</a></li>
+</ul>
 </div>
-<span class="target" id="module-otx.mpa.modules.datasets"></span><span class="target" id="module-otx.mpa.modules.datasets.composed_dataloader"></span><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.CDLIterator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.composed_dataloader.</span></span><span class="sig-name descname"><span class="pre">CDLIterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cdl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.CDLIterator" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
+<span class="target" id="module-otx.core.ov"></span><p>Module for otx.core.ov.</p>
+<span class="target" id="module-otx.core.ov.omz_wrapper"></span><p>OMZ wrapper-related code for otx.core.ov.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.mpa.modules.datasets.composed_dataloader.</span></span><span class="sig-name descname"><span class="pre">ComposedDL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loaders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py class">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DummySampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cdl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler" title="Permalink to this definition">#</a></dt>
-<dd><p>dummy sampler class to relay set_epoch() call to the
-list of data loaders in the CDL</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler.set_epoch">
-<span class="sig-name descname"><span class="pre">set_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler.set_epoch" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="otx.core.ov.omz_wrapper.NameSpace">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.ov.omz_wrapper.</span></span><span class="sig-name descname"><span class="pre">NameSpace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.core.ov.omz_wrapper.NameSpace" title="Permalink to this definition">#</a></dt>
+<dd><p>NameSpace class for otx.core.ov.omz_wrapper.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.omz_wrapper.convert_model">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.omz_wrapper.</span></span><span class="sig-name descname"><span class="pre">convert_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">download_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.cache/otx/omz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.cache/otx/omz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.core.ov.omz_wrapper.convert_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Converting model for OMZ wrapping.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.omz_wrapper.download_model">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.omz_wrapper.</span></span><span class="sig-name descname"><span class="pre">download_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">download_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.cache/otx/omz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.core.ov.omz_wrapper.download_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Function for downloading model from directory.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.omz_wrapper.get_model_configuration">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.omz_wrapper.</span></span><span class="sig-name descname"><span class="pre">get_model_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.core.ov.omz_wrapper.get_model_configuration" title="Permalink to this definition">#</a></dt>
+<dd><p>Getter function of model configuration from name.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.omz_wrapper.get_omz_model">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.omz_wrapper.</span></span><span class="sig-name descname"><span class="pre">get_omz_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">download_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.cache/otx/omz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.cache/otx/omz'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.core.ov.omz_wrapper.get_omz_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Get OMZ model from name and download_dir.</p>
+</dd></dl>
+
+<span class="target" id="module-otx.core.ov.registry"></span><p>Registry Class for otx.core.ov.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.core.ov.registry.Registry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.core.ov.registry.</span></span><span class="sig-name descname"><span class="pre">Registry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_name_as_attr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.core.ov.registry.Registry" title="Permalink to this definition">#</a></dt>
+<dd><p>Registry Class for OMZ model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.core.ov.registry.Registry.REGISTERED_NAME_ATTR">
+<span class="sig-name descname"><span class="pre">REGISTERED_NAME_ATTR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'_registered_name'</span></em><a class="headerlink" href="#otx.core.ov.registry.Registry.REGISTERED_NAME_ATTR" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.ov.registry.Registry.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#otx.core.ov.registry.Registry.get" title="Permalink to this definition">#</a></dt>
+<dd><p>Get from module name (key).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.core.ov.registry.Registry.register">
+<span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.core.ov.registry.Registry.register" title="Permalink to this definition">#</a></dt>
+<dd><p>Register from name.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="otx.mpa.modules.datasets.composed_dataloader.ComposedDL.sampler">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sampler</span></span><a class="headerlink" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.sampler" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="otx.core.ov.registry.Registry.registry_dict">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">registry_dict</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.core.ov.registry.Registry.registry_dict" title="Permalink to this definition">#</a></dt>
+<dd><p>Dictionary of registered module.</p>
+</dd></dl>
 
 </dd></dl>
 
-<span class="target" id="module-otx.mpa.modules.datasets.pipelines"></span><span class="target" id="module-otx.mpa.modules.datasets.samplers"></span></section>
+<span class="target" id="module-otx.core.ov.utils"></span><p>Utils for otx.core.ov.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.utils.get_op_name">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.utils.</span></span><span class="sig-name descname"><span class="pre">get_op_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op_node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Node</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.core.ov.utils.get_op_name" title="Permalink to this definition">#</a></dt>
+<dd><p>Get op name string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.utils.load_ov_model">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.utils.</span></span><span class="sig-name descname"><span class="pre">load_ov_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_dynamic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#otx.core.ov.utils.load_ov_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Load ov_model from model_path.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.utils.normalize_name">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.core.ov.utils.normalize_name" title="Permalink to this definition">#</a></dt>
+<dd><p>Normalize name string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.utils.to_dynamic_model">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.utils.</span></span><span class="sig-name descname"><span class="pre">to_dynamic_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ov_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#otx.core.ov.utils.to_dynamic_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Convert ov_model to dynamic Model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.core.ov.utils.unnormalize_name">
+<span class="sig-prename descclassname"><span class="pre">otx.core.ov.utils.</span></span><span class="sig-name descname"><span class="pre">unnormalize_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#otx.core.ov.utils.unnormalize_name" title="Permalink to this definition">#</a></dt>
+<dd><p>Unnormalize name string.</p>
+</dd></dl>
+
+</section>
 
 
             </article>
@@ -514,17 +575,17 @@ list of data loaders in the CDL</p>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="models/utils.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="../data.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Utils</p>
+          <p class="prev-next-title">Data</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="hooks.html" title="next page">
+  <a class='right-next' id="next-link" href="graph.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Hooks</p>
+      <p class="prev-next-title">Graph</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -545,53 +606,141 @@ list of data loaders in the CDL</p>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.composed_dataloader.CDLIterator">
+  <a class="reference internal nav-link" href="#otx.core.ov.omz_wrapper.NameSpace">
    <code class="docutils literal notranslate">
     <span class="pre">
-     CDLIterator
+     NameSpace
     </span>
    </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL">
+  <a class="reference internal nav-link" href="#otx.core.ov.omz_wrapper.convert_model">
    <code class="docutils literal notranslate">
     <span class="pre">
-     ComposedDL
+     convert_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.omz_wrapper.download_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     download_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.omz_wrapper.get_model_configuration">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_model_configuration()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.omz_wrapper.get_omz_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_omz_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.registry.Registry">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     Registry
     </span>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler">
+    <a class="reference internal nav-link" href="#otx.core.ov.registry.Registry.REGISTERED_NAME_ATTR">
      <code class="docutils literal notranslate">
       <span class="pre">
-       ComposedDL.DummySampler
+       Registry.REGISTERED_NAME_ATTR
       </span>
      </code>
     </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.DummySampler.set_epoch">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         ComposedDL.DummySampler.set_epoch()
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.mpa.modules.datasets.composed_dataloader.ComposedDL.sampler">
+    <a class="reference internal nav-link" href="#otx.core.ov.registry.Registry.get">
      <code class="docutils literal notranslate">
       <span class="pre">
-       ComposedDL.sampler
+       Registry.get()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.ov.registry.Registry.register">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Registry.register()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.core.ov.registry.Registry.registry_dict">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Registry.registry_dict
       </span>
      </code>
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.utils.get_op_name">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_op_name()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.utils.load_ov_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     load_ov_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.utils.normalize_name">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     normalize_name()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.utils.to_dynamic_model">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     to_dynamic_model()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.core.ov.utils.unnormalize_name">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     unnormalize_name()
+    </span>
+   </code>
+  </a>
  </li>
 </ul>
 
@@ -610,7 +759,7 @@ list of data loaders in the CDL</p>
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../../_sources/guide/reference/mpa/modules/datasets.rst.txt">
+    <a href="../../../../_sources/guide/reference/core/ov/index.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

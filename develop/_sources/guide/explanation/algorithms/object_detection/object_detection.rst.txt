@@ -95,20 +95,25 @@ To see which public backbones are available for the task, the following command 
 
         $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
-.. In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
-.. The results were obtained on our templates without any changes.
-.. For hyperparameters, please, refer to the related template.
-.. We trained each model with a single Nvidia GeForce RTX3090.
+In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
 
-.. +-----------+------------+-----------+-----------+
-.. | Model name| COCO       | PASCAL VOC| MinneApple|
-.. +===========+============+===========+===========+
-.. | YOLOX     | N/A        | N/A       | 24.5      |
-.. +-----------+------------+-----------+-----------+
-.. | SSD       | N/A        | N/A       | 31.2      |
-.. +-----------+------------+-----------+-----------+
-.. | ATSS      | N/A        | N/A       | 42.5      |
-.. +-----------+------------+-----------+-----------+
+For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights is shown. That means that weights are undertrained for COCO dataset and don't achieve the best result. 
+That is because the purpose of pretrained models is to learn basic features from a such large and diverse dataset as COCO and to use these weights to get good results for other custom datasets right from the start. 
+
+The results on `Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/>`_,  `BCCD <https://public.roboflow.com/object-detection/bccd/3>`_, `MinneApple <https://rsn.umn.edu/projects/orchard-monitoring/minneapple>`_ and `WGISD <https://github.com/thsant/wgisd>`_  were obtained on our templates without any changes.
+BCCD is an easy dataset with focused large objects, while MinneApple and WGISD have small objects that are hard to distinguish from the background.
+For hyperparameters, please, refer to the related template.
+We trained each model with a single Nvidia GeForce RTX3090.
+
++-----------+------------+-----------+-----------+-----------+-----------+
+| Model name| COCO       | PASCAL VOC| BCCD      | MinneApple| WGISD     |
++===========+============+===========+===========+===========+===========+
+| YOLOX     | 32.0       | 66.6      | 60.3      | 24.5      | 44.1      |
++-----------+------------+-----------+-----------+-----------+-----------+
+| SSD       | 13.5       | 50.0      | 54.2      | 31.2      | 45.9      |
++-----------+------------+-----------+-----------+-----------+-----------+
+| ATSS      | 32.5       | 68.7      | 61.5      | 42.5      | 57.5      |
++-----------+------------+-----------+-----------+-----------+-----------+
 
 
 
@@ -133,7 +138,7 @@ Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improv
 
 Please, refer to the :doc:`tutorial <../../../tutorials/advanced/semi_sl>` how to train semi supervised learning.
 
-In the table below the mAP on toy data sample from `COCO <https://cocodataset.org/#home>`_ dataset using our pipeline is presented.
+In the table below the mAP on toy data sample from `COCO <https://cocodataset.org/#home>`__ dataset using our pipeline is presented.
 
 We sample 400 images that contain one of [person, car, bus] for labeled train images. And 4000 images for unlabeled images. For validation 100 images are selected from val2017.
 

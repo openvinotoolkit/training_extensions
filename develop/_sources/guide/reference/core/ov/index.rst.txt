@@ -8,18 +8,18 @@ OpenVINO
    models
    ops
 
-.. automodule:: otx.mpa.modules.ov
+.. automodule:: otx.core.ov
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.omz_wrapper
+.. automodule:: otx.core.ov.omz_wrapper
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.registry
+.. automodule:: otx.core.ov.registry
    :members:
    :undoc-members:
 
-.. automodule:: otx.mpa.modules.ov.utils
+.. automodule:: otx.core.ov.utils
    :members:
    :undoc-members:
