@@ -101,7 +101,7 @@ class TestToolsMPASegmentation:
         args1["train_params"] = resume_params
         args1[
             "--resume-from"
-        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/models/weights.pth"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
