@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import json
+from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.resultset import ResultSetEntity
