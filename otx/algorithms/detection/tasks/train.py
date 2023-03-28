@@ -23,6 +23,7 @@ from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,
 )
@@ -52,7 +53,6 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
 
@@ -217,9 +217,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
                     labels=self._labels,
                 )
 
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
         return data_cfg
 
     @staticmethod

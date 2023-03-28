@@ -11,7 +11,7 @@ import torch
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.yolo_head import YOLOV3Head
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 # TODO: Need to fix pylint issues
 # pylint: disable=too-many-instance-attributes, keyword-arg-before-vararg

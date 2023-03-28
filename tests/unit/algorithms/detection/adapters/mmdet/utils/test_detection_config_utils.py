@@ -11,6 +11,7 @@ import pytest
 from mmcv.utils import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import is_epoch_based_runner
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     cluster_anchors,
     patch_adaptive_repeat_dataset,
@@ -25,7 +26,6 @@ from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.entities.label import Domain
 from otx.api.entities.model_template import TaskType
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_MODEL_CONFIG_PATH,

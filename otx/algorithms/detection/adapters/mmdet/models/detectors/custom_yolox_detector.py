@@ -9,13 +9,15 @@ import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.yolox import YOLOX
 
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    FeatureVectorHook,
+)
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.task_adapt import map_class_names
 from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
     DetSaliencyMapHook,
 )
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
-from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
-from otx.mpa.modules.utils.task_adapt import map_class_names
-from otx.mpa.utils.logger import get_logger
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin

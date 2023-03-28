@@ -30,9 +30,11 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_default_config,
     patch_runner,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils import embed_ir_model_data
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -62,8 +64,6 @@ from otx.api.utils.argument_checks import (
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
-from otx.mpa.utils.config_utils import MPAConfig
-from otx.mpa.utils.logger import get_logger
 
 # pylint: disable=invalid-name
 
@@ -71,9 +71,9 @@ logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semisl.yaml",
-    TrainType.INCREMENTAL: "incremental.yaml",
-    TrainType.SELFSUPERVISED: "selfsl.yaml",
+    TrainType.Semisupervised: "semisl.yaml",
+    TrainType.Incremental: "incremental.yaml",
+    TrainType.Selfsupervised: "selfsl.yaml",
 }
 
 
@@ -113,7 +113,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if not self._multilabel and not self._hierarchical:
             logger.info("Classification mode: multiclass")
 
-        if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
+        if self._hyperparams.algo_backend.train_type == TrainType.Selfsupervised:
             self._selfsl = True
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
@@ -423,7 +423,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             runner=runner,
         )
 
-        if self._train_type.value == "SEMISUPERVISED":
+        if self._train_type.value == "Semisupervised":
             unlabeled_config = ConfigDict(
                 data=ConfigDict(
                     unlabeled_dataloader=ConfigDict(
@@ -443,7 +443,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         # pylint: disable=too-many-boolean-expressions
         if (
             self._train_type in RECIPE_TRAIN_TYPE
-            and self._train_type == TrainType.INCREMENTAL
+            and self._train_type == TrainType.Incremental
             and not self._multilabel
             and not self._hierarchical
             and self._hyperparams.learning_parameters.enable_supcon
@@ -453,7 +453,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         self._recipe_cfg = self._init_model_cfg()
 
-        # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
+        # FIXME[Soobee] : if train type is not in cfg, it raises an error in default Incremental mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = self._train_type.name
 
@@ -479,7 +479,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)  # for OTX compatibility
 
     # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
-    # model.py contains heads/classifier only for INCREMENTAL setting
+    # model.py contains heads/classifier only for Incremental setting
     # error log : ValueError: Unexpected type of 'data_loader' parameter
     def _init_model_cfg(self):
         if self._multilabel:
@@ -512,7 +512,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         return data_cfg
 
     def _update_stage_module(self, stage_module):
-        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
+        module_prefix = {TrainType.Incremental: "Incr", TrainType.Semisupervised: "SemiSL"}
         if self._train_type in module_prefix and stage_module in ["ClsTrainer", "ClsInferrer"]:
             stage_module = module_prefix[self._train_type] + stage_module
         return stage_module

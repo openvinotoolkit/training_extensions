@@ -16,4 +16,4 @@ hyper_parameters:
         default_value: false
     algo_backend:
       train_type:
-        default_value: SELFSUPERVISED
+        default_value: Selfsupervised

@@ -11,7 +11,7 @@
       "options": {
         "arch": ["tiny", "small", "base"]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.ConvMixer": {
       "required": ["arch"],
@@ -287,7 +287,7 @@
     "mmcls.T2T_ViT": {
       "required": [],
       "options": {},
-      "available": []
+      "available": ["CLASSIFICATION"]
     },
     "mmcls.TIMMBackbone": {
       "required": ["model_name"],
@@ -341,7 +341,7 @@
           "deit-base"
         ]
       },
-      "available": []
+      "available": ["CLASSIFICATION"]
     }
   }
 }

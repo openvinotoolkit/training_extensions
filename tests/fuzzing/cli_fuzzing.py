@@ -4,6 +4,7 @@ import atheris
 from helper import FuzzingHelper
 
 from otx.cli.tools.cli import main as cli_main
+from otx.cli.utils.errors import CliException
 
 
 @atheris.instrument_func
@@ -21,6 +22,8 @@ def fuzz_otx(input_bytes):
         # argparser will throw SystemExit with code 2 when some required arguments are missing
         if e.code != 2:
             raise
+    except CliException:
+        pass
     # some known exceptions can be catched here
     finally:
         sys.argv = backup_argv
