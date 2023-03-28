@@ -30,7 +30,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
         self.label_entities = label_information["label_entities"]
 
         dataset_items: List[DatasetItemEntity] = []
-        used_labels: List[int] = []
+        used_labels = set()
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -47,8 +47,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                             if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 
-                        if ann.label not in used_labels:
-                            used_labels.append(ann.label)
+                        used_labels.add(ann.label)
 
                     if (
                         len(shapes) > 0

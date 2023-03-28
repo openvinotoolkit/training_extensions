@@ -83,7 +83,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
 
         """
         outputs = {
-            "label_entities": [],
+            "label_entities": {},
         }  # type: dict
 
         # Making overall categories
@@ -117,10 +117,10 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
                                 annotation.label = self.get_ann_label(category_names, ann_name)
 
         # Generate label_entity list according to overall categories
-        outputs["label_entities"] = [
-            LabelEntity(name=name, domain=self.domain, is_empty=False, id=ID(index))
+        outputs["label_entities"] = {
+            index: LabelEntity(name=name, domain=self.domain, is_empty=False, id=ID(index))
             for index, name in enumerate(category_names)
-        ]
+        }
         return outputs
 
     @staticmethod
@@ -195,7 +195,7 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
         self.label_entities = label_information["label_entities"]
 
         # Detection use index 0 as a background category
-        for label_entity in self.label_entities:
+        for label_entity in self.label_entities.values():
             label_entity.id = ID(int(label_entity.id) + 1)
 
         dataset_items: List[DatasetItemEntity] = []
@@ -225,7 +225,8 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
                     )
                     dataset_items.append(dataset_item)
 
-        if self.label_entities[-1].name == "EmptyFrame":
-            self.label_entities = self.label_entities[:-1]
+        last_key = len(self.label_entities) - 1
+        if self.label_entities[last_key].name == "EmptyFrame":
+            self.label_entities.pop(last_key)
 
         return DatasetEntity(items=dataset_items)

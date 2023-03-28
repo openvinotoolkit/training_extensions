@@ -90,7 +90,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Anomaly classification."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
-        self.label_entities = [normal_label, abnormal_label]
+        self.label_entities = {0: normal_label, 1: abnormal_label}
 
         # Prepare
         dataset_items: List[DatasetItemEntity] = []
@@ -125,7 +125,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
     def get_otx_dataset(self) -> DatasetEntity:
         """Conver DatumaroDataset to DatasetEntity for Anomaly detection."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
-        self.label_entities = [normal_label, abnormal_label]
+        self.label_entities = {0: normal_label, 1: abnormal_label}
 
         # Prepare
         dataset_items: List[DatasetItemEntity] = []
@@ -182,7 +182,7 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
     def get_otx_dataset(self) -> DatasetEntity:
         """Conver DatumaroDataset to DatasetEntity for Anomaly segmentation."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
-        self.label_entities = [normal_label, abnormal_label]
+        self.label_entities = {0: normal_label, 1: abnormal_label}
 
         # Prepare
         dataset_items: List[DatasetItemEntity] = []
