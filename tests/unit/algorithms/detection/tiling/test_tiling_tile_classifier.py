@@ -10,6 +10,7 @@ import pytest
 import torch
 from openvino.model_zoo.model_api.models import Model
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.tasks import DetectionTrainTask
@@ -28,7 +29,6 @@ from otx.api.entities.model_template import (
     task_type_to_label_domain,
 )
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_ISEG_TEMPLATE_DIR,
