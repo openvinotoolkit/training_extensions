@@ -44,7 +44,7 @@ args = {
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
-        "2",
+        "10",
         "--learning_parameters.batch_size",
         "4",
         "--tiling_parameters.enable_tiling",
@@ -58,7 +58,7 @@ args = {
 resume_params = [
     "params",
     "--learning_parameters.num_iters",
-    "4",
+    "15",
     "--learning_parameters.batch_size",
     "4",
 ]
