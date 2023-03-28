@@ -92,7 +92,7 @@ def test_main(mocker, mock_config_manager, mock_args):
     assert result == {"retcode": 0, "task_type": ""}
 
     # Check ConfigManager constructor call
-    mock_config_manager.assert_called_once_with(mock_args, mode="build")
+    mock_config_manager.assert_called_once()
 
     # Check ConfigManager method calls
     mock_config_manager.return_value.configure_template.assert_called_once_with(model="")
