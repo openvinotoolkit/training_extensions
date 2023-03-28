@@ -19,10 +19,10 @@ import os
 import signal
 import socket
 import sys
-import tempfile
 import threading
 import time
 from contextlib import closing
+from tempfile import TemporaryDirectory
 from typing import Callable, List, Optional, Union
 
 import psutil
@@ -172,7 +172,7 @@ class MultiGPUManager:
                 If output_path is None, make a temporary directory and return it.
         """
         if output_path is None:
-            output_path = tempfile.mkdtemp(prefix="OTX-multi-gpu-")
+            output_path = TemporaryDirectory(prefix="OTX-multi-gpu-").name  # pylint: disable=R1732
 
         if optimized_hyper_parameters is not None:  # if HPO is executed, optimized HPs are applied to child processes
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)

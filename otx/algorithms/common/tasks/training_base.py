@@ -133,7 +133,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     @staticmethod
     def _is_multi_gpu_training():
-        return "LOCAL_RANK" in os.environ
+        return "LOCAL_RANK" in os.environ and torch.cuda.is_available()
 
     @staticmethod
     def _setup_multigpu_training():
