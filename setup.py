@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import platform
 import subprocess
 import sys
 import warnings
@@ -100,6 +101,9 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 
 
 def get_extensions():
+    if platform.system() == "Windows":
+        return []
+
     def _cython_modules():
         package_root = os.path.dirname(__file__)
 
@@ -111,14 +115,14 @@ def get_extensions():
         ext_modules = [
             Extension(
                 cython_file.rstrip(".pyx").replace("/", "."),
-                [os.path.join(package_root, cython_file)],
+                [cython_file],
                 include_dirs=[numpy.get_include()],
                 extra_compile_args=["-O3"],
             )
             for cython_file in cython_files
         ]
 
-        return cythonize(ext_modules, annotate=True)
+        return cythonize(ext_modules)
 
     extensions = []
     extensions.extend(_cython_modules())

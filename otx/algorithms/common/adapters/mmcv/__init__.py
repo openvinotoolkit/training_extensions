@@ -34,7 +34,6 @@ from .hooks import (
 )
 from .nncf.hooks import CompressionHook
 from .nncf.runners import AccuracyAwareRunner
-from .pipelines.transforms import pil_augment
 from .runner import EpochRunnerWithCancel, IterBasedRunnerWithCancel
 
 __all__ = [
@@ -56,7 +55,6 @@ __all__ = [
     "StopLossNanTrainingHook",
     "EMAMomentumUpdateHook",
     "CompressionHook",
-    "pil_augment",
     "AccuracyAwareRunner",
     "TwoCropTransformHook",
 ]
