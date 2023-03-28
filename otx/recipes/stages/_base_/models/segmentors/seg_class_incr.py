@@ -25,8 +25,5 @@ model = dict(
             )
         ],
     ),
-    test_cfg=dict(
-        mode="whole",
-        output_scale=3.0,
-    ),
+    test_cfg=dict(mode='slide', crop_size=(512,512), stride=(341, 341))
 )

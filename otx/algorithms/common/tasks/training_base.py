@@ -280,7 +280,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         else:
             self._recipe_cfg.pop("adaptive_validation_interval", None)
 
-        self.set_early_stopping_hook()
+        # self.set_early_stopping_hook()
 
         # add Cancel tranining hook
         update_or_add_custom_hook(

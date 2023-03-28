@@ -11,6 +11,8 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
+from otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_fcn_head import get_head
+
 
 logger = get_logger()
 
@@ -144,9 +146,15 @@ class SegStage(Stage):
                 use_sigmoid=False,
                 loss_weight=1.0,
             )
+        else:
+            cfg_loss_decode = ConfigDict(
+                type="CrossEntropyLoss",
+                use_sigmoid=False,
+                loss_weight=1.0,
+            )
 
-            if "decode_head" in cfg.model:
-                decode_head = cfg.model.decode_head
-                if decode_head.type == "FCNHead":
-                    decode_head.type = "CustomFCNHead"
-                    decode_head.loss_decode = cfg_loss_decode
+        if "decode_head" in cfg.model:
+            decode_head = cfg.model.decode_head
+            decode_head.head_name = decode_head.type
+            decode_head.type = get_head
+            decode_head.loss_decode = cfg_loss_decode

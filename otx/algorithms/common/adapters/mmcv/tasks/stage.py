@@ -9,7 +9,8 @@ import os
 import os.path as osp
 import random
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
+from collections import OrderedDict
 
 import mmcv
 import numpy as np
@@ -429,6 +430,7 @@ class Stage:
     def get_model_meta(cfg):
         """Return model_meta."""
         ckpt_path = cfg.get("load_from", None)
+        print(ckpt_path)
         meta = {}
         if ckpt_path:
             ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
@@ -486,12 +488,28 @@ class Stage:
     def get_model_ckpt(ckpt_path, new_path=None):
         """Return model ckpt from ckpt_path."""
         ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
+        local_torch_hub_folder = torch.hub.get_dir()
         if "model" in ckpt:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
             torch.save(ckpt, new_path)
             return new_path
+
+        elif "state_dict" in ckpt:
+            ckpt = ckpt["state_dict"]
+            new_ckpt = OrderedDict()
+            for name in ckpt:
+                if not name.startswith("backbone") and (not name.startswith("decode_head") or not name.startswith("fc")):
+                    new_name = "backbone." + name
+                else:
+                    new_name = name
+                new_ckpt[new_name] = ckpt[name]
+            if not new_path:
+                new_path = local_torch_hub_folder + "/_converted.pth"
+            torch.save(new_ckpt, new_path)
+            return new_path
+
         return ckpt_path
 
     @staticmethod

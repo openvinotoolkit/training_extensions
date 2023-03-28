@@ -39,8 +39,7 @@ class SegTrainer(SegStage):
         if mode not in self.mode:
             logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
-
-        cfg = self.configure(model_cfg, model_ckpt, data_cfg, **kwargs)
+        cfg = self.configure(model_cfg, model_cfg.load_from, data_cfg, **kwargs)
         logger.info("train!")
 
         # FIXME: what is this? Why do we need?
