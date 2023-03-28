@@ -9,6 +9,7 @@ import pytest
 from mmcv.utils import Registry
 from torch import nn
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.cli.builder.builder import (
     Builder,
     get_backbone_out_channels,
@@ -16,7 +17,6 @@ from otx.cli.builder.builder import (
     update_channels,
 )
 from otx.cli.utils.importing import get_otx_root_path
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

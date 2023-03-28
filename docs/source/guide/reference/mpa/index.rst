@@ -5,7 +5,4 @@ Model Preparation Algorithm
    :maxdepth: 1
 
    modules/index
-   classification
-   detection
-   segmentation
    utils

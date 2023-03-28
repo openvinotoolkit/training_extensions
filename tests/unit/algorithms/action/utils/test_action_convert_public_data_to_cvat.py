@@ -3,6 +3,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+import tempfile
+
 import numpy as np
 import pytest
 
@@ -95,24 +97,24 @@ def test_convert_action_cls_dataset_to_datumaro(mocker) -> None:
     """Test convert_jester_dataset_to_datumaro function."""
 
     src_path = "dummy_src_path"
-    dst_path = "dummy_dst_path"
     ann_file = "dummy_ann_file"
 
-    mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.open", return_value=MockFileObject())
-    mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.pathlib.Path.mkdir", return_value=True)
-    # mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.os.makedirs", return_value=True)
-    mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.shutil.copy", return_value=True)
-    mocker.patch(
-        "otx.algorithms.action.utils.convert_public_data_to_cvat.generate_default_cvat_xml_fields",
-        return_value=([], (256, 256, 3), []),
-    )
-    mocker.patch(
-        "otx.algorithms.action.utils.convert_public_data_to_cvat.os.listdir", return_value=(["frame0", "frame1"])
-    )
-    mocker.patch(
-        "otx.algorithms.action.utils.convert_public_data_to_cvat.etree.ElementTree", return_value=MockElementTree()
-    )
-    convert_action_cls_dataset_to_datumaro(src_path, dst_path, ann_file)
+    with tempfile.TemporaryDirectory() as dst_path:
+        mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.open", return_value=MockFileObject())
+        mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.pathlib.Path.mkdir", return_value=True)
+        # mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.os.makedirs", return_value=True)
+        mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.shutil.copy", return_value=True)
+        mocker.patch(
+            "otx.algorithms.action.utils.convert_public_data_to_cvat.generate_default_cvat_xml_fields",
+            return_value=([], (256, 256, 3), []),
+        )
+        mocker.patch(
+            "otx.algorithms.action.utils.convert_public_data_to_cvat.os.listdir", return_value=(["frame0", "frame1"])
+        )
+        mocker.patch(
+            "otx.algorithms.action.utils.convert_public_data_to_cvat.etree.ElementTree", return_value=MockElementTree()
+        )
+        convert_action_cls_dataset_to_datumaro(src_path, dst_path, ann_file)
 
 
 @e2e_pytest_unit
@@ -120,23 +122,23 @@ def test_convert_ava_dataset_to_datumaro(mocker) -> None:
     """Test convert_ava_dataset_to_datumaro function."""
 
     src_path = "dummy_src_path"
-    dst_path = "dummy_dst_path"
     ann_file = "dummy_ann_file"
 
-    mocker.patch(
-        "otx.algorithms.action.utils.convert_public_data_to_cvat.read_ava_csv",
-        return_value={"video_0": {"frame_idx": [[0, 0, 1, 1, "action"]]}},
-    )
-    mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.os.listdir", return_value=["video_0"])
-    mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.shutil.copytree", return_value=True)
-    mocker.patch(
-        "otx.algorithms.action.utils.convert_public_data_to_cvat.generate_default_cvat_xml_fields",
-        return_value=([], (256, 256, 3), []),
-    )
-    mocker.patch(
-        "otx.algorithms.action.utils.convert_public_data_to_cvat.etree.ElementTree", return_value=MockElementTree()
-    )
-    convert_ava_dataset_to_datumaro(src_path, dst_path, ann_file)
+    with tempfile.TemporaryDirectory() as dst_path:
+        mocker.patch(
+            "otx.algorithms.action.utils.convert_public_data_to_cvat.read_ava_csv",
+            return_value={"video_0": {"frame_idx": [[0, 0, 1, 1, "action"]]}},
+        )
+        mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.os.listdir", return_value=["video_0"])
+        mocker.patch("otx.algorithms.action.utils.convert_public_data_to_cvat.shutil.copytree", return_value=True)
+        mocker.patch(
+            "otx.algorithms.action.utils.convert_public_data_to_cvat.generate_default_cvat_xml_fields",
+            return_value=([], (256, 256, 3), []),
+        )
+        mocker.patch(
+            "otx.algorithms.action.utils.convert_public_data_to_cvat.etree.ElementTree", return_value=MockElementTree()
+        )
+        convert_ava_dataset_to_datumaro(src_path, dst_path, ann_file)
 
 
 @e2e_pytest_unit

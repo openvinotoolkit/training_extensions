@@ -33,7 +33,7 @@ from mmseg.models.builder import BACKBONES
 from mmseg.utils import get_root_logger
 from torch import nn
 
-from otx.mpa.modules.models.utils import (
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,

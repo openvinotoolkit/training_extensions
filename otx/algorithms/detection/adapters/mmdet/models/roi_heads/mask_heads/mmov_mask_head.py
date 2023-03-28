@@ -10,7 +10,7 @@ import openvino.runtime as ov
 from mmdet.models.builder import HEADS
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 # TODO: Need to fix pylint issues
 # pylint: disable=too-many-instance-attributes, too-many-arguments, keyword-arg-before-vararg, dangerous-default-value

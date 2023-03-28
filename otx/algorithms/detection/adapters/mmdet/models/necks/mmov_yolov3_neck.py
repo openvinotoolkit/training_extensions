@@ -10,8 +10,8 @@ import torch
 from mmdet.models.builder import NECKS
 from mmdet.models.necks.yolo_neck import YOLOV3Neck
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
-from otx.mpa.modules.ov.models.parser_mixin import ParserMixin
+from otx.core.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.parser_mixin import ParserMixin  # type: ignore[attr-defined]
 
 
 @NECKS.register_module()

@@ -24,7 +24,7 @@ from mmseg.models.builder import (  # pylint: disable=no-name-in-module
 from mmseg.ops import resize
 from torch import nn
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from .class_incr_encoder_decoder import ClassIncrEncoderDecoder
 

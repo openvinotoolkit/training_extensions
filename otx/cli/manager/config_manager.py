@@ -482,7 +482,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if (target_dir / file_name).exists():
             if file_name.endswith(".py"):
                 try:
-                    from otx.mpa.utils.config_utils import MPAConfig
+                    from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+                        MPAConfig,
+                    )
 
                     config = MPAConfig.fromfile(str(target_dir / file_name))
                     config.dump(str(dest_dir / file_name))
