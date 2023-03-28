@@ -105,7 +105,11 @@ def main():
     export_precision = ModelPrecision.FP16 if args.half_precision else ModelPrecision.FP32
     task.export(ExportType.OPENVINO, exported_model, export_precision, args.dump_features)
 
-    output_path = config_manager.output_path / "openvino_models"
+    if not args.output:
+        output_path = config_manager.output_path
+        output_path = output_path / "openvino_models"
+    else:
+        output_path = Path(args.output)
     output_path.mkdir(exist_ok=True, parents=True)
     save_model_data(exported_model, str(output_path))
 
