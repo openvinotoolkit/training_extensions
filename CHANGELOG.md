@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.2.0\]
+
+### New features
+
+-
+
+### Enhancements
+
+-
+
+### Bug fixes
+
+-
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
+## \[v1.1.0\]
+
+### New features
+
+- Add FP16 IR export support (<https://github.com/openvinotoolkit/training_extensions/pull/1683>)
+- Add in-memory caching in dataloader (<https://github.com/openvinotoolkit/training_extensions/pull/1694>)
+- Add MoViNet template for action classification (<https://github.com/openvinotoolkit/training_extensions/pull/1742>)
+- Add Semi-SL multilabel classification algorithm (<https://github.com/openvinotoolkit/training_extensions/pull/1805>)
+- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (<https://github.com/openvinotoolkit/training_extensions/pull/1534>)
+- Add train-type parameter to otx train (<https://github.com/openvinotoolkit/training_extensions/pull/1874>)
+- Add embedding of inference configuration to IR for classification (<https://github.com/openvinotoolkit/training_extensions/pull/1842>)
+- Enable VOC dataset in OTX (<https://github.com/openvinotoolkit/training_extensions/pull/1862>)
+- Add mmcls.VisionTransformer backbone support (<https://github.com/openvinotoolkit/training_extensions/pull/1908>)
+
+### Enhancements
+
+- Parametrize saliency maps dumping in export (<https://github.com/openvinotoolkit/training_extensions/pull/1888>)
+- Bring mmdeploy to action recognition model export & Test optimization of action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/1848>)
+- Update backbone lists (<https://github.com/openvinotoolkit/training_extensions/pull/1835>)
+- Add explanation for XAI & minor doc fixes (<https://github.com/openvinotoolkit/training_extensions/pull/1923>)
+- Refactor phase#1: MPA modules
+
+### Bug fixes
+
+- Handle unpickable update_progress_callback (<https://github.com/openvinotoolkit/training_extensions/pull/1892>)
+- Dataset Adapter: Avoid duplicated annotation and permit empty image (<https://github.com/openvinotoolkit/training_extensions/pull/1873>)
+- Arrange scale between bbox preds and bbox targets in ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/1880>)
+- Fix label mismatch of evaluation and validation with large dataset in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1851>)
+- Fix packaging errors including cython module build / import issues (<https://github.com/openvinotoolkit/training_extensions/pull/1936>)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
 ## \[v1.0.1\]
 
 ### Enhancements

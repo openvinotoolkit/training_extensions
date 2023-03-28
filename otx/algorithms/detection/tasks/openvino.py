@@ -36,6 +36,7 @@ from compression.pipeline.initializer import create_pipeline
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import (
@@ -88,7 +89,6 @@ from otx.api.utils.argument_checks import (
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.detection_utils import detection2array
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

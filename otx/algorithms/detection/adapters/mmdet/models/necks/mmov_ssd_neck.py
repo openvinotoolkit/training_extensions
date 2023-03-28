@@ -12,7 +12,7 @@ from mmcv.runner import BaseModule
 from mmdet.models.builder import NECKS
 from torch import nn
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 # pylint: disable=too-many-arguments, too-many-locals
 

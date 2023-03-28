@@ -3,7 +3,7 @@
 This MLP consists of fc (conv) - norm - relu - fc (conv).
 """
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=dangerous-default-value

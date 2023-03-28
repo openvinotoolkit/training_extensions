@@ -10,6 +10,12 @@ from otx.cli.manager.config_manager import (
     set_workspace,
 )
 from otx.cli.registry import Registry
+from otx.cli.utils.errors import (
+    CliException,
+    ConfigValueError,
+    FileNotExistError,
+    NotSupportedError,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
@@ -132,7 +138,7 @@ class TestConfigManager:
     def test_build_workspace(self, mocker):
         # Setup
         task_type = "CLASSIFICATION"
-        train_type = "SEMISUPERVISED"
+        train_type = "Semisupervised"
         workspace_path = "./otx-workspace"
         args = mocker.Mock()
         args.autosplit = None
@@ -319,7 +325,7 @@ class TestConfigManager:
         expected_file_path = tmp_dir_path / "data.yaml"
         args = parser.parse_args(["--data", str(expected_file_path)])
         config_manager.args = args
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileNotExistError):
             config_manager.data_config_file_path
 
         mock_exists.return_value = True
@@ -339,7 +345,7 @@ class TestConfigManager:
             "otx.cli.manager.config_manager.ConfigManager.check_workspace", return_value=True
         )
         mocker.patch("otx.cli.manager.config_manager.ConfigManager._get_template", return_value=mock_template)
-        mocker.patch("otx.cli.manager.config_manager.ConfigManager._get_train_type", return_value="INCREMENTAL")
+        mocker.patch("otx.cli.manager.config_manager.ConfigManager._get_train_type", return_value="Incremental")
         mock_parse_model_template = mocker.patch(
             "otx.cli.manager.config_manager.parse_model_template", return_value=mock_template
         )
@@ -352,7 +358,7 @@ class TestConfigManager:
         # Then
         assert config_manager.task_type == "CLASSIFICATION"
         assert config_manager.model == "template_name"
-        assert config_manager.train_type == "INCREMENTAL"
+        assert config_manager.train_type == "Incremental"
 
         config_manager.mode = "build"
         mocker.patch("otx.cli.manager.config_manager.ConfigManager._check_rebuild", return_value=True)
@@ -360,7 +366,7 @@ class TestConfigManager:
         assert config_manager.rebuild
         assert config_manager.task_type == "CLASSIFICATION"
         assert config_manager.model == "template_name"
-        assert config_manager.train_type == "INCREMENTAL"
+        assert config_manager.train_type == "Incremental"
 
         mock_check_workspace.return_value = False
         mocker.patch("pathlib.Path.exists", return_value=True)
@@ -376,7 +382,7 @@ class TestConfigManager:
         config_manager.configure_template()
         assert config_manager.task_type == "CLASSIFICATION"
         assert config_manager.model == "template_name"
-        assert config_manager.train_type == "INCREMENTAL"
+        assert config_manager.train_type == "Incremental"
 
     @e2e_pytest_unit
     def test__check_rebuild(self, mocker):
@@ -389,7 +395,7 @@ class TestConfigManager:
         mock_args.template = mock_template
 
         config_manager = ConfigManager(mock_args)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotSupportedError):
             config_manager._check_rebuild()
 
         config_manager.template.task_type = "DETECTION"
@@ -399,7 +405,7 @@ class TestConfigManager:
 
         config_manager.args.model = "SSD"
         config_manager.template.name = "ATSS"
-        config_manager.args.train_type = "SEMISUPERVISED"
+        config_manager.args.train_type = "Semisupervised"
         assert config_manager._check_rebuild()
 
     @e2e_pytest_unit
@@ -427,7 +433,7 @@ class TestConfigManager:
         mock_args.mode = "build"
 
         config_manager = ConfigManager(mock_args)
-        config_manager.train_type = "INCREMENTAL"
+        config_manager.train_type = "Incremental"
         config_manager.configure_data_config(update_data_yaml=True)
 
         mock_configure_dataset.assert_called_once()
@@ -440,39 +446,39 @@ class TestConfigManager:
     @e2e_pytest_unit
     def test__get_train_type(self, mocker):
         mock_args = mocker.MagicMock()
-        mock_params_dict = {"algo_backend": {"train_type": {"value": "SEMISUPERVISED"}}}
+        mock_params_dict = {"algo_backend": {"train_type": {"value": "Semisupervised"}}}
         mock_configure_dataset = mocker.patch(
             "otx.cli.manager.config_manager.gen_params_dict_from_args", return_value=mock_params_dict
         )
         config_manager = ConfigManager(args=mock_args)
         config_manager.mode = "build"
-        assert config_manager._get_train_type() == "SEMISUPERVISED"
+        assert config_manager._get_train_type() == "Semisupervised"
 
-        config_manager.args.train_type = "INCREMENTAL"
+        config_manager.args.train_type = "Incremental"
         mock_configure_dataset.return_value = {}
-        assert config_manager._get_train_type() == "INCREMENTAL"
+        assert config_manager._get_train_type() == "Incremental"
 
         mock_template = mocker.MagicMock()
         mock_template.hyper_parameters.parameter_overrides = {
-            "algo_backend": {"train_type": {"default_value": "SELFSUPERVISED"}}
+            "algo_backend": {"train_type": {"default_value": "Selfsupervised"}}
         }
         config_manager.template = mock_template
-        assert config_manager._get_train_type(ignore_args=True) == "SELFSUPERVISED"
+        assert config_manager._get_train_type(ignore_args=True) == "Selfsupervised"
 
         config_manager.template.hyper_parameters.parameter_overrides = {}
-        assert config_manager._get_train_type(ignore_args=True) == "INCREMENTAL"
+        assert config_manager._get_train_type(ignore_args=True) == "Incremental"
 
     @e2e_pytest_unit
     def test_auto_task_detection(self, mocker):
         mock_args = mocker.MagicMock()
         config_manager = ConfigManager(args=mock_args)
-        with pytest.raises(ValueError):
+        with pytest.raises(CliException):
             config_manager.auto_task_detection("")
 
         mock_get_data_format = mocker.patch(
             "otx.cli.manager.config_manager.DatasetManager.get_data_format", return_value="Unexpected"
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(ConfigValueError):
             config_manager.auto_task_detection("data/roots")
 
         mock_get_data_format.return_value = "coco"

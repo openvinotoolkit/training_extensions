@@ -28,10 +28,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_default_config,
     patch_runner,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.common.utils.ir import embed_ir_model_data
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
@@ -76,14 +78,12 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
-from otx.mpa.utils.config_utils import MPAConfig
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semisl.py",
-    TrainType.INCREMENTAL: "incremental.py",
+    TrainType.Semisupervised: "semisl.py",
+    TrainType.Incremental: "incremental.py",
 }
 
 
@@ -404,8 +404,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         return data_cfg
 
     def _update_stage_module(self, stage_module):
-        module_prefix = {TrainType.INCREMENTAL: "Incr", TrainType.SEMISUPERVISED: "SemiSL"}
-        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "DetectionExporter":
+        module_prefix = {TrainType.Incremental: "Incr", TrainType.Semisupervised: "SemiSL"}
+        if self._train_type == TrainType.Semisupervised and stage_module == "DetectionExporter":
             stage_module = "SemiSLDetectionExporter"
         elif self._train_type in module_prefix and stage_module in [
             "DetectionTrainer",

@@ -1,6 +1,6 @@
 """Segmentation losses."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
 from .detcon_loss import DetConLoss
 
-__all__ = ["DetConLoss"]
+__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore"]

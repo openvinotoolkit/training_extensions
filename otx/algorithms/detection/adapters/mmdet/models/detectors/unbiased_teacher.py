@@ -11,7 +11,7 @@ import torch
 from mmdet.models import DETECTORS, build_detector
 from mmdet.models.detectors import BaseDetector
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 from .sam_detector_mixin import SAMDetectorMixin
 

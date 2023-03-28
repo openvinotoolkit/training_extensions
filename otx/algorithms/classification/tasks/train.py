@@ -15,6 +15,7 @@ from mmcv.utils import ConfigDict
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -37,7 +38,6 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
 from .inference import ClassificationInferenceTask
 
@@ -162,8 +162,6 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                     labels=self._labels,
                 )
 
-        for label in self._labels:
-            label.hotkey = "a"
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves):

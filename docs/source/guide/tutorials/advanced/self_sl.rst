@@ -21,7 +21,7 @@ The process has been tested on the following configuration:
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` 
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 2. Activate your virtual 
@@ -64,23 +64,23 @@ for **self-supervised learning** by running the following command:
 
 .. code-block::
 
-    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type SELFSUPERVISED --work-dir otx-workspace-CLASSIFICATION-SELFSUPERVISED
+    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type Selfsupervised --work-dir otx-workspace-CLASSIFICATION-Selfsupervised
 
-    [*] Workspace Path: otx-workspace-CLASSIFICATION-SELFSUPERVISED
+    [*] Workspace Path: otx-workspace-CLASSIFICATION-Selfsupervised
     [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
-    [*] Load Model Name: MobileNet-V3-large-1x[*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/selfsl/model.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/selfsl/data_pipeline.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/deployment.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/hpo_config.yaml
-    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/model_hierarchical.py
-    [*]     - Updated: otx-workspace-CLASSIFICATION-SELFSUPERVISED/model_multilabel.py
-    [*] Update data configuration file to: otx-workspace-CLASSIFICATION-SELFSUPERVISED/data.yaml
+    [*] Load Model Name: MobileNet-V3-large-1x[*]     - Updated: otx-workspace-CLASSIFICATION-Selfsupervised/selfsl/model.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-Selfsupervised/selfsl/data_pipeline.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-Selfsupervised/deployment.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-Selfsupervised/hpo_config.yaml
+    [*]     - Updated: otx-workspace-CLASSIFICATION-Selfsupervised/model_hierarchical.py
+    [*]     - Updated: otx-workspace-CLASSIFICATION-Selfsupervised/model_multilabel.py
+    [*] Update data configuration file to: otx-workspace-CLASSIFICATION-Selfsupervised/data.yaml
 
 .. note::
 
     Three things must be considered to set the workspace for self-supervised learning:
 
-    1. add ``--train-type SELFSUPERVISED`` in the command to get the training components for self-supervised learning,
+    1. add ``--train-type Selfsupervised`` in the command to get the training components for self-supervised learning,
     2. update the path set as ``train-data-roots``,
     3. and add ``--work-dir`` to distinguish self-supervised learning workspace from supervised learning workspace.
 
@@ -102,7 +102,7 @@ After the workspace creation, the workspace structure is as follows:
     │   ├── train
     │   └── val
     └── template.yaml
-    otx-workspace-CLASSIFICATION-SELFSUPERVISED
+    otx-workspace-CLASSIFICATION-Selfsupervised
     ├── configuration.yaml
     ├── data.yaml
     ├── deployment.py
@@ -121,20 +121,20 @@ After the workspace creation, the workspace structure is as follows:
     For `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ used in :doc:`semantic segmentation tutorial <../base/how_to_train/semantic_segmentation>`, for example, the path ``data/VOCdevkit/VOC2012/JPEGImages`` must be set instead of ``data/VOCdevkit/VOC2012``.
     
     Please refer to :ref:`Explanation of Self-Supervised Learning for Semantic Segmentation <selfsl_semantic_segmentation>`.
-    And don't forget to add ``--train-type SELFSUPERVISED``.
+    And don't forget to add ``--train-type Selfsupervised``.
 
     .. code-block::
 
         (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012/JPEGImages \
                             --model Lite-HRNet-18-mod2 \
-                            --train-type SELFSUPERVISED
+                            --train-type Selfsupervised
 
 4. To start training we need to call ``otx train`` 
 command in **self-supervised learning** workspace:
 
 .. code-block::
 
-    (otx) ...$ cd otx-workspace-CLASSIFICATION-SELFSUPERVISED
+    (otx) ...$ cd otx-workspace-CLASSIFICATION-Selfsupervised
     (otx) ...$ otx train --data ../otx-workspace-CLASSIFICATION/data.yaml
     
     ...
@@ -168,7 +168,7 @@ After pre-training progress, start fine-tuning by calling the below command with
 .. code-block::
 
     (otx) ...$ cd ../otx-workspace-CLASSIFICATION
-    (otx) ...$ otx train --load-weights ../otx-workspace-CLASSIFICATION-SELFSUPERVISED/models/weights.pth
+    (otx) ...$ otx train --load-weights ../otx-workspace-CLASSIFICATION-Selfsupervised/models/weights.pth
 
     ...
 

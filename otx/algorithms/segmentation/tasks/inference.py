@@ -26,9 +26,11 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
     remove_from_configs_by_type,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.algorithms.segmentation.adapters.mmseg.utils.config_utils import (
     patch_datasets,
@@ -67,16 +69,14 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
-from otx.mpa.utils.config_utils import MPAConfig
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
 
 RECIPE_TRAIN_TYPE = {
-    TrainType.SEMISUPERVISED: "semisl.py",
-    TrainType.INCREMENTAL: "incremental.py",
-    TrainType.SELFSUPERVISED: "selfsl.py",
+    TrainType.Semisupervised: "semisl.py",
+    TrainType.Incremental: "incremental.py",
+    TrainType.Selfsupervised: "selfsl.py",
 }
 
 
@@ -191,7 +191,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         # TODO: Need to remove the hard coding for supcon only.
         if (
             self._train_type in RECIPE_TRAIN_TYPE
-            and self._train_type == TrainType.INCREMENTAL
+            and self._train_type == TrainType.Incremental
             and self._hyperparams.learning_parameters.enable_supcon
             and not self._model_dir.endswith("supcon")
         ):
@@ -219,8 +219,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")  # type: ignore
 
     def _update_stage_module(self, stage_module: str):
-        module_prefix = {TrainType.SEMISUPERVISED: "SemiSL", TrainType.INCREMENTAL: "Incr"}
-        if self._train_type == TrainType.SEMISUPERVISED and stage_module == "SegExporter":
+        module_prefix = {TrainType.Semisupervised: "SemiSL", TrainType.Incremental: "Incr"}
+        if self._train_type == TrainType.Semisupervised and stage_module == "SegExporter":
             stage_module = "SemiSLSegExporter"
         elif self._train_type in module_prefix and stage_module in ["SegTrainer", "SegInferrer"]:
             stage_module = module_prefix[self._train_type] + stage_module

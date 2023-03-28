@@ -9,13 +9,13 @@ import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.mask_rcnn import MaskRCNN
 
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
-from otx.mpa.modules.hooks.recording_forward_hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     FeatureVectorHook,
 )
-from otx.mpa.modules.utils.task_adapt import map_class_names
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.task_adapt import map_class_names
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin
