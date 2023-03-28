@@ -7,7 +7,7 @@ from functools import partial
 from typing import Callable
 
 import onnx
-from onnx import ModelProto, NodeProto
+from onnx import ModelProto, NodeProto  # pylint: disable = no-name-in-module
 
 
 def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:
@@ -34,8 +34,8 @@ def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:
             break
         src, dst = connect
         for node in model.graph.node:
-            for i, input in enumerate(node.input):
-                if input == dst:
+            for i, _input in enumerate(node.input):
+                if _input == dst:
                     node.input[i] = src
     return model
 
@@ -56,9 +56,9 @@ def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
 
     def simplify_inputs():
         connect = None
-        for input in graph.input:
+        for _input in graph.input:
             for i, node in enumerate(graph.node):
-                if node.op_type == op_name and node.input[0] == input.name:
+                if node.op_type == op_name and node.input[0] == _input.name:
                     connect = (node.input[0], node.output[0])
                     del graph.node[i]
                     break
