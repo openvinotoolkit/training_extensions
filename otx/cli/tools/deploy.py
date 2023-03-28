@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from pathlib import Path
+
 from otx.api.configuration.helper import create
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.task_environment import TaskEnvironment
@@ -80,7 +82,8 @@ def main():
 
     deployed_model = ModelEntity(None, environment.get_model_configuration())
 
-    output_path = config_manager.output_path
+    output_path = Path(args.output) if args.output else config_manager.output_path
+    output_path.mkdir(exist_ok=True, parents=True)
     task.deploy(deployed_model)
     with open(output_path / "openvino.zip", "wb") as write_file:
         write_file.write(deployed_model.exportable_code)

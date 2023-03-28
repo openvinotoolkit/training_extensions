@@ -136,7 +136,7 @@ def main():
     assert resultset.performance is not None
     print(resultset.performance)
 
-    output_path = config_manager.output_path
+    output_path = Path(args.output) if args.output else config_manager.output_path
     with open(output_path / "performance.json", "w", encoding="UTF-8") as write_file:
         json.dump(
             {resultset.performance.score.name: resultset.performance.score.value},
