@@ -7,9 +7,7 @@
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-instance-attributes, unused-argument
 
 import abc
-import hashlib
 import os
-import stat
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Set, Union
 
@@ -40,61 +38,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
-from otx.mpa.utils.file import MPA_CACHE
-
-DATASET_CACHE = os.path.join(MPA_CACHE, "dataset")
-
-
-def arrow_cache_helper(
-    dataset: DatumDataset,
-    cache_scheme: str,
-    force: bool = False,
-) -> List[str]:
-    """A helper for dumping Datumaro arrow format."""
-
-    def get_hash(source_dir, cache_scheme):
-        m = hashlib.sha256()
-        m.update(f"{source_dir}".encode("utf-8"))
-        m.update(f"{cache_scheme}".encode("utf-8"))
-        for root, dirs, files in os.walk(source_dir):
-            for file in files:
-                m.update(str(os.stat(os.path.join(root, file))[stat.ST_MTIME]).encode("utf-8"))
-            for _dir in dirs:
-                m.update(str(os.stat(os.path.join(root, _dir))[stat.ST_MTIME]).encode("utf-8"))
-        return m.hexdigest()
-
-    def get_file_hash(file):
-        m = hashlib.sha256()
-        m.update(str(file).encode("utf-8"))
-        m.update(str(os.stat(file)[stat.ST_MTIME]).encode("utf-8"))
-        return m.hexdigest()
-
-    cache_dir = get_hash(dataset.data_path, cache_scheme)
-    cache_dir = os.path.join(DATASET_CACHE, cache_dir)
-    cache_paths = []
-    os.makedirs(cache_dir, exist_ok=True)
-
-    cache_hit = [False for _ in dataset.subsets().keys()]
-    for i, subset in enumerate(dataset.subsets().keys()):
-        cache_path = os.path.join(cache_dir, f"{subset}.arrow")
-        cache_paths.append(cache_path)
-        hash_path = f"{cache_path}.hash"
-        if os.path.exists(cache_path) and os.path.exists(hash_path) and not force:
-            with open(hash_path, "r", encoding="utf-8") as f:
-                if get_file_hash(cache_path) == f.read():
-                    cache_hit[i] = True
-
-    if all(cache_hit):
-        return cache_paths
-
-    dataset.export(cache_dir, "arrow", save_media=True, image_ext=cache_scheme)
-
-    for cache_path in cache_paths:
-        hash_path = f"{cache_path}.hash"
-        with open(hash_path, "w", encoding="utf-8") as f:
-            f.write(get_file_hash(cache_path))
-
-    return cache_paths
+from otx.core.data.caching.storage_cache import init_arrow_cache
 
 
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
@@ -140,7 +84,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         )
 
         for subset, dataset in self.dataset.items():
-            self.dataset[subset] = self.init_arrow_cache(dataset, storage_cache_scheme)
+            self.dataset[subset] = init_arrow_cache(dataset, storage_cache_scheme)
 
         self.category_items: Dict[DatumAnnotationType, DatumCategories]
         self.label_groups: List[str]
@@ -352,23 +296,6 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         for used_label in used_labels:
             clean_label_entities[used_label] = self.label_entities[used_label]
         self.label_entities = clean_label_entities
-
-    @staticmethod
-    def init_arrow_cache(dataset: DatumDataset, cache_scheme: Optional[str] = None) -> DatumDataset:
-        """Init arrow format cache from Datumaro."""
-        if cache_scheme is None or cache_scheme == "NONE":
-            return dataset
-        cache_paths = arrow_cache_helper(dataset, cache_scheme)
-        datasets = []
-        for cache_path in cache_paths:
-            datasets.append(DatumDataset.import_from(cache_path, "arrow"))
-        dataset = DatumDataset.from_extractors(*datasets)
-        if len(cache_paths) == 1:
-            dataset._source_path = cache_paths[0]  # pylint: disable=protected-access
-        else:
-            dataset._source_path = os.path.dirname(cache_paths[0])  # pylint: disable=protected-access
-
-        return dataset
 
     @staticmethod
     def datum_media_2_otx_media(datumaro_media: DatumMediaElement) -> IMediaEntity:
