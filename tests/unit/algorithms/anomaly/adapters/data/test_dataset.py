@@ -6,7 +6,7 @@
 import pytest
 
 from otx.api.entities.model_template import TaskType
-from tests.unit.algorithms.anomaly.helpers.dummy_dataset import ShapesDataModule
+from tests.unit.algorithms.anomaly.helpers.dummy_dataset import HazelnutDataModule
 
 
 @pytest.mark.parametrize("stage", ["predict", "fit", "validate", "test"])
@@ -16,7 +16,7 @@ def test_dataloaders(task_type, stage):
 
     For all the test stages and the task types, the datamodule should return the correct keys.
     """
-    datamodule = ShapesDataModule(task_type)
+    datamodule = HazelnutDataModule(task_type)
     datamodule.setup(stage)
     if stage == "fit":
         batch = next(iter(datamodule.train_dataloader()))

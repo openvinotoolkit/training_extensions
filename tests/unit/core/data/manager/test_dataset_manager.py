@@ -22,7 +22,7 @@ AVAILABLE_DATA_ROOTS = [
     "tests/assets/imagenet_dataset",
     "tests/assets/car_tree_bug",
     "tests/assets/cityscapes_dataset/dataset",
-    "tests/assets/anomaly/shapes",
+    "tests/assets/anomaly/hazelnut",
     "tests/assets/cvat_dataset/action_classification/train",
 ]
 
