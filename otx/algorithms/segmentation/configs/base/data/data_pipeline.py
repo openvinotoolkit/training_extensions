@@ -20,11 +20,11 @@ __img_scale = (544, 544)
 __crop_size = (512, 512)
 
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations'),
-    dict(type='Resize', img_scale=__img_scale, ratio_range=(0.5, 2.0)),
-    dict(type='RandomCrop', crop_size=__crop_size, cat_max_ratio=0.75),
-    dict(type='RandomFlip', prob=0.5),
+    dict(type="LoadImageFromFile"),
+    dict(type="LoadAnnotations"),
+    dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0)),
+    dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
+    dict(type="RandomFlip", prob=0.5),
     dict(
         type="MaskCompose",
         prob=0.5,
@@ -34,17 +34,17 @@ train_pipeline = [
             dict(type="PhotoMetricDistortion"),
         ],
     ),
-    dict(type='Normalize', **__img_norm_cfg),
-    dict(type='Pad', size=__crop_size, pad_val=0, seg_pad_val=255),
-    dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_semantic_seg']),
+    dict(type="Normalize", **__img_norm_cfg),
+    dict(type="Pad", size=__crop_size, pad_val=0, seg_pad_val=255),
+    dict(type="DefaultFormatBundle"),
+    dict(type="Collect", keys=["img", "gt_semantic_seg"]),
 ]
 
 test_pipeline = [
     dict(type="LoadImageFromFile"),
     dict(
         type="MultiScaleFlipAug",
-        img_scale=__crop_size,
+        img_scale=__img_scale,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),
