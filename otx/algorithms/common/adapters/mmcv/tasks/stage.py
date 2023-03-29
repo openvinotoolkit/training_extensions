@@ -492,26 +492,30 @@ class Stage:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
-            torch.save(ckpt, new_path)
+            if not torch.distributed.is_initialized() or dist.get_rank() == 0:
+                torch.save(ckpt, new_path)
             return new_path
 
         elif "state_dict" in ckpt:
             ckpt = ckpt["state_dict"]
             new_ckpt = OrderedDict()
+            modified = False
             # patch pre-trained checkpoint for model
             for name in ckpt:
                 if (not name.startswith("backbone")
-                    and not name.startswith("decode_head")
-                    and not name.startswith("fc")):
-
+                    and not "fc" in name
+                    and not "head" in name):
                     new_name = "backbone." + name
+                    modified = True
                 else:
                     new_name = name
                 new_ckpt[new_name] = ckpt[name]
-            if not new_path:
-                new_path = local_torch_hub_folder + "/_converted.pth"
-            torch.save(new_ckpt, new_path)
-            return new_path
+            if modified:
+                if not new_path:
+                    new_path = local_torch_hub_folder + "/__converted.pth"
+                if not torch.distributed.is_initialized() or dist.get_rank() == 0:
+                    torch.save(new_ckpt, new_path)
+                return new_path
 
         return ckpt_path
 

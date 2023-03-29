@@ -63,7 +63,7 @@ class AggregatorMixin(nn.Module):
             if in_index is not None:
                 kwargs["in_index"] = in_index[0]
 
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         self.aggregator = aggregator
         # re-define variables
@@ -78,16 +78,17 @@ class AggregatorMixin(nn.Module):
         return inputs
 
 
-class Mixin(nn.Module):
+class Mixin(AggregatorMixin):
     """Pixel weight mixin class."""
-    def __init__(self, enable_loss_equalizer=False, loss_target="gt_semantic_seg",
-                 enable_out_seg=True, enable_out_norm=False, *args, **kwargs):
-        print("BEFORE PASSED")
+    def __init__(self, enable_loss_equalizer=False,
+                 loss_target="gt_semantic_seg",
+                 enable_out_seg=True,
+                 enable_out_norm=False,
+                 *args,
+                 **kwargs):
         super().__init__(*args, **kwargs)
-        print("PASSED")
         self.enable_loss_equalizer = enable_loss_equalizer
         self.loss_target = loss_target
-        self.aggregator = AggregatorMixin(*args, **kwargs)
         self.loss_equalizer = None
         if enable_loss_equalizer:
             self.loss_equalizer = LossEqualizer()
@@ -125,10 +126,6 @@ class Mixin(nn.Module):
             return 1.0
 
         return loss_module.last_scale
-
-    def _transform_inputs(self, inputs):
-        inputs = self.aggregator._transform_inputs(inputs)
-        return inputs
 
     def _mix_loss(logits, target, ignore_index=255):
         num_samples = logits.size(0)

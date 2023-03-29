@@ -15,7 +15,6 @@ KNOWN_HEADS = {
 }
 
 def get_head(head_name, *args, **kwargs):
-    print(head_name)
     head_class = KNOWN_HEADS[head_name]
 
     class CustomOTXHead(Mixin, head_class):
