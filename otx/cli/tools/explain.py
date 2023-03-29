@@ -82,7 +82,7 @@ def main():
 
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, mode="eval")
+    config_manager = ConfigManager(args, mode="explain")
     # Auto-Configuration for model template
     config_manager.configure_template()
 

@@ -163,7 +163,7 @@ Export
 It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. Run the command line below to export the trained model
-and save the exported model to the ``openvino_models`` folder.
+and save the exported model to the ``openvino`` folder.
 
 .. code-block::
 
@@ -213,7 +213,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
+  (otx) ...$ otx optimize --load-weights openvino/openvino.xml \
                           --save-model-to pot_model
 
   ...

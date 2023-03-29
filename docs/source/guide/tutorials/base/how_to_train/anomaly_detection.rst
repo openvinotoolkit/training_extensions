@@ -159,13 +159,13 @@ Export
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
-and save the exported model to the ``openvino_models`` folder:
+and save the exported model to the ``openvino`` folder:
 
 .. code-block::
 
     otx export ote_anomaly_detection_padim \
         --load-weights otx-workspace-ANOMALY_DETECTION/models/weights.pth \
-        --output otx-workspace-ANOMALY_DETECTION/openvino_models
+        --output otx-workspace-ANOMALY_DETECTION/openvino
 
 You will see the outputs similar to the following:
 
@@ -187,8 +187,8 @@ Now that we have the exported model, let's check its performance using ``otx eva
 
     otx eval ote_anomaly_detection_padim \
         --test-data-roots datasets/MVTec/bottle/test \
-        --load-weights otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml \
-        --output otx-workspace-ANOMALY_DETECTION/openvino_models
+        --load-weights otx-workspace-ANOMALY_DETECTION/openvino/openvino.xml \
+        --output otx-workspace-ANOMALY_DETECTION/openvino
 
 This gives the following results:
 
@@ -210,7 +210,7 @@ optimization.
 
     otx optimize ote_anomaly_detection_padim \
         --train-data-roots datasets/MVTec/bottle/train \
-        --load-weights otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml \
+        --load-weights otx-workspace-ANOMALY_DETECTION/openvino/openvino.xml \
         --output otx-workspace-ANOMALY_DETECTION/pot_model
 
 This command generates the following files that can be used to run :doc:`otx demo <../demo>`:

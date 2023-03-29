@@ -63,7 +63,7 @@ def get_args():
 def main():
     """Main function that is used for model exporting."""
     args = get_args()
-    config_manager = ConfigManager(args, mode="eval", workspace_root=args.workspace)
+    config_manager = ConfigManager(args, mode="export", workspace_root=args.workspace)
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -72,7 +72,9 @@ def main():
 
     # Get class for Task.
     if not args.load_weights and config_manager.check_workspace():
-        latest_model_path = config_manager.workspace_root / "outputs" / "latest" / "weights.pth"
+        latest_model_path = (
+            config_manager.workspace_root / "outputs" / "latest_trained_model" / "models" / "weights.pth"
+        )
         args.load_weights = str(latest_model_path)
 
     is_nncf = is_checkpoint_nncf(args.load_weights)
@@ -108,17 +110,11 @@ def main():
 
     if not args.output:
         output_path = config_manager.output_path
-        output_path = output_path / "openvino_models"
+        output_path = output_path / "openvino"
     else:
         output_path = Path(args.output)
     output_path.mkdir(exist_ok=True, parents=True)
     save_model_data(exported_model, str(output_path))
-
-    # Softlink to weights & openvino_models
-    pre_weight_path = Path(args.load_weights).resolve().parent / "openvino_models"
-    if pre_weight_path.exists():
-        pre_weight_path.unlink()
-    pre_weight_path.symlink_to(output_path.resolve())
 
     return dict(retcode=0, template=template.name)
 

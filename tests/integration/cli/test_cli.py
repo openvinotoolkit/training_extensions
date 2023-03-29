@@ -124,8 +124,12 @@ class TestToolsOTXTrainAutoConfig:
         # check output (use --workspace & --output)
         output_path = os.path.join(tmp_dir_path, "otx-workspace")
         assert os.path.exists(os.path.join(output_path, "outputs"))
-        assert os.path.exists(os.path.join(output_path, "outputs", "latest"))
-        assert os.path.exists(os.path.join(output_path, "outputs", "latest", "weights.pth"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(
+            os.path.join(output_path, "outputs", "latest_trained_model", "models", "label_schema.json")
+        )
         assert os.path.exists(os.path.join(output_path, "models"))
         assert os.path.exists(os.path.join(output_path, "models", "weights.pth"))
 
@@ -142,9 +146,10 @@ class TestToolsOTXTrainAutoConfig:
         assert os.path.exists(output_path)
         file_list = sorted(os.listdir(output_path))
         assert len(file_list) == 2
-        assert os.path.exists(os.path.join(output_path, "latest"))
-        assert os.path.exists(os.path.join(output_path, "latest", "weights.pth"))
-        assert os.path.exists(os.path.join(output_path, "latest", "label_schema.json"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models", "label_schema.json"))
         file_list = file_list[:-1]  # Remove latest from list, then file_list[-1] is latest
         assert os.path.exists(os.path.join(output_path, file_list[-1]))
         assert os.path.exists(os.path.join(output_path, file_list[-1], "models"))
@@ -168,17 +173,12 @@ class TestToolsOTXTrainAutoConfig:
         assert os.path.exists(output_path)
         file_list = sorted(os.listdir(output_path))
         assert len(file_list) == 3
-        assert os.path.exists(os.path.join(output_path, "latest"))
-        assert os.path.exists(os.path.join(output_path, "latest", "openvino_models"))
-        assert os.path.exists(os.path.join(output_path, "latest", "openvino_models", "openvino.xml"))
-        assert os.path.exists(os.path.join(output_path, "latest", "openvino_models", "openvino.bin"))
-        assert os.path.exists(os.path.join(output_path, "latest", "openvino_models", "label_schema.json"))
         file_list = file_list[:-1]  # Remove latest from list, then file_list[-1] is latest
         assert os.path.exists(os.path.join(output_path, file_list[-1]))
-        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino_models"))
-        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino_models", "openvino.xml"))
-        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino_models", "openvino.bin"))
-        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino_models", "label_schema.json"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "openvino.xml"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "openvino.bin"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "label_schema.json"))
 
     @e2e_pytest_component
     def test_otx_optimize_wo_output_args(self, tmp_dir_path):
@@ -198,47 +198,45 @@ class TestToolsOTXTrainAutoConfig:
         assert os.path.exists(output_path)
         file_list = sorted(os.listdir(output_path))
         assert len(file_list) == 4
-        assert os.path.exists(os.path.join(output_path, "latest"))
-        assert os.path.exists(os.path.join(output_path, "latest", "nncf"))
-        assert os.path.exists(os.path.join(output_path, "latest", "nncf", "weights.pth"))
-        assert os.path.exists(os.path.join(output_path, "latest", "nncf", "label_schema.json"))
         file_list = file_list[:-1]  # Remove latest from list, then file_list[-1] is latest
         assert os.path.exists(os.path.join(output_path, file_list[-1]))
         assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf"))
         assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf", "weights.pth"))
         assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf", "label_schema.json"))
 
-    # @e2e_pytest_component
-    # def test_otx_train_wo_workspace_and_output_args(self, tmp_dir_path):
-    #     otx_dir = os.getcwd()
-    #     case = list(train_auto_config_args.keys())[0]
-    #     tmp_dir_path = tmp_dir_path / "test_otx_train_wo_workspace_and_output_args"
-    #     tmp_dir_path.mkdir(exist_ok=True)
-    #     expected_workspace_path = os.path.join(tmp_dir_path, f"otx-workspace-{case.upper()}")
-    #     command_line = [
-    #         "otx",
-    #         "train",
-    #     ]
-    #     args = train_auto_config_args[case]
-    #     for option, value in args.items():
-    #         if option in ["--train-data-roots", "--val-data-roots"]:
-    #             command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
-    #     command_line.extend(train_params)
-    #     check_run(command_line, cwd=tmp_dir_path)
+    @e2e_pytest_component
+    def test_otx_train_wo_workspace_and_output_args(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_otx_train_wo_workspace_and_output_args"
+        tmp_dir_path.mkdir(exist_ok=True)
+        expected_workspace_path = os.path.join(tmp_dir_path, f"otx-workspace-{case.upper()}")
+        command_line = [
+            "otx",
+            "train",
+        ]
+        args = train_auto_config_args[case]
+        for option, value in args.items():
+            if option in ["--train-data-roots", "--val-data-roots"]:
+                command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
+        command_line.extend(train_params)
+        check_run(command_line, cwd=tmp_dir_path)
 
-    #     # check output (without --output -> Default outputs)
-    #     assert os.path.exists(expected_workspace_path)
-    #     expected_output_path = os.path.join(expected_workspace_path, "outputs")
-    #     assert os.path.exists(expected_output_path)
-    #     file_list = sorted(os.listdir(expected_output_path))
-    #     assert len(file_list) == 2
-    #     assert os.path.exists(os.path.join(expected_output_path, "latest"))
-    #     assert os.path.exists(os.path.join(expected_output_path, "latest", "weights.pth"))
-    #     assert os.path.exists(os.path.join(expected_output_path, "latest", "label_schema.json"))
-    #     file_list = file_list[:-1]  # Remove latest from list, then file_list[-1] is latest
-    #     assert os.path.exists(os.path.join(expected_output_path, file_list[-1]))
-    #     assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models"))
-    #     assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "weights.pth"))
+        # check output (without --output -> Default outputs)
+        assert os.path.exists(expected_workspace_path)
+        expected_output_path = os.path.join(expected_workspace_path, "outputs")
+        assert os.path.exists(expected_output_path)
+        file_list = sorted(os.listdir(expected_output_path))
+        assert len(file_list) == 2
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "label_schema.json"))
+        file_list = file_list[:-1]  # Remove latest from list, then file_list[-1] is latest
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models"))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "weights.pth"))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "label_schema.json"))
 
 
 class TestTelemetryIntegration:

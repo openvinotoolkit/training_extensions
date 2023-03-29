@@ -106,7 +106,7 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, mode="eval")
+    config_manager = ConfigManager(args, mode="demo")
     # Auto-Configuration for model template
     config_manager.configure_template()
 

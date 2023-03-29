@@ -150,7 +150,7 @@ In the train log, you can check that the train type is set to **Semisupervised**
   ...
 
 
-After training ends, a trained model is saved in the ``latest`` sub-directory in the workspace named ``otx-workspace-CLASSIFICATION`` by default.
+After training ends, a trained model is saved in the ``latest_trained_model`` sub-directory in the workspace named ``otx-workspace-CLASSIFICATION`` by default.
 
 
 ***************************

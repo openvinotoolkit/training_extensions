@@ -78,13 +78,15 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, workspace_root=args.workspace, mode="train")
+    config_manager = ConfigManager(args, workspace_root=args.workspace, mode="optimize")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
     # The default in the workspace is the model weight of the OTX train.
     if not args.load_weights and config_manager.check_workspace():
-        latest_model_path = config_manager.workspace_root / "outputs" / "latest" / "weights.pth"
+        latest_model_path = (
+            config_manager.workspace_root / "outputs" / "latest_trained_model" / "models" / "weights.pth"
+        )
         args.load_weights = str(latest_model_path)
 
     is_pot = False
@@ -135,12 +137,6 @@ def main():
         output_path = Path(args.output)
     output_path.mkdir(exist_ok=True, parents=True)
     save_model_data(output_model, output_path)
-
-    # Softlink to weights & optimized models
-    pre_weight_path = Path(args.load_weights).resolve().parent / opt_method
-    if pre_weight_path.exists():
-        pre_weight_path.unlink()
-    pre_weight_path.symlink_to(output_path.resolve())
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
