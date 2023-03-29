@@ -7,15 +7,21 @@
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-instance-attributes, unused-argument
 
 import abc
+import hashlib
+import os
+import stat
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
+import cv2
 import datumaro
-from datumaro.components.annotation import Annotation as DatumaroAnnotation
-from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
-from datumaro.components.annotation import Categories as DatumaroCategories
-from datumaro.components.dataset import Dataset as DatumaroDataset
-from datumaro.components.dataset import DatasetSubset as DatumaroDatasetSubset
+from datumaro.components.annotation import Annotation as DatumAnnotation
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.components.annotation import Categories as DatumCategories
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.dataset import DatasetSubset as DatumDatasetSubset
+from datumaro.components.media import Image as DatumImage
+from datumaro.components.media import MediaElement as DatumMediaElement
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -25,13 +31,70 @@ from otx.api.entities.annotation import (
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
+from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.media import IMediaEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
+from otx.mpa.utils.file import MPA_CACHE
+
+DATASET_CACHE = os.path.join(MPA_CACHE, "dataset")
+
+
+def arrow_cache_helper(
+    dataset: DatumDataset,
+    cache_scheme: str,
+    force: bool = False,
+) -> List[str]:
+    """A helper for dumping Datumaro arrow format."""
+
+    def get_hash(source_dir, cache_scheme):
+        m = hashlib.sha256()
+        m.update(f"{source_dir}".encode("utf-8"))
+        m.update(f"{cache_scheme}".encode("utf-8"))
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                m.update(str(os.stat(os.path.join(root, file))[stat.ST_MTIME]).encode("utf-8"))
+            for _dir in dirs:
+                m.update(str(os.stat(os.path.join(root, _dir))[stat.ST_MTIME]).encode("utf-8"))
+        return m.hexdigest()
+
+    def get_file_hash(file):
+        m = hashlib.sha256()
+        m.update(str(file).encode("utf-8"))
+        m.update(str(os.stat(file)[stat.ST_MTIME]).encode("utf-8"))
+        return m.hexdigest()
+
+    cache_dir = get_hash(dataset.data_path, cache_scheme)
+    cache_dir = os.path.join(DATASET_CACHE, cache_dir)
+    cache_paths = []
+    os.makedirs(cache_dir, exist_ok=True)
+
+    cache_hit = [False for _ in dataset.subsets().keys()]
+    for i, subset in enumerate(dataset.subsets().keys()):
+        cache_path = os.path.join(cache_dir, f"{subset}.arrow")
+        cache_paths.append(cache_path)
+        hash_path = f"{cache_path}.hash"
+        if os.path.exists(cache_path) and os.path.exists(hash_path) and not force:
+            with open(hash_path, "r", encoding="utf-8") as f:
+                if get_file_hash(cache_path) == f.read():
+                    cache_hit[i] = True
+
+    if all(cache_hit):
+        return cache_paths
+
+    dataset.export(cache_dir, "arrow", save_media=True, image_ext=cache_scheme)
+
+    for cache_path in cache_paths:
+        hash_path = f"{cache_path}.hash"
+        with open(hash_path, "w", encoding="utf-8") as f:
+            f.write(get_file_hash(cache_path))
+
+    return cache_paths
 
 
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
@@ -62,6 +125,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         val_data_roots: Optional[str] = None,
         test_data_roots: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        storage_cache_scheme: Optional[str] = None,
     ):
         self.task_type = task_type
         self.domain = task_type.domain
@@ -75,7 +139,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             unlabeled_data_roots=unlabeled_data_roots,
         )
 
-        self.category_items: Dict[DatumaroAnnotationType, DatumaroCategories]
+        for subset, dataset in self.dataset.items():
+            self.dataset[subset] = self.init_arrow_cache(dataset, storage_cache_scheme)
+
+        self.category_items: Dict[DatumAnnotationType, DatumCategories]
         self.label_groups: List[str]
         self.label_entities: Dict[int, LabelEntity]
         self.label_schema: LabelSchemaEntity
@@ -86,7 +153,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         val_data_roots: Optional[str] = None,
         test_data_roots: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
-    ) -> Dict[Subset, DatumaroDataset]:
+    ) -> Dict[Subset, DatumDataset]:
         """Import dataset by using Datumaro.import_from() method.
 
         Args:
@@ -108,7 +175,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
 
-            train_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
+            train_dataset = DatumDataset.import_from(train_data_roots, format=self.data_type)
 
             # Prepare subsets by using Datumaro dataset
             dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
@@ -118,7 +185,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             if val_data_roots:
                 val_data_candidates = self._detect_dataset_format(path=val_data_roots)
                 val_data_type = self._select_data_type(val_data_candidates)
-                val_dataset = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
+                val_dataset = DatumDataset.import_from(val_data_roots, format=val_data_type)
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
             elif "val" in train_dataset.subsets():
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
@@ -126,12 +193,12 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         if test_data_roots is not None and train_data_roots is None:
             self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
-            test_dataset = DatumaroDataset.import_from(test_data_roots, format=self.data_type)
+            test_dataset = DatumDataset.import_from(test_data_roots, format=self.data_type)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
             self.is_train_phase = False
 
         if unlabeled_data_roots is not None:
-            dataset[Subset.UNLABELED] = DatumaroDataset.import_from(unlabeled_data_roots, format="image_dir")
+            dataset[Subset.UNLABELED] = DatumDataset.import_from(unlabeled_data_roots, format="image_dir")
 
         return dataset
 
@@ -144,12 +211,16 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         """Get Label Schema."""
         return self._generate_default_label_schema(self.label_entities)
 
-    def _get_subset_data(self, subset: str, dataset: DatumaroDataset) -> DatumaroDatasetSubset:
+    def _get_subset_data(self, subset: str, dataset: DatumDataset) -> DatumDatasetSubset:
         """Get subset dataset according to subset."""
         for k, v in dataset.subsets().items():
             if subset in k or "default" in k:
+                v = v.as_dataset()
+                v.init_cache()
                 return v
             if subset == "test" and "val" in k:
+                v = v.as_dataset()
+                v.init_cache()
                 return v
 
         raise ValueError("Can't find proper dataset.")
@@ -177,17 +248,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _prepare_label_information(
         self,
-        datumaro_dataset: Dict[Subset, DatumaroDataset],
+        datumaro_dataset: Dict[Subset, DatumDataset],
     ) -> Dict[str, Any]:
         # Get datumaro category information
         if self.is_train_phase:
-            label_categories_list = (
-                datumaro_dataset[Subset.TRAINING].categories().get(DatumaroAnnotationType.label, None)
-            )
+            label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumAnnotationType.label, None)
         else:
-            label_categories_list = (
-                datumaro_dataset[Subset.TESTING].categories().get(DatumaroAnnotationType.label, None)
-            )
+            label_categories_list = datumaro_dataset[Subset.TESTING].categories().get(DatumAnnotationType.label, None)
         category_items = label_categories_list.items
         label_groups = label_categories_list.label_groups
 
@@ -199,7 +266,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
-    def _is_normal_polygon(self, annotation: DatumaroAnnotationType.polygon) -> bool:
+    def _is_normal_polygon(self, annotation: DatumAnnotationType.polygon) -> bool:
         """To filter out the abnormal polygon."""
         x_points = [annotation.points[i] for i in range(0, len(annotation.points), 2)]
         y_points = [annotation.points[i + 1] for i in range(0, len(annotation.points), 2)]
@@ -228,13 +295,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
         return annotation_scene
 
-    def _get_label_entity(self, annotation: DatumaroAnnotation) -> Annotation:
+    def _get_label_entity(self, annotation: DatumAnnotation) -> Annotation:
         """Get label entity."""
         return Annotation(
             Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.label_entities[annotation.label])]
         )
 
-    def _get_normalized_bbox_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
+    def _get_normalized_bbox_entity(self, annotation: DatumAnnotation, width: int, height: int) -> Annotation:
         """Get bbox entity w/ normalization."""
         x1, y1, x2, y2 = annotation.points
         return Annotation(
@@ -247,7 +314,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
-    def _get_original_bbox_entity(self, annotation: DatumaroAnnotation) -> Annotation:
+    def _get_original_bbox_entity(self, annotation: DatumAnnotation) -> Annotation:
         """Get bbox entity w/o normalization."""
         return Annotation(
             Rectangle(
@@ -259,7 +326,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
-    def _get_polygon_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
+    def _get_polygon_entity(self, annotation: DatumAnnotation, width: int, height: int) -> Annotation:
         """Get polygon entity."""
         return Annotation(
             Polygon(
@@ -281,8 +348,47 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         Args:
             used_labels (Set): list for index of used label
         """
-        used_labels = list(used_labels)
         clean_label_entities = {}
         for used_label in used_labels:
             clean_label_entities[used_label] = self.label_entities[used_label]
         self.label_entities = clean_label_entities
+
+    @staticmethod
+    def init_arrow_cache(dataset: DatumDataset, cache_scheme: Optional[str] = None) -> DatumDataset:
+        """Init arrow format cache from Datumaro."""
+        if cache_scheme is None or cache_scheme == "NONE":
+            return dataset
+        cache_paths = arrow_cache_helper(dataset, cache_scheme)
+        datasets = []
+        for cache_path in cache_paths:
+            datasets.append(DatumDataset.import_from(cache_path, "arrow"))
+        dataset = DatumDataset.from_extractors(*datasets)
+        if len(cache_paths) == 1:
+            dataset._source_path = cache_paths[0]  # pylint: disable=protected-access
+        else:
+            dataset._source_path = os.path.dirname(cache_paths[0])  # pylint: disable=protected-access
+
+        return dataset
+
+    @staticmethod
+    def datum_media_2_otx_media(datumaro_media: DatumMediaElement) -> IMediaEntity:
+        """Convert Datumaro media to OTX media."""
+        if isinstance(datumaro_media, DatumImage):
+            path = datumaro_media.path
+            size = datumaro_media._size  # pylint: disable=protected-access
+            if os.path.exists(path):
+                return Image(file_path=path, size=size)
+
+            def helper():
+                # OTX expects RGB format
+                data = datumaro_media._data()  # pylint: disable=protected-access
+                if len(data.shape) == 2:
+                    return cv2.cvtColor(data, cv2.COLOR_GRAY2RGB)
+                if len(data.shape) == 3:
+                    return cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                if len(data.shape) == 4:
+                    return cv2.cvtColor(data, cv2.COLOR_BGRA2RGB)
+                raise NotImplementedError
+
+            return Image(data=helper, size=size)
+        raise NotImplementedError

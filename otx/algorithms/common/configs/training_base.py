@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import POTQuantizationPreset
+from .configuration_enums import POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
@@ -292,6 +292,14 @@ class BaseConfig(ConfigurableParameters):
             max_value=maxsize,
             visible_in_ui=False,
             affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        storage_cache_scheme = selectable(
+            default_value=StorageCacheScheme.NONE,
+            header="Scheme for storage cache",
+            description="Scheme for storage cache",
+            editable=False,
+            visible_in_ui=True,
         )
 
     @attrs

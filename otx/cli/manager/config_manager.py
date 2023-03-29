@@ -350,11 +350,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         override_parameters(updated_hyper_parameters, hyper_parameters)
         return create(hyper_parameters)
 
-    def get_dataset_config(self, subsets: List[str]) -> dict:
+    def get_dataset_config(self, subsets: List[str], hyper_parameters: Optional[ConfigurableParameters] = None) -> dict:
         """Returns dataset_config in a format suitable for each subset.
 
         Args:
             subsets (list, str): Defaults to ["train", "val", "unlabeled"].
+            hyper_parameters (ConfigurableParameters): Set of hyper parameters.
 
         Returns:
             dict: dataset_config
@@ -365,6 +366,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         for subset in subsets:
             if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
                 dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})
+        if hyper_parameters is not None:
+            algo_backend = getattr(hyper_parameters, "algo_backend")
+            storage_cache_scheme = getattr(algo_backend, "storage_cache_scheme", None)
+            if storage_cache_scheme is not None:
+                storage_cache_scheme = str(storage_cache_scheme)
+            dataset_config["storage_cache_scheme"] = storage_cache_scheme
         return dataset_config
 
     def update_data_config(self, data_yaml: dict) -> None:

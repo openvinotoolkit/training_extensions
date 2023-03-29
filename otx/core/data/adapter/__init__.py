@@ -101,6 +101,7 @@ def get_dataset_adapter(
     val_data_roots: str = None,
     test_data_roots: str = None,
     unlabeled_data_roots: str = None,
+    **kwargs,
 ):
     """Returns a dataset class by task type.
 
@@ -128,4 +129,5 @@ def get_dataset_adapter(
         val_data_roots=val_data_roots,
         test_data_roots=test_data_roots,
         unlabeled_data_roots=unlabeled_data_roots,
+        **kwargs,
     )
