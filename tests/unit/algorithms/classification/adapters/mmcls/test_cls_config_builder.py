@@ -5,7 +5,7 @@
 import pytest
 
 from otx.algorithms.classification.adapters.mmcls.utils import patch_evaluation
-from otx.mpa.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 

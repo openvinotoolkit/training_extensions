@@ -5,7 +5,7 @@
 
 from mmdet.models.builder import BACKBONES
 
-from otx.mpa.modules.ov.models.mmov_model import MMOVModel
+from otx.core.ov.models.mmov_model import MMOVModel
 
 
 @BACKBONES.register_module()

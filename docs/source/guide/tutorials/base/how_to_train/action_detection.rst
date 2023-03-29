@@ -153,3 +153,74 @@ We will get a similar to this validation output after some validation time (abou
 .. note::
 
   Currently we don't support export and optimize task in action detection. We will support these features very near future.
+
+
+*********
+Export
+*********
+
+1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
+It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+
+2. Run the command line below to export the trained model
+and save the exported model to the ``openvino_models`` folder.
+
+.. code-block::
+
+  (otx) ...$ otx export 
+
+  2023-03-24 15:03:35,993 - mmdeploy - INFO - Export PyTorch model to ONNX: /tmp/OTX-task-ffw8llin/openvino.onnx.
+  2023-03-24 15:03:44,450 - mmdeploy - INFO - Args for Model Optimizer: mo --input_model="/tmp/OTX-task-ffw8llin/openvino.onnx" --output_dir="/tmp/OTX-task-ffw8llin/" --output="bboxes,labels" --input="input" --input_shape="[1, 3, 32, 256, 256]" --mean_values="[123.675, 116.28, 103.53]" --scale_values="[58.395, 57.12, 57.375]" --source_layout=bctwh
+  2023-03-24 15:03:46,707 - mmdeploy - INFO - [ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
+  Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html
+  [ SUCCESS ] Generated IR version 11 model.
+  [ SUCCESS ] XML file: /tmp/OTX-task-ffw8llin/openvino.xml
+  [ SUCCESS ] BIN file: /tmp/OTX-task-ffw8llin/openvino.bin
+
+2023-03-24 15:03:46,707 - mmdeploy - INFO - Successfully exported OpenVINO model: /tmp/OTX-task-ffw8llin/openvino.xml
+2023-03-24 15:03:46,756 - mmaction - INFO - Exporting completed
+
+
+3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
+using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
+
+.. code-block::
+
+  (otx) ...$ otx eval --test-data-roots ../data/JHMDB_5%/test \
+                      --load-weights model-exported/openvino.xml \
+                      --save-performance model-exported/performance.json
+
+  ...
+
+  Performance(score: 0.0, dashboard: (3 metric groups))
+
+.. note::
+
+  Unfortunately, openvino has trouble in export from ONNX file, which comes from torch 1.13.
+  You can get proper openvino IR when you downgrade torch version to 1.12.1 when exporting.
+
+
+*************
+Optimization
+*************
+
+1. You can further optimize the model with ``otx optimize``.
+Currently, only POT is supported for action detection. NNCF will be supported in near future.
+Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
+
+2. Example command for optimizing
+OpenVINO™ model (.xml) with OpenVINO™ POT.
+
+.. code-block::
+
+  (otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
+                          --save-model-to pot_model
+
+  ...
+
+  Performance(score: 0.0, dashboard: (3 metric groups))
+
+Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
+
+3. Now, you have fully trained, optimized and exported an
+efficient model representation ready-to-use action detection model.

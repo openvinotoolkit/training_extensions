@@ -15,8 +15,9 @@
 # and limitations under the License.
 
 
-from .data import OTXClsDataset, SelfSLDataset
+from .datasets import OTXClsDataset, SelfSLDataset
 from .models import BYOL, ConstrastiveHead, SelfSLMLP
+from .optimizer import LARS
 
 # fmt: off
 # isort: off
@@ -33,4 +34,5 @@ __all__ = [
     "BYOL",
     "SelfSLMLP",
     "ConstrastiveHead",
+    "LARS",
 ]

@@ -54,7 +54,7 @@ args_semisl = {
         "--learning_parameters.batch_size",
         "4",
         "--algo_backend.train_type",
-        "SEMISUPERVISED",
+        "Semisupervised",
     ],
 }
 
@@ -68,7 +68,7 @@ args_selfsl = {
         "--learning_parameters.batch_size",
         "4",
         "--algo_backend.train_type",
-        "SELFSUPERVISED",
+        "Selfsupervised",
     ],
 }
 

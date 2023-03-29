@@ -172,7 +172,7 @@ class TestRegressionSegmentation:
             "--learning_parameters.num_iters",
             REGRESSION_TEST_EPOCHS,
             "--algo_backend.train_type",
-            "SEMISUPERVISED",
+            "Semisupervised",
         ]
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
@@ -223,7 +223,7 @@ class TestRegressionSegmentation:
         args_selfsl = config_selfsl["data_path"]
 
         selfsl_train_args = copy.deepcopy(args_selfsl)
-        selfsl_train_args["train_params"] = ["params", "--algo_backend.train_type", "SELFSUPERVISED"]
+        selfsl_train_args["train_params"] = ["params", "--algo_backend.train_type", "Selfsupervised"]
 
         # Self-supervised Training
         train_start_time = timer()

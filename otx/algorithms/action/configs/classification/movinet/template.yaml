@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Action_Classificaiton_MoViNet
+model_template_id: Custom_Action_Classification_MoViNet
 name: MoViNet
 task_type: ACTION_CLASSIFICATION
 task_family: VISION
@@ -45,7 +45,7 @@ hyper_parameters:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: INCREMENTAL
+        default_value: Incremental
 
 # Training resources.
 max_nodes: 1

@@ -1,11 +1,11 @@
 TestToolsMultiClassClassification:
   pot:
-    number_of_fakequantizers: 100
+    number_of_fakequantizers: 92
   nncf:
     number_of_fakequantizers: 124
 TestToolsMultilabelClassification:
   pot:
-    number_of_fakequantizers: 104
+    number_of_fakequantizers: 94
   nncf:
     number_of_fakequantizers: 126
 TestToolsHierarchicalClassification:

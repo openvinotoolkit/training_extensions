@@ -26,9 +26,28 @@ at the path specified by ``--save-explanation-to``.
 
 .. code-block::
 
-    otx explain --explain-data-roots otx-workspace-DETECTION/splitted_dataset/val/ --save-explanation-to outputs/explanation --load-weights outputs/weights.pth
+    otx explain --explain-data-roots otx-workspace-DETECTION/splitted_dataset/val/ \
+                --save-explanation-to outputs/explanation \
+                --load-weights outputs/weights.pth
 
-3. As a result we will get a folder with a pair of generated 
+3. To specify the algorithm of saliency map creation for classification, 
+we can define the ``--explain-algorithm`` parameter.
+
+- ``activationmap`` - for activation map classification algorithm 
+- ``eigencam`` -  for Eigen-Cam classification algorithm
+- ``classwisesaliencymap`` -  for Recipro-CAM classification algorithm, this is a default method
+
+For detection task, we can choose between the following methods:
+
+- ``activationmap`` - for activation map detection algorithm
+- ``classwisesaliencymap`` - for DetClassProbabilityMap algorithm (works for single-stage detectors only)
+
+.. note::
+
+  Learn more about Explainable AI and its algorithms in :doc:`XAI explanation section <../../explanation/additional_features/xai>`
+
+
+4. As a result we will get a folder with a pair of generated 
 images for each image in ``--explain-data-roots``: 
 
 - saliency map - where red color means more attention of the model

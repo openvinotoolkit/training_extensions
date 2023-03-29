@@ -6,7 +6,7 @@ This MLP consists of fc (conv) - norm - relu - fc (conv).
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=missing-module-docstring, dangerous-default-value
+# pylint: disable=missing-module-docstring
 from typing import Any, Dict, List, Tuple, Union
 
 import torch
@@ -34,11 +34,11 @@ class SelfSLMLP(nn.Module):
         in_channels: int,
         hid_channels: int,
         out_channels: int,
-        norm_cfg: Dict[str, Any] = dict(type="BN1d"),
+        norm_cfg: Dict[str, Any] = None,
         use_conv: bool = False,
         with_avg_pool: bool = True,
     ):
-
+        norm_cfg = norm_cfg if norm_cfg else dict(type="BN1d")
         super().__init__()
 
         self.with_avg_pool = with_avg_pool

@@ -44,7 +44,7 @@ This tutorial explains how to train a model in semi-supervised learning mode and
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` 
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 2. Activate your virtual 
@@ -73,7 +73,7 @@ Enable via ``otx build``
 1. To enable semi-supervsied learning via ``otx build``, we need to add arguments ``--unlabeled-data-roots`` and ``--train-type``. 
 OpenVINO™ Training Extensions receives the root path where unlabeled images are by ``--unlabeled-data-roots``.
 
-We should put the path where unlabeled data are contained. It also provides us ``--train-type`` to select the type of training scheme. All we have to do for that is specifying it as **SEMISUPERVISED**.
+We should put the path where unlabeled data are contained. It also provides us ``--train-type`` to select the type of training scheme. All we have to do for that is specifying it as **Semisupervised**.
 
 .. note::
 
@@ -85,7 +85,7 @@ We should put the path where unlabeled data are contained. It also provides us `
 
 .. code-block::
 
-  (otx) ...$ otx build --train-data-roots data/flower_photos --unlabeled-data-roots tests/assets/imagenet_dataset --model MobileNet-V3-large-1x --train-type SEMISUPERVISED
+  (otx) ...$ otx build --train-data-roots data/flower_photos --unlabeled-data-roots tests/assets/imagenet_dataset --model MobileNet-V3-large-1x --train-type Semisupervised
   
 
   [*] Workspace Path: otx-workspace-CLASSIFICATION
@@ -107,14 +107,14 @@ command in our workspace:
 
   (otx) ...$ otx train
 
-In the train log, you can check that the train type is set to **SEMISUPERVISED** and related configurations are properly loaded as following:
+In the train log, you can check that the train type is set to **Semisupervised** and related configurations are properly loaded as following:
 
 .. code-block::
 
   ...
   2023-02-22 06:21:54,492 | INFO : called _init_recipe()
-  2023-02-22 06:21:54,492 | INFO : train type = SEMISUPERVISED
-  2023-02-22 06:21:54,492 | INFO : train type = SEMISUPERVISED - loading training_extensions/otx/recipes/stages/classification/semisl.yaml
+  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised
+  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised - loading training_extensions/otx/recipes/stages/classification/semisl.yaml
   2023-02-22 06:21:54,500 | INFO : Replacing runner from EpochRunnerWithCancel to EpochRunnerWithCancel.
   2023-02-22 06:21:54,503 | INFO : initialized recipe = training_extensions/otx/recipes/stages/classification/semisl.yaml
   ...
@@ -128,23 +128,23 @@ Enable via ``otx train``
 ***************************
 
 1. To enable semi-supervised learning directly via ``otx train``, we need to add arguments ``--unlabeled-data-roots`` and ``--algo_backend.train_type`` 
-which is one of template-specific parameters (details are provided in `quick start guide <../../get_started/quick_start_guide/cli_commands.html#training>`__.)
+which is one of template-specific parameters (details are provided in `quick start guide <../../get_started/quick_start_guide/cli_commands.html#training>`__).
 
 .. code-block::
 
   (otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                       --train-data-roots data/flower_photos \
                       --unlabeled-data-roots tests/assets/imagenet_dataset \
-                      params --algo_backend.train_type SEMISUPERVISED
+                      params --algo_backend.train_type Semisupervised
 
-In the train log, you can check that the train type is set to **SEMISUPERVISED** and related configurations are properly loaded as following:
+In the train log, you can check that the train type is set to **Semisupervised** and related configurations are properly loaded as following:
 
 .. code-block::
 
   ...
   2023-02-22 06:21:54,492 | INFO : called _init_recipe()
-  2023-02-22 06:21:54,492 | INFO : train type = SEMISUPERVISED
-  2023-02-22 06:21:54,492 | INFO : train type = SEMISUPERVISED - loading training_extensions/otx/recipes/stages/classification/semisl.yaml
+  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised
+  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised - loading training_extensions/otx/recipes/stages/classification/semisl.yaml
   2023-02-22 06:21:54,500 | INFO : Replacing runner from EpochRunnerWithCancel to EpochRunnerWithCancel.
   2023-02-22 06:21:54,503 | INFO : initialized recipe = training_extensions/otx/recipes/stages/classification/semisl.yaml
   ...

@@ -56,6 +56,7 @@ with the following command:
   cd ..
 
 |
+
 .. image:: ../../../../../utils/images/flowers_example.jpg
   :width: 600
 
@@ -120,7 +121,7 @@ Let's prepare an OpenVINO™ Training Extensions classification workspace runnin
 
   (otx) ...$ cd ./otx-workspace-CLASSIFICATION
 
-It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset named ``splitted_dataset``.
+It will create **otx-workspace-CLASSIFICATION** with all necessary configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset named ``splitted_dataset``.
 
 3. To start training you need to call ``otx train``
 command in our workspace:

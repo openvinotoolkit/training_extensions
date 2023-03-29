@@ -794,7 +794,7 @@ def otx_build_backbone_testing(root, backbone_args):
         task_workspace,
     ]
     check_run(command_line)
-    from otx.mpa.utils.config_utils import MPAConfig
+    from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 
     model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
     assert os.path.exists(os.path.join(task_workspace, "model.py"))
@@ -810,13 +810,13 @@ def otx_build_testing(root, args: Dict[str, str], expected: Dict[str, str]):
     for option, value in args.items():
         command_line.extend([option, value])
     check_run(command_line)
-    from otx.mpa.utils.config_utils import MPAConfig
+    from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 
     template_config = MPAConfig.fromfile(os.path.join(workspace_root, "template.yaml"))
     assert template_config.name == expected["model"]
     assert (
         template_config.hyper_parameters.parameter_overrides.algo_backend.train_type.default_value
-        == expected["train_type"].upper()
+        == expected["train_type"]
     )
 
 
