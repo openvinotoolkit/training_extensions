@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 
-from .custom_fcn_head import CustomFCNHead
+from .custom_otx_head import get_head
 from .mmov_decode_head import MMOVDecodeHead
 
-__all__ = ["MMOVDecodeHead", "CustomFCNHead"]
+__all__ = ["MMOVDecodeHead", "get_head"]
