@@ -72,7 +72,8 @@ def main():
 
     # Get class for Task.
     if not args.load_weights and config_manager.check_workspace():
-        args.load_weights = str(config_manager.workspace_root / "latest" / "weights.pth")
+        latest_model_path = config_manager.workspace_root / "outputs" / "latest" / "weights.pth"
+        args.load_weights = str(latest_model_path)
 
     is_nncf = is_checkpoint_nncf(args.load_weights)
     task_class = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)

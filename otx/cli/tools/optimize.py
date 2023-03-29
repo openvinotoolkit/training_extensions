@@ -84,7 +84,8 @@ def main():
 
     # The default in the workspace is the model weight of the OTX train.
     if not args.load_weights and config_manager.check_workspace():
-        args.load_weights = str(config_manager.workspace_root / "latest" / "weights.pth")
+        latest_model_path = config_manager.workspace_root / "outputs" / "latest" / "weights.pth"
+        args.load_weights = str(latest_model_path)
 
     is_pot = False
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):

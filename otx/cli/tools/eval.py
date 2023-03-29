@@ -88,7 +88,8 @@ def main():
     config_manager.configure_template()
 
     if not args.load_weights and config_manager.check_workspace():
-        args.load_weights = str(config_manager.workspace_root / "latest" / "weights.pth")
+        latest_model_path = config_manager.workspace_root / "outputs" / "latest" / "weights.pth"
+        args.load_weights = str(latest_model_path)
 
     # Update Hyper Parameter Configs
     hyper_parameters = config_manager.get_hyparams_config(override_param)

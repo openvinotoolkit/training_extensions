@@ -59,7 +59,7 @@ def main():
     assert hyper_parameters
 
     if not args.load_weights and config_manager.check_workspace():
-        exported_weight_path = config_manager.workspace_root / "latest/openvino_models/openvino.xml"
+        exported_weight_path = config_manager.workspace_root / "outputs" / "latest" / "openvino_models" / "openvino.xml"
         if not exported_weight_path.exists():
             raise RuntimeError("No appropriate OpenVINO exported model was found.")
         args.load_weights = str(exported_weight_path)

@@ -230,9 +230,12 @@ def main():  # pylint: disable=too-many-branches
 
     save_model_data(output_model, str(config_manager.output_path / "models"))
     # Latest model folder symbolic link to models
-    if (config_manager.workspace_root / "latest").exists():
-        (config_manager.workspace_root / "latest").unlink()
-    (config_manager.workspace_root / "latest").symlink_to((config_manager.output_path / "models").resolve())
+    latest_path = config_manager.workspace_root / "outputs" / "latest"
+    if latest_path.exists():
+        (config_manager.workspace_root / "outputs/latest").unlink()
+    elif not latest_path.parent.exists():
+        latest_path.parent.mkdir(exist_ok=True, parents=True)
+    latest_path.symlink_to((config_manager.output_path / "models").resolve())
 
     if config_manager.data_config["val_subset"]["data_root"]:
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
