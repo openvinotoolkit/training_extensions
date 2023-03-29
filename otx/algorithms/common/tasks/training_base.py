@@ -331,9 +331,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
         if export:
-            if fp16_export:
-                self._precision[0] = ModelPrecision.FP16
             options["deploy_cfg"] = self._init_deploy_cfg()
+            if fp16_export:
+                mo_options = options["deploy_cfg"].backend_config.mo_options
+                mo_options.flags.append("--compress_to_fp16")
+
             if options.get("precision", None) is None:
                 assert len(self._precision) == 1
                 options["precision"] = str(self._precision[0])

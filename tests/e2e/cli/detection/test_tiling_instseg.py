@@ -27,7 +27,6 @@ from tests.test_suite.run_test_command import (
     otx_explain_openvino_testing,
     otx_explain_testing,
     otx_export_testing,
-    otx_export_testing_w_features,
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
@@ -101,16 +100,17 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export_w_features(self, template, tmp_dir_path):
+    def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -122,9 +122,10 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
