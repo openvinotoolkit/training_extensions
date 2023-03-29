@@ -1,4 +1,4 @@
-"""MMDeploy config of OCR-Lite-HRnet-s-mod2 model for Segmentation Task."""
+"""MMDeploy config of ResNet50 model for Segmentation Task."""
 
 _base_ = ["../base/deployments/base_segmentation_dynamic.py"]
 

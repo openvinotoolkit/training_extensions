@@ -1,4 +1,4 @@
-"""Data Pipeline of HR-Net model for Segmentation Task."""
+"""Data Pipeline of ResNet model for Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #

@@ -28,8 +28,7 @@
       "fixed_iters": 0,
       "warmup": null,
       "warmup_iters": 0,
-      "by_epoch": true,
-      "step": [90]
+      "step": [20]
     },
     "nncf_config": {
       "compression": [
@@ -38,10 +37,10 @@
           "preset": "mixed",
           "initializer": {
             "range": {
-              "num_init_samples": 500
+              "num_init_samples": 5
             },
             "batchnorm_adaptation": {
-              "num_bn_adaptation_samples": 500
+              "num_bn_adaptation_samples": 5
             }
           },
           "ignored_scopes": [
@@ -54,7 +53,7 @@
         "mode": "early_exit",
         "params": {
           "maximal_absolute_accuracy_degradation": 1.0,
-          "maximal_total_epochs": 180
+          "maximal_total_epochs": 40
         }
       }
     }

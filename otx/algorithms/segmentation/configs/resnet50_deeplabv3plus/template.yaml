@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Semantic_Segmentation_SegNext_s
-name: SegNext-s
+model_template_id: Custom_Semantic_Segmentation_ResNet50_ASPP
+name: ResNet50_ASPP
 task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Semantic Segmentation with small-sized architecture which based on the MSCAN backbone for the balance between the faster inference.
+summary: Class-Incremental Semantic Segmentation with medium-heavy architecture which based on the ResNet backbone for more accurate results when additional recources are available.
 application: ~
 
 # Algo backend.
@@ -27,13 +27,14 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 8
+        auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.0005
+        default_value: 0.001
         auto_hpo_state: POSSIBLE
       learning_rate_fixed_iters:
         default_value: 0
       learning_rate_warmup_iters:
-        default_value: 0
+        default_value: 20
       num_iters:
         default_value: 100
     nncf_optimization:
@@ -56,5 +57,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 3.63
-size: 4.8
+gigaflops: 1.82
+size: 3.5

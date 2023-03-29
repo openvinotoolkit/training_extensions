@@ -17,6 +17,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
+    "../../../../recipes/stages/segmentation/incremental.py",
     "../../../common/adapters/mmcv/configs/backbones/lite_hrnet_18.py",
 ]
 
@@ -27,7 +28,7 @@ model = dict(
         type="FCNHead",
         in_channels=[40, 80, 160, 320],
         in_index=[0, 1, 2, 3],
-        input_transform="resize_concat",
+        input_transform="multiple_select",
         channels=40,
         kernel_size=1,
         num_convs=1,
@@ -36,6 +37,8 @@ model = dict(
         num_classes=2,
         norm_cfg=dict(type="BN", requires_grad=True),
         align_corners=False,
+        enable_aggregator=True,
+        enable_out_norm=False,
         loss_decode=[
             dict(
                 type="CrossEntropyLoss",
@@ -44,67 +47,9 @@ model = dict(
             ),
         ],
     ),
-    train_cfg=dict(mix_loss=dict(enable=False, weight=0.1)),
-    test_cfg=dict(mode='slide', crop_size=(512,512), stride=(341, 341))
 )
 
-load_from = "/home/kprokofi/mmsgementation.pth"
+load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
+/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth"
 
 fp16 = dict(loss_scale=512.0)
-
-optimizer = dict(type='AdamW', lr=0.001, betas=(0.9, 0.999), weight_decay=1e-4, paramwise_cfg={'bias_decay_mult ': 0.0, 'norm_decay_mult ': 0.0})
-optimizer_config = dict()
-# optimizer_config = dict(
-#     _delete_=True,
-#     grad_clip=dict(
-#         # method='adaptive',
-#         # clip=0.2,
-#         # method='default',
-#         max_norm=40,
-#         norm_type=2,
-#     ),
-# )
-
-lr_config = dict(policy='poly',  warmup='linear',  warmup_iters=400, warmup_ratio=1e-6, power=0.9,  min_lr=1e-6, by_epoch=False)
-
-log_config = dict(
-    interval=10,
-    hooks=[
-        dict(type="TextLoggerHook", by_epoch=True, ignore_last=False),
-        # dict(type='TensorboardLoggerHook')
-    ],
-)
-
-dist_params = dict(backend="nccl", linear_scale_lr=False)
-
-runner = dict(type="EpochBasedRunner", max_epochs=100)
-
-checkpoint_config = dict(by_epoch=True, interval=1)
-
-evaluation = dict(interval=1, metric=["mDice", "mIoU"], show_log=True)
-
-find_unused_parameters = False
-
-task_adapt = dict(
-    type="mpa",
-    op="REPLACE",
-)
-
-ignore = True
-
-cudnn_benchmark = False
-
-deterministic = False
-
-hparams = dict(dummy=0)
-
-# yapf:disable
-log_config = dict(
-    interval=100, hooks=[dict(type="TextLoggerHook", ignore_last=False), dict(type="TensorboardLoggerHook")]
-)
-# yapf:enable
-
-log_level = "INFO"
-
-resume_from = None
-workflow = [("train", 1)]
