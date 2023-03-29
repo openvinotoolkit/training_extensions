@@ -312,6 +312,8 @@ def patch_datasets(
             cfg_.type = "LoadImageFromOTXDataset"
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
             cfg_.type = "LoadAnnotationFromOTXDataset"
+        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotationsFromFile")):
+            cfg_.type = "LoadAnnotationFromFiles"
 
     for subset in subsets:
         if subset not in config.data:

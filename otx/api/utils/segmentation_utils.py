@@ -48,7 +48,6 @@ def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEn
 
 
 def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
-
     mask_form_file = dataset_item.media.path
     mask_form_file = mask_form_file.replace("images", "masks")
     mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
@@ -99,7 +98,6 @@ def mask_from_annotation(
         mask = cv2.drawContours(mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1)
 
     mask = np.expand_dims(mask, axis=2)
-
 
     return mask
 
