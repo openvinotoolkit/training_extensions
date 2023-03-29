@@ -55,3 +55,31 @@ class LoadAnnotationFromOTXDataset:
         results["seg_fields"].append("gt_semantic_seg")
 
         return results
+
+
+@PIPELINES.register_module()
+class LoadAnnotationFromFiles:
+    """Pipeline element that loads an annotations directly from dataset files. This loading function
+    supports only Common Semantic Segmentation format. This functionality is added for debugging purposes
+    and for supportting custom datasets with ignore labels.
+
+    Expected entries in the 'results' dict that should be passed to this pipeline element are:
+        results['dataset_item']: dataset_item from which to load the annotation
+        results['ann_info']['label_list']: list of all labels in the project
+
+    """
+    def __init__(self):
+        pass
+
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of LoadAnnotationFromFiles."""
+        dataset_item = results["dataset_item"]
+        labels = results["ann_info"]["labels"]
+
+        ann_info = get_annotation_mmseg_format(dataset_item, labels, from_file=True)
+
+        results["gt_semantic_seg"] = ann_info["gt_semantic_seg"]
+        results["seg_fields"].append("gt_semantic_seg")
+
+        return results

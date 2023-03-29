@@ -30,12 +30,13 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.api.utils.segmentation_utils import mask_from_dataset_item
+from otx.api.utils.segmentation_utils import mask_from_dataset_item, mask_from_file
 
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 @check_input_parameters_type()
-def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> dict:
+def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[LabelEntity],
+                                from_file: bool = False) -> dict:
     """Function to convert a OTX annotation to mmsegmentation format.
 
     This is used both in the OTXDataset class defined in this file
@@ -45,10 +46,12 @@ def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[La
     :param labels: List of labels in the project
     :return dict: annotation information dict in mmseg format
     """
+    if from_file:
+        gt_seg_map = mask_from_file(dataset_item)
+    else:
+        gt_seg_map = mask_from_dataset_item(dataset_item, labels)
 
-    gt_seg_map = mask_from_dataset_item(dataset_item, labels)
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
-
     ann_info = dict(gt_semantic_seg=gt_seg_map)
 
     return ann_info

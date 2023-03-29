@@ -37,34 +37,24 @@ def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEn
         Numpy array of mask
     """
     # todo: cache this so that it does not have to be redone for all the same media
-
-    mask = mask_from_file(
-        dataset_item,
-        labels
+    mask = mask_from_annotation(
+        dataset_item.get_annotations(),
+        labels,
+        dataset_item.width,
+        dataset_item.height
     )
 
     return mask
 
-def mask_from_file(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
 
-    labels = sorted(labels)  # type: ignore
-    labels = [int(l.id) + 1 for l in labels]
-    labels.insert(0, 0)
+def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
+
     mask_form_file = dataset_item.media.path
     mask_form_file = mask_form_file.replace("images", "masks")
     mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
-    new_mask = np.zeros_like(mask)
 
-    for l in np.unique(mask):
-        if l == 255:
-            new_mask[mask == l] = 255
-        else:
-            new_mask[mask == l] = labels[l]
-    if len(labels) <= 10:
-        assert np.sum(new_mask != mask) == 0
+    return np.expand_dims(mask, axis=2).astype(np.int8)
 
-    return np.expand_dims(new_mask, axis=2).astype(np.int8)
 
 def mask_from_annotation(
     annotations: List[Annotation], labels: List[LabelEntity], width: int, height: int
