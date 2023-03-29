@@ -39,12 +39,10 @@ class SegTrainer(SegStage):
         if mode not in self.mode:
             logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
-        cfg = self.configure(model_cfg, model_cfg.load_from, data_cfg, **kwargs)
+        # patch pretrained weights for model
+        model_ckpt = model_ckpt if model_ckpt else model_cfg.load_from
+        cfg = self.configure(model_cfg, model_ckpt, data_cfg, **kwargs)
         logger.info("train!")
-
-        # FIXME: what is this? Why do we need?
-        if cfg.runner.type == "IterBasedRunner":
-            cfg.runner = dict(type=cfg.runner.type, max_iters=cfg.runner.max_iters)
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 

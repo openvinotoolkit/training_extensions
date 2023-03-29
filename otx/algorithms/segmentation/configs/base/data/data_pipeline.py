@@ -25,7 +25,15 @@ train_pipeline = [
     dict(type='Resize', img_scale=__img_scale, ratio_range=(0.5, 2.0)),
     dict(type='RandomCrop', crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
-    dict(type='PhotoMetricDistortion'),
+    dict(
+        type="MaskCompose",
+        prob=0.5,
+        lambda_limits=(4, 16),
+        keep_original=False,
+        transforms=[
+            dict(type="PhotoMetricDistortion"),
+        ],
+    ),
     dict(type='Normalize', **__img_norm_cfg),
     dict(type='Pad', size=__crop_size, pad_val=0, seg_pad_val=255),
     dict(type='DefaultFormatBundle'),

@@ -11,7 +11,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
-from otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_fcn_head import get_head
+from training_extensions.otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_otx_head import get_head
 
 
 logger = get_logger()
