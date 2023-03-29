@@ -121,6 +121,8 @@ class MultiGPUManager:
         world_size (int): Total number of workers in a worker group.
     """
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(
         self,
         train_func: Callable,
@@ -146,6 +148,7 @@ class MultiGPUManager:
         self._world_size = world_size
         self._main_pid = os.getpid()
         self._processes: Optional[List[mp.Process]] = None
+        self._tmp_dir: Optional[TemporaryDirectory] = None
 
     def is_available(self) -> bool:
         """Check multi GPU training is available.
@@ -172,7 +175,8 @@ class MultiGPUManager:
                 If output_path is None, make a temporary directory and return it.
         """
         if output_path is None:
-            output_path = TemporaryDirectory(prefix="OTX-multi-gpu-").name  # pylint: disable=R1732
+            self._tmp_dir = TemporaryDirectory(prefix="OTX-multi-gpu-")  # pylint: disable=consider-using-with
+            output_path = self._tmp_dir.name
 
         if optimized_hyper_parameters is not None:  # if HPO is executed, optimized HPs are applied to child processes
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
@@ -193,6 +197,9 @@ class MultiGPUManager:
         if self._processes is not None:
             for p in self._processes:
                 p.join()
+
+        if self._tmp_dir is not None:
+            self._tmp_dir.cleanup()
 
     @staticmethod
     def initialize_multigpu_train(
