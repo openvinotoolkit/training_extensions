@@ -63,7 +63,7 @@ class AggregatorMixin(nn.Module):
             if in_index is not None:
                 kwargs["in_index"] = in_index[0]
 
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
         self.aggregator = aggregator
         # re-define variables
@@ -82,8 +82,9 @@ class Mixin(nn.Module):
     """Pixel weight mixin class."""
     def __init__(self, enable_loss_equalizer=False, loss_target="gt_semantic_seg",
                  enable_out_seg=True, enable_out_norm=False, *args, **kwargs):
+        print("BEFORE PASSED")
         super().__init__(*args, **kwargs)
-
+        print("PASSED")
         self.enable_loss_equalizer = enable_loss_equalizer
         self.loss_target = loss_target
         self.aggregator = AggregatorMixin(*args, **kwargs)

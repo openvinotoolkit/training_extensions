@@ -5,16 +5,17 @@
 #
 
 from mmseg.models.decode_heads.fcn_head import FCNHead
-from mmseg.models.decode_heads.sep_aspp_head import ASPPHead
+from mmseg.models.decode_heads.sep_aspp_head import DepthwiseSeparableASPPHead
 
 from .mixin import Mixin
 
 KNOWN_HEADS = {
     "FCNHead": FCNHead,
-    "ASPPHead": ASPPHead
+    "ASPPHead": DepthwiseSeparableASPPHead
 }
 
 def get_head(head_name, *args, **kwargs):
+    print(head_name)
     head_class = KNOWN_HEADS[head_name]
 
     class CustomOTXHead(Mixin, head_class):
