@@ -847,7 +847,7 @@ def otx_build_auto_config(root, otx_dir: str, args: Dict[str, str]):
     check_run(command_line)
 
 
-def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
+def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str], use_output: bool = True):
     work_dir = os.path.join(root, "otx-workspace")
     command_line = ["otx", "train"]
 
@@ -856,7 +856,8 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str]):
             command_line.extend([args[option]])
         elif option in ["--train-data-roots", "--val-data-roots"]:
             command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
-    command_line.extend(["--output", f"{work_dir}"])
+    if use_output:
+        command_line.extend(["--output", f"{work_dir}"])
     command_line.extend(["--workspace", f"{work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
