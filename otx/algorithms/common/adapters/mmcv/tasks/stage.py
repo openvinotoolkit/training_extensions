@@ -9,7 +9,7 @@ import os
 import os.path as osp
 import random
 import time
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 from collections import OrderedDict
 
 import mmcv
@@ -430,7 +430,6 @@ class Stage:
     def get_model_meta(cfg):
         """Return model_meta."""
         ckpt_path = cfg.get("load_from", None)
-        print(ckpt_path)
         meta = {}
         if ckpt_path:
             ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
@@ -499,8 +498,12 @@ class Stage:
         elif "state_dict" in ckpt:
             ckpt = ckpt["state_dict"]
             new_ckpt = OrderedDict()
+            # patch pre-trained checkpoint for model
             for name in ckpt:
-                if not name.startswith("backbone") and (not name.startswith("decode_head") or not name.startswith("fc")):
+                if (not name.startswith("backbone")
+                    and not name.startswith("decode_head")
+                    and not name.startswith("fc")):
+
                     new_name = "backbone." + name
                 else:
                     new_name = name

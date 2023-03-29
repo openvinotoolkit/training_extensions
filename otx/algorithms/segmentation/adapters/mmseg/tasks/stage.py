@@ -66,6 +66,10 @@ class SegStage(Stage):
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
+        # configure head
+        self.configure_head(cfg)
+
+
     def configure_data(self, cfg, training, data_cfg):  # noqa: C901
         """Patch data_cfg."""
         # Data
@@ -138,6 +142,17 @@ class SegStage(Stage):
         self.org_model_classes = org_model_classes
         self.model_classes = model_classes
 
+    def configure_head(self, cfg):
+        """Change head to custom head to align with otx
+           inteface for class incremental learning."""
+        decode_head = cfg.model.get("decode_head", None)
+        auxiliary_head = cfg.model.get("auxiliary_head", None)
+
+        for head in (decode_head, auxiliary_head):
+            if head:
+                head.head_name = decode_head.type
+                head.type = get_head
+
     def configure_ignore(self, cfg):
         """Change to incremental loss (ignore mode)."""
         if cfg.get("ignore", False):
@@ -146,15 +161,11 @@ class SegStage(Stage):
                 use_sigmoid=False,
                 loss_weight=1.0,
             )
-        else:
-            cfg_loss_decode = ConfigDict(
-                type="CrossEntropyLoss",
-                use_sigmoid=False,
-                loss_weight=1.0,
-            )
 
-        if "decode_head" in cfg.model:
-            decode_head = cfg.model.decode_head
-            decode_head.head_name = decode_head.type
-            decode_head.type = get_head
-            decode_head.loss_decode = cfg_loss_decode
+            if "decode_head" in cfg.model:
+                decode_head = cfg.model.decode_head
+                decode_head.loss_decode = cfg_loss_decode
+
+            if "auxiliary_head" in cfg.model:
+                auxiliary_head = cfg.model.auxiliary_head
+                auxiliary_head.loss_decode = cfg_loss_decode
