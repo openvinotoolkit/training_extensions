@@ -59,7 +59,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
-from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
+from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
@@ -97,58 +97,28 @@ class OTXDetectionTask(OTXTask, ABC):
         if task_environment.model is not None:
             self._load_model()
 
-    def _load_model(self):
-        """Loading model from checkpoint."""
-
-        def _load_model_ckpt(model: Optional[ModelEntity]):
-            if model and "weights.pth" in model.model_adapters:
-                # If a model has been trained and saved for the task already, create empty model and load weights here
-                buffer = io.BytesIO(model.get_data("weights.pth"))
-                model_data = torch.load(buffer, map_location=torch.device("cpu"))
-
-                # set confidence_threshold as well
-                self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
-                if model_data.get("anchors"):
-                    self._anchors = model_data["anchors"]
-
-                # Get config
-                if model_data.get("config"):
-                    tiling_parameters = model_data.get("config").get("tiling_parameters")
-                    if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
-                        logger.info("Load tiling parameters")
-                        self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
-                        self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
-                        self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
-                        self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"][
-                            "value"
-                        ]
-                return model_data
-            return None
-
-        def _load_model_label_schema(model: Optional[ModelEntity]):
+    def _load_model_ckpt(self, model: Optional[ModelEntity]):
+        if model and "weights.pth" in model.model_adapters:
             # If a model has been trained and saved for the task already, create empty model and load weights here
-            if model and "label_schema.json" in model.model_adapters:
-                import json
+            buffer = io.BytesIO(model.get_data("weights.pth"))
+            model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
-                buffer = json.loads(model.get_data("label_schema.json").decode("utf-8"))
-                model_label_schema = LabelSchemaMapper().backward(buffer)
-                return model_label_schema.get_labels(include_empty=False)
-            return self._labels
+            # set confidence_threshold as well
+            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
+            if model_data.get("anchors"):
+                self._anchors = model_data["anchors"]
 
-        def _load_resume_info(model: Optional[ModelEntity]):
-            if model and "resume" in model.model_adapters:
-                return model.model_adapters.get("resume", False)
-            return False
-
-        logger.info("loading the model from the task env.")
-        state_dict = _load_model_ckpt(self._task_environment.model)
-        if state_dict:
-            self._model_ckpt = os.path.join(self._output_path, "env_model_ckpt.pth")
-            if os.path.exists(self._model_ckpt):
-                os.remove(self._model_ckpt)
-            torch.save(state_dict, self._model_ckpt)
-            self._model_label_schema = _load_model_label_schema(self._task_environment.model)
-            self._resume = _load_resume_info(self._task_environment.model)
+            # Get config
+            if model_data.get("config"):
+                tiling_parameters = model_data.get("config").get("tiling_parameters")
+                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
+                    logger.info("Load tiling parameters")
+                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
+                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
+                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
+                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
+            return model_data
+        return None
 
     def train(
         self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None

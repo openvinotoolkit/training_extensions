@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import io
 import os
 import shutil
 import tempfile
@@ -35,6 +36,7 @@ from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMeth
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
+from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
@@ -117,10 +119,38 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         # This is for hpo, and this should be removed
         self.project_path = self._output_path
 
-    @abstractmethod
     def _load_model(self):
         """Loading model from checkpoint."""
-        raise NotImplementedError
+
+        def _load_model_label_schema(model: Optional[ModelEntity]):
+            # If a model has been trained and saved for the task already, create empty model and load weights here
+            if model and "label_schema.json" in model.model_adapters:
+                import json
+
+                buffer = json.loads(model.get_data("label_schema.json").decode("utf-8"))
+                model_label_schema = LabelSchemaMapper().backward(buffer)
+                return model_label_schema.get_labels(include_empty=False)
+            return self._labels
+
+        logger.info("loading the model from the task env.")
+        model = self._task_environment.model
+        state_dict = self._load_model_ckpt(model)
+        if state_dict:
+            self._model_ckpt = os.path.join(self._output_path, "env_model_ckpt.pth")
+            if os.path.exists(self._model_ckpt):
+                os.remove(self._model_ckpt)
+            torch.save(state_dict, self._model_ckpt)
+            self._model_label_schema = _load_model_label_schema(model)
+            if model is not None:
+                self._resume = model.model_adapters.get("resume", False)
+
+    def _load_model_ckpt(self, model: Optional[ModelEntity]):
+        if model and "weights.pth" in model.model_adapters:
+            # If a model has been trained and saved for the task already, create empty model and load weights here
+            buffer = io.BytesIO(model.get_data("weights.pth"))
+            model_data = torch.load(buffer, map_location=torch.device("cpu"))
+            return model_data
+        return None
 
     @abstractmethod
     def train(
