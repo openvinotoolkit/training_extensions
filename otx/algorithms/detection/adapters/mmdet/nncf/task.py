@@ -19,10 +19,10 @@ from functools import partial
 from typing import Optional
 
 import otx.algorithms.detection.adapters.mmdet.nncf.patches  # noqa: F401  # pylint: disable=unused-import
-from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
-from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector
+from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,
 )
@@ -32,43 +32,41 @@ from otx.api.entities.model import ModelEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-
-from .inference import DetectionInferenceTask
-from .train import DetectionTrainTask
 
 logger = get_logger()
 
 
-class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disable=too-many-ancestors
+# pylint: disable=too-many-ancestors
+class DetectionNNCFTask(NNCFBaseTask, MMDetectionTask):
     """DetectionNNCFTask."""
 
-    def _initialize_post_hook(self, options=None):
-        super()._initialize_post_hook(options)
+    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
+        super().__init__()
+        super(NNCFBaseTask, self).__init__(task_environment, output_path)
+        self._set_attributes_by_hyperparams()
 
-        export = options.get("export", False)
-        options["model_builder"] = partial(
+    def _init_task(self, export: bool = False):  # noqa
+        super(NNCFBaseTask, self)._init_task(export)
+        self._prepare_optimize(export)
+
+    def _prepare_optimize(self, export=False):
+        super()._prepare_optimize()
+
+        self.model_builder = partial(
             self.model_builder,
             nncf_model_builder=build_nncf_detector,
             return_compression_ctrl=False,
             is_export=export,
         )
 
-        # do not configure regularization
-        if "l2sp_weight" in self._recipe_cfg.model or "l2sp_weight" in self._recipe_cfg.model:
-            remove_from_config(self._recipe_cfg.model, "l2sp_weight")
-
     def _optimize(
         self,
         dataset: DatasetEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
-        results = self._run_task(
-            "DetectionTrainer",
-            mode="train",
-            dataset=dataset,
-            parameters=optimization_parameters,
-        )
+        results = self._train_model(dataset)
 
         return results
 
@@ -79,7 +77,7 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disabl
     ):
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        val_preds, val_map = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
+        val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
@@ -108,7 +106,7 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disabl
         logger.info(f"Final model performance: {str(performance)}")
         performance.dashboard_metrics.extend(
             # pylint: disable-next=protected-access
-            DetectionTrainTask._generate_training_metrics(self._learning_curves, val_map)
+            self._generate_training_metrics(self._learning_curves, val_map)
         )
         output_model.performance = performance
 

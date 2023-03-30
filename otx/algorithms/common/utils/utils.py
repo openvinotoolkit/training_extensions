@@ -16,9 +16,13 @@
 
 import importlib
 import inspect
+import os
+import random
 from collections import defaultdict
 from typing import Callable, Optional, Tuple
 
+import numpy as np
+import torch
 import yaml
 
 from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
@@ -94,3 +98,25 @@ def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
             if spec.varkw is None and spec.varargs is None:
                 break
     return tuple(args)
+
+
+def set_random_seed(seed, logger, deterministic=False):
+    """Set random seed.
+
+    Args:
+        seed (int): Seed to be used.
+        logger (logging.Logger): logger for logging seed info
+        deterministic (bool): Whether to set the deterministic option for
+            CUDNN backend, i.e., set `torch.backends.cudnn.deterministic`
+            to True and `torch.backends.cudnn.benchmark` to False.
+            Default: False.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    logger.info(f"Training seed was set to {seed} w/ deterministic={deterministic}.")
+    if deterministic:
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False

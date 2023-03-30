@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from . import models
 from .datasets.dataset import OTXDetDataset
 
 # fmt: off
@@ -15,4 +16,4 @@ get_root_logger().propagate = False  # pylint: disable=wrong-import-order
 # isort:on
 # fmt: on
 
-__all__ = ["OTXDetDataset"]
+__all__ = ["OTXDetDataset", "models"]
