@@ -280,7 +280,7 @@ class MultiGPUManager:
         # set CUDA_VISIBLE_DEVICES to make child process use proper GPU
         origin_cuda_visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES")
         if origin_cuda_visible_devices is not None:
-            cuda_visible_devices = origin_cuda_visible_devices.split(',')
+            cuda_visible_devices = origin_cuda_visible_devices.split(",")
         else:
             cuda_visible_devices = [str(i) for i in range(torch.cuda.device_count())]
         os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([cuda_visible_devices[gpu_idx] for gpu_idx in self._gpu_ids])

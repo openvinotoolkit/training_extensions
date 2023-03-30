@@ -143,8 +143,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._work_dir_is_temp = True
         # If training is excuted with torchrun, set all trainings' output directory same
         if "TORCHELASTIC_RUN_ID" in os.environ:
-            return os.path.join(
-                tempfile.gettempdir(), f"OTX-task-torchelastic-{os.environ['TORCHELASTIC_RUN_ID']}")
+            return os.path.join(tempfile.gettempdir(), f"OTX-task-torchelastic-{os.environ['TORCHELASTIC_RUN_ID']}")
         return tempfile.mkdtemp(prefix="OTX-task-")
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
