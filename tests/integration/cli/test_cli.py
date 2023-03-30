@@ -198,7 +198,7 @@ class TestToolsOTXTrainAutoConfig:
         assert os.path.exists(output_path)
         file_list = sorted(os.listdir(output_path))
         assert len(file_list) == 4
-        file_list = file_list[:-1]  # Remove latest from list, then file_list[-1] is latest
+        file_list.remove("latest_trained_model")
         assert os.path.exists(os.path.join(output_path, file_list[-1]))
         assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf"))
         assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf", "weights.pth"))
