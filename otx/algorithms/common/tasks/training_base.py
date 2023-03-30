@@ -90,7 +90,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._anchors = {}  # type: Dict[str, int]
         self._work_dir_is_temp = False
         if output_path is None:
-            output_path = tempfile.mkdtemp(prefix="OTX-task-")
+            if "TORCHELASTIC_RUN_ID" in os.environ:
+                output_path = os.path.join(tempfile.gettempdir(),
+                                           f"OTX-task-torchelastic-{os.environ['TORCHELASTIC_RUN_ID ']}")
+            else:
+                output_path = tempfile.mkdtemp(prefix="OTX-task-")
             self._work_dir_is_temp = True
         self._output_path = output_path
         logger.info(f"created output path at {self._output_path}")
