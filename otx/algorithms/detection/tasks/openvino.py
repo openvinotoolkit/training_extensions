@@ -86,6 +86,7 @@ from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.detection_utils import detection2array
 
 logger = get_logger()
+import time
 
 
 # pylint: disable=too-many-locals
@@ -158,7 +159,8 @@ class BaseInferencerWithConverter(BaseInferencer):
         """
         segm = isinstance(self.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
         tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=segm)
-        detections, features = tiler.predict(image)
+        # detections, features = tiler.predict(image)
+        detections, features = tiler.predict_async(image)
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
 
@@ -391,6 +393,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
+            start_time = time.perf_counter()
             if tile_enabled:
                 predicted_scene, features = self.inferencer.predict_tile(
                     dataset_item.numpy,
@@ -427,6 +430,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     process_saliency_maps=process_saliency_maps,
                 )
             update_progress_callback(int(i / dataset_size * 100), None)
+            logger.info(
+                "OpenVINO inference completed for %s, time: %s",
+                i,
+                time.perf_counter() - start_time,
+            )
         logger.info("OpenVINO inference completed")
         return dataset
 
