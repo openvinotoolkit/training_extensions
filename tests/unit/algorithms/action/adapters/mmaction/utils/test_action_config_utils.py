@@ -5,7 +5,6 @@
 #
 
 import tempfile
-from collections import defaultdict
 
 import pytest
 from mmcv.utils import Config
@@ -22,7 +21,6 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.model_template import TaskType
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 CLS_CONFIG_NAME = "otx/algorithms/action/configs/classification/x3d/model.py"
@@ -108,20 +106,10 @@ def test_prepare_for_training() -> None:
 
     item = DatasetItemEntity(media=Image(file_path="iamge.jpg"), annotation_scene=NullAnnotationSceneEntity())
     dataset = DatasetEntity(items=[item])
-    time_monitor = TimeMonitorCallback()
-    learning_curves = defaultdict()
 
     CLS_CONFIG.runner = {}
     CLS_CONFIG.custom_hooks = []
-    prepare_for_training(CLS_CONFIG, dataset, dataset, time_monitor, learning_curves)
+    prepare_for_training(CLS_CONFIG, dataset, dataset)
 
     assert get_data_cfg(CLS_CONFIG, "train").otx_dataset == dataset
     assert get_data_cfg(CLS_CONFIG, "val").otx_dataset == dataset
-    assert (
-        CLS_CONFIG.custom_hooks[-1]["type"] == "OTXProgressHook"
-        and CLS_CONFIG.custom_hooks[-1]["time_monitor"] == time_monitor
-    )
-    assert (
-        CLS_CONFIG.log_config.hooks[-1]["type"] == "OTXLoggerHook"
-        and CLS_CONFIG.log_config.hooks[-1]["curves"] == learning_curves
-    )
