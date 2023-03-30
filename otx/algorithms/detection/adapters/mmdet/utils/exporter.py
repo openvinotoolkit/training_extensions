@@ -5,7 +5,7 @@
 
 import numpy as np
 
-from otx.algorithms.common.adapters.mmcv.tasks.exporter_mixin import ExporterMixin
+from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
 from otx.algorithms.common.adapters.mmdeploy.utils.utils import (
     sync_batchnorm_2_batchnorm,
 )
@@ -15,7 +15,7 @@ from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 logger = get_logger()
 
 
-class DetectionExporter(ExporterMixin):
+class DetectionExporter(Exporter):
     """Exporter for OTX Detection using mmdetection traing backend."""
 
     def run(self, cfg, **kwargs):  # noqa: C901

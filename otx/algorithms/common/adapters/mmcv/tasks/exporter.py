@@ -11,24 +11,13 @@ from otx.algorithms.common.utils.logger import get_logger
 logger = get_logger()
 
 
-class ExporterMixin:
-    """Exporter Mixin class for OTX export."""
+class Exporter:
+    """Exporter class for OTX export."""
 
-    def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):  # noqa: C901
+    def run(self, cfg, **kwargs):  # noqa: C901
         """Run export procedure."""
-        self._init_logger()
-        logger.info("exporting the model")
-        mode = kwargs.get("mode", "train")
-        if mode not in self.mode:
-            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
-            return {}
-
-        cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
         logger.info("export!")
 
-        #  from torch.jit._trace import TracerWarning
-        #  import warnings
-        #  warnings.filterwarnings("ignore", category=TracerWarning)
         precision = kwargs.pop("precision", "FP32")
         if precision not in ("FP32", "FP16", "INT8"):
             raise NotImplementedError

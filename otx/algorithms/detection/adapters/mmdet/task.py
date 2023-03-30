@@ -34,6 +34,7 @@ from mmdet.utils import collect_env
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
+    BaseRecordingForwardHook,
     EigenCamHook,
     FeatureVectorHook,
 )
@@ -357,9 +358,9 @@ class MMDetectionTask(OTXDetectionTask):
             cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
 
         # Data loader
-        dataset = build_dataset(cfg.data.test)
+        mm_dataset = build_dataset(cfg.data.test)
         dataloader = build_dataloader(
-            dataset,
+            mm_dataset,
             samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
             workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
             num_gpus=len(cfg.gpu_ids),
@@ -377,7 +378,7 @@ class MMDetectionTask(OTXDetectionTask):
                     "configuration"
                 )
         else:
-            target_classes = dataset.CLASSES
+            target_classes = mm_dataset.CLASSES
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
@@ -405,7 +406,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         if not dump_saliency_map:
-            saliency_hook = nullcontext()
+            saliency_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             raw_model = feature_model
             if raw_model.__class__.__name__ == "NNCFNetwork":
@@ -415,35 +416,44 @@ class MMDetectionTask(OTXDetectionTask):
             else:
                 saliency_hook = DetSaliencyMapHook(feature_model)
 
+        if not dump_features:
+            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
+        else:
+            feature_vector_hook = FeatureVectorHook(feature_model)
+
         eval_predictions = []
-        with FeatureVectorHook(feature_model) if dump_features else nullcontext() as feature_vector_hook:
+        # pylint: disable=no-member
+        with feature_vector_hook:
             with saliency_hook:
                 eval_predictions = single_gpu_test(model, dataloader)
-                feature_vectors = feature_vector_hook.records if dump_features else [None] * len(dataset)
-                if isinstance(saliency_hook, nullcontext):
-                    saliency_maps = [None] * len(dataset)
+                if isinstance(feature_vector_hook, nullcontext):
+                    feature_vectors = [None] * len(mm_dataset)
                 else:
-                    saliency_maps = saliency_hook.records  # pylint: disable=no-member
+                    feature_vectors = feature_vector_hook.records
+                if isinstance(saliency_hook, nullcontext):
+                    saliency_maps = [None] * len(mm_dataset)
+                else:
+                    saliency_maps = saliency_hook.records
 
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
             cfg.evaluation.pop(key, None)
 
         metric = None
         if inference_parameters and inference_parameters.is_evaluation:
-            metric = dataset.evaluate(eval_predictions, **cfg.evaluation)
+            metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
             metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
 
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
-        while hasattr(dataset, "dataset") and not isinstance(dataset, ImageTilingDataset):
-            dataset = dataset.dataset
+        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
+            mm_dataset = mm_dataset.dataset
 
-        if isinstance(dataset, ImageTilingDataset):
-            feature_vectors = [feature_vectors[i] for i in range(dataset.num_samples)]
-            saliency_maps = [saliency_maps[i] for i in range(dataset.num_samples)]
-            if not dataset.merged_results:
-                eval_predictions = dataset.merge(eval_predictions)
+        if isinstance(mm_dataset, ImageTilingDataset):
+            feature_vectors = [feature_vectors[i] for i in range(mm_dataset.num_samples)]
+            saliency_maps = [saliency_maps[i] for i in range(mm_dataset.num_samples)]
+            if not mm_dataset.merged_results:
+                eval_predictions = mm_dataset.merge(eval_predictions)
             else:
-                eval_predictions = dataset.merged_results
+                eval_predictions = mm_dataset.merged_results
 
         assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), (
             "Number of elements should be the same, however, number of outputs are "
@@ -642,7 +652,7 @@ class MMDetectionTask(OTXDetectionTask):
                     "configuration"
                 )
         else:
-            target_classes = dataset.CLASSES
+            target_classes = mm_dataset.CLASSES
 
         # TODO: Check Inference FP16 Support
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
@@ -669,7 +679,10 @@ class MMDetectionTask(OTXDetectionTask):
             model.register_forward_hook(hook)
 
         explainer = explain_parameters.explainer if explain_parameters else None
-        explainer_hook = explainer_hook_selector.get(explainer.lower(), None)
+        if explainer is not None:
+            explainer_hook = explainer_hook_selector.get(explainer.lower(), None)
+        else:
+            explainer_hook = None
         if explainer_hook is None:
             raise NotImplementedError(f"Explainer algorithm {explainer} not supported!")
         logger.info(f"Explainer algorithm: {explainer}")

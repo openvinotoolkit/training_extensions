@@ -84,9 +84,15 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
         self._should_stop = False
         self._optimization_type = ModelOptimizationType.NNCF
         self._time_monitor = None
+
+        # Variables will be set in training backend task
         self._data_cfg = None
         self._model_ckpt = None
         self._model_dir = None
+        self._labels = None
+        self._recipe_cfg = None
+        self._hyperparams = None
+        self._task_environment = None
 
         logger.info("Task initialization completed")
 

@@ -35,6 +35,7 @@ from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMeth
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
+from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -98,13 +99,13 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
             self._work_dir_is_temp = True
         else:
             os.makedirs(self._output_path, exist_ok=True)
-        self._time_monitor = None
+        self._time_monitor: Optional[TimeMonitorCallback] = None
         self.on_hook_initialized = OnHookInitialized(self)
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._model_label_schema = []  # type: List[LabelEntity]
         self._resume = False
         self._should_stop = False
-        self.cancel_interface = None
+        self.cancel_interface: Optional[CancelInterfaceHook] = None
         self.reserved_cancel = False
         self._model_ckpt = None
         self._precision = [ModelPrecision.FP32]
