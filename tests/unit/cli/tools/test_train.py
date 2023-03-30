@@ -121,6 +121,7 @@ def test_main(mocker, mock_args, mock_config_manager, mock_dataset_adapter, mock
     mocker.patch.object(target_package, "read_label_schema")
     mocker.patch.object(target_package, "read_binary")
     mocker.patch("otx.cli.tools.train.Path.symlink_to")
+    mocker.patch("otx.cli.tools.train.get_otx_report")
     mocker.patch.object(
         target_package,
         "run_hpo",
