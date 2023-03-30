@@ -36,6 +36,6 @@ model = dict(
     ),
     auxiliary_head=dict(in_channels=256, channels=64, num_classes=19,
         enable_aggregator=False,
-        enable_out_norm=False,))
+        enable_out_norm=False))
 
 load_from = 'open-mmlab://resnet18_v1c'
