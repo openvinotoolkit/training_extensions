@@ -97,7 +97,7 @@ def get_cls_deploy_config(label_schema: LabelSchemaEntity, inference_config: Dic
 def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_config: Dict[str, Any]):
     """Get ModelAPI config."""
     mapi_config = {}
-    mapi_config[("model_info", "model_type")] = "classification"
+    mapi_config[("model_info", "model_type")] = "Classification"
     mapi_config[("model_info", "confidence_threshold")] = str(inference_config["confidence_threshold"])
     mapi_config[("model_info", "multilabel")] = str(inference_config["multilabel"])
 
