@@ -17,7 +17,8 @@ class DetConHead(nn.Module):
     """DetCon head for pixel-wise contrastive learning.
 
     Args:
-        head (dict): configurations for predictor.
+        predictor (dict): configurations for predictor.
+        loss_cfg (dict): configurations for detcon loss.
     """
 
     def __init__(self, predictor: Dict[str, Any], loss_cfg: Dict[str, Any], **kwargs):
@@ -26,11 +27,7 @@ class DetConHead(nn.Module):
         self.detcon_loss = build_loss(loss_cfg)
 
     def init_weights(self):
-        """Initialize predictor weights.
-
-        Args:
-            init_linear (str): Option to initialize weights.
-        """
+        """Initialize predictor weights."""
         self.predictor.init_weights()
 
     def forward(
@@ -47,6 +44,10 @@ class DetConHead(nn.Module):
         Args:
             projs (Tensor): NxC input features.
             projs_tgt (Tensor): NxC target features.
+            ids (Tensor): NxC input ids.
+            ids_tgt (Tensor): NxC target ids.
+            batch_size (int): batch size.
+            num_samples (int): The number of samples to be sampled.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.

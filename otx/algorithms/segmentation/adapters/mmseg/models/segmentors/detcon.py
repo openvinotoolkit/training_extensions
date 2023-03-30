@@ -142,7 +142,6 @@ class DetConB(nn.Module):
         in_index (list): Feature index to be used for DetCon if the backbone outputs
             multi-scale features wrapped by list or tuple. Default: [0].
         align_corners (bool): Whether apply `align_corners` during resize. Default: False.
-        loss_cfg (dict): DetCon loss configuration.
     """
 
     def __init__(
