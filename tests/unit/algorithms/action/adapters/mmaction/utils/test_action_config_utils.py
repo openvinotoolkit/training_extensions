@@ -97,18 +97,15 @@ def test_prepare_for_training() -> None:
     """Test prepare_for_training function.
 
     <Step>
-        1. Create sample DatasetEntity, TimeMonitorCallback, Learngin_cureves
+        1. Create sample DatasetEntity
         2. Check config.data.train
         3. Check config.data.val
-        4. Check custom_hooks
-        5. Check log_config.hooks
     """
 
     item = DatasetItemEntity(media=Image(file_path="iamge.jpg"), annotation_scene=NullAnnotationSceneEntity())
     dataset = DatasetEntity(items=[item])
 
     CLS_CONFIG.runner = {}
-    CLS_CONFIG.custom_hooks = []
     prepare_for_training(CLS_CONFIG, dataset, dataset)
 
     assert get_data_cfg(CLS_CONFIG, "train").otx_dataset == dataset
