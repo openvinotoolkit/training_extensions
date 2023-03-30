@@ -30,8 +30,12 @@ model = dict(
         c1_channels=12,
         in_channels=512,
         channels=128,
-        num_classes=21
+        num_classes=21,
+        enable_aggregator=False,
+        enable_out_norm=False,
     ),
-    auxiliary_head=dict(in_channels=256, channels=64, num_classes=21))
+    auxiliary_head=dict(in_channels=256, channels=64, num_classes=19,
+        enable_aggregator=False,
+        enable_out_norm=False,))
 
 load_from = 'open-mmlab://resnet18_v1c'

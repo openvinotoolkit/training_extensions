@@ -30,7 +30,7 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.api.utils.segmentation_utils import mask_from_dataset_item, mask_from_file
+from otx.api.utils.segmentation_utils import mask_from_dataset_item
 
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
@@ -46,10 +46,7 @@ def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[La
     :param labels: List of labels in the project
     :return dict: annotation information dict in mmseg format
     """
-    if from_file:
-        gt_seg_map = mask_from_file(dataset_item)
-    else:
-        gt_seg_map = mask_from_dataset_item(dataset_item, labels)
+    gt_seg_map = mask_from_dataset_item(dataset_item, labels, from_file)
 
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
     ann_info = dict(gt_semantic_seg=gt_seg_map)
@@ -121,6 +118,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         pipeline: Sequence[dict],
         classes: Optional[List[str]] = None,
         test_mode: bool = False,
+        load_from_files: bool = False
     ):
         self.otx_dataset = otx_dataset
         self.test_mode = test_mode
@@ -128,9 +126,10 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         self.ignore_index = 255
         self.reduce_zero_label = False
         self.label_map = None
+        self.load_from_files = load_from_files
 
         dataset_labels = self.otx_dataset.get_labels(include_empty=False)
-        self.project_labels = sorted(self.filter_labels(dataset_labels, classes))
+        self.project_labels = self.filter_labels(dataset_labels, classes)
         self.CLASSES, self.PALETTE = self.get_classes_and_palette(classes, None)
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset
@@ -220,7 +219,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         """
 
         dataset_item = self.otx_dataset[idx]
-        ann_info = get_annotation_mmseg_format(dataset_item, self.project_labels)
+        ann_info = get_annotation_mmseg_format(dataset_item, self.project_labels, self.load_from_files)
 
         return ann_info
 
@@ -245,6 +244,7 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         pipeline = []
         test_mode = kwargs.get("test_mode", False)
+        load_from_files = False
         if "dataset" in kwargs:
             dataset = kwargs["dataset"]
             otx_dataset = dataset.otx_dataset
@@ -260,12 +260,19 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
         if test_mode is False:
             self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)
 
+        if test_mode:
+            for pipe in pipeline:
+                if pipe['type'] == 'LoadFromFiles':
+                    load_from_files = pipe['flag']
+                    pipeline.remove(pipe)
+
         if classes:
             classes = [c.name for c in classes]
             classes = ["background"] + classes
         else:
             classes = []
-        super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes)
+        super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes, load_from_files=load_from_files)
+
 
         self.CLASSES = [label.name for label in self.project_labels]
         if "background" not in self.CLASSES:

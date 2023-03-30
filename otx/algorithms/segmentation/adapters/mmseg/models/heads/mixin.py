@@ -19,22 +19,22 @@ from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     get_valid_label_mask_per_batch,
 )
-
 # pylint: disable=abstract-method, unused-argument, keyword-arg-before-vararg
 
 
-class AggregatorMixin(nn.Module):
-    """A class for creating an aggregator."""
-
-    def __init__(
-        self,
-        *args,
-        enable_aggregator=False,
-        aggregator_min_channels=None,
-        aggregator_merge_norm=None,
-        aggregator_use_concat=False,
-        **kwargs,
-    ):
+class Mixin(nn.Module):
+    """Pixel weight mixin class. It includes SegmentOutNormMixin,
+    loss mixing module and aggregator for class incremental"""
+    def __init__(self, enable_loss_equalizer=False,
+                 loss_target="gt_semantic_seg",
+                 enable_out_seg=True,
+                 enable_out_norm=False,
+                 enable_aggregator=False,
+                 aggregator_min_channels=None,
+                 aggregator_merge_norm=None,
+                 aggregator_use_concat=False,
+                 *args,
+                 **kwargs):
 
         in_channels = kwargs.get("in_channels")
         in_index = kwargs.get("in_index")
@@ -63,30 +63,6 @@ class AggregatorMixin(nn.Module):
             if in_index is not None:
                 kwargs["in_index"] = in_index[0]
 
-        super().__init__(*args, **kwargs)
-
-        self.aggregator = aggregator
-        # re-define variables
-        self.in_channels = in_channels
-        self.input_transform = input_transform
-        self.in_index = in_index
-
-    def _transform_inputs(self, inputs):
-        inputs = super()._transform_inputs(inputs)
-        if self.aggregator is not None:
-            inputs = self.aggregator(inputs)[0]
-        return inputs
-
-
-class Mixin(AggregatorMixin):
-    """Pixel weight mixin class."""
-    def __init__(self, enable_loss_equalizer=False,
-                 loss_target="gt_semantic_seg",
-                 enable_out_seg=True,
-                 enable_out_norm=False,
-                 *args,
-                 **kwargs):
-        super().__init__(*args, **kwargs)
         self.enable_loss_equalizer = enable_loss_equalizer
         self.loss_target = loss_target
         self.loss_equalizer = None
@@ -103,6 +79,14 @@ class Mixin(AggregatorMixin):
                 self.conv_seg = AngularPWConv(self.channels, self.out_channels, clip_output=True)
         else:
             self.conv_seg = None
+
+        super().__init__(*args, **kwargs)
+
+        self.aggregator = aggregator
+        # re-define variables
+        self.in_channels = in_channels
+        self.input_transform = input_transform
+        self.in_index = in_index
 
     @property
     def loss_target_name(self):
@@ -203,6 +187,12 @@ class Mixin(AggregatorMixin):
             logits = self.forward_output if self.forward_output is not None else seg_logits
             return losses, logits
         return losses
+
+    def _transform_inputs(self, inputs):
+        inputs = super()._transform_inputs(inputs)
+        if self.aggregator is not None:
+            inputs = self.aggregator(inputs)[0]
+        return inputs
 
     @force_fp32(apply_to=("seg_logit",))
     def losses(

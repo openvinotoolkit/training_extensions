@@ -21,7 +21,7 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.utils.shape_factory import ShapeFactory
 
 
-def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
+def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEntity], load_from_files: bool = False) -> np.ndarray:
     """Creates a mask from dataset item.
 
     The mask will be two dimensional, and the value of each pixel matches the class index with offset 1. The background
@@ -37,12 +37,15 @@ def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEn
         Numpy array of mask
     """
     # todo: cache this so that it does not have to be redone for all the same media
-    mask = mask_from_annotation(
-        dataset_item.get_annotations(),
-        labels,
-        dataset_item.width,
-        dataset_item.height
-    )
+    if load_from_files:
+        mask = mask_from_file(dataset_item)
+    else:
+        mask = mask_from_annotation(
+            dataset_item.get_annotations(),
+            labels,
+            dataset_item.width,
+            dataset_item.height
+        )
 
     return mask
 
@@ -75,7 +78,6 @@ def mask_from_annotation(
         2d numpy array of mask
     """
 
-    labels = sorted(labels)  # type: ignore
     mask = np.zeros(shape=(height, width), dtype=np.uint8)
     for annotation in annotations:
         shape = annotation.shape

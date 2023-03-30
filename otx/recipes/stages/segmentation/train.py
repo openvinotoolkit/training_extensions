@@ -29,14 +29,14 @@ evaluation = dict(
     metric=["mIoU", "mDice"],
 )
 
-custom_hooks = [
-    dict(
-        type="LazyEarlyStoppingHook",
-        patience=8,
-        iteration_patience=0,
-        metric="mDice",
-        interval=1,
-        priority=75,
-        start=1,
-    ),
-]
+# custom_hooks = [
+#     dict(
+#         type="LazyEarlyStoppingHook",
+#         patience=8,
+#         iteration_patience=0,
+#         metric="mDice",
+#         interval=1,
+#         priority=75,
+#         start=1,
+#     ),
+# ]

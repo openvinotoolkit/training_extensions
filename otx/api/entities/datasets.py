@@ -417,4 +417,4 @@ class DatasetEntity:
             List[LabelEntity]: list of labels that appear in the dataset
         """
         label_set = set(itertools.chain(*[item.annotation_scene.get_labels(include_empty) for item in self]))
-        return list(label_set)
+        return sorted(list(label_set), key=lambda x: int(x.id))

@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from .compose import MaskCompose, ProbCompose
-from .loads import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset, LoadAnnotationFromFiles
+from .loads import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset
 from .transforms import TwoCropTransform
 
-__all__ = ["MaskCompose", "ProbCompose", "LoadImageFromOTXDataset", "LoadAnnotationFromOTXDataset", "TwoCropTransform", "LoadAnnotationFromFiles"]
+__all__ = ["MaskCompose", "ProbCompose", "LoadImageFromOTXDataset", "LoadAnnotationFromOTXDataset", "TwoCropTransform"]
