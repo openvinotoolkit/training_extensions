@@ -573,17 +573,17 @@ which is one of template-specific parameters (details are provided in <a class="
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>After training ends, a trained model is saved in the <code class="docutils literal notranslate"><span class="pre">models</span></code> sub-directory in the workspace named <code class="docutils literal notranslate"><span class="pre">otx-workspace-CLASSIFICATION</span></code> by default.</p>
+<p>After training ends, a trained model is saved in the <code class="docutils literal notranslate"><span class="pre">latest_trained_model</span></code> sub-directory in the workspace named <code class="docutils literal notranslate"><span class="pre">otx-workspace-CLASSIFICATION</span></code> by default.</p>
 </section>
 <section id="validation">
 <h2>Validation<a class="headerlink" href="#validation" title="Permalink to this heading">#</a></h2>
 <p>In the same manner with <a class="reference external" href="../base/how_to_train/classification.html#validation">the normal validation</a>,
 we can evaluate the trained model with auto-splitted validation dataset in the workspace and
-save results to <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> by the following command:</p>
+save results to <code class="docutils literal notranslate"><span class="pre">outputs/performance.json</span></code> by the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                     --test-data-roots splitted_dataset/val \
                     --load-weights models/weights.pth \
-                    --save-performance performance.json
+                    --output outputs
 </pre></div>
 </div>
 </section>

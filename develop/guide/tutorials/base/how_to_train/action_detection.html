@@ -563,10 +563,10 @@ model on a specific dataset.</p>
 Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be located in the same folder as the model snapshot.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a mAP score for spatio-temporal action detection.</p>
 <p>2. The command below will run validation on our dataset
-and save performance results in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
+and save performance results in <code class="docutils literal notranslate"><span class="pre">outputs/performance.json</span></code> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/JHMDB_5%/test \
                     --load-weights models/weights.pth \
-                    --save-performance performance.json
+                    --output outputs
 </pre></div>
 </div>
 <p>We will get a similar to this validation output after some validation time (about 2 minutes):</p>
@@ -591,7 +591,7 @@ and save performance results in <code class="docutils literal notranslate"><span
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. Run the command line below to export the trained model
-and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_models</span></code> folder.</p>
+and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export
 
 2023-03-24 15:03:35,993 - mmdeploy - INFO - Export PyTorch model to ONNX: /tmp/OTX-task-ffw8llin/openvino.onnx.
@@ -629,7 +629,7 @@ Currently, only POT is supported for action detection. NNCF will be supported in
 Refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section for more details on model optimization.</p>
 <p>2. Example command for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino/openvino.xml \
                         --save-model-to pot_model
 
 ...

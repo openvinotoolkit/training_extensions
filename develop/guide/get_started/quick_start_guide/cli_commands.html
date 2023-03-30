@@ -518,7 +518,7 @@ optional arguments:
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code> creates a workspace with a particular model template and all the necessary components for training, evaluation, optimization, etc. This option is also used for modifying the backbone of the model.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --help
 usage: otx build [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--test-data-roots TEST_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]
-                [--unlabeled-file-list UNLABELED_FILE_LIST] [--task TASK] [--train-type TRAIN_TYPE] [--work-dir WORK_DIR] [--model MODEL] [--backbone BACKBONE]
+                [--unlabeled-file-list UNLABELED_FILE_LIST] [--task TASK] [--train-type TRAIN_TYPE] [--workspace WORKSPACE] [--model MODEL] [--backbone BACKBONE]
                 [template]
 
 positional arguments:
@@ -540,7 +540,7 @@ optional arguments:
   --task TASK           The currently supported options: (&#39;CLASSIFICATION&#39;, &#39;DETECTION&#39;, &#39;INSTANCE_SEGMENTATION&#39;, &#39;SEGMENTATION&#39;, &#39;ACTION_CLASSIFICATION&#39;, &#39;ACTION_DETECTION&#39;, &#39;ANOMALY_CLASSIFICATION&#39;, &#39;ANOMALY_DETECTION&#39;, &#39;ANOMALY_SEGMENTATION&#39;).
   --train-type TRAIN_TYPE
                         The currently supported options: dict_keys([&#39;Incremental&#39;, &#39;Semisupervised&#39;, &#39;Selfsupervised&#39;]).
-  --work-dir WORK_DIR   Location where the workspace.
+  --workspace WORKSPACE   Location where the workspace.
   --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
   --backbone BACKBONE   Available Backbone Type can be found using &#39;otx find --backbone {framework}&#39;.
                         If there is an already created backbone configuration yaml file, enter the corresponding path.
@@ -586,12 +586,12 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 <li><p><code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> - a model snapshot</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> - a label schema used in training, created from a dataset</p></li>
 </ul>
-<p>The results will be saved in <code class="docutils literal notranslate"><span class="pre">./model</span></code> folder by default. The output folder can be modified by <code class="docutils literal notranslate"><span class="pre">--save-model-to</span></code> option. These files are used by other commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>, <code class="docutils literal notranslate"><span class="pre">demo</span></code>, etc.</p>
+<p>The results will be saved in <code class="docutils literal notranslate"><span class="pre">./outputs/</span></code> folder by default. The output folder can be modified by <code class="docutils literal notranslate"><span class="pre">--output</span></code> option. These files are used by other commands: <code class="docutils literal notranslate"><span class="pre">export</span></code>, <code class="docutils literal notranslate"><span class="pre">eval</span></code>, <code class="docutils literal notranslate"><span class="pre">demo</span></code>, etc.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> receives <code class="docutils literal notranslate"><span class="pre">template</span></code> as a positional argument. <code class="docutils literal notranslate"><span class="pre">template</span></code> can be a path to the specific <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.</p>
 <p>However, if you created a workspace with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>, the training process can be started (in the workspace directory) just with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> command without any additional options. OpenVINO™ Training Extensions will fetch everything else automatically.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="o">--</span><span class="n">help</span>
 <span class="n">usage</span><span class="p">:</span> <span class="n">otx</span> <span class="n">train</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">UNLABELED_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlabeled</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="nb">list</span> <span class="n">UNLABELED_FILE_LIST</span><span class="p">]</span>
-                <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">resume</span><span class="o">-</span><span class="kn">from</span> <span class="nn">RESUME_FROM</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">SAVE_MODEL_TO</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">work</span><span class="o">-</span><span class="nb">dir</span> <span class="n">WORK_DIR</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">hpo</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">hpo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">ratio</span> <span class="n">HPO_TIME_RATIO</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">gpus</span> <span class="n">GPUS</span><span class="p">]</span>
+                <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">resume</span><span class="o">-</span><span class="kn">from</span> <span class="nn">RESUME_FROM</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">hpo</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">hpo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">ratio</span> <span class="n">HPO_TIME_RATIO</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">gpus</span> <span class="n">GPUS</span><span class="p">]</span>
                 <span class="p">[</span><span class="o">--</span><span class="n">rdzv</span><span class="o">-</span><span class="n">endpoint</span> <span class="n">RDZV_ENDPOINT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">base</span><span class="o">-</span><span class="n">rank</span> <span class="n">BASE_RANK</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">world</span><span class="o">-</span><span class="n">size</span> <span class="n">WORLD_SIZE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mem</span><span class="o">-</span><span class="n">cache</span><span class="o">-</span><span class="n">size</span> <span class="n">PARAMS</span><span class="o">.</span><span class="n">ALGO_BACKEND</span><span class="o">.</span><span class="n">MEM_CACHE_SIZE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">data</span> <span class="n">DATA</span><span class="p">]</span>
                 <span class="p">[</span><span class="n">template</span><span class="p">]</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">...</span>
 
@@ -617,9 +617,9 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
                         <span class="n">Load</span> <span class="n">model</span> <span class="n">weights</span> <span class="kn">from</span> <span class="nn">previously</span> <span class="n">saved</span> <span class="n">checkpoint</span><span class="o">.</span>
   <span class="o">--</span><span class="n">resume</span><span class="o">-</span><span class="kn">from</span> <span class="nn">RESUME_FROM</span>
                         <span class="n">Resume</span> <span class="n">training</span> <span class="kn">from</span> <span class="nn">previously</span> <span class="n">saved</span> <span class="n">checkpoint</span>
-  <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">SAVE_MODEL_TO</span>
+  <span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">,</span> <span class="o">--</span><span class="n">output</span> <span class="n">OUTPUT</span>
                         <span class="n">Location</span> <span class="n">where</span> <span class="n">trained</span> <span class="n">model</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">work</span><span class="o">-</span><span class="nb">dir</span> <span class="n">WORK_DIR</span>   <span class="n">Location</span> <span class="n">where</span> <span class="n">the</span> <span class="n">intermediate</span> <span class="n">output</span> <span class="n">of</span> <span class="n">the</span> <span class="n">training</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
+  <span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span>   <span class="n">Location</span> <span class="n">where</span> <span class="n">the</span> <span class="n">intermediate</span> <span class="n">output</span> <span class="n">of</span> <span class="n">the</span> <span class="n">training</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
   <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="n">hpo</span>          <span class="n">Execute</span> <span class="n">hyper</span> <span class="n">parameters</span> <span class="n">optimization</span> <span class="p">(</span><span class="n">HPO</span><span class="p">)</span> <span class="n">before</span> <span class="n">training</span><span class="o">.</span>
   <span class="o">--</span><span class="n">hpo</span><span class="o">-</span><span class="n">time</span><span class="o">-</span><span class="n">ratio</span> <span class="n">HPO_TIME_RATIO</span>
                         <span class="n">Expected</span> <span class="n">ratio</span> <span class="n">of</span> <span class="n">total</span> <span class="n">time</span> <span class="n">to</span> <span class="n">run</span> <span class="n">HPO</span> <span class="n">to</span> <span class="n">time</span> <span class="n">taken</span> <span class="k">for</span> <span class="n">full</span> <span class="n">fine</span><span class="o">-</span><span class="n">tuning</span><span class="o">.</span>
@@ -676,7 +676,7 @@ For example, you can cache approximately 10,000 of <code class="docutils literal
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained model to the OpenVINO™ IR format to efficiently run it on Intel hardware.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --help
-usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--dump-features] [--half-precision] [template]
+usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [--dump-features] [--half-precision] [template]
 
 positional arguments:
   template              Enter the path or ID or name of the template file.
@@ -686,20 +686,20 @@ optional arguments:
   -h, --help            show this help message and exit
   --load-weights LOAD_WEIGHTS
                         Load model weights from previously saved checkpoint.
-  --save-model-to SAVE_MODEL_TO
+  -o OUTPUT, --output OUTPUT
                         Location where exported model will be stored.
-  --work-dir WORK_DIR   Location where the intermediate output of the export will be stored.
+  --workspace WORKSPACE   Location where the intermediate output of the export will be stored.
   --dump-features       Whether to return feature vector and saliency map for explanation purposes.
   --half-precision      This flag indicated if model is exported in half precision (FP16).
 </pre></div>
 </div>
 <p>The command below performs exporting to the <code class="docutils literal notranslate"><span class="pre">outputs/openvino</span></code> path.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/trained/weights.pth&gt; --save-model-to outputs/openvino
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/trained/weights.pth&gt; --output outputs/openvino
 </pre></div>
 </div>
 <p>The command results in <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code>, <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> and <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code></p>
 <p>To use the exported model as an input for <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please dump additional outputs with internal information, using <code class="docutils literal notranslate"><span class="pre">--dump-features</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/trained/weights.pth&gt; --save-model-to outputs/openvino/with_features --dump-features
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights &lt;path/to/trained/weights.pth&gt; --output outputs/openvino/with_features --dump-features
 </pre></div>
 </div>
 </section>
@@ -711,8 +711,8 @@ optional arguments:
 <li><p>POT optimization used for models exported in the OpenVINO™ IR format</p></li>
 </ul>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">otx</span> <span class="n">optimize</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">SAVE_MODEL_TO</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">performance</span> <span class="n">SAVE_PERFORMANCE</span><span class="p">]</span>
-                    <span class="p">[</span><span class="o">--</span><span class="n">work</span><span class="o">-</span><span class="nb">dir</span> <span class="n">WORK_DIR</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">otx</span> <span class="n">optimize</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">TRAIN_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">VAL_DATA_ROOTS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">]</span>
+                    <span class="p">[</span><span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span><span class="p">]</span>
                     <span class="p">[</span><span class="n">template</span><span class="p">]</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">...</span>
 
 <span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
@@ -729,24 +729,22 @@ optional arguments:
                         <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">paths</span> <span class="n">to</span> <span class="n">validation</span> <span class="n">data</span> <span class="n">folders</span><span class="o">.</span>
   <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">LOAD_WEIGHTS</span>
                         <span class="n">Load</span> <span class="n">weights</span> <span class="n">of</span> <span class="n">trained</span> <span class="n">model</span>
-  <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">SAVE_MODEL_TO</span>
-                        <span class="n">Location</span> <span class="n">where</span> <span class="n">trained</span> <span class="n">model</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">performance</span> <span class="n">SAVE_PERFORMANCE</span>
-                        <span class="n">Path</span> <span class="n">to</span> <span class="n">a</span> <span class="n">json</span> <span class="n">file</span> <span class="n">where</span> <span class="n">computed</span> <span class="n">performance</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">work</span><span class="o">-</span><span class="nb">dir</span> <span class="n">WORK_DIR</span>   <span class="n">Location</span> <span class="n">where</span> <span class="n">the</span> <span class="n">intermediate</span> <span class="n">output</span> <span class="n">of</span> <span class="n">the</span> <span class="n">task</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
+  <span class="o">-</span><span class="n">o</span> <span class="n">OUTPUT</span><span class="p">,</span> <span class="o">--</span><span class="n">output</span> <span class="n">OUTPUT</span>
+                        <span class="n">Location</span> <span class="n">where</span> <span class="n">optimized</span> <span class="n">model</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
+  <span class="o">--</span><span class="n">workspace</span> <span class="n">WORKSPACE</span>   <span class="n">Location</span> <span class="n">where</span> <span class="n">the</span> <span class="n">intermediate</span> <span class="n">output</span> <span class="n">of</span> <span class="n">the</span> <span class="n">task</span> <span class="n">will</span> <span class="n">be</span> <span class="n">stored</span><span class="o">.</span>
 </pre></div>
 </div>
 <p>Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize SSD --load-weights &lt;path/to/trained/weights.pth&gt; \
                             --train-data-roots &lt;path/to/train/root&gt; \
                             --val-data-roots &lt;path/to/val/root&gt; \
-                            --save-model-to outputs/nncf
+                            --output outputs/nncf
 </pre></div>
 </div>
 <p>Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize SSD --load-weights &lt;path/to/openvino.xml&gt; \
                             --val-data-roots &lt;path/to/val/root&gt; \
-                            --save-model-to outputs/pot
+                            --output outputs/pot
 </pre></div>
 </div>
 <p>Thus, to use POT pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.</p>
@@ -756,7 +754,7 @@ optional arguments:
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> runs the evaluation of a model on the specific dataset.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --help
-usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-performance SAVE_PERFORMANCE] [--work-dir WORK_DIR] [template] {params} ...
+usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [template] {params} ...
 
 positional arguments:
   template              Enter the path or ID or name of the template file.
@@ -770,15 +768,15 @@ optional arguments:
                         Comma-separated paths to test data folders.
   --load-weights LOAD_WEIGHTS
                         Load model weights from previously saved checkpoint.It could be a trained/optimized model (POT only) or exported model.
-  --save-performance SAVE_PERFORMANCE
-                        Path to a json file where computed performance will be stored.
-  --work-dir WORK_DIR   Location where the intermediate output of the task will be stored.
+  -o OUTPUT, --output OUTPUT
+                        Location where the intermediate output of the task will be stored.
+  --workspace WORKSPACE   Path to the workspace where the command will run.
 </pre></div>
 </div>
 <p>The command below will evaluate the trained model on the provided dataset:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval SSD --test-data-roots &lt;path/to/test/root&gt; \
                         --load-weights &lt;path/to/model_weghts&gt; \
-                        --save-performance outputs/performance.json
+                        --output &lt;path/to/outputs&gt;
 </pre></div>
 </div>
 <div class="admonition note">
@@ -827,7 +825,7 @@ optional arguments:
 </div>
 <p>By default, the model is exported to the OpenVINO™ IR format without extra feature information needed for the <code class="docutils literal notranslate"><span class="pre">explain</span></code> function. To use OpenVINO™ IR model in <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code>, please first export it with <code class="docutils literal notranslate"><span class="pre">--dump-features</span></code> parameter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export SSD --load-weights &lt;path/to/trained/weights.pth&gt; \
-                          --save-model-to outputs/openvino/with_features \
+                          --output outputs/openvino/with_features \
                           --dump-features
 (otx) ...$ otx explain SSD --explain-data-roots &lt;path/to/explain/root&gt; \
                            --load-weights outputs/openvino/with_features \
@@ -885,7 +883,7 @@ optional arguments:
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">deploy</span></code> creates <code class="docutils literal notranslate"><span class="pre">openvino.zip</span></code> with a self-contained python package, a demo application, and an exported model. As follows from the zip archive name, the <code class="docutils literal notranslate"><span class="pre">deploy</span></code> can be used only with the OpenVINO™ IR model.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx deploy --help
-usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [template]
+usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [template]
 
 positional arguments:
   template              Enter the path or ID or name of the template file.
@@ -895,13 +893,13 @@ optional arguments:
   -h, --help            show this help message and exit
   --load-weights LOAD_WEIGHTS
                         Load model weights from previously saved checkpoint.
-  --save-model-to SAVE_MODEL_TO
+  -o OUTPUT, --output OUTPUT
                         Location where openvino.zip will be stored.
 </pre></div>
 </div>
 <p>Command example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx deploy SSD --load-weights &lt;path/to/openvino.xml&gt; \
-                          --save-model-to outputs/deploy
+                          --output outputs/deploy
 </pre></div>
 </div>
 </section>

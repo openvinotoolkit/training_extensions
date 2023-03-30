@@ -618,10 +618,10 @@ the following arguments:</p>
 Keep in mind that <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be in the same folder as the model snapshot.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a frame-wise accuracy for action classification. Note, that top-1 accuracy during training is video-wise accuracy.</p>
 <p>2. The command below will run validation on the dataset
-and save performance results in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
+and save performance results in <code class="docutils literal notranslate"><span class="pre">outputs/performance.json</span></code> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                     --load-weights models/weights.pth \
-                    --save-performance performance.json
+                    --output outputs
 </pre></div>
 </div>
 <p>You will get a similar validation output:</p>
@@ -641,9 +641,9 @@ and save performance results in <code class="docutils literal notranslate"><span
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. Run the command line below to export the trained model
-and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_models</span></code> folder.</p>
+and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights models/weights.pth \
-                      --save-model-to openvino_models
+                      --output openvino
 
 ...
 2023-02-21 22:54:32,518 - mmaction - INFO - Model architecture: X3D
@@ -661,8 +661,8 @@ Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/late
 <p>3. Check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
 using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
-                    --load-weights openvino_models/openvino.xml \
-                    --save-performance openvino_models/performance.json
+                    --load-weights openvino/openvino.xml \
+                    --output outputs/openvino
 
 ...
 
@@ -677,8 +677,8 @@ Currently, quantization jobs that include POT is supported for X3D template. MoV
 Refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section for more details on model optimization.</p>
 <p>2. Example command for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
-                        --save-model-to pot_model
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino/openvino.xml \
+                        --output pot_model
 
 ...
 

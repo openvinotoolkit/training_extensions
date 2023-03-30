@@ -637,10 +637,10 @@ model on a specific dataset.</p>
 Please note, <code class="docutils literal notranslate"><span class="pre">label_schema.json</span></code> file contains meta information about the dataset and it should be located in the same folder as the model snapshot.</p>
 <p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> will output a F-measure for instance segmentation.</p>
 <p>2. The command below will run validation on our dataset
-and save performance results in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
+and save performance results in <code class="docutils literal notranslate"><span class="pre">outputs/performance.json</span></code> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
                     --load-weights models/weights.pth \
-                    --save-performance performance.json
+                    --outputs outputs
 </pre></div>
 </div>
 <p>We will get a similar to this validation output:</p>
@@ -657,7 +657,7 @@ and save performance results in <code class="docutils literal notranslate"><span
 <p class="admonition-title">Note</p>
 <p>You can omit <code class="docutils literal notranslate"><span class="pre">--test-data-roots</span></code> if you are currently inside a workspace and have test-data stuff written in <code class="docutils literal notranslate"><span class="pre">data.yaml</span></code>.</p>
 <p>Also, if you’re inside a workspace and <code class="docutils literal notranslate"><span class="pre">weights.pth</span></code> exists in <code class="docutils literal notranslate"><span class="pre">models</span></code> dir, you can omit <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> as well, assuming those weights are the default as <code class="docutils literal notranslate"><span class="pre">models/weights.pth</span></code>.</p>
-<p>If you omit <code class="docutils literal notranslate"><span class="pre">--save-performance</span></code>, it will create a <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> in the folder for those weights.</p>
+<p>If you omit <code class="docutils literal notranslate"><span class="pre">--output</span></code>, it will create a <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> in the folder for those weights.</p>
 </div>
 <p>The output of <code class="docutils literal notranslate"><span class="pre">./outputs/performance.json</span></code> consists of a dict with target metric name and its value.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;f-measure&quot;</span><span class="p">:</span> <span class="mf">0.33333333333333326</span><span class="p">}</span>
@@ -672,7 +672,7 @@ OpenVINO™ Intermediate Representation (IR) format.</p>
 <p>2. We can run the below command line to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_model</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights models/weights.pth \
-                      --save-model-to openvino_model
+                      --output openvino_model
 
 ...
 [ SUCCESS ] Generated IR version 11 model.
@@ -689,7 +689,7 @@ the exported model and the PyTorch model.</p>
 <p>You can use <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> directly without <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>. It will be required to add <code class="docutils literal notranslate"><span class="pre">--train-data-roots</span></code> and <code class="docutils literal notranslate"><span class="pre">--val-data-roots</span></code> in the command line:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
                     --load-weights openvino_model/openvino.xml \
-                    --save-performance openvino_model/performance.json
+                    --output openvino_model
 
 ...
 
@@ -710,7 +710,7 @@ It uses NNCF or POT depending on the model format.</p>
 <p>Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
 <p>2. Command example for optimizing
 a PyTorch model (<cite>.pth</cite>) with OpenVINO™ NNCF.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
 
 ...
 
@@ -726,7 +726,7 @@ Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
 <p>3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                        --save-model-to pot_model
+                        --output pot_model
 
 ...
 

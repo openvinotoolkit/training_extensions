@@ -578,7 +578,7 @@ Please note, <code class="docutils literal notranslate"><span class="pre">label_
 By running this example command, the performance results evaluated by our splitted validation dataset are saved in <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                     --load-weights models/weights.pth \
-                    --save-performance performance.json
+                    --output outputs
 </pre></div>
 </div>
 <p>Finally, we get the validation output:</p>
@@ -591,7 +591,7 @@ By running this example command, the performance results evaluated by our splitt
 <span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.9659400544959128</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>In <code class="docutils literal notranslate"><span class="pre">performance.json</span></code> file, the validation output score is saved as:</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">outputs/performance.json</span></code> file, the validation output score is saved as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;Dice Average&quot;</span><span class="p">:</span> <span class="mf">0.9659400544959128</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -603,7 +603,7 @@ It allows running the model on the Intel hardware much more efficient, especiall
 <p>2. We can run the below command line to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_model</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights models/weights.pth \
-                      --save-model-to openvino_model
+                      --output openvino_model
 
 ...
 
@@ -615,7 +615,7 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> and passing the IR model path to the <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> parameter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                     --load-weights openvino_model/openvino.xml \
-                    --save-performance openvino_model/performance.json
+                    --output openvino_model
 
 ...
 
@@ -630,7 +630,7 @@ It uses NNCF or POT depending on the model format.
 Please, refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section to get the intuition of what we use under the hood for optimization purposes.</p>
 <p>2. Command example for optimizing
 a PyTorch model (<cite>.pth</cite>) with OpenVINO™ NNCF.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
 
 ...
 
@@ -646,7 +646,7 @@ Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
 <p>3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                        --save-model-to pot_model
+                        --output pot_model
 
 ...
 

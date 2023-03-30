@@ -576,7 +576,7 @@ this example.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>otx<span class="o">)</span><span class="w"> </span>...$<span class="w"> </span>otx<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
 <span class="w">                    </span>--test-data-roots<span class="w"> </span>datasets/MVTec/bottle/test<span class="w"> </span><span class="se">\</span>
 <span class="w">                    </span>--load-weights<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/models/weights.pth<span class="w"> </span><span class="se">\</span>
-<span class="w">                    </span>--save-performance<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/performance.json
+<span class="w">                    </span>--output<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/outputs
 </pre></div>
 </div>
 <p>You should see an output similar to the following:</p>
@@ -594,10 +594,10 @@ this example.</p>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. We can run the below command line to export the trained model
-and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino_models</span></code> folder:</p>
+and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino</span></code> folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">export</span> <span class="n">ote_anomaly_detection_padim</span> \
     <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span> \
-    <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">openvino_models</span>
+    <span class="o">--</span><span class="n">output</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">openvino</span>
 </pre></div>
 </div>
 <p>You will see the outputs similar to the following:</p>
@@ -615,8 +615,8 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 <p>Now that we have the exported model, let’s check its performance using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>otx<span class="w"> </span><span class="nb">eval</span><span class="w"> </span>ote_anomaly_detection_padim<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--test-data-roots<span class="w"> </span>datasets/MVTec/bottle/test<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--load-weights<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/openvino_models/openvino.xml<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--save-performance<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/openvino_models/performance.json
+<span class="w">    </span>--load-weights<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/openvino/openvino.xml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>otx-workspace-ANOMALY_DETECTION/openvino
 </pre></div>
 </div>
 <p>This gives the following results:</p>
@@ -631,8 +631,8 @@ and save the exported model to the <code class="docutils literal notranslate"><s
 optimization.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">optimize</span> <span class="n">ote_anomaly_detection_padim</span> \
     <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">datasets</span><span class="o">/</span><span class="n">MVTec</span><span class="o">/</span><span class="n">bottle</span><span class="o">/</span><span class="n">train</span> \
-    <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">openvino_models</span><span class="o">/</span><span class="n">openvino</span><span class="o">.</span><span class="n">xml</span> \
-    <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">pot_model</span>
+    <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">openvino</span><span class="o">/</span><span class="n">openvino</span><span class="o">.</span><span class="n">xml</span> \
+    <span class="o">--</span><span class="n">output</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">pot_model</span>
 </pre></div>
 </div>
 <p>This command generates the following files that can be used to run <a class="reference internal" href="../demo.html"><span class="doc">otx demo</span></a>:</p>
@@ -650,7 +650,7 @@ weights to the <code class="docutils literal notranslate"><span class="pre">opit
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">optimize</span> <span class="n">ote_anomaly_detection_padim</span> \
     <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">datasets</span><span class="o">/</span><span class="n">MVTec</span><span class="o">/</span><span class="n">bottle</span><span class="o">/</span><span class="n">train</span> \
     <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span> \
-    <span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">model</span><span class="o">-</span><span class="n">to</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">nncf_model</span>
+    <span class="o">--</span><span class="n">output</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">ANOMALY_DETECTION</span><span class="o">/</span><span class="n">nncf_model</span>
 </pre></div>
 </div>
 <p>Similar to POT optimization, it generates the following files:</p>
