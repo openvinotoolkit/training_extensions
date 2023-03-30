@@ -1,4 +1,4 @@
-"""Exporter for OTX Detection task with MMDETECTION traiing backend."""
+"""Exporter for OTX Detection task with MMDETECTION training backend."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -16,7 +16,7 @@ logger = get_logger()
 
 
 class DetectionExporter(Exporter):
-    """Exporter for OTX Detection using mmdetection traing backend."""
+    """Exporter for OTX Detection using mmdetection training backend."""
 
     def run(self, cfg, **kwargs):  # noqa: C901
         """Run exporter stage."""

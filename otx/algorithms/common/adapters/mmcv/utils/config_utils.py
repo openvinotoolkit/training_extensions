@@ -415,9 +415,9 @@ def patch_fp16(config: Config):
 
 
 def update_basic_hooks(config: Config):
-    """Update basic hooks for OTX trainig.
+    """Update basic hooks for OTX training.
 
-    This function can be removed by add custom hook cfg into recipe.py directly.
+    This function can be removed by adding custom hook cfg into recipe.py directly.
     """
     # default adaptive hook for evaluating before and after training
     add_custom_hook_if_not_exists(

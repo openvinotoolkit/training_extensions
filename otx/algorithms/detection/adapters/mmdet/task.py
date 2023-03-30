@@ -127,7 +127,7 @@ class MMDetectionTask(OTXDetectionTask):
             self._recipe_cfg.merge_from_dict(self.override_configs)
             logger.info(f"after override configs merging = {self._recipe_cfg}")
 
-        # add Cancel tranining hook
+        # add Cancel training hook
         update_or_add_custom_hook(
             self._recipe_cfg,
             ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
@@ -165,16 +165,27 @@ class MMDetectionTask(OTXDetectionTask):
     # pylint: disable=too-many-arguments
     def configure(
         self,
-        model_cfg,
-        model_ckpt,
-        data_cfg,
         training=True,
         subset="train",
         ir_options=None,
-        data_classes=None,
-        model_classes=None,
     ):
         """Patch mmcv configs for OTX detection settings."""
+
+        # deepcopy all configs to make sure
+        # changes under MPA and below does not take an effect to OTX for clear distinction
+        recipe_cfg = deepcopy(self._recipe_cfg)
+        data_cfg = deepcopy(self._data_cfg)
+        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
+
+        if self._data_cfg is not None:
+            data_classes = [label.name for label in self._labels]
+        else:
+            data_classes = None
+        model_classes = [label.name for label in self._model_label_schema]
+
+        recipe_cfg.work_dir = self._output_path
+        recipe_cfg.resume = self._resume
+
         if self._train_type == TrainType.Incremental:
             configurer = IncrDetectionConfigManager()
         elif self._train_type == TrainType.Semisupervised:
@@ -182,7 +193,7 @@ class MMDetectionTask(OTXDetectionTask):
         else:
             configurer = DetectionConfigManager()
         cfg = configurer.configure(
-            model_cfg, model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
+            recipe_cfg, self._model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
         )
         return cfg
 
@@ -191,7 +202,7 @@ class MMDetectionTask(OTXDetectionTask):
         self,
         dataset: DatasetEntity,
     ):
-        """Train function in DetectionTrainTask."""
+        """Train function in MMDetectionTask."""
         logger.info("init data cfg.")
         self._data_cfg = ConfigDict(data=ConfigDict())
 
@@ -219,20 +230,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task()
 
-        # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
-        recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
-        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
-
-        # update model config -> model label schema
-        data_classes = [label.name for label in self._labels]
-        model_classes = [label.name for label in self._model_label_schema]
-
-        recipe_cfg.work_dir = self._output_path
-        recipe_cfg.resume = self._resume
-
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, True, "train", None, data_classes, model_classes)
+        cfg = self.configure(True, "train", None)
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -287,10 +285,6 @@ class MMDetectionTask(OTXDetectionTask):
         if cfg.distributed:
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
-        # Save config
-        # cfg.dump(os.path.join(cfg.work_dir, 'config.py'))
-        # logger.info(f'Config:\n{cfg.pretty_text}')
-
         validate = bool(cfg.data.get("val", None))
         train_detector(
             model,
@@ -307,7 +301,6 @@ class MMDetectionTask(OTXDetectionTask):
         best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_*.pth"))
         if len(best_ckpt_path) > 0:
             output_ckpt_path = best_ckpt_path[0]
-        logger.info("run task done.")
         return dict(
             final_ckpt=output_ckpt_path,
         )
@@ -336,20 +329,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task()
 
-        # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
-        recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
-        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
-
-        # update model config -> model label schema
-        data_classes = [label.name for label in self._labels]
-        model_classes = [label.name for label in self._model_label_schema]
-
-        recipe_cfg.work_dir = self._output_path
-        recipe_cfg.resume = self._resume
-
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test", None, data_classes, model_classes)
+        cfg = self.configure(False, "test", None)
         logger.info("infer!")
 
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
@@ -470,7 +450,6 @@ class MMDetectionTask(OTXDetectionTask):
             )
         )
 
-        logger.info("run task done.")
         # TODO: InferenceProgressCallback register
         output = results["outputs"]
         metric = output["metric"]
@@ -500,19 +479,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task(export=True)
 
-        # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
-        recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
-        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
-
-        # update model config -> model label schema
-        model_classes = [label.name for label in self._model_label_schema]
-
-        recipe_cfg.work_dir = self._output_path
-        recipe_cfg.resume = self._resume
-
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test", None, None, model_classes)
+        cfg = self.configure(False, "test", None)
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
@@ -577,7 +544,7 @@ class MMDetectionTask(OTXDetectionTask):
         dataset: DatasetEntity,
         explain_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
-        """Main explain function of OTX Detection."""
+        """Main explain function of MMDetectionTask."""
 
         explainer_hook_selector = {
             "classwisesaliencymap": DetSaliencyMapHook,
@@ -611,20 +578,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task()
 
-        # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
-        recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
-        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
-
-        # update model config -> model label schema
-        data_classes = [label.name for label in self._labels]
-        model_classes = [label.name for label in self._model_label_schema]
-
-        recipe_cfg.work_dir = self._output_path
-        recipe_cfg.resume = self._resume
-
-        cfg = self.configure(recipe_cfg, self._model_ckpt, data_cfg, False, "test", None, data_classes, model_classes)
+        cfg = self.configure(False, "test", None)
 
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
         if samples_per_gpu > 1:
@@ -706,7 +660,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
 
-        logger.info("run task done.")
         detections = outputs["detections"]
         explain_results = outputs["saliency_maps"]
 
