@@ -9,11 +9,10 @@ import pytest
 import torch
 from mmdet.models import build_detector
 
-from otx.algorithms.classification.tasks import ClassificationInferenceTask  # noqa
-from otx.algorithms.detection.adapters.mmdet.hooks import DetClassProbabilityMapHook
-from otx.cli.registry import Registry
-from otx.mpa.det.stage import DetectionStage  # noqa
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.detection.adapters.mmdet.hooks import DetClassProbabilityMapHook
+from otx.algorithms.detection.adapters.mmdet.tasks.stage import DetectionStage  # noqa
+from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 templates_det = Registry("otx/algorithms").filter(task_type="DETECTION").templates

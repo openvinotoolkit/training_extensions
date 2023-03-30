@@ -16,6 +16,7 @@
 
 from pathlib import Path
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
@@ -32,7 +33,6 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     get_parser_and_hprams_data,
 )
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -70,7 +70,7 @@ def get_args():
     parser.add_argument(
         "--process-saliency-maps",
         action="store_true",
-        help="Processing of saliency map includes (1) resize to input image resolution and (2) apply a colormap."
+        help="Processing of saliency map includes (1) resizing to input image resolution and (2) applying a colormap."
         "Depending on the number of targets to explain, this might take significant time.",
     )
     parser.add_argument(
@@ -99,7 +99,10 @@ def _log_prior_to_saving(args, num_images):
             "and (2) color map applied."
         )
     else:
-        logger.info("No postprocessing applied. Raw low-resolution saliency maps saved as .tiff format images.")
+        logger.info(
+            "No postprocessing applied. Raw low-resolution saliency maps saved as .tiff format images. "
+            "Use --process-saliency-maps to apply postprocessing to saliency maps."
+        )
 
     if args.explain_all_classes:
         logger.info(f"Saliency maps generated for each class, per each of {num_images} images.")

@@ -9,19 +9,17 @@ import pytest
 import torch
 from mmcls.models import build_classifier
 
+from otx.algorithms.classification.adapters.mmcls.tasks.stage import ClsStage
 from otx.algorithms.classification.tasks import ClassificationInferenceTask  # noqa
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    ReciproCAMHook,
+)
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.cli.registry import Registry
-from otx.mpa.cls.stage import ClsStage
-from otx.mpa.det.stage import DetectionStage  # noqa
-from otx.mpa.modules.hooks.recording_forward_hooks import ReciproCAMHook
-from otx.mpa.utils.config_utils import MPAConfig
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates
 templates_cls_ids = [template.model_template_id for template in templates_cls]
-
-templates_det = Registry("otx/algorithms").filter(task_type="DETECTION").templates
-templates_det_ids = [template.model_template_id for template in templates_det]
 
 
 class TestExplainMethods:
