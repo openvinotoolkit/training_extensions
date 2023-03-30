@@ -8,7 +8,7 @@ summary: Class-Incremental Instance Segmentation for MaskRCNN-ResNet50
 application: ~
 
 # Algo backend.
-framework: OTEDetection v2.9.1
+framework: OTXDetection v2.9.1
 
 # Task implementations.
 entrypoints:
