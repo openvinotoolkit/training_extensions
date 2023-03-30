@@ -18,8 +18,8 @@ from mmcv.runner import load_checkpoint
 from mmseg.models.builder import (  # pylint: disable=no-name-in-module
     SEGMENTORS,
     build_backbone,
-    build_loss,
     build_neck,
+    build_head,
 )
 from mmseg.ops import resize
 from torch import nn
@@ -158,7 +158,6 @@ class DetConB(nn.Module):
         input_transform: str = "resize_concat",
         in_index: Union[List[int], int] = [0],
         align_corners: bool = False,
-        loss_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
         super().__init__()
@@ -181,15 +180,12 @@ class DetConB(nn.Module):
         self.target_projector = build_neck(neck)
 
         # build head with predictor
-        self.predictor = build_neck(head)
+        self.predictor = build_head(head)
 
         # set maskpooling
         self.mask_pool = MaskPooling(num_classes, num_samples, downsample)
 
         self.init_weights(pretrained=pretrained)
-
-        # build detcon loss
-        self.detcon_loss = build_loss(loss_cfg)
 
         # Hooks for super_type transparent weight save
         self._register_state_dict_hook(self.state_dict_hook)
@@ -331,24 +327,7 @@ class DetConB(nn.Module):
             projs_tgt, ids_tgt = self.sample_masked_feats(self.target_backbone(imgs), masks, self.target_projector)
 
         # predictor
-        # TODO (sungchul): predictor + loss -> head?
-        preds = self.predictor(projs)
-        pred1, pred2 = torch.split(preds.reshape((-1, self.num_samples, preds.shape[-1])), batch_size)
-        id1, id2 = torch.split(ids, batch_size)
-        proj1_tgt, proj2_tgt = torch.split(projs_tgt.reshape((-1, self.num_samples, projs_tgt.shape[-1])), batch_size)
-        id1_tgt, id2_tgt = torch.split(ids_tgt, batch_size)
-
-        # decon loss
-        loss = self.detcon_loss(
-            pred1=pred1,
-            pred2=pred2,
-            target1=proj1_tgt,
-            target2=proj2_tgt,
-            pind1=id1,
-            pind2=id2,
-            tind1=id1_tgt,
-            tind2=id2_tgt,
-        )
+        loss = self.predictor(projs, projs_tgt, ids, ids_tgt, batch_size, self.num_samples)
 
         if return_embedding:
             return loss, embds, masks
@@ -485,7 +464,6 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
         input_transform: str = "resize_concat",
         in_index: Union[List[int], int] = [0],
         align_corners: bool = False,
-        loss_cfg: Optional[Dict[str, Any]] = None,
         train_cfg: Optional[Dict[str, Any]] = None,
         test_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
@@ -504,7 +482,6 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             input_transform=input_transform,
             in_index=in_index,
             align_corners=align_corners,
-            loss_cfg=loss_cfg,
             **kwargs,
         )
         self.backbone = self.detconb.online_backbone

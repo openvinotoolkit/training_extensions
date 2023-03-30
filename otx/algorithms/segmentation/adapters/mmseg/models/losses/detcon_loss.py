@@ -164,4 +164,4 @@ class DetConLoss(nn.Module):
         loss_b = manual_cross_entropy(logits_concat[1], labels_concat[1], weight=weights[1])
         loss = loss_a + loss_b
 
-        return dict(loss=loss)
+        return loss

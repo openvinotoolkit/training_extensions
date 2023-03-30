@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from .backbones import LiteHRNet, MMOVBackbone
-from .heads import CustomFCNHead, MMOVDecodeHead
+from .heads import CustomFCNHead, MMOVDecodeHead, DetConHead
 from .losses import CrossEntropyLossWithIgnore, DetConLoss
 from .necks import SelfSLMLP
 from .schedulers import (
@@ -45,4 +45,5 @@ __all__ = [
     "SupConDetConB",
     "ClassIncrEncoderDecoder",
     "MeanTeacherSegmentor",
+    "DetConHead",
 ]
