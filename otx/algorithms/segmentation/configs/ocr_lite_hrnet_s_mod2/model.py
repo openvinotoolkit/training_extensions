@@ -51,11 +51,11 @@ model = dict(
         ],
     ),
     init_cfg=dict(
-            type="Normal",
-            mean=0,
-            std=0.01,
-            override=dict(name="conv_seg"),
-        ),
+        type="Normal",
+        mean=0,
+        std=0.01,
+        override=dict(name="conv_seg"),
+    ),
 )
 
 load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\

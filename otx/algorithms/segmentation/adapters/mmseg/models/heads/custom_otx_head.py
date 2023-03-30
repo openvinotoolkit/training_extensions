@@ -9,11 +9,8 @@ from mmseg.models.decode_heads.sep_aspp_head import DepthwiseSeparableASPPHead
 
 from .mixin import Mixin
 
+KNOWN_HEADS = {"FCNHead": FCNHead, "ASPPHead": DepthwiseSeparableASPPHead}
 
-KNOWN_HEADS = {
-    "FCNHead": FCNHead,
-    "ASPPHead": DepthwiseSeparableASPPHead
-}
 
 def get_head(head_name, *args, **kwargs):
     head_class = KNOWN_HEADS[head_name]

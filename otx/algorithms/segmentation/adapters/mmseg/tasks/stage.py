@@ -10,9 +10,10 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
 )
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_otx_head import (
+    get_head,
+)
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
-from otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_otx_head import get_head
-
 
 logger = get_logger()
 
@@ -68,7 +69,6 @@ class SegStage(Stage):
 
         # configure head
         self.configure_head(cfg)
-
 
     def configure_data(self, cfg, training, data_cfg):  # noqa: C901
         """Patch data_cfg."""
@@ -144,7 +144,7 @@ class SegStage(Stage):
 
     def configure_head(self, cfg):
         """Change head to custom head to align with otx
-           inteface for class incremental learning."""
+        inteface for class incremental learning."""
         decode_head = cfg.model.get("decode_head", None)
         auxiliary_head = cfg.model.get("auxiliary_head", None)
 

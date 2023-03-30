@@ -9,8 +9,8 @@ import os
 import os.path as osp
 import random
 import time
-from typing import Any, Callable, Dict, List, Optional
 from collections import OrderedDict
+from typing import Any, Callable, Dict, List, Optional
 
 import mmcv
 import numpy as np
@@ -502,9 +502,7 @@ class Stage:
             modified = False
             # patch pre-trained checkpoint for model
             for name in ckpt:
-                if (not name.startswith("backbone")
-                    and not "fc" in name
-                    and not "head" in name):
+                if not name.startswith("backbone") and not "fc" in name and not "head" in name:
                     new_name = "backbone." + name
                     modified = True
                 else:

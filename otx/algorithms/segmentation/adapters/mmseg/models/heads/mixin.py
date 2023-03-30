@@ -19,22 +19,27 @@ from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     get_valid_label_mask_per_batch,
 )
+
 # pylint: disable=abstract-method, unused-argument, keyword-arg-before-vararg
 
 
 class Mixin(nn.Module):
     """Pixel weight mixin class. It includes SegmentOutNormMixin,
     loss mixing module and aggregator for class incremental"""
-    def __init__(self, enable_loss_equalizer=False,
-                 loss_target="gt_semantic_seg",
-                 enable_out_seg=True,
-                 enable_out_norm=False,
-                 enable_aggregator=False,
-                 aggregator_min_channels=None,
-                 aggregator_merge_norm=None,
-                 aggregator_use_concat=False,
-                 *args,
-                 **kwargs):
+
+    def __init__(
+        self,
+        enable_loss_equalizer=False,
+        loss_target="gt_semantic_seg",
+        enable_out_seg=True,
+        enable_out_norm=False,
+        enable_aggregator=False,
+        aggregator_min_channels=None,
+        aggregator_merge_norm=None,
+        aggregator_use_concat=False,
+        *args,
+        **kwargs,
+    ):
 
         in_channels = kwargs.get("in_channels")
         in_index = kwargs.get("in_index")

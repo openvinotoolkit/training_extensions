@@ -20,6 +20,6 @@ _base_ = [
     "../../../common/adapters/mmcv/configs/backbones/deeplabv3plus_resnet50.py",
 ]
 
-load_from = 'open-mmlab://resnet50_v1c'
+load_from = "open-mmlab://resnet50_v1c"
 fp16 = dict(loss_scale=512.0)
-model = dict(type='ClassIncrEncoderDecoder')
+model = dict(type="ClassIncrEncoderDecoder")

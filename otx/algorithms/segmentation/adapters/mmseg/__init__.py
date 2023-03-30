@@ -21,7 +21,6 @@ from .models import (
     ClassIncrEncoderDecoder,
     ConstantScalarScheduler,
     CrossEntropyLossWithIgnore,
-    get_head,
     DetConB,
     DetConLoss,
     LiteHRNet,
@@ -32,6 +31,7 @@ from .models import (
     SelfSLMLP,
     StepScalarScheduler,
     SupConDetConB,
+    get_head,
 )
 
 # fmt: off
