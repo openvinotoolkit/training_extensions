@@ -232,7 +232,7 @@ class TestToolsOTXTrainAutoConfig:
         assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models"))
         assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "weights.pth"))
         assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "label_schema.json"))
-        file_list = file_list[:-1]  # Remove latest from list, then file_list[-1] is latest
+        file_list.remove("latest_trained_model")
         assert os.path.exists(os.path.join(expected_output_path, file_list[-1]))
         assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models"))
         assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "weights.pth"))
