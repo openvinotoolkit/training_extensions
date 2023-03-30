@@ -6,6 +6,7 @@ from functools import partial
 
 from mmcls.models.builder import CLASSIFIERS
 from mmcls.models.classifiers.image import ImageClassifier
+from mmcv.parallel import DataContainer
 
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.logger import get_logger
@@ -63,6 +64,10 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
         losses = dict()
 
         if self.multilabel or self.hierarchical:
+            # FIXME: img_metas incomes as DataContainer in OSX
+            img_metas = kwargs.get("img_metas", None)
+            if img_metas and isinstance(img_metas, DataContainer):
+                kwargs["img_metas"] = img_metas.data[0]
             loss = self.head.forward_train(x, gt_label, **kwargs)
         else:
             gt_label = gt_label.squeeze(dim=1)

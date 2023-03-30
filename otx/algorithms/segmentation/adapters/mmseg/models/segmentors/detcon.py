@@ -207,7 +207,7 @@ class DetConB(nn.Module):
                 self.online_backbone,
                 pretrained,
                 strict=False,
-                map_location=None,
+                map_location="cpu",
                 logger=logger,
                 revise_keys=[(r"^backbone\.", "")],
             )
