@@ -55,9 +55,9 @@ from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.configurer import (
-    DetectionStage,
-    IncrDetectionStage,
-    SemiSLDetectionStage,
+    DetectionConfigManager,
+    IncrDetectionConfigManager,
+    SemiSLDetectionConfigManager,
 )
 from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
@@ -176,11 +176,11 @@ class MMDetectionTask(OTXDetectionTask):
     ):
         """Patch mmcv configs for OTX detection settings."""
         if self._train_type == TrainType.Incremental:
-            configurer = IncrDetectionStage()
+            configurer = IncrDetectionConfigManager()
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLDetectionStage()
+            configurer = SemiSLDetectionConfigManager()
         else:
-            configurer = DetectionStage()
+            configurer = DetectionConfigManager()
         cfg = configurer.configure(
             model_cfg, model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
         )

@@ -38,7 +38,7 @@ logger = get_logger()
 
 
 # pylint: disable=too-many-public-methods
-class DetectionStage:
+class DetectionConfigManager:
     """Patch config to support otx train."""
 
     def __init__(self):
@@ -148,7 +148,7 @@ class DetectionStage:
 
         Merge cfg and data_cfg
         Match cfg.data.train.type to super_type
-        Patch for unlabeled data path ==> This may be moved to SemiDetectionStage
+        Patch for unlabeled data path ==> This may be moved to SemiDetectionConfigManager
         """
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
@@ -660,7 +660,7 @@ class DetectionStage:
         _configure_dataloader(cfg)
 
 
-class IncrDetectionStage(DetectionStage):
+class IncrDetectionConfigManager(DetectionConfigManager):
     """Patch config to support incremental learning for object detection."""
 
     def configure_task(self, cfg, training):
@@ -689,7 +689,7 @@ class IncrDetectionStage(DetectionStage):
         )
 
 
-class SemiSLDetectionStage(DetectionStage):
+class SemiSLDetectionConfigManager(DetectionConfigManager):
     """Patch config to support semi supervised learning for object detection."""
 
     def configure_data(self, cfg, training, data_cfg):
