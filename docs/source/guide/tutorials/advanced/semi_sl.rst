@@ -150,7 +150,7 @@ In the train log, you can check that the train type is set to **Semisupervised**
   ...
 
 
-After training ends, a trained model is saved in the ``models`` sub-directory in the workspace named ``otx-workspace-CLASSIFICATION`` by default.
+After training ends, a trained model is saved in the ``latest_trained_model`` sub-directory in the workspace named ``otx-workspace-CLASSIFICATION`` by default.
 
 
 ***************************
@@ -159,7 +159,7 @@ Validation
 
 In the same manner with `the normal validation <../base/how_to_train/classification.html#validation>`__,
 we can evaluate the trained model with auto-splitted validation dataset in the workspace and 
-save results to ``performance.json`` by the following command:
+save results to ``outputs/performance.json`` by the following command:
 
 
 .. code-block::
@@ -167,4 +167,4 @@ save results to ``performance.json`` by the following command:
   (otx) ...$ otx eval otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                       --test-data-roots splitted_dataset/val \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --output outputs

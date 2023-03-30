@@ -12,8 +12,8 @@ def test_get_args(mocker):
     mock_options = {
         "--test-data-roots": "test/data/root",
         "--load-weights": "weight/path",
-        "--save-performance": "save/path",
-        "--work-dir": "work/dir/path",
+        "--output": "save/path",
+        "--workspace": "work/dir/path",
     }
     mock_command = ["otx"]
     for key, value in mock_options.items():
@@ -29,8 +29,7 @@ def test_get_args(mocker):
 
     assert parsed_args.test_data_roots == "test/data/root"
     assert parsed_args.load_weights == "weight/path"
-    assert parsed_args.save_performance == "save/path"
-    assert parsed_args.work_dir == "work/dir/path"
+    assert parsed_args.workspace == "work/dir/path"
 
 
 @pytest.fixture
@@ -38,8 +37,7 @@ def mock_args(mocker, tmp_path):
     mock_args = mocker.MagicMock()
     mock_args.test_data_roots = "fake_test_data_root"
     mock_args.load_weights = "fake_load_weights.xml"
-    mock_args.save_performance = tmp_path / "save/performance.json"
-    mock_args.work_dir = tmp_path / "work_dir"
+    mock_args.workspace = tmp_path / "work_dir"
 
     def mock_contains(self, val):
         return val in self.__dict__

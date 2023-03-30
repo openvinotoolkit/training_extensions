@@ -186,13 +186,13 @@ Keep in mind that ``label_schema.json`` file contains meta information about the
 ``otx eval`` will output a frame-wise accuracy for action classification. Note, that top-1 accuracy during training is video-wise accuracy.
 
 2. The command below will run validation on the dataset
-and save performance results in ``performance.json`` file:
+and save performance results in ``outputs/performance.json`` file:
 
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --output outputs
 
 You will get a similar validation output:
 
@@ -215,12 +215,12 @@ Export
 It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. Run the command line below to export the trained model
-and save the exported model to the ``openvino_models`` folder.
+and save the exported model to the ``openvino`` folder.
 
 .. code-block::
 
   (otx) ...$ otx export --load-weights models/weights.pth \
-                        --save-model-to openvino_models
+                        --output openvino
 
   ...
   2023-02-21 22:54:32,518 - mmaction - INFO - Model architecture: X3D
@@ -241,8 +241,8 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
-                      --load-weights openvino_models/openvino.xml \
-                      --save-performance openvino_models/performance.json
+                      --load-weights openvino/openvino.xml \
+                      --output outputs/openvino
 
   ...
 
@@ -262,8 +262,8 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
-                          --save-model-to pot_model
+  (otx) ...$ otx optimize --load-weights openvino/openvino.xml \
+                          --output pot_model
 
   ...
 

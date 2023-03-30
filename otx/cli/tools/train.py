@@ -76,11 +76,12 @@ def get_args():
         help="Resume training from previously saved checkpoint",
     )
     parser.add_argument(
-        "--save-model-to",
-        help="Location where trained model will be stored.",
+        "-o",
+        "--output",
+        help="Location where outputs (model & logs) will be stored.",
     )
     parser.add_argument(
-        "--work-dir",
+        "--workspace",
         help="Location where the intermediate output of the training will be stored.",
         default=None,
     )
@@ -157,13 +158,13 @@ def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="train")
+    config_manager = ConfigManager(args, workspace_root=args.workspace, mode="train")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
     # Creates a workspace if it doesn't exist.
     if not config_manager.check_workspace():
-        config_manager.build_workspace(new_workspace_path=args.work_dir)
+        config_manager.build_workspace(new_workspace_path=args.workspace)
 
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
@@ -203,13 +204,13 @@ def main():  # pylint: disable=too-many-branches
             model_adapters=model_adapters,
         )
 
-    # FIXME: Need to align output results & Current HPO use save_model_to.parent
-    if "save_model_to" not in args or not args.save_model_to:
-        args.save_model_to = str(config_manager.workspace_root / "models")
     if args.enable_hpo:
-        environment = run_hpo(args, environment, dataset, config_manager.data_config)
+        environment = run_hpo(
+            args.hpo_time_ratio, config_manager.output_path, environment, dataset, config_manager.data_config
+        )
 
-    task = task_class(task_environment=environment, output_path=args.work_dir)
+    (config_manager.output_path / "logs").mkdir(exist_ok=True, parents=True)
+    task = task_class(task_environment=environment, output_path=str(config_manager.output_path / "logs"))
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(main, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
@@ -219,14 +220,22 @@ def main():  # pylint: disable=too-many-branches
             multigpu_manager.is_available()
             and not template.task_type.is_anomaly  # anomaly tasks don't use this way for multi-GPU training
         ):
-            multigpu_manager.setup_multi_gpu_train(task.project_path, hyper_parameters if args.enable_hpo else None)
+            multigpu_manager.setup_multi_gpu_train(
+                str(config_manager.output_path), hyper_parameters if args.enable_hpo else None
+            )
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
-    save_model_data(output_model, args.save_model_to)
-    print(f"[*] Save Model to: {args.save_model_to}")
+    save_model_data(output_model, str(config_manager.output_path / "models"))
+    # Latest model folder symbolic link to models
+    latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
+    if latest_path.exists():
+        latest_path.unlink()
+    elif not latest_path.parent.exists():
+        latest_path.parent.mkdir(exist_ok=True, parents=True)
+    latest_path.symlink_to(config_manager.output_path.resolve())
 
     if config_manager.data_config["val_subset"]["data_root"]:
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
