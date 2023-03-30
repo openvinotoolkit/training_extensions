@@ -180,12 +180,10 @@ class Stage:
             self._distributed = True
             self.cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
         elif "gpu_ids" not in self.cfg:
-            gpu_ids = os.environ.get("CUDA_VISIBLE_DEVICES")
-            logger.info(f"CUDA_VISIBLE_DEVICES = {gpu_ids}")
-            if gpu_ids is not None:
-                self.cfg.gpu_ids = range(len(gpu_ids.split(",")))
-            else:
-                self.cfg.gpu_ids = range(1)
+            self.cfg.gpu_ids = range(1)
+        else:
+            if len(self.cfg.gpu_ids) != 0:
+                raise ValueError("length of cfg.gpu_ids should be 1 when training with single GPU.")
 
         # consider "cuda" and "cpu" device only
         if not torch.cuda.is_available():

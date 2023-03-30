@@ -89,14 +89,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._resume = False
         self._anchors = {}  # type: Dict[str, int]
         self._work_dir_is_temp = False
-        if output_path is None:
-            if "TORCHELASTIC_RUN_ID" in os.environ:
-                output_path = os.path.join(tempfile.gettempdir(),
-                                           f"OTX-task-torchelastic-{os.environ['TORCHELASTIC_RUN_ID ']}")
-            else:
-                output_path = tempfile.mkdtemp(prefix="OTX-task-")
-            self._work_dir_is_temp = True
-        self._output_path = output_path
+        self._output_path = output_path if output_path is not None else self._get_tmp_dir()
         logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
@@ -145,6 +138,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
             dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
             logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
+
+    def _get_tmp_dir(self):
+        self._work_dir_is_temp = True
+        # If training is excuted with torchrun, set all trainings' output directory same
+        if "TORCHELASTIC_RUN_ID" in os.environ:
+            return os.path.join(
+                tempfile.gettempdir(), f"OTX-task-torchelastic-{os.environ['TORCHELASTIC_RUN_ID']}")
+        return tempfile.mkdtemp(prefix="OTX-task-")
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(kwargs)

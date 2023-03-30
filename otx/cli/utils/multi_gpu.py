@@ -161,9 +161,9 @@ class MultiGPUManager:
 
     def setup_multi_gpu_train(
         self,
-        output_path: Optional[str] = None,
+        output_path: str,
         optimized_hyper_parameters: Optional[ConfigurableParameters] = None,
-    ) -> str:
+    ):
         """Carry out what should be done to run multi GPU training.
 
         Args:
@@ -174,10 +174,6 @@ class MultiGPUManager:
             str:
                 If output_path is None, make a temporary directory and return it.
         """
-        if output_path is None:
-            self._tmp_dir = TemporaryDirectory(prefix="OTX-multi-gpu-")  # pylint: disable=consider-using-with
-            output_path = self._tmp_dir.name
-
         if optimized_hyper_parameters is not None:  # if HPO is executed, optimized HPs are applied to child processes
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
 
@@ -189,8 +185,6 @@ class MultiGPUManager:
         self.initialize_multigpu_train(self._rdzv_endpoint, self._base_rank, 0, self._gpu_ids, self._world_size)
 
         threading.Thread(target=self._check_child_processes_alive, daemon=True).start()
-
-        return output_path
 
     def finalize(self):
         """Join all child processes."""
@@ -257,7 +251,7 @@ class MultiGPUManager:
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove("--enable-hpo")
-        set_arguments_to_argv("--output", output_path)
+        set_arguments_to_argv(["-o", "--output"], output_path)
         set_arguments_to_argv("--rdzv-endpoint", rdzv_endpoint)
 
         MultiGPUManager.initialize_multigpu_train(rdzv_endpoint, rank, local_rank, gpu_ids, world_size)
@@ -282,6 +276,15 @@ class MultiGPUManager:
     def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
         processes = []
         ctx = mp.get_context("spawn")
+
+        # set CUDA_VISIBLE_DEVICES to make child process use proper GPU
+        origin_cuda_visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES")
+        if origin_cuda_visible_devices is not None:
+            cuda_visible_devices = origin_cuda_visible_devices.split(',')
+        else:
+            cuda_visible_devices = [str(i) for i in range(torch.cuda.device_count())]
+        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([cuda_visible_devices[gpu_idx] for gpu_idx in self._gpu_ids])
+
         for rank in range(1, len(self._gpu_ids)):
             task_p = ctx.Process(
                 target=MultiGPUManager.run_child_process,
@@ -297,6 +300,11 @@ class MultiGPUManager:
             )
             task_p.start()
             processes.append(task_p)
+
+        if origin_cuda_visible_devices is None:
+            del os.environ["CUDA_VISIBLE_DEVICES"]
+        else:
+            os.environ["CUDA_VISIBLE_DEVICES"] = origin_cuda_visible_devices
 
         return processes
 
