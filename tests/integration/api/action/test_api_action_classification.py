@@ -58,8 +58,11 @@ class TestActionTaskAPI:
             )
 
     def init_environment(self, params, model_template):
+        algo_backend = model_template.hyper_parameters.parameter_overrides["algo_backend"]
+        train_type = algo_backend["train_type"]["default_value"]
         dataset_adapter = get_dataset_adapter(
             model_template.task_type,
+            train_type,
             train_data_roots=self.train_data_roots,
             val_data_roots=self.val_data_roots,
         )
