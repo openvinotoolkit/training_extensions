@@ -52,7 +52,7 @@ def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
     mask_form_file = mask_form_file.replace("images", "masks")
     mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
 
-    return np.expand_dims(mask, axis=2).astype(np.int8)
+    return np.expand_dims(mask, axis=2)
 
 
 def mask_from_annotation(
