@@ -42,7 +42,7 @@ from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import (
     config_to_bytes,
     flatten_config_values,
-    group_to_dict,
+    flatten_detection_config_groups,
 )
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -375,7 +375,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             ADDict: config dictionary
         """
         config = vars(self.hparams)
-        group_to_dict(config)
+        flatten_detection_config_groups(config)
         try:
             if self.model is not None and self.model.get_data("config.json"):
                 config.update(json.loads(self.model.get_data("config.json")))

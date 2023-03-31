@@ -205,7 +205,7 @@ def flatten_config_values(config: dict):
                 flatten_config_values(value)
 
 
-def group_to_dict(config: dict):
+def flatten_detection_config_groups(config: dict):
     """Converts all Detection Config Group objects in a config dictionary to their dictionary representation.
 
     Args:
@@ -215,4 +215,4 @@ def group_to_dict(config: dict):
         if hasattr(value, "__dict__"):
             config[key] = value.__dict__
         elif isinstance(value, dict):
-            group_to_dict(value)
+            flatten_detection_config_groups(value)

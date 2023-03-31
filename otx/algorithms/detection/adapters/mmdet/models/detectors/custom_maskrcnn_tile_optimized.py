@@ -7,6 +7,7 @@
 import numpy as np
 import torch
 from mmcv.runner import auto_fp16
+from mmcv.cnn import ConvModule
 from mmdet.models.builder import DETECTORS
 from torch import nn
 
@@ -22,17 +23,11 @@ class TileClassifier(torch.nn.Module):
         super().__init__()
         self.fp16_enabled = False
         self.features = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
+            ConvModule(3, 64, 11, stride=4, padding=2, act_cfg=dict(type="ReLU")),
             nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(64, 192, kernel_size=5, padding=2),
-            nn.BatchNorm2d(192),
-            nn.ReLU(inplace=True),
+            ConvModule(64, 192, 5, padding=2, act_cfg=dict(type="ReLU")),
             nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(192, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True),
+            ConvModule(192, 256, 3, padding=1, act_cfg=dict(type="ReLU")),
             nn.MaxPool2d(kernel_size=3, stride=2),
         )
         self.avgpool = torch.nn.AdaptiveAvgPool2d((6, 6))
@@ -44,7 +39,7 @@ class TileClassifier(torch.nn.Module):
             torch.nn.Linear(256, 1),
         )
 
-        self.loss_fun = torch.nn.BCEWithLogitsLoss()
+        self.loss_func = torch.nn.BCEWithLogitsLoss()
         self.sigmoid = torch.nn.Sigmoid()
 
     @auto_fp16()
@@ -74,7 +69,7 @@ class TileClassifier(torch.nn.Module):
         Returns:
             torch.Tensor: BCE loss
         """
-        loss = self.loss_fun(pred, target)
+        loss = self.loss_func(pred, target)
         return loss
 
     @auto_fp16()
@@ -253,7 +248,7 @@ if is_mmdeploy_enabled():
 
     # pylint: disable=line-too-long
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.CustomMaskRCNNTileOptimised.forward"  # noqa: E501
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.CustomMaskRCNNTileOptimized.forward"  # noqa: E501
     )
     def custom_maskrcnn__forward(ctx, self, img, img_metas=None, **kwargs):
         """Custom MaskRCNN Forward Rewriter.
