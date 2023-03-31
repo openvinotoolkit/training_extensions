@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
--
+- Update DetCon logic and SupCon for semantic segmentation recipes (<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
 
 ### Bug fixes
 
