@@ -89,13 +89,13 @@ class OTXDetectionTask(OTXTask, ABC):
         else:
             self.confidence_threshold = 0.0
 
+        if task_environment.model is not None:
+            self._load_model()
+
         if self._hyperparams.tiling_parameters.enable_tiling:
             self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
         else:
             self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
-
-        if task_environment.model is not None:
-            self._load_model()
 
     def _load_model_ckpt(self, model: Optional[ModelEntity]):
         if model and "weights.pth" in model.model_adapters:
