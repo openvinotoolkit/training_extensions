@@ -11,7 +11,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_otx_head import (
-    get_head,
+    CustomOTXHeadFactory
 )
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 
@@ -149,9 +149,9 @@ class SegStage(Stage):
         auxiliary_head = cfg.model.get("auxiliary_head", None)
 
         for head in (decode_head, auxiliary_head):
-            if head:
-                head.head_name = head.type
-                head.type = get_head
+            if head is not None:
+                # substitute head.type with OTX Head factory
+                head.type = CustomOTXHeadFactory(head.type)
 
     def configure_ignore(self, cfg):
         """Change to incremental loss (ignore mode)."""

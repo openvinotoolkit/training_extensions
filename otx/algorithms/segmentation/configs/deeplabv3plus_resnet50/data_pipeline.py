@@ -1,4 +1,4 @@
-"""Data Pipeline of ResNet model for Segmentation Task."""
+"""Data Pipeline of DeepLabV3Plus_ResNet50 model for Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #

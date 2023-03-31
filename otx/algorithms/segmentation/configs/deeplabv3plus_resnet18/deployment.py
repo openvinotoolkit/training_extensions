@@ -1,4 +1,4 @@
-"""MMDeploy config of ResNet50 model for Segmentation Task."""
+"""MMDeploy config of DeepLabV3Plus_ResNet18 model for Segmentation Task."""
 
 _base_ = ["../base/deployments/base_segmentation_dynamic.py"]
 

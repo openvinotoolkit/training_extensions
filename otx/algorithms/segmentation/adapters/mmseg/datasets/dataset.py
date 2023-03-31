@@ -36,7 +36,7 @@ from otx.api.utils.segmentation_utils import mask_from_dataset_item
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 @check_input_parameters_type()
 def get_annotation_mmseg_format(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity], from_file: bool = False
+    dataset_item: DatasetItemEntity, labels: List[LabelEntity], use_otx_adapter: bool = True
 ) -> dict:
     """Function to convert a OTX annotation to mmsegmentation format.
 
@@ -47,7 +47,7 @@ def get_annotation_mmseg_format(
     :param labels: List of labels in the project
     :return dict: annotation information dict in mmseg format
     """
-    gt_seg_map = mask_from_dataset_item(dataset_item, labels, from_file)
+    gt_seg_map = mask_from_dataset_item(dataset_item, labels, use_otx_adapter)
 
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
     ann_info = dict(gt_semantic_seg=gt_seg_map)
@@ -119,7 +119,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         pipeline: Sequence[dict],
         classes: Optional[List[str]] = None,
         test_mode: bool = False,
-        load_from_files: bool = False,
+        use_otx_adapter: bool = True,
     ):
         self.otx_dataset = otx_dataset
         self.test_mode = test_mode
@@ -127,7 +127,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         self.ignore_index = 255
         self.reduce_zero_label = False
         self.label_map = None
-        self.load_from_files = load_from_files
+        self.use_otx_adapter = use_otx_adapter
 
         dataset_labels = self.otx_dataset.get_labels(include_empty=False)
         self.project_labels = self.filter_labels(dataset_labels, classes)
@@ -220,7 +220,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         """
 
         dataset_item = self.otx_dataset[idx]
-        ann_info = get_annotation_mmseg_format(dataset_item, self.project_labels, self.load_from_files)
+        ann_info = get_annotation_mmseg_format(dataset_item, self.project_labels, self.use_otx_adapter)
 
         return ann_info
 
@@ -245,7 +245,7 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         pipeline = []
         test_mode = kwargs.get("test_mode", False)
-        load_from_files = False
+        use_otx_adapter = False
         if "dataset" in kwargs:
             dataset = kwargs["dataset"]
             otx_dataset = dataset.otx_dataset
@@ -261,18 +261,16 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
         if test_mode is False:
             self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)
 
-        if test_mode:
-            for pipe in pipeline:
-                if pipe["type"] == "LoadFromFiles":
-                    load_from_files = pipe["flag"]
-                    pipeline.remove(pipe)
+        for pipe in pipeline:
+            if pipe["type"] == "LoadImageFromFile" and "use_otx_adapter" in pipe:
+                use_otx_adapter = pipe["use_otx_adapter"]
 
         if classes:
             classes = [c.name for c in classes]
             classes = ["background"] + classes
         else:
             classes = []
-        super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes, load_from_files=load_from_files)
+        super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes, use_otx_adapter=use_otx_adapter)
 
         self.CLASSES = [label.name for label in self.project_labels]
         if "background" not in self.CLASSES:

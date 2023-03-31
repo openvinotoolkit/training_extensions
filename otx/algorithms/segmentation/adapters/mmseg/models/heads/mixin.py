@@ -23,7 +23,7 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 # pylint: disable=abstract-method, unused-argument, keyword-arg-before-vararg
 
 
-class Mixin(nn.Module):
+class SegMixinModule(nn.Module):
     """Pixel weight mixin class. It includes SegmentOutNormMixin,
     loss mixing module and aggregator for class incremental"""
 

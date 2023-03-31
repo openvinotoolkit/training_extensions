@@ -22,7 +22,7 @@ from otx.api.utils.shape_factory import ShapeFactory
 
 
 def mask_from_dataset_item(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity], load_from_files: bool = False
+    dataset_item: DatasetItemEntity, labels: List[LabelEntity], use_otx_adapter: bool = True
 ) -> np.ndarray:
     """Creates a mask from dataset item.
 
@@ -39,15 +39,16 @@ def mask_from_dataset_item(
         Numpy array of mask
     """
     # todo: cache this so that it does not have to be redone for all the same media
-    if load_from_files:
-        mask = mask_from_file(dataset_item)
-    else:
+    if use_otx_adapter:
         mask = mask_from_annotation(dataset_item.get_annotations(), labels, dataset_item.width, dataset_item.height)
-
+    else:
+        mask = mask_from_file(dataset_item)
     return mask
 
 
 def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
+    """loads masks directly from annotation image. Only Common Sematic Segmentation format
+    is supported"""
     mask_form_file = dataset_item.media.path
     mask_form_file = mask_form_file.replace("images", "masks")
     mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)

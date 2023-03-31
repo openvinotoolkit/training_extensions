@@ -31,7 +31,6 @@ from .models import (
     SelfSLMLP,
     StepScalarScheduler,
     SupConDetConB,
-    get_head,
 )
 
 # fmt: off
@@ -48,7 +47,6 @@ __all__ = [
     "MPASegDataset",
     "LiteHRNet",
     "MMOVBackbone",
-    "get_head",
     "MMOVDecodeHead",
     "DetConLoss",
     "SelfSLMLP",
