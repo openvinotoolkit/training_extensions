@@ -8,7 +8,7 @@ summary: Class-Incremental Semantic Segmentation with middle-sized architecture 
 application: ~
 
 # Algo backend.
-framework: OTESegmentation v0.14.0
+framework: OTXSegmentation v0.14.0
 
 # Task implementations.
 entrypoints:
