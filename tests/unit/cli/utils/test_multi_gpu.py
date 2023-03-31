@@ -219,10 +219,7 @@ class TestMultiGPUManager:
         fake_output_path = "fake"
 
         # run
-        output_path = self.multigpu_manager.setup_multi_gpu_train(fake_output_path, mock_hyper_parameters)
-
-        # check output_path is same
-        assert fake_output_path == output_path
+        self.multigpu_manager.setup_multi_gpu_train(fake_output_path, mock_hyper_parameters)
 
         # check spwaning child process
         assert self.mock_process.call_count == self.num_gpu - 1
@@ -254,23 +251,6 @@ class TestMultiGPUManager:
         assert mock_sys.argv[mock_sys.argv.index("--learning_parameters.learning_rate") + 1] == "0.01"
         assert "--learning_parameters.batch_size" in mock_sys.argv
         assert mock_sys.argv[mock_sys.argv.index("--learning_parameters.batch_size") + 1] == "8"
-
-    @e2e_pytest_unit
-    def test_setup_multi_gpu_train_no_output_path(self, mocker):
-        """Check setup_multi_gpu_train without output_path"""
-        # prepare
-        mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
-        mock_hyper_parameters = mocker.MagicMock()
-        mock_hyper_parameters.learning_parameters.learning_rate = 0.01
-        mock_hyper_parameters.learning_parameters.batch_size = 8
-        mock_sys = mocker.patch.object(multi_gpu, "sys")
-        mock_sys.argv = []
-
-        # run
-        output_path = self.multigpu_manager.setup_multi_gpu_train(None, mock_hyper_parameters)
-
-        # check output_path exists
-        assert Path(output_path).exists()
 
     @e2e_pytest_unit
     def test_check_child_processes_alive(self, mocker, process_arr):
@@ -401,8 +381,11 @@ class TestMultiGPUManager:
         # check
         assert mock_set_start_method.call_args.kwargs["method"] is None
         assert "--gpus" not in mock_sys.argv
-        assert "--output" in mock_sys.argv
-        assert mock_sys.argv[mock_sys.argv.index("--output") + 1] == output_path
+        for output_arg_key in ["-o", "--output", False]:
+            if output_arg_key in mock_sys.argv:
+                break
+        assert output_arg_key is not False, "There arn't both '-o' and '--output'."
+        assert mock_sys.argv[mock_sys.argv.index(output_arg_key) + 1] == output_path
         assert "--rdzv-endpoint" in mock_sys.argv
         assert mock_sys.argv[mock_sys.argv.index("--rdzv-endpoint") + 1] == rdzv_endpoint
         mock_initialize_multigpu_train.assert_called_once()

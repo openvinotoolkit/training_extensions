@@ -137,7 +137,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if not dist.is_initialized():
             torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
             dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
-            logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
+            logger.info(f"Dist info: rank {dist.get_rank()} / {dist.get_world_size()} world_size")
 
     def _get_tmp_dir(self):
         self._work_dir_is_temp = True
