@@ -207,6 +207,14 @@ class TestMultiGPUManager:
         assert not multigpu_manager.is_available()
 
     @e2e_pytest_unit
+    def test_is_unavailable_by_torchrun(self, mocker):
+        mock_os = mocker.patch.object(multi_gpu, "os")
+        mock_os.environ = {"TORCHELASTIC_RUN_ID": "1234"}
+        multigpu_manager = MultiGPUManager(mocker.MagicMock(), ",".join([str(i) for i in range(4)]), "localhost:0")
+
+        assert not multigpu_manager.is_available()
+
+    @e2e_pytest_unit
     def test_setup_multi_gpu_train(self, mocker):
         # prepare
         mock_initialize_multigpu_train = mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")

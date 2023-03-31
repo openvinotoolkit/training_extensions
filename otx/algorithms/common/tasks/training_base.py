@@ -130,7 +130,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     @staticmethod
     def _is_multi_gpu_training():
-        return "LOCAL_RANK" in os.environ and torch.cuda.is_available()
+        multi_gpu_env = ["MASTER_ADDR", "MASTER_PORT", "LOCAL_WORLD_SIZE", "WORLD_SIZE", "LOCAL_RANK", "RANK"]
+        for env in multi_gpu_env:
+            if env not in os.environ:
+                return False
+
+        return torch.cuda.is_available()
 
     @staticmethod
     def _setup_multigpu_training():

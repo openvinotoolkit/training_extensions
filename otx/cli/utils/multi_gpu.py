@@ -157,7 +157,11 @@ class MultiGPUManager:
             bool:
                 whether multi GPU training is available.
         """
-        return len(self._gpu_ids) > 1
+        return (
+            len(self._gpu_ids) > 1
+            and "TORCHELASTIC_RUN_ID"
+            not in os.environ  # If otx is executed by torchrun, then otx multi gpu interface is disabled.
+        )
 
     def setup_multi_gpu_train(
         self,
