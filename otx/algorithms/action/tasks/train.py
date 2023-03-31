@@ -113,7 +113,7 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
             self._is_training = False
             return
 
-        # Set OTE LoggerHook & Time Monitor
+        # Set OTX LoggerHook & Time Monitor
         if train_parameters:
             update_progress_callback = train_parameters.update_progress
         else:
