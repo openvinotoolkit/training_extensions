@@ -55,9 +55,9 @@ from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.configurer import (
-    DetectionConfigManager,
-    IncrDetectionConfigManager,
-    SemiSLDetectionConfigManager,
+    DetectionConfigurer,
+    IncrDetectionConfigurer,
+    SemiSLDetectionConfigurer,
 )
 from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
@@ -188,11 +188,11 @@ class MMDetectionTask(OTXDetectionTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrDetectionConfigManager()
+            configurer = IncrDetectionConfigurer()
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLDetectionConfigManager()
+            configurer = SemiSLDetectionConfigurer()
         else:
-            configurer = DetectionConfigManager()
+            configurer = DetectionConfigurer()
         cfg = configurer.configure(
             recipe_cfg, self._model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
         )
