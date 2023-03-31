@@ -6,8 +6,8 @@
 
 import numpy as np
 import torch
-from mmcv.runner import auto_fp16
 from mmcv.cnn import ConvModule
+from mmcv.runner import auto_fp16
 from mmdet.models.builder import DETECTORS
 from torch import nn
 
