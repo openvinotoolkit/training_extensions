@@ -10,7 +10,6 @@ on:
       - opened
       - reopened
       - synchronize
-      - ready_for_review
   workflow_dispatch: # run on request (no need for PR)
 
 # This is what will cancel the workflow concurrency
@@ -36,7 +35,6 @@ jobs:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Code-Quality-Checks
     timeout-minutes: 120
-    if: github.event.pull_request.draft == false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

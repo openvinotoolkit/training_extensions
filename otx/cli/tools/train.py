@@ -16,6 +16,8 @@
 
 # pylint: disable=too-many-locals
 
+import datetime
+import time
 from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -38,6 +40,7 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     get_parser_and_hprams_data,
 )
+from otx.cli.utils.report import get_otx_report
 from otx.core.data.adapter import get_dataset_adapter
 
 
@@ -154,11 +157,13 @@ def get_args():
     return parser.parse_args(), override_param
 
 
-def main():  # pylint: disable=too-many-branches
+def main():  # pylint: disable=too-many-branches, too-many-statements
     """Main function that is used for model training."""
+    start_time = time.time()
+    mode = "train"
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, workspace_root=args.workspace, mode="train")
+    config_manager = ConfigManager(args, workspace_root=args.workspace, mode=mode)
     # Auto-Configuration for model template
     config_manager.configure_template()
 
@@ -228,7 +233,8 @@ def main():  # pylint: disable=too-many-branches
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
-    save_model_data(output_model, str(config_manager.output_path / "models"))
+    model_path = config_manager.output_path / "models"
+    save_model_data(output_model, str(model_path))
     # Latest model folder symbolic link to models
     latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
     if latest_path.exists():
@@ -237,6 +243,7 @@ def main():  # pylint: disable=too-many-branches
         latest_path.parent.mkdir(exist_ok=True, parents=True)
     latest_path.symlink_to(config_manager.output_path.resolve())
 
+    performance = None
     if config_manager.data_config["val_subset"]["data_root"]:
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
         predicted_validation_dataset = task.infer(
@@ -250,8 +257,22 @@ def main():  # pylint: disable=too-many-branches
             prediction_dataset=predicted_validation_dataset,
         )
         task.evaluate(resultset)
-        assert resultset.performance is not None
-        print(resultset.performance)
+        performance = resultset.performance
+        assert performance is not None
+        print(performance)
+
+    end_time = time.time()
+    sec = end_time - start_time
+    total_time = str(datetime.timedelta(seconds=sec))
+    print("otx train time elapsed: ", total_time)
+    model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
+    get_otx_report(
+        model_template=config_manager.template,
+        task_config=task.config,
+        data_config=config_manager.data_config,
+        results=model_results,
+        output_path=config_manager.output_path / "cli_report.log",
+    )
 
     if args.gpus:
         multigpu_manager.finalize()
