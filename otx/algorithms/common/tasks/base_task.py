@@ -91,6 +91,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     """Base task of OTX."""
 
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
+        self._config: Dict[Any, Any] = {}
         self._task_environment = task_environment
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
@@ -273,3 +274,12 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
                 is_in_docker = is_in_docker or any("docker" in line for line in f)
         is_in_docker = is_in_docker or os.path.exists("/.dockerenv")
         return is_in_docker
+
+    @property
+    def config(self):
+        """Config of OTX task."""
+        return self._config
+
+    @config.setter
+    def config(self, config: Dict[Any, Any]):
+        self._config = config

@@ -109,6 +109,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
+        self._config = self._recipe_cfg
 
         set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
 
@@ -195,6 +196,7 @@ class MMDetectionTask(OTXDetectionTask):
         cfg = configurer.configure(
             recipe_cfg, self._model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
         )
+        self._config = cfg
         return cfg
 
     # pylint: disable=too-many-branches, too-many-statements
