@@ -12,13 +12,10 @@ from .mixin import SegMixinModule
 KNOWN_HEADS = {"FCNHead": FCNHead, "ASPPHead": DepthwiseSeparableASPPHead}
 
 
-class CustomOTXHeadFactory:
-    def __init__(self, head_type):
-        self.head_type = head_type
-        self.head_base_cls = KNOWN_HEADS[head_type]
-        self.custom_head_cls = CustomOTXHead
-
-        class CustomOTXHead(SegMixinModule,  self.head_base_cls):
+def otx_head_factory(*args, base_type="FCNHead", **kwargs):
+    head_base_cls = KNOWN_HEADS[base_type]
+    print(base_type, head_base_cls)
+    class CustomOTXHead(SegMixinModule,  head_base_cls):
             """Custom universal class incremental head for Semantic Segmentation."""
 
             def __init__(self, head_type, *args, **kwargs):
@@ -32,5 +29,4 @@ class CustomOTXHeadFactory:
                 if kwargs.get("init_cfg", {}):
                     self.init_weights()
 
-    def __call__(self, *args, **kwargs):
-        return self.custom_head_cls(*args, **kwargs)
+    return CustomOTXHead(base_type, *args, **kwargs)

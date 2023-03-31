@@ -27,7 +27,7 @@ model = dict(
     type="ClassIncrEncoderDecoder",
     backbone=dict(depth=18),
     decode_head=dict(
-        type="ASPPHead",
+        base_type="ASPPHead",
         in_channels=512,
         in_index=3,
         channels=512,
@@ -43,7 +43,7 @@ model = dict(
         loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0)
     ),
     auxiliary_head=dict(
-        type="FCNHead",
+        base_type="FCNHead",
         in_channels=256,
         in_index=2,
         channels=64,

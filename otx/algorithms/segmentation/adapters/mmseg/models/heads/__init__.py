@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 
-from .custom_otx_head import get_head
+from .custom_otx_head import otx_head_factory
 from .mmov_decode_head import MMOVDecodeHead
 
-__all__ = ["MMOVDecodeHead", "get_head"]
+__all__ = ["MMOVDecodeHead", "otx_head_factory"]

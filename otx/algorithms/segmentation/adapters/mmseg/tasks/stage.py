@@ -2,7 +2,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
 from mmcv import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.tasks.stage import Stage
@@ -10,8 +9,8 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
 )
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.segmentation.adapters.mmseg.models.heads.custom_otx_head import (
-    CustomOTXHeadFactory
+from otx.algorithms.segmentation.adapters.mmseg.models.heads import (
+    otx_head_factory
 )
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 
@@ -150,8 +149,8 @@ class SegStage(Stage):
 
         for head in (decode_head, auxiliary_head):
             if head is not None:
-                # substitute head.type with OTX Head factory
-                head.type = CustomOTXHeadFactory(head.type)
+                # substitute head.type with OTX Head factory function
+                head.type = otx_head_factory
 
     def configure_ignore(self, cfg):
         """Change to incremental loss (ignore mode)."""

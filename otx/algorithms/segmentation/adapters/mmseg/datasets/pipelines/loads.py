@@ -28,6 +28,9 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 @PIPELINES.register_module()
 class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
     """Pipeline element that loads an image from a OTX Dataset on the fly."""
+    def __init__(self, use_otx_adapter: bool = True, to_float32: bool = False):
+        self.use_otx_adapter = use_otx_adapter
+        super().__init__(to_float32)
 
 
 @PIPELINES.register_module()
@@ -42,8 +45,8 @@ class LoadAnnotationFromOTXDataset:
 
     """
 
-    def __init__(self, load_from_files=False):
-        self.load_from_files = load_from_files
+    def __init__(self, use_otx_adapter=True):
+        self.use_otx_adapter = use_otx_adapter
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
@@ -51,7 +54,7 @@ class LoadAnnotationFromOTXDataset:
         dataset_item = results["dataset_item"]
         labels = results["ann_info"]["labels"]
 
-        ann_info = get_annotation_mmseg_format(dataset_item, labels, self.load_from_files)
+        ann_info = get_annotation_mmseg_format(dataset_item, labels, self.use_otx_adapter)
 
         results["gt_semantic_seg"] = ann_info["gt_semantic_seg"]
         results["seg_fields"].append("gt_semantic_seg")
