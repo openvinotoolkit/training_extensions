@@ -267,7 +267,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     print("otx train time elapsed: ", total_time)
     model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
     get_otx_report(
-        mode=mode,
         model_template=config_manager.template,
         task_config=task.config,
         data_config=config_manager.data_config,

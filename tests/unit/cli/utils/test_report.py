@@ -73,7 +73,6 @@ def test_get_otx_report(tmp_dir):
         "val_subset": {"data-roots": "aaa"},
     }
     get_otx_report(
-        mode="train",
         model_template=model_template,
         task_config=task_config,
         data_config=data_config,

@@ -15,7 +15,6 @@ from otx.api.entities.model_template import ModelTemplate
 
 
 def get_otx_report(
-    mode: str,
     model_template: ModelTemplate,
     task_config: Dict[str, Any],
     data_config: Dict[str, Dict[str, str]],
@@ -25,7 +24,7 @@ def get_otx_report(
     """Generate CLI reports."""
     dash_line = "-" * 60 + "\n\n"
     # Header
-    report_str = f"OTX {mode.upper()} Report\n"
+    report_str = get_otx_cli_ascii_banner()
     report_str += dash_line
     report_str += f"Current path: {Path.cwd()}\n"
     report_str += f"sys.argv: {sys.argv}\n"
@@ -122,3 +121,17 @@ def task_config_to_str(task_config: Dict[str, Any]):
             model_str = pformat(value)
             report_str += model_str + "\n"
     return report_str
+
+
+def get_otx_cli_ascii_banner():
+    """Get OTX ASCII banner."""
+    return """
+
+ ██████╗     ████████╗    ██╗  ██╗
+██╔═══██╗    ╚══██╔══╝    ╚██╗██╔╝
+██║   ██║       ██║        ╚███╔╝
+██║   ██║       ██║        ██╔██╗
+╚██████╔╝       ██║       ██╔╝ ██╗
+ ╚═════╝        ╚═╝       ╚═╝  ╚═╝
+
+"""
