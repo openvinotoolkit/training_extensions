@@ -7,8 +7,7 @@
 from typing import Any, Dict
 
 import torch
-import torch.nn.functional as F
-from mmseg.models.builder import HEADS, build_neck, build_loss
+from mmseg.models.builder import HEADS, build_loss, build_neck
 from torch import nn
 
 
@@ -30,6 +29,7 @@ class DetConHead(nn.Module):
         """Initialize predictor weights."""
         self.predictor.init_weights()
 
+    # pylint: disable=too-many-locals
     def forward(
         self,
         projs: torch.Tensor,
@@ -37,7 +37,7 @@ class DetConHead(nn.Module):
         ids: torch.Tensor,
         ids_tgt: torch.Tensor,
         batch_size: int,
-        num_samples: int
+        num_samples: int,
     ) -> Dict[str, torch.Tensor]:
         """Forward head.
 
@@ -46,7 +46,7 @@ class DetConHead(nn.Module):
             projs_tgt (Tensor): NxC target features.
             ids (Tensor): NxC input ids.
             ids_tgt (Tensor): NxC target ids.
-            batch_size (int): batch size.
+            batch_size (int): Batch size to split concatenated features.
             num_samples (int): The number of samples to be sampled.
 
         Returns:

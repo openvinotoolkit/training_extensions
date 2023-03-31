@@ -18,8 +18,8 @@ from mmcv.runner import load_checkpoint
 from mmseg.models.builder import (  # pylint: disable=no-name-in-module
     SEGMENTORS,
     build_backbone,
-    build_neck,
     build_head,
+    build_neck,
 )
 from mmseg.ops import resize
 from torch import nn

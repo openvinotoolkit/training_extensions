@@ -46,7 +46,7 @@ model = dict(
             hid_channels=256,
             out_channels=128,
             norm_cfg=dict(type="BN1d", requires_grad=True),
-            with_avg_pool=False
+            with_avg_pool=False,
         ),
         loss_cfg=dict(type="DetConLoss", temperature=0.1),
     ),

@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from .backbones import LiteHRNet, MMOVBackbone
-from .heads import CustomFCNHead, MMOVDecodeHead, DetConHead
+from .heads import CustomFCNHead, DetConHead, MMOVDecodeHead
 from .losses import CrossEntropyLossWithIgnore, DetConLoss
 from .necks import SelfSLMLP
 from .schedulers import (
