@@ -2,7 +2,6 @@ import os
 import socket
 from contextlib import closing
 from copy import deepcopy
-from pathlib import Path
 
 import pytest
 import torch
