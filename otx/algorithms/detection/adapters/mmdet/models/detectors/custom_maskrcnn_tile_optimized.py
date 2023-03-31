@@ -92,7 +92,7 @@ class TileClassifier(torch.nn.Module):
 
 # pylint: disable=too-many-ancestors
 @DETECTORS.register_module()
-class CustomMaskRCNNTileOptimised(CustomMaskRCNN):
+class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
     """Custom MaskRCNN detector with tile classifier."""
 
     def __init__(self, *args, task_adapt=None, **kwargs):
@@ -207,7 +207,7 @@ if is_mmdeploy_enabled():
 
     # pylint: disable=line-too-long, unused-argument
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.TileClassifier.simple_test"  # noqa: E501
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.TileClassifier.simple_test"  # noqa: E501
     )
     def tile_classifier__simple_test(ctx, self, img):
         """Tile Classifier Simple Test Rewriter.
@@ -253,7 +253,7 @@ if is_mmdeploy_enabled():
 
     # pylint: disable=line-too-long
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.forward"  # noqa: E501
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.CustomMaskRCNNTileOptimised.forward"  # noqa: E501
     )
     def custom_maskrcnn__forward(ctx, self, img, img_metas=None, **kwargs):
         """Custom MaskRCNN Forward Rewriter.
@@ -280,7 +280,7 @@ if is_mmdeploy_enabled():
 
     # pylint: disable=line-too-long
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimised.CustomMaskRCNNTileOptimised.simple_test"  # noqa: E501
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_maskrcnn_tile_optimized.CustomMaskRCNNTileOptimized.simple_test"  # noqa: E501
     )
     def custom_mask_rcnn__simple_test(ctx, self, img, img_metas, proposals=None):
         """Custom Mask RCNN Simple Test Rewriter for ONNX tracing.

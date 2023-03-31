@@ -5,7 +5,7 @@
 
 from .custom_atss_detector import CustomATSS
 from .custom_maskrcnn_detector import CustomMaskRCNN
-from .custom_maskrcnn_tile_optimised import CustomMaskRCNNTileOptimised
+from .custom_maskrcnn_tile_optimized import CustomMaskRCNNTileOptimized
 from .custom_single_stage_detector import CustomSingleStageDetector
 from .custom_two_stage_detector import CustomTwoStageDetector
 from .custom_vfnet_detector import CustomVFNet
@@ -24,5 +24,5 @@ __all__ = [
     "L2SPDetectorMixin",
     "SAMDetectorMixin",
     "UnbiasedTeacher",
-    "CustomMaskRCNNTileOptimised",
+    "CustomMaskRCNNTileOptimized",
 ]
