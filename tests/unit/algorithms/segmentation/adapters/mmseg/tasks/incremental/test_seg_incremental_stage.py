@@ -13,6 +13,7 @@ class TestOTXSegStage:
     def setup(self) -> None:
         cfg = MPAConfig.fromfile(DEFAULT_RECIPE_CONFIG_PATH)
         self.stage = IncrSegStage(name="", mode="train", config=cfg, common_cfg=None, index=0)
+        self.stage.cfg.model["type"] = "ClassIncrEncoderDecoder"
 
     @e2e_pytest_unit
     def test_configure_task(self, mocker):

@@ -21,11 +21,14 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 )
 
 # pylint: disable=abstract-method, unused-argument, keyword-arg-before-vararg
+# pylint: disable=too-many-instance-attributes, too-many-arguments, too-many-locals
 
 
 class SegMixinModule(nn.Module):
-    """Pixel weight mixin class. It includes SegmentOutNormMixin,
-    loss mixing module and aggregator for class incremental"""
+    """Pixel weight mixin class for segmentation.
+
+    It includes SegmentOutNormMixin, loss mixing module and aggregator for class incremental.
+    """
 
     def __init__(
         self,
@@ -116,6 +119,7 @@ class SegMixinModule(nn.Module):
 
         return loss_module.last_scale
 
+    @staticmethod
     def _mix_loss(logits, target, ignore_index=255):
         num_samples = logits.size(0)
         assert num_samples % 2 == 0
@@ -239,7 +243,7 @@ class SegMixinModule(nn.Module):
         loss["acc_seg"] = accuracy(seg_logit, seg_label)
 
         if train_cfg.get("mix_loss", None) and train_cfg.mix_loss.get("enable", False):
-            mix_loss = self._mix_loss(seg_logit, seg_label, ignore_index=self.ignore_index)
+            mix_loss = self._mix_loss(seg_logit, seg_label, self.ignore_index)
 
             mix_loss_weight = train_cfg.mix_loss.get("weight", 1.0)
             loss["loss_mix"] = mix_loss_weight * mix_loss

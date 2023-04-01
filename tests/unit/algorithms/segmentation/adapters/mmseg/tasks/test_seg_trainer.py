@@ -3,6 +3,7 @@ import os
 import pytest
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 from otx.algorithms.segmentation.adapters.mmseg.tasks.trainer import SegTrainer
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.segmentation.test_helpers import (
@@ -17,6 +18,7 @@ class TestOTXSegTrainer:
         cfg = MPAConfig.fromfile(DEFAULT_RECIPE_CONFIG_PATH)
         self.trainer = SegTrainer(name="", mode="train", config=cfg, common_cfg=None, index=0)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
+        self.model_cfg["model"]["decode_head"]["type"] = otx_head_factory
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
 
     @e2e_pytest_unit
@@ -25,7 +27,6 @@ class TestOTXSegTrainer:
         mocker.patch.object(SegTrainer, "configure_fp16_optimizer")
         mocker.patch.object(SegTrainer, "configure_compat_cfg")
         mock_train_segmentor = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.tasks.trainer.train_segmentor")
-
         self.trainer.run(self.model_cfg, "", self.data_cfg)
         mock_train_segmentor.assert_called_once()
 

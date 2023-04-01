@@ -47,13 +47,19 @@ def mask_from_dataset_item(
 
 
 def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
-    """loads masks directly from annotation image. Only Common Sematic Segmentation format
-    is supported"""
-    mask_form_file = dataset_item.media.path
-    mask_form_file = mask_form_file.replace("images", "masks")
-    mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
+    """Loads masks directly from annotation image.
 
-    return np.expand_dims(mask, axis=2)
+    Only Common Sematic Segmentation format is supported.
+    """
+
+    mask_form_file = dataset_item.media.path
+    if mask_form_file is not None:
+        mask_form_file = mask_form_file.replace("images", "masks")
+        mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
+        mask = np.expand_dims(mask, axis=2)
+    else:
+        mask = None
+    return mask
 
 
 def mask_from_annotation(

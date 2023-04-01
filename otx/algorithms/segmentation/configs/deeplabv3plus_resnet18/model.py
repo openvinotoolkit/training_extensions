@@ -40,7 +40,7 @@ model = dict(
         align_corners=False,
         enable_aggregator=False,
         enable_out_norm=False,
-        loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0)
+        loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0),
     ),
     auxiliary_head=dict(
         base_type="FCNHead",
@@ -56,7 +56,7 @@ model = dict(
         enable_out_norm=False,
         align_corners=False,
         loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=0.4),
-    )
+    ),
 )
 
 load_from = "open-mmlab://resnet18_v1c"

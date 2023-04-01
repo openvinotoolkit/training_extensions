@@ -28,7 +28,9 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 @PIPELINES.register_module()
 class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
     """Pipeline element that loads an image from a OTX Dataset on the fly."""
-    def __init__(self, use_otx_adapter: bool = True, to_float32: bool = False):
+
+    @check_input_parameters_type()
+    def __init__(self, to_float32: bool = False, use_otx_adapter: bool = True):
         self.use_otx_adapter = use_otx_adapter
         super().__init__(to_float32)
 
@@ -36,8 +38,6 @@ class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
 @PIPELINES.register_module()
 class LoadAnnotationFromOTXDataset:
     """Pipeline element that loads an annotation from a OTX Dataset on the fly.
-    It also supports direct annotations loading from file. It can be useful for OTX Dataset and
-    for datasets that can't be supported by internal OTX Dataset representation
 
     Expected entries in the 'results' dict that should be passed to this pipeline element are:
         results['dataset_item']: dataset_item from which to load the annotation

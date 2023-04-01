@@ -9,9 +9,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
 )
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.segmentation.adapters.mmseg.models.heads import (
-    otx_head_factory
-)
+from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 
 logger = get_logger()
@@ -142,15 +140,17 @@ class SegStage(Stage):
         self.model_classes = model_classes
 
     def configure_head(self, cfg):
-        """Change head to custom head to align with otx
-        inteface for class incremental learning."""
+        """Change head to custom head to align with otx inteface for class incremental learning."""
+
         decode_head = cfg.model.get("decode_head", None)
         auxiliary_head = cfg.model.get("auxiliary_head", None)
 
         for head in (decode_head, auxiliary_head):
             if head is not None:
                 # substitute head.type with OTX Head factory function
-                head.type = otx_head_factory
+                head_type = head.get("type", None)
+                if head_type:
+                    head_type = otx_head_factory
 
     def configure_ignore(self, cfg):
         """Change to incremental loss (ignore mode)."""

@@ -245,7 +245,7 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
     def __init__(self, **kwargs):
         pipeline = []
         test_mode = kwargs.get("test_mode", False)
-        use_otx_adapter = False
+        use_otx_adapter = True
         if "dataset" in kwargs:
             dataset = kwargs["dataset"]
             otx_dataset = dataset.otx_dataset

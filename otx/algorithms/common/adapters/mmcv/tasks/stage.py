@@ -496,14 +496,14 @@ class Stage:
                 torch.save(ckpt, new_path)
             return new_path
 
-        elif "state_dict" in ckpt:
+        if "state_dict" in ckpt:
             ckpt = ckpt["state_dict"]
             new_ckpt = OrderedDict()
             modified = False
             # patch pre-trained checkpoint for model
             for name in ckpt:
                 # we should add backbone prefix to backbone parameters names to load it for our models
-                if not name.startswith("backbone") and not "fc" in name and not "head" in name:
+                if not name.startswith("backbone") and "fc" not in name and "head" not in name:
                     new_name = "backbone." + name
                     modified = True
                 else:
@@ -511,7 +511,7 @@ class Stage:
                 new_ckpt[new_name] = ckpt[name]
             if modified:
                 if not new_path:
-                   new_path = osp.join(local_torch_hub_folder, "converted.pth")
+                    new_path = osp.join(local_torch_hub_folder, "converted.pth")
                 if not torch.distributed.is_initialized() or dist.get_rank() == 0:
                     torch.save(new_ckpt, new_path)
                 return new_path
