@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
 from .custom_fcn_head import CustomFCNHead
+from .detcon_head import DetConHead
 from .mmov_decode_head import MMOVDecodeHead
 
-__all__ = ["MMOVDecodeHead", "CustomFCNHead"]
+__all__ = ["MMOVDecodeHead", "CustomFCNHead", "DetConHead"]

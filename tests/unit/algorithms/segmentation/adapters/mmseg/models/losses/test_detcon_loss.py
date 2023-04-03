@@ -57,7 +57,6 @@ def test_detcon_loss(mocker, inputs, expected):
     mocker.patch("torch.cuda.device_count", return_value=0)
     detcon_loss = DetConLoss()
 
-    results = detcon_loss(**inputs)
+    loss = detcon_loss(**inputs)
 
-    assert "loss" in results
-    assert torch.allclose(results["loss"], expected)
+    assert torch.allclose(loss, expected)

@@ -186,20 +186,21 @@ Supervised Contrastive Learning
 To enhance the performance of the algorithm in case when we have a small number of data, `Supervised Contrastive Learning (SupCon) <https://arxiv.org/abs/2004.11362>`_ can be used.
 
 More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with `DetCon loss <https://arxiv.org/abs/2103.10957>`_.
+As of using this advanced approach, we can expect improved performance and reduced training time rather than supervised learning.
 The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC 2012 with three classes (person, car, bicycle).
 Each subset dataset has 8, 16, and 24 images, respectively.
 
-+--------------------+-------+--------+-------+--------+-------+--------+
-| Model name         | #8    |        | #16   |        | #24   |        |
-+====================+=======+========+=======+========+=======+========+
-|                    | SL    | SupCon | SL    | SupCon | SL    | SupCon |
-+--------------------+-------+--------+-------+--------+-------+--------+
-| Lite-HRNet-s-mod2  | 48.30 | 51.83  | 57.08 | 59.26  | 62.40 | 63.39  |
-+--------------------+-------+--------+-------+--------+-------+--------+
-| Lite-HRNet-18-mod2 | 53.47 | 54.90  | 56.69 | 60.32  | 62.81 | 64.56  |
-+--------------------+-------+--------+-------+--------+-------+--------+
-| Lite-HRNet-x-mod3  | 53.71 | 54.83  | 58.43 | 62.03  | 64.72 | 64.57  |
-+--------------------+-------+--------+-------+--------+-------+--------+
++--------------------+-------+--------+-------+-------+--------+-------+-------+--------+-------+
+| Model name         | #8    |        |       | #16   |        |       | #24   |        |       | 
++====================+=======+========+=======+=======+========+=======+========+=======+=======+
+|                    | SL    | SupCon | TR    | SL    | SupCon | TR    | SL    | SupCon | TR    |
++--------------------+-------+--------+-------+-------+--------+-------+-------+--------+-------+
+| Lite-HRNet-s-mod2  | 52.30 | 54.24  | 0.83x | 59.58 | 61.44  | 0.93x | 62.86 | 64.30  | 1.03x |
++--------------------+-------+--------+-------+-------+--------+-------+-------+--------+-------+
+| Lite-HRNet-18-mod2 | 53.00 | 56.16  | 0.71x | 61.44 | 60.08  | 0.91x | 64.26 | 64.82  | 0.91x |
++--------------------+-------+--------+-------+-------+--------+-------+-------+--------+-------+
+| Lite-HRNet-x-mod3  | 53.71 | 58.67  | 0.83x | 58.43 | 61.52  | 0.73x | 64.72 | 65.83  | 0.73x |
++--------------------+-------+--------+-------+-------+--------+-------+-------+--------+-------+
 
 The SupCon training can be launched by adding additional option to template parameters like the below.
 It can be launched only with supervised (incremental) training type.
@@ -213,7 +214,7 @@ It can be launched only with supervised (incremental) training type.
               --learning_parameters.enable_supcon=True
 
 .. note::
-    SL stands for Supervised Learning.
+    SL : Supervised Learning / TR : Training Time Ratio of SupCon compared with supervised learning
 
 .. ********************
 .. Incremental Learning
