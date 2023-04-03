@@ -641,6 +641,7 @@ DetCon uses pseudo masks created in <code class="docutils literal notranslate"><
 <h2>Supervised Contrastive Learning<a class="headerlink" href="#supervised-contrastive-learning" title="Permalink to this heading">#</a></h2>
 <p>To enhance the performance of the algorithm in case when we have a small number of data, <a class="reference external" href="https://arxiv.org/abs/2004.11362">Supervised Contrastive Learning (SupCon)</a> can be used.</p>
 <p>More specifically, we train a model with two heads: segmentation head with Cross Entropy Loss and contrastive head with <a class="reference external" href="https://arxiv.org/abs/2103.10957">DetCon loss</a>.
+As of using this advanced approach, we can expect improved performance and reduced training time rather than supervised learning.
 The below table shows how much performance (mDice) SupCon improved compared with baseline performance on the subsets of Pascal VOC 2012 with three classes (person, car, bicycle).
 Each subset dataset has 8, 16, and 24 images, respectively.</p>
 <table class="table">
@@ -648,9 +649,11 @@ Each subset dataset has 8, 16, and 24 images, respectively.</p>
 <tr class="row-odd"><th class="head"><p>Model name</p></th>
 <th class="head"><p>#8</p></th>
 <th class="head"></th>
+<th class="head"></th>
 <th class="head"><p>#16</p></th>
 <th class="head"></th>
-<th class="head"><p>#24</p></th>
+<th class="head"></th>
+<th class="head" colspan="3"><p>#24   |</p></th>
 <th class="head"></th>
 </tr>
 </thead>
@@ -658,34 +661,45 @@ Each subset dataset has 8, 16, and 24 images, respectively.</p>
 <tr class="row-even"><td></td>
 <td><p>SL</p></td>
 <td><p>SupCon</p></td>
+<td><p>TR</p></td>
 <td><p>SL</p></td>
 <td><p>SupCon</p></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
+<td><p>TR</p></td>
+<td colspan="3"><p>SL    | SupCon</p></td>
+<td><p>TR</p></td>
 </tr>
 <tr class="row-odd"><td><p>Lite-HRNet-s-mod2</p></td>
-<td><p>48.30</p></td>
-<td><p>51.83</p></td>
-<td><p>57.08</p></td>
-<td><p>59.26</p></td>
-<td><p>62.40</p></td>
-<td><p>63.39</p></td>
+<td><p>52.30</p></td>
+<td><p>54.24</p></td>
+<td><p>0.83x</p></td>
+<td><p>59.58</p></td>
+<td><p>61.44</p></td>
+<td><p>0.93x</p></td>
+<td><p>62.86</p></td>
+<td colspan="2"><p>64.30</p></td>
+<td><p>1.03x</p></td>
 </tr>
 <tr class="row-even"><td><p>Lite-HRNet-18-mod2</p></td>
-<td><p>53.47</p></td>
-<td><p>54.90</p></td>
-<td><p>56.69</p></td>
-<td><p>60.32</p></td>
-<td><p>62.81</p></td>
-<td><p>64.56</p></td>
+<td><p>53.00</p></td>
+<td><p>56.16</p></td>
+<td><p>0.71x</p></td>
+<td><p>61.44</p></td>
+<td><p>60.08</p></td>
+<td><p>0.91x</p></td>
+<td><p>64.26</p></td>
+<td colspan="2"><p>64.82</p></td>
+<td><p>0.91x</p></td>
 </tr>
 <tr class="row-odd"><td><p>Lite-HRNet-x-mod3</p></td>
 <td><p>53.71</p></td>
-<td><p>54.83</p></td>
+<td><p>58.67</p></td>
+<td><p>0.83x</p></td>
 <td><p>58.43</p></td>
-<td><p>62.03</p></td>
+<td><p>61.52</p></td>
+<td><p>0.73x</p></td>
 <td><p>64.72</p></td>
-<td><p>64.57</p></td>
+<td colspan="2"><p>65.83</p></td>
+<td><p>0.73x</p></td>
 </tr>
 </tbody>
 </table>
@@ -700,7 +714,7 @@ It can be launched only with supervised (incremental) training type.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>SL stands for Supervised Learning.</p>
+<p>SL : Supervised Learning / TR : Training Time Ratio of SupCon compared with supervised learning</p>
 </div>
 </section>
 </section>
