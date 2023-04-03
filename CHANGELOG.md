@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.1.2\]
+
+### Bug fixes
+
+- Fix exception -> warning for anomaly dump_feature option
+- Remove `dataset.with_empty_annotations()` to keep original input structure (<https://github.com/openvinotoolkit/training_extensions/pull/1964>)
+- Fix OV batch inference (saliency map generation)  (<https://github.com/openvinotoolkit/training_extensions/pull/1965>)
+
 ## \[v1.1.1\]
 
 ### Bug fixes
