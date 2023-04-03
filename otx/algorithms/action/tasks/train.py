@@ -54,7 +54,7 @@ from .inference import ActionInferenceTask
 logger = get_root_logger()
 
 
-# pylint: disable=too-many-locals, too-many-instance-attributes
+# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-ancestors
 class ActionTrainTask(ActionInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Action Task."""
 
@@ -113,7 +113,7 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
             self._is_training = False
             return
 
-        # Set OTE LoggerHook & Time Monitor
+        # Set OTX LoggerHook & Time Monitor
         if train_parameters:
             update_progress_callback = train_parameters.update_progress
         else:
@@ -149,22 +149,15 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
             raise Exception("Recipe config does not initialize properly!")
         train_dataset = dataset.get_subset(Subset.TRAINING)
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        training_config = prepare_for_training(
-            self._recipe_cfg, train_dataset, val_dataset, self._time_monitor, self._learning_curves
-        )
+        training_config = prepare_for_training(self._recipe_cfg, train_dataset, val_dataset)
         mm_train_dataset = build_dataset(training_config.data.train)
         logger.info("Start training")
         self._model.train()
         # FIXME runner is built inside of train_model funciton, it is hard to change runner's type
         train_model(model=self._model, dataset=mm_train_dataset, cfg=training_config, validate=True)
-        checkpoint_file_path = glob(os.path.join(self._recipe_cfg.work_dir, "best*pth"))
+        checkpoint_file_path = glob(os.path.join(self._recipe_cfg.work_dir, "best*pth"))[0]
         if len(checkpoint_file_path) == 0:
             checkpoint_file_path = os.path.join(self._recipe_cfg.work_dir, "latest.pth")
-        elif len(checkpoint_file_path) > 1:
-            logger.warning(f"Multiple candidates for the best checkpoint found: {checkpoint_file_path}")
-            checkpoint_file_path = checkpoint_file_path[0]
-        else:
-            checkpoint_file_path = checkpoint_file_path[0]
         logger.info(f"Use {checkpoint_file_path} for final model weights")
 
         return {"final_ckpt": checkpoint_file_path}

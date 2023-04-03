@@ -191,6 +191,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         return self._output_path
 
     @property
+    def config(self):
+        """Return output configs used in task."""
+        return self._recipe_cfg
+
+    @property
     def model_name(self):
         """Name of Model Template."""
         return self._task_environment.model_template.name
@@ -326,9 +331,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
         if export:
-            if fp16_export:
-                self._precision[0] = ModelPrecision.FP16
             options["deploy_cfg"] = self._init_deploy_cfg()
+            if fp16_export:
+                mo_options = options["deploy_cfg"].backend_config.mo_options
+                mo_options.flags.append("--compress_to_fp16")
+
             if options.get("precision", None) is None:
                 assert len(self._precision) == 1
                 options["precision"] = str(self._precision[0])

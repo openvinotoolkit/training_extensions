@@ -17,8 +17,6 @@ and build models with new backbone replacements.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from pathlib import Path
-
 from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME, ConfigManager
 from otx.cli.utils.parser import get_parser_and_hprams_data
 
@@ -68,8 +66,8 @@ def get_args():
         default="Incremental",
     )
     parser.add_argument(
-        "--work-dir",
-        help="Location where the workspace.",
+        "--workspace",
+        help="Path to the workspace where the command will run.",
         default=None,
     )
     parser.add_argument(
@@ -88,16 +86,14 @@ def main():
     """Main function for model or backbone or task building."""
 
     args = get_args()
-    config_manager = ConfigManager(args, mode="build")
+    config_manager = ConfigManager(args, workspace_root=args.workspace, mode="build")
     if args.task:
         config_manager.task_type = args.task.upper()
-    if args.work_dir:
-        config_manager.workspace_root = Path(args.work_dir)
 
     # Auto-Configuration for model template
     config_manager.configure_template(model=args.model)
 
-    config_manager.build_workspace(new_workspace_path=args.work_dir)
+    config_manager.build_workspace(new_workspace_path=args.workspace)
 
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config()

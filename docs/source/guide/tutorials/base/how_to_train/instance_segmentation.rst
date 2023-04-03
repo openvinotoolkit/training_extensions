@@ -217,13 +217,13 @@ Please note, ``label_schema.json`` file contains meta information about the data
 ``otx eval`` will output a F-measure for instance segmentation.
 
 2. The command below will run validation on our dataset
-and save performance results in ``performance.json`` file:
+and save performance results in ``outputs/performance.json`` file:
 
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --outputs outputs
 
 We will get a similar to this validation output:
 
@@ -243,7 +243,7 @@ We will get a similar to this validation output:
 
   Also, if you're inside a workspace and ``weights.pth`` exists in ``models`` dir, you can omit ``--load-weights`` as well, assuming those weights are the default as ``models/weights.pth``.
 
-  If you omit ``--save-performance``, it will create a ``performance.json`` in the folder for those weights.
+  If you omit ``--output``, it will create a ``performance.json`` in the folder for those weights.
 
 
 The output of ``./outputs/performance.json`` consists of a dict with target metric name and its value.
@@ -267,7 +267,7 @@ and save the exported model to the ``openvino_model`` folder.
 .. code-block::
 
   (otx) ...$ otx export --load-weights models/weights.pth \
-                        --save-model-to openvino_model
+                        --output openvino_model
 
   ...
   [ SUCCESS ] Generated IR version 11 model.
@@ -287,7 +287,7 @@ You can use ``otx train`` directly without ``otx build``. It will be required to
 
   (otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
                       --load-weights openvino_model/openvino.xml \
-                      --save-performance openvino_model/performance.json
+                      --output openvino_model
 
   ...
 
@@ -313,7 +313,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
+  (otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
 
   ...
 
@@ -332,7 +332,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                          --save-model-to pot_model
+                          --output pot_model
 
   ...
 

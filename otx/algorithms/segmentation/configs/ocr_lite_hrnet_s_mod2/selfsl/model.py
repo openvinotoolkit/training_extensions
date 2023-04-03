@@ -23,8 +23,11 @@ _base_ = [
 
 model = dict(
     type="DetConB",
-    pretrained="https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
-        /models/custom_semantic_segmentation/litehrnetsv2_imagenet1k_rsc.pth",
+    pretrained=(
+        "https://storage.openvinotoolkit.org/repositories/"
+        "openvino_training_extensions/models/custom_semantic_segmentation/"
+        "litehrnetsv2_imagenet1k_rsc.pth"
+    ),
     num_classes=256,
     num_samples=16,
     downsample=8,
@@ -39,14 +42,17 @@ model = dict(
         with_avg_pool=False,
     ),
     head=dict(
-        type="SelfSLMLP",
-        in_channels=128,
-        hid_channels=256,
-        out_channels=128,
-        norm_cfg=dict(type="BN1d", requires_grad=True),
-        with_avg_pool=False,
+        type="DetConHead",
+        predictor=dict(
+            type="SelfSLMLP",
+            in_channels=128,
+            hid_channels=256,
+            out_channels=128,
+            norm_cfg=dict(type="BN1d", requires_grad=True),
+            with_avg_pool=False,
+        ),
+        loss_cfg=dict(type="DetConLoss", temperature=0.1),
     ),
-    loss_cfg=dict(type="DetConLoss", temperature=0.1),
 )
 
 load_from = None

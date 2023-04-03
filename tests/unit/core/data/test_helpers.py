@@ -53,19 +53,19 @@ TASK_NAME_TO_DATA_ROOT = {
         "unlabeled": "tests/assets/common_semantic_segmentation_dataset/val",
     },
     "anomaly_classification": {
-        "train": "tests/assets/anomaly/shapes",
-        "val": "tests/assets/anomaly/shapes",
-        "test": "tests/assets/anomaly/shapes",
+        "train": "tests/assets/anomaly/hazelnut",
+        "val": "tests/assets/anomaly/hazelnut",
+        "test": "tests/assets/anomaly/hazelnut",
     },
     "anomaly_detection": {
-        "train": "tests/assets/anomaly/shapes",
-        "val": "tests/assets/anomaly/shapes",
-        "test": "tests/assets/anomaly/shapes",
+        "train": "tests/assets/anomaly/hazelnut",
+        "val": "tests/assets/anomaly/hazelnut",
+        "test": "tests/assets/anomaly/hazelnut",
     },
     "anomaly_segmentation": {
-        "train": "tests/assets/anomaly/shapes",
-        "val": "tests/assets/anomaly/shapes",
-        "test": "tests/assets/anomaly/shapes",
+        "train": "tests/assets/anomaly/hazelnut",
+        "val": "tests/assets/anomaly/hazelnut",
+        "test": "tests/assets/anomaly/hazelnut",
     },
     "action_classification": {
         "train": "tests/assets/cvat_dataset/action_classification/train",

@@ -20,9 +20,9 @@ from openvino.model_zoo.download_engine.postprocessing import PostprocUnpackArch
 from openvino.model_zoo.omz_converter import ModelOptimizerProperties, convert_to_onnx
 from requests.exceptions import HTTPError
 
+from otx.core.file import OTX_CACHE
+
 # pylint: disable=too-many-locals, too-many-branches
-OTX_CACHE = os.path.expanduser(os.getenv("OTX_CACHE", os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "otx")))
-os.makedirs(OTX_CACHE, exist_ok=True)
 OMZ_CACHE = os.path.join(OTX_CACHE, "omz")
 os.makedirs(OMZ_CACHE, exist_ok=True)
 

@@ -95,14 +95,14 @@ class TrainingTask(InferenceTask, ITrainingTask):
         logger.info("Training completed.")
 
     def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
-        """Create and Load Anomalib Module from OTE Model.
+        """Create and Load Anomalib Module from OTX Model.
 
-        This method checks if the task environment has a saved OTE Model,
-        and creates one. If the OTE model already exists, it returns the
+        This method checks if the task environment has a saved OTX Model,
+        and creates one. If the OTX model already exists, it returns the
         the model with the saved weights.
 
         Args:
-            otx_model (Optional[ModelEntity]): OTE Model from the
+            otx_model (Optional[ModelEntity]): OTX Model from the
                 task environment.
 
         Returns:

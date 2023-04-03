@@ -6,11 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
--
+- Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
 
 ### Enhancements
 
--
+- Clean up and refactor the output of the OTX CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1946>)
+- Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
 
 ### Bug fixes
 
@@ -20,6 +21,12 @@ All notable changes to this project will be documented in this file.
 
 - OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
   (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
+## \[v1.1.1\]
+
+### Bug fixes
+
+- Add missing OpenVINO dependency in exportable code requirement
 
 ## \[v1.1.0\]
 

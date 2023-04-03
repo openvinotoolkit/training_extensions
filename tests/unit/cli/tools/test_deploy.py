@@ -10,7 +10,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 @e2e_pytest_unit
 def test_get_args(mocker):
-    mocker.patch("sys.argv", ["otx", "--load-weights", "load_weights", "--save-model-to", "save_model_to"])
+    mocker.patch("sys.argv", ["otx", "--load-weights", "load_weights", "--output", "output"])
     mocker.patch.object(
         target_package, "get_parser_and_hprams_data", return_value=[argparse.ArgumentParser(), "fake", "fake"]
     )
@@ -18,14 +18,14 @@ def test_get_args(mocker):
     parsed_args = get_args()
 
     assert parsed_args.load_weights == "load_weights"
-    assert parsed_args.save_model_to == "save_model_to"
+    assert parsed_args.output == "output"
 
 
 @pytest.fixture
 def mock_args(mocker, tmp_dir):
     mock_args = mocker.MagicMock()
     mock_args.load_weights = "fake.bin"
-    mock_args.save_model_to = tmp_dir
+    mock_args.output = tmp_dir
 
     def mock_contains(self, val):
         return val in self.__dict__

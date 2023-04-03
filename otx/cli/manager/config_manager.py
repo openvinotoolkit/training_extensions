@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -94,6 +95,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.workspace_root = Path(workspace_root) if workspace_root else Path(".")
         self.mode = mode
         self.rebuild: bool = False
+        self.create_date: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         self.args = args
         self.template = args.template
@@ -120,6 +122,21 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 return Path(self.args.data)
             raise FileNotExistError(f"Not found: {self.args.data}")
         return self.workspace_root / "data.yaml"
+
+    @property
+    def output_path(self) -> Path:
+        """The path of output directory for workspace.
+
+        Returns:
+            Path: Path of output directory.
+        """
+        if "output" in self.args and self.args.output:
+            output_path = Path(self.args.output)
+        else:
+            output_path = self.workspace_root / "outputs" / f"{self.create_date}_{self.mode}"
+        if not output_path.exists():
+            output_path.mkdir(exist_ok=True, parents=True)
+        return output_path
 
     def check_workspace(self) -> bool:
         """Check that the class's workspace_root is an actual workspace folder.
@@ -173,7 +190,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Configure data_config according to the situation and create data.yaml."""
         data_yaml_path = self.data_config_file_path
         data_yaml = configure_dataset(self.args, data_yaml_path=data_yaml_path)
-        if self.mode in ("train", "build"):
+        if self.mode in ("train", "build", "optimize"):
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
             # FIXME: Hardcoded for Self-Supervised Learning
             if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
@@ -194,7 +211,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if arg_algo_backend:
                 train_type = arg_algo_backend.get("train_type", {"value": "Incremental"})  # type: ignore
                 return train_type.get("value", "Incremental")
-            if hasattr(self.args, "train_type") and self.mode in ("build", "train") and self.args.train_type:
+            if (
+                hasattr(self.args, "train_type")
+                and self.mode in ("build", "train", "optimize")
+                and self.args.train_type
+            ):
                 self.train_type = self.args.train_type
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
                     raise NotSupportedError(f"{self.train_type} is not currently supported by otx.")
@@ -260,7 +281,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         # TODO: This should modify data yaml format to data_config format.
         """Save the splitted dataset and data.yaml to the workspace."""
         data_yaml = self._create_empty_data_cfg()
-        if self.mode == "train":
+        if self.mode in ("train", "optimize"):
             if self.args.train_data_roots:
                 data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
             if self.args.val_data_roots:
@@ -363,7 +384,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 "file_list": data_yaml["data"]["unlabeled"]["file-list"],
             }
         # FIXME: Hardcoded for Self-Supervised Learning
-        if self.mode == "train" and str(self.train_type).upper() == "SELFSUPERVISED":
+        if self.mode in ("train", "optimize") and str(self.train_type).upper() == "SELFSUPERVISED":
             self.data_config["val_subset"] = {"data_root": None}
 
     def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:
