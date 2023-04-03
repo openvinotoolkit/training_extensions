@@ -27,6 +27,7 @@ from collections.abc import Mapping
 from importlib import import_module
 from typing import Any, Callable, Dict, List, Tuple, Union
 
+import torch
 from mmcv import Config, ConfigDict
 from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
 from mmcv.utils.misc import import_modules_from_strings
@@ -391,12 +392,158 @@ def patch_runner(config: Config):
         remove_from_config(config, "total_epochs")
 
     # Change runner's type.
-    if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
-        logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-        config.runner.type = "EpochRunnerWithCancel"
-    elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
-        logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-        config.runner.type = "IterBasedRunnerWithCancel"
+    if config.runner.type != "AccuracyAwareRunner":
+        if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
+            logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
+            config.runner.type = "EpochRunnerWithCancel"
+        elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
+            logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
+            config.runner.type = "IterBasedRunnerWithCancel"
+
+
+def patch_fp16(config: Config):
+    """Remove FP16 config if running on CPU device and revert to FP32.
+
+    Please refer https://github.com/pytorch/pytorch/issues/23377
+    """
+    if not torch.cuda.is_available() and "fp16" in config:
+        logger.info("Revert FP16 to FP32 on CPU device")
+        if isinstance(config, Config):
+            del config._cfg_dict["fp16"]  # pylint: disable=protected-access
+        elif isinstance(config, ConfigDict):
+            del config["fp16"]
+
+
+def patch_adaptive_interval_training(config: Config):
+    """Update adaptive interval settings for OTX training.
+
+    This function can be removed by adding custom hook cfg into recipe.py directly.
+    """
+    # default adaptive hook for evaluating before and after training
+    add_custom_hook_if_not_exists(
+        config,
+        ConfigDict(
+            type="AdaptiveTrainSchedulingHook",
+            enable_adaptive_interval_hook=False,
+            enable_eval_before_run=True,
+        ),
+    )
+    # Add/remove adaptive interval hook
+    if config.get("use_adaptive_interval", False):
+        update_or_add_custom_hook(
+            config,
+            ConfigDict(
+                {
+                    "type": "AdaptiveTrainSchedulingHook",
+                    "max_interval": 5,
+                    "enable_adaptive_interval_hook": True,
+                    "enable_eval_before_run": True,
+                    **config.pop("adaptive_validation_interval", {}),
+                }
+            ),
+        )
+    else:
+        config.pop("adaptive_validation_interval", None)
+
+
+def patch_early_stopping(config: Config):
+    """Update early stop settings for OTX training.
+
+    This function can be removed by adding custom hook cfg into recipe.py directly.
+    """
+    if "early_stop" in config:
+        remove_custom_hook(config, "EarlyStoppingHook")
+        early_stop = config.get("early_stop", False)
+        if early_stop:
+            early_stop_hook = ConfigDict(
+                type="LazyEarlyStoppingHook",
+                start=early_stop.start,
+                patience=early_stop.patience,
+                iteration_patience=early_stop.iteration_patience,
+                interval=1,
+                metric=config.early_stop_metric,
+                priority=75,
+            )
+            update_or_add_custom_hook(config, early_stop_hook)
+        else:
+            remove_custom_hook(config, "LazyEarlyStoppingHook")
+
+    # make sure model to be in a training mode even after model is evaluated (mmcv bug)
+    update_or_add_custom_hook(
+        config,
+        ConfigDict(type="ForceTrainModeHook", priority="LOWEST"),
+    )
+
+
+def patch_persistent_workers(config: Config):
+    """If num_workers is 0, persistent_workers must be False."""
+    data_cfg = config.data
+    for subset in ["train", "val", "test", "unlabeled"]:
+        if subset not in data_cfg:
+            continue
+        dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
+        workers_per_gpu = dataloader_cfg.get(
+            "workers_per_gpu",
+            data_cfg.get("workers_per_gpu", 0),
+        )
+        if workers_per_gpu == 0:
+            dataloader_cfg["persistent_workers"] = False
+            data_cfg[f"{subset}_dataloader"] = dataloader_cfg
+
+
+def patch_from_hyperparams(config: Config, hyperparams):
+    """Patch config parameters from hyperparams."""
+    params = hyperparams.learning_parameters
+    warmup_iters = int(params.learning_rate_warmup_iters)
+    lr_config = (
+        ConfigDict(warmup_iters=warmup_iters)
+        if warmup_iters > 0
+        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+    )
+
+    if params.enable_early_stopping and config.get("evaluation", None):
+        early_stop = ConfigDict(
+            start=int(params.early_stop_start),
+            patience=int(params.early_stop_patience),
+            iteration_patience=int(params.early_stop_iteration_patience),
+        )
+    else:
+        early_stop = False
+
+    runner = ConfigDict(max_epochs=int(params.num_iters))
+    if config.get("runner", None) and config.runner.get("type").startswith("IterBasedRunner"):
+        runner = ConfigDict(max_iters=int(params.num_iters))
+
+    hparams = ConfigDict(
+        optimizer=ConfigDict(lr=params.learning_rate),
+        lr_config=lr_config,
+        early_stop=early_stop,
+        data=ConfigDict(
+            samples_per_gpu=int(params.batch_size),
+            workers_per_gpu=int(params.num_workers),
+        ),
+        runner=runner,
+    )
+    if bool(hyperparams.tiling_parameters.enable_tiling):
+        logger.info("Tiling Enabled")
+        tiling_params = ConfigDict(
+            tile_size=int(hyperparams.tiling_parameters.tile_size),
+            overlap_ratio=float(hyperparams.tiling_parameters.tile_overlap),
+            max_per_img=int(hyperparams.tiling_parameters.tile_max_number),
+        )
+        hparams.update(
+            ConfigDict(
+                data=ConfigDict(
+                    train=tiling_params,
+                    val=tiling_params,
+                    test=tiling_params,
+                )
+            )
+        )
+        hparams.update(dict(evaluation=dict(iou_thr=[0.5])))
+
+    hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
+    config.merge_from_dict(hparams)
 
 
 @check_input_parameters_type()
