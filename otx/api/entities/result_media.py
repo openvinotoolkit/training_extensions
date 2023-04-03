@@ -82,7 +82,7 @@ class ResultMediaEntity(IMetadata):
         self.annotation_scene = annotation_scene
         self.roi = Annotation(Rectangle.generate_full_box(), labels=[]) if roi is None else roi
         self.label = label
-        self.numpy = numpy
+        self.numpy = np.copy(numpy)
 
     def __repr__(self):
         """Returns a string with all the attributes of the ResultMediaEntity."""
