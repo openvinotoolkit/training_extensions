@@ -15,9 +15,11 @@ from .config_utils import (
     get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
+    patch_adaptive_interval_training,
     patch_color_conversion,
     patch_data_pipeline,
     patch_default_config,
+    patch_early_stopping,
     patch_fp16,
     patch_from_hyperparams,
     patch_persistent_workers,
@@ -26,7 +28,6 @@ from .config_utils import (
     prepare_work_dir,
     remove_from_config,
     remove_from_configs_by_type,
-    update_basic_hooks,
     update_config,
 )
 
@@ -43,9 +44,11 @@ __all__ = [
     "prepare_for_testing",
     "is_epoch_based_runner",
     "config_from_string",
+    "patch_adaptive_interval_training",
     "patch_default_config",
     "patch_data_pipeline",
     "patch_color_conversion",
+    "patch_early_stopping",
     "patch_from_hyperparams",
     "patch_fp16",
     "patch_persistent_workers",
@@ -54,6 +57,5 @@ __all__ = [
     "get_meta_keys",
     "prepare_work_dir",
     "get_data_cfg",
-    "update_basic_hooks",
     "MPAConfig",
 ]

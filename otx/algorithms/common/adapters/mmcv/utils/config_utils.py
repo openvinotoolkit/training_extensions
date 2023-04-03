@@ -414,8 +414,8 @@ def patch_fp16(config: Config):
             del config["fp16"]
 
 
-def update_basic_hooks(config: Config):
-    """Update basic hooks for OTX training.
+def patch_adaptive_interval_training(config: Config):
+    """Update adaptive interval settings for OTX training.
 
     This function can be removed by adding custom hook cfg into recipe.py directly.
     """
@@ -445,6 +445,12 @@ def update_basic_hooks(config: Config):
     else:
         config.pop("adaptive_validation_interval", None)
 
+
+def patch_early_stopping(config: Config):
+    """Update early stop settings for OTX training.
+
+    This function can be removed by adding custom hook cfg into recipe.py directly.
+    """
     if "early_stop" in config:
         remove_custom_hook(config, "EarlyStoppingHook")
         early_stop = config.get("early_stop", False)

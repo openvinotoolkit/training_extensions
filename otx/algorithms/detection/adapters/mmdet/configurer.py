@@ -18,11 +18,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     build_dataloader,
     build_dataset,
+    patch_adaptive_interval_training,
     patch_default_config,
+    patch_early_stopping,
     patch_fp16,
     patch_persistent_workers,
     patch_runner,
-    update_basic_hooks,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
@@ -63,7 +64,7 @@ class DetectionConfigurer:
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={training}")
 
-        self.base_configure(cfg, data_cfg, data_classes, model_classes)
+        self.configure_base(cfg, data_cfg, data_classes, model_classes)
         self.configure_device(cfg)
         self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
@@ -76,7 +77,7 @@ class DetectionConfigurer:
         self.configure_compat_cfg(cfg)
         return cfg
 
-    def base_configure(self, cfg, data_cfg, data_classes, model_classes):
+    def configure_base(self, cfg, data_cfg, data_classes, model_classes):
         """Basic configuration work for recipe.
 
         Patchings in this function are handled task level previously
@@ -93,7 +94,8 @@ class DetectionConfigurer:
         )  # for OTX compatibility
         patch_evaluation(cfg)  # for OTX compatibility
         patch_fp16(cfg)
-        update_basic_hooks(cfg)
+        patch_adaptive_interval_training(cfg)
+        patch_early_stopping(cfg)
         patch_persistent_workers(cfg)
 
         if data_cfg is not None:
