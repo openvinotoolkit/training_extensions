@@ -102,6 +102,7 @@ class SemiMultilabelClsHead:
     Args:
         unlabeled_coef (float): unlabeled loss coefficient, default is 1.0.
         use_dynamic_loss_weighting (boolean): whether to use dynamic unlabeled loss weighting, default is True.
+        aux_loss (dict, optional): auxiliary loss function, default is None.
     """
 
     def __init__(
