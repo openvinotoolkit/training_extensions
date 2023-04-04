@@ -545,7 +545,7 @@ class DetectionConfigurer:
         cfg.distributed = False
         if torch.distributed.is_initialized():
             cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
-            if training:
+            if training:  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
                 cfg.distributed = True
                 self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
