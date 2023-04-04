@@ -22,6 +22,7 @@ import sys
 import threading
 import time
 from contextlib import closing
+from tempfile import TemporaryDirectory
 from typing import Callable, List, Optional, Union
 
 import psutil
@@ -120,6 +121,8 @@ class MultiGPUManager:
         world_size (int): Total number of workers in a worker group.
     """
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(
         self,
         train_func: Callable,
@@ -145,6 +148,7 @@ class MultiGPUManager:
         self._world_size = world_size
         self._main_pid = os.getpid()
         self._processes: Optional[List[mp.Process]] = None
+        self._tmp_dir: Optional[TemporaryDirectory] = None
 
     def is_available(self) -> bool:
         """Check multi GPU training is available.
@@ -153,7 +157,11 @@ class MultiGPUManager:
             bool:
                 whether multi GPU training is available.
         """
-        return len(self._gpu_ids) > 1
+        return (
+            len(self._gpu_ids) > 1
+            and "TORCHELASTIC_RUN_ID"
+            not in os.environ  # If otx is executed by torchrun, then otx multi gpu interface is disabled.
+        )
 
     def setup_multi_gpu_train(
         self,
@@ -165,6 +173,10 @@ class MultiGPUManager:
         Args:
             output_path (str): output path where task output are saved.
             optimized_hyper_parameters (ConfigurableParameters or None): hyper parameters reflecting HPO result.
+
+        Returns:
+            str:
+                If output_path is None, make a temporary directory and return it.
         """
         if optimized_hyper_parameters is not None:  # if HPO is executed, optimized HPs are applied to child processes
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
@@ -183,6 +195,9 @@ class MultiGPUManager:
         if self._processes is not None:
             for p in self._processes:
                 p.join()
+
+        if self._tmp_dir is not None:
+            self._tmp_dir.cleanup()
 
     @staticmethod
     def initialize_multigpu_train(
@@ -209,9 +224,6 @@ class MultiGPUManager:
         os.environ["WORLD_SIZE"] = str(world_size)
         os.environ["LOCAL_RANK"] = str(local_rank)
         os.environ["RANK"] = str(rank)
-        torch.cuda.set_device(gpu_ids[local_rank])
-        dist.init_process_group(backend="nccl", world_size=world_size, rank=rank)
-        logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     @staticmethod
     def run_child_process(
@@ -243,7 +255,7 @@ class MultiGPUManager:
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove("--enable-hpo")
-        set_arguments_to_argv("--output", output_path)
+        set_arguments_to_argv(["-o", "--output"], output_path)
         set_arguments_to_argv("--rdzv-endpoint", rdzv_endpoint)
 
         MultiGPUManager.initialize_multigpu_train(rdzv_endpoint, rank, local_rank, gpu_ids, world_size)
@@ -268,6 +280,15 @@ class MultiGPUManager:
     def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
         processes = []
         ctx = mp.get_context("spawn")
+
+        # set CUDA_VISIBLE_DEVICES to make child process use proper GPU
+        origin_cuda_visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES")
+        if origin_cuda_visible_devices is not None:
+            cuda_visible_devices = origin_cuda_visible_devices.split(",")
+        else:
+            cuda_visible_devices = [str(i) for i in range(torch.cuda.device_count())]
+        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([cuda_visible_devices[gpu_idx] for gpu_idx in self._gpu_ids])
+
         for rank in range(1, len(self._gpu_ids)):
             task_p = ctx.Process(
                 target=MultiGPUManager.run_child_process,
@@ -283,6 +304,11 @@ class MultiGPUManager:
             )
             task_p.start()
             processes.append(task_p)
+
+        if origin_cuda_visible_devices is None:
+            del os.environ["CUDA_VISIBLE_DEVICES"]
+        else:
+            os.environ["CUDA_VISIBLE_DEVICES"] = origin_cuda_visible_devices
 
         return processes
 
