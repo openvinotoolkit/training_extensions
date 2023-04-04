@@ -13,12 +13,12 @@ from openvino.model_zoo.model_api.models import Model
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
-from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.adapters.openvino.task import (
     OpenVINODetectionTask,
     OpenVINOMaskInferencer,
     OpenVINOTileClassifierWrapper,
 )
+from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import generate_label_schema
 from otx.api.configuration.helper import create
 from otx.api.entities.label import LabelEntity
