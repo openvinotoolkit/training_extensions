@@ -17,7 +17,6 @@ from tests.test_suite.run_test_command import (
     otx_explain_openvino_testing,
     otx_explain_testing,
     otx_export_testing,
-    otx_export_testing_w_features,
     otx_hpo_testing,
     otx_train_testing,
 )
@@ -68,7 +67,7 @@ class TestTilingInstanceSegmentationCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_w_features(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
