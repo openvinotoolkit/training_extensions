@@ -5,3 +5,4 @@ mmsegmentation==0.30.0
 scikit-image
 otxdeploy==0.12.1  # FIXME: mmdeploy==? when PyPI packages are available
 timm
+pytorchcv

@@ -18,6 +18,7 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import ConvModule
 from mmcv.runner import load_checkpoint
+from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import init
 
@@ -1281,5 +1282,5 @@ class OTXEfficientNet(EfficientNet):
             load_checkpoint(self, pretrained)
             logger.info(f"init weight - {pretrained}")
         elif pretrained is not None:
-            load_checkpoint(self, pretrained_urls[self.model_name])
+            download_model(net=self, model_name=self.model_name)
             logger.info(f"init weight - {pretrained_urls[self.model_name]}")
