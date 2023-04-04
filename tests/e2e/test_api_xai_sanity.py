@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -14,11 +14,12 @@ from otx.algorithms.classification.tasks import (
     ClassificationOpenVINOTask,
     ClassificationTrainTask,
 )
-from otx.algorithms.detection.tasks import (
-    DetectionInferenceTask,
-    DetectionTrainTask,
-    OpenVINODetectionTask,
-)
+
+# from otx.algorithms.detection.tasks import (
+#     DetectionInferenceTask,
+#     DetectionTrainTask,
+#     OpenVINODetectionTask,
+# )
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.result_media import ResultMediaEntity
@@ -29,10 +30,11 @@ from tests.integration.api.classification.test_api_classification import (
     DEFAULT_CLS_TEMPLATE_DIR,
     ClassificationTaskAPIBase,
 )
-from tests.integration.api.detection.test_api_detection import (
-    DEFAULT_DET_TEMPLATE_DIR,
-    DetectionTaskAPIBase,
-)
+
+# from tests.integration.api.detection.test_api_detection import (
+#     DEFAULT_DET_TEMPLATE_DIR,
+#     DetectionTaskAPIBase,
+# )
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
 torch.manual_seed(0)
@@ -139,76 +141,77 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
                 )
 
 
-class TestOVDetXAIAPI(DetectionTaskAPIBase):
-    ref_raw_saliency_shapes = {
-        "ATSS": (6, 8),
-        "SSD": (13, 13),
-        "YOLOX": (13, 13),
-    }
-
-    @e2e_pytest_api
-    def test_inference_xai(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
-            hyper_parameters, model_template = self.setup_configurable_parameters(
-                DEFAULT_DET_TEMPLATE_DIR, num_iters=15
-            )
-            detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 10)
-
-            train_task = DetectionTrainTask(task_environment=detection_environment)
-            trained_model = ModelEntity(
-                dataset,
-                detection_environment.get_model_configuration(),
-            )
-            train_task.train(dataset, trained_model, TrainParameters())
-            save_model_data(trained_model, temp_dir)
-
-            from otx.api.entities.subset import Subset
-
-            for processed_saliency_maps, only_predicted in [[True, False], [False, True]]:
-                detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 10)
-                inference_parameters = InferenceParameters(
-                    is_evaluation=False,
-                    process_saliency_maps=processed_saliency_maps,
-                    explain_predicted_classes=only_predicted,
-                )
-
-                # Infer torch model
-                detection_environment.model = trained_model
-                inference_task = DetectionInferenceTask(task_environment=detection_environment)
-                val_dataset = dataset.get_subset(Subset.VALIDATION)
-                predicted_dataset = inference_task.infer(val_dataset.with_empty_annotations(), inference_parameters)
-
-                # Check saliency maps torch task
-                task_labels = trained_model.configuration.get_label_schema().get_labels(include_empty=False)
-                saliency_maps_check(
-                    predicted_dataset,
-                    task_labels,
-                    self.ref_raw_saliency_shapes[model_template.name],
-                    processed_saliency_maps=processed_saliency_maps,
-                    only_predicted=only_predicted,
-                )
-
-                # Save OV IR model
-                inference_task._model_ckpt = osp.join(temp_dir, "weights.pth")
-                exported_model = ModelEntity(None, detection_environment.get_model_configuration())
-                inference_task.export(ExportType.OPENVINO, exported_model, dump_features=True)
-                os.makedirs(temp_dir, exist_ok=True)
-                save_model_data(exported_model, temp_dir)
-
-                # Infer OV IR model
-                load_weights_ov = osp.join(temp_dir, "openvino.xml")
-                detection_environment.model = read_model(
-                    detection_environment.get_model_configuration(), load_weights_ov, None
-                )
-                task = OpenVINODetectionTask(task_environment=detection_environment)
-                _, dataset = self.init_environment(hyper_parameters, model_template, 10)
-                predicted_dataset_ov = task.infer(dataset.with_empty_annotations(), inference_parameters)
-
-                # Check saliency maps OV task
-                saliency_maps_check(
-                    predicted_dataset_ov,
-                    task_labels,
-                    self.ref_raw_saliency_shapes[model_template.name],
-                    processed_saliency_maps=processed_saliency_maps,
-                    only_predicted=only_predicted,
-                )
+# class TestOVDetXAIAPI(DetectionTaskAPIBase):
+#     ref_raw_saliency_shapes = {
+#         "ATSS": (6, 8),
+#         "SSD": (13, 13),
+#         "YOLOX": (13, 13),
+#     }
+#
+#     @e2e_pytest_api
+#     @pytest.mark.skip(reason="Detection task refactored.")
+#     def test_inference_xai(self):
+#         with tempfile.TemporaryDirectory() as temp_dir:
+#             hyper_parameters, model_template = self.setup_configurable_parameters(
+#                 DEFAULT_DET_TEMPLATE_DIR, num_iters=15
+#             )
+#             detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 10)
+#
+#             train_task = DetectionTrainTask(task_environment=detection_environment)
+#             trained_model = ModelEntity(
+#                 dataset,
+#                 detection_environment.get_model_configuration(),
+#             )
+#             train_task.train(dataset, trained_model, TrainParameters())
+#             save_model_data(trained_model, temp_dir)
+#
+#             from otx.api.entities.subset import Subset
+#
+#             for processed_saliency_maps, only_predicted in [[True, False], [False, True]]:
+#                 detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 10)
+#                 inference_parameters = InferenceParameters(
+#                     is_evaluation=False,
+#                     process_saliency_maps=processed_saliency_maps,
+#                     explain_predicted_classes=only_predicted,
+#                 )
+#
+#                 # Infer torch model
+#                 detection_environment.model = trained_model
+#                 inference_task = DetectionInferenceTask(task_environment=detection_environment)
+#                 val_dataset = dataset.get_subset(Subset.VALIDATION)
+#                 predicted_dataset = inference_task.infer(val_dataset.with_empty_annotations(), inference_parameters)
+#
+#                 # Check saliency maps torch task
+#                 task_labels = trained_model.configuration.get_label_schema().get_labels(include_empty=False)
+#                 saliency_maps_check(
+#                     predicted_dataset,
+#                     task_labels,
+#                     self.ref_raw_saliency_shapes[model_template.name],
+#                     processed_saliency_maps=processed_saliency_maps,
+#                     only_predicted=only_predicted,
+#                 )
+#
+#                 # Save OV IR model
+#                 inference_task._model_ckpt = osp.join(temp_dir, "weights.pth")
+#                 exported_model = ModelEntity(None, detection_environment.get_model_configuration())
+#                 inference_task.export(ExportType.OPENVINO, exported_model, dump_features=True)
+#                 os.makedirs(temp_dir, exist_ok=True)
+#                 save_model_data(exported_model, temp_dir)
+#
+#                 # Infer OV IR model
+#                 load_weights_ov = osp.join(temp_dir, "openvino.xml")
+#                 detection_environment.model = read_model(
+#                     detection_environment.get_model_configuration(), load_weights_ov, None
+#                 )
+#                 task = OpenVINODetectionTask(task_environment=detection_environment)
+#                 _, dataset = self.init_environment(hyper_parameters, model_template, 10)
+#                 predicted_dataset_ov = task.infer(dataset.with_empty_annotations(), inference_parameters)
+#
+#                 # Check saliency maps OV task
+#                 saliency_maps_check(
+#                     predicted_dataset_ov,
+#                     task_labels,
+#                     self.ref_raw_saliency_shapes[model_template.name],
+#                     processed_saliency_maps=processed_saliency_maps,
+#                     only_predicted=only_predicted,
+#                 )

@@ -31,6 +31,7 @@ from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import UncopiableDefaultDict
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import MetricsGroup
@@ -208,7 +209,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Task."""
         raise NotImplementedError
