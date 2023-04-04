@@ -557,7 +557,7 @@ def run_hpo(
         return environment
 
     if "TORCHELASTIC_RUN_ID" in os.environ:
-        logger.warning("OTX is train by torchrun. HPO isn't available.")
+        logger.warning("OTX is trained by torchrun. HPO isn't available.")
         return environment
 
     hpo_save_path = (output / "hpo").absolute()
