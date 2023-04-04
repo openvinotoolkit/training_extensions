@@ -65,7 +65,7 @@ class DetectionConfigurer:
         logger.info(f"configure!: training={training}")
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes)
-        self.configure_device(cfg)
+        self.configure_device(cfg, training)
         self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, training, data_cfg)
@@ -540,13 +540,14 @@ class DetectionConfigurer:
                 if hook["type"] == opt_key:
                     update_hook(opt, custom_hooks, idx, hook)
 
-    def configure_device(self, cfg):
+    def configure_device(self, cfg, training):
         """Setting device for training and inference."""
         cfg.distributed = False
         if torch.distributed.is_initialized():
-            cfg.distributed = True
-            self.configure_distributed(cfg)
             cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
+            if training:
+                cfg.distributed = True
+                self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
             gpu_ids = os.environ.get("CUDA_VISIBLE_DEVICES")
             logger.info(f"CUDA_VISIBLE_DEVICES = {gpu_ids}")
