@@ -85,7 +85,6 @@ class TestOTXSegTaskInference:
         assert result_set.performance.score.value == 0.1
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
-    @pytest.mark.parametrize("dump_features", [True, False])
     @e2e_pytest_unit
     def test_export(self, mocker, precision: ModelPrecision):
         fake_output = {"outputs": {"bin": None, "xml": None}}
@@ -106,7 +105,7 @@ class TestOTXSegTaskInference:
 
         fake_output = {"outputs": {"bin": f"{self.output_path}/model.xml", "xml": f"{self.output_path}/model.bin"}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
-        self.seg_train_task.export(ExportType.OPENVINO, self.model, precision)
+        self.seg_train_task.export(ExportType.OPENVINO, self.model, precision, dump_features)
 
         mock_run_task.assert_called_once()
         assert self.model.get_data("openvino.bin")
