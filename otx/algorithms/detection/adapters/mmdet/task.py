@@ -63,6 +63,7 @@ from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
     DetSaliencyMapHook,
 )
+from otx.algorithms.detection.adapters.mmdet.utils import patch_tiling
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,
@@ -70,7 +71,6 @@ from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
 from otx.algorithms.detection.adapters.mmdet.utils.exporter import DetectionExporter
 from otx.algorithms.detection.task import OTXDetectionTask
 from otx.algorithms.detection.utils import get_det_model_api_configuration
-from otx.algorithms.detection.utils.data import adaptive_tile_params
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -103,10 +103,58 @@ class MMDetectionTask(OTXDetectionTask):
         self._data_cfg: Optional[Config] = None
         self._recipe_cfg: Optional[Config] = None
 
-    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, export: bool = False):  # noqa
-        """Initialize task."""
+    def _load_tiling_parameters(self, model_data):
+        """Load tiling parameters from PyTorch model.
 
+        Args:
+            model_data: The model data.
+
+        Raises:
+            RuntimeError: If tile classifier is enabled but not found in the trained model.
+        """
+        loaded_tiling_parameters = model_data.get("config", {}).get("tiling_parameters", {})
+        if loaded_tiling_parameters.get("enable_tiling", {}).get("value", False):
+            logger.info("Load tiling parameters")
+            hparams = self._hyperparams.tiling_parameters
+            hparams.enable_tiling = loaded_tiling_parameters["enable_tiling"]["value"]
+            hparams.tile_size = loaded_tiling_parameters["tile_size"]["value"]
+            hparams.tile_overlap = loaded_tiling_parameters["tile_overlap"]["value"]
+            hparams.tile_max_number = loaded_tiling_parameters["tile_max_number"]["value"]
+            # check backward compatibility
+            enable_tile_classifier = loaded_tiling_parameters.get("enable_tile_classifier", {}).get("value", False)
+            if enable_tile_classifier:
+                found_tile_classifier = any(
+                    layer_name.startswith("tile_classifier") for layer_name in model_data["model"]["state_dict"].keys()
+                )
+                if not found_tile_classifier:
+                    raise RuntimeError(
+                        "Tile classifier is enabled but not found in the trained model. Please retrain your model."
+                    )
+                hparams.enable_tile_classifier = loaded_tiling_parameters["enable_tile_classifier"]["value"]
+
+    def _load_model_ckpt(self, model: Optional[ModelEntity]):
+        """Load model checkpoint from model entity.
+
+        Args:
+            model (Optional[ModelEntity]): _description_
+        Returns:
+            _type_: _description_
+        """
+        model_data = super()._load_model_ckpt(model)
+
+        if not model_data:
+            return model_data
+
+        if model_data.get("anchors"):
+            self._anchors = model_data["anchors"]
+
+        self._load_tiling_parameters(model_data)
+
+        return model_data
+
+    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def _init_task(self, dataset: Optional[DatasetEntity] = None, export: bool = False):  # noqa
+        """Initialize task."""
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
@@ -147,6 +195,9 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
+
+        # Patch tiling parameters
+        patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
 
         logger.info("initialized.")
 
@@ -221,12 +272,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._is_training = True
 
-        if bool(self._hyperparams.tiling_parameters.enable_tiling) and bool(
-            self._hyperparams.tiling_parameters.enable_adaptive_params
-        ):
-            adaptive_tile_params(self._hyperparams.tiling_parameters, dataset)
-
-        self._init_task()
+        self._init_task(dataset)
 
         cfg = self.configure(True, "train", None)
         logger.info("train!")
@@ -325,7 +371,7 @@ class MMDetectionTask(OTXDetectionTask):
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
-        self._init_task()
+        self._init_task(dataset)
 
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
@@ -524,6 +570,20 @@ class MMDetectionTask(OTXDetectionTask):
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
+
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            tile_classifier = None
+            for partition in outputs.get("partitioned"):
+                if partition.get("tile_classifier"):
+                    tile_classifier = partition.get("tile_classifier")
+                    break
+            if tile_classifier is None:
+                raise RuntimeError("invalid status of exporting. tile_classifier should not be None")
+            with open(tile_classifier["bin"], "rb") as f:
+                output_model.set_data("tile_classifier.bin", f.read())
+            with open(tile_classifier["xml"], "rb") as f:
+                output_model.set_data("tile_classifier.xml", f.read())
+
         output_model.set_data(
             "confidence_threshold",
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
@@ -677,6 +737,10 @@ class MMDetectionTask(OTXDetectionTask):
     # This should moved somewhere
     def _init_deploy_cfg(self) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
+        else:
+            deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):

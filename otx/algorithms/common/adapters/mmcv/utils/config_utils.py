@@ -524,23 +524,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
         ),
         runner=runner,
     )
-    if bool(hyperparams.tiling_parameters.enable_tiling):
-        logger.info("Tiling Enabled")
-        tiling_params = ConfigDict(
-            tile_size=int(hyperparams.tiling_parameters.tile_size),
-            overlap_ratio=float(hyperparams.tiling_parameters.tile_overlap),
-            max_per_img=int(hyperparams.tiling_parameters.tile_max_number),
-        )
-        hparams.update(
-            ConfigDict(
-                data=ConfigDict(
-                    train=tiling_params,
-                    val=tiling_params,
-                    test=tiling_params,
-                )
-            )
-        )
-        hparams.update(dict(evaluation=dict(iou_thr=[0.5])))
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)

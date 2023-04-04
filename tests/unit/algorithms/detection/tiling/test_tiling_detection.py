@@ -12,8 +12,8 @@ from mmcv import ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
-from otx.algorithms.detection.tasks import DetectionTrainTask
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -200,7 +200,7 @@ class TestTilingDetection:
         hyper_parameters.tiling_parameters.enable_tiling = True
         task_env = init_environment(hyper_parameters, model_template)
         output_model = ModelEntity(self.otx_dataset, task_env.get_model_configuration())
-        task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+        task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
         model_ckpt = os.path.join(tmp_dir_path, "maskrcnn.pth")
         torch.save(detector.state_dict(), model_ckpt)
         task._model_ckpt = model_ckpt
@@ -218,7 +218,7 @@ class TestTilingDetection:
                 model_adapters={"weights.pth": ModelAdapter(bin_data)},
             )
         task_env.model = model
-        task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+        task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
 
     @e2e_pytest_unit
     def test_patch_tiling_func(self):

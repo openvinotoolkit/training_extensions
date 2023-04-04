@@ -11,10 +11,10 @@ import torch
 from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.tasks import DetectionTrainTask
-from otx.algorithms.detection.tasks.openvino import (
+from otx.algorithms.detection.adapters.openvino.task import (
     OpenVINODetectionTask,
     OpenVINOMaskInferencer,
     OpenVINOTileClassifierWrapper,
@@ -68,7 +68,7 @@ class TestTilingTileClassifier:
         Args:
             mocker (_type_): pytest mocker from fixture
         """
-        mocker.patch("otx.algorithms.detection.tasks.openvino.OpenvinoAdapter")
+        mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model", return_value=mocker.MagicMock(spec=Model))
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
@@ -117,7 +117,7 @@ class TestTilingTileClassifier:
         hyper_parameters.tiling_parameters.enable_tile_classifier = True
         task_env = init_environment(hyper_parameters, model_template)
         output_model = ModelEntity(self.dataset, task_env.get_model_configuration())
-        task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+        task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
         task._model_ckpt = model_ckpt
         task.save_model(output_model)
         for filename, model_adapter in output_model.model_adapters.items():
@@ -134,21 +134,21 @@ class TestTilingTileClassifier:
             )
         task_env.model = model
         with pytest.raises(RuntimeError) as e:
-            task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+            task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
             assert (
                 str(e.value)
                 == "Tile classifier is enabled but not found in the trained model. Please retrain your model."
             )
 
         maskrcnn_classifier_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
-        maskrcnn_classifier_cfg.model.type = "CustomMaskRCNNTileOptimised"
+        maskrcnn_classifier_cfg.model.type = "CustomMaskRCNNTileOptimized"
         tile_classifier_detector = build_detector(maskrcnn_classifier_cfg)
         tile_classifier_ckpt = os.path.join(tmp_dir_path, "maskrcnn_with_tile_classifier.pth")
         torch.save({"state_dict": tile_classifier_detector.state_dict()}, tile_classifier_ckpt)
 
         task_env = init_environment(hyper_parameters, model_template)
         output_model = ModelEntity(self.dataset, task_env.get_model_configuration())
-        task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+        task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
         task._model_ckpt = tile_classifier_ckpt
         task.save_model(output_model)
         for filename, model_adapter in output_model.model_adapters.items():
@@ -164,7 +164,7 @@ class TestTilingTileClassifier:
                 model_adapters={"weights.pth": ModelAdapter(bin_data)},
             )
         task_env.model = model
-        task = DetectionTrainTask(task_env, output_path=str(tmp_dir_path))
+        task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
 
     @e2e_pytest_unit
     def test_patch_tiling_func(self):

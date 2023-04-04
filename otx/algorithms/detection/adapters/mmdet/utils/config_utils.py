@@ -371,8 +371,8 @@ def patch_tiling(config, hparams, dataset=None):
 
         if hparams.tiling_parameters.enable_tile_classifier:
             logger.info("Tile classifier enabled")
-            logger.info(f"Patch model from: {config.model.type} to CustomMaskRCNNTileOptimised")
-            config.model.type = "CustomMaskRCNNTileOptimised"
+            logger.info(f"Patch model from: {config.model.type} to CustomMaskRCNNTileOptimized")
+            config.model.type = "CustomMaskRCNNTileOptimized"
 
             if config.model.backbone.type == "efficientnet_b2b":
                 learning_rate = 0.002

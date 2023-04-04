@@ -35,7 +35,7 @@ from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.annotation import Annotation
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import Domain, LabelEntity
@@ -108,15 +108,6 @@ class OTXDetectionTask(OTXTask, ABC):
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
-            # Get config
-            if model_data.get("config"):
-                tiling_parameters = model_data.get("config").get("tiling_parameters")
-                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
-                    logger.info("Load tiling parameters")
-                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
-                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
-                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
-                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
             return model_data
         return None
 
@@ -143,6 +134,7 @@ class OTXDetectionTask(OTXTask, ABC):
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
 
+        dataset.purpose = DatasetPurpose.TRAINING
         results = self._train_model(dataset)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
@@ -227,6 +219,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         logger.info(f"Confidence threshold {self.confidence_threshold}")
 
+        dataset.purpose = DatasetPurpose.INFERENCE
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
 
         self._add_predictions_to_dataset(
