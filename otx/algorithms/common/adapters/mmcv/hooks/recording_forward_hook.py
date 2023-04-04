@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Sequence, Union
+from typing import List, Sequence, Union
 
 import torch
 
@@ -44,7 +44,7 @@ class BaseRecordingForwardHook(ABC):
     def __init__(self, module: torch.nn.Module, fpn_idx: int = -1) -> None:
         self._module = module
         self._handle = None
-        self._records = []  # type: list[torch.Tensor]
+        self._records: List[torch.Tensor] = []
         self._fpn_idx = fpn_idx
 
     @property
