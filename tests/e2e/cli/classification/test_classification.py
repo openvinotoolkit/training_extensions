@@ -113,7 +113,7 @@ class TestToolsMultiClassClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -125,15 +125,25 @@ class TestToolsMultiClassClassification:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_fp16(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -159,9 +169,10 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -295,7 +306,7 @@ class TestToolsMultiClassSemiSLClassification:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args0)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
@@ -304,6 +315,19 @@ class TestToolsMultiClassSemiSLClassification:
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args0)
+
+    @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
+        args_semisl_multigpu = copy.deepcopy(args0)
+        args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
+        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
+        args_semisl_multigpu["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
 
 
 # Pre-train w/ 'car', 'tree' classes
@@ -346,7 +370,7 @@ class TestToolsMultilabelClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args0_m)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_m)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -358,15 +382,18 @@ class TestToolsMultilabelClassification:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0_m)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -540,7 +567,7 @@ class TestToolsHierarchicalClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_h)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -552,15 +579,18 @@ class TestToolsHierarchicalClassification:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_h)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -723,7 +753,7 @@ args_selfsl = {
         "--learning_parameters.learning_rate",
         "1e-07",
         "--algo_backend.train_type",
-        "SELFSUPERVISED",
+        "Selfsupervised",
     ],
 }
 
@@ -736,7 +766,7 @@ class TestToolsSelfSLClassification:
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         tmp_dir_path_2 = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
         otx_train_testing(template, tmp_dir_path_2, otx_dir, args1)
 
@@ -746,3 +776,14 @@ class TestToolsSelfSLClassification:
     def test_otx_selfsl_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_selfsl"
+        args_selfsl_multigpu = copy.deepcopy(args_selfsl)
+        args_selfsl_multigpu["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)

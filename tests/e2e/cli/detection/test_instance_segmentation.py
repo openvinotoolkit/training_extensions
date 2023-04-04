@@ -86,7 +86,7 @@ class TestToolsMPAInstanceSegmentation:
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -98,15 +98,25 @@ class TestToolsMPAInstanceSegmentation:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "ins_seg"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_fp16(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "ins_seg"
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -119,9 +129,10 @@ class TestToolsMPAInstanceSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.skip(reason="CVS-104657")
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "ins_seg"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -164,6 +175,7 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-104657")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
@@ -171,6 +183,7 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-104657")
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args)

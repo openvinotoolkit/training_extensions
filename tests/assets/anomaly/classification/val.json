@@ -1,40 +1,38 @@
 {
   "image_path": {
-    "1": "test/good/000.png",
-    "2": "test/good/001.png",
-    "3": "test/good/002.png",
-    "4": "test/good/003.png",
-    "5": "test/star/000.png",
-    "6": "test/star/001.png",
-    "7": "test/star/002.png",
-    "8": "test/star/003.png",
-    "9": "test/hexagon/000.png",
-    "10": "test/hexagon/001.png",
-    "11": "test/hexagon/002.png",
-    "12": "test/hexagon/003.png"
+    "0": "test/good/13.jpg",
+    "1": "test/good/23.jpg",
+    "2": "test/good/04.jpg",
+    "3": "test/colour/13.jpg",
+    "4": "test/colour/00.jpg",
+    "5": "test/colour/05.jpg",
+    "6": "test/colour/02.jpg",
+    "7": "test/colour/16.jpg",
+    "8": "test/colour/15.jpg",
+    "9": "test/colour/10.jpg",
+    "10": "test/colour/04.jpg"
   },
   "label": {
+    "0": "good",
     "1": "good",
     "2": "good",
-    "3": "good",
-    "4": "good",
-    "5": "star",
-    "6": "star",
-    "7": "star",
-    "8": "star",
-    "9": "hexagon",
-    "10": "hexagon",
-    "11": "hexagon",
-    "12": "hexagon"
+    "3": "abnormal",
+    "4": "abnormal",
+    "5": "abnormal",
+    "6": "abnormal",
+    "7": "abnormal",
+    "8": "abnormal",
+    "9": "abnormal",
+    "10": "abnormal"
   },
-  "mask_path": {
-    "5": "ground_truth/star/000_mask.png",
-    "6": "ground_truth/star/001_mask.png",
-    "7": "ground_truth/star/002_mask.png",
-    "8": "ground_truth/star/003_mask.png",
-    "9": "ground_truth/hexagon/000_mask.png",
-    "10": "ground_truth/hexagon/001_mask.png",
-    "11": "ground_truth/hexagon/002_mask.png",
-    "12": "ground_truth/hexagon/003_mask.png"
+  "masks": {
+    "3": "mask/colour/13.png",
+    "4": "mask/colour/00.png",
+    "5": "mask/colour/05.png",
+    "6": "mask/colour/02.png",
+    "7": "mask/colour/16.png",
+    "8": "mask/colour/15.png",
+    "9": "mask/colour/10.png",
+    "10": "mask/colour/04.png"
   }
 }

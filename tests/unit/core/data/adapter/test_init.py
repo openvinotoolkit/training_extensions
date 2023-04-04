@@ -13,7 +13,7 @@ from tests.unit.core.data.test_helpers import (
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("task_name", TASK_NAME_TO_TASK_TYPE.keys())
-@pytest.mark.parametrize("train_type", [TrainType.INCREMENTAL.value])
+@pytest.mark.parametrize("train_type", [TrainType.Incremental.value])
 def test_get_dataset_adapter_incremental(task_name, train_type):
     root_path = os.getcwd()
     task_type = TASK_NAME_TO_TASK_TYPE[task_name]
@@ -35,7 +35,7 @@ def test_get_dataset_adapter_incremental(task_name, train_type):
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("task_name", ["classification"])
-@pytest.mark.parametrize("train_type", [TrainType.SELFSUPERVISED.value])
+@pytest.mark.parametrize("train_type", [TrainType.Selfsupervised.value])
 def test_get_dataset_adapter_selfsl_classification(task_name, train_type):
     root_path = os.getcwd()
     task_type = TASK_NAME_TO_TASK_TYPE[task_name]
@@ -56,7 +56,7 @@ def test_get_dataset_adapter_selfsl_classification(task_name, train_type):
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("task_name", ["segmentation"])
-@pytest.mark.parametrize("train_type", [TrainType.SELFSUPERVISED.value])
+@pytest.mark.parametrize("train_type", [TrainType.Selfsupervised.value])
 def test_get_dataset_adapter_selfsl_segmentation(task_name, train_type):
     root_path = os.getcwd()
     task_type = TASK_NAME_TO_TASK_TYPE[task_name]

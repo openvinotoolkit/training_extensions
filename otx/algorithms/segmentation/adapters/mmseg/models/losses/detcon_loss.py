@@ -1,6 +1,6 @@
 """DetCon loss."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=no-name-in-module, not-callable
@@ -164,4 +164,4 @@ class DetConLoss(nn.Module):
         loss_b = manual_cross_entropy(logits_concat[1], labels_concat[1], weight=weights[1])
         loss = loss_a + loss_b
 
-        return dict(loss=loss)
+        return loss

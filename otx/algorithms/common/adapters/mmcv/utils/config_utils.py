@@ -17,23 +17,237 @@
 import copy
 import glob
 import os
+import os.path as osp
+import platform
+import shutil
+import sys
 import tempfile
+import warnings
 from collections.abc import Mapping
-from typing import Any, Dict, List, Tuple, Union
+from importlib import import_module
+from typing import Any, Callable, Dict, List, Tuple, Union
 
+import torch
 from mmcv import Config, ConfigDict
+from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
+from mmcv.utils.misc import import_modules_from_strings
+from mmcv.utils.path import check_file_exist
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
 
 logger = get_logger()
+
+
+# TODO: refactor Config
+class MPAConfig(Config):
+    """A class that extends the base `Config` class, adds additional functionality for loading configuration files."""
+
+    @staticmethod
+    def _file2dict(
+        filename, use_predefined_variables=True
+    ):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        """Static method that loads the configuration file and returns a dictionary of its contents.
+
+        :param filename: str, the path of the configuration file to be loaded.
+        :param use_predefined_variables: bool, a flag indicating whether to substitute predefined variables in the
+                                          configuration file.
+        :return: tuple of dictionary and string. Returns a dictionary containing the contents of the configuration file
+                 and a string representation of the configuration file.
+        :raises: IOError if the file type is not supported.
+        """
+        filename = osp.abspath(osp.expanduser(filename))
+        check_file_exist(filename)
+        extender = osp.splitext(filename)[1]
+        if extender not in [".py", ".json", ".yaml", ".yml"]:
+            raise IOError("Only py/yml/yaml/json type are supported now!")
+
+        with tempfile.TemporaryDirectory() as temp_config_dir:
+            with tempfile.NamedTemporaryFile(dir=temp_config_dir, suffix=extender) as temp_config_file:
+                if platform.system() == "Windows":
+                    temp_config_file.close()
+                temp_config_name = osp.basename(temp_config_file.name)
+                # Substitute predefined variables
+                if use_predefined_variables:
+                    Config._substitute_predefined_vars(filename, temp_config_file.name)
+                else:
+                    shutil.copyfile(filename, temp_config_file.name)
+                # Substitute base variables from placeholders to strings
+                base_var_dict = Config._pre_substitute_base_vars(temp_config_file.name, temp_config_file.name)
+                if filename.endswith(".py"):
+                    temp_module_name = osp.splitext(temp_config_name)[0]
+                    sys.path.insert(0, temp_config_dir)
+                    Config._validate_py_syntax(filename)
+                    mod = import_module(temp_module_name)
+                    sys.path.pop(0)
+                    cfg_dict = {name: value for name, value in mod.__dict__.items() if not name.startswith("__")}
+                    # delete imported module
+                    del sys.modules[temp_module_name]
+                elif filename.endswith((".yml", ".yaml", ".json")):
+                    import mmcv
+
+                    cfg_dict = mmcv.load(temp_config_file.name)
+
+        # check deprecation information
+        if DEPRECATION_KEY in cfg_dict:
+            deprecation_info = cfg_dict.pop(DEPRECATION_KEY)
+            warning_msg = f"The config file {filename} will be deprecated " "in the future."
+            if "expected" in deprecation_info:
+                warning_msg += f' Please use {deprecation_info["expected"]} ' "instead."
+            if "reference" in deprecation_info:
+                warning_msg += " More information can be found at " f'{deprecation_info["reference"]}'
+            warnings.warn(warning_msg)
+
+        cfg_text = filename + "\n"
+        with open(filename, "r", encoding="utf-8") as f:
+            # Setting encoding explicitly to resolve coding issue on windows
+            cfg_text += f.read()
+
+        if BASE_KEY in cfg_dict:
+            cfg_dir = osp.dirname(filename)
+            base_filename = cfg_dict.pop(BASE_KEY)
+            base_filename = base_filename if isinstance(base_filename, list) else [base_filename]
+
+            cfg_dict_list = []
+            cfg_text_list = []
+            for f in base_filename:
+                _cfg_dict, _cfg_text = MPAConfig._file2dict(osp.join(cfg_dir, f))
+                cfg_dict_list.append(_cfg_dict)
+                cfg_text_list.append(_cfg_text)
+
+            base_cfg_dict = dict()
+            # for c in cfg_dict_list:
+            #     duplicate_keys = base_cfg_dict.keys() & c.keys()
+            #     if len(duplicate_keys) > 0:
+            #         raise KeyError('Duplicate key is not allowed among bases. '
+            #                        f'Duplicate keys: {duplicate_keys}')
+            #     base_cfg_dict.update(c)
+            for c in cfg_dict_list:
+                if len(base_cfg_dict.keys() & c.keys()) > 0:
+                    # raise KeyError(f'Duplicate key is not allowed among bases [{base_cfg_dict.keys() & c.keys()}]')
+                    logger.warning(f"Duplicate key is detected among bases [{base_cfg_dict.keys() & c.keys()}]")
+                    logger.debug(f"base = {base_cfg_dict}, cfg = {c}")
+                    base_cfg_dict = Config._merge_a_into_b(base_cfg_dict, c)
+                    logger.debug(f"merged dict = {base_cfg_dict}")
+                else:
+                    base_cfg_dict.update(c)
+
+            # Subtitute base variables from strings to their actual values
+            cfg_dict = Config._substitute_base_vars(cfg_dict, base_var_dict, base_cfg_dict)
+
+            base_cfg_dict = Config._merge_a_into_b(cfg_dict, base_cfg_dict)
+            cfg_dict = base_cfg_dict
+
+            # merge cfg_text
+            cfg_text_list.append(cfg_text)
+            cfg_text = "\n".join(cfg_text_list)
+
+        return cfg_dict, cfg_text
+
+    @staticmethod
+    def fromfile(filename, use_predefined_variables=True, import_custom_modules=True):
+        """Static method that loads a configuration file and returns an instance of `Config` class.
+
+        :param filename: str, the path of the configuration file to be loaded.
+        :param use_predefined_variables: bool, a flag indicating whether to substitute predefined variables in the
+                                          configuration file.
+        :param import_custom_modules: bool, a flag indicating whether to import custom modules.
+        :return: Config object, an instance of `Config` class containing the contents of the configuration file.
+        """
+        cfg_dict, cfg_text = MPAConfig._file2dict(filename, use_predefined_variables)
+        if import_custom_modules and cfg_dict.get("custom_imports", None):
+            import_modules_from_strings(**cfg_dict["custom_imports"])
+        return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
+
+
+def copy_config(cfg):
+    """A function that creates a deep copy of the input configuration object.
+
+    :param cfg: Config object, an instance of `Config` class to be copied.
+    :return: Config object, a deep copy of the input configuration object.
+    :raises: ValueError if the input object is not an instance of `Config` class.
+    """
+    if not isinstance(cfg, Config):
+        raise ValueError(f"cannot copy this instance {type(cfg)}")
+    # new_cfg = copy.deepcopy(cfg)
+    # new_cfg._cfg_dict = copy.deepcopy(cfg._cfg_dict)
+    # new_cfg.filename = cfg.filename
+    import pickle
+
+    data = pickle.dumps(cfg)
+    return pickle.loads(data)
+
+
+def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict):
+    """Update hook cfg if same type is in custom_hook or append it."""
+    custom_hooks = cfg.get("custom_hooks", [])
+    custom_hooks_updated = False
+    for custom_hook in custom_hooks:
+        if custom_hook["type"] == hook_cfg["type"]:
+            custom_hook.update(hook_cfg)
+            custom_hooks_updated = True
+            break
+    if not custom_hooks_updated:
+        custom_hooks.append(hook_cfg)
+    cfg["custom_hooks"] = custom_hooks
+
+
+def remove_custom_hook(cfg: Config, hook_type: str):
+    """Remove hook cfg if hook_type is in custom_hook."""
+    custom_hooks = cfg.get("custom_hooks", [])
+    if len(custom_hooks) > 0:
+        idx_to_del = None
+        for i, custom_hook in enumerate(custom_hooks):
+            if custom_hook["type"] == hook_type:
+                idx_to_del = i
+                break
+        if idx_to_del is not None:
+            del custom_hooks[idx_to_del]
+
+
+def recursively_update_cfg(
+    cfg: Union[Config, dict],
+    criterion: Callable[[Any, Any], bool],
+    update_dict: Any,
+):
+    """A function that recursively updates the input dictionary or `Config` object with a new dictionary.
+
+    :param cfg: Union[Config, dict], an input dictionary or `Config` object to be updated.
+    :param criterion: Callable[[Any, Any], bool], a function that determines whether to update a key-value pair based on
+                      a criterion. The function takes two arguments: key and value, and returns a boolean.
+    :param update_dict: Any, a dictionary to be used for updating the input dictionary.
+    :return: None
+    """
+    for key, val in list(cfg.items()):
+        if isinstance(val, dict):
+            recursively_update_cfg(val, criterion, update_dict)
+        if criterion(key, val):
+            cfg.update(update_dict)
+
+
+def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict):
+    """A function that adds a custom hook to the input `Config` object if it doesn't already exist.
+
+    :param cfg: Config object, an instance of `Config` class to which the custom hook will be added.
+    :param hook_cfg: ConfigDict object, an instance of `ConfigDict` class representing the custom hook to be added.
+    :return: None
+    """
+    custom_hooks = cfg.get("custom_hooks", [])
+    found = False
+    for hook in custom_hooks:
+        if hook["type"] == hook_cfg["type"]:
+            found = True
+            break
+    if not found:
+        custom_hooks.append(hook_cfg)
+        cfg["custom_hooks"] = custom_hooks
 
 
 @check_input_parameters_type()
@@ -84,7 +298,13 @@ def update_config(
 
 @check_input_parameters_type()
 def get_dataset_configs(config: Union[Config, ConfigDict], subset: str) -> List[ConfigDict]:
-    """Get 'datasets' configs."""
+    """A function that retrieves 'datasets' configurations from the input `Config` object or `ConfigDict` object.
+
+    :param config: Union[Config, ConfigDict], an instance of `Config` class or `ConfigDict` class containing the
+                   configurations.
+    :param subset: str, a string representing the subset for which the 'datasets' configuration is required.
+    :return: List[ConfigDict], a list of 'datasets' configuration dictionaries.
+    """
     if config.data.get(subset, None) is None:
         return []
     data_cfg = config.data[subset]
@@ -172,12 +392,158 @@ def patch_runner(config: Config):
         remove_from_config(config, "total_epochs")
 
     # Change runner's type.
-    if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
-        logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-        config.runner.type = "EpochRunnerWithCancel"
-    elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
-        logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-        config.runner.type = "IterBasedRunnerWithCancel"
+    if config.runner.type != "AccuracyAwareRunner":
+        if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
+            logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
+            config.runner.type = "EpochRunnerWithCancel"
+        elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
+            logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
+            config.runner.type = "IterBasedRunnerWithCancel"
+
+
+def patch_fp16(config: Config):
+    """Remove FP16 config if running on CPU device and revert to FP32.
+
+    Please refer https://github.com/pytorch/pytorch/issues/23377
+    """
+    if not torch.cuda.is_available() and "fp16" in config:
+        logger.info("Revert FP16 to FP32 on CPU device")
+        if isinstance(config, Config):
+            del config._cfg_dict["fp16"]  # pylint: disable=protected-access
+        elif isinstance(config, ConfigDict):
+            del config["fp16"]
+
+
+def patch_adaptive_interval_training(config: Config):
+    """Update adaptive interval settings for OTX training.
+
+    This function can be removed by adding custom hook cfg into recipe.py directly.
+    """
+    # default adaptive hook for evaluating before and after training
+    add_custom_hook_if_not_exists(
+        config,
+        ConfigDict(
+            type="AdaptiveTrainSchedulingHook",
+            enable_adaptive_interval_hook=False,
+            enable_eval_before_run=True,
+        ),
+    )
+    # Add/remove adaptive interval hook
+    if config.get("use_adaptive_interval", False):
+        update_or_add_custom_hook(
+            config,
+            ConfigDict(
+                {
+                    "type": "AdaptiveTrainSchedulingHook",
+                    "max_interval": 5,
+                    "enable_adaptive_interval_hook": True,
+                    "enable_eval_before_run": True,
+                    **config.pop("adaptive_validation_interval", {}),
+                }
+            ),
+        )
+    else:
+        config.pop("adaptive_validation_interval", None)
+
+
+def patch_early_stopping(config: Config):
+    """Update early stop settings for OTX training.
+
+    This function can be removed by adding custom hook cfg into recipe.py directly.
+    """
+    if "early_stop" in config:
+        remove_custom_hook(config, "EarlyStoppingHook")
+        early_stop = config.get("early_stop", False)
+        if early_stop:
+            early_stop_hook = ConfigDict(
+                type="LazyEarlyStoppingHook",
+                start=early_stop.start,
+                patience=early_stop.patience,
+                iteration_patience=early_stop.iteration_patience,
+                interval=1,
+                metric=config.early_stop_metric,
+                priority=75,
+            )
+            update_or_add_custom_hook(config, early_stop_hook)
+        else:
+            remove_custom_hook(config, "LazyEarlyStoppingHook")
+
+    # make sure model to be in a training mode even after model is evaluated (mmcv bug)
+    update_or_add_custom_hook(
+        config,
+        ConfigDict(type="ForceTrainModeHook", priority="LOWEST"),
+    )
+
+
+def patch_persistent_workers(config: Config):
+    """If num_workers is 0, persistent_workers must be False."""
+    data_cfg = config.data
+    for subset in ["train", "val", "test", "unlabeled"]:
+        if subset not in data_cfg:
+            continue
+        dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
+        workers_per_gpu = dataloader_cfg.get(
+            "workers_per_gpu",
+            data_cfg.get("workers_per_gpu", 0),
+        )
+        if workers_per_gpu == 0:
+            dataloader_cfg["persistent_workers"] = False
+            data_cfg[f"{subset}_dataloader"] = dataloader_cfg
+
+
+def patch_from_hyperparams(config: Config, hyperparams):
+    """Patch config parameters from hyperparams."""
+    params = hyperparams.learning_parameters
+    warmup_iters = int(params.learning_rate_warmup_iters)
+    lr_config = (
+        ConfigDict(warmup_iters=warmup_iters)
+        if warmup_iters > 0
+        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+    )
+
+    if params.enable_early_stopping and config.get("evaluation", None):
+        early_stop = ConfigDict(
+            start=int(params.early_stop_start),
+            patience=int(params.early_stop_patience),
+            iteration_patience=int(params.early_stop_iteration_patience),
+        )
+    else:
+        early_stop = False
+
+    runner = ConfigDict(max_epochs=int(params.num_iters))
+    if config.get("runner", None) and config.runner.get("type").startswith("IterBasedRunner"):
+        runner = ConfigDict(max_iters=int(params.num_iters))
+
+    hparams = ConfigDict(
+        optimizer=ConfigDict(lr=params.learning_rate),
+        lr_config=lr_config,
+        early_stop=early_stop,
+        data=ConfigDict(
+            samples_per_gpu=int(params.batch_size),
+            workers_per_gpu=int(params.num_workers),
+        ),
+        runner=runner,
+    )
+    if bool(hyperparams.tiling_parameters.enable_tiling):
+        logger.info("Tiling Enabled")
+        tiling_params = ConfigDict(
+            tile_size=int(hyperparams.tiling_parameters.tile_size),
+            overlap_ratio=float(hyperparams.tiling_parameters.tile_overlap),
+            max_per_img=int(hyperparams.tiling_parameters.tile_max_number),
+        )
+        hparams.update(
+            ConfigDict(
+                data=ConfigDict(
+                    train=tiling_params,
+                    val=tiling_params,
+                    test=tiling_params,
+                )
+            )
+        )
+        hparams.update(dict(evaluation=dict(iou_thr=[0.5])))
+
+    hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
+    config.merge_from_dict(hparams)
 
 
 @check_input_parameters_type()

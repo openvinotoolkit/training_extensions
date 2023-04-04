@@ -13,9 +13,8 @@ def test_get_args(mocker):
         "--train-data-roots": "train_data_roots_path",
         "--val-data-roots": "val_data_roots_path",
         "--load-weights": "load_weights_path",
-        "--save-model-to": "save_model_path",
-        "--save-performance": "save_performance_path",
-        "--work-dir": "work_dir_path",
+        "--output": "output",
+        "--workspace": "work_dir_path",
     }
     mock_command = ["otx"]
     for key, value in mock_options.items():
@@ -32,9 +31,8 @@ def test_get_args(mocker):
     assert parsed_args.train_data_roots == "train_data_roots_path"
     assert parsed_args.val_data_roots == "val_data_roots_path"
     assert parsed_args.load_weights == "load_weights_path"
-    assert parsed_args.save_model_to == "save_model_path"
-    assert parsed_args.save_performance == "save_performance_path"
-    assert parsed_args.work_dir == "work_dir_path"
+    assert parsed_args.output == "output"
+    assert parsed_args.workspace == "work_dir_path"
 
 
 @pytest.fixture
@@ -43,9 +41,8 @@ def mock_args(mocker, tmp_path):
     mock_args.train_data_roots = "fake_train_data_roots_path"
     mock_args.val_data_roots = "fake_val_data_roots_path"
     mock_args.load_weights = "fake_load_weights_path"
-    mock_args.save_model_to = tmp_path / "save/model"
-    mock_args.save_performance = tmp_path / "save/performance.json"
-    mock_args.work_dir = tmp_path / "work_dir_path"
+    mock_args.output = tmp_path / "save/model"
+    mock_args.workspace = tmp_path / "work_dir_path"
 
     def mock_contains(self, val):
         return val in self.__dict__

@@ -70,7 +70,7 @@ class TestToolsOTXActionDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

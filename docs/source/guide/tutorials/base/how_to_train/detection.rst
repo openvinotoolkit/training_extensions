@@ -60,7 +60,7 @@ Dataset preparation
 
 .. code-block::
 
-  cd data
+  mkdir data ; cd data
   git clone https://github.com/thsant/wgisd.git
   cd wgisd
   git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
@@ -107,7 +107,7 @@ We can do that by running these commands:
 .. code-block::
 
   # format images folder
-  mkdir data images
+  mv data images
 
   # format annotations folder
   mv coco_annotations annotations
@@ -115,6 +115,8 @@ We can do that by running these commands:
   # rename annotations to meet *_train.json pattern
   mv annotations/train_bbox_instances.json annotations/instances_train.json
   mv annotations/test_bbox_instances.json annotations/instances_val.json
+
+  cd ../..
 
 *********
 Training
@@ -183,9 +185,9 @@ Let's prepare the object detection workspace running the following command:
 
 
 
-.. note::
+.. warning::
   
-  If you want to update your current workspace by running ``otx build`` with other parameters, it's better to delete the original workplace before that to prevent mistakes.
+  If you want to rebuild your current workspace by running ``otx build`` with other parameters, it's better to delete the original workplace before that to prevent mistakes.
 
 Check ``otx-workspace-DETECTION/data.yaml`` to ensure, which data subsets will be used for training and validation, and update it if necessary.
 
@@ -225,7 +227,7 @@ detection model on the first GPU on WGISD dataset:
 .. code-block::
 
   (otx) ...$ cd otx-workspace-DETECTION/
-  (otx) ...$ otx train  --save-model-to ../outputs --work-dir ../outputs/logs --gpus 1
+  (otx) ...$ otx train  --output ../outputs --workspace ../outputs/logs --gpus 1
 
 To start multi-gpu training, list the indexes of GPUs you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
 
@@ -288,7 +290,7 @@ folder on WGISD dataset and save results to ``outputs/performance``:
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                       --load-weights ../outputs/weights.pth \
-                      --save-performance ../outputs/performance.json
+                      --output ../outputs/
 
 
 3. The output of ``../outputs/performance.json`` consists of 
@@ -309,7 +311,7 @@ Please note, by default, the optimal confidence threshold is detected based on v
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                       --load-weights ../outputs/weights.pth \
-                      --save-performance ../outputs/performance.json
+                      --output ../outputs
                       params \
                       --postprocessing.confidence_threshold 0.5 \
                       --postprocessing.result_based_confidence_threshold false
@@ -332,7 +334,7 @@ from the previous section and save the exported model to the ``../outputs/openvi
 .. code-block::
 
   (otx) ...$ otx export --load-weights ../outputs/weights.pth \
-                        --save-model-to ../outputs/openvino/
+                        --output ../outputs/openvino/
 
   ...
 
@@ -347,7 +349,7 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                       --load-weights ../outputs/openvino/openvino.xml \
-                      --save-performance ../outputs/performance.json
+                      --output ../outputs
 
   ...
   2023-01-10 06:24:50,382 | INFO : Start OpenVINO inference
@@ -384,8 +386,8 @@ with OpenVINO NNCF.
 .. code-block::
 
   (otx) ...$ otx optimize  --load-weights ../outputs/weights.pth \
-                           --save-model-to ../outputs/nncf \
-                           --save-performance ../outputs/nncf/performance.json
+                           --output ../outputs/nncf \
+                           --output ../outputs/nncf
 
   ...
 
@@ -403,8 +405,8 @@ with OpenVINO™ POT.
 .. code-block::
 
   (otx) ...$ otx optimize  --load-weights ../outputs/openvino/openvino.xml \
-                           --save-model-to ../outputs/pot \
-                           --save-performance ../outputs/pot/performance.json
+                           --output ../outputs/pot \
+                           --output ../outputs/pot
 
   ...
 

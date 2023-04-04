@@ -31,7 +31,9 @@ OpenVINO™ Training Extensions is a low-code transfer learning framework for Co
 The CLI commands of the framework allows users to train, infer, optimize and deploy models easily and quickly even with low expertise in the deep learning field. OpenVINO™ Training Extensions offers diverse combinations of model architectures, learning methods, and task types based on [PyTorch](https://pytorch.org) and [OpenVINO™
 toolkit](https://software.intel.com/en-us/openvino-toolkit).
 
-OpenVINO™ Training Extensions provides a "model template" for every supported task type, which consolidates necessary information to build a model. Model templates are validated on various datasets and serve one-stop shop for obtaining the best models in general. If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/latest/index.html), [pytorchcv](https://github.com/osmr/imgclsmob), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
+OpenVINO™ Training Extensions provides a "model template" for every supported task type, which consolidates necessary information to build a model.
+Model templates are validated on various datasets and serve one-stop shop for obtaining the best models in general.
+If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/latest/index.html), [pytorchcv](https://github.com/osmr/imgclsmob), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
 
 Furthermore, OpenVINO™ Training Extensions provides automatic configuration of task types and hyperparameters.
 The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
@@ -87,19 +89,19 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.0.0 (1Q23)
+### v1.1.0 (1Q23)
 
-- Package Installation via PyPI
-  - OpenVINO™ Training Extensions installation will be supported via PyPI
-- CLI update
-  - Update `find` command to find configurations of tasks/algorithms
-  - Introduce `build` command to customize task or model configurations
-  - Automatic algorihm selection for the `train` command using the given input dataset
-- Adaptation of [Datumaro](https://github.com/openvinotoolkit/datumaro) component as a dataset interface
-- Integrate hyper-parameter optimizations
-- Support action recognition task
+- Add FP16 IR export support (<https://github.com/openvinotoolkit/training_extensions/pull/1683>)
+- Add in-memory caching in dataloader (<https://github.com/openvinotoolkit/training_extensions/pull/1694>)
+- Add MoViNet template for action classification (<https://github.com/openvinotoolkit/training_extensions/pull/1742>)
+- Add Semi-SL multilabel classification algorithm (<https://github.com/openvinotoolkit/training_extensions/pull/1805>)
+- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (<https://github.com/openvinotoolkit/training_extensions/pull/1534>)
+- Add train-type parameter to otx train (<https://github.com/openvinotoolkit/training_extensions/pull/1874>)
+- Add embedding of inference configuration to IR for classification (<https://github.com/openvinotoolkit/training_extensions/pull/1842>)
+- Enable VOC dataset in OTX (<https://github.com/openvinotoolkit/training_extensions/pull/1862>)
+- Add mmcls.VisionTransformer backbone support (<https://github.com/openvinotoolkit/training_extensions/pull/1908>)
 
-### v1.1+ (2Q23)
+### v1.2+ (2Q23)
 
 - In planning
 

@@ -5,12 +5,12 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.classification.adapters.mmcls.data import (
+from otx.algorithms.classification.adapters.mmcls.datasets import (
     OTXClsDataset,
     OTXHierarchicalClsDataset,
     OTXMultilabelClsDataset,
+    SelfSLDataset,
 )
-from otx.algorithms.classification.adapters.mmcls.data.datasets import SelfSLDataset
 from otx.algorithms.classification.utils import get_multihead_class_info
 from otx.api.entities.annotation import (
     Annotation,

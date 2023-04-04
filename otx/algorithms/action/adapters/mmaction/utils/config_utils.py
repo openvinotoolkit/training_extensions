@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from collections import defaultdict
 from typing import List, Union
 
 from mmcv.utils import Config, ConfigDict
@@ -27,7 +26,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model_template import TaskType
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
@@ -95,15 +93,10 @@ def prepare_for_training(
     config: Union[Config, ConfigDict],
     train_dataset: DatasetEntity,
     val_dataset: DatasetEntity,
-    time_monitor: TimeMonitorCallback,
-    learning_curves: defaultdict,
 ) -> Config:
     """Prepare configs for training phase."""
     prepare_work_dir(config)
     data_train = get_data_cfg(config)
     data_train.otx_dataset = train_dataset
     config.data.val.otx_dataset = val_dataset
-    config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
-    config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
-
     return config

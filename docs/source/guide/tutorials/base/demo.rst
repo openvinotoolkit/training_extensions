@@ -8,7 +8,7 @@ It allows you to apply the model on the custom data or the online footage from a
 
     This tutorial uses an object detection model for example, however for other tasks the functionality remains the same - you just need to replace the input dataset with your own.
 
-For visualization you use images from WGISD dataset from the :doc: `object detection tutorial <how_to_train/detection>`.
+For visualization you use images from WGISD dataset from the :doc:`object detection tutorial <how_to_train/detection>`.
 
 1. Activate the virtual environment 
 created in the previous step.
@@ -69,8 +69,8 @@ You can check a list of camera devices by running the command line below on Linu
 
 .. code-block::
 
-    sudo apt-get install v4l-utils
-    v4l2-ctl --list-devices
+    (demo) ...$ sudo apt-get install v4l-utils
+    (demo) ...$ v4l2-ctl --list-devices
 
 The output will look like this:
 

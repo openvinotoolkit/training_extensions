@@ -4,6 +4,8 @@ Original papers:
 - 'Bootstrap Your Own Latent: A New Approach to Self-Supervised Learning', https://arxiv.org/abs/2006.07733
 """
 
+import copy
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -16,7 +18,7 @@ import torch.distributed as dist
 from mmcls.models.builder import CLASSIFIERS, build_backbone, build_head, build_neck
 from torch import nn
 
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -50,7 +52,11 @@ class BYOL(nn.Module):
 
         # build backbone
         self.online_backbone = build_backbone(backbone)
-        self.target_backbone = build_backbone(backbone)
+
+        target_backbone_cfg = copy.deepcopy(backbone)
+        target_backbone_cfg["pretrained"] = None
+
+        self.target_backbone = build_backbone(target_backbone_cfg)
 
         # build projector
         self.online_projector = build_neck(neck)

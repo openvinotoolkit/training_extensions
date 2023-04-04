@@ -18,7 +18,6 @@
 import io
 import json
 import os
-from collections.abc import Mapping
 from copy import deepcopy
 from typing import Dict, List, Optional
 
@@ -38,6 +37,7 @@ from otx.algorithms.common.adapters.nncf import (
 from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -63,7 +63,6 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.mpa.utils.logger import get_logger
 
 from .training_base import BaseTask
 
@@ -133,9 +132,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
                     labels=self._labels,
                 )
 
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
         return data_cfg
 
     def _init_nncf_cfg(self):
@@ -336,29 +332,16 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
 
-        config = deepcopy(self._recipe_cfg)
-
-        def update(d, u):  # pylint: disable=invalid-name
-            for k, v in u.items():  # pylint: disable=invalid-name
-                if isinstance(v, Mapping):
-                    d[k] = update(d.get(k, {}), v)
-                else:
-                    d[k] = v
-            return d
-
-        modelinfo = torch.load(self._model_ckpt, map_location=torch.device("cpu"))
-        modelinfo = update(
-            dict(model=modelinfo),
-            {
-                "meta": {
-                    "nncf_enable_compression": True,
-                    "config": config,
-                },
-                "config": hyperparams_str,
-                "labels": labels,
-                "VERSION": 1,
+        model_ckpt = torch.load(self._model_ckpt, map_location=torch.device("cpu"))
+        modelinfo = {
+            "model": model_ckpt,
+            "config": hyperparams_str,
+            "labels": labels,
+            "VERSION": 1,
+            "meta": {
+                "nncf_enable_compression": True,
             },
-        )
+        }
         self._save_model_post_hook(modelinfo)
 
         torch.save(modelinfo, buffer)

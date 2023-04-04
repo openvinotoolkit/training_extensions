@@ -56,6 +56,7 @@ with the following command:
   cd ..
 
 |
+
 .. image:: ../../../../../utils/images/flowers_example.jpg
   :width: 600
 
@@ -120,7 +121,7 @@ Let's prepare an OpenVINO™ Training Extensions classification workspace runnin
 
   (otx) ...$ cd ./otx-workspace-CLASSIFICATION
 
-It will create **otx-workspace-CLASSIFICATION** with all necessery configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset named ``splitted_dataset``.
+It will create **otx-workspace-CLASSIFICATION** with all necessary configs for MobileNet-V3-large-1x, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset named ``splitted_dataset``.
 
 3. To start training you need to call ``otx train``
 command in our workspace:
@@ -136,7 +137,7 @@ The training time highly relies on the hardware characteristics, for example on 
 After that, you have the PyTorch classification model trained with OpenVINO™ Training Extensions, which you can use for evaluation, export, optimization and deployment.
 
 .. note::
-  If you specified ``--work-dir``, you also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
+  If you specified ``--workspace``, you also can visualize the training using ``Tensorboard`` as these logs are located in ``<work_dir>/tf_logs``.
 
 ***********
 Validation
@@ -157,7 +158,7 @@ and save performance results in ``performance.json`` file:
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --output outputs
 
 You will get a similar validation output:
 
@@ -184,7 +185,7 @@ and save the exported model to the ``openvino_model`` folder:
 .. code-block::
 
   (otx) ...$ otx export --load-weights models/weights.pth \
-                        --save-model-to openvino_model
+                        --output openvino_model
 
   ...
 
@@ -199,7 +200,7 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                       --load-weights openvino_model/openvino.xml \
-                      --save-performance openvino_model/performance.json
+                      --output openvino_model
 
   ...
 
@@ -220,7 +221,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
+  (otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
 
   ...
 
@@ -239,7 +240,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                          --save-model-to pot_model
+                          --output pot_model
 
   ...
 

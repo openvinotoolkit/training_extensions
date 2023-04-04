@@ -6,6 +6,7 @@
 
 import json
 import logging
+import os
 import re
 import shutil
 from copy import deepcopy
@@ -536,12 +537,13 @@ class HpoRunner:
 
 
 def run_hpo(
-    args, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, str]
+    hpo_time_ratio: int, output: Path, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, str]
 ) -> Optional[TaskEnvironment]:
     """Run HPO and load optimized hyper parameter and best HPO model weight.
 
     Args:
-        args: arguments passed to otx train
+        hpo_time_ratio(int): expected ratio of total time to run HPO to time taken for full fine-tuning
+        output(Path): directory where HPO output is saved
         environment (TaskEnvironment): otx task environment
         dataset (DatasetEntity): dataset to use for training
         data_roots (Dict[str, str]): dataset path of each dataset type
@@ -552,15 +554,19 @@ def run_hpo(
             "Currently supported task types are classification, detection, segmentation and anomaly"
             f"{task_type} is not supported yet."
         )
-        return None
+        return environment
 
-    hpo_save_path = (Path(args.save_model_to).parent / "hpo").absolute()
+    if "TORCHELASTIC_RUN_ID" in os.environ:
+        logger.warning("OTX is trained by torchrun. HPO isn't available.")
+        return environment
+
+    hpo_save_path = (output / "hpo").absolute()
     hpo_runner = HpoRunner(
         environment,
         len(dataset.get_subset(Subset.TRAINING)),
         len(dataset.get_subset(Subset.VALIDATION)),
         hpo_save_path,
-        args.hpo_time_ratio,
+        hpo_time_ratio,
     )
 
     logger.info("started hyper-parameter optimization")

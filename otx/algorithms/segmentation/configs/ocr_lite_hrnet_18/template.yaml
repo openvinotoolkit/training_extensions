@@ -8,7 +8,7 @@ summary: Class-Incremental Semantic Segmentation with middle-sized architecture 
 application: ~
 
 # Algo backend.
-framework: OTESegmentation v0.14.0
+framework: OTXSegmentation v0.14.0
 
 # Task implementations.
 entrypoints:
@@ -38,7 +38,7 @@ hyper_parameters:
         default_value: 300
     algo_backend:
       train_type:
-        default_value: INCREMENTAL
+        default_value: Incremental
 
 # Training resources.
 max_nodes: 1

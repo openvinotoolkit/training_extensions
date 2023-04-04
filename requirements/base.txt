@@ -1,7 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Base Algo Requirements.                                                          #
 natsort>=6.0.0
-nbmake
 prettytable
 protobuf>=3.20.0
 pyyaml

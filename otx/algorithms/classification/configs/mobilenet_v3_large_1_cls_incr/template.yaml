@@ -8,14 +8,13 @@ summary: Class-Incremental Image Classification for MobileNet-V3-large-1x
 application: ~
 
 # Algo backend.
-framework: OTEClassification v1.2.3
+framework: OTXClassification v1.2.3
 
 # Task implementations.
 entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.ClassificationNNCFTask
-base_model_path: ../../adapters/deep_object_reid/configs/mobilenet_v3_large_1/template_experimental.yaml
 
 # Capabilities.
 capabilities:
@@ -47,7 +46,7 @@ hyper_parameters:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: INCREMENTAL
+        default_value: Incremental
 
 # Training resources.
 max_nodes: 1

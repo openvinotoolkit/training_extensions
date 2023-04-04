@@ -93,7 +93,7 @@ def get_predictions(task, frame):
     start_time = time.perf_counter()
     predicted_validation_dataset = task.infer(
         dataset,
-        InferenceParameters(is_evaluation=True),
+        InferenceParameters(is_evaluation=False),
     )
     elapsed_time = time.perf_counter() - start_time
     item = predicted_validation_dataset[0]
@@ -106,7 +106,7 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, mode="eval")
+    config_manager = ConfigManager(args, mode="demo")
     # Auto-Configuration for model template
     config_manager.configure_template()
 

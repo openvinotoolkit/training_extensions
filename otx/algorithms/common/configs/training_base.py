@@ -32,15 +32,17 @@ from otx.api.configuration.model_lifecycle import ModelLifecycle
 
 from .configuration_enums import POTQuantizationPreset
 
+# pylint: disable=invalid-name
+
 
 class TrainType(ConfigurableEnum):
     """TrainType for OTX Algorithms."""
 
-    FINETUNE = "FINETUNE"
-    SEMISUPERVISED = "SEMISUPERVISED"
-    SELFSUPERVISED = "SELFSUPERVISED"
-    INCREMENTAL = "INCREMENTAL"
-    FUTUREWORK = "FUTUREWORK"
+    Finetune = "Finetune"
+    Semisupervised = "Semisupervised"
+    Selfsupervised = "Selfsupervised"
+    Incremental = "Incremental"
+    Futurework = "Futurework"
 
 
 class LearningRateSchedule(ConfigurableEnum):
@@ -65,7 +67,7 @@ class BaseConfig(ConfigurableParameters):
         batch_size = configurable_integer(
             default_value=5,
             min_value=1,
-            max_value=512,
+            max_value=2048,
             header="Batch size",
             description="The number of training samples seen in each iteration of training. Increasing thisvalue "
             "improves training time and may make the training more stable. A larger batch size has higher "
@@ -275,7 +277,7 @@ class BaseConfig(ConfigurableParameters):
         """BaseAlgoBackendParameters for OTX Algorithms."""
 
         train_type = selectable(
-            default_value=TrainType.INCREMENTAL,
+            default_value=TrainType.Incremental,
             header="train type",
             description="Training scheme option that determines how to train the model",
             editable=False,
