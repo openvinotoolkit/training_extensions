@@ -39,6 +39,16 @@ def setup_module(monkeypatch, mocker):
         def init_weights(self, init_linear=None):
             pass
 
+    class MockHead(nn.Sequential):
+        def __init__(self):
+            super().__init__(nn.Linear(2, 2, bias=False), nn.Linear(2, 2, bias=False))
+
+        def init_weights(self, init_linear=None):
+            pass
+
+        def forward(self, *args, **kwargs):
+            return {"loss": torch.tensor(1.0)}
+
     class MockDecodeHead(nn.Module):
         def __init__(self):
             super().__init__()
@@ -52,6 +62,7 @@ def setup_module(monkeypatch, mocker):
     def build_mock(mock_class, *args, **kwargs):
         return mock_class()
 
+    # DetCon
     monkeypatch.setattr(
         "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_backbone",
         partial(build_mock, MockBackbone),
@@ -60,20 +71,21 @@ def setup_module(monkeypatch, mocker):
         "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_neck", partial(build_mock, MockNeck)
     )
     monkeypatch.setattr(
-        "mmseg.models.segmentors.encoder_decoder.builder.build_backbone", partial(build_mock, MockBackbone)
-    )
-    monkeypatch.setattr(
-        "mmseg.models.segmentors.encoder_decoder.builder.build_head", partial(build_mock, MockDecodeHead)
-    )
-    mocker.patch(
-        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_loss",
-        return_value=lambda *args, **kwargs: dict(loss=1.0),
+        "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.build_head", partial(build_mock, MockHead)
     )
     mocker.patch(
         "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB._register_state_dict_hook"
     )
     mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.DetConB.state_dict_hook")
     mocker.patch("otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.load_checkpoint")
+
+    # SupCon
+    monkeypatch.setattr(
+        "mmseg.models.segmentors.encoder_decoder.builder.build_backbone", partial(build_mock, MockBackbone)
+    )
+    monkeypatch.setattr(
+        "mmseg.models.segmentors.encoder_decoder.builder.build_head", partial(build_mock, MockDecodeHead)
+    )
     mocker.patch(
         "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.SupConDetConB._decode_head_forward_train",
         return_value=(dict(loss=1.0), None),
@@ -124,7 +136,7 @@ class TestDetConB:
 
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.detconb = DetConB(backbone={}, neck={}, head={}, downsample=1, loss_cfg=dict(type="DetConLoss"))
+        self.detconb = DetConB(backbone={}, neck={}, head={}, downsample=1)
 
     @e2e_pytest_unit
     def test_init_weights(self) -> None:
@@ -252,7 +264,6 @@ class TestSupConDetConB:
             downsample=1,
             input_transform="resize_concat",
             in_index=[0, 1],
-            loss_cfg=dict(type="DetConLoss"),
             task_adapt=dict(dst_classes=1, src_classes=1),
         )
 

@@ -215,7 +215,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         )
 
     (config_manager.output_path / "logs").mkdir(exist_ok=True, parents=True)
-    task = task_class(task_environment=environment, output_path=str(config_manager.output_path / "logs"))
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(main, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
@@ -228,6 +227,8 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             multigpu_manager.setup_multi_gpu_train(
                 str(config_manager.output_path), hyper_parameters if args.enable_hpo else None
             )
+
+    task = task_class(task_environment=environment, output_path=str(config_manager.output_path / "logs"))
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 

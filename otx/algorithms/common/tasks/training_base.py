@@ -21,11 +21,13 @@ import os
 import shutil
 import tempfile
 from copy import deepcopy
+from datetime import timedelta
 from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
+from torch import distributed as dist
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
@@ -87,10 +89,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._resume = False
         self._anchors = {}  # type: Dict[str, int]
         self._work_dir_is_temp = False
-        if output_path is None:
-            output_path = tempfile.mkdtemp(prefix="OTX-task-")
-            self._work_dir_is_temp = True
-        self._output_path = output_path
+        self._output_path = output_path if output_path is not None else self._get_tmp_dir()
         logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
@@ -125,6 +124,32 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # to override configuration at runtime
         self.override_configs = {}  # type: Dict[str, str]
+
+        if self._is_multi_gpu_training():
+            self._setup_multigpu_training()
+
+    @staticmethod
+    def _is_multi_gpu_training():
+        multi_gpu_env = ["MASTER_ADDR", "MASTER_PORT", "LOCAL_WORLD_SIZE", "WORLD_SIZE", "LOCAL_RANK", "RANK"]
+        for env in multi_gpu_env:
+            if env not in os.environ:
+                return False
+
+        return torch.cuda.is_available()
+
+    @staticmethod
+    def _setup_multigpu_training():
+        if not dist.is_initialized():
+            torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
+            dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
+            logger.info(f"Dist info: rank {dist.get_rank()} / {dist.get_world_size()} world_size")
+
+    def _get_tmp_dir(self):
+        self._work_dir_is_temp = True
+        # If training is excuted with torchrun, set all trainings' output directory same
+        if "TORCHELASTIC_RUN_ID" in os.environ:
+            return os.path.join(tempfile.gettempdir(), f"OTX-task-torchelastic-{os.environ['TORCHELASTIC_RUN_ID']}")
+        return tempfile.mkdtemp(prefix="OTX-task-")
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(kwargs)

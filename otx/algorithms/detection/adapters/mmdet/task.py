@@ -219,10 +219,6 @@ class MMDetectionTask(OTXDetectionTask):
                     labels=self._labels,
                 )
 
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
-
         self._is_training = True
 
         if bool(self._hyperparams.tiling_parameters.enable_tiling) and bool(

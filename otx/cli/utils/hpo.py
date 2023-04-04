@@ -6,6 +6,7 @@
 
 import json
 import logging
+import os
 import re
 import shutil
 from copy import deepcopy
@@ -553,7 +554,11 @@ def run_hpo(
             "Currently supported task types are classification, detection, segmentation and anomaly"
             f"{task_type} is not supported yet."
         )
-        return None
+        return environment
+
+    if "TORCHELASTIC_RUN_ID" in os.environ:
+        logger.warning("OTX is trained by torchrun. HPO isn't available.")
+        return environment
 
     hpo_save_path = (output / "hpo").absolute()
     hpo_runner = HpoRunner(
