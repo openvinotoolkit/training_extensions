@@ -8,7 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Fix exception -> warning for anomaly dump_feature option
 - Remove `dataset.with_empty_annotations()` to keep original input structure (<https://github.com/openvinotoolkit/training_extensions/pull/1964>)
-- Fix OV batch inference (saliency map generation)  (<https://github.com/openvinotoolkit/training_extensions/pull/1965>)
+- Fix OV batch inference (saliency map generation) (<https://github.com/openvinotoolkit/training_extensions/pull/1965>)
+- Replace EfficentNetB0 model download logic by pytorchcv to resolve zip issue (<https://github.com/openvinotoolkit/training_extensions/pull/1967>)
 
 ## \[v1.1.1\]
 
