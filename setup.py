@@ -102,8 +102,6 @@ def get_extensions():
         return []
 
     def _cython_modules():
-        os.path.dirname(__file__)
-
         cython_files = [
             "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/pil_augment.pyx",
             "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/cv_augment.pyx"
