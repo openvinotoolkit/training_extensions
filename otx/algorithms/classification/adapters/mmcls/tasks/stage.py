@@ -30,8 +30,8 @@ class ClsStage(Stage):
 
         # Recipe + model
         cfg = self.cfg
-        self.configure_model(cfg, model_cfg, **kwargs)
         self.configure_ckpt(cfg, model_ckpt, kwargs.get("pretrained", None))
+        self.configure_model(cfg, model_cfg, **kwargs)
         self.configure_data(cfg, data_cfg, training)
         self.configure_task(cfg, training)
         return cfg
