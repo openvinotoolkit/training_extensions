@@ -5,12 +5,12 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.classification.configs.base import ClassificationConfig
-from otx.algorithms.classification.tasks.openvino import (
+from otx.algorithms.classification.adapters.openvino.task import (
     ClassificationOpenVINOInferencer,
     ClassificationOpenVINOTask,
     OTXOpenVinoDataLoader,
 )
+from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
