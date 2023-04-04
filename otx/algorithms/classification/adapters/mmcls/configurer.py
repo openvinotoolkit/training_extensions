@@ -68,7 +68,7 @@ class ClassificationConfigurer:
         logger.info(f"configure!: training={training}")
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes, **kwargs)
-        self.configure_device(cfg)
+        self.configure_device(cfg, training)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_model(cfg, ir_options)
         self.configure_data(cfg, training, data_cfg)
@@ -400,13 +400,14 @@ class ClassificationConfigurer:
                 if hook["type"] == opt_key:
                     update_hook(opt, custom_hooks, idx, hook)
 
-    def configure_device(self, cfg):
+    def configure_device(self, cfg, training):
         """Setting device for training and inference."""
         cfg.distributed = False
         if torch.distributed.is_initialized():
-            cfg.distributed = True
-            self.configure_distributed(cfg)
             cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
+            if training:  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
+                cfg.distributed = True
+                self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
             gpu_ids = os.environ.get("CUDA_VISIBLE_DEVICES")
             logger.info(f"CUDA_VISIBLE_DEVICES = {gpu_ids}")
@@ -544,6 +545,7 @@ class ClassificationConfigurer:
                     f"'in_channels' config in model.head is updated from "
                     f"{cfg.model.head.in_channels} to {in_channels}"
                 )
+                cfg.model.head.in_channels = in_channels
 
     @staticmethod
     def configure_topk(cfg):
