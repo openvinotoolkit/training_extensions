@@ -118,6 +118,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         pipeline: Sequence[dict],
         classes: Optional[List[str]] = None,
         test_mode: bool = False,
+        **kwargs,
     ):
         self.otx_dataset = otx_dataset
         self.test_mode = test_mode

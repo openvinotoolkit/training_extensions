@@ -28,7 +28,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.common.configs import TrainType
-from otx.algorithms.common.tasks import BaseTask
+from otx.algorithms.common.tasks.base_task import OTXTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
@@ -81,7 +81,7 @@ RECIPE_TRAIN_TYPE = {
 
 
 # pylint: disable=too-many-locals, too-many-instance-attributes, attribute-defined-outside-init
-class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+class SegmentationInferenceTask(OTXTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Segmentation."""
 
     @check_input_parameters_type()

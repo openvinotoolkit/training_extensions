@@ -15,18 +15,12 @@
 # and limitations under the License.
 
 import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
-import otx.algorithms.segmentation.adapters.mmseg.tasks as MPASegmentation
 
 from .inference import SegmentationInferenceTask
-from .nncf import SegmentationNNCFTask
-from .openvino import OpenVINOSegmentationTask
 from .train import SegmentationTrainTask
 
 __all__ = [
-    "MPASegmentation",
     "SegmentationInferenceTask",
     "SegmentationTrainTask",
-    "SegmentationNNCFTask",
-    "OpenVINOSegmentationTask",
     "OTXBackbones",
 ]
