@@ -390,6 +390,7 @@ class ImageTilingDataset:
 
         Args:
             results (list[list | tuple]): Testing results of the dataset.
+            **kwargs: Addition keyword arguments.
 
         Returns:
             dict[str, float]: evaluation metric.

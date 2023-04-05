@@ -95,8 +95,9 @@ class TestOTXSegTaskInference:
             mock_run_task.assert_called_once()
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
+    @pytest.mark.parametrize("dump_features", [True, False])
     @e2e_pytest_unit
-    def test_export_with_model_files(self, mocker, precision: ModelPrecision):
+    def test_export_with_model_files(self, mocker, precision: ModelPrecision, dump_features: bool):
         with open(f"{self.output_path}/model.xml", "wb") as f:
             f.write(b"foo")
         with open(f"{self.output_path}/model.bin", "wb") as f:
@@ -104,11 +105,12 @@ class TestOTXSegTaskInference:
 
         fake_output = {"outputs": {"bin": f"{self.output_path}/model.xml", "xml": f"{self.output_path}/model.bin"}}
         mock_run_task = mocker.patch.object(BaseTask, "_run_task", return_value=fake_output)
-        self.seg_train_task.export(ExportType.OPENVINO, self.model, precision)
+        self.seg_train_task.export(ExportType.OPENVINO, self.model, precision, dump_features)
 
         mock_run_task.assert_called_once()
         assert self.model.get_data("openvino.bin")
         assert self.model.get_data("openvino.xml")
+        assert self.model.has_xai == dump_features
 
     @e2e_pytest_unit
     def test_unload(self, mocker):

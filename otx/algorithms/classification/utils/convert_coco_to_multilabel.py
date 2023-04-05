@@ -3,9 +3,6 @@
 this script contains a lot of hard-coding to create .json file that Datumaro can consume.
 """
 
-import argparse
-import json
-
 # Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +16,14 @@ import json
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+
+import argparse
+import json
 from typing import Any, Dict, List
 
 from otx.algorithms.detection.utils.data import CocoDataset
 
-multilabel_ann_format = {
+multilabel_ann_format: Dict[str, Any] = {
     "info": {},
     "categories": {
         "label": {
@@ -33,7 +33,7 @@ multilabel_ann_format = {
         }
     },
     "items": [],
-}  # type: Dict[str, Any]
+}
 
 
 def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: str, test_mode: bool = False):
@@ -58,7 +58,7 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
     # Fill the categories part
     # For the multi-label classification,
     # Datumaro will make label_groups and labels
-    overall_classes = coco_dataset.get_classes()  # type: List
+    overall_classes: List = coco_dataset.get_classes()
     for class_name in overall_classes:
         multilabel_ann_format["categories"]["label"]["label_groups"].append(
             {"name": str(class_name), "group_type": "exclusive", "labels": [str(class_name)]}

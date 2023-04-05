@@ -264,6 +264,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
         output_model.precision = self._precision
+        output_model.has_xai = dump_features
         output_model.set_data(
             "label_schema.json",
             label_schema_to_bytes(self._task_environment.label_schema),

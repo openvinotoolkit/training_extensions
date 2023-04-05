@@ -52,6 +52,8 @@ class SAMImageClassifier(SAMClassifierMixin, ImageClassifier):
                 shoulf be of shape (N, C) encoding the ground-truth label
                 of input images for multi-labels task.
 
+            **kwargs (Any): Addition keyword arguments.
+
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """

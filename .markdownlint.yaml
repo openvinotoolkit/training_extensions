@@ -1,0 +1,40 @@
+# Default state for all rules
+default: true
+
+# IMHO it's easier to read lists like:
+# * outmost indent
+#   - one indent
+#   - second indent
+# * Another major bullet
+# Unordered list style
+MD004: false
+
+# I prefer two blank lines before each heading.
+MD012: false # Multiple consecutive blank lines
+
+# line-length - Line length
+MD013: false
+
+# This is not useful for some files such as `CHANGELOG.md`
+MD024: false # Multiple headers with the same content
+
+# blanks-around-fences - Fenced code blocks should be surrounded by blank lines
+MD031: false
+
+# I find it necessary to use '<br/>' to force line breaks.
+MD033: false # Inline HTML
+
+# If a page is printed, it helps if the URL is viewable.
+MD034: false # Bare URL used
+
+# fenced-code-language: Fenced code blocks should have a language
+MD040: false
+
+# Some md files have comments or links at the top of the files.
+MD041: false # First line in file should be a top level header
+
+#===============================================================================
+# Exclude rules for pragmatic reasons.
+
+# Either disable this one or MD024 - Multiple headers with the same content.
+MD036: false # Emphasis used instead of a header

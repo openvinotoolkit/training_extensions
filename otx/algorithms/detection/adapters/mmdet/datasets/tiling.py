@@ -24,7 +24,7 @@ def timeit(func) -> Callable:
     """Decorator to measure time of function execution.
 
     Args:
-        func:
+        func: Function to be the target for measuring.
 
     Returns:
         Callable function with time measurement.

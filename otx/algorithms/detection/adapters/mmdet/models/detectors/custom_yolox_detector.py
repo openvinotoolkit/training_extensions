@@ -86,7 +86,7 @@ class CustomYOLOX(SAMDetectorMixin, L2SPDetectorMixin, YOLOX):
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param
 
-    def onnx_export(self, img, img_metas, with_nms=True):
+    def onnx_export(self, img, img_metas):
         """Test function without test time augmentation.
 
         Args:

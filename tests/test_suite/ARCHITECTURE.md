@@ -1347,9 +1347,9 @@ The test case class should be implemented as follows:
                                cur_test_expected_metrics_callback_fx)
   ```
 
-## VIII. Connecting algo backend with test suite. Pytest magic and fixtures.
+## VIII. Connecting algo backend with test suite. Pytest magic and fixtures
 
-## VIII.1. Connecting algo backend with test suite. Pytest magic.
+## VIII.1. Connecting algo backend with test suite. Pytest magic
 
 As stated above in the previous section the direct connection between the training test in an algo
 backend and the test suite is made, particularly, by
@@ -1411,7 +1411,7 @@ as follows:
   ```
   Note that the scope "class" is used, it is required.
 
-## VIII.2. Connecting algo backend with test suite. Pytest fixtures and others.
+## VIII.2. Connecting algo backend with test suite. Pytest fixtures and others
 
 To connect an algo backend with the test suite the following fixtures should be implemented
 in the file `tests/conftest.py` of the algo backend.

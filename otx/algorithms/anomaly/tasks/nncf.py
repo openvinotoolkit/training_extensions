@@ -67,6 +67,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
 
         Args:
             task_environment (TaskEnvironment): OTX Task environment.
+            **kwargs: Addition keyword arguments.
         """
         self.compression_ctrl = None
         self.nncf_preset = "nncf_quantization"
