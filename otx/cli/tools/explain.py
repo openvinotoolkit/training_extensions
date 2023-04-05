@@ -188,9 +188,8 @@ def main():
         metadata_list = explained_data.get_metadata()
         if len(metadata_list) > 0:
             explained_image_counter += 1
-        else:
-            if explain_predicted_classes:  # Explain only predictions
-                logger.info(f"No saliency maps generated for {filename} - due to lack of confident predictions.")
+        elif explain_predicted_classes:  # Explain only predictions
+            logger.info(f"No saliency maps generated for {filename} - due to lack of confident predictions.")
         for metadata in metadata_list:
             saliency_data = metadata.data
             fname = f"{Path(Path(filename).name).stem}_{saliency_data.name}".replace(" ", "_")
