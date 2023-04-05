@@ -39,15 +39,15 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
     ReciproCAMHook,
 )
-from otx.algorithms.common.adapters.mmcv.utils import build_data_parallel
+from otx.algorithms.common.adapters.mmcv.utils import (
+    build_data_parallel,
+    get_configs_by_pairs,
+    patch_data_pipeline,
+)
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
 )
 from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
-from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_pairs,
-    patch_data_pipeline,
-)
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
