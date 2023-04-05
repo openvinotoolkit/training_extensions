@@ -125,7 +125,7 @@ class ClassificationConfigurer:
 
         cfg.model_task = cfg.model.pop("task", "classification")
         if cfg.model_task != "classification":
-            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by detection recipe")
+            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by classification recipe")
 
         super_type = cfg.model.pop("super_type", None)
         if super_type:

@@ -76,7 +76,7 @@ RECIPE_TRAIN_TYPE = {
 
 
 class OTXClassificationTask(OTXTask, ABC):
-    """Task class for OTX detection."""
+    """Task class for OTX classification."""
 
     # pylint: disable=too-many-instance-attributes, too-many-locals, too-many-boolean-expressions
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
@@ -167,7 +167,7 @@ class OTXClassificationTask(OTXTask, ABC):
     def train(
         self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
     ):
-        """Train function for OTX detection task.
+        """Train function for OTX classification task.
 
         Actual training is processed by _train_model fucntion
         """

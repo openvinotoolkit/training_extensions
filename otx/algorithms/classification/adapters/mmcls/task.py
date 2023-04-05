@@ -1,4 +1,4 @@
-"""Task of OTX Detection using mmdetection training backend."""
+"""Task of OTX Classification using mmclassification training backend."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -77,7 +77,7 @@ logger = get_logger()
 
 
 class MMClassificationTask(OTXClassificationTask):
-    """Task class for OTX detection using mmdetection training backend."""
+    """Task class for OTX classification using mmclassification training backend."""
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
@@ -147,7 +147,7 @@ class MMClassificationTask(OTXClassificationTask):
         subset="train",
         ir_options=None,
     ):
-        """Patch mmcv configs for OTX detection settings."""
+        """Patch mmcv configs for OTX classification settings."""
 
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
