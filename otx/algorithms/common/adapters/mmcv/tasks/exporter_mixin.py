@@ -72,6 +72,7 @@ class ExporterMixin:
             "outputs": {
                 "bin": os.path.join(cfg.work_dir, f"{model_name}.bin"),
                 "xml": os.path.join(cfg.work_dir, f"{model_name}.xml"),
+                "onnx": os.path.join(cfg.work_dir, f"{model_name}.onnx"),
                 "partitioned": [
                     {
                         "bin": os.path.join(cfg.work_dir, name.replace(".xml", ".bin")),

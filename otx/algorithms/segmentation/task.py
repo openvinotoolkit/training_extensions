@@ -225,13 +225,16 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         bin_file = outputs.get("bin")
         xml_file = outputs.get("xml")
+        onnx_file = outputs.get("onnx")
 
-        if xml_file is None or bin_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        if xml_file is None or bin_file is None or onnx_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
         with open(bin_file, "rb") as f:
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
+        with open(onnx_file, "rb") as f:
+            output_model.set_data("model.onnx", f.read())
         output_model.precision = self._precision
         output_model.optimization_methods = self._optimization_methods
         output_model.has_xai = dump_features
