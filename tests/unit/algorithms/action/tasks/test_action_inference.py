@@ -272,8 +272,9 @@ class TestActionInferenceTask:
         assert isinstance(self.cls_task.deploy_cfg, Config)
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
+    @pytest.mark.parametrize("dump_features", [False])
     @e2e_pytest_unit
-    def test_export(self, mocker, precision: ModelPrecision) -> None:
+    def test_export(self, mocker, precision: ModelPrecision, dump_features: bool) -> None:
         """Test export function.
 
         <Steps>
@@ -290,7 +291,7 @@ class TestActionInferenceTask:
         )
         mocker.patch("otx.algorithms.action.tasks.inference.ActionInferenceTask._init_task", return_value=True)
         mocker.patch("otx.algorithms.action.tasks.inference.Exporter", side_effect=MockExporter)
-        self.cls_task.export(ExportType.OPENVINO, _model, precision)
+        self.cls_task.export(ExportType.OPENVINO, _model, precision, dump_features)
 
         assert _model.model_format == ModelFormat.OPENVINO
         assert _model.optimization_type == ModelOptimizationType.MO
@@ -301,6 +302,7 @@ class TestActionInferenceTask:
         assert _model.precision == self.cls_task._precision
         assert _model.optimization_methods == self.cls_task._optimization_methods
         assert _model.get_data("label_schema.json") is not None
+        assert _model.has_xai == dump_features
 
     @e2e_pytest_unit
     def test_init_task(self, mocker) -> None:
