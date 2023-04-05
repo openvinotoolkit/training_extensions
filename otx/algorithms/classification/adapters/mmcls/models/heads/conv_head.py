@@ -39,7 +39,7 @@ class ConvClsHead(ClsHead):
             x = x[-1]
         return x
 
-    def simple_test(self, cls_score, softmax=True, post_process=True):
+    def simple_test(self, x, softmax=True, post_process=True):
         """Inference without augmentation.
 
         Args:
@@ -59,7 +59,7 @@ class ConvClsHead(ClsHead):
                 - If post processing, the output is a multi-dimentional list of
                   float and the dimensions are ``(num_samples, num_classes)``.
         """
-        x = self.pre_logits(cls_score)
+        x = self.pre_logits(x)
         cls_score = self.conv(x).squeeze()
 
         if softmax:

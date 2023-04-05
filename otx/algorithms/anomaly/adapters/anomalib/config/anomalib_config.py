@@ -31,6 +31,7 @@ def get_anomalib_config(task_name: str, otx_config: ConfigurableParameters) -> U
     OTX config.
 
     Args:
+        task_name: Task name to load configuration from the Anomalib
         otx_config: ConfigurableParameters: OTX config object parsed from
             configuration.yaml file
 

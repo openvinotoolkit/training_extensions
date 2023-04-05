@@ -55,6 +55,7 @@ class ClassIncrEncoderDecoder(PixelWeightsMixin, OTXEncoderDecoder):
             gt_semantic_seg (Tensor): Semantic segmentation masks
                 used if the architecture supports semantic segmentation task.
             aux_img (Tensor): Auxiliary images.
+            **kwargs (Any): Addition keyword arguments.
 
         Returns:
             dict[str, Tensor]: a dictionary of loss components

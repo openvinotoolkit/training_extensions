@@ -25,8 +25,10 @@ logger = get_logger()
 
 @CLASSIFIERS.register_module()
 class BYOL(nn.Module):
-    """Implementation of 'Bootstrap Your Own Latent: A New Approach to \
-    Self-Supervised Learning (https://arxiv.org/abs/2006.07733)'.
+    """BYOL Implementation.
+
+    Implementation of 'Bootstrap Your Own Latent: A New Approach to Self-Supervised
+    Learning (https://arxiv.org/abs/2006.07733)'.
 
     Args:
         backbone (dict): Config dict for module of backbone ConvNet.
@@ -36,6 +38,7 @@ class BYOL(nn.Module):
         pretrained (str, optional): Path to pre-trained weights. Default: None.
         base_momentum (float): The base momentum coefficient for the target network.
             Default: 0.996.
+        **kwargs: Addition keyword arguments.
     """
 
     def __init__(
@@ -122,6 +125,7 @@ class BYOL(nn.Module):
                 Typically these should be mean centered and std scaled.
             img2 (Tensor): Input of two concatenated images of shape (N, C, H, W).
                 Typically these should be mean centered and std scaled.
+            **kwargs: Addition keyword arguments.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.

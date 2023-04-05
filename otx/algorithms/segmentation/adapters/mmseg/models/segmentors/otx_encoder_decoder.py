@@ -20,11 +20,10 @@ class OTXEncoderDecoder(EncoderDecoder):
         seg_logit = self.inference(img, img_meta, rescale)
         if output_logits:
             seg_pred = seg_logit
+        elif self.out_channels == 1:
+            seg_pred = (seg_logit > self.decode_head.threshold).to(seg_logit).squeeze(1)
         else:
-            if self.out_channels == 1:
-                seg_pred = (seg_logit > self.decode_head.threshold).to(seg_logit).squeeze(1)
-            else:
-                seg_pred = seg_logit.argmax(dim=1)
+            seg_pred = seg_logit.argmax(dim=1)
         if torch.onnx.is_in_onnx_export():
             # our inference backend only support 4D output
             if seg_pred.dim() != 4:
