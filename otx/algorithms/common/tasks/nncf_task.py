@@ -85,7 +85,6 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
         self._optimization_type = ModelOptimizationType.NNCF
         self._time_monitor = None
 
-        # !!!
         # Variables will be set in training backend task
         self._data_cfg = None
         self._model_ckpt = None

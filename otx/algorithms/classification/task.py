@@ -1,4 +1,4 @@
-"""Task of OTX Detection."""
+"""Task of OTX Classification."""
 
 # Copyright (C) 2023 Intel Corporation
 #
