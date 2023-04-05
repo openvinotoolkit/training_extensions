@@ -568,10 +568,9 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
         """Patch cfg.data."""
         super().configure_data(cfg, training, data_cfg)
         # Set unlabeled data hook
-        # Set unlabeled data hook
         if training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
-                self.configure_unlabeled_dataloader(cfg, self.distributed)
+                self.configure_unlabeled_dataloader(cfg)
 
     def configure_task(self, cfg, training, **kwargs):
         """Adjust settings for task adaptation."""
