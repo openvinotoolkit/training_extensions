@@ -121,6 +121,7 @@ class ModelEntity:
         performance_improvement: Dict[str, float] = None,
         model_size_reduction: float = 0.0,
         _id: Optional[ID] = None,
+        has_xai: bool = False,
     ):
         _id = ID() if _id is None else _id
         performance = NullPerformance() if performance is None else performance
@@ -160,6 +161,7 @@ class ModelEntity:
         self.__optimization_objectives = optimization_objectives
         self.__performance_improvement = performance_improvement
         self.__model_size_reduction = model_size_reduction
+        self.__has_xai = has_xai
 
     @property
     def id_(self) -> ID:
@@ -384,6 +386,15 @@ class ModelEntity:
     def exportable_code(self, data: Union[bytes, IDataSource]):
         """Set the exportable code using the exportable code adapter."""
         self.__exportable_code_adapter = ExportableCodeAdapter(data_source=data)
+
+    @property
+    def has_xai(self) -> float:
+        """Get or set the xAI flag."""
+        return self.__has_xai
+
+    @has_xai.setter
+    def has_xai(self, value: bool):
+        self.__has_xai = value
 
     @property
     def exportable_code_adapter(self) -> Optional[ExportableCodeAdapter]:
