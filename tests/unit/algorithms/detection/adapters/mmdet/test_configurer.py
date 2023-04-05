@@ -38,7 +38,7 @@ class TestDetectionConfigurer:
         data_cfg = copy.deepcopy(self.data_cfg)
         returned_value = self.configurer.configure(model_cfg, "", data_cfg, True)
         mock_cfg_base.assert_called_once_with(model_cfg, data_cfg, None, None)
-        mock_cfg_device.assert_called_once_with(model_cfg)
+        mock_cfg_device.assert_called_once_with(model_cfg, True)
         mock_cfg_model.assert_called_once_with(model_cfg, None)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_regularization.assert_called_once_with(model_cfg, True)
@@ -68,7 +68,7 @@ class TestDetectionConfigurer:
         )
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config)
+        self.configurer.configure_device(config, True)
         assert config.distributed is True
 
         mocker.patch(
@@ -80,7 +80,7 @@ class TestDetectionConfigurer:
             return_value=False,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config)
+        self.configurer.configure_device(config, True)
         assert config.distributed is False
         assert config.device == "cpu"
 
@@ -93,7 +93,7 @@ class TestDetectionConfigurer:
             return_value=True,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config)
+        self.configurer.configure_device(config, True)
         assert config.distributed is False
         assert config.device == "cuda"
 
