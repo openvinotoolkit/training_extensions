@@ -22,10 +22,8 @@ import otx.algorithms.classification.adapters.mmcls.nncf.registers  # noqa: F401
 from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
     build_nncf_classifier,
 )
-from otx.algorithms.classification.adapters.mmcls.utils import (
-    patch_evaluation,
-)
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
+from otx.algorithms.classification.adapters.mmcls.utils import patch_evaluation
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
