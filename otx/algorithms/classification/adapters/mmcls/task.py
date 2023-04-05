@@ -110,17 +110,15 @@ class MMClassificationTask(OTXClassificationTask):
 
         if not export:
             self._recipe_cfg.merge_from_dict(self._init_hparam())
-            # patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
 
-        # # TODO[HARIM]: self.override_configs is working?
-        # if "custom_hooks" in self.override_configs:
-        #     override_custom_hooks = self.override_configs.pop("custom_hooks")
-        #     for override_custom_hook in override_custom_hooks:
-        #         update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
-        # if len(self.override_configs) > 0:
-        #     logger.info(f"before override configs merging = {self._recipe_cfg}")
-        #     self._recipe_cfg.merge_from_dict(self.override_configs)
-        #     logger.info(f"after override configs merging = {self._recipe_cfg}")
+        if "custom_hooks" in self.override_configs:
+            override_custom_hooks = self.override_configs.pop("custom_hooks")
+            for override_custom_hook in override_custom_hooks:
+                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
+        if len(self.override_configs) > 0:
+            logger.info(f"before override configs merging = {self._recipe_cfg}")
+            self._recipe_cfg.merge_from_dict(self.override_configs)
+            logger.info(f"after override configs merging = {self._recipe_cfg}")
 
         # add Cancel training hook
         update_or_add_custom_hook(
@@ -355,17 +353,6 @@ class MMClassificationTask(OTXClassificationTask):
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
-        # TODO[HARIM]: This should be moved to configurer
-        # repr_ds = datasets[0]
-        # if cfg.checkpoint_config is not None:
-        #     cfg.checkpoint_config.meta = dict(mmcls_version=__version__)
-        #     if hasattr(repr_ds, "tasks"):
-        #         cfg.checkpoint_config.meta["tasks"] = repr_ds.tasks
-        #     if hasattr(repr_ds, "CLASSES"):
-        #         cfg.checkpoint_config.meta["CLASSES"] = repr_ds.CLASSES
-        # self.configure_samples_per_gpu(cfg, "train", self.distributed)
-        # self.configure_fp16_optimizer(cfg, self.distributed)
-
         # Metadata
         meta = dict()
         meta["env_info"] = env_info
@@ -496,7 +483,6 @@ class MMClassificationTask(OTXClassificationTask):
         feature_model = model
         model = build_data_parallel(model, cfg, distributed=False)
 
-        # TODO: This is commonly available code.
         # InferenceProgressCallback (Time Monitor enable into Infer task)
         time_monitor = None
         if cfg.get("custom_hooks", None):
@@ -542,7 +528,6 @@ class MMClassificationTask(OTXClassificationTask):
 
         cfg = self.configure(False, "test", None)
 
-        # TODO: This is commonly available code.
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
         export_options["deploy_cfg"] = self._init_deploy_cfg()
@@ -570,7 +555,6 @@ class MMClassificationTask(OTXClassificationTask):
         )
         return results
 
-    # TODO: This is commonly available code.
     def _init_deploy_cfg(self) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
@@ -689,3 +673,10 @@ class MMClassificationTask(OTXClassificationTask):
             )
             config.update(unlabeled_config)
         return config
+
+    # This should be removed
+    def update_override_configurations(self, config):
+        """Update override_configs."""
+        logger.info(f"update override config with: {config}")
+        config = ConfigDict(**config)
+        self.override_configs.update(config)

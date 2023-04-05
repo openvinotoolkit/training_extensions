@@ -369,7 +369,7 @@ class OTXClassificationTask(OTXTask, ABC):
             else:
                 for cls_idx, pred_item in enumerate(prediction_item):
                     if pred_item > pos_thr:
-                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
+                        cls_label = ScoredLabel(self._labels[cls_idx], probability=float(pred_item))
                         item_labels.append(cls_label)
 
         elif self._hierarchical:

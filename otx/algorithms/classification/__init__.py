@@ -14,15 +14,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import otx.algorithms.classification.adapters.mmcls as MPAData
-import otx.algorithms.classification.adapters.mmcls.tasks as MPAClassification
+# The import required to register the backbone used by the OTX Template with the Registry.
 import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
 
 from .task import OTXClassificationTask
 
 __all__ = [
-    "MPAClassification",
     "OTXBackbones",
-    "MPAData",
     "OTXClassificationTask",
 ]
