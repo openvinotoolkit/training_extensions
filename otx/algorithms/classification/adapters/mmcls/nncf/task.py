@@ -22,6 +22,9 @@ import otx.algorithms.classification.adapters.mmcls.nncf.registers  # noqa: F401
 from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
     build_nncf_classifier,
 )
+from otx.algorithms.classification.adapters.mmcls.utils import (
+    patch_evaluation,
+)
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.logger import get_logger
@@ -51,6 +54,13 @@ class ClassificationNNCFTask(NNCFBaseTask, MMClassificationTask):  # pylint: dis
 
     def _init_task(self, export: bool = False):  # noqa
         super(NNCFBaseTask, self)._init_task(export)
+        # Patch Evaluation Metric for nncf_config
+        options_for_patch_evaluation = {"task": "normal"}
+        if self._multilabel:
+            options_for_patch_evaluation["task"] = "multilabel"
+        elif self._hierarchical:
+            options_for_patch_evaluation["task"] = "hierarchical"
+        patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)
         self._prepare_optimize(export)
 
     def _prepare_optimize(self, export=False):

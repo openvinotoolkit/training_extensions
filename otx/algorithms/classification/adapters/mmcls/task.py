@@ -356,7 +356,7 @@ class MMClassificationTask(OTXClassificationTask):
         # Metadata
         meta = dict()
         meta["env_info"] = env_info
-        meta["seed"] = cfg.seed
+        meta["seed"] = cfg.get("seed", 5)
         meta["exp_name"] = cfg.work_dir
 
         # Model
