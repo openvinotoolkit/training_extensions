@@ -36,7 +36,7 @@ class SemiClsHead:
         """Loss function in which unlabeled data is considered.
 
         Args:
-            logit (set): (labeled data logit, unlabeled data logit)
+            logits (set): (labeled data logit, unlabeled data logit)
             gt_label (Tensor): target features for labeled data
             pseudo_label (Tensor): target feature for unlabeled data
             mask (Tensor): Mask that shows pseudo-label that passes threshold

@@ -10,9 +10,15 @@
 [License](#license)
 
 [![PyPI](https://img.shields.io/pypi/v/otx)](https://pypi.org/project/otx)
+
+<!-- markdownlint-disable MD042 -->
+
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![pytorch](https://img.shields.io/badge/pytorch-1.13.1%2B-orange)]()
 [![openvino](https://img.shields.io/badge/openvino-2022.3.0-purple)]()
+
+<!-- markdownlint-enable  MD042 -->
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f9ba89f9ea2a47eeb9d52c2acc311e6c)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
 [![Codecov](https://codecov.io/gh/openvinotoolkit/training_extensions/branch/develop/graph/badge.svg?token=9HVFNMPFGD)](https://codecov.io/gh/openvinotoolkit/training_extensions)
 [![Pre-Merge Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml)

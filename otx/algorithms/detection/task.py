@@ -74,7 +74,7 @@ class OTXDetectionTask(OTXTask, ABC):
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         super().__init__(task_environment, output_path)
         self._task_config = DetectionConfig
-        self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
+        self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(self._task_config)
         self._train_type = self._hyperparams.algo_backend.train_type
         self._model_dir = os.path.join(
             os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),

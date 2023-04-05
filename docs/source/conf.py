@@ -11,6 +11,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 
+# ruff: noqa
+
 # -- Project information ----------------------------------------------------- #
 
 project = 'OpenVINO™ Training Extensions'

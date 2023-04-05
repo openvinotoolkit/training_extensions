@@ -62,6 +62,7 @@ class CustomSingleStageDetector(SAMDetectorMixin, L2SPDetectorMixin, SingleStage
             gt_labels (list[Tensor]): Class indices corresponding to each box
             gt_bboxes_ignore (None | list[Tensor]): Specify which bounding
                 boxes can be ignored when computing the loss.
+            **kwargs (Any): Addition keyword arguments.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.

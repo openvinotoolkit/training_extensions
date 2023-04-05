@@ -219,6 +219,7 @@ def eval_segm(  # pylint: disable=too-many-locals
         logger (logging.Logger | str | None): The way to print the mAP
             summary. See `mmcv.utils.print_log()` for details. Default: None.
         nproc (int): Processes used for computing tpfpmiou_func. Default: 4.
+        metric (str): Metric to be returned which is one of ["mAP", "mIoU"]. Default: "mAP".
 
     Returns:
         tuple: (mIoU, [dict, dict, ...])

@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# ruff: noqa: PLW0603
+
 import functools
 import logging
 import os

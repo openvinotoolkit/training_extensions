@@ -130,19 +130,23 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         """Compute loss of a single scale level.
 
         Args:
+            anchors (Tensor): Box reference for each scale level with shape
+                (N, num_total_anchors, 4).
             cls_score (Tensor): Box scores for each scale level
                 Has shape (N, num_anchors * num_classes, H, W).
             bbox_pred (Tensor): Box energies / deltas for each scale
                 level with shape (N, num_anchors * 4, H, W).
-            anchors (Tensor): Box reference for each scale level with shape
-                (N, num_total_anchors, 4).
+            centerness (list[Tensor]): Centerness for each scale
+                level with shape (N, num_anchors * num_classes, H, W)
             labels (Tensor): Labels of each anchors with shape
                 (N, num_total_anchors).
             label_weights (Tensor): Label weights of each anchor with shape
                 (N, num_total_anchors)
             bbox_targets (Tensor): BBox regression targets of each anchor wight
                 shape (N, num_total_anchors, 4).
-            num_total_samples (int): Number os positive samples that is
+            valid_label_mask (Tensor): Label mask for consideration of ignored
+                label with shape (N, num_total_anchors, 1).
+            num_total_samples (int): Number of positive samples that is
                 reduced over all GPUs.
 
         Returns:

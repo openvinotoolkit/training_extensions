@@ -218,6 +218,7 @@ class OTXMultilabelClsDataset(OTXClsDataset):
                 'OP', 'OR' and 'OF1'.
             metric_options (dict, optional): Options for calculating metrics.
                 Allowed keys are 'k' and 'thr'. Defaults to None
+            indices (list, optional):  Indices to filter the gt label. Defaults to None.
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
 
@@ -355,6 +356,8 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
                 'OP', 'OR' and 'OF1'.
             metric_options (dict, optional): Options for calculating metrics.
                 Allowed keys are 'k' and 'thr'. Defaults to None
+            indices (list, optional):  Indices to filter the gt label.
+                Defaults to None.
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
 

@@ -74,6 +74,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
                 represents [tl_x, tl_y, br_x, br_y].
             gt_labels (list[Tensor]): Gt_labels of all images in a batch,
                 each tensor has shape (num_gt,).
+            img_metas (list[dict]): Meta information of each image.
             rcnn_train_cfg (obj:ConfigDict): `train_cfg` of RCNN.
             concat (bool): Whether to concatenate the results of all
                 the images in a single batch.

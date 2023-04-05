@@ -209,9 +209,8 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
                 return False
         elif (current + 1) < self.start:
             return False
-        else:
-            if (current + 1 - self.start) % self.interval:
-                return False
+        elif (current + 1 - self.start) % self.interval:
+            return False
         return True
 
 
@@ -271,7 +270,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.bad_count = 0
         self.last_iter = 0
         self.current_lr = -1.0
-        self.base_lr = []  # type: List
+        self.base_lr: List[float] = []
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
 
