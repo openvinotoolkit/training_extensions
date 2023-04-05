@@ -340,8 +340,8 @@ class MMDetectionTask(OTXDetectionTask):
         mm_dataset = build_dataset(cfg.data.test)
         dataloader = build_dataloader(
             mm_dataset,
-            samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
-            workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+            samples_per_gpu=cfg.data.test_dataloader.get("samples_per_gpu", 1),
+            workers_per_gpu=cfg.data.test_dataloader.get("workers_per_gpu", 0),
             num_gpus=len(cfg.gpu_ids),
             dist=cfg.distributed,
             seed=cfg.get("seed", None),
