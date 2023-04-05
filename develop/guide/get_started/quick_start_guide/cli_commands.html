@@ -786,7 +786,7 @@ optional arguments:
 </section>
 <section id="explanation">
 <h2>Explanation<a class="headerlink" href="#explanation" title="Permalink to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explainable AI (XAI) algorithm of a model on the specific dataset. It helps explain the model’s decision-making process in a way that is easily understood by humans.</p>
+<p><code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> runs the explainable AI (XAI) algorithm on a specific model-dataset pair. It helps explain the model’s decision-making process in a way that is easily understood by humans.</p>
 <p>With the <code class="docutils literal notranslate"><span class="pre">--help</span></code> command, you can list additional information, such as its parameters common to all model templates:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx explain --help
 usage: otx explain [-h] --explain-data-roots EXPLAIN_DATA_ROOTS [--save-explanation-to SAVE_EXPLANATION] --load-weights LOAD_WEIGHTS [--explain-algorithm EXPLAIN_ALGORITHM] [--overlay-weight OVERLAY_WEIGHT] [template] {params} ...
@@ -807,8 +807,12 @@ optional arguments:
                         Load model weights from previously saved checkpoint.
   --explain-algorithm EXPLAIN_ALGORITHM
                         Explain algorithm name, currently support [&#39;activationmap&#39;, &#39;eigencam&#39;, &#39;classwisesaliencymap&#39;]. For Openvino task, default method will be selected.
+  --process-saliency-maps PROCESS_SALIENCY_MAPS
+                        Processing of saliency map includes (1) resizing to input image resolution and (2) applying a colormap. Depending on the number of targets to explain, this might take significant time.
+  --explain-all-classes EXPLAIN_ALL_CLASSES
+                        Provides explanations for all classes. Otherwise, explains only predicted classes. This feature is supported by algorithms that can generate explanations per each class.
   --overlay-weight OVERLAY_WEIGHT
-                        Weight of the saliency map when overlaying the saliency map.
+                        Weight of the saliency map when overlaying the input image with saliency map.
 </pre></div>
 </div>
 <p>The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to <code class="docutils literal notranslate"><span class="pre">save-explanation-to</span></code> path:</p>
