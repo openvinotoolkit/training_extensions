@@ -22,6 +22,15 @@ All notable changes to this project will be documented in this file.
 - OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
   (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
 
+## \[v1.1.2\]
+
+### Bug fixes
+
+- Fix exception -> warning for anomaly dump_feature option
+- Remove `dataset.with_empty_annotations()` to keep original input structure (<https://github.com/openvinotoolkit/training_extensions/pull/1964>)
+- Fix OV batch inference (saliency map generation) (<https://github.com/openvinotoolkit/training_extensions/pull/1965>)
+- Replace EfficentNetB0 model download logic by pytorchcv to resolve zip issue (<https://github.com/openvinotoolkit/training_extensions/pull/1967>)
+
 ## \[v1.1.1\]
 
 ### Bug fixes

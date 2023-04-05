@@ -465,7 +465,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=np.copy(saliency_map),
+                saliency_map=saliency_map,
                 model=self.model,
                 labels=labels,
                 predicted_scored_labels=predicted_scored_labels,
