@@ -4,6 +4,7 @@
 #
 
 
+import copy
 import json
 import os
 from enum import Enum
@@ -216,3 +217,33 @@ def flatten_detection_config_groups(config: dict):
             config[key] = value.__dict__
         elif isinstance(value, dict):
             flatten_detection_config_groups(value)
+
+
+def merge_a_into_b(dict_a, dict_b):
+    """Inspired by mmcv.Config.merge_a_into_b by merging dict ``a`` into dict ``b`` (non-inplace).
+
+    Values in ``a`` will overwrite ``b``. ``b`` is copied first to avoid
+    in-place modifications.
+
+    Args:
+        dict_a (dict): The source dict to be merged into ``b``.
+        dict_b (dict): The origin dict to be fetch keys from ``a``.
+
+    Returns:
+        dict: The modified dict of ``b`` using ``a``.
+
+    Examples:
+        # Normally merge a into b.
+        >>> merge_a_into_b({'a': {'d': 5, 'e': 6}, 'b': 4}, {'a': {'c': 1, 'd': 4}, 'b': 3})
+        {'a': {'c': 1, 'd': 5, 'e': 6}, 'b': 4}
+    """
+    dict_b = copy.deepcopy(dict_b)
+    for key, value in dict_a.items():
+        if isinstance(value, dict):
+            if key in dict_b:
+                dict_b[key] = merge_a_into_b(value, dict_b[key])
+            else:
+                dict_b[key] = value
+        else:
+            dict_b[key] = value
+    return dict_b

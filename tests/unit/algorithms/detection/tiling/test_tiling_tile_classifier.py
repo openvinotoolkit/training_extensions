@@ -4,6 +4,7 @@
 
 import copy
 import os
+from functools import partial
 
 import numpy as np
 import pytest
@@ -13,6 +14,7 @@ from openvino.model_zoo.model_api.models import Model
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
+from otx.algorithms.detection.adapters.openvino.model_wrappers import OTXMaskRCNNModel
 from otx.algorithms.detection.adapters.openvino.task import (
     OpenVINODetectionTask,
     OpenVINOMaskInferencer,
@@ -62,16 +64,17 @@ class TestTilingTileClassifier:
         self.labels = labels
 
     @e2e_pytest_unit
-    def test_openvino(self, mocker):
+    def test_openvino_sync(self, mocker):
         """Test OpenVINO tile classifier
 
         Args:
             mocker (_type_): pytest mocker from fixture
         """
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
-        mocker.patch.object(Model, "create_model", return_value=mocker.MagicMock(spec=Model))
+        mocker.patch.object(Model, "create_model", return_value=mocker.MagicMock(spec=OTXMaskRCNNModel))
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
+        ov_mask_inferencer.model.resize_mask = False
         ov_mask_inferencer.model.preprocess.return_value = ({"foo": "bar"}, {"baz": "qux"})
         ov_mask_inferencer.model.postprocess.return_value = (
             np.array([], dtype=np.float32),
@@ -79,11 +82,12 @@ class TestTilingTileClassifier:
             np.zeros((0, 4), dtype=np.float32),
             [],
         )
-        ov_inferencer = OpenVINOTileClassifierWrapper(ov_mask_inferencer, "", "")
+        ov_inferencer = OpenVINOTileClassifierWrapper(ov_mask_inferencer, mode="sync")
         ov_inferencer.model.__model__ = "OTX_MaskRCNN"
-        mock_predict = mocker.patch.object(ov_inferencer.tile_classifier, "infer_sync", return_value={"tile_prob": 0.5})
+        mock_predict = mocker.patch.object(ov_inferencer.classifier, "infer_sync", return_value={"tile_prob": 0.5})
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
         ov_task = OpenVINODetectionTask(self.task_env)
+        ov_task.inferencer.predict = partial(ov_task.inferencer.predict, mode="sync")
         updated_dataset = ov_task.infer(self.dataset)
 
         mock_predict.assert_called()

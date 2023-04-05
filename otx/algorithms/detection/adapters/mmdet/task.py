@@ -66,6 +66,7 @@ from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import 
 from otx.algorithms.detection.adapters.mmdet.utils import patch_tiling
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    set_hyperparams,
     should_cluster_anchors,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.exporter import DetectionExporter
@@ -199,6 +200,7 @@ class MMDetectionTask(OTXDetectionTask):
         # Patch tiling parameters
         patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
 
+        set_hyperparams(self._recipe_cfg, self._hyperparams)
         logger.info("initialized.")
 
     def build_model(
@@ -741,7 +743,6 @@ class MMDetectionTask(OTXDetectionTask):
             deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
         else:
             deploy_cfg_path = os.path.join(base_dir, "deployment.py")
-        deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)

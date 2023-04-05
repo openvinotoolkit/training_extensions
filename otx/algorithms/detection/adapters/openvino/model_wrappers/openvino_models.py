@@ -33,6 +33,10 @@ class OTXMaskRCNNModel(MaskRCNNModel):
 
     __model__ = "OTX_MaskRCNN"
 
+    def __init__(self, model_adapter, configuration, preload=False):
+        super().__init__(model_adapter, configuration, preload)
+        self.resize_mask = True
+
     def _check_io_number(self, number_of_inputs, number_of_outputs):
         """Checks whether the number of model inputs/outputs is supported.
 
@@ -61,8 +65,6 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         """Post process function for OTX MaskRCNN model."""
 
         # pylint: disable-msg=too-many-locals
-        resize_mask = meta.get("resize_mask", True)
-
         # FIXME: here, batch dim of IR must be 1
         boxes = outputs[self.output_blob_name["boxes"]]
         boxes = boxes.squeeze(0)
@@ -95,7 +97,7 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         resized_masks = []
         for box, cls, raw_mask in zip(boxes, classes, masks):
             raw_cls_mask = raw_mask[cls, ...] if self.is_segmentoly else raw_mask
-            if resize_mask:
+            if self.resize_mask:
                 resized_masks.append(self._segm_postprocess(box, raw_cls_mask, *meta["original_shape"][:-1]))
             else:
                 resized_masks.append(raw_cls_mask)
@@ -105,6 +107,13 @@ class OTXMaskRCNNModel(MaskRCNNModel):
     def segm_postprocess(self, *args, **kwargs):
         """Post-process for segmentation masks."""
         return self._segm_postprocess(*args, **kwargs)
+
+    def disable_mask_resizing(self):
+        """Disable mask resizing.
+
+        There is no need to resize mask in tile as it will be processed at the end.
+        """
+        self.resize_mask = False
 
 
 class OTXSSDModel(SSD):
