@@ -72,7 +72,6 @@ class ClassificationConfigurer:
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_model(cfg, ir_options)
         self.configure_data(cfg, training, data_cfg)
-        self.configure_regularization(cfg, training)
         self.configure_task(cfg, training)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg, subset)
@@ -222,25 +221,6 @@ class ClassificationConfigurer:
         if super_type:
             cfg.data.train.org_type = cfg.data.train.type
             cfg.data.train.type = super_type
-
-    def configure_regularization(self, cfg, training):  # noqa: C901
-        """Patch regularization parameters."""
-        if training:
-            if cfg.model.get("l2sp_weight", 0.0) > 0.0:
-                logger.info("regularization config!!!!")
-
-                # Checkpoint
-                l2sp_ckpt = cfg.model.get("l2sp_ckpt", None)
-                if l2sp_ckpt is None:
-                    if "pretrained" in cfg.model:
-                        l2sp_ckpt = cfg.model.pretrained
-                    if cfg.load_from:
-                        l2sp_ckpt = cfg.load_from
-                cfg.model.l2sp_ckpt = l2sp_ckpt
-
-                # Disable weight decay
-                if "weight_decay" in cfg.optimizer:
-                    cfg.optimizer.weight_decay = 0.0
 
     def configure_task(self, cfg, training):
         """Patch config to support training algorithm."""
