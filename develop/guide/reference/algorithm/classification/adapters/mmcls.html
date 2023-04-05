@@ -471,7 +471,9 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.classification.adapters.mmcls.</span></span><span class="sig-name descname"><span class="pre">BYOL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_momentum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.996</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL" title="Permalink to this definition">#</a></dt>
-<dd><p>Implementation of ‘Bootstrap Your Own Latent: A New Approach to     Self-Supervised Learning (<a class="reference external" href="https://arxiv.org/abs/2006.07733">https://arxiv.org/abs/2006.07733</a>)’.</p>
+<dd><p>BYOL Implementation.</p>
+<p>Implementation of ‘Bootstrap Your Own Latent: A New Approach to Self-Supervised
+Learning (<a class="reference external" href="https://arxiv.org/abs/2006.07733">https://arxiv.org/abs/2006.07733</a>)’.</p>
 <dl>
 <dt>Args:</dt><dd><p>backbone (dict): Config dict for module of backbone ConvNet.
 neck (dict): Config dict for module of deep features to compact feature vectors.</p>
@@ -484,19 +486,21 @@ base_momentum (float): The base momentum coefficient for the target network.</p>
 <blockquote>
 <div><p>Default: 0.996.</p>
 </div></blockquote>
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs: Addition keyword arguments.</p>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.BYOL.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.BYOL.forward" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward computation during training.</p>
-<dl class="simple">
+<dl>
 <dt>Args:</dt><dd><dl class="simple">
 <dt>img1 (Tensor): Input of two concatenated images of shape (N, C, H, W).</dt><dd><p>Typically these should be mean centered and std scaled.</p>
 </dd>
 <dt>img2 (Tensor): Input of two concatenated images of shape (N, C, H, W).</dt><dd><p>Typically these should be mean centered and std scaled.</p>
 </dd>
 </dl>
+<p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs: Addition keyword arguments.</p>
 </dd>
 <dt>Returns:</dt><dd><p>dict[str, Tensor]: A dictionary of loss components.</p>
 </dd>
