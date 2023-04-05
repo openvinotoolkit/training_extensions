@@ -60,8 +60,8 @@ from otx.algorithms.detection.adapters.mmdet.configurer import (
     SemiSLDetectionConfigurer,
 )
 from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
-from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
-    DetSaliencyMapHook,
+from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
+    DetClassProbabilityMapHook,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -74,6 +74,7 @@ from otx.algorithms.detection.utils.data import adaptive_tile_params
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import (
     ModelEntity,
@@ -392,7 +393,7 @@ class MMDetectionTask(OTXDetectionTask):
             if isinstance(raw_model, TwoStageDetector):
                 saliency_hook = ActivationMapHook(feature_model)
             else:
-                saliency_hook = DetSaliencyMapHook(feature_model)
+                saliency_hook = DetClassProbabilityMapHook(feature_model)
 
         if not dump_features:
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
@@ -541,12 +542,12 @@ class MMDetectionTask(OTXDetectionTask):
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of MMDetectionTask."""
 
         explainer_hook_selector = {
-            "classwisesaliencymap": DetSaliencyMapHook,
+            "classwisesaliencymap": DetClassProbabilityMapHook,
             "eigencam": EigenCamHook,
             "activationmap": ActivationMapHook,
         }
