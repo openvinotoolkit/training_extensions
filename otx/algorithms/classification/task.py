@@ -142,7 +142,6 @@ class OTXClassificationTask(OTXTask, ABC):
         """Main infer function of OTX Classification."""
 
         logger.info("infer()")
-        dataset = dataset.with_empty_annotations()
 
         results = self._infer_model(dataset, inference_parameters)
         prediction_results = zip(
@@ -267,8 +266,6 @@ class OTXClassificationTask(OTXTask, ABC):
         explain_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Classification Task."""
-
-        dataset = dataset.with_empty_annotations()
 
         predictions, saliency_maps = self._explain_model(
             dataset,

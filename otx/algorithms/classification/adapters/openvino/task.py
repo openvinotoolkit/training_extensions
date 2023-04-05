@@ -273,7 +273,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             dataset_item.append_labels(item_labels)
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=np.copy(saliency_map),
+                saliency_map=saliency_map,
                 model=self.model,
                 labels=self.task_environment.get_labels(),
                 predicted_scored_labels=item_labels,

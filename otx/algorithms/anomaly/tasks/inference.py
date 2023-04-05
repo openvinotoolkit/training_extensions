@@ -266,7 +266,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Exception: If export_type is not ExportType.OPENVINO
         """
         if dump_features:
-            raise NotImplementedError(
+            logger.warning(
                 "Feature dumping is not implemented for the anomaly task."
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
