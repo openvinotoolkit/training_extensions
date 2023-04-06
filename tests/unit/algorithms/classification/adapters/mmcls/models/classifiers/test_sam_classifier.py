@@ -3,6 +3,7 @@ from copy import deepcopy
 import pytest
 import torch
 
+from mmcls.models.classifiers.image import build_backbone
 from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import (
     ImageClassifier,
     SAMImageClassifier,
@@ -124,3 +125,58 @@ class TestSAMImageClassifier:
         self.classifier.load_state_dict_mixing_hook(self.module, model_classes, chkpt_classes, chkpt_dict, prefix="")
 
         assert chkpt_dict.keys() == state_dict.keys()
+
+
+class TestLossDynamicsTrackingMixin:
+    TESTCASE = [
+        ("CustomLinearClsHead", "CrossEntropyLoss"),
+        ("CustomNonLinearClsHead", "CrossEntropyLoss"),
+        ("CustomLinearClsHead", "IBLoss"),
+        ("CustomNonLinearClsHead", "IBLoss"),
+    ]
+
+    @pytest.fixture()
+    def classifier(self, request, mocker) -> SAMImageClassifier:
+        head_type, loss_type = request.param
+        cfg = {
+            "backbone": None,
+            "head": {
+                "type": head_type,
+                "num_classes": 5,
+                "in_channels": 10,
+                "loss": {
+                    "type": loss_type,
+                },
+            },
+            "multilabel": False,
+            "hierarchical": False,
+        }
+        if loss_type == "IBLoss":
+            cfg["head"]["loss"]["num_classes"] = 5
+
+        class MockBackbone(torch.nn.Module):
+            def forward(self, *args, **kwargs):
+                return torch.randn([2, 10])
+
+        mocker.patch("mmcls.models.classifiers.image.build_backbone", return_value=MockBackbone())
+        classifier = SAMImageClassifier(track_loss_dynamics=True, **cfg)
+        return classifier
+
+    @pytest.fixture()
+    def data(self):
+        img = torch.rand(2, 3, 224, 224)
+        gt_label = torch.randint(0, 5, (2, 1))
+        return {
+            "img": img,
+            "gt_label": gt_label,
+            "img_metas": [{"entity_id": f"id{idx}"} for idx in range(2)],
+        }
+
+    @torch.no_grad()
+    @pytest.mark.parametrize("classifier", TESTCASE, indirect=True, ids=lambda x: "-".join(x))
+    def test_train_step(self, classifier: SAMImageClassifier, data):
+        outputs = classifier.train_step(data)
+
+        assert "loss_dyns" in outputs
+        assert "entity_ids" in outputs
+        assert "gt_labels" in outputs

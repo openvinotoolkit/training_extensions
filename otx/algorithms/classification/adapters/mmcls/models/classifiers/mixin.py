@@ -16,7 +16,10 @@ class SAMClassifierMixin:
 class LossDynamicsTrackingMixin:
     """Mix-in to track loss dynamics during training."""
 
-    def __init__(self, track_loss_dynamics: bool = True, **kwargs):
+    def __init__(self, track_loss_dynamics: bool = False, **kwargs):
+        if getattr(self, "multilabel") or getattr(self, "hierarchical"):
+            raise RuntimeError("multilabel or hierarchical tasks are not supported now.")
+
         if track_loss_dynamics:
             head_cfg = kwargs.get("head", None)
             loss_cfg = head_cfg.get("loss", None)
