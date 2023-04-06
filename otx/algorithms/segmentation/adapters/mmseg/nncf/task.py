@@ -35,7 +35,6 @@ from otx.api.entities.metrics import (
 )
 from otx.api.entities.model import (
     ModelEntity,
-    ModelOptimizationType,
 )
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.task_environment import TaskEnvironment
@@ -47,10 +46,10 @@ class SegmentationNNCFTask(NNCFBaseTask, MMSegmentationTask):  # pylint: disable
     """SegmentationNNCFTask."""
 
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
+        super().__init__()  # type: ignore [call-arg]
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
         self._model_name = task_environment.model_template.name
-        self._optimization_type = ModelOptimizationType.NNCF  # FIXME
 
     def _init_task(self, export: bool = False):  # noqa
         super(NNCFBaseTask, self)._init_task(export)

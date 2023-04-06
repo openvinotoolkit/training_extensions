@@ -469,7 +469,6 @@ class SegmentationConfigurer:
     @staticmethod
     def configure_fp16_optimizer(cfg: Config):
         """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
-
         fp16_config = cfg.pop("fp16", None)
         if fp16_config is not None:
             optim_type = cfg.optimizer_config.get("type", "OptimizerHook")

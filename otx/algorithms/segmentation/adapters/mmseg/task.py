@@ -75,6 +75,12 @@ from otx.core.data import caching
 
 logger = get_logger()
 
+RECIPE_TRAIN_TYPE = {
+    TrainType.Semisupervised: "semisl.py",
+    TrainType.Incremental: "incremental.py",
+    TrainType.Selfsupervised: "selfsl.py",
+}
+
 # TODO Remove unnecessary pylint disable
 # pylint: disable=too-many-lines
 
@@ -91,6 +97,15 @@ class MMSegmentationTask(OTXSegmentationTask):
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def _init_task(self, export: bool = False):  # noqa
         """Initialize task."""
+
+        if (
+            self._train_type in RECIPE_TRAIN_TYPE
+            and self._train_type == TrainType.Incremental
+            and self._hyperparams.learning_parameters.enable_supcon
+            and not self._model_dir.endswith("supcon")
+        ):
+            self._model_dir = os.path.join(self._model_dir, "supcon")
+            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
@@ -284,6 +299,9 @@ class MMSegmentationTask(OTXSegmentationTask):
             final_ckpt=output_ckpt_path,
         )
 
+    def _get_feature_module(self, model):
+        return model
+
     def _infer_model(
         self,
         dataset: DatasetEntity,
@@ -338,7 +356,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
-        feature_model = model.model_t if self._train_type == TrainType.Semisupervised else model
+        feature_model = model.model_s if self._train_type == TrainType.Semisupervised else model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -365,7 +383,7 @@ class MMSegmentationTask(OTXSegmentationTask):
                 with torch.no_grad():
                     result = model(return_loss=False, output_logits=True, **data)
                 eval_predictions.append(result)
-            feature_vectors = fhook.records if dump_features else [None] * len(self.dataset)
+            feature_vectors = fhook.records if dump_features else [None] * len(mm_dataset)
 
         assert len(eval_predictions) == len(feature_vectors), (
             "Number of elements should be the same, however, number of outputs are ",

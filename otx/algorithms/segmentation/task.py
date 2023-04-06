@@ -23,6 +23,7 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 
+from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
@@ -140,6 +141,12 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         # get prediction on validation set
         self._is_training = False
+
+        if self._train_type == TrainType.Selfsupervised:
+            self.save_model(output_model)
+            logger.info("train done.")
+            return
+
         val_dataset = dataset.get_subset(Subset.VALIDATION)
         pred_dataset = val_dataset.with_empty_annotations()
         predictions = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
