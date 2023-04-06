@@ -1,4 +1,4 @@
-"""Base exporter for OTX Classification with MMCLS."""
+"""Exporter for OTX Classification task with MMClassification training backend."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -6,25 +6,24 @@
 import numpy as np
 from mmcv.runner import wrap_fp16_model
 
-from otx.algorithms.common.adapters.mmcv.tasks.exporter_mixin import ExporterMixin
-from otx.algorithms.common.adapters.mmcv.tasks.registry import STAGES
-from otx.algorithms.common.adapters.mmdeploy.utils import sync_batchnorm_2_batchnorm
+from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
+from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
+from otx.algorithms.common.adapters.mmdeploy.utils.utils import (
+    sync_batchnorm_2_batchnorm,
+)
 from otx.algorithms.common.utils.logger import get_logger
-
-from .stage import ClsStage
 
 logger = get_logger()
 
 
-@STAGES.register_module()
-class ClsExporter(ExporterMixin, ClsStage):
-    """Base exporter class."""
+class ClassificationExporter(Exporter):
+    """Exporter for OTX Classification using mmclassification training backend."""
 
-    def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):  # noqa: C901
+    def run(self, cfg, **kwargs):  # noqa: C901
         """Run exporter stage."""
 
         precision = kwargs.get("precision", "FP32")
-        model_builder = kwargs.get("model_builder", self.MODEL_BUILDER)
+        model_builder = kwargs.get("model_builder", build_classifier)
 
         def model_builder_helper(*args, **kwargs):
             model = model_builder(*args, **kwargs)
@@ -44,7 +43,7 @@ class ClsExporter(ExporterMixin, ClsStage):
             return model
 
         kwargs["model_builder"] = model_builder_helper
-        return super().run(model_cfg, model_ckpt, data_cfg, **kwargs)
+        return super().run(cfg, **kwargs)
 
     @staticmethod
     def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):

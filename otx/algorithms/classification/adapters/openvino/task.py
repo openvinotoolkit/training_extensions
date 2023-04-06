@@ -102,7 +102,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         device: str = "CPU",
         num_requests: int = 1,
     ):  # pylint: disable=unused-argument
-        """Inferencer implementation for OTXDetection using OpenVINO backend.
+        """Inferencer implementation for OTXClassification using OpenVINO backend.
 
         :param model: Path to model to load, `.xml`, `.bin` or `.onnx` file.
         :param hparams: Hyper parameters that the model should use.
