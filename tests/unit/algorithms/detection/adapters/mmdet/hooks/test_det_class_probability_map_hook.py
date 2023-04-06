@@ -49,19 +49,34 @@ class TestDetClassProbabilityMapHook:
         assert self.hook.func(torch.randn(1, 3, 14, 14)) is not None
 
     @e2e_pytest_unit
-    def test_get_cls_scores_from_feature_map(self) -> None:
+    def test_get_cls_scores_from_feature_map_atss(self) -> None:
         """Test _get_cls_scores_from_feature_map function."""
 
         self.module.bbox_head = CustomATSSHead(num_classes=3, in_channels=64)
         self.hook = DetClassProbabilityMapHook(self.module)
         assert self.hook._get_cls_scores_from_feature_map(torch.Tensor(1, 3, 64, 32, 32)) is not None
+
+    @e2e_pytest_unit
+    def test_get_cls_scores_from_feature_map_yolox(self) -> None:
+        """Test _get_cls_scores_from_feature_map function."""
+
         self.module.bbox_head = CustomYOLOXHead(num_classes=3, in_channels=64)
         self.hook = DetClassProbabilityMapHook(self.module)
         assert self.hook._get_cls_scores_from_feature_map(torch.Tensor(1, 3, 64, 32, 32)) is not None
+
+    @e2e_pytest_unit
+    def test_get_cls_scores_from_feature_map_vfnet(self) -> None:
+        """Test _get_cls_scores_from_feature_map function."""
+
         self.module.bbox_head = CustomVFNetHead(num_classes=3, in_channels=64)
         self.module.bbox_head.anchor_generator.num_base_anchors = 1
         self.hook = DetClassProbabilityMapHook(self.module)
         assert self.hook._get_cls_scores_from_feature_map(torch.Tensor(1, 3, 64, 32, 32)) is not None
+
+    @e2e_pytest_unit
+    def test_get_cls_scores_from_feature_map_ssd(self) -> None:
+        """Test _get_cls_scores_from_feature_map function."""
+
         self.module.bbox_head = CustomSSDHead(
             anchor_generator=dict(
                 type="SSDAnchorGenerator",
@@ -73,6 +88,10 @@ class TestDetClassProbabilityMapHook:
         )
         self.hook = DetClassProbabilityMapHook(self.module)
         assert self.hook._get_cls_scores_from_feature_map(torch.Tensor(1, 3, 512, 32, 32)) is not None
+
+    @e2e_pytest_unit
+    def test_get_cls_scores_from_feature_map_not_implemented_head(self) -> None:
+        """Test _get_cls_scores_from_feature_map function."""
 
         self.module.bbox_head = torch.nn.Module()
         self.module.bbox_head.cls_out_channels = 3
