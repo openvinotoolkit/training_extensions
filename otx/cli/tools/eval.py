@@ -57,6 +57,12 @@ def get_args():
         help="Path to the workspace where the command will run.",
         default=None,
     )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default=None,
+        help="The data.yaml path want to use in train task.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]

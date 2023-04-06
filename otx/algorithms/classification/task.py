@@ -40,7 +40,13 @@ from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.explain_parameters import ExplainParameters
+from otx.api.entities.inference_parameters import (
+    InferenceParameters,
+)
+from otx.api.entities.inference_parameters import (
+    default_progress_callback as default_infer_progress_callback,
+)
 from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.metrics import (
     CurveMetric,
@@ -60,7 +66,12 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
-from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
+from otx.api.entities.train_parameters import (
+    TrainParameters,
+)
+from otx.api.entities.train_parameters import (
+    default_progress_callback as default_train_progress_callback,
+)
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
@@ -150,7 +161,7 @@ class OTXClassificationTask(OTXTask, ABC):
             results["saliency_maps"],
         )
 
-        update_progress_callback = default_progress_callback
+        update_progress_callback = default_infer_progress_callback
         process_saliency_maps = False
         explain_predicted_classes = True
         if inference_parameters is not None:
@@ -183,7 +194,7 @@ class OTXClassificationTask(OTXTask, ABC):
         if train_parameters:
             update_progress_callback = train_parameters.update_progress
         else:
-            update_progress_callback = default_progress_callback
+            update_progress_callback = default_train_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
 
         results = self._train_model(dataset)
@@ -263,7 +274,7 @@ class OTXClassificationTask(OTXTask, ABC):
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Classification Task."""
 
@@ -272,7 +283,7 @@ class OTXClassificationTask(OTXTask, ABC):
             explain_parameters=explain_parameters,
         )
 
-        update_progress_callback = default_progress_callback
+        update_progress_callback = default_infer_progress_callback
         process_saliency_maps = False
         explain_predicted_classes = True
         if explain_parameters is not None:
@@ -486,7 +497,7 @@ class OTXClassificationTask(OTXTask, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[InferenceParameters]):
+    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
         """Explain model and return the results."""
         raise NotImplementedError
 

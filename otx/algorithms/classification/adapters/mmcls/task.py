@@ -57,6 +57,7 @@ from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelPrecision
 from otx.api.entities.subset import Subset
@@ -445,7 +446,7 @@ class MMClassificationTask(OTXClassificationTask):
             ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
         )
 
-    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[InferenceParameters]):
+    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
         """Explain function in MMClassificationTask."""
         explainer_hook_selector = {
             "eigencam": EigenCamHook,

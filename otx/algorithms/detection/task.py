@@ -36,6 +36,7 @@ from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import Domain, LabelEntity
@@ -259,7 +260,7 @@ class OTXDetectionTask(OTXTask, ABC):
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Task."""
         raise NotImplementedError

@@ -116,6 +116,12 @@ def task_config_to_str(task_config: Dict[str, Any]):
     report_str = ""
     not_target = ["log_config"]
     for target, value in task_config.items():
+        # Remove otx_dataset
+        if target == "data":
+            for key in value:
+                if "otx_dataset" in value[key]:
+                    del value[key]["otx_dataset"]
+
         if target not in not_target:
             report_str += target + ": "
             model_str = pformat(value)
