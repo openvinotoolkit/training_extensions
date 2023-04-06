@@ -24,19 +24,23 @@ from tests.unit.algorithms.common.adapters.mmcv.nncf.test_helpers import (
 def prepare_dataset():
     create_dataset(lib="mmdet")
 
+
 @pytest.fixture(scope="module")
 def temp_dir():
     with tempfile.TemporaryDirectory() as tempdir:
         yield tempdir
 
+
 @pytest.fixture
 def nncf_model_path(temp_dir):
     return os.path.join(temp_dir, "nncf_model.bin")
+
 
 @pytest.fixture(scope="module")
 def state_to_build():
     model = create_model(lib="mmdet")
     return model.state_dict()
+
 
 @pytest.fixture
 def mock_config(temp_dir, state_to_build):
@@ -46,12 +50,14 @@ def mock_config(temp_dir, state_to_build):
     mock_config.load_from = model_path
     return mock_config
 
+
 @e2e_pytest_unit
 def test_build_nncf_detector(mock_config):
     _, model = build_nncf_detector(mock_config)
 
     assert isinstance(model, NNCFNetwork)
     assert len([hook for hook in mock_config.custom_hooks if hook.type == "CompressionHook"]) == 1
+
 
 @e2e_pytest_unit
 def test_build_nncf_detector_not_compress_postprocessing(mock_config, state_to_build, nncf_model_path):
@@ -76,6 +82,7 @@ def test_build_nncf_detector_not_compress_postprocessing(mock_config, state_to_b
         },
         nncf_model_path,
     )
+
 
 @e2e_pytest_unit
 def test_build_nncf_detector_with_nncf_ckpt(mock_config, nncf_model_path):
