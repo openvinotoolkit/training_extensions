@@ -475,6 +475,7 @@
 <li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.OTXClsDataset"><code class="docutils literal notranslate"><span class="pre">OTXClsDataset</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.SelfSLDataset"><code class="docutils literal notranslate"><span class="pre">SelfSLDataset</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.SelfSLMLP"><code class="docutils literal notranslate"><span class="pre">SelfSLMLP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="adapters/mmcls.html#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask"><code class="docutils literal notranslate"><span class="pre">MMClassificationTask</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="adapters/openvino.html">openvino</a><ul>
@@ -492,28 +493,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.evaluate"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.explain"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.explain()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.export"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.export()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.infer"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.infer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationInferenceTask.unload"><code class="docutils literal notranslate"><span class="pre">ClassificationInferenceTask.unload()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationNNCFTask"><code class="docutils literal notranslate"><span class="pre">ClassificationNNCFTask</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.deploy"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.deploy()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.evaluate"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.explain"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.explain()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.infer"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.infer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.load_inferencer"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.load_inferencer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationOpenVINOTask.optimize"><code class="docutils literal notranslate"><span class="pre">ClassificationOpenVINOTask.optimize()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask.cancel_training"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask.cancel_training()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask.save_model"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask.save_model()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.tasks.ClassificationTrainTask.train"><code class="docutils literal notranslate"><span class="pre">ClassificationTrainTask.train()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#otx.algorithms.classification.task.OTXClassificationTask"><code class="docutils literal notranslate"><span class="pre">OTXClassificationTask</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.task.OTXClassificationTask.evaluate"><code class="docutils literal notranslate"><span class="pre">OTXClassificationTask.evaluate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.task.OTXClassificationTask.explain"><code class="docutils literal notranslate"><span class="pre">OTXClassificationTask.explain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.task.OTXClassificationTask.export"><code class="docutils literal notranslate"><span class="pre">OTXClassificationTask.export()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.task.OTXClassificationTask.infer"><code class="docutils literal notranslate"><span class="pre">OTXClassificationTask.infer()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.task.OTXClassificationTask.save_model"><code class="docutils literal notranslate"><span class="pre">OTXClassificationTask.save_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.html#otx.algorithms.classification.task.OTXClassificationTask.train"><code class="docutils literal notranslate"><span class="pre">OTXClassificationTask.train()</span></code></a></li>
 </ul>
 </li>
 </ul>

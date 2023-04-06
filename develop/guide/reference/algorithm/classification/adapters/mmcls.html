@@ -785,6 +785,31 @@ bias (float): Bias for normal initialization. Default: 0.</p>
 
 </dd></dl>
 
+<span class="target" id="module-otx.algorithms.classification.adapters.mmcls.task"></span><p>Task of OTX Classification using mmclassification training backend.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.classification.adapters.mmcls.task.</span></span><span class="sig-name descname"><span class="pre">MMClassificationTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask" title="Permalink to this definition">#</a></dt>
+<dd><p>Task class for OTX classification using mmclassification training backend.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.build_model">
+<span class="sig-name descname"><span class="pre">build_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp16</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Module</span></span></span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.build_model" title="Permalink to this definition">#</a></dt>
+<dd><p>Build model from model_builder.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.configure">
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'train'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ir_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.configure" title="Permalink to this definition">#</a></dt>
+<dd><p>Patch mmcv configs for OTX classification settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.update_override_configurations">
+<span class="sig-name descname"><span class="pre">update_override_configurations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.update_override_configurations" title="Permalink to this definition">#</a></dt>
+<dd><p>Update override_configs.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -1065,6 +1090,44 @@ bias (float): Bias for normal initialization. Default: 0.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        SelfSLMLP.training
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     MMClassificationTask
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.build_model">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MMClassificationTask.build_model()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.configure">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MMClassificationTask.configure()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask.update_override_configurations">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MMClassificationTask.update_override_configurations()
       </span>
      </code>
     </a>
