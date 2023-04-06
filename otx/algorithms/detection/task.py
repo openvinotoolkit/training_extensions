@@ -98,7 +98,44 @@ class OTXDetectionTask(OTXTask, ABC):
         else:
             self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
+    def _load_tiling_parameters(self, model_data):
+        """Load tiling parameters from PyTorch model.
+
+        Args:
+            model_data: The model data.
+
+        Raises:
+            RuntimeError: If tile classifier is enabled but not found in the trained model.
+        """
+        loaded_tiling_parameters = model_data.get("config", {}).get("tiling_parameters", {})
+        if loaded_tiling_parameters.get("enable_tiling", {}).get("value", False):
+            logger.info("Load tiling parameters")
+            hparams = self._hyperparams.tiling_parameters
+            hparams.enable_tiling = loaded_tiling_parameters["enable_tiling"]["value"]
+            hparams.tile_size = loaded_tiling_parameters["tile_size"]["value"]
+            hparams.tile_overlap = loaded_tiling_parameters["tile_overlap"]["value"]
+            hparams.tile_max_number = loaded_tiling_parameters["tile_max_number"]["value"]
+            # check backward compatibility
+            enable_tile_classifier = loaded_tiling_parameters.get("enable_tile_classifier", {}).get("value", False)
+            if enable_tile_classifier:
+                found_tile_classifier = any(
+                    layer_name.startswith("tile_classifier") for layer_name in model_data["model"]["state_dict"].keys()
+                )
+                if not found_tile_classifier:
+                    raise RuntimeError(
+                        "Tile classifier is enabled but not found in the trained model. Please retrain your model."
+                    )
+                hparams.enable_tile_classifier = loaded_tiling_parameters["enable_tile_classifier"]["value"]
+
     def _load_model_ckpt(self, model: Optional[ModelEntity]):
+        """Load model checkpoint from model entity.
+
+        Args:
+            model (Optional[ModelEntity]): The model entity.
+
+        Returns:
+            _type_: _description_
+        """
         if model and "weights.pth" in model.model_adapters:
             # If a model has been trained and saved for the task already, create empty model and load weights here
             buffer = io.BytesIO(model.get_data("weights.pth"))
@@ -108,7 +145,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
-
+            self._load_tiling_parameters(model_data)
             return model_data
         return None
 

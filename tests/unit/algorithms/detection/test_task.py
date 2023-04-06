@@ -10,6 +10,7 @@ import pytest
 from mmcv import Config
 
 from otx.algorithms.detection.task import OTXDetectionTask
+from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.utils import generate_label_schema
 from otx.api.configuration.helper import create
 from otx.api.entities.model_template import (
