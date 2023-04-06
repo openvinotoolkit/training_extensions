@@ -165,6 +165,9 @@ class MMDetectionTask(OTXDetectionTask):
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
 
+        # Patch tiling parameters
+        patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
+
         if not export:
             patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
 
@@ -197,10 +200,6 @@ class MMDetectionTask(OTXDetectionTask):
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
 
-        # Patch tiling parameters
-        patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
-
-        set_hyperparams(self._recipe_cfg, self._hyperparams)
         logger.info("initialized.")
 
     def build_model(
