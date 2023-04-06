@@ -17,7 +17,7 @@
 import io
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Optional
+from typing import List, Optional
 
 import numpy as np
 import torch
@@ -40,20 +40,18 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import (
-    BarChartInfo,
-    BarMetricsGroup,
     CurveMetric,
+    InfoMetric,
     LineChartInfo,
-    LineMetricsGroup,
     MetricsGroup,
+    Performance,
     ScoreMetric,
+    VisualizationInfo,
     VisualizationType,
 )
 from otx.api.entities.model import ModelEntity, ModelPrecision
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
@@ -147,26 +145,18 @@ class OTXSegmentationTask(OTXTask, ABC):
             logger.info("train done.")
             return
 
-        val_dataset = dataset.get_subset(Subset.VALIDATION)
-        pred_dataset = val_dataset.with_empty_annotations()
-        predictions = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
-        prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
-
-        self._add_predictions_to_dataset(prediction_results, pred_dataset, dump_soft_prediction=False)
-
-        output_resultset = ResultSetEntity(
-            model=output_model,
-            ground_truth_dataset=val_dataset,
-            prediction_dataset=pred_dataset,
+        # Get training metrics group from learning curves
+        training_metrics, best_score = self._generate_training_metrics(self._learning_curves)
+        performance = Performance(
+            score=ScoreMetric(value=best_score, name=self.metric),
+            dashboard_metrics=training_metrics,
         )
 
-        logger.info("Computing mDice")
-        metrics = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset)
-        logger.info(f"mDice after evaluation: {metrics.overall_dice.value}")
-        output_resultset.performance = metrics.get_performance()
-
+        logger.info(f"Final model performance: {str(performance)}")
         # save resulting model
         self.save_model(output_model)
+        output_model.performance = performance
+        self._is_training = False
         logger.info("train done.")
 
     @abstractmethod
@@ -279,52 +269,34 @@ class OTXSegmentationTask(OTXTask, ABC):
                     )
                     dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
 
-    def _get_shapes(self, all_results, width, height, confidence_threshold):
-        if self._task_type == TaskType.DETECTION:
-            shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-        elif self._task_type in {
-            TaskType.INSTANCE_SEGMENTATION,
-            TaskType.ROTATED_DETECTION,
-        }:
-            shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-        else:
-            raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
-        return shapes
-
-    @staticmethod
-    def _generate_training_metrics(learning_curves, scores) -> Iterable[MetricsGroup[Any, Any]]:
+    def _generate_training_metrics(self, learning_curves):
         """Get Training metrics (epochs & scores).
 
         Parses the mmsegmentation logs to get metrics from the latest training run
         :return output List[MetricsGroup]
         """
         output: List[MetricsGroup] = []
-
-        # Learning curves.
-        for key, curve in learning_curves.items():
-            len_x, len_y = len(curve.x), len(curve.y)
-            if len_x != len_y:
-                logger.warning(f"Learning curve {key} has inconsistent number of coordinates ({len_x} vs {len_y}.")
-                len_x = min(len_x, len_y)
-                curve.x = curve.x[:len_x]
-                curve.y = curve.y[:len_x]
-            metric_curve = CurveMetric(
-                xs=np.nan_to_num(curve.x).tolist(),
-                ys=np.nan_to_num(curve.y).tolist(),
-                name=key,
-            )
-            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
-            output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
-
-        # Final mAP value on the validation set.
+        # Model architecture
+        architecture = InfoMetric(name="Model architecture", value=self._model_name)
+        visualization_info_architecture = VisualizationInfo(
+            name="Model architecture", visualisation_type=VisualizationType.TEXT
+        )
         output.append(
-            BarMetricsGroup(
-                metrics=[ScoreMetric(value=scores, name="mAP")],
-                visualization_info=BarChartInfo("Validation score", visualization_type=VisualizationType.RADIAL_BAR),
+            MetricsGroup(
+                metrics=[architecture],
+                visualization_info=visualization_info_architecture,
             )
         )
+        # Learning curves
+        best_score = -1
+        for key, curve in learning_curves.items():
+            metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
+            if key == f"val/{self.metric}":
+                best_score = max(curve.y)
+            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
+            output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
 
-        return output
+        return output, best_score
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in SegmentationTrainTask."""

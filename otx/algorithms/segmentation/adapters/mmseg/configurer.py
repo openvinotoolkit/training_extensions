@@ -1,4 +1,4 @@
-"""Base configurer for mmdet config."""
+"""Base configurer for mmseg config."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -537,7 +537,7 @@ class SegmentationConfigurer:
 
 
 class IncrSegmentationConfigurer(SegmentationConfigurer):
-    """Patch config to support incremental learning for object segmentation."""
+    """Patch config to support incremental learning for semantic segmentation."""
 
     def configure_task(self, cfg, training):
         """Patch config to support incremental learning."""
@@ -561,7 +561,7 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
 
 
 class SemiSLSegmentationConfigurer(SegmentationConfigurer):
-    """Patch config to support semi supervised learning for object segmentation."""
+    """Patch config to support semi supervised learning for semantic segmentation."""
 
     def configure_data(self, cfg, training, data_cfg):
         """Patch cfg.data."""

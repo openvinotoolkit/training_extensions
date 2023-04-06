@@ -49,7 +49,6 @@ class SegmentationNNCFTask(NNCFBaseTask, MMSegmentationTask):  # pylint: disable
         super().__init__()  # type: ignore [call-arg]
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
-        self._model_name = task_environment.model_template.name
 
     def _init_task(self, export: bool = False):  # noqa
         super(NNCFBaseTask, self)._init_task(export)
