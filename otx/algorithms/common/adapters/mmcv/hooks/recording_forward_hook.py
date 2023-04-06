@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List, Sequence, Union
 
 import torch
@@ -52,7 +52,6 @@ class BaseRecordingForwardHook(ABC):
         """Return records."""
         return self._records
 
-    @abstractmethod
     def func(self, feature_map: torch.Tensor, fpn_idx: int = -1) -> torch.Tensor:
         """This method get the feature vector or saliency map from the output of the module.
 

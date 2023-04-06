@@ -22,7 +22,9 @@ import otx.algorithms.classification.adapters.mmcls.nncf.registers  # noqa: F401
 from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
     build_nncf_classifier,
 )
-from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
+from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
+from otx.algorithms.classification.adapters.mmcls.utils import patch_evaluation
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.metrics import (
@@ -35,20 +37,34 @@ from otx.api.entities.metrics import (
 )
 from otx.api.entities.model import ModelEntity  # ModelStatus
 from otx.api.entities.optimization_parameters import OptimizationParameters
-
-from .inference import ClassificationInferenceTask
+from otx.api.entities.task_environment import TaskEnvironment
 
 logger = get_logger()
 
 
-class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):  # pylint: disable=too-many-ancestors
+class ClassificationNNCFTask(NNCFBaseTask, MMClassificationTask):  # pylint: disable=too-many-ancestors
     """ClassificationNNCFTask."""
 
-    def _initialize_post_hook(self, options=None):
-        super()._initialize_post_hook(options)
+    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
+        super().__init__()
+        super(NNCFBaseTask, self).__init__(task_environment, output_path)
+        self._set_attributes_by_hyperparams()
 
-        export = options.get("export", False)
-        options["model_builder"] = partial(
+    def _init_task(self, export: bool = False):  # noqa
+        super(NNCFBaseTask, self)._init_task(export)
+        # Patch Evaluation Metric for nncf_config
+        options_for_patch_evaluation = {"task": "normal"}
+        if self._multilabel:
+            options_for_patch_evaluation["task"] = "multilabel"
+        elif self._hierarchical:
+            options_for_patch_evaluation["task"] = "hierarchical"
+        patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)
+        self._prepare_optimize(export)
+
+    def _prepare_optimize(self, export=False):
+        super()._prepare_optimize()
+
+        self.model_builder = partial(
             self.model_builder,
             nncf_model_builder=build_nncf_classifier,
             return_compression_ctrl=False,
@@ -60,12 +76,8 @@ class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):  # pyli
         dataset: DatasetEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
-        results = self._run_task(
-            "ClsTrainer",
-            mode="train",
-            dataset=dataset,
-            parameters=optimization_parameters,
-        )
+        results = self._train_model(dataset)
+
         return results
 
     def _optimize_post_hook(

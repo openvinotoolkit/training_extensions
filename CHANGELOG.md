@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 - Clean up and refactor the output of the OTX CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1946>)
 - Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
+- Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
 - Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
 
 ### Bug fixes

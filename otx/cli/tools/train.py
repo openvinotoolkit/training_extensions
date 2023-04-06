@@ -236,13 +236,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
-    # Latest model folder symbolic link to models
-    latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
-    if latest_path.exists():
-        latest_path.unlink()
-    elif not latest_path.parent.exists():
-        latest_path.parent.mkdir(exist_ok=True, parents=True)
-    latest_path.symlink_to(config_manager.output_path.resolve())
 
     performance = None
     if config_manager.data_config["val_subset"]["data_root"]:
@@ -267,6 +260,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     total_time = str(datetime.timedelta(seconds=sec))
     print("otx train time elapsed: ", total_time)
     model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
+
     get_otx_report(
         model_template=config_manager.template,
         task_config=task.config,
@@ -274,6 +268,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         results=model_results,
         output_path=config_manager.output_path / "cli_report.log",
     )
+
+    # Latest model folder symbolic link to models
+    latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
+    if latest_path.exists():
+        latest_path.unlink()
+    elif not latest_path.parent.exists():
+        latest_path.parent.mkdir(exist_ok=True, parents=True)
+    latest_path.symlink_to(config_manager.output_path.resolve())
 
     if args.gpus:
         multigpu_manager.finalize()
