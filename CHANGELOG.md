@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
--
+- Fix backward compatibility with OpenVINO SSD-like detection models from OTE 0.5 (<https://github.com/openvinotoolkit/training_extensions/pull/1970>)
 
 ### Known issues
 
