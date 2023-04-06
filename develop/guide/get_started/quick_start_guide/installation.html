@@ -470,7 +470,7 @@
 <p>The current version of OpenVINO™ Training Extensions was tested in the following environment:</p>
 <ul class="simple">
 <li><p>Ubuntu 20.04</p></li>
-<li><p>Python 3.8.x</p></li>
+<li><p>Python 3.8 ~ 3.10</p></li>
 <li><p>(Optional) To use the NVidia GPU for the training: <a class="reference external" href="https://developer.nvidia.com/cuda-11-7-0-download-archive">CUDA Toolkit 11.7</a></p></li>
 </ul>
 <div class="admonition note">
@@ -522,7 +522,7 @@ Refer to the <a class="reference external" href="https://pytorch.org/get-started
 <ul class="simple">
 <li><p>PyPI</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">otx</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">otx</span><span class="p">[</span><span class="n">full</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>5. Once the package is installed in the virtual environment, you can use full
@@ -532,8 +532,8 @@ OpenVINO™ Training Extensions command line functionality.</p>
 <h2>Install OpenVINO™ Training Extensions for developers<a class="headerlink" href="#install-openvino-training-extensions-for-developers" title="Permalink to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">tox</span></code> and create a development environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">tox</span>
-<span class="c1"># -- need to fix &#39;38&#39; in tox.ini if another python version needed</span>
-<span class="n">tox</span> <span class="n">devenv</span> <span class="n">venv</span><span class="o">/</span><span class="n">otx</span> <span class="o">-</span><span class="n">e</span> <span class="n">pre</span><span class="o">-</span><span class="n">merge</span>
+<span class="c1"># -- need to replace &#39;310&#39; below if another python version needed</span>
+<span class="n">tox</span> <span class="n">devenv</span> <span class="n">venv</span><span class="o">/</span><span class="n">otx</span> <span class="o">-</span><span class="n">e</span> <span class="n">pre</span><span class="o">-</span><span class="n">merge</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">py310</span>
 <span class="n">source</span> <span class="n">venv</span><span class="o">/</span><span class="n">otx</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
 </pre></div>
 </div>
