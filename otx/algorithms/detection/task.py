@@ -127,14 +127,14 @@ class OTXDetectionTask(OTXTask, ABC):
                     )
                 hparams.enable_tile_classifier = loaded_tiling_parameters["enable_tile_classifier"]["value"]
 
-    def _load_model_ckpt(self, model: Optional[ModelEntity]):
+    def _load_model_ckpt(self, model: Optional[ModelEntity]) -> Optional[Dict]:
         """Load model checkpoint from model entity.
 
         Args:
             model (Optional[ModelEntity]): The model entity.
 
         Returns:
-            _type_: _description_
+            dict: The model checkpoint including model weights and other parameters.
         """
         if model and "weights.pth" in model.model_adapters:
             # If a model has been trained and saved for the task already, create empty model and load weights here
