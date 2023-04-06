@@ -19,8 +19,12 @@ from tests.test_suite.run_test_command import (
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_explain_all_classes_openvino_testing,
     otx_explain_openvino_testing,
+    otx_explain_process_saliency_maps_openvino_testing,
     otx_explain_testing,
+    otx_explain_testing_all_classes,
+    otx_explain_testing_process_saliency_maps,
     otx_export_testing,
     otx_hpo_testing,
     otx_resume_testing,
@@ -139,9 +143,33 @@ class TestMultiClassClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -275,9 +303,33 @@ class TestMultilabelClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -366,9 +418,33 @@ class TestHierarchicalClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

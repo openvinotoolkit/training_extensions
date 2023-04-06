@@ -36,6 +36,7 @@ from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
@@ -127,7 +128,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         logger.info("called infer()")
         stage_module = "ClsInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
-        dataset = dataset.with_empty_annotations()
 
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
@@ -163,13 +163,12 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Classification Task."""
         logger.info("called explain()")
         stage_module = "ClsExplainer"
         self._data_cfg = self._init_test_data_cfg(dataset)
-        dataset = dataset.with_empty_annotations()
 
         results = self._run_task(
             stage_module,
