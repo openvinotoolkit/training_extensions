@@ -88,9 +88,14 @@ class TileClassifier(torch.nn.Module):
 # pylint: disable=too-many-ancestors
 @DETECTORS.register_module()
 class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
-    """Custom MaskRCNN detector with tile classifier."""
+    """Custom MaskRCNN detector with tile classifier.
 
-    def __init__(self, *args, task_adapt=None, **kwargs):
+    Args:
+        *args: args
+        **kwargs: kwargs
+    """
+
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.tile_classifier = TileClassifier()
 
@@ -110,6 +115,7 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             gt_bboxes_ignore (list, optional): ground truth bounding boxes to be ignored. Defaults to None.
             gt_masks (list, optional): ground truth masks. Defaults to None.
             proposals (list, optional): proposals. Defaults to None.
+            kwargs: kwargs
         """
 
         losses = dict()
@@ -192,8 +198,8 @@ if is_mmdeploy_enabled():
         Partition tile classifier by marking tile classifier in tracing.
 
         Args:
-            ctx (object): object context
-            img (torch.Tensor): input image
+            self (object): object
+            img: input image
 
         Returns:
             torch.Tensor: objectness score
@@ -211,6 +217,7 @@ if is_mmdeploy_enabled():
 
         Args:
             ctx (object): object context
+            self (object): object
             img (torch.Tensor): input image
 
         Returns:
@@ -229,8 +236,10 @@ if is_mmdeploy_enabled():
 
         Args:
             ctx (object): object context
+            self (object): object
             img (torch.Tensor): input image
-            img_metas (dict): _description_
+            img_metas (dict): image meta data
+            **kwargs: kwargs
 
         Returns:
             _type_: _description_
@@ -255,9 +264,10 @@ if is_mmdeploy_enabled():
 
         Args:
             ctx (object): object context
+            self (object): object
             img (torch.Tensor): input image
-            img_metas (dict, optional): _description_. Defaults to None.
-            return_loss (bool, optional): _description_. Defaults to False.
+            img_metas (dict, optional): image meta data. Defaults to None.
+            **kwargs: kwargs
 
         Returns:
             _type_: _description_
@@ -284,6 +294,7 @@ if is_mmdeploy_enabled():
 
         Args:
             ctx (object): object context
+            self (object): object
             img (torch.Tensor): input image
             img_metas (list): image meta data
             proposals (list, optional): proposals. Defaults to None.
