@@ -9,8 +9,7 @@ import pytest
 import torch
 from mmcls.models import build_classifier
 
-from otx.algorithms.classification.adapters.mmcls.tasks.stage import ClsStage
-from otx.algorithms.classification.tasks import ClassificationInferenceTask  # noqa
+from otx.algorithms.classification.adapters.mmcls.configurer import ClassificationConfigurer
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
 )
@@ -39,7 +38,7 @@ class TestExplainMethods:
         cfg = MPAConfig.fromfile(cfg_path)
 
         cfg.model.pop("task")
-        ClsStage.configure_in_channel(cfg)
+        ClassificationConfigurer.configure_in_channel(cfg)
         model = build_classifier(cfg.model)
         model = model.eval()
 
