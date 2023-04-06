@@ -116,11 +116,11 @@ def task_config_to_str(task_config: Dict[str, Any]):
     report_str = ""
     not_target = ["log_config"]
     for target, value in task_config.items():
-        # Remove otx_dataset
-        if target == "data":
-            for key in value:
-                if "otx_dataset" in value[key]:
-                    del value[key]["otx_dataset"]
+        # Remove otx_dataset from the report as it is unnecessary.
+        if target == "data" and isinstance(value, dict):
+            for item in value.values():
+                if isinstance(item, dict) and "otx_dataset" in item:
+                    del item["otx_dataset"]
 
         if target not in not_target:
             report_str += target + ": "
