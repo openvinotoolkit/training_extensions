@@ -82,9 +82,13 @@ class TestTilingTileClassifier:
             np.zeros((0, 4), dtype=np.float32),
             [],
         )
-        ov_inferencer = OpenVINOTileClassifierWrapper(ov_mask_inferencer, mode="sync")
+        ov_inferencer = OpenVINOTileClassifierWrapper(
+            ov_mask_inferencer, tile_classifier_model_file="", tile_classifier_weight_file="", mode="sync"
+        )
         ov_inferencer.model.__model__ = "OTX_MaskRCNN"
-        mock_predict = mocker.patch.object(ov_inferencer.classifier, "infer_sync", return_value={"tile_prob": 0.5})
+        mock_predict = mocker.patch.object(
+            ov_inferencer.tiler.classifier, "infer_sync", return_value={"tile_prob": 0.5}
+        )
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
         ov_task = OpenVINODetectionTask(self.task_env)
         ov_task.inferencer.predict = partial(ov_task.inferencer.predict, mode="sync")
