@@ -64,6 +64,11 @@ from otx.api.utils.segmentation_utils import (
 )
 
 logger = get_logger()
+RECIPE_TRAIN_TYPE = {
+    TrainType.Semisupervised: "semisl.py",
+    TrainType.Incremental: "incremental.py",
+    TrainType.Selfsupervised: "selfsl.py",
+}
 
 
 class OTXSegmentationTask(OTXTask, ABC):
@@ -82,6 +87,13 @@ class OTXSegmentationTask(OTXTask, ABC):
             os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),
             TRAIN_TYPE_DIR_PATH[self._train_type.name],
         )
+        if (
+            self._train_type in RECIPE_TRAIN_TYPE
+            and self._train_type == TrainType.Incremental
+            and self._hyperparams.learning_parameters.enable_supcon
+            and not self._model_dir.endswith("supcon")
+        ):
+            self._model_dir = os.path.join(self._model_dir, "supcon")
 
         if task_environment.model is not None:
             self._load_model()

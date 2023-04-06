@@ -96,7 +96,6 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         self._config: Dict[Any, Any] = {}
         self._task_environment = task_environment
-        self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
         self._work_dir_is_temp = False

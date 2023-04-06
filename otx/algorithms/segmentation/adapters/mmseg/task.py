@@ -54,7 +54,7 @@ from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     SemiSLSegmentationConfigurer,
 )
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
-from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegExporter
+from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegmentationExporter
 from otx.algorithms.segmentation.task import OTXSegmentationTask
 
 # from otx.algorithms.segmentation.utils import get_det_model_api_configuration
@@ -76,12 +76,6 @@ from otx.core.data import caching
 
 logger = get_logger()
 
-RECIPE_TRAIN_TYPE = {
-    TrainType.Semisupervised: "semisl.py",
-    TrainType.Incremental: "incremental.py",
-    TrainType.Selfsupervised: "selfsl.py",
-}
-
 # TODO Remove unnecessary pylint disable
 # pylint: disable=too-many-lines
 
@@ -92,22 +86,13 @@ class MMSegmentationTask(OTXSegmentationTask):
     # pylint: disable=too-many-instance-attributes
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         super().__init__(task_environment, output_path)
+        self._model_name = task_environment.model_template.name
         self._data_cfg: Optional[Config] = None
         self._recipe_cfg: Optional[Config] = None
 
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def _init_task(self, export: bool = False):  # noqa
         """Initialize task."""
-
-        if (
-            self._train_type in RECIPE_TRAIN_TYPE
-            and self._train_type == TrainType.Incremental
-            and self._hyperparams.learning_parameters.enable_supcon
-            and not self._model_dir.endswith("supcon")
-        ):
-            self._model_dir: str = os.path.join(self._model_dir, "supcon")
-            self.data_pipeline_path: str = os.path.join(self._model_dir, "data_pipeline.py")
-
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
@@ -451,7 +436,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
-        exporter = SegExporter()
+        exporter = SegmentationExporter()
         results = exporter.run(
             cfg,
             **export_options,

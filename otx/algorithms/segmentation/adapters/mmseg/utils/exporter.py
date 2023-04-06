@@ -16,7 +16,7 @@ logger = get_logger()
 
 
 @STAGES.register_module()
-class SegExporter(Exporter):
+class SegmentationExporter(Exporter):
     """Exporter for OTX Segmentation using mmsegmentation training backend."""
 
     def run(self, cfg, **kwargs):  # noqa: C901

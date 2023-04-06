@@ -67,8 +67,8 @@ class SegmentationConfigurer:
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes)
         self.configure_device(cfg, training)
-        self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
+        self.configure_model(cfg, ir_options)
         self.configure_data(cfg, training, data_cfg)
         self.configure_task(cfg, training)
         self.configure_hook(cfg)
@@ -304,6 +304,8 @@ class SegmentationConfigurer:
             cfg.load_from = self.get_model_ckpt(model_ckpt)
         if cfg.get("resume", False):
             cfg.resume_from = cfg.load_from
+        if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
+            cfg.model.backbone.pretrained = None
 
     @staticmethod
     def get_model_ckpt(ckpt_path, new_path=None):

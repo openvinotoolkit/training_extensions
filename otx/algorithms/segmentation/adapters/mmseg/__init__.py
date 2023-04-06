@@ -32,7 +32,6 @@ from .models import (
     StepScalarScheduler,
     SupConDetConB,
 )
-from .nncf import CustomstepLrUpdaterHook
 
 # fmt: off
 # isort: off
@@ -49,7 +48,6 @@ __all__ = [
     "LiteHRNet",
     "MMOVBackbone",
     "CustomFCNHead",
-    "CustomstepLrUpdaterHook",
     "MMOVDecodeHead",
     "DetConLoss",
     "SelfSLMLP",
