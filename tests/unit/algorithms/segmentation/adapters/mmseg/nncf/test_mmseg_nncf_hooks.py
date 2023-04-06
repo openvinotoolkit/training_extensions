@@ -9,7 +9,7 @@ from mmcv.utils import get_logger
 from torch.optim import SGD
 
 from otx.algorithms.common.adapters.mmcv.utils import build_data_parallel
-from otx.algorithms.segmentation.adapters.mmseg.nncf.hooks import (
+from otx.algorithms.common.adapters.mmcv.hooks import (
     CustomstepLrUpdaterHook,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit

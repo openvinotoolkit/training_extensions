@@ -64,14 +64,11 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
-from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
 
 logger = get_logger()
@@ -136,19 +133,6 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         logger.info("initialized.")
 
-    def build_model(
-        self,
-        cfg: Config,
-        fp16: bool = False,
-        **kwargs,
-    ) -> torch.nn.Module:
-        """Build model from model_builder."""
-        model_builder = getattr(self, "model_builder", build_segmentor)
-        model = model_builder(cfg, **kwargs)
-        if bool(fp16):
-            wrap_fp16_model(model)
-        return model
-
     # pylint: disable=too-many-arguments
     def configure(
         self,
@@ -185,107 +169,17 @@ class MMSegmentationTask(OTXSegmentationTask):
         self._config = cfg
         return cfg
 
-    # pylint: disable=too-many-branches, too-many-statements
-    def _train_model(
+    def build_model(
         self,
-        dataset: DatasetEntity,
-    ):
-        """Train function in MMSegmentationTask."""
-        logger.info("init data cfg.")
-        self._data_cfg = ConfigDict(data=ConfigDict())
-
-        for cfg_key, subset in zip(
-            ["train", "val", "unlabeled"],
-            [Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED],
-        ):
-            subset = get_dataset(dataset, subset)
-            if subset and self._data_cfg is not None:
-                self._data_cfg.data[cfg_key] = ConfigDict(
-                    otx_dataset=subset,
-                    labels=self._labels,
-                )
-
-        self._is_training = True
-
-        self._init_task()
-
-        cfg = self.configure(True, "train", None)
-        logger.info("train!")
-
-        timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
-
-        # Environment
-        logger.info(f"cfg.gpu_ids = {cfg.gpu_ids}, distributed = {cfg.distributed}")
-        env_info_dict = collect_env()
-        env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
-        dash_line = "-" * 60 + "\n"
-        logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
-
-        # Data
-        datasets = [build_dataset(cfg.data.train)]
-
-        # FIXME: Currently segmentor does not support multi batch evaluation.
-        # For the Self-SL case, there is no val data. So, need to check the
-
-        if "val" in cfg.data and "val_dataloader" in cfg.data:
-            cfg.data.val_dataloader["samples_per_gpu"] = 1
-
-        # Target classes
-        if "task_adapt" in cfg:
-            target_classes = cfg.task_adapt.final
-        else:
-            target_classes = datasets[0].CLASSES
-
-        # Metadata
-        meta = dict()
-        meta["env_info"] = env_info
-        meta["seed"] = cfg.seed
-        meta["exp_name"] = cfg.work_dir
-        if cfg.checkpoint_config is not None:
-            cfg.checkpoint_config.meta = dict(
-                mmseg_version=__version__ + get_git_hash()[:7],
-                CLASSES=target_classes,
-            )
-
-        # Model
-        model = self.build_model(cfg, fp16=cfg.get("fp16", False))
-        model.train()
-        model.CLASSES = target_classes
-
-        if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-            if cfg.dist_params.get("linear_scale_lr", False):
-                new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
-                logger.info(
-                    f"enabled linear scaling rule to the learning rate. \
-                    changed LR from {cfg.optimizer.lr} to {new_lr}"
-                )
-                cfg.optimizer.lr = new_lr
-
-        validate = bool(cfg.data.get("val", None))
-        train_segmentor(
-            model,
-            datasets,
-            cfg,
-            distributed=cfg.distributed,
-            validate=validate,
-            timestamp=timestamp,
-            meta=meta,
-        )
-
-        # Save outputs
-        output_ckpt_path = os.path.join(cfg.work_dir, "latest.pth")
-        best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mDice_*.pth"))
-        if len(best_ckpt_path) > 0:
-            output_ckpt_path = best_ckpt_path[0]
-        best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mIoU_*.pth"))
-        if len(best_ckpt_path) > 0:
-            output_ckpt_path = best_ckpt_path[0]
-        return dict(
-            final_ckpt=output_ckpt_path,
-        )
-
-    def _get_feature_module(self, model):
+        cfg: Config,
+        fp16: bool = False,
+        **kwargs,
+    ) -> torch.nn.Module:
+        """Build model from model_builder."""
+        model_builder = getattr(self, "model_builder", build_segmentor)
+        model = model_builder(cfg, **kwargs)
+        if bool(fp16):
+            wrap_fp16_model(model)
         return model
 
     def _infer_model(
@@ -392,26 +286,121 @@ class MMSegmentationTask(OTXSegmentationTask):
         )
         return outputs
 
-    def explain(self):
+    # pylint: disable=too-many-branches, too-many-statements
+    def _train_model(
+        self,
+        dataset: DatasetEntity,
+    ):
+        """Train function in MMSegmentationTask."""
+        logger.info("init data cfg.")
+        self._data_cfg = ConfigDict(data=ConfigDict())
+
+        for cfg_key, subset in zip(
+            ["train", "val", "unlabeled"],
+            [Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED],
+        ):
+            subset = get_dataset(dataset, subset)
+            if subset and self._data_cfg is not None:
+                self._data_cfg.data[cfg_key] = ConfigDict(
+                    otx_dataset=subset,
+                    labels=self._labels,
+                )
+
+        self._is_training = True
+
+        self._init_task()
+
+        cfg = self.configure(True, "train", None)
+        logger.info("train!")
+
+        timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
+        # Environment
+        logger.info(f"cfg.gpu_ids = {cfg.gpu_ids}, distributed = {cfg.distributed}")
+        env_info_dict = collect_env()
+        env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
+        dash_line = "-" * 60 + "\n"
+        logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
+
+        # Data
+        datasets = [build_dataset(cfg.data.train)]
+
+        # FIXME: Currently segmentor does not support multi batch evaluation.
+        # For the Self-SL case, there is no val data. So, need to check the
+
+        if "val" in cfg.data and "val_dataloader" in cfg.data:
+            cfg.data.val_dataloader["samples_per_gpu"] = 1
+
+        # Target classes
+        if "task_adapt" in cfg:
+            target_classes = cfg.task_adapt.final
+        else:
+            target_classes = datasets[0].CLASSES
+
+        # Metadata
+        meta = dict()
+        meta["env_info"] = env_info
+        meta["seed"] = cfg.seed
+        meta["exp_name"] = cfg.work_dir
+        if cfg.checkpoint_config is not None:
+            cfg.checkpoint_config.meta = dict(
+                mmseg_version=__version__ + get_git_hash()[:7],
+                CLASSES=target_classes,
+            )
+
+        # Model
+        model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        model.train()
+        model.CLASSES = target_classes
+
+        if cfg.distributed:
+            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            if cfg.dist_params.get("linear_scale_lr", False):
+                new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+                logger.info(
+                    f"enabled linear scaling rule to the learning rate. \
+                    changed LR from {cfg.optimizer.lr} to {new_lr}"
+                )
+                cfg.optimizer.lr = new_lr
+
+        validate = bool(cfg.data.get("val", None))
+        train_segmentor(
+            model,
+            datasets,
+            cfg,
+            distributed=cfg.distributed,
+            validate=validate,
+            timestamp=timestamp,
+            meta=meta,
+        )
+
+        # Save outputs
+        output_ckpt_path = os.path.join(cfg.work_dir, "latest.pth")
+        best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mDice_*.pth"))
+        if len(best_ckpt_path) > 0:
+            output_ckpt_path = best_ckpt_path[0]
+        best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mIoU_*.pth"))
+        if len(best_ckpt_path) > 0:
+            output_ckpt_path = best_ckpt_path[0]
+        return dict(
+            final_ckpt=output_ckpt_path,
+        )
+
+    def _get_feature_module(self, model):
+        return model
+
+    def _explain_model(self):
         """Explain function of OTX Segmentation Task."""
         raise NotImplementedError
 
     # pylint: disable=too-many-statements
-    def export(
+    def _export_model(
         self,
-        export_type: ExportType,
-        output_model: ModelEntity,
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = True,
     ):
         """Export function of OTX Segmentation Task."""
         # copied from OTX inference_task.py
-        logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
-
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
@@ -441,32 +430,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             cfg,
             **export_options,
         )
-
-        outputs = results.get("outputs")
-        logger.debug(f"results of run_task = {outputs}")
-        if outputs is None:
-            raise RuntimeError(results.get("msg"))
-
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        if xml_file is None or bin_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        output_model.precision = self._precision
-        output_model.optimization_methods = self._optimization_methods
-        output_model.has_xai = dump_features
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        logger.info("Exporting completed")
-
-    # This should be removed
-    def update_override_configurations(self, config):
-        """Update override_configs."""
-        logger.info(f"update override config with: {config}")
-        config = ConfigDict(**config)
-        self.override_configs.update(config)
+        return results
 
     # This should moved somewhere
     def _init_deploy_cfg(self) -> Union[Config, None]:
@@ -539,6 +503,13 @@ class MMSegmentationTask(OTXSegmentationTask):
                 patch_input_shape(deploy_cfg)
 
         return deploy_cfg
+
+    # This should be removed
+    def update_override_configurations(self, config):
+        """Update override_configs."""
+        logger.info(f"update override config with: {config}")
+        config = ConfigDict(**config)
+        self.override_configs.update(config)
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in SegmentationTrainTask."""

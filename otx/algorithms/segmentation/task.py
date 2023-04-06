@@ -49,7 +49,12 @@ from otx.api.entities.metrics import (
     VisualizationInfo,
     VisualizationType,
 )
-from otx.api.entities.model import ModelEntity, ModelPrecision
+from otx.api.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+)
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
@@ -107,6 +112,29 @@ class OTXSegmentationTask(OTXTask, ABC):
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
             return model_data
         return None
+
+    def infer(
+        self,
+        dataset: DatasetEntity,
+        inference_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        """Main infer function."""
+        logger.info("infer()")
+
+        update_progress_callback = default_progress_callback
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress  # type: ignore
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
+        # If confidence threshold is adaptive then up-to-date value should be stored in the model
+        # and should not be changed during inference. Otherwise user-specified value should be taken.
+
+        predictions = self._infer_model(dataset, InferenceParameters(is_evaluation=True))
+        prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
+        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=False)
+
+        logger.info("Inference completed")
+        return dataset
 
     def train(
         self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
@@ -171,44 +199,6 @@ class OTXSegmentationTask(OTXTask, ABC):
         self._is_training = False
         logger.info("train done.")
 
-    @abstractmethod
-    def _train_model(self, dataset: DatasetEntity):
-        """Train model and return the results."""
-        raise NotImplementedError
-
-    def infer(
-        self,
-        dataset: DatasetEntity,
-        inference_parameters: Optional[InferenceParameters] = None,
-    ) -> DatasetEntity:
-        """Main infer function."""
-        logger.info("infer()")
-
-        update_progress_callback = default_progress_callback
-        if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress  # type: ignore
-
-        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
-
-        predictions = self._infer_model(dataset, InferenceParameters(is_evaluation=True))
-        prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
-        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=False)
-
-        logger.info("Inference completed")
-        return dataset
-
-    @abstractmethod
-    def _infer_model(
-        self,
-        dataset: DatasetEntity,
-        inference_parameters: Optional[InferenceParameters] = None,
-    ):
-        """Get inference results from dataset."""
-        raise NotImplementedError
-
-    @abstractmethod
     def export(
         self,
         export_type: ExportType,
@@ -217,9 +207,33 @@ class OTXSegmentationTask(OTXTask, ABC):
         dump_features: bool = True,
     ):
         """Export function of OTX Task."""
-        raise NotImplementedError
+        logger.info("Exporting the model")
+        if export_type != ExportType.OPENVINO:
+            raise RuntimeError(f"not supported export type {export_type}")
+        output_model.model_format = ModelFormat.OPENVINO
+        output_model.optimization_type = ModelOptimizationType.MO
 
-    @abstractmethod
+        results = self._export_model(precision, dump_features)
+        outputs = results.get("outputs")
+        logger.debug(f"results of run_task = {outputs}")
+        if outputs is None:
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+
+        if xml_file is None or bin_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
+        output_model.precision = self._precision
+        output_model.optimization_methods = self._optimization_methods
+        output_model.has_xai = dump_features
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+        logger.info("Exporting completed")
+
     def explain(
         self,
         dataset: DatasetEntity,
@@ -281,6 +295,28 @@ class OTXSegmentationTask(OTXTask, ABC):
                     )
                     dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
 
+    def save_model(self, output_model: ModelEntity):
+        """Save best model weights in SegmentationTrainTask."""
+        logger.info("called save_model")
+        buffer = io.BytesIO()
+        hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
+        labels = {label.name: label.color.rgb_tuple for label in self._labels}
+        model_ckpt = torch.load(self._model_ckpt)
+        modelinfo = {
+            "model": model_ckpt,
+            "config": hyperparams_str,
+            "labels": labels,
+            "VERSION": 1,
+        }
+
+        torch.save(modelinfo, buffer)
+        output_model.set_data("weights.pth", buffer.getvalue())
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self._task_environment.label_schema),
+        )
+        output_model.precision = self._precision
+
     def _generate_training_metrics(self, learning_curves):
         """Get Training metrics (epochs & scores).
 
@@ -310,24 +346,26 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         return output, best_score
 
-    def save_model(self, output_model: ModelEntity):
-        """Save best model weights in SegmentationTrainTask."""
-        logger.info("called save_model")
-        buffer = io.BytesIO()
-        hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
-        labels = {label.name: label.color.rgb_tuple for label in self._labels}
-        model_ckpt = torch.load(self._model_ckpt)
-        modelinfo = {
-            "model": model_ckpt,
-            "config": hyperparams_str,
-            "labels": labels,
-            "VERSION": 1,
-        }
+    @abstractmethod
+    def _train_model(self, dataset: DatasetEntity):
+        """Train model and return the results."""
+        raise NotImplementedError
 
-        torch.save(modelinfo, buffer)
-        output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data(
-            "label_schema.json",
-            label_schema_to_bytes(self._task_environment.label_schema),
-        )
-        output_model.precision = self._precision
+    @abstractmethod
+    def _infer_model(
+        self,
+        dataset: DatasetEntity,
+        inference_parameters: Optional[InferenceParameters] = None,
+    ):
+        """Get inference results from dataset."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def _export_model(self, precision, dump_features):
+        """Export model and return the results."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
+        """Explain model and return the results."""
+        raise NotImplementedError
