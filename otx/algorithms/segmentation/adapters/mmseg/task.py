@@ -31,6 +31,7 @@ from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import collect_env
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    BaseRecordingForwardHook,
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -104,8 +105,8 @@ class MMSegmentationTask(OTXSegmentationTask):
             and self._hyperparams.learning_parameters.enable_supcon
             and not self._model_dir.endswith("supcon")
         ):
-            self._model_dir = os.path.join(self._model_dir, "supcon")
-            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
+            self._model_dir: str = os.path.join(self._model_dir, "supcon")
+            self.data_pipeline_path: str = os.path.join(self._model_dir, "data_pipeline.py")
 
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
@@ -378,12 +379,21 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         eval_predictions = []
         feature_vectors = []
-        with FeatureVectorHook(feature_model) if dump_features else nullcontext() as fhook:
+
+        if not dump_features:
+            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
+        else:
+            feature_vector_hook = FeatureVectorHook(feature_model)
+
+        with feature_vector_hook:
             for data in dataloader:
                 with torch.no_grad():
                     result = model(return_loss=False, output_logits=True, **data)
                 eval_predictions.append(result)
-            feature_vectors = fhook.records if dump_features else [None] * len(mm_dataset)
+                if isinstance(feature_vector_hook, nullcontext):
+                    feature_vectors = [None] * len(mm_dataset)
+                else:
+                    feature_vectors = feature_vector_hook.records
 
         assert len(eval_predictions) == len(feature_vectors), (
             "Number of elements should be the same, however, number of outputs are ",
