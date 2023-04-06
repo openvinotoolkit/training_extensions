@@ -18,6 +18,7 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import ConvModule
 from mmcv.runner import load_checkpoint
+from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import init
 
@@ -573,6 +574,7 @@ def get_efficientnet(
         model_name : str or None, default None. Model name for loading pretrained model.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     if version == "b0":
         assert in_size == (224, 224)
@@ -688,6 +690,7 @@ def efficientnet_b0(in_size=(224, 224), **kwargs):
         in_size : tuple of two ints, default (224, 224). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b0", in_size=in_size, model_name="efficientnet_b0", **kwargs)
 
@@ -699,6 +702,7 @@ def efficientnet_b1(in_size=(240, 240), **kwargs):
         in_size : tuple of two ints, default (240, 240). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b1", in_size=in_size, model_name="efficientnet_b1", **kwargs)
 
@@ -710,6 +714,7 @@ def efficientnet_b2(in_size=(260, 260), **kwargs):
         in_size : tuple of two ints, default (260, 260). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b2", in_size=in_size, model_name="efficientnet_b2", **kwargs)
 
@@ -721,6 +726,7 @@ def efficientnet_b3(in_size=(300, 300), **kwargs):
         in_size : tuple of two ints, default (300, 300). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b3", in_size=in_size, model_name="efficientnet_b3", **kwargs)
 
@@ -732,6 +738,7 @@ def efficientnet_b4(in_size=(380, 380), **kwargs):
         in_size : tuple of two ints, default (380, 380). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b4", in_size=in_size, model_name="efficientnet_b4", **kwargs)
 
@@ -743,6 +750,7 @@ def efficientnet_b5(in_size=(456, 456), **kwargs):
         in_size : tuple of two ints, default (456, 456). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b5", in_size=in_size, model_name="efficientnet_b5", **kwargs)
 
@@ -754,6 +762,7 @@ def efficientnet_b6(in_size=(528, 528), **kwargs):
         in_size : tuple of two ints, default (528, 528). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b6", in_size=in_size, model_name="efficientnet_b6", **kwargs)
 
@@ -765,6 +774,7 @@ def efficientnet_b7(in_size=(600, 600), **kwargs):
         in_size : tuple of two ints, default (600, 600). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b7", in_size=in_size, model_name="efficientnet_b7", **kwargs)
 
@@ -776,6 +786,7 @@ def efficientnet_b8(in_size=(672, 672), **kwargs):
         in_size : tuple of two ints, default (672, 672). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(version="b8", in_size=in_size, model_name="efficientnet_b8", **kwargs)
 
@@ -787,6 +798,7 @@ def efficientnet_b0b(in_size=(224, 224), **kwargs):
         in_size : tuple of two ints, default (224, 224). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b0",
@@ -805,6 +817,7 @@ def efficientnet_b1b(in_size=(240, 240), **kwargs):
         in_size : tuple of two ints, default (240, 240). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b1",
@@ -823,6 +836,7 @@ def efficientnet_b2b(in_size=(260, 260), **kwargs):
         in_size : tuple of two ints, default (260, 260). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b2",
@@ -841,6 +855,7 @@ def efficientnet_b3b(in_size=(300, 300), **kwargs):
         in_size : tuple of two ints, default (300, 300). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b3",
@@ -859,6 +874,7 @@ def efficientnet_b4b(in_size=(380, 380), **kwargs):
         in_size : tuple of two ints, default (380, 380). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b4",
@@ -877,6 +893,7 @@ def efficientnet_b5b(in_size=(456, 456), **kwargs):
         in_size : tuple of two ints, default (456, 456). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b5",
@@ -895,6 +912,7 @@ def efficientnet_b6b(in_size=(528, 528), **kwargs):
         in_size : tuple of two ints, default (528, 528). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b6",
@@ -913,6 +931,7 @@ def efficientnet_b7b(in_size=(600, 600), **kwargs):
         in_size : tuple of two ints, default (600, 600). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b7",
@@ -931,6 +950,7 @@ def efficientnet_b0c(in_size=(224, 224), **kwargs):
         in_size : tuple of two ints, default (224, 224). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b0",
@@ -949,6 +969,7 @@ def efficientnet_b1c(in_size=(240, 240), **kwargs):
         in_size : tuple of two ints, default (240, 240). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b1",
@@ -967,6 +988,7 @@ def efficientnet_b2c(in_size=(260, 260), **kwargs):
         in_size : tuple of two ints, default (260, 260). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b2",
@@ -985,6 +1007,7 @@ def efficientnet_b3c(in_size=(300, 300), **kwargs):
         in_size : tuple of two ints, default (300, 300). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b3",
@@ -1003,6 +1026,7 @@ def efficientnet_b4c(in_size=(380, 380), **kwargs):
         in_size : tuple of two ints, default (380, 380). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b4",
@@ -1021,6 +1045,7 @@ def efficientnet_b5c(in_size=(456, 456), **kwargs):
         in_size : tuple of two ints, default (456, 456). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b5",
@@ -1039,6 +1064,7 @@ def efficientnet_b6c(in_size=(528, 528), **kwargs):
         in_size : tuple of two ints, default (528, 528). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b6",
@@ -1057,6 +1083,7 @@ def efficientnet_b7c(in_size=(600, 600), **kwargs):
         in_size : tuple of two ints, default (600, 600). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
     return get_efficientnet(
         version="b7",
@@ -1075,6 +1102,7 @@ def efficientnet_b8c(in_size=(672, 672), **kwargs):
         in_size : tuple of two ints, default (672, 672). Spatial size of the expected input image.
         pretrained : bool, default False. Whether to load the pretrained weights for model.
         root : str, default '~/.torch/models'. Location for keeping the model parameters.
+        **kwargs: Addition keyword arguments.
     """
 
     return get_efficientnet(
@@ -1281,5 +1309,5 @@ class OTXEfficientNet(EfficientNet):
             load_checkpoint(self, pretrained)
             logger.info(f"init weight - {pretrained}")
         elif pretrained is not None:
-            load_checkpoint(self, pretrained_urls[self.model_name])
+            download_model(net=self, model_name=self.model_name)
             logger.info(f"init weight - {pretrained_urls[self.model_name]}")

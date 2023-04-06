@@ -14,6 +14,7 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.registry import find_and_parse_model_template
+from otx.cli.utils import hpo
 from otx.cli.utils.hpo import (
     HpoCallback,
     HpoDataset,
@@ -653,6 +654,23 @@ def test_run_hpo_not_supported_task(mocker, action_task_env):
     output = "fake"
 
     run_hpo(hpo_time_ratio, output, action_task_env, mocker.MagicMock(), mocker.MagicMock())
+    mock_hpo_runner_instance.run_hpo.assert_not_called()
+
+
+@e2e_pytest_unit
+def test_run_hpo_with_torchrun(mocker, mock_environment):
+    # prepare
+    output = "fake"
+    mock_hpo_runner_instance = mocker.MagicMock()
+    mock_hpo_runner_class = mocker.patch("otx.cli.utils.hpo.HpoRunner")
+    mock_hpo_runner_class.return_value = mock_hpo_runner_instance
+    hpo_time_ratio = "4"
+    mock_environment.model_template.task_type = TaskType.CLASSIFICATION
+    mock_os = mocker.patch.object(hpo, "os", return_value={"TORCHELASTIC_RUN_ID": "1234"})
+    mock_os.environ = {"TORCHELASTIC_RUN_ID": "1234"}
+
+    # run
+    run_hpo(hpo_time_ratio, output, mock_environment, mocker.MagicMock(), mocker.MagicMock())
     mock_hpo_runner_instance.run_hpo.assert_not_called()
 
 

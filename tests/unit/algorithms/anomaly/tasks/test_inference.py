@@ -73,5 +73,6 @@ class TestInferenceTask:
             assert result_set.performance.score.name == "Dice Average"
 
         # 5. Check if OpenVINO model can be generated
-        inference_task.export(ExportType.OPENVINO, output_model)
+        inference_task.export(ExportType.OPENVINO, output_model, dump_features=False)
         assert output_model.get_data("openvino.bin") is not None  # Should not raise an error
+        assert not output_model.has_xai

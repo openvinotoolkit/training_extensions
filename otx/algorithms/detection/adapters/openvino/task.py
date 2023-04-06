@@ -47,6 +47,7 @@ from otx.api.configuration.helper.utils import (
 )
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
@@ -513,7 +514,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Explain function of OpenVINODetectionTask."""
         logger.info("Start OpenVINO explain")
@@ -532,6 +533,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100), None)
             _, saliency_map = features
+            if saliency_map is None:
+                raise RuntimeError(
+                    "There is no Saliency Map in OpenVINO IR model output. "
+                    "Please export model to OpenVINO IR with dump_features"
+                )
 
             labels = self.task_environment.get_labels().copy()
             if saliency_map.shape[0] == len(labels) + 1:
@@ -544,7 +550,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=np.copy(saliency_map),
+                saliency_map=saliency_map,
                 model=self.model,
                 labels=labels,
                 predicted_scored_labels=predicted_scored_labels,

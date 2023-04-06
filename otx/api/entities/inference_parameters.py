@@ -36,7 +36,6 @@ class InferenceParameters:
     is_evaluation: bool = False
     update_progress: Callable[[int, Optional[float]], Any] = default_progress_callback
 
-    # TODO(negvet): use separate ExplainParameters dataclass for this
     explainer: str = ""
     process_saliency_maps: bool = False
     explain_predicted_classes: bool = True

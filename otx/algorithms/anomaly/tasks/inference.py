@@ -266,18 +266,17 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Exception: If export_type is not ExportType.OPENVINO
         """
         if dump_features:
-            raise NotImplementedError(
+            logger.warning(
                 "Feature dumping is not implemented for the anomaly task."
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
         self.precision[0] = precision
         assert export_type == ExportType.OPENVINO, f"Incorrect export_type={export_type}"
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
 
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = self.optimization_type
+        output_model.has_xai = dump_features
 
         # pylint: disable=no-member; need to refactor this
         logger.info("Exporting the OpenVINO model.")

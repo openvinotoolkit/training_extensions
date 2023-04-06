@@ -342,6 +342,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+        output_model.has_xai = dump_features
         self._init_task(export=True, dump_features=dump_features)
 
         self._precision[0] = precision

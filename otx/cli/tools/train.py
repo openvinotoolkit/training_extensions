@@ -215,7 +215,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         )
 
     (config_manager.output_path / "logs").mkdir(exist_ok=True, parents=True)
-    task = task_class(task_environment=environment, output_path=str(config_manager.output_path / "logs"))
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(main, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
@@ -229,19 +228,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 str(config_manager.output_path), hyper_parameters if args.enable_hpo else None
             )
 
+    task = task_class(task_environment=environment, output_path=str(config_manager.output_path / "logs"))
+
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
-    # Latest model folder symbolic link to models
-    latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
-    if latest_path.exists():
-        latest_path.unlink()
-    elif not latest_path.parent.exists():
-        latest_path.parent.mkdir(exist_ok=True, parents=True)
-    latest_path.symlink_to(config_manager.output_path.resolve())
 
     performance = None
     if config_manager.data_config["val_subset"]["data_root"]:
@@ -266,6 +260,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     total_time = str(datetime.timedelta(seconds=sec))
     print("otx train time elapsed: ", total_time)
     model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
+
     get_otx_report(
         model_template=config_manager.template,
         task_config=task.config,
@@ -273,6 +268,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         results=model_results,
         output_path=config_manager.output_path / "cli_report.log",
     )
+
+    # Latest model folder symbolic link to models
+    latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
+    if latest_path.exists():
+        latest_path.unlink()
+    elif not latest_path.parent.exists():
+        latest_path.parent.mkdir(exist_ok=True, parents=True)
+    latest_path.symlink_to(config_manager.output_path.resolve())
 
     if args.gpus:
         multigpu_manager.finalize()

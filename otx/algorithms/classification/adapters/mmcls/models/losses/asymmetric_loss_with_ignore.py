@@ -26,6 +26,7 @@ def asymmetric_loss_with_ignore(
         pred (torch.Tensor): The prediction with shape (N, *).
         target (torch.Tensor): The ground truth label of the prediction with
             shape (N, *).
+        valid_label_mask (torch.Tensor, optional): Label mask for consideration of ignored label.
         weight (torch.Tensor, optional): Sample-wise loss weight with shape
             (N, ). Dafaults to None.
         gamma_pos (float): positive focusing parameter. Defaults to 0.0.

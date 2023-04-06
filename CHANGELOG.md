@@ -7,11 +7,14 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
+- Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
 
 ### Enhancements
 
 - Clean up and refactor the output of the OTX CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1946>)
 - Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
+- Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
+- Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
 
 ### Bug fixes
 
@@ -21,6 +24,15 @@ All notable changes to this project will be documented in this file.
 
 - OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
   (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
+## \[v1.1.2\]
+
+### Bug fixes
+
+- Fix exception -> warning for anomaly dump_feature option
+- Remove `dataset.with_empty_annotations()` to keep original input structure (<https://github.com/openvinotoolkit/training_extensions/pull/1964>)
+- Fix OV batch inference (saliency map generation) (<https://github.com/openvinotoolkit/training_extensions/pull/1965>)
+- Replace EfficentNetB0 model download logic by pytorchcv to resolve zip issue (<https://github.com/openvinotoolkit/training_extensions/pull/1967>)
 
 ## \[v1.1.1\]
 

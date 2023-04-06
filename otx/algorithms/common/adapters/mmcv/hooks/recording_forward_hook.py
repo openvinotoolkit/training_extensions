@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List, Sequence, Union
 
 import torch
@@ -44,7 +44,7 @@ class BaseRecordingForwardHook(ABC):
     def __init__(self, module: torch.nn.Module, fpn_idx: int = -1) -> None:
         self._module = module
         self._handle = None
-        self._records = []  # type: List[torch.Tensor]
+        self._records: List[torch.Tensor] = []
         self._fpn_idx = fpn_idx
 
     @property
@@ -52,12 +52,11 @@ class BaseRecordingForwardHook(ABC):
         """Return records."""
         return self._records
 
-    @abstractmethod
     def func(self, feature_map: torch.Tensor, fpn_idx: int = -1) -> torch.Tensor:
         """This method get the feature vector or saliency map from the output of the module.
 
         Args:
-            x (torch.Tensor): Feature map from the backbone module
+            feature_map (torch.Tensor): Feature map from the backbone module
             fpn_idx (int, optional): The layer index to be processed if the model is a FPN.
                                     Defaults to 0 which uses the largest feature map from FPN.
 

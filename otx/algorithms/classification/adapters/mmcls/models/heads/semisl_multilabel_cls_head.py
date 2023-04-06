@@ -40,33 +40,20 @@ class EMAMeter:
         """Initialize the Exponential Moving Average Meter.
 
         Args:
-        - alpha (float): Smoothing factor for the exponential moving average. Defaults to 0.9.
-
-        Returns:
-        - None
+            alpha (float): Smoothing factor for the exponential moving average. Defaults to 0.9.
         """
         self.alpha = alpha
         self.val = 0
 
     def reset(self):
-        """Reset the Exponential Moving Average Meter.
-
-        Args:
-        - None
-
-        Returns:
-        - None
-        """
+        """Reset the Exponential Moving Average Meter."""
         self.val = 0
 
     def update(self, val):
         """Update the Exponential Moving Average Meter with new value.
 
         Args:
-        - val (float): New value to update the meter.
-
-        Returns:
-        - None
+            val (float): New value to update the meter.
         """
         self.val = self.alpha * self.val + (1 - self.alpha) * val
 
@@ -78,12 +65,9 @@ class LossBalancer:
         """Initialize the Loss Balancer.
 
         Args:
-        - num_losses (int): Number of losses to balance.
-        - weights (list): List of weights to be applied to each loss. If None, equal weights are applied.
-        - ema_weight (float): Smoothing factor for the exponential moving average meter. Defaults to 0.7.
-
-        Returns:
-        - None
+            num_losses (int): Number of losses to balance.
+            weights (list): List of weights to be applied to each loss. If None, equal weights are applied.
+            ema_weight (float): Smoothing factor for the exponential moving average meter. Defaults to 0.7.
         """
         self.epsilon = 1e-9
         self.avg_estimators = [EMAMeter(ema_weight) for _ in range(num_losses)]
@@ -98,10 +82,10 @@ class LossBalancer:
         """Balance the given losses using the weights and exponential moving average.
 
         Args:
-        - losses (list): List of losses to be balanced.
+            losses (list): List of losses to be balanced.
 
         Returns:
-        - total_loss (float): Balanced loss value.
+            total_loss (float): Balanced loss value.
         """
         total_loss = 0.0
         for i, loss in enumerate(losses):
@@ -116,8 +100,9 @@ class SemiMultilabelClsHead:
     """Multilabel Classification head for Semi-SL.
 
     Args:
-        unlabeled_coef (float): unlabeled loss coefficient, default is 1.0
-        use_dynamic_loss_weighting (boolean): whether to use dynamic unlabeled loss weighting, default is True
+        unlabeled_coef (float): unlabeled loss coefficient, default is 1.0.
+        use_dynamic_loss_weighting (boolean): whether to use dynamic unlabeled loss weighting, default is True.
+        aux_loss (dict, optional): auxiliary loss function, default is None.
     """
 
     def __init__(
@@ -142,7 +127,7 @@ class SemiMultilabelClsHead:
         """Loss function in which unlabeled data is considered.
 
         Args:
-            logit (Tensor): Labeled data logits
+            logits (Tensor): Labeled data logits
             gt_label (Tensor): target features for labeled data
             features (set): (weak data features, strong data features)
 

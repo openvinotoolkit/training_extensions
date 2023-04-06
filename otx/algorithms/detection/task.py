@@ -36,6 +36,7 @@ from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
+from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import Domain, LabelEntity
@@ -74,7 +75,7 @@ class OTXDetectionTask(OTXTask, ABC):
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         super().__init__(task_environment, output_path)
         self._task_config = DetectionConfig
-        self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
+        self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(self._task_config)
         self._train_type = self._hyperparams.algo_backend.train_type
         self._model_dir = os.path.join(
             os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),
@@ -252,7 +253,7 @@ class OTXDetectionTask(OTXTask, ABC):
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: Optional[InferenceParameters] = None,
+        explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Task."""
         raise NotImplementedError
