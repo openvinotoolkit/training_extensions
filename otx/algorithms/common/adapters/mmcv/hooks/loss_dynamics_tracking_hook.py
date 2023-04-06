@@ -12,16 +12,11 @@ import pandas as pd
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
 
-from otx.algorithms.classification.adapters.mmcls import OTXClsDataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.api.entities.datasets import DatasetEntity
 
 logger = get_logger()
-
-# TODO: More than two types are needed to create Union so that None is inserted here.
-# This space is reserved for OTXDetDataset in the future.
-_ALLOWED_DATASET_TYPES = Union[OTXClsDataset, None]
 
 
 @HOOKS.register_module()
@@ -35,7 +30,13 @@ class LossDynamicsTrackingHook(Hook):
 
     def before_train_epoch(self, runner: BaseRunner):
         """Initialization for training loss dynamics tracking."""
-        if not isinstance(runner.data_loader.dataset, get_args(_ALLOWED_DATASET_TYPES)):
+        from otx.algorithms.classification.adapters.mmcls import OTXClsDataset
+
+        # TODO: More than two types are needed to create Union so that None is inserted here.
+        # This space is reserved for OTXDetDataset in the future.
+        _allowed_types = Union[OTXClsDataset, None]
+
+        if not isinstance(runner.data_loader.dataset, get_args(_allowed_types)):
             raise RuntimeError(f"{type(runner.data_loader.dataset)} is not allowed.")
 
         dataset = runner.data_loader.dataset
