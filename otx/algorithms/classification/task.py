@@ -23,7 +23,6 @@ from typing import List, Optional
 import numpy as np
 import torch
 
-from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
@@ -78,6 +77,7 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {

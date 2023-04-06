@@ -25,7 +25,6 @@ import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import ConfigDict
 
-from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
@@ -65,6 +64,7 @@ from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
 logger = get_logger()
 
