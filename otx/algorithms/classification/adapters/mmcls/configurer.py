@@ -156,7 +156,7 @@ class ClassificationConfigurer:
 
         Merge cfg and data_cfg
         Match cfg.data.train.type to super_type
-        Patch for unlabeled data path ==> This may be moved to SemiDetectionConfigurer
+        Patch for unlabeled data path ==> This may be moved to SemiClassificationConfigurer
         """
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
