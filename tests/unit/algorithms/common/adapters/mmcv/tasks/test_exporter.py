@@ -5,7 +5,7 @@ from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-class TestExporterMixin:
+class TestExporter:
     @pytest.fixture(autouse=True)
     def setup(self, mocker):
         def mock_init_logger():
