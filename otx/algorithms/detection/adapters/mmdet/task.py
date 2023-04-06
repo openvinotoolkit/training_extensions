@@ -66,7 +66,6 @@ from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import 
 from otx.algorithms.detection.adapters.mmdet.utils import patch_tiling
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
-    set_hyperparams,
     should_cluster_anchors,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.exporter import DetectionExporter
