@@ -73,6 +73,7 @@ class TestDetSaliencyMapHook:
         )
         self.hook = DetSaliencyMapHook(self.module)
         assert self.hook._get_cls_scores_from_feature_map(torch.Tensor(1, 3, 512, 32, 32)) is not None
+
         self.module.bbox_head = torch.nn.Module()
         self.module.bbox_head.cls_out_channels = 3
         self.hook = DetSaliencyMapHook(self.module)

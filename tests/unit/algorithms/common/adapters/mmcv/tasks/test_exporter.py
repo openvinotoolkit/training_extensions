@@ -16,10 +16,7 @@ class TestExporter:
 
         self.exporter = Exporter()
         self.exporter._init_logger = mock_init_logger
-        # self.exporter.configure = mock_configure
-        # self.exporter.mode = ["mock_mode", "train"]
         self.fake_config = mmcv.ConfigDict(work_dir="/path/work_dir", data=dict(test=dict(dataset=mocker.MagicMock())))
-        # mocker.patch.object(self.exporter, "configure", return_value=fake_config)
         mocker.patch("os.listdir")
 
     @e2e_pytest_unit
