@@ -180,11 +180,6 @@ class OTXSegmentationTask(OTXTask, ABC):
         # get prediction on validation set
         self._is_training = False
 
-        if self._train_type == TrainType.Selfsupervised:
-            self.save_model(output_model)
-            logger.info("train done.")
-            return
-
         # Get training metrics group from learning curves
         training_metrics, best_score = self._generate_training_metrics(self._learning_curves)
         performance = Performance(
