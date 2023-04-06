@@ -25,6 +25,7 @@ import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import ConfigDict
 
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
@@ -443,6 +444,9 @@ class OTXDetectionTask(OTXTask, ABC):
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in DetectionTrainTask."""
+        if is_multigpu_child_process():
+            return
+
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))

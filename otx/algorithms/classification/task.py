@@ -23,6 +23,7 @@ from typing import List, Optional
 import numpy as np
 import torch
 
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
@@ -438,6 +439,9 @@ class OTXClassificationTask(OTXTask, ABC):
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in ClassificationTrainTask."""
+        if is_multigpu_child_process():
+            return
+
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
