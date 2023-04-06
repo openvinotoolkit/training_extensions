@@ -84,20 +84,20 @@ class OTXClsDataset(BaseDataset):
     @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Get item from dataset."""
-        dataset = self.otx_dataset
-        item = dataset[index]
+        item = self.otx_dataset[index]
         ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
 
         height, width = item.height, item.width
 
-        data_info = dict(
-            dataset_item=item,
-            width=width,
-            height=height,
-            index=index,
-            gt_label=self.gt_labels[index],
-            ignored_labels=ignored_labels,
-        )
+        data_info = {
+            "dataset_item": item,
+            "width": width,
+            "height": height,
+            "index": index,
+            "gt_label": self.gt_labels[index],
+            "ignored_labels": ignored_labels,
+            "entity_id": item.id_,
+        }
 
         if self.pipeline is None:
             return data_info

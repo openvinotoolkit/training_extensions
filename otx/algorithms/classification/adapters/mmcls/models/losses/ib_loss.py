@@ -14,13 +14,14 @@ from mmcls.models.losses import CrossEntropyLoss
 class IBLoss(CrossEntropyLoss):
     """IB Loss, Influence-Balanced Loss for Imbalanced Visual Classification, https://arxiv.org/abs/2110.02444."""
 
-    def __init__(self, num_classes, start=5, alpha=1000.0):
+    def __init__(self, num_classes, start=5, alpha=1000.0, reduction: str = "mean"):
         """Init fuction of IBLoss.
 
         Args:
             num_classes (int): Number of classes in dataset
             start (int): Epoch to start finetuning with IB loss
             alpha (float): Hyper-parameter for an adjustment for IB loss re-weighting
+            reduction (str): How to reduce the output. Available options are "none" or "mean". Defaults to 'mean'.
         """
         super().__init__(loss_weight=1.0)
         if alpha < 0:
@@ -31,6 +32,9 @@ class IBLoss(CrossEntropyLoss):
         self.weight = None
         self._start_epoch = start
         self._cur_epoch = 0
+        if reduction not in {"mean", "none"}:
+            raise ValueError(f"reduction={reduction} is not allowed.")
+        self._reduction = reduction
 
     @property
     def cur_epoch(self):
@@ -60,4 +64,4 @@ class IBLoss(CrossEntropyLoss):
         scaler = self.alpha / (scaler + self.epsilon)
         ce_loss = F.cross_entropy(x, target, weight=self.weight.to(x.get_device()), reduction="none")
         loss = ce_loss * scaler
-        return loss.mean()
+        return loss.mean() if self._reduction == "mean" else loss
