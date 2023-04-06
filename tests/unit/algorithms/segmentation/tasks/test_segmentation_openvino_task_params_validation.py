@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
-from otx.algorithms.segmentation.tasks.openvino import (
+from otx.algorithms.segmentation.adapters.openvino import (
     OpenVINOSegmentationInferencer,
     OpenVINOSegmentationTask,
     OTXOpenVinoDataLoader,
