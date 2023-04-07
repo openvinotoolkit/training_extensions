@@ -18,7 +18,9 @@
 
 import datetime
 import time
+from contextlib import ExitStack
 from pathlib import Path
+from typing import Optional
 
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
@@ -157,8 +159,14 @@ def get_args():
     return parser.parse_args(), override_param
 
 
-def main():  # pylint: disable=too-many-branches, too-many-statements
-    """Main function that is used for model training."""
+def main():
+    """Main function that invoke train function with ExitStack."""
+    with ExitStack() as exit_stack:
+        train(exit_stack)
+
+
+def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-branches, too-many-statements
+    """Function that is used for model training."""
     start_time = time.time()
     mode = "train"
     args, override_param = get_args()
@@ -206,7 +214,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         environment.model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),
-            model_adapters=model_adapters,
+            model_adapters=model_adapters,  # type: ignore
         )
 
     if args.enable_hpo:
@@ -217,7 +225,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     (config_manager.output_path / "logs").mkdir(exist_ok=True, parents=True)
 
     if args.gpus:
-        multigpu_manager = MultiGPUManager(main, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
+        multigpu_manager = MultiGPUManager(train, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
         if template.task_type in (TaskType.ACTION_CLASSIFICATION, TaskType.ACTION_DETECTION):
             print("Multi-GPU training for action tasks isn't supported yet. A single GPU will be used for a training.")
         elif (
@@ -227,6 +235,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             multigpu_manager.setup_multi_gpu_train(
                 str(config_manager.output_path), hyper_parameters if args.enable_hpo else None
             )
+            if exit_stack is not None:
+                exit_stack.callback(multigpu_manager.finalize)
+            else:
+                print(
+                    "Warning: due to abstract of ExitStack context, "
+                    "if main process raises an error, all processes can be stuck."
+                )
 
     task = task_class(task_environment=environment, output_path=str(config_manager.output_path / "logs"))
 
@@ -276,9 +291,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     elif not latest_path.parent.exists():
         latest_path.parent.mkdir(exist_ok=True, parents=True)
     latest_path.symlink_to(config_manager.output_path.resolve())
-
-    if args.gpus:
-        multigpu_manager.finalize()
 
     if not is_multigpu_child_process():
         task.cleanup()
