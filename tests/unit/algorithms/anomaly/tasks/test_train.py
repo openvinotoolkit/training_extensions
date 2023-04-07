@@ -3,6 +3,8 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import pytest
+
 from copy import deepcopy
 
 from torch import nn
@@ -24,6 +26,7 @@ class TestTrainTask:
             if not param1.data.isnan().any() and "bn" not in key1:
                 assert param1.data.allclose(param2.data)
 
+    @pytest.mark.skip(reason="CVS-107918 FAIL code -11 in anomaly unit test on python3.10")
     def test_train_and_load(self, tmpdir, setup_task_environment):
         """Tests the train method and check if it can be loaded correctly."""
         root = str(tmpdir.mkdir("anomaly_training_test"))
