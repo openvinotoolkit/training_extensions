@@ -5,7 +5,7 @@ ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
 ARG action_runner_url
-ARG ver_cuda="11.1.1"
+ARG ver_cuda="11.7.1"
 
 FROM nvidia/cuda:${ver_cuda}-devel-ubuntu20.04 AS python_base_cuda
 LABEL maintainer="OpenVINO Training Extensions Development Team"
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         software-properties-common \
         wget \
         ffmpeg \
-        libpython3.8 \
+        libpython3.10 \
         curl \
         nodejs \
         unzip \
@@ -49,7 +49,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     bash /home/validation/miniconda.sh -b -p /home/validation/conda && \
     rm ~/miniconda.sh
 ENV PATH "/home/validation/conda/bin:${PATH}"
-RUN conda install python=3.8
+RUN conda install python=3.10
 
 #########################################################
 ## OTX Development Env
