@@ -30,7 +30,7 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
     def __init__(self) -> None:
         super().__init__()
 
-    def init_with_otx_dataset(self, otx_dataset: DatasetEntity) -> None:
+    def init_with_otx_dataset(self, otx_dataset: DatasetEntity[DatasetItemEntityWithID]) -> None:
         """DatasetEntity should be injected to the tracker for the initialization."""
         otx_labels = otx_dataset.get_labels()
         label_categories = dm.LabelCategories.from_iterable([label_entity.name for label_entity in otx_labels])

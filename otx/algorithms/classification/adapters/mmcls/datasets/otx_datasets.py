@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import numpy as np
 from mmcls.core import average_performance, mAP
@@ -108,7 +108,7 @@ class OTXClsDataset(BaseDataset):
             return data_info
         return self.pipeline(data_info)
 
-    def _get_label_id(self, gt_label: np.ndarray) -> ID:
+    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, List[ID]]:
         return self.idx_to_label_id.get(gt_label.item(), ID())
 
     def get_gt_labels(self):
@@ -293,7 +293,7 @@ class OTXMultilabelClsDataset(OTXClsDataset):
 
         return eval_results
 
-    def _get_label_id(self, gt_label: np.ndarray) -> List[ID]:
+    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, List[ID]]:
         return [self.idx_to_label_id.get(idx, ID()) for idx, v in enumerate(gt_label) if v == 1]
 
 
