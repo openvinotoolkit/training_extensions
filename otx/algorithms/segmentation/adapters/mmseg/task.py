@@ -83,7 +83,6 @@ class MMSegmentationTask(OTXSegmentationTask):
     # pylint: disable=too-many-instance-attributes
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         super().__init__(task_environment, output_path)
-        self._model_name = task_environment.model_template.name
         self._data_cfg: Optional[Config] = None
         self._recipe_cfg: Optional[Config] = None
 
@@ -208,12 +207,16 @@ class MMSegmentationTask(OTXSegmentationTask):
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
 
+        # FIXME: Currently segmentor does not support multi batch inference.
+        if "test" in cfg.data and "test_dataloader" in cfg.data:
+            cfg.data.test_dataloader["samples_per_gpu"] = 1
+
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
         dataloader = build_dataloader(
             mm_dataset,
-            samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
-            workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+            samples_per_gpu=cfg.data.test_dataloader.get("samples_per_gpu", 1),
+            workers_per_gpu=cfg.data.test_dataloader.get("workers_per_gpu", 0),
             num_gpus=len(cfg.gpu_ids),
             dist=cfg.distributed,
             seed=cfg.get("seed", None),
@@ -386,9 +389,6 @@ class MMSegmentationTask(OTXSegmentationTask):
             final_ckpt=output_ckpt_path,
         )
 
-    def _get_feature_module(self, model):
-        return model
-
     def _explain_model(self):
         """Explain function of OTX Segmentation Task."""
         raise NotImplementedError
@@ -420,7 +420,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             if export_options["deploy_cfg"]["codebase_config"]["task"] != "Segmentation":
                 if "saliency_map" not in output_names:
                     output_names.append("saliency_map")
-        export_options["model_builder"] = build_segmentor
+        export_options["model_builder"] = getattr(self, "model_builder", build_segmentor)
 
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")

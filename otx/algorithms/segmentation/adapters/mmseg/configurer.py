@@ -6,7 +6,7 @@
 import importlib
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -44,24 +44,24 @@ class SegmentationConfigurer:
     """Patch config to support otx train."""
 
     def __init__(self):
-        self.task_adapt_type = None
-        self.task_adapt_op = "REPLACE"
-        self.org_model_classes = []
-        self.model_classes = []
-        self.data_classes = []
+        self.task_adapt_type: Optional[str] = None
+        self.task_adapt_op: str = "REPLACE"
+        self.org_model_classes: List[str] = []
+        self.model_classes: List[str] = []
+        self.data_classes: List[str] = []
 
     # pylint: disable=too-many-arguments
     def configure(
         self,
-        cfg,
-        model_ckpt,
-        data_cfg,
-        training=True,
-        subset="train",
-        ir_options=None,
-        data_classes=None,
-        model_classes=None,
-    ):
+        cfg: Config,
+        model_ckpt: str,
+        data_cfg: Config,
+        training: bool = True,
+        subset: str = "train",
+        ir_options: Optional[Config] = None,
+        data_classes: Optional[List[str]] = None,
+        model_classes: Optional[List[str]] = None,
+    ) -> Config:
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={training}")
 
@@ -77,7 +77,13 @@ class SegmentationConfigurer:
         self.configure_compat_cfg(cfg)
         return cfg
 
-    def configure_base(self, cfg, data_cfg, data_classes, model_classes):
+    def configure_base(
+        self,
+        cfg: Config,
+        data_cfg: Optional[Config],
+        data_classes: Optional[List[str]],
+        model_classes: Optional[List[str]],
+    ) -> None:
         """Basic configuration work for recipe.
 
         Patchings in this function are handled task level previously
@@ -104,18 +110,21 @@ class SegmentationConfigurer:
         # update model config -> model label schema
         cfg["model_classes"] = model_classes
         if data_classes is not None:
-            train_data_cfg = self.get_data_cfg(data_cfg, "train")
+            train_data_cfg: Config = self.get_data_cfg(data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
+            new_classes: List[str] = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-    def configure_model(self, cfg, ir_options):  # noqa: C901
+    def configure_model(
+        self,
+        cfg: Config,
+        ir_options: Optional[Config],
+    ) -> None:
         """Patch config's model.
 
         Change model type to super type
         Patch for OMZ backbones
         """
-
         if ir_options is None:
             ir_options = {"ir_model_path": None, "ir_weight_path": None, "ir_weight_init": False}
 
@@ -132,7 +141,7 @@ class SegmentationConfigurer:
         ir_model_path = ir_options.get("ir_model_path")
         if ir_model_path:
 
-            def is_mmov_model(key, value):
+            def is_mmov_model(key: str, value: Any) -> bool:
                 if key == "type" and value.startswith("MMOV"):
                     return True
                 return False
@@ -145,7 +154,12 @@ class SegmentationConfigurer:
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-    def configure_data(self, cfg, training, data_cfg):  # noqa: C901
+    def configure_data(
+        self,
+        cfg: Config,
+        training: bool,
+        data_cfg: Optional[Config],
+    ) -> None:
         """Patch cfg.data.
 
         Merge cfg and data_cfg
@@ -155,8 +169,8 @@ class SegmentationConfigurer:
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
 
-        def configure_split(target):
-            def update_transform(opt, pipeline, idx, transform):
+        def configure_split(target: str) -> None:
+            def update_transform(opt: Config, pipeline: Config, idx: int, transform: Config) -> None:
                 if isinstance(opt, dict):
                     if "_delete_" in opt.keys() and opt.get("_delete_", False):
                         # if option include _delete_=True, remove this transform from pipeline
@@ -167,7 +181,7 @@ class SegmentationConfigurer:
                     transform.update(**opt)
 
             # pylint: disable=too-many-branches, too-many-nested-blocks
-            def update_config(src, pipeline_options):
+            def update_config(src: Config, pipeline_options: Config) -> None:
                 logger.info(f"update_config() {pipeline_options}")
                 if src.get("pipeline") is not None or (
                     src.get("dataset") is not None and src.get("dataset").get("pipeline") is not None
@@ -221,7 +235,11 @@ class SegmentationConfigurer:
                     cfg.data[mode]["type"] = "MPASegDataset"
                     cfg.data[mode]["org_type"] = org_type
 
-    def configure_task(self, cfg, training):
+    def configure_task(
+        self,
+        cfg: Config,
+        training: bool,
+    ) -> None:
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
             logger.info(f"task config!!!!: training={training}")
@@ -232,7 +250,7 @@ class SegmentationConfigurer:
             # Ignored mode
             self.configure_ignore(cfg)
 
-    def configure_ignore(self, cfg):
+    def configure_ignore(self, cfg: Config) -> None:
         """Change to incremental loss (ignore mode)."""
         if cfg.get("ignore", False):
             cfg_loss_decode = ConfigDict(
@@ -248,7 +266,7 @@ class SegmentationConfigurer:
                     decode_head.loss_decode = cfg_loss_decode
 
     # pylint: disable=too-many-branches
-    def configure_classes(self, cfg):
+    def configure_classes(self, cfg: Config) -> None:
         """Patch classes for model and dataset."""
         org_model_classes = self.get_model_classes(cfg)
         data_classes = self.get_data_classes(cfg)
@@ -278,7 +296,7 @@ class SegmentationConfigurer:
         # Model architecture
         if "decode_head" in cfg.model:
             decode_head = cfg.model.decode_head
-            if isinstance(decode_head, dict):
+            if isinstance(decode_head, Config):
                 decode_head.num_classes = len(model_classes)
             elif isinstance(decode_head, list):
                 for head in decode_head:
@@ -293,7 +311,7 @@ class SegmentationConfigurer:
         self.model_classes = model_classes
 
     # Functions below are come from base stage
-    def configure_ckpt(self, cfg, model_ckpt):
+    def configure_ckpt(self, cfg: Config, model_ckpt: str) -> None:
         """Patch checkpoint path for pretrained weight.
 
         Replace cfg.load_from to model_ckpt
@@ -308,7 +326,7 @@ class SegmentationConfigurer:
             cfg.model.backbone.pretrained = None
 
     @staticmethod
-    def get_model_ckpt(ckpt_path, new_path=None):
+    def get_model_ckpt(ckpt_path: str, new_path: Optional[str] = None) -> str:
         """Get pytorch model weights."""
         ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
         if "model" in ckpt:
@@ -320,7 +338,7 @@ class SegmentationConfigurer:
         return ckpt_path
 
     @staticmethod
-    def get_model_classes(cfg):
+    def get_model_classes(cfg: Config) -> List[str]:
         """Extract trained classes info from checkpoint file.
 
         MMCV-based models would save class info in ckpt['meta']['CLASSES']
@@ -329,7 +347,7 @@ class SegmentationConfigurer:
           non-MMCV models (e.g. OMZ models)
         """
 
-        def get_model_meta(cfg):
+        def get_model_meta(cfg: Config) -> Config:
             ckpt_path = cfg.get("load_from", None)
             meta = {}
             if ckpt_path:
@@ -353,7 +371,7 @@ class SegmentationConfigurer:
                 all_classes = []
             return all_classes
 
-        classes = []
+        classes: List[str] = []
         meta = get_model_meta(cfg)
         # for MPA classification legacy compatibility
         classes = meta.get("CLASSES", [])
@@ -369,9 +387,9 @@ class SegmentationConfigurer:
             classes = cfg.model.pop("classes", cfg.pop("model_classes", []))
         return classes
 
-    def get_data_classes(self, cfg):
+    def get_data_classes(self, cfg: Config) -> List[str]:
         """Get data classes from train cfg."""
-        data_classes = []
+        data_classes: List[str] = []
         train_cfg = self.get_data_cfg(cfg, "train")
         if "data_classes" in train_cfg:
             data_classes = list(train_cfg.pop("data_classes", []))
@@ -380,7 +398,7 @@ class SegmentationConfigurer:
         return data_classes
 
     @staticmethod
-    def get_data_cfg(cfg, subset):
+    def get_data_cfg(cfg: Config, subset: str) -> Config:
         """Get subset's data cfg."""
         assert subset in ["train", "val", "test"], f"Unknown subset:{subset}"
         if "dataset" in cfg.data[subset]:  # Concat|RepeatDataset
@@ -391,10 +409,10 @@ class SegmentationConfigurer:
         return cfg.data[subset]
 
     @staticmethod
-    def configure_hook(cfg):
+    def configure_hook(cfg: Config) -> None:
         """Update cfg.custom_hooks based on cfg.custom_hook_options."""
 
-        def update_hook(opt, custom_hooks, idx, hook):
+        def update_hook(opt: Config, custom_hooks: Any, idx: int, hook: Config) -> None:
             """Delete of update a custom hook."""
             if isinstance(opt, dict):
                 if opt.get("_delete_", False):
@@ -416,7 +434,7 @@ class SegmentationConfigurer:
                 if hook["type"] == opt_key:
                     update_hook(opt, custom_hooks, idx, hook)
 
-    def configure_device(self, cfg, training):
+    def configure_device(self, cfg: Config, training: bool) -> None:
         """Setting device for training and inference."""
         cfg.distributed = False
         if torch.distributed.is_initialized():
@@ -439,11 +457,7 @@ class SegmentationConfigurer:
         else:
             cfg.device = "cuda"
 
-    def configure_samples_per_gpu(
-        self,
-        cfg: Config,
-        subset: str,
-    ):
+    def configure_samples_per_gpu(self, cfg: Config, subset: str) -> None:
         """Settings samples_per_gpu for training and inference."""
 
         dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
@@ -469,12 +483,12 @@ class SegmentationConfigurer:
             cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
     @staticmethod
-    def configure_fp16_optimizer(cfg: Config):
+    def configure_fp16_optimizer(cfg: Config) -> None:
         """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
         fp16_config = cfg.pop("fp16", None)
         if fp16_config is not None:
             optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
-            opts: Dict[str, Any] = dict(
+            opts: Config = dict(
                 distributed=getattr(cfg, "distributed", False),
                 **fp16_config,
             )
@@ -490,7 +504,7 @@ class SegmentationConfigurer:
             cfg.optimizer_config.update(opts)
 
     @staticmethod
-    def configure_distributed(cfg):
+    def configure_distributed(cfg: Config) -> None:
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
             new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
@@ -506,8 +520,8 @@ class SegmentationConfigurer:
     ):
         """Modify config to keep the compatibility."""
 
-        def _configure_dataloader(cfg):
-            global_dataloader_cfg = {}
+        def _configure_dataloader(cfg: Config) -> None:
+            global_dataloader_cfg: Dict[str, str] = {}
             global_dataloader_cfg.update(
                 {
                     k: cfg.data.pop(k)
@@ -541,14 +555,14 @@ class SegmentationConfigurer:
 class IncrSegmentationConfigurer(SegmentationConfigurer):
     """Patch config to support incremental learning for semantic segmentation."""
 
-    def configure_task(self, cfg, training):
+    def configure_task(self, cfg: ConfigDict, training: bool) -> None:
         """Patch config to support incremental learning."""
         super().configure_task(cfg, training)
 
-        new_classes = np.setdiff1d(self.model_classes, self.org_model_classes).tolist()
+        new_classes: List[str] = np.setdiff1d(self.model_classes, self.org_model_classes).tolist()
 
         # Check if new classes are added
-        has_new_class = len(new_classes) > 0
+        has_new_class: bool = len(new_classes) > 0
 
         # Update TaskAdaptHook (use incremental sampler)
         task_adapt_hook = ConfigDict(
@@ -565,7 +579,7 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
 class SemiSLSegmentationConfigurer(SegmentationConfigurer):
     """Patch config to support semi supervised learning for semantic segmentation."""
 
-    def configure_data(self, cfg, training, data_cfg):
+    def configure_data(self, cfg: ConfigDict, training: bool, data_cfg: ConfigDict) -> None:
         """Patch cfg.data."""
         super().configure_data(cfg, training, data_cfg)
         # Set unlabeled data hook
@@ -573,7 +587,7 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 self.configure_unlabeled_dataloader(cfg)
 
-    def configure_task(self, cfg, training, **kwargs):
+    def configure_task(self, cfg: ConfigDict, training: bool, **kwargs: Any) -> None:
         """Adjust settings for task adaptation."""
         super().configure_task(cfg, training, **kwargs)
 
@@ -585,10 +599,14 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
         remove_custom_hook(cfg, "TaskAdaptHook")
 
     @staticmethod
-    def configure_unlabeled_dataloader(cfg: Config):
+    def configure_unlabeled_dataloader(cfg: ConfigDict) -> None:
         """Patch for unlabled dataloader."""
 
-        model_task = {"classification": "mmcls", "segmentation": "mmdet", "segmentation": "mmseg"}  # noqa
+        model_task: Dict[str, str] = {
+            "classification": "mmcls",
+            "detection": "mmdet",
+            "segmentation": "mmseg",
+        }  # noqa
         if "unlabeled" in cfg.data:
             task_lib_module = importlib.import_module(f"{model_task[cfg.model_task]}.datasets")
             dataset_builder = getattr(task_lib_module, "build_dataset")

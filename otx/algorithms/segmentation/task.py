@@ -84,6 +84,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         super().__init__(task_environment, output_path)
         self._task_config = SegmentationConfig
         self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(self._task_config)
+        self._model_name = task_environment.model_template.name
         self._train_type = self._hyperparams.algo_backend.train_type
         self.metric = "mDice"
         self._label_dictionary = dict(enumerate(sorted(self._labels), 1))
