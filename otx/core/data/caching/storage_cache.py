@@ -10,9 +10,9 @@ from typing import List, Optional
 
 from datumaro.components.dataset import Dataset as DatumDataset
 
-from otx.mpa.utils.file import MPA_CACHE
+from otx.core.file import OTX_CACHE
 
-DATASET_CACHE = os.path.join(MPA_CACHE, "dataset")
+DATASET_CACHE = os.path.join(OTX_CACHE, "dataset")
 
 
 def arrow_cache_helper(
