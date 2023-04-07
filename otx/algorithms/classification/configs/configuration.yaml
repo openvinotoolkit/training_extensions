@@ -372,7 +372,7 @@ algo_backend:
     warning: null
   enable_noisy_label_detection:
     affects_outcome_of: TRAINING
-    default_value: true
+    default_value: false
     description: Set to True to enable loss dynamics tracking for each sample to detect noisy labeled samples.
     editable: true
     header: Enable loss dynamics tracking for noisy label detection
