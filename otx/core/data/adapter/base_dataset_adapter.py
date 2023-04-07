@@ -20,6 +20,7 @@ from datumaro.components.dataset import Dataset as DatumDataset
 from datumaro.components.dataset import DatasetSubset as DatumDatasetSubset
 from datumaro.components.media import Image as DatumImage
 from datumaro.components.media import MediaElement as DatumMediaElement
+import numpy as np
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -301,14 +302,17 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     def datum_media_2_otx_media(datumaro_media: DatumMediaElement) -> IMediaEntity:
         """Convert Datumaro media to OTX media."""
         if isinstance(datumaro_media, DatumImage):
-            path = datumaro_media.path
+            path = getattr(datumaro_media, "path", None)
             size = datumaro_media._size  # pylint: disable=protected-access
-            if os.path.exists(path):
+
+            if path and os.path.exists(path):
                 return Image(file_path=path, size=size)
 
             def helper():
+                data = datumaro_media.data  # pylint: disable=protected-access
+                # OTX expects unint8 data type
+                data = data.astype(np.uint8)
                 # OTX expects RGB format
-                data = datumaro_media._data()  # pylint: disable=protected-access
                 if len(data.shape) == 2:
                     return cv2.cvtColor(data, cv2.COLOR_GRAY2RGB)
                 if len(data.shape) == 3:
