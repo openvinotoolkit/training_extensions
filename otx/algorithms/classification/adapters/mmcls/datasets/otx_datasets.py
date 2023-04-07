@@ -98,11 +98,9 @@ class OTXClsDataset(BaseDataset):
             "index": index,
             "gt_label": gt_label,
             "ignored_labels": ignored_labels,
+            "entity_id": getattr(item, "id_", None),
+            "label_id": self.labels[gt_label.item()].id_,
         }
-
-        if hasattr(item, "id_"):
-            data_info["entity_id"]: item.id_  # type: ignore
-            data_info["label_id"]: self.labels[gt_label.item()].id_  # type: ignore
 
         if self.pipeline is None:
             return data_info

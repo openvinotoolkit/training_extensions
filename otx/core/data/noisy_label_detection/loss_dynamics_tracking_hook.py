@@ -7,7 +7,11 @@ import os.path as osp
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
+from mmcv.utils import Config, ConfigDict
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    update_or_add_custom_hook,
+)
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 
@@ -73,12 +77,15 @@ class LossDynamicsTrackingHook(Hook):
             tracker.export(self._output_fpath)
 
     @classmethod
-    def configure_train_pipeline(cls, data_cfg) -> None:
-        """Configure data pipeline to produce necessary output variables.
+    def configure_recipe(cls, recipe_cfg: Config, output_path: str) -> None:
+        """Configure recipe to enable loss dynamics tracking."""
+        recipe_cfg.model["track_loss_dynamics"] = True
 
-        This should be called before building the train dataloader.
-        """
-        for p in data_cfg.train.pipeline:
-            if p.type == "Collect":
-                p.meta_keys.add("entity_id")
-                p.meta_keys.add("label_id")
+        update_or_add_custom_hook(
+            recipe_cfg,
+            ConfigDict(
+                type="LossDynamicsTrackingHook",
+                priority="LOWEST",
+                output_path=output_path,
+            ),
+        )

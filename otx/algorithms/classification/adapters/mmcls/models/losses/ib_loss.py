@@ -34,7 +34,6 @@ class IBLoss(CrossEntropyLoss):
         self._cur_epoch = 0
         if reduction not in {"mean", "none"}:
             raise ValueError(f"reduction={reduction} is not allowed.")
-        self._reduction = reduction
 
     @property
     def cur_epoch(self):
@@ -64,4 +63,4 @@ class IBLoss(CrossEntropyLoss):
         scaler = self.alpha / (scaler + self.epsilon)
         ce_loss = F.cross_entropy(x, target, weight=self.weight, reduction="none")
         loss = ce_loss * scaler
-        return loss.mean() if self._reduction == "mean" else loss
+        return loss.mean() if self.reduction == "mean" else loss

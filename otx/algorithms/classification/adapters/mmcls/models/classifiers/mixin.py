@@ -94,7 +94,7 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
 
     def __init__(self, track_loss_dynamics: bool = False, **kwargs):
         if track_loss_dynamics:
-            if getattr(self, "multilabel") or getattr(self, "hierarchical"):
+            if getattr(self, "multilabel", False) or getattr(self, "hierarchical", False):
                 raise RuntimeError("multilabel or hierarchical tasks are not supported now.")
 
             head_cfg = kwargs.get("head", None)

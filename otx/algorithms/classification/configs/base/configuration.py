@@ -53,7 +53,7 @@ class ClassificationConfig(BaseConfig):
         header = string_attribute("Parameters for the MPA algo-backend")
         description = header
 
-        enable_loss_dyns_tracking = configurable_boolean(
+        enable_noisy_label_detection = configurable_boolean(
             default_value=False,
             header="Enable loss dynamics tracking for noisy label detection",
             description="Set to True to enable loss dynamics tracking for each sample to detect noisy labeled samples.",

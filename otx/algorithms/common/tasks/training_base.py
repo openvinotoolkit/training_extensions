@@ -352,9 +352,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # Update recipe with caching modules
         self._update_caching_modules(data_cfg)
 
-        # Update recipe with loss dynamics tracking module
-        self._update_loss_dynamics_tracking_modules(data_cfg)
-
         if self._data_cfg is not None:
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
@@ -682,21 +679,4 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         update_or_add_custom_hook(
             self._recipe_cfg,
             ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
-        )
-
-    def _update_loss_dynamics_tracking_modules(self, data_cfg) -> None:
-        if not getattr(self.hyperparams.algo_backend, "enable_loss_dyns_tracking", False):
-            return
-
-        from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook  # noqa: F401
-
-        LossDynamicsTrackingHook.configure_train_pipeline(data_cfg)
-
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(
-                type="LossDynamicsTrackingHook",
-                priority="LOWEST",
-                output_path=self._output_path,
-            ),
         )

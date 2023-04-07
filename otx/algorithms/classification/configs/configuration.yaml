@@ -370,7 +370,7 @@ algo_backend:
       type: UI_RULES
     visible_in_ui: false
     warning: null
-  enable_loss_dyns_tracking:
+  enable_noisy_label_detection:
     affects_outcome_of: TRAINING
     default_value: true
     description: Set to True to enable loss dynamics tracking for each sample to detect noisy labeled samples.
