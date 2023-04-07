@@ -488,6 +488,17 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         """
         return [meta for meta in self.get_metadata() if meta.data.name == name and meta.model == model]
 
+    def wrap(self, **kwargs) -> "DatasetItemEntity":
+        """Creates a new DatasetItemEntity, overriding only the given arguments to the existing ones for this instance."""
+        return DatasetItemEntity(
+            media=kwargs.get("media", self.media),
+            annotation_scene=kwargs.get("annotation_scene", self.annotation_scene),
+            roi=kwargs.get("roi", self.roi),
+            metadata=kwargs.get("metadata", self.get_metadata()),
+            subset=kwargs.get("subset", self.subset),
+            ignored_labels=kwargs.get("ignored_labels", self.ignored_labels),
+        )
+
 
 class DatasetItemEntityWithID(DatasetItemEntity):
     def __init__(
@@ -523,3 +534,15 @@ class DatasetItemEntityWithID(DatasetItemEntity):
 
     def __eq__(self, other):
         return super().__eq__(other) and self.id_ == other.id_
+
+    def wrap(self, **kwargs) -> "DatasetItemEntityWithID":
+        """Creates a new DatasetItemEntityWithID, overriding only the given arguments to the existing ones for this instance."""
+        return DatasetItemEntityWithID(
+            media=kwargs.get("media", self.media),
+            annotation_scene=kwargs.get("annotation_scene", self.annotation_scene),
+            roi=kwargs.get("roi", self.roi),
+            metadata=kwargs.get("metadata", self.get_metadata()),
+            subset=kwargs.get("subset", self.subset),
+            ignored_labels=kwargs.get("ignored_labels", self.ignored_labels),
+            id_=kwargs.get("id_", self.id_),
+        )

@@ -318,7 +318,7 @@ class DatasetEntity:
                 roi.id_ = ID(ObjectId())
                 roi.set_labels([])
 
-                new_dataset_item = DatasetItemEntity(
+                new_dataset_item = dataset_item.wrap(
                     media=dataset_item.media,
                     annotation_scene=empty_annotation,
                     roi=roi,

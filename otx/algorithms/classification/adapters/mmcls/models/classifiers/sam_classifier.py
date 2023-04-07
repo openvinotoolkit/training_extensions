@@ -11,13 +11,13 @@ from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
 
-from .mixin import LossDynamicsTrackingMixin, SAMClassifierMixin
+from .mixin import ClsLossDynamicsTrackingMixin, SAMClassifierMixin
 
 logger = get_logger()
 
 
 @CLASSIFIERS.register_module()
-class SAMImageClassifier(SAMClassifierMixin, LossDynamicsTrackingMixin, ImageClassifier):
+class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
     """SAM-enabled ImageClassifier."""
 
     def __init__(self, task_adapt=None, **kwargs):

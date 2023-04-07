@@ -688,9 +688,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if not getattr(self.hyperparams.algo_backend, "enable_loss_dyns_tracking", False):
             return
 
-        for p in data_cfg.train.pipeline:
-            if p.type == "Collect":
-                p.meta_keys.add("entity_id")
+        from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook  # noqa: F401
+
+        LossDynamicsTrackingHook.configure_train_pipeline(data_cfg)
 
         update_or_add_custom_hook(
             self._recipe_cfg,

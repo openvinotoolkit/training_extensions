@@ -67,6 +67,11 @@ class ClsStage(Stage):
         self.configure_in_channel(cfg)
         self.configure_topk(cfg)
 
+        # Loss dynamics tracking
+        for hook_cfg in cfg.custom_hooks:
+            if hook_cfg.type == "LossDynamicsTrackingHook":
+                cfg.model["track_loss_dynamics"] = True
+
     # pylint: disable=too-many-branches
     @staticmethod
     def configure_in_channel(cfg):
