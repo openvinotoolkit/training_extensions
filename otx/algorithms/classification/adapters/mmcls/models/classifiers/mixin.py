@@ -34,11 +34,13 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
         """DatasetEntity should be injected to the tracker for the initialization."""
         otx_labels = otx_dataset.get_labels()
         label_categories = dm.LabelCategories.from_iterable([label_entity.name for label_entity in otx_labels])
-        otx_label_map = {label_entity.id_: idx for idx, label_entity in enumerate(otx_labels)}
+        self.otx_label_map = {label_entity.id_: idx for idx, label_entity in enumerate(otx_labels)}
 
         def _convert_anns(item: DatasetItemEntityWithID):
             labels = [
-                dm.Label(label=otx_label_map[label.id_]) for ann in item.get_annotations() for label in ann.get_labels()
+                dm.Label(label=self.otx_label_map[label.id_])
+                for ann in item.get_annotations()
+                for label in ann.get_labels()
             ]
             return labels
 
@@ -52,9 +54,7 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
                 )
                 for item in otx_dataset
             ],
-            infos={
-                "purpose": "To export training loss dynamics for classification tasks",
-            },
+            infos={"purpose": "noisy_label_detection", "task": "OTX-MultiClassCls"},
             categories={dm.AnnotationType.label: label_categories},
         )
 
@@ -63,11 +63,11 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
     def accumulate(self, outputs, iter) -> None:
         """Accumulate training loss dynamics for each training step."""
         entity_ids = outputs["entity_ids"]
-        gt_labels = np.squeeze(outputs["gt_labels"])
+        label_ids = np.squeeze(outputs["label_ids"])
         loss_dyns = outputs["loss_dyns"]
 
-        for entity_id, gt_label, loss_dyn in zip(entity_ids, gt_labels, loss_dyns):
-            self._loss_dynamics[(entity_id, gt_label)].append((iter, loss_dyn))
+        for entity_id, label_id, loss_dyn in zip(entity_ids, label_ids, loss_dyns):
+            self._loss_dynamics[(entity_id, label_id)].append((iter, loss_dyn))
 
     def export(self, output_path: str) -> None:
         """Export loss dynamics statistics to Datumaro format."""
@@ -80,10 +80,10 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
             columns=["iters", "loss_dynamics"],
         )
 
-        for (entity_id, gt_label), row in df.iterrows():
+        for (entity_id, label_id), row in df.iterrows():
             item = self._export_dataset.get(entity_id, "train")
             for ann in item.annotations:
-                if isinstance(ann, dm.Label) and ann.label == gt_label:
+                if isinstance(ann, dm.Label) and ann.label == self.otx_label_map[label_id]:
                     ann.attributes = row.to_dict()
 
         self._export_dataset.export(output_path, format="datumaro")
@@ -124,8 +124,8 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
         loss_dyns = losses["loss"].detach().cpu().numpy()
         assert not np.isscalar(loss_dyns)
 
-        gt_labels = data["gt_label"].detach().cpu().numpy()
         entity_ids = [img_meta["entity_id"] for img_meta in data["img_metas"]]
+        label_ids = [img_meta["label_id"] for img_meta in data["img_metas"]]
         loss, log_vars = self._parse_losses(losses)
 
         outputs = dict(
@@ -133,7 +133,7 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
             log_vars=log_vars,
             loss_dyns=loss_dyns,
             entity_ids=entity_ids,
-            gt_labels=gt_labels,
+            label_ids=label_ids,
             num_samples=len(data["img"].data),
         )
 

@@ -74,10 +74,11 @@ class LossDynamicsTrackingHook(Hook):
 
     @classmethod
     def configure_train_pipeline(cls, data_cfg) -> None:
-        """Configure data pipeline to include "entity_id".
+        """Configure data pipeline to produce necessary output variables.
 
         This should be called before building the train dataloader.
         """
         for p in data_cfg.train.pipeline:
             if p.type == "Collect":
                 p.meta_keys.add("entity_id")
+                p.meta_keys.add("label_id")

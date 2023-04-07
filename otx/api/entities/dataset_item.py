@@ -500,6 +500,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         )
 
 
+# TODO: This should be removed in the near future and DatasetItemEntity should have id_ field.
 class DatasetItemEntityWithID(DatasetItemEntity):
     def __init__(
         self,

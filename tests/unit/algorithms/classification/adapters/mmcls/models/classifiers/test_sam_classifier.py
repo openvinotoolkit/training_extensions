@@ -159,6 +159,7 @@ class TestLossDynamicsTrackingMixin:
         }
         if loss_type == "IBLoss":
             cfg["head"]["loss"]["num_classes"] = num_classes
+            cfg["head"]["loss"]["start"] = 0  # Should be zero
 
         class MockBackbone(torch.nn.Module):
             def forward(self, *args, **kwargs):
@@ -176,11 +177,21 @@ class TestLossDynamicsTrackingMixin:
         img = torch.rand(n_data, 3, 8, 8)
         gt_label = torch.arange(0, len(labels), dtype=torch.long).reshape(-1, 1)
         entity_ids = [item.id_ for item in fxt_multi_class_cls_dataset_entity]
+        label_ids = [
+            label.id_
+            for item in fxt_multi_class_cls_dataset_entity
+            for ann in item.get_annotations()
+            for label in ann.get_labels()
+        ]
+
+        assert len(entity_ids) == len(label_ids)
 
         return {
             "img": img,
             "gt_label": gt_label,
-            "img_metas": [{"entity_id": entity_id} for entity_id in entity_ids],
+            "img_metas": [
+                {"entity_id": entity_id, "label_id": label_id} for entity_id, label_id in zip(entity_ids, label_ids)
+            ],
         }
 
     @torch.no_grad()
@@ -190,9 +201,10 @@ class TestLossDynamicsTrackingMixin:
 
         assert "loss_dyns" in outputs
         assert "entity_ids" in outputs
-        assert "gt_labels" in outputs
+        assert "label_ids" in outputs
 
-        for iter in range(3):
+        n_steps = 3
+        for iter in range(n_steps):
             classifier.loss_dyns_tracker.accumulate(outputs, iter)
 
         export_dir = osp.join(tmp_dir_path, "noisy_label_detection")
@@ -202,4 +214,6 @@ class TestLossDynamicsTrackingMixin:
 
         for item in dataset:
             for ann in item.annotations:
-                ann.attributes
+                for k, v in ann.attributes.items():
+                    assert k in {"iters", "loss_dynamics"}
+                    assert len(v) == n_steps
