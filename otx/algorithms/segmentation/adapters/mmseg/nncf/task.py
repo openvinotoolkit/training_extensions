@@ -18,9 +18,10 @@ from functools import partial
 from typing import List, Optional
 
 import otx.algorithms.segmentation.adapters.mmseg.nncf.patches  # noqa: F401  # pylint: disable=unused-import
-from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.nncf import build_nncf_segmentor
+from otx.algorithms.segmentation.adapters.mmseg.task import MMSegmentationTask
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.metrics import (
     CurveMetric,
@@ -32,22 +33,31 @@ from otx.api.entities.metrics import (
     VisualizationInfo,
     VisualizationType,
 )
-from otx.api.entities.model import ModelEntity
+from otx.api.entities.model import (
+    ModelEntity,
+)
 from otx.api.entities.optimization_parameters import OptimizationParameters
-
-from .inference import SegmentationInferenceTask
+from otx.api.entities.task_environment import TaskEnvironment
 
 logger = get_logger()
 
 
-class SegmentationNNCFTask(NNCFBaseTask, SegmentationInferenceTask):  # pylint: disable=too-many-ancestors
+class SegmentationNNCFTask(NNCFBaseTask, MMSegmentationTask):  # pylint: disable=too-many-ancestors
     """SegmentationNNCFTask."""
 
-    def _initialize_post_hook(self, options=None):
-        super()._initialize_post_hook(options)
+    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
+        super().__init__()  # type: ignore [call-arg]
+        super(NNCFBaseTask, self).__init__(task_environment, output_path)
+        self._set_attributes_by_hyperparams()
 
-        export = options.get("export", False)
-        options["model_builder"] = partial(
+    def _init_task(self, export: bool = False):  # noqa
+        super(NNCFBaseTask, self)._init_task(export)
+        self._prepare_optimize(export)
+
+    def _prepare_optimize(self, export=False):
+        super()._prepare_optimize()
+
+        self.model_builder = partial(
             self.model_builder,
             nncf_model_builder=build_nncf_segmentor,
             return_compression_ctrl=False,
@@ -59,12 +69,8 @@ class SegmentationNNCFTask(NNCFBaseTask, SegmentationInferenceTask):  # pylint: 
         dataset: DatasetEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
-        results = self._run_task(
-            "SegTrainer",
-            mode="train",
-            dataset=dataset,
-            parameters=optimization_parameters,
-        )
+        results = self._train_model(dataset)
+
         return results
 
     def _optimize_post_hook(

@@ -23,9 +23,11 @@ from .config_utils import (
     set_hyperparams,
 )
 from .data_utils import get_valid_label_mask_per_batch, load_dataset_items
+from .exporter import SegmentationExporter
 
 __all__ = [
     "patch_config",
+    "SegmentationExporter",
     "patch_datasets",
     "patch_evaluation",
     "prepare_for_training",

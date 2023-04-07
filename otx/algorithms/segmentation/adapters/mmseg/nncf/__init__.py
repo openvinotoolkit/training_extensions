@@ -15,9 +15,7 @@
 # and limitations under the License.
 
 from .builder import build_nncf_segmentor
-from .hooks import CustomstepLrUpdaterHook
 
 __all__ = [
     "build_nncf_segmentor",
-    "CustomstepLrUpdaterHook",
 ]
