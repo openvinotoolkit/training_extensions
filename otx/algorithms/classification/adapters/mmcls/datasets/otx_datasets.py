@@ -101,15 +101,15 @@ class OTXClsDataset(BaseDataset):
             gt_label=gt_label,
             ignored_labels=ignored_labels,
             entity_id=getattr(item, "id_", None),
-            label_ids=self._get_label_ids(gt_label),
+            label_id=self._get_label_id(gt_label),
         )
 
         if self.pipeline is None:
             return data_info
         return self.pipeline(data_info)
 
-    def _get_label_ids(self, gt_label: np.ndarray) -> ID:
-        return self.idx_to_label_id[gt_label.item()]
+    def _get_label_id(self, gt_label: np.ndarray) -> ID:
+        return self.idx_to_label_id.get(gt_label.item(), ID())
 
     def get_gt_labels(self):
         """Get all ground-truth labels (categories).
@@ -293,8 +293,8 @@ class OTXMultilabelClsDataset(OTXClsDataset):
 
         return eval_results
 
-    def _get_label_ids(self, gt_label: np.ndarray) -> List[ID]:
-        return [self.idx_to_label_id[idx] for idx, v in enumerate(gt_label) if v == 1]
+    def _get_label_id(self, gt_label: np.ndarray) -> List[ID]:
+        return [self.idx_to_label_id.get(idx, ID()) for idx, v in enumerate(gt_label) if v == 1]
 
 
 @DATASETS.register_module()
