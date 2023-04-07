@@ -544,7 +544,7 @@ class MMClassificationTask(OTXClassificationTask):
             if export_options["deploy_cfg"]["codebase_config"]["task"] != "Segmentation":
                 if "saliency_map" not in output_names:
                     output_names.append("saliency_map")
-        export_options["model_builder"] = build_classifier
+        export_options["model_builder"] = getattr(self, "model_builder", build_classifier)
 
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
