@@ -5,6 +5,6 @@ Tasks
    :maxdepth: 3
    :caption: Contents:
 
-.. automodule:: otx.algorithms.classification.tasks
+.. automodule:: otx.algorithms.classification.task
    :members:
    :undoc-members:

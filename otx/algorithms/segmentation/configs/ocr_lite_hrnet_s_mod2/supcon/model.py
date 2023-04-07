@@ -91,4 +91,4 @@ load_from = None
 
 resume_from = None
 
-fp16 = dict(_delete_=True, loss_scale=512.0)
+fp16 = dict(loss_scale=512.0)

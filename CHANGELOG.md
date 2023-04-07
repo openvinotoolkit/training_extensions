@@ -7,15 +7,19 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
+- Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
 
 ### Enhancements
 
 - Clean up and refactor the output of the OTX CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1946>)
 - Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
+- Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
+- Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
+- Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
 
 ### Bug fixes
 
--
+- Fix backward compatibility with OpenVINO SSD-like detection models from OTE 0.5 (<https://github.com/openvinotoolkit/training_extensions/pull/1970>)
 
 ### Known issues
 

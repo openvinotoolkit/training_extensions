@@ -397,7 +397,7 @@ The command below will evaluate the trained model on the provided dataset:
 Explanation
 ***********
 
-``otx explain`` runs the explainable AI (XAI) algorithm of a model on the specific dataset. It helps explain the model's decision-making process in a way that is easily understood by humans.
+``otx explain`` runs the explainable AI (XAI) algorithm on a specific model-dataset pair. It helps explain the model's decision-making process in a way that is easily understood by humans.
 
 With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
 
@@ -422,8 +422,12 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Load model weights from previously saved checkpoint.
       --explain-algorithm EXPLAIN_ALGORITHM
                             Explain algorithm name, currently support ['activationmap', 'eigencam', 'classwisesaliencymap']. For Openvino task, default method will be selected.
+      --process-saliency-maps PROCESS_SALIENCY_MAPS
+                            Processing of saliency map includes (1) resizing to input image resolution and (2) applying a colormap. Depending on the number of targets to explain, this might take significant time.
+      --explain-all-classes EXPLAIN_ALL_CLASSES
+                            Provides explanations for all classes. Otherwise, explains only predicted classes. This feature is supported by algorithms that can generate explanations per each class.
       --overlay-weight OVERLAY_WEIGHT
-                            Weight of the saliency map when overlaying the saliency map.
+                            Weight of the saliency map when overlaying the input image with saliency map.
 
 
 The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``save-explanation-to`` path:
