@@ -10,7 +10,7 @@ import copy
 import itertools
 import logging
 from threading import Lock
-from typing import List, Optional, Sequence, Set, Tuple, Union
+from typing import List, Optional, Sequence, Set, Tuple, TypeVar, Union
 from bson import ObjectId
 import numpy as np
 
@@ -26,6 +26,9 @@ from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
 
 logger = logging.getLogger(__name__)
+
+
+T = TypeVar("T", bound="DatasetItemEntity")
 
 
 class DatasetItemEntity(metaclass=abc.ABCMeta):
@@ -488,9 +491,9 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         """
         return [meta for meta in self.get_metadata() if meta.data.name == name and meta.model == model]
 
-    def wrap(self, **kwargs) -> "DatasetItemEntity":
+    def wrap(self: T, **kwargs) -> T:
         """Creates a new DatasetItemEntity, overriding only the given arguments to the existing ones for this instance."""
-        return DatasetItemEntity(
+        return self.__class__(
             media=kwargs.get("media", self.media),
             annotation_scene=kwargs.get("annotation_scene", self.annotation_scene),
             roi=kwargs.get("roi", self.roi),
@@ -538,7 +541,7 @@ class DatasetItemEntityWithID(DatasetItemEntity):
 
     def wrap(self, **kwargs) -> "DatasetItemEntityWithID":
         """Creates a new DatasetItemEntityWithID, overriding only the given arguments to the existing ones for this instance."""
-        return DatasetItemEntityWithID(
+        return self.__class__(
             media=kwargs.get("media", self.media),
             annotation_scene=kwargs.get("annotation_scene", self.annotation_scene),
             roi=kwargs.get("roi", self.roi),

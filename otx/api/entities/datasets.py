@@ -82,7 +82,7 @@ class DatasetIterator(collections.abc.Iterator):
         return item
 
 
-TDatasetItemEntity = TypeVar("TDatasetItemEntity", bound=DatasetItemEntity)
+TDatasetItemEntity = TypeVar("TDatasetItemEntity", bound="DatasetItemEntity")
 
 
 class DatasetEntity(Generic[TDatasetItemEntity]):
@@ -309,9 +309,10 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
                 Defaults to AnnotationSceneKind.PREDICTION
 
         Returns:
-            DatasetEntity: a new dataset containing the same items, with empty annotation objects.
+            DatasetEntity: a new dataset containing the same items, with empty annotation objects.asdf
         """
-        new_dataset = DatasetEntity[DatasetItemEntity](purpose=self.purpose)
+        new_dataset = DatasetEntity[TDatasetItemEntity](purpose=self.purpose)
+
         for dataset_item in self:
             if isinstance(dataset_item, DatasetItemEntity):
                 empty_annotation = AnnotationSceneEntity(annotations=[], kind=annotation_kind)
@@ -360,7 +361,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
         This function calls remove_at_indices function.
 
         Args:
-            item (TDatasetItemEntity): the item to be deleted.
+            item (DatasetItemEntity): the item to be deleted.
 
         Raises:
             ValueError: if the input item is not in the dataset
@@ -384,7 +385,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
             >>> dataset.append(dataset_item)
 
         Args:
-            item (TDatasetItemEntity): item to append
+            item (DatasetItemEntity): item to append
         """
 
         if item.media is None:
