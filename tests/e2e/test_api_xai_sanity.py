@@ -9,11 +9,8 @@ import tempfile
 import pytest
 import torch
 
-from otx.algorithms.classification.tasks import (
-    ClassificationInferenceTask,
-    ClassificationOpenVINOTask,
-    ClassificationTrainTask,
-)
+from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
+from otx.algorithms.classification.adapters.openvino.task import ClassificationOpenVINOTask
 
 # from otx.algorithms.detection.tasks import (
 #     DetectionInferenceTask,
@@ -84,7 +81,7 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
             )
 
             # Train and save a model
-            task = ClassificationTrainTask(task_environment=task_environment)
+            task = MMClassificationTask(task_environment=task_environment)
             train_parameters = TrainParameters()
             output_model = ModelEntity(
                 dataset,
@@ -99,7 +96,7 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
                 )
 
                 # Infer torch model
-                task = ClassificationInferenceTask(task_environment=task_environment)
+                task = MMClassificationTask(task_environment=task_environment)
                 inference_parameters = InferenceParameters(
                     is_evaluation=False,
                     process_saliency_maps=processed_saliency_maps,
