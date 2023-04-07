@@ -79,10 +79,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 from otx.api.utils import Tiler
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.detection_utils import detection2array
 
@@ -93,7 +89,6 @@ logger = get_logger()
 class BaseInferencerWithConverter(BaseInferencer):
     """BaseInferencerWithConverter class in OpenVINO task."""
 
-    @check_input_parameters_type()
     def __init__(
         self,
         configuration: dict,
@@ -104,19 +99,16 @@ class BaseInferencerWithConverter(BaseInferencer):
         self.model = model
         self.converter = converter
 
-    @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Detection Inferencer."""
         return self.model.preprocess(image)
 
-    @check_input_parameters_type()
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Post-process function of OpenVINO Detection Inferencer."""
         detections = self.model.postprocess(prediction, metadata)
 
         return self.converter.convert_to_annotation(detections, metadata)
 
-    @check_input_parameters_type()
     def predict(self, image: np.ndarray):
         """Predict function of OpenVINO Detection Inferencer."""
         image, metadata = self.pre_process(image)
@@ -135,13 +127,11 @@ class BaseInferencerWithConverter(BaseInferencer):
             )
         return predictions, features
 
-    @check_input_parameters_type()
     def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
     # TODO [Eugene]: implement unittest for tiling predict
-    @check_input_parameters_type()
     def predict_tile(
         self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
     ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
@@ -167,7 +157,6 @@ class BaseInferencerWithConverter(BaseInferencer):
 class OpenVINODetectionInferencer(BaseInferencerWithConverter):
     """Inferencer implementation for OTXDetection using OpenVINO backend."""
 
-    @check_input_parameters_type()
     def __init__(
         self,
         hparams: DetectionConfig,
@@ -205,7 +194,6 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
-    @check_input_parameters_type()
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Detection specific post-process."""
         detections = self.model.postprocess(prediction, metadata)
@@ -216,7 +204,6 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
     """Mask Inferencer implementation for OTXDetection using OpenVINO backend."""
 
-    @check_input_parameters_type()
     def __init__(
         self,
         hparams: DetectionConfig,
@@ -251,7 +238,6 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
 class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
     """Rotated Rect Inferencer implementation for OTXDetection using OpenVINO backend."""
 
-    @check_input_parameters_type()
     def __init__(
         self,
         hparams: DetectionConfig,
@@ -286,12 +272,10 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
 class OTXOpenVinoDataLoader(DataLoader):
     """Data loader for OTXDetection using OpenVINO backend."""
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         self.dataset = dataset
         self.inferencer = inferencer
 
-    @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Return dataset item from index."""
         image = self.dataset[index].numpy
@@ -308,7 +292,6 @@ class OTXOpenVinoDataLoader(DataLoader):
 class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
     """Task implementation for OTXDetection using OpenVINO backend."""
 
-    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         logger.info("Loading OpenVINO OTXDetectionTask")
         self.task_environment = task_environment
@@ -362,7 +345,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             return OpenVINORotatedRectInferencer(*args)
         raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self,
         dataset: DatasetEntity,
@@ -431,7 +413,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         logger.info("OpenVINO inference completed")
         return dataset
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def explain(
         self,
         dataset: DatasetEntity,
@@ -481,7 +462,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         logger.info("OpenVINO explain completed")
         return dataset
 
-    @check_input_parameters_type()
     def evaluate(
         self,
         output_resultset: ResultSetEntity,
@@ -496,7 +476,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
         logger.info("OpenVINO metric evaluation completed")
 
-    @check_input_parameters_type()
     def deploy(self, output_model: ModelEntity) -> None:
         """Deploy function of OpenVINODetectionTask."""
         logger.info("Deploying the model")
@@ -543,7 +522,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         output_model.exportable_code = zip_buffer.getvalue()
         logger.info("Deploying completed")
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
         optimization_type: OptimizationType,

@@ -21,10 +21,6 @@ from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_ind
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 logger = get_logger()
 
@@ -34,7 +30,6 @@ logger = get_logger()
 class OTXClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
-    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     def __init__(
         self, otx_dataset: DatasetEntity, labels: List[LabelEntity], empty_label=None, **kwargs
     ):  # pylint: disable=super-init-not-called
@@ -81,7 +76,6 @@ class OTXClsDataset(BaseDataset):
             self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
-    @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Get item from dataset."""
         dataset = self.otx_dataset
@@ -424,7 +418,6 @@ class SelfSLDataset(Dataset):
 
     CLASSES = None
 
-    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     def __init__(
         self, otx_dataset: DatasetEntity, pipeline: Dict[str, Any], **kwargs
     ):  # pylint: disable=unused-argument

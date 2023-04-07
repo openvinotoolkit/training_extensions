@@ -21,7 +21,6 @@ from mmcv.runner.hooks import HOOKS, Hook
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
 
@@ -30,14 +29,12 @@ logger = get_logger()
 class OTXProgressHook(Hook):
     """OTXProgressHook for getting progress."""
 
-    @check_input_parameters_type()
     def __init__(self, time_monitor: TimeMonitorCallback, verbose: bool = False):
         super().__init__()
         self.time_monitor = time_monitor
         self.verbose = verbose
         self.print_threshold = 1
 
-    @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
         """Called before_run in OTXProgressHook."""
         total_epochs = runner.max_epochs if runner.max_epochs is not None else 1
@@ -49,24 +46,20 @@ class OTXProgressHook(Hook):
         self.time_monitor.current_epoch = 0
         self.time_monitor.on_train_begin()
 
-    @check_input_parameters_type()
     def before_epoch(self, runner: BaseRunner):
         """Called before_epoch in OTXProgressHook."""
         self.time_monitor.on_epoch_begin(runner.epoch)
 
-    @check_input_parameters_type()
     def after_epoch(self, runner: BaseRunner):
         """Called after_epoch in OTXProgressHook."""
         # put some runner's training status to use on the other hooks
         runner.log_buffer.output["current_iters"] = runner.iter
         self.time_monitor.on_epoch_end(runner.epoch, runner.log_buffer.output)
 
-    @check_input_parameters_type()
     def before_iter(self, runner: BaseRunner):
         """Called before_iter in OTXProgressHook."""
         self.time_monitor.on_train_batch_begin(1)
 
-    @check_input_parameters_type()
     def after_iter(self, runner: BaseRunner):
         """Called after_iter in OTXProgressHook."""
         # put some runner's training status to use on the other hooks
@@ -78,17 +71,14 @@ class OTXProgressHook(Hook):
                 logger.warning(f"training progress {progress:.0f}%")
                 self.print_threshold = (progress + 10) // 10 * 10
 
-    @check_input_parameters_type()
     def before_val_iter(self, runner: BaseRunner):
         """Called before_val_iter in OTXProgressHook."""
         self.time_monitor.on_test_batch_begin(1, logger)
 
-    @check_input_parameters_type()
     def after_val_iter(self, runner: BaseRunner):
         """Called after_val_iter in OTXProgressHook."""
         self.time_monitor.on_test_batch_end(1, logger)
 
-    @check_input_parameters_type()
     def after_run(self, runner: BaseRunner):
         """Called after_run in OTXProgressHook."""
         self.time_monitor.on_train_end(1)

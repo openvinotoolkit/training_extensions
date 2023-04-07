@@ -26,12 +26,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.label import Domain
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
 
 
-@check_input_parameters_type()
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.CLASSIFICATION,

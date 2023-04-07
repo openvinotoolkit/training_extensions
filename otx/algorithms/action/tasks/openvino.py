@@ -69,10 +69,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 try:
     from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
@@ -89,7 +85,6 @@ logger = logging.getLogger(__name__)
 class ActionOpenVINOInferencer(BaseInferencer):
     """ActionOpenVINOInferencer class in OpenVINO task for action recognition."""
 
-    @check_input_parameters_type()
     def __init__(
         self,
         task_type: str,
@@ -126,12 +121,10 @@ class ActionOpenVINOInferencer(BaseInferencer):
         else:
             self.converter = DetectionBoxToAnnotationConverter(self.label_schema)
 
-    @check_input_parameters_type()
     def pre_process(self, image: List[DatasetItemEntity]) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Inferencer for Action Recognition."""
         return self.model.preprocess(image)
 
-    @check_input_parameters_type()
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
     ) -> Optional[AnnotationSceneEntity]:
@@ -140,7 +133,6 @@ class ActionOpenVINOInferencer(BaseInferencer):
         prediction = self.model.postprocess(prediction, metadata)
         return self.converter.convert_to_annotation(prediction, metadata)
 
-    @check_input_parameters_type()
     def predict(self, image: List[DatasetItemEntity]) -> AnnotationSceneEntity:
         """Predict function of OpenVINO Action Inferencer for Action Recognition."""
         data, metadata = self.pre_process(image)
@@ -148,7 +140,6 @@ class ActionOpenVINOInferencer(BaseInferencer):
         predictions = self.post_process(raw_predictions, metadata)
         return predictions
 
-    # @check_input_parameters_type()
     def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Action Inferencer for Action Recognition."""
 
@@ -158,13 +149,11 @@ class ActionOpenVINOInferencer(BaseInferencer):
 class DataLoaderWrapper(DataLoader):
     """DataLoader implementation for ActionOpenVINOTask."""
 
-    @check_input_parameters_type()
     def __init__(self, dataloader: DataLoader, inferencer: BaseInferencer):
         super().__init__(config=None)
         self.dataloader = dataloader
         self.inferencer = inferencer
 
-    @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Get item from dataset."""
         item = self.dataloader[index]
@@ -180,7 +169,6 @@ class DataLoaderWrapper(DataLoader):
 class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
     """Task implementation for OTX Action Recognition using OpenVINO backend."""
 
-    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
         self.hparams = self.task_environment.get_hyper_parameters(ActionConfig)
@@ -203,7 +191,6 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         )
 
     # pylint: disable=no-value-for-parameter
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
@@ -223,7 +210,6 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
-    @check_input_parameters_type()
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OpenVINOTask."""
 
@@ -234,7 +220,6 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         elif self.task_type == "ACTION_DETECTION":
             output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
-    @check_input_parameters_type()
     def deploy(self, output_model: ModelEntity) -> None:
         """Deploy function of OpenVINOTask."""
 
@@ -271,7 +256,6 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         output_model.exportable_code = zip_buffer.getvalue()
         logger.info("Deploying completed")
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
         optimization_type: OptimizationType,

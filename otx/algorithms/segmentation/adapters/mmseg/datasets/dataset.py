@@ -26,15 +26,10 @@ from otx.algorithms.common.utils.data import get_old_new_img_indices
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 from otx.api.utils.segmentation_utils import mask_from_dataset_item
 
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
-@check_input_parameters_type()
 def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> dict:
     """Function to convert a OTX annotation to mmsegmentation format.
 
@@ -111,7 +106,6 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
             return data_info
 
-    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     def __init__(
         self,
         otx_dataset: DatasetEntity,
@@ -144,7 +138,6 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         self.pipeline = Compose(pipeline)
 
     @staticmethod
-    @check_input_parameters_type()
     def filter_labels(all_labels: List[LabelEntity], label_names: List[str]) -> List[LabelEntity]:
         """Filter and collect actual label entities."""
         filtered_labels = []
@@ -164,13 +157,11 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
         return len(self.data_infos)
 
-    @check_input_parameters_type()
     def pre_pipeline(self, results: Dict[str, Any]):
         """Prepare results dict for pipeline."""
 
         results["seg_fields"] = []
 
-    @check_input_parameters_type()
     def prepare_train_img(self, idx: int) -> dict:
         """Get training data and annotations after pipeline.
 
@@ -188,7 +179,6 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
         return out
 
-    @check_input_parameters_type()
     def prepare_test_img(self, idx: int) -> dict:
         """Get testing data after pipeline.
 
@@ -206,7 +196,6 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
         return out
 
-    @check_input_parameters_type()
     def get_ann_info(self, idx: int):
         """This method is used for evaluation of predictions.
 
@@ -222,7 +211,6 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
         return ann_info
 
-    @check_input_parameters_type()
     def get_gt_seg_maps(self, efficient_test: bool = False):
         """Get ground truth segmentation maps for evaluation."""
 

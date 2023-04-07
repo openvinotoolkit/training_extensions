@@ -72,10 +72,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 logger = get_logger()
 
@@ -84,7 +80,6 @@ logger = get_logger()
 class OpenVINOSegmentationInferencer(BaseInferencer):
     """Inferencer implementation for Segmentation using OpenVINO backend."""
 
-    @check_input_parameters_type()
     def __init__(
         self,
         hparams: SegmentationConfig,
@@ -119,12 +114,10 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         )
         self.converter = SegmentationToAnnotationConverter(label_schema)
 
-    @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Segmentation Inferencer."""
         return self.model.preprocess(image)
 
-    @check_input_parameters_type()
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
     ) -> Tuple[AnnotationSceneEntity, Any, Any]:
@@ -136,7 +129,6 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
 
         return predicted_scene, feature_vector, soft_prediction
 
-    @check_input_parameters_type()
     def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, Any, Any]:
         """Perform a prediction for a given input image."""
         image, metadata = self.pre_process(image)
@@ -144,7 +136,6 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         predictions = self.post_process(predictions, metadata)
         return predictions
 
-    @check_input_parameters_type()
     def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Segmentation Inferencer."""
         return self.model.infer_sync(image)
@@ -153,12 +144,10 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
 class OTXOpenVinoDataLoader(DataLoader):
     """Data loader for OTXDetection using OpenVINO backend."""
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         self.dataset = dataset
         self.inferencer = inferencer
 
-    @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Return dataset item from index."""
         image = self.dataset[index].numpy
@@ -175,7 +164,6 @@ class OTXOpenVinoDataLoader(DataLoader):
 class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
     """Task implementation for Segmentation using OpenVINO backend."""
 
-    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
         self.model = self.task_environment.model
@@ -203,7 +191,6 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             self.model.get_data("openvino.bin"),
         )
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
@@ -244,7 +231,6 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         return dataset
 
-    @check_input_parameters_type()
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OpenVINOSegmentationTask."""
         logger.info("Computing mDice")
@@ -253,7 +239,6 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         output_resultset.performance = metrics.get_performance()
 
-    @check_input_parameters_type()
     def deploy(self, output_model: ModelEntity) -> None:
         """Deploy function of OpenVINOSegmentationTask."""
         logger.info("Deploying the model")
@@ -288,7 +273,6 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         output_model.exportable_code = zip_buffer.getvalue()
         logger.info("Deploying completed")
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
         optimization_type: OptimizationType,

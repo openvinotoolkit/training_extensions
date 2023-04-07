@@ -21,7 +21,6 @@ from typing import Any, Dict, List
 import numpy as np
 
 from otx.api.entities.datasets import DatasetItemEntity
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 try:
     from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
@@ -37,7 +36,6 @@ except ImportError as e:
     warnings.warn(f"{e}, ModelAPI was not found.")
 
 
-@check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
     """Softmax numpy."""
     x = np.exp(x - np.max(x))
@@ -45,7 +43,6 @@ def softmax_numpy(x: np.ndarray):
     return x
 
 
-@check_input_parameters_type()
 def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
     """Get multiclass predictions."""
     index = np.argmax(logits)
@@ -93,7 +90,6 @@ class OTXOVActionCls(Model):
                 layer_name = name
         return layer_name
 
-    @check_input_parameters_type()
     def preprocess(self, inputs: List[DatasetItemEntity]):
         """Pre-process."""
         meta = {"original_shape": inputs[0].media.numpy.shape}
@@ -108,14 +104,12 @@ class OTXOVActionCls(Model):
         return dict_inputs, meta
 
     @staticmethod
-    @check_input_parameters_type()
     def _reshape(inputs: List[np.ndarray]) -> np.ndarray:
         """Reshape(expand, transpose, permute) the input np.ndarray."""
         np_inputs = np.expand_dims(inputs, axis=(0, 1))  # [1, 1, T, H, W, C]
         np_inputs = np_inputs.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
         return np_inputs
 
-    @check_input_parameters_type()
     # pylint: disable=unused-argument
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):
         """Post-process."""
@@ -162,7 +156,6 @@ class OTXOVActionDet(Model):
                 out_names["labels"] = name
         return out_names
 
-    @check_input_parameters_type()
     def preprocess(self, inputs: List[DatasetItemEntity]):
         """Pre-process."""
         meta = {"original_shape": inputs[0].media.numpy.shape}
@@ -177,14 +170,12 @@ class OTXOVActionDet(Model):
         return dict_inputs, meta
 
     @staticmethod
-    @check_input_parameters_type()
     def reshape(inputs: List[np.ndarray]) -> np.ndarray:
         """Reshape(expand, transpose, permute) the input np.ndarray."""
         np_inputs = np.expand_dims(inputs, axis=0)  # [1, T, H, W, C]
         np_inputs = np_inputs.transpose(0, -1, 1, 2, 3)  # [1, C, T, H, W]
         return np_inputs
 
-    @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):
         """Post-process."""
         # TODO Support multi label classification
