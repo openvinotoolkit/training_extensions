@@ -1,4 +1,4 @@
-"""NNCF task related hooks."""
+"""Module for defining LrUpdaterHook and CustomLRUpdateHook for self-supervised learning using mmseg."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #

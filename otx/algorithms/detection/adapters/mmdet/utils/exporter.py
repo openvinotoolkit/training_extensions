@@ -22,7 +22,7 @@ class DetectionExporter(Exporter):
         """Run exporter stage."""
 
         precision = kwargs.get("precision", "FP32")
-        model_builder = build_detector
+        model_builder = kwargs.get("model_builder", build_detector)
 
         def model_builder_helper(*args, **kwargs):
             model = model_builder(*args, **kwargs)

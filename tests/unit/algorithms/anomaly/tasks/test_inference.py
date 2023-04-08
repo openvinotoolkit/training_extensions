@@ -3,6 +3,8 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import pytest
+
 from copy import deepcopy
 
 from otx.algorithms.anomaly.tasks.inference import InferenceTask
@@ -21,6 +23,7 @@ from tests.unit.algorithms.anomaly.helpers.utils import create_task_environment
 class TestInferenceTask:
     """Tests the methods in the inference task."""
 
+    @pytest.mark.skip(reason="CVS-107918 FAIL code -11 in anomaly unit test on python3.10")
     def test_inference(self, tmpdir, setup_task_environment):
         """Tests the inference method."""
         root = str(tmpdir.mkdir("anomaly_inference_test"))

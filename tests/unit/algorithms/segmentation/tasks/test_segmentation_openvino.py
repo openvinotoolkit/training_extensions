@@ -9,9 +9,10 @@ import numpy as np
 import pytest
 from openvino.model_zoo.model_api.models import Model
 
-import otx.algorithms.segmentation.tasks.openvino
+import otx.algorithms.segmentation.adapters.openvino
+
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
-from otx.algorithms.segmentation.tasks.openvino import (
+from otx.algorithms.segmentation.adapters.openvino import (
     OpenVINOSegmentationInferencer,
     OpenVINOSegmentationTask,
 )
@@ -47,7 +48,7 @@ class TestOpenVINOSegmentationInferencer:
         hyper_parameters = create(model_template.hyper_parameters.data)
         seg_params = SegmentationConfig(header=hyper_parameters.header)
         label_schema = generate_otx_label_schema()
-        mocker.patch("otx.algorithms.segmentation.tasks.openvino.OpenvinoAdapter")
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.seg_ov_inferencer = OpenVINOSegmentationInferencer(seg_params, label_schema, "")
         self.seg_ov_inferencer.model = mocker.patch("openvino.model_zoo.model_api.models.Model", autospec=True)
@@ -103,7 +104,7 @@ class TestOpenVINOSegmentationTask:
         label_schema = generate_otx_label_schema()
         task_env = init_environment(hyper_parameters, model_template)
         seg_params = SegmentationConfig(header=hyper_parameters.header)
-        mocker.patch("otx.algorithms.segmentation.tasks.openvino.OpenvinoAdapter")
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         seg_ov_inferencer = OpenVINOSegmentationInferencer(seg_params, label_schema, "")
 
@@ -126,7 +127,9 @@ class TestOpenVINOSegmentationTask:
         mock_predict = mocker.patch.object(
             OpenVINOSegmentationInferencer, "predict", return_value=(fake_ann_scene, None, fake_input)
         )
-        mocker.patch("otx.algorithms.segmentation.tasks.openvino.get_activation_map", return_value=np.zeros((5, 1)))
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.openvino.task.get_activation_map", return_value=np.zeros((5, 1))
+        )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
         updated_dataset = self.seg_ov_task.infer(self.dataset)
 
@@ -171,10 +174,10 @@ class TestOpenVINOSegmentationTask:
         output_model = copy.deepcopy(otx_model)
         self.seg_ov_task.model.set_data("openvino.bin", b"foo")
         self.seg_ov_task.model.set_data("openvino.xml", b"bar")
-        mocker.patch("otx.algorithms.segmentation.tasks.openvino.load_model", autospec=True)
-        mocker.patch("otx.algorithms.segmentation.tasks.openvino.create_pipeline", autospec=True)
-        mocker.patch("otx.algorithms.segmentation.tasks.openvino.save_model", new=patch_save_model)
-        spy_compress = mocker.spy(otx.algorithms.segmentation.tasks.openvino, "compress_model_weights")
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.load_model", autospec=True)
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.create_pipeline", autospec=True)
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.save_model", new=patch_save_model)
+        spy_compress = mocker.spy(otx.algorithms.segmentation.adapters.openvino.task, "compress_model_weights")
         self.seg_ov_task.optimize(OptimizationType.POT, dataset=dataset, output_model=output_model)
 
         spy_compress.assert_called_once()
