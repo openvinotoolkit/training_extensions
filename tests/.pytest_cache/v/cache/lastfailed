@@ -1,0 +1,10 @@
+{
+  "unit/core/data/adapter/test_base_adapter.py::TestOTXBaseDatasetAdapter::test__filter_unlabeled_data[classification]": true,
+  "unit/core/data/adapter/test_base_adapter.py::TestOTXBaseDatasetAdapter::test__filter_unlabeled_data[detection]": true,
+  "unit/core/data/adapter/test_base_adapter.py::TestOTXBaseDatasetAdapter::test__filter_unlabeled_data[segmentation]": true,
+  "unit/core/data/adapter/test_init.py::test_get_dataset_adapter_incremental[INCREMENTAL-anomaly_classification]": true,
+  "unit/core/data/adapter/test_init.py::test_get_dataset_adapter_incremental[INCREMENTAL-anomaly_detection]": true,
+  "unit/core/data/adapter/test_init.py::test_get_dataset_adapter_incremental[INCREMENTAL-anomaly_segmentation]": true,
+  "unit/core/data/adapter/test_init.py::test_get_dataset_adapter_incremental[INCREMENTAL-action_classification]": true,
+  "unit/core/data/adapter/test_init.py::test_get_dataset_adapter_incremental[INCREMENTAL-action_detection]": true
+}
