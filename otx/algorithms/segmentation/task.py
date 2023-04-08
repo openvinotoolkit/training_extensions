@@ -39,6 +39,9 @@ from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.inference_parameters import (
+    default_progress_callback as default_infer_progress_callback,
+)
 from otx.api.entities.metrics import (
     CurveMetric,
     InfoMetric,
@@ -122,17 +125,22 @@ class OTXSegmentationTask(OTXTask, ABC):
         """Main infer function."""
         logger.info("infer()")
 
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress
+            is_evaluation = inference_parameters.is_evaluation
+        else:
+            update_progress_callback = default_infer_progress_callback
+            is_evaluation = False
+
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
 
         predictions = self._infer_model(dataset, InferenceParameters(is_evaluation=True))
         prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
-        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=False)
+        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
 
         logger.info("Inference completed")
         return dataset
@@ -208,7 +216,6 @@ class OTXSegmentationTask(OTXTask, ABC):
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
-
         results = self._export_model(precision, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
