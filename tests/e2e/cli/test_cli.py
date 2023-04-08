@@ -40,21 +40,21 @@ class TestToolsOTXCLI:
         otx_build_backbone_testing(tmp_dir_path, build_backbone_args)
 
 
-auto_config_args_with_autosplit = {"--train-data-roots": "tests/assets/imagenet_dataset"}
+auto_config_args_with_autosplit = {"--train-data-roots": "tests/assets/classification_dataset"}
 
 auto_config_args_with_autosplit_task = {
     "--task": "classification",
-    "--train-data-roots": "tests/assets/imagenet_dataset",
+    "--train-data-roots": "tests/assets/classification_dataset",
 }
 
 auto_config_args_without_autosplit = {
-    "--train-data-roots": "tests/assets/imagenet_dataset",
-    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
+    "--train-data-roots": "tests/assets/classification_dataset",
+    "--val-data-roots": "tests/assets/classification_dataset_class_incremental",
 }
 
 build_auto_config_args = {
-    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
-    "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/imagenet_dataset"},
+    "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
+    "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/classification_dataset"},
     "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
     "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/car_tree_bug"},
 }
@@ -70,10 +70,10 @@ class TestToolsOTXBuildAutoConfig:
 
 
 train_auto_config_args = {
-    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
+    "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
     "classification_with_template": {
         "template": "otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
-        "--train-data-roots": "tests/assets/imagenet_dataset",
+        "--train-data-roots": "tests/assets/classification_dataset",
     },
     "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
     "detection_with_template": {

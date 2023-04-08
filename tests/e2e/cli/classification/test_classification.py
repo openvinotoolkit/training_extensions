@@ -39,10 +39,10 @@ from tests.test_suite.run_test_command import (
 
 # Pre-train w/ 'label_0', 'label_1' classes
 args0 = {
-    "--train-data-roots": "tests/assets/imagenet_dataset",
-    "--val-data-roots": "tests/assets/imagenet_dataset",
-    "--test-data-roots": "tests/assets/imagenet_dataset",
-    "--input": "tests/assets/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/classification_dataset",
+    "--val-data-roots": "tests/assets/classification_dataset",
+    "--test-data-roots": "tests/assets/classification_dataset",
+    "--input": "tests/assets/classification_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -54,10 +54,10 @@ args0 = {
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--test-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--input": "tests/assets/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--val-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--test-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--input": "tests/assets/classification_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -743,7 +743,7 @@ class TestToolsHierarchicalClassification:
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--train-data-roots": "tests/assets/imagenet_dataset",
+    "--train-data-roots": "tests/assets/classification_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
