@@ -7,6 +7,7 @@ import copy
 import os
 
 import pytest
+import tempfile
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
@@ -124,7 +125,8 @@ class TestSegmentationConfigurer:
             "otx.algorithms.segmentation.adapters.mmseg.configurer.CheckpointLoader.load_checkpoint",
             return_value={"model": None},
         )
-        self.configurer.configure_ckpt(model_cfg, "dummy.pth")
+        with tempfile.TemporaryDirectory() as tempdir:
+            self.configurer.configure_ckpt(model_cfg, os.path.join(tempdir, "dummy.pth"))
 
     @e2e_pytest_unit
     def test_configure_device(self, mocker):
