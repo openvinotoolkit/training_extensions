@@ -163,11 +163,10 @@ class SegmentationConfigurer:
         """Patch cfg.data.
 
         Merge cfg and data_cfg
+        Wrap original dataset type to MPAsegDataset
         """
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
-
-        # TODO: unlabeled 잘되는지 확인
 
         train_data_cfg = self.get_data_cfg(cfg, "train")
         for mode in ["train", "val", "test"]:

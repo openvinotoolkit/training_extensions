@@ -216,6 +216,7 @@ class OTXSegmentationTask(OTXTask, ABC):
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+
         results = self._export_model(precision, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")

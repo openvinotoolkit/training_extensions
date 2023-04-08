@@ -1,3 +1,8 @@
+"""Test otx mmseg configurer."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import copy
 import os
 
@@ -69,7 +74,7 @@ class TestSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
-        self.configurer.configure_data(self.model_cfg, data_cfg)
+        self.configurer.configure_data(self.model_cfg, True, data_cfg)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
         assert self.model_cfg.data.val
@@ -242,7 +247,7 @@ class TestSemiSLSegmentationConfigurer:
         data_cfg.merge_from_dict(unlabeled_dict)
         mocker_build_dataset = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataset")
         mocker_build_dataloader = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataloader")
-        self.configurer.configure_data(self.model_cfg, data_cfg, True)
+        self.configurer.configure_data(self.model_cfg, True, data_cfg)
 
         mocker_build_dataset.assert_called_once()
         mocker_build_dataloader.assert_called_once()
