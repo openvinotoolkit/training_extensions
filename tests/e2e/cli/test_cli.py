@@ -54,7 +54,10 @@ auto_config_args_without_autosplit = {
 
 build_auto_config_args = {
     "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
-    "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/classification_dataset"},
+    "classification_with_task": {
+        "--task": "classification",
+        "--train-data-roots": "tests/assets/classification_dataset",
+    },
     "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
     "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/car_tree_bug"},
 }
