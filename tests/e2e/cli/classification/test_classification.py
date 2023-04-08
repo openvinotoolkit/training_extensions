@@ -42,7 +42,7 @@ args0 = {
     "--train-data-roots": "tests/assets/classification_dataset",
     "--val-data-roots": "tests/assets/classification_dataset",
     "--test-data-roots": "tests/assets/classification_dataset",
-    "--input": "tests/assets/classification_dataset/label_0",
+    "--input": "tests/assets/classification_dataset/0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -57,7 +57,7 @@ args = {
     "--train-data-roots": "tests/assets/classification_dataset_class_incremental",
     "--val-data-roots": "tests/assets/classification_dataset_class_incremental",
     "--test-data-roots": "tests/assets/classification_dataset_class_incremental",
-    "--input": "tests/assets/classification_dataset/label_0",
+    "--input": "tests/assets/classification_dataset/0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
