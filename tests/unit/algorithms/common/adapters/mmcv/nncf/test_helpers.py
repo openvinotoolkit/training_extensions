@@ -256,14 +256,14 @@ def create_eval_fn():
     return evaluate_fn
 
 
-def create_nncf_model(tempdir):
+def create_nncf_model(workdir):
     mock_model = create_model()
     mock_config = create_config()
     mock_eval_fn = create_eval_fn()
     dataloader = create_dataloader()
 
     mock_config = create_config()
-    mock_config.nncf_config.log_dir = tempdir
+    mock_config.nncf_config.log_dir = workdir
     pipeline = Compose(mock_config.data.val.pipeline)
     get_fake_input_fn = partial(get_fake_input, pipeline)
 
