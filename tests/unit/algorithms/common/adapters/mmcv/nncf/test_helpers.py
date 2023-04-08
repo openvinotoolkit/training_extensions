@@ -256,13 +256,14 @@ def create_eval_fn():
     return evaluate_fn
 
 
-def create_nncf_model():
+def create_nncf_model(tempdir):
     mock_model = create_model()
     mock_config = create_config()
     mock_eval_fn = create_eval_fn()
     dataloader = create_dataloader()
 
     mock_config = create_config()
+    mock_config.nncf_config.log_dir = tempdir
     pipeline = Compose(mock_config.data.val.pipeline)
     get_fake_input_fn = partial(get_fake_input, pipeline)
 
@@ -288,7 +289,7 @@ def create_nncf_model():
 def create_nncf_runner(work_dir):
     mock_config = create_config()
     dataloader = create_dataloader()
-    ctrl, model = create_nncf_model()
+    ctrl, model = create_nncf_model(work_dir)
 
     runner = AccuracyAwareRunner(
         build_data_parallel(model, mock_config),
