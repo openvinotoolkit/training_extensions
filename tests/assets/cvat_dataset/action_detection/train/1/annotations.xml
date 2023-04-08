@@ -3,8 +3,8 @@
   <version>1.1</version>
   <meta>
     <task>
-      <id>0</id>
-      <name>v0</name>
+      <id>1</id>
+      <name>v1</name>
       <size>10</size>
       <mode>interpolation</mode>
       <overlap>2</overlap>
@@ -27,8 +27,8 @@
       </labels>
       <segments></segments>
       <original_size>
-        <width>256</width>
-        <height>192</height>
+        <width>24</width>
+        <height>24</height>
       </original_size>
     </task>
   </meta>
@@ -41,14 +41,14 @@
   <track id="0" label="EmptyFrame">
     <box frame="22" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
   </track>
-  <track id="0" label="2">
-    <box frame="23" outside="0" occluded="0" xtl="0.22982445" ytl="0.0969286" xbr="0.72086316" ybr="0.9888343" z_order="0" label="2"></box>
+  <track id="0" label="EmptyFrame">
+    <box frame="23" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
   </track>
   <track id="0" label="EmptyFrame">
     <box frame="24" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="25" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="2">
+    <box frame="25" outside="0" occluded="0" xtl="0.25" ytl="0.25" xbr="0.66" ybr="0.66" z_order="0" label="2"></box>
   </track>
   <track id="0" label="EmptyFrame">
     <box frame="26" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
