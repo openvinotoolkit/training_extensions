@@ -1,0 +1,374 @@
+description: Configuration for an image classification task
+header: Configuration for an image classification task
+learning_parameters:
+  batch_size:
+    affects_outcome_of: TRAINING
+    default_value: 32
+    description:
+      The number of training samples seen in each iteration of training.
+      Increasing this value improves training time and may make the training more
+      stable. A larger batch size has higher memory requirements.
+    editable: true
+    header: Batch size
+    max_value: 2048
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning:
+      Increasing this value may cause the system to use more memory than available,
+      potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
+  unlabeled_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: 32
+    description:
+      The number of unlabeled training samples seen in each iteration of semi-supervised learning.
+      Increasing this value improves training time and may make the training more
+      stable. A larger batch size has higher memory requirements.
+    editable: true
+    header: Unlabeled batch size
+    max_value: 512
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning:
+      Increasing this value may cause the system to use more memory than available,
+      potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
+  description: Learning Parameters
+  header: Learning Parameters
+  learning_rate:
+    affects_outcome_of: TRAINING
+    default_value: 0.01
+    description:
+      Increasing this value will speed up training convergence but might
+      make it unstable.
+    editable: true
+    header: Learning rate
+    max_value: 1.0
+    min_value: 1.0e-07
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+    auto_hpo_state: NOT_POSSIBLE
+  max_num_epochs:
+    affects_outcome_of: TRAINING
+    default_value: 200
+    description:
+      Increasing this value causes the results to be more robust but training
+      time will be longer.
+    editable: true
+    header: Maximum number of training epochs
+    max_value: 1000
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  num_iters:
+    affects_outcome_of: TRAINING
+    default_value: 1
+    description:
+      Increasing this value causes the results to be more robust but training
+      time will be longer.
+    editable: true
+    header: Number of training iterations
+    max_value: 100000
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1
+    visible_in_ui: true
+    warning: null
+  num_workers:
+    affects_outcome_of: NONE
+    default_value: 2
+    description:
+      Increasing this value might improve training speed however it might
+      cause out of memory errors. If the number of workers is set to zero, data loading
+      will happen in the main training thread.
+    editable: true
+    header: Number of cpu threads to use during batch generation
+    max_value: 8
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
+    warning: null
+  learning_rate_warmup_iters:
+    affects_outcome_of: TRAINING
+    default_value: 100
+    description: ""
+    editable: true
+    header: Number of iterations for learning rate warmup
+    max_value: 10000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 100
+    visible_in_ui: true
+    warning: null
+  enable_early_stopping:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Early exit from training when validation accuracy is not changed or decreased for several epochs.
+    editable: true
+    header: Enable early stopping of the training
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  early_stop_start:
+    affects_outcome_of: TRAINING
+    default_value: 3
+    editable: true
+    header: Start epoch for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 3
+    visible_in_ui: false
+  early_stop_patience:
+    affects_outcome_of: TRAINING
+    default_value: 8
+    description: Training will stop if the model does not improve within the number of epochs of patience.
+    editable: true
+    header: Patience for early stopping
+    max_value: 50
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 8
+    visible_in_ui: true
+    warning: This is applied exclusively when early stopping is enabled.
+  early_stop_iteration_patience:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description:
+      Training will stop if the model does not improve within the number of iterations of patience.
+      This ensures the model is trained enough with the number of iterations of patience before early stopping.
+    editable: true
+    header: Iteration patience for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
+    warning: This is applied exclusively when early stopping is enabled.
+  enable_supcon:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description:
+      Enable an auxiliar supervised contrastive loss, which might increase robustness
+      and accuracy for small datasets.
+    editable: true
+    header: Enable Supervised Contrastive helper loss
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+pot_parameters:
+  description: POT Parameters
+  header: POT Parameters
+  preset:
+    affects_outcome_of: NONE
+    default_value: Performance
+    description: Quantization preset that defines quantization scheme
+    editable: false
+    enum_name: POTQuantizationPreset
+    header: Preset
+    options:
+      MIXED: Mixed
+      PERFORMANCE: Performance
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  stat_subset_size:
+    affects_outcome_of: NONE
+    default_value: 300
+    description: Number of data samples used for post-training optimization
+    editable: true
+    header: Number of data samples
+    max_value: 9223372036854775807
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+type: CONFIGURABLE_PARAMETERS
+visible_in_ui: true
+nncf_optimization:
+  description: Optimization by NNCF
+  header: Optimization by NNCF
+  enable_quantization:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Enable quantization algorithm
+    editable: true
+    header: Enable quantization algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  enable_pruning:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Enable filter pruning algorithm
+    editable: true
+    header: Enable filter pruning algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: true
+    warning: null
+  pruning_supported:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Whether filter pruning is supported
+    editable: false
+    header: Whether filter pruning is supported
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: false
+    warning: null
+  maximal_accuracy_degradation:
+    affects_outcome_of: TRAINING
+    default_value: 1.0
+    description: The maximal allowed accuracy metric drop
+    editable: true
+    header: Maximum accuracy degradation
+    max_value: 100.0
+    min_value: 0.0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+algo_backend:
+  description: parameters for algo backend
+  header: Algo backend parameters
+  train_type:
+    affects_outcome_of: TRAINING
+    default_value: Incremental
+    description: Training scheme option that determines how to train the model
+    editable: True
+    enum_name: TrainType
+    header: Train type
+    options:
+      Incremental: "Incremental"
+      Semisupervised: "Semisupervised"
+      Selfsupervised: "Selfsupervised"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Incremental
+    visible_in_ui: True
+    warning: null
+  mem_cache_size:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description: Size of memory pool for caching decoded data to load data faster (bytes).
+    editable: true
+    header: Size of memory pool
+    max_value: 9223372036854775807
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true

@@ -1,0 +1,21 @@
+backbone:
+  arch: base
+  drop_path_rate: 0.0
+  drop_rate: 0.0
+  final_norm: true
+  img_size: 224
+  in_channels: 3
+  init_cfg: null
+  interpolate_mode: bicubic
+  layer_cfgs: {}
+  norm_cfg:
+    eps: 1.0e-06
+    type: LN
+  out_indices: -1
+  output_cls_token: true
+  patch_cfg: {}
+  patch_size: 16
+  qkv_bias: true
+  type: mmcls.VisionTransformer
+  use_out_indices: true
+  with_cls_token: true
