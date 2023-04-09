@@ -274,11 +274,11 @@ class MMClassificationTask(OTXClassificationTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
-        if not dump_saliency_map:
+        if not dump_saliency_map or "Transformer" in cfg.model.backbone.type:
             forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
-        if not dump_features:
+        if not dump_features or "Transformer" in cfg.model.backbone.type:
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)

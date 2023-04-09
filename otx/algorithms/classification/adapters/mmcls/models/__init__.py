@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from .backbones import CLIPVisionTransformer
 from .classifiers import BYOL, SAMImageClassifier, SemiSLClassifier, SupConClassifier
 from .heads import (
     ClsHead,
@@ -46,6 +47,7 @@ __all__ = [
     "SupConClassifier",
     "CustomLinearClsHead",
     "CustomNonLinearClsHead",
+    "CLIPVisionTransformer",
     "CustomMultiLabelNonLinearClsHead",
     "CustomMultiLabelLinearClsHead",
     "CustomHierarchicalLinearClsHead",

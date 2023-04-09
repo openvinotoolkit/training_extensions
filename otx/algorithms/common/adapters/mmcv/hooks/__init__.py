@@ -33,6 +33,7 @@ from .early_stopping_hook import (
 from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
+from .freeze_hook import FreezeHook
 from .ib_loss_hook import IBLossHook
 from .logger_hook import LoggerReplaceHook, OTXLoggerHook
 from .lr_updater_hook import CustomstepLrUpdaterHook
@@ -64,6 +65,7 @@ __all__ = [
     "DistCustomEvalHook",
     "EarlyStoppingHook",
     "LazyEarlyStoppingHook",
+    "FreezeHook",
     "ReduceLROnPlateauLrUpdaterHook",
     "EMAMomentumUpdateHook",
     "ForceTrainModeHook",

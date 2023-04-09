@@ -15,9 +15,27 @@
 # and limitations under the License.
 
 from .byol import BYOL
+from .clip_classifier import (
+    CLIPVisionTransformerSAMImageClassifier,
+    FrozenCLIPVisionTransformerSAMImageClassifier,
+    FrozenMMCLSVisionTransformerSAMImageClassifier,
+    MMCLSVisionTransformerSAMImageClassifier,
+    SAMImageClassifierTrainOnlyHead,
+)
 from .sam_classifier import SAMImageClassifier
 from .semisl_classifier import SemiSLClassifier
 from .semisl_multilabel_classifier import SemiSLMultilabelClassifier
 from .supcon_classifier import SupConClassifier
 
-__all__ = ["BYOL", "SAMImageClassifier", "SemiSLClassifier", "SemiSLMultilabelClassifier", "SupConClassifier"]
+__all__ = [
+    "BYOL",
+    "SAMImageClassifier",
+    "SemiSLClassifier",
+    "SemiSLMultilabelClassifier",
+    "SupConClassifier",
+    "FrozenMMCLSVisionTransformerSAMImageClassifier",
+    "CLIPVisionTransformerSAMImageClassifier",
+    "MMCLSVisionTransformerSAMImageClassifier",
+    "FrozenCLIPVisionTransformerSAMImageClassifier",
+    "SAMImageClassifierTrainOnlyHead",
+]
