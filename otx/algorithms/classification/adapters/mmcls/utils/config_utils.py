@@ -48,7 +48,7 @@ def patch_datasets(
     def update_pipeline(cfg):
         if subset == "train":
             for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
-                get_meta_keys(collect_cfg, ["entity_id", "label_id"])
+                get_meta_keys(collect_cfg)
 
     for subset in subsets:
         if subset not in config.data:
@@ -57,7 +57,7 @@ def patch_datasets(
 
         # For stable hierarchical information indexing
         if subset == "train" and kwargs["type"] == "OTXHierarchicalClsDataset":
-            config.data[f"{subset}_dataloader"].drop_last = True
+            config.data[f"{subset}_dataloader"]["drop_last"] = True
 
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
