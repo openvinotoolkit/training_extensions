@@ -15,10 +15,11 @@ All notable changes to this project will be documented in this file.
 - Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
 - Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
 - Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
+- Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
 
 ### Bug fixes
 
--
+- Fix backward compatibility with OpenVINO SSD-like detection models from OTE 0.5 (<https://github.com/openvinotoolkit/training_extensions/pull/1970>)
 
 ### Known issues
 

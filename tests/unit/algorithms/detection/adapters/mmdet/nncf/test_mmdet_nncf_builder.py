@@ -53,7 +53,9 @@ def mock_config(temp_dir, state_to_build):
 
 @e2e_pytest_unit
 def test_build_nncf_detector(mock_config):
-    _, model = build_nncf_detector(mock_config)
+    with tempfile.TemporaryDirectory() as tempdir:
+        mock_config.nncf_config.log_dir = tempdir
+        _, model = build_nncf_detector(mock_config)
 
     assert isinstance(model, NNCFNetwork)
     assert len([hook for hook in mock_config.custom_hooks if hook.type == "CompressionHook"]) == 1
@@ -61,8 +63,10 @@ def test_build_nncf_detector(mock_config):
 
 @e2e_pytest_unit
 def test_build_nncf_detector_not_compress_postprocessing(mock_config, state_to_build, nncf_model_path):
-    mock_config.nncf_compress_postprocessing = False
-    ctrl, model = build_nncf_detector(mock_config)
+    with tempfile.TemporaryDirectory() as tempdir:
+        mock_config.nncf_config.log_dir = tempdir
+        mock_config.nncf_compress_postprocessing = False
+        ctrl, model = build_nncf_detector(mock_config)
 
     assert isinstance(model, NNCFNetwork)
     assert len([hook for hook in mock_config.custom_hooks if hook.type == "CompressionHook"]) == 1
@@ -86,6 +90,8 @@ def test_build_nncf_detector_not_compress_postprocessing(mock_config, state_to_b
 
 @e2e_pytest_unit
 def test_build_nncf_detector_with_nncf_ckpt(mock_config, nncf_model_path):
-    _, model = build_nncf_detector(mock_config, nncf_model_path)
+    with tempfile.TemporaryDirectory() as tempdir:
+        mock_config.nncf_config.log_dir = tempdir
+        _, model = build_nncf_detector(mock_config, nncf_model_path)
     assert isinstance(model, NNCFNetwork)
     assert len([hook for hook in mock_config.custom_hooks if hook.type == "CompressionHook"]) == 1

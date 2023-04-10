@@ -152,7 +152,11 @@ class BatchBoxesLabelsParser:
             self.labels_layer = None
             self.default_label = default_label
 
-        self.bboxes_layer = self.find_layer_bboxes_output(layers)
+        try:
+            self.bboxes_layer = self.find_layer_bboxes_output(layers)
+        except ValueError:
+            self.bboxes_layer = find_layer_by_name("boxes", layers)
+
         self.input_size = input_size
 
     @staticmethod
@@ -169,7 +173,8 @@ class BatchBoxesLabelsParser:
         """Parse bboxes."""
         # FIXME: here, batch dim of IR must be 1
         bboxes = outputs[self.bboxes_layer]
-        bboxes = bboxes.squeeze(0)
+        if bboxes.shape[0] == 1:
+            bboxes = bboxes.squeeze(0)
         assert bboxes.ndim == 2
         scores = bboxes[:, 4]
         bboxes = bboxes[:, :4]
@@ -179,7 +184,8 @@ class BatchBoxesLabelsParser:
             labels = outputs[self.labels_layer]
         else:
             labels = np.full(len(bboxes), self.default_label, dtype=bboxes.dtype)
-        labels = labels.squeeze(0)
+        if labels.shape[0] == 1:
+            labels = labels.squeeze(0)
 
         detections = [Detection(*bbox, score, label) for label, score, bbox in zip(labels, scores, bboxes)]
         return detections
