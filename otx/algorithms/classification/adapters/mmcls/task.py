@@ -377,15 +377,17 @@ class MMClassificationTask(OTXClassificationTask):
         validate = bool(cfg.data.get("val", None))
         if validate:
             val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
-            val_loader_cfg = {
-                "num_gpus": len(cfg.gpu_ids),
-                "dist": cfg.distributed,
-                "round_up": True,
-                "seed": cfg.seed,
-                "shuffle": False,  # Not shuffle by default
-                "sampler_cfg": None,  # Not use sampler by default
-                **cfg.data.get("val_dataloader", {}),
-            }
+            val_loader_cfg = Config(
+                {
+                    "num_gpus": len(cfg.gpu_ids),
+                    "dist": cfg.distributed,
+                    "round_up": True,
+                    "seed": cfg.seed,
+                    "shuffle": False,  # Not shuffle by default
+                    "sampler_cfg": None,  # Not use sampler by default
+                    **cfg.data.get("val_dataloader", {}),
+                }
+            )
             val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
             eval_cfg = cfg.get("evaluation", {})
             eval_cfg["by_epoch"] = cfg.runner["type"] != "IterBasedRunner"
