@@ -29,7 +29,7 @@ class IBLoss(CrossEntropyLoss):
         self.alpha = alpha
         self.epsilon = 0.001
         self.num_classes = num_classes
-        self.weight = torch.nn.Parameter(torch.ones(size=(self.num_classes,)), requires_grad=False)
+        self.register_buffer("weight", torch.ones(size=(self.num_classes,)))
         self._start_epoch = start
         self._cur_epoch = 0
         if reduction not in {"mean", "none"}:
