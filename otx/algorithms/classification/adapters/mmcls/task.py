@@ -378,7 +378,7 @@ class MMClassificationTask(OTXClassificationTask):
         if validate:
             val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
             val_loader_cfg = Config(
-                {
+                cfg_dict={
                     "num_gpus": len(cfg.gpu_ids),
                     "dist": cfg.distributed,
                     "round_up": True,
