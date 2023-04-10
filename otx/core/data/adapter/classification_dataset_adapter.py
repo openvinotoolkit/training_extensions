@@ -10,7 +10,7 @@ from typing import List, Union
 from datumaro.components.annotation import AnnotationType, LabelCategories
 
 from otx.api.entities.annotation import Annotation
-from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
@@ -38,8 +38,8 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
         # Generate label schema
         self.label_schema = self._generate_classification_label_schema(self.label_groups, self.label_entities)
 
-        # Set the DatasetItemEntity
-        dataset_items: List[DatasetItemEntity] = []
+        # Set the DatasetItemEntityWithID
+        dataset_items: List[DatasetItemEntityWithID] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -50,7 +50,9 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                             datumaro_labels.append(ann.label)
 
                     shapes = self._get_cls_shapes(datumaro_labels)
-                    dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
+                    dataset_item = DatasetItemEntityWithID(
+                        image, self._get_ann_scene_entity(shapes), subset=subset, id_=datumaro_item.id
+                    )
 
                     dataset_items.append(dataset_item)
 

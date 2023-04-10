@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import numpy as np
 from mmcls.core import average_performance, mAP
@@ -20,6 +20,7 @@ from torch.utils.data import Dataset
 from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_indices
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
@@ -42,6 +43,7 @@ class OTXClsDataset(BaseDataset):
         self.labels = labels
         self.label_names = [label.name for label in self.labels]
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
+        self.idx_to_label_id = {v: k for k, v in self.label_idx.items()}
         self.empty_label = empty_label
         self.class_acc = False
 
@@ -90,18 +92,24 @@ class OTXClsDataset(BaseDataset):
 
         height, width = item.height, item.width
 
+        gt_label = self.gt_labels[index]
         data_info = dict(
             dataset_item=item,
             width=width,
             height=height,
             index=index,
-            gt_label=self.gt_labels[index],
+            gt_label=gt_label,
             ignored_labels=ignored_labels,
+            entity_id=getattr(item, "id_", None),
+            label_id=self._get_label_id(gt_label),
         )
 
         if self.pipeline is None:
             return data_info
         return self.pipeline(data_info)
+
+    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, List[ID]]:
+        return self.idx_to_label_id.get(gt_label.item(), ID())
 
     def get_gt_labels(self):
         """Get all ground-truth labels (categories).
@@ -284,6 +292,9 @@ class OTXMultilabelClsDataset(OTXClsDataset):
                     eval_results[k] = v
 
         return eval_results
+
+    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, List[ID]]:
+        return [self.idx_to_label_id.get(idx, ID()) for idx, v in enumerate(gt_label) if v == 1]
 
 
 @DATASETS.register_module()
