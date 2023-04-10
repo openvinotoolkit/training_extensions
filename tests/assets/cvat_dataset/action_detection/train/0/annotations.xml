@@ -3,8 +3,8 @@
   <version>1.1</version>
   <meta>
     <task>
-      <id>1</id>
-      <name>v1</name>
+      <id>0</id>
+      <name>v0</name>
       <size>10</size>
       <mode>interpolation</mode>
       <overlap>2</overlap>
@@ -21,7 +21,7 @@
           <attributes></attributes>
         </label>
         <label>
-          <name>1</name>
+          <name>Right</name>
           <attributes></attributes>
         </label>
       </labels>
@@ -32,34 +32,34 @@
       </original_size>
     </task>
   </meta>
-  <track id="0" label="EmptyFrame">
-    <box frame="20" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="00" outside="0" occluded="0" xtl="0.08" ytl="0.25" xbr="0.50" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="21" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="01" outside="0" occluded="0" xtl="0.12" ytl="0.25" xbr="0.54" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="22" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="02" outside="0" occluded="0" xtl="0.16" ytl="0.25" xbr="0.58" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="23" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="03" outside="0" occluded="0" xtl="0.20" ytl="0.25" xbr="0.62" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="1">
-    <box frame="24" outside="0" occluded="0" xtl="0.25" ytl="0.25" xbr="0.66" ybr="0.66" z_order="0" label="1"></box>
+  <track id="0" label="Right">
+    <box frame="04" outside="0" occluded="0" xtl="0.25" ytl="0.25" xbr="0.67" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="25" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="05" outside="0" occluded="0" xtl="0.29" ytl="0.25" xbr="0.71" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="26" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="06" outside="0" occluded="0" xtl="0.33" ytl="0.25" xbr="0.75" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="27" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="07" outside="0" occluded="0" xtl="0.37" ytl="0.25" xbr="0.79" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="28" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="08" outside="0" occluded="0" xtl="0.41" ytl="0.25" xbr="0.83" ybr="0.75" z_order="0" label="Right"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="29" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Right">
+    <box frame="09" outside="0" occluded="0" xtl="0.45" ytl="0.25" xbr="0.87" ybr="0.75" z_order="0" label="Right"></box>
   </track>
 </annotations>
