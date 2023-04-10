@@ -48,7 +48,7 @@ def patch_datasets(
     def update_pipeline(cfg):
         if subset == "train":
             for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
-                get_meta_keys(collect_cfg)
+                get_meta_keys(collect_cfg, ["entity_id", "label_id"])
 
     for subset in subsets:
         if subset not in config.data:
