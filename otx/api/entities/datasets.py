@@ -309,7 +309,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
                 Defaults to AnnotationSceneKind.PREDICTION
 
         Returns:
-            DatasetEntity: a new dataset containing the same items, with empty annotation objects.asdf
+            DatasetEntity: a new dataset containing the same items, with empty annotation objects.
         """
         new_dataset = DatasetEntity[TDatasetItemEntity](purpose=self.purpose)
 
