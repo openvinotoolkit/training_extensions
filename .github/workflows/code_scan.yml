@@ -6,50 +6,67 @@ on:
     # every UTC 6PM from Mon to Fri
     - cron: "0 18 * * 1-5"
 
+permissions:
+  contents: write
+
 jobs:
-  Bandit:
+  trivy:
+    name: Checks
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
+        uses: aquasecurity/trivy-action@master
         with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: python -m pip install tox
-      - name: Bandit Scanning
-        run: tox -e bandit-scan
-      - name: Upload Bandit artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: bandit-report
-          path: .tox/bandit-report.txt
-        # Use always() to always run this step to publish scan results when there are test failures
-        if: ${{ always() }}
-  Snyk-scan:
-    runs-on: [self-hosted, linux, x64, dev]
-    permissions:
-      security-events: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
-      - name: Snyk Scanning
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          SNYK_ENDPOINT: ${{ secrets.SNYK_ENDPOINT }}
-        continue-on-error: true
-        run: tox -e snyk-scan
-      - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: .tox/snyk.sarif
-      - name: Upload snyk html artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: snyk-report
-          path: .tox/snyk.html
-        # Use always() to always run this step to publish scan results when there are test failures
-        if: ${{ always() }}
+          scan-type: "fs"
+          format: "github"
+          output: "dependency-results.sbom.json"
+          image-ref: "."
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
+  # Bandit:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.8
+  #     - name: Install dependencies
+  #       run: python -m pip install tox
+  #     - name: Bandit Scanning
+  #       run: tox -e bandit-scan
+  #     - name: Upload Bandit artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: bandit-report
+  #         path: .tox/bandit-report.txt
+  #       # Use always() to always run this step to publish scan results when there are test failures
+  #       if: ${{ always() }}
+  # Snyk-scan:
+  #   runs-on: [self-hosted, linux, x64, dev]
+  #   permissions:
+  #     security-events: write
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+  #     - name: Install dependencies
+  #       run: python -m pip install -r requirements/dev.txt
+  #     - name: Snyk Scanning
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #         SNYK_ENDPOINT: ${{ secrets.SNYK_ENDPOINT }}
+  #       continue-on-error: true
+  #       run: tox -e snyk-scan
+  #     - name: Upload result to GitHub Code Scanning
+  #       uses: github/codeql-action/upload-sarif@v2
+  #       with:
+  #         sarif_file: .tox/snyk.sarif
+  #     - name: Upload snyk html artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: snyk-report
+  #         path: .tox/snyk.html
+  #       # Use always() to always run this step to publish scan results when there are test failures
+  #       if: ${{ always() }}
