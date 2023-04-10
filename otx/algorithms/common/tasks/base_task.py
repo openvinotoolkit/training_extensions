@@ -308,3 +308,34 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     @config.setter
     def config(self, config: Dict[Any, Any]):
         self._config = config
+
+    @staticmethod
+    def adapt_batch_size(train_func, current_bs: int):
+        import datetime
+        min_bs = 0
+        max_bs = None
+        start_time = datetime.datetime.now()
+        while True:
+            try:
+                train_func(current_bs)
+            except RuntimeError:
+                if max_bs is None or current_bs < max_bs:
+                    max_bs = current_bs
+                current_bs = (current_bs + min_bs) // 2
+            else:
+                if min_bs < current_bs:
+                    min_bs = current_bs
+                if max_bs is None:
+                    current_bs *= 2
+                else:
+                    current_bs = (current_bs + max_bs) // 2
+
+            if max_bs is not None and max_bs - min_bs <= 2:
+                break
+
+        if min_bs == 0:
+            raise RuntimeError("Current device can't train model even with 2!")
+
+        print("*"*100, f"elapsed_time : {datetime.datetime.now() - start_time}")
+
+        return min_bs

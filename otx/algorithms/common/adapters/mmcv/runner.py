@@ -56,6 +56,9 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         This method supports distributed training by broadcasting should_stop to other ranks
         :return: a cancellation bool
         """
+        if self.meta.get("run_single_iter", False):
+            return True
+
         broadcast_obj = [False]
         if self.rank == 0 and self.should_stop:
             broadcast_obj = [True]

@@ -274,6 +274,24 @@ class MMDetectionTask(OTXDetectionTask):
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
+
+        meta["run_single_iter"] = True
+        def train_func(bs):
+            cfg.data.train_dataloader['samples_per_gpu'] = bs
+            train_detector(
+                model,
+                datasets,
+                cfg,
+                distributed=cfg.distributed,
+                validate=validate,
+                timestamp=timestamp,
+                meta=meta,
+            )
+
+        bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'])
+        meta.pop("run_single_iter")
+        cfg.data.train_dataloader['samples_per_gpu'] = bs
+
         train_detector(
             model,
             datasets,
