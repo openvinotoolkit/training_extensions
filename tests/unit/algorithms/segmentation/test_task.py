@@ -74,17 +74,20 @@ class TestOTXSegmentationTask:
 
         self.seg_task = MockOTXSegmentationTask(task_env)
 
+    @e2e_pytest_unit
     def test_load_model_ckpt(self, mocker):
         mocker_torch_load = mocker.patch("torch.load")
         self.seg_task._load_model_ckpt(MockModel())
         mocker_torch_load.assert_called_once()
 
+    @e2e_pytest_unit
     def test_train(self, mocker):
         dataset = generate_otx_dataset(5)
         mocker.patch("torch.load", return_value=np.ndarray([1]))
         self.seg_task.train(dataset, MockModel())
         assert self.seg_task._model_ckpt == "dummy.pth"
 
+    @e2e_pytest_unit
     def test_infer(self):
         dataset = generate_otx_dataset(5)
         predicted_dataset = self.seg_task.infer(
@@ -92,6 +95,7 @@ class TestOTXSegmentationTask:
         )
         assert predicted_dataset[0].annotation_scene.annotations[0]
 
+    @e2e_pytest_unit
     def test_evaluate(self, mocker):
         class _MockScoreMetric:
             def __init__(self, value):

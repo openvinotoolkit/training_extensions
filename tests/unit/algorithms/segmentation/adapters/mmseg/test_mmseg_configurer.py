@@ -212,6 +212,7 @@ class TestIncrSegmentationConfigurer:
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
 
+    @e2e_pytest_unit
     def test_configure_task(self, mocker):
         mocker.patch.object(SegmentationConfigurer, "configure_task")
         self.configurer.configure_task(self.model_cfg, True)
@@ -226,6 +227,7 @@ class TestSemiSLSegmentationConfigurer:
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
 
+    @e2e_pytest_unit
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
         unlabeled_dict = dict(data=dict(unlabeled=dict(otx_dataset="foo")))
@@ -234,6 +236,7 @@ class TestSemiSLSegmentationConfigurer:
         self.configurer.configure_data(self.model_cfg, True, data_cfg)
         mock_ul_dataloader.assert_called_once()
 
+    @e2e_pytest_unit
     def test_configure_task(self, mocker):
         model_cfg = ConfigDict(dict(model=dict(type="", task_adapt=True)))
         mock_remove_hook = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.remove_custom_hook")
@@ -241,6 +244,7 @@ class TestSemiSLSegmentationConfigurer:
         assert "task_adapt" not in model_cfg.model
         mock_remove_hook.assert_called_once()
 
+    @e2e_pytest_unit
     def test_configure_unlabeled_dataloader(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
         data_cfg.model_task = "segmentation"
