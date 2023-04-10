@@ -7,6 +7,42 @@ on:
     - cron: "0 18 * * 1-5"
 
 jobs:
+  Trivy-scan:
+    name: Build
+    runs-on: ubuntu-20.04
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@0.9.2
+        with:
+          scan-type: fs
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: trivy-results.sarif
+  Trivy-gen-sbom:
+    name: Checks
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
+        uses: aquasecurity/trivy-action@0.9.2
+        with:
+          scan-type: fs
+          format: github
+          output: dependency-results.sbom.json
+          image-ref: "."
+          github-pat: ${{ secrets.GITHUB_TOKEN }}
   Bandit:
     runs-on: ubuntu-20.04
     steps:
