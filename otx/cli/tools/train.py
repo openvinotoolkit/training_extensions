@@ -162,7 +162,7 @@ def get_args():
 def main():
     """Main function that invoke train function with ExitStack."""
     with ExitStack() as exit_stack:
-        train(exit_stack)
+        return train(exit_stack)
 
 
 def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-branches, too-many-statements
