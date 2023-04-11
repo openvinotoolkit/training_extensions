@@ -42,11 +42,11 @@ class DetConLoss(nn.Module):
 
     def get_distributed_tensors(self, target1, target2, batch_size, num_samples, num_features, device):
         """Grab tensors across replicas during distributed training."""
-        num_gpus = torch.cuda.device_count()
-        if num_gpus > 1 and torch.distributed.is_initialized() and self.use_replicator_loss:
+        if torch.distributed.is_initialized() and self.use_replicator_loss:
             # Grab tensor across replicas and expand first dimension
-            target1_large = [torch.zeros_like(target1) for _ in range(num_gpus)]
-            target2_large = [torch.zeros_like(target2) for _ in range(num_gpus)]
+            world_size = dist.get_world_size()
+            target1_large = [torch.zeros_like(target1) for _ in range(world_size)]
+            target2_large = [torch.zeros_like(target2) for _ in range(world_size)]
             dist.all_gather(target1_large, target1)
             dist.all_gather(target2_large, target2)
             target1_large = torch.cat(target1_large, dim=0)
