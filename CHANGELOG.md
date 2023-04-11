@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
 - Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
 - Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
+- Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
 
 ### Bug fixes
 
