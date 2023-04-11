@@ -171,6 +171,8 @@ class Tiler:
         self.async_pipeline.await_all()
         for j in range(processed_tiles, num_tiles):
             tile_prediction, meta, feats = self.async_pipeline.get_result(j)
+            if meta["tile_i"] == 0:
+                features = feats
             tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
             tile_results.append(tile_result)
         assert j == num_tiles - 1, "Number of tiles processed does not match number of tiles"

@@ -78,7 +78,7 @@ class TestTilingInstanceSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "ins_seg/test_resume"
+        tmp_dir_path = tmp_dir_path / "tiling_ins_seg/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
