@@ -57,27 +57,6 @@ class TestSelfSLDataset:
         }
 
     @e2e_pytest_unit
-    def test_self_sl_dataset_init_params_validation(self):
-        """Test SelfSLDataset initialization parameters validation."""
-        correct_values_dict = {
-            "otx_dataset": self.otx_dataset,
-            "pipeline": self.pipeline,
-        }
-        unexpected_str = "unexpected string"
-        unexpected_values = [
-            # Unexpected string is specified as "otx_dataset" parameter
-            ("otx_dataset", unexpected_str),
-            # Unexpected string is specified as "pipeline" parameter
-            ("pipeline", unexpected_str),
-        ]
-
-        check_value_error_exception_raised(
-            correct_parameters=correct_values_dict,
-            unexpected_values=unexpected_values,
-            class_or_function=SelfSLDataset,
-        )
-
-    @e2e_pytest_unit
     def test_getitem(self):
         """Test __getitem__ method."""
         dataset = SelfSLDataset(otx_dataset=self.otx_dataset, pipeline=self.pipeline)

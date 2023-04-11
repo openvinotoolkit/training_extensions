@@ -29,6 +29,7 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.subset import Subset
+from otx.api.utils.argument_checks import IMAGE_FILE_EXTENSIONS
 
 logger = logging.getLogger(__name__)
 
