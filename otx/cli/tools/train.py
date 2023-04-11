@@ -131,7 +131,7 @@ def get_args():
         required=False,
         help="Size of memory pool for caching decoded data to load data faster. "
         "For example, you can use digits for bytes size (e.g. 1024) or a string with size units "
-        "(e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30).",
+        "(e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).",
     )
     parser.add_argument(
         "--data",
