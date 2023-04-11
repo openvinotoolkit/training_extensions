@@ -336,6 +336,6 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         if min_bs == 0:
             raise RuntimeError("Current device can't train model even with 2!")
 
-        print("*"*100, f"elapsed_time : {datetime.datetime.now() - start_time}")
+        print("*"*100, f"max bs : {min_bs} / elapsed_time : {datetime.datetime.now() - start_time}")
 
         return min_bs

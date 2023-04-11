@@ -275,15 +275,22 @@ class MMDetectionTask(OTXDetectionTask):
 
         validate = bool(cfg.data.get("val", None))
 
+        # find maximal batch size ##################################################################
+        origin_max_epohcs = cfg.runner["max_epochs"]
+        cfg.runner["max_epochs"] = 1
         meta["run_single_iter"] = True
+        for hook in cfg.custom_hooks:
+            if hook["type"] == "AdaptiveTrainSchedulingHook":
+                origin_enable_eval_before_run = hook["enable_eval_before_run"]
+                hook["enable_eval_before_run"] = False
         def train_func(bs):
             cfg.data.train_dataloader['samples_per_gpu'] = bs
             train_detector(
                 model,
                 datasets,
                 cfg,
-                distributed=cfg.distributed,
-                validate=validate,
+                distributed=False,
+                validate=False,
                 timestamp=timestamp,
                 meta=meta,
             )
@@ -291,6 +298,11 @@ class MMDetectionTask(OTXDetectionTask):
         bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'])
         meta.pop("run_single_iter")
         cfg.data.train_dataloader['samples_per_gpu'] = bs
+        for hook in cfg.custom_hooks:
+            if hook["type"] == "AdaptiveTrainSchedulingHook":
+                hook["enable_eval_before_run"] = origin_enable_eval_before_run
+        cfg.runner["max_epochs"] = origin_max_epohcs 
+        ############################################################################################
 
         train_detector(
             model,
