@@ -32,11 +32,14 @@ class SyncExecutor:
         """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
 
-        for frame in streamer:
+        for (frame, input_path) in streamer:
             # getting result include preprocessing, infer, postprocessing for sync infer
             predictions, frame_meta = self.model(frame)
             annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
             output = self.visualizer.draw(frame, annotation_scene, frame_meta)
             self.visualizer.show(output)
+            self.visualizer.save_frame(output, input_path, str(streamer.get_type()))
             if self.visualizer.is_quit():
                 break
+
+        self.visualizer.dump_frames(streamer)

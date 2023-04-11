@@ -15,10 +15,11 @@
 # and limitations under the License.
 
 import time
-from collections import deque
+from collections import deque, defaultdict
 
 import cv2
 import numpy as np
+from pathlib import Path
 
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
@@ -71,6 +72,12 @@ def get_args():
         "These metrics take into account not only model inference time, but also "
         "frame reading, pre-processing and post-processing.",
     )
+    parser.add_argument(
+        "--save-results-to",
+        default=None,
+        type=str,
+        help="Output path to save input data with predictions.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
@@ -106,6 +113,9 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
+    if args.loop and args.save_results_to:
+        raise ValueError('--loop and --save-results-to cannot be both specified')
+
     config_manager = ConfigManager(args, mode="demo")
     # Auto-Configuration for model template
     config_manager.configure_template()
@@ -137,8 +147,9 @@ def main():
 
     elapsed_times = deque(maxlen=10)
     frame_index = 0
+    saved_frames = defaultdict(list)
     while True:
-        frame = capture.read()
+        frame, path = capture.read()
         if frame is None:
             break
 
@@ -155,12 +166,40 @@ def main():
                 color=(255, 255, 255),
             )
 
-        if args.delay >= 0:
+        if args.delay > 0:
             cv2.imshow("frame", frame)
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
+
+        # path to input is returned during the first pass through input only
+        if args.save_results_to and path:
+            filename = Path(path).name
+            if capture.get_type() == "VIDEO":
+                saved_frames[filename].append(frame)
+            else:
+                saved_frames[filename] = frame
+
+    if len(saved_frames) > 0:
+        if not Path(args.save_results_to).exists():
+            Path(args.save_results_to).mkdir(parents=True)
+
+        if capture.get_type() == "VIDEO":
+            filename, frames = list(saved_frames.items())[0]
+            w, h, _ = frames[0].shape
+            video_path = str(Path(args.save_results_to) / filename)
+            codec = cv2.VideoWriter_fourcc(*'mp4v')
+            out = cv2.VideoWriter(video_path, codec, capture.fps(), (h, w))
+            for frame in frames:
+                out.write(frame)
+            out.release()
+            print(f"Video was saved to {video_path}")
+        else:
+            for filename, frame in saved_frames.items():
+                image_path = str(Path(args.save_results_to, filename))
+                cv2.imwrite(image_path, frame)
+                print(f"Image was saved to {image_path}")
 
     return dict(retcode=0, template=template.name)
 

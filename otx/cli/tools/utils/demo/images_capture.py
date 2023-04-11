@@ -63,6 +63,7 @@ class ImreadWrapper(ImagesCapture):
         self.loop = loop
         if not os.path.isfile(source):
             raise InvalidInput(f"Can't find the image by {source}")
+        self.source = source
         self.image = cv2.imread(source, cv2.IMREAD_COLOR)
         if self.image is None:
             raise OpenError(f"Can't open the image from {source}")
@@ -70,12 +71,12 @@ class ImreadWrapper(ImagesCapture):
 
     def read(self):
         """Returns captured image."""
-        if self.loop:
-            return copy.deepcopy(self.image)
         if self.can_read:
             self.can_read = False
-            return copy.deepcopy(self.image)
-        return None
+            return copy.deepcopy(self.image), self.source
+        if self.loop:
+            return copy.deepcopy(self.image), None
+        return None, None
 
     def fps(self):
         """Returns a frequency of getting images from source."""
@@ -112,7 +113,7 @@ class DirReader(ImagesCapture):
             image = cv2.imread(filename, cv2.IMREAD_COLOR)
             self.file_id += 1
             if image is not None:
-                return image
+                return image, filename
         if self.loop:
             self.file_id = 0
             while self.file_id < len(self.names):
@@ -120,8 +121,8 @@ class DirReader(ImagesCapture):
                 image = cv2.imread(filename, cv2.IMREAD_COLOR)
                 self.file_id += 1
                 if image is not None:
-                    return image
-        return None
+                    return image, None
+        return None, None
 
     def fps(self):
         """Returns a frequency of getting images from source."""
@@ -138,6 +139,7 @@ class VideoCapWrapper(ImagesCapture):
     def __init__(self, source, loop):
         self.loop = loop
         self.cap = cv2.VideoCapture()
+        self.source = source
         status = self.cap.open(source)
         if not status:
             raise InvalidInput(f"Can't open the video from {source}")
@@ -147,12 +149,12 @@ class VideoCapWrapper(ImagesCapture):
         status, image = self.cap.read()
         if not status:
             if not self.loop:
-                return None
+                return None, None
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
             status, image = self.cap.read()
             if not status:
-                return None
-        return image
+                return None, None
+        return image, self.source
 
     def fps(self):
         """Returns a frequency of getting images from source."""
@@ -186,7 +188,7 @@ class CameraCapWrapper(ImagesCapture):
         status, image = self.cap.read()
         if not status:
             return None
-        return image
+        return image, None
 
     def fps(self):
         """Returns a frequency of getting images from source."""
