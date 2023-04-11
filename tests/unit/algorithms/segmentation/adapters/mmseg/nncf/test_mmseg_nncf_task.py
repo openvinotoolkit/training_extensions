@@ -62,16 +62,3 @@ class TestOTXSegTaskNNCF:
 
         assert self.model.performance != NullPerformance()
         assert self.model.performance.score.value == 0.2
-<<<<<<< HEAD:tests/unit/algorithms/segmentation/tasks/test_segmentation_nncf.py
-
-    @e2e_pytest_unit
-    def test_initialize(self, mocker):
-        """Test initialize method in OTXDetTaskNNCF."""
-        dataset = None
-        options = {}
-        self.seg_nncf_task._initialize(dataset, options)
-
-        assert "model_builder" in options
-        assert NNCFBaseTask.model_builder == options["model_builder"].func
-=======
->>>>>>> develop:tests/unit/algorithms/segmentation/adapters/mmseg/nncf/test_mmseg_nncf_task.py
