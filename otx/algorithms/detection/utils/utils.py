@@ -78,7 +78,7 @@ def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Dom
     """Generating label_schema function."""
     colors = ColorPalette(len(label_names)) if len(label_names) > 0 else []
     not_empty_labels = [
-        LabelEntity(name=name, color=colors[i], domain=label_domain, id=ID(f"{i:08}"))
+        LabelEntity(name=name, color=colors[i], domain=label_domain, id=ID(f"{i:08}"))  # type: ignore
         for i, name in enumerate(label_names)
     ]
     emptylabel = LabelEntity(

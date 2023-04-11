@@ -133,8 +133,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         """Perform a prediction for a given input image."""
         image, metadata = self.pre_process(image)
         predictions = self.forward(image)
-        predictions = self.post_process(predictions, metadata)
-        return predictions
+        return self.post_process(predictions, metadata)
 
     def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Segmentation Inferencer."""

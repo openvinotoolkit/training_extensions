@@ -281,10 +281,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             model = build_model(model_cfg)
         return model
 
-    def evaluate(
-        self,
-        output_resultset: ResultSetEntity,
-    ):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
         self._remove_empty_frames(output_resultset.ground_truth_dataset)
