@@ -137,6 +137,7 @@ class TestTilingInstanceSegmentationCLI:
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
     @e2e_pytest_component
+    @pytest.mark.skip(reason="CVS-107743")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg/test_hpo"
