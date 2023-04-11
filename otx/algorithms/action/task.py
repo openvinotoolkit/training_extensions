@@ -62,9 +62,9 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
-from otx.api.usecases.accuracy import Accuracy
+from otx.api.usecases.evaluation.accuracy import Accuracy
+from otx.api.usecases.evaluation.f_measure import FMeasure
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-from otx.api.usecases.f_measure import FMeasure
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.vis_utils import get_actmap
 
@@ -300,6 +300,7 @@ class OTXActionTask(OTXTask, ABC):
                 f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
             )
         self._remove_empty_frames(output_resultset.ground_truth_dataset)
+
         metric: Union[Accuracy, FMeasure]
         if self._task_type == TaskType.ACTION_CLASSIFICATION:
             metric = MetricsHelper.compute_accuracy(output_resultset)

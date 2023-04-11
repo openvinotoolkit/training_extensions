@@ -487,24 +487,9 @@ class MMActionTask(OTXActionTask):
                 mo_options.flags.extend(options["flags"])
                 mo_options.flags = list(set(mo_options.flags))
 
-            def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
-                    dict(type="Resize"),
-                )
-                assert len(resize_cfg) == 1
-                resize_cfg = resize_cfg[0]
-                size = resize_cfg.size
-                if isinstance(size, int):
-                    size = (size, size)
-                assert all(isinstance(i, int) and i > 0 for i in size)
-                # default is static shape to prevent an unexpected error
-                # when converting to OpenVINO IR
-                deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
-
             patch_input_preprocessing(deploy_cfg)
             if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(deploy_cfg)
+                raise NotImplementedError("Video recognition task must specify model input info in deployment.py")
 
         return deploy_cfg
 

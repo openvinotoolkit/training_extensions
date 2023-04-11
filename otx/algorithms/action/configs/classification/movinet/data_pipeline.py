@@ -16,7 +16,6 @@
 
 # pylint: disable=invalid-name
 # dataset settings
-seed = 2
 dataset_type = "RawframeDataset"
 
 img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[255.0, 255.0, 255.0], to_bgr=False)

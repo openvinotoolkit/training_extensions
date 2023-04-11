@@ -16,6 +16,8 @@
 
 # pylint: disable=invalid-name
 
+seed = 2
+
 evaluation = dict(interval=1, metrics=["top_k_accuracy", "mean_class_accuracy"], final_metric="mean_class_accuracy")
 
 optimizer = dict(
