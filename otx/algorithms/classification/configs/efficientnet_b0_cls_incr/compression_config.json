@@ -3,7 +3,7 @@
     "find_unused_parameters": true,
     "nncf_config": {
       "compression": [],
-      "log_dir": "."
+      "log_dir": "/tmp"
     }
   },
   "nncf_quantization": {

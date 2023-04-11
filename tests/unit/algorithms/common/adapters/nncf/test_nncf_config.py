@@ -36,7 +36,7 @@ def test_compose_nncf_config():
                 "target_metric_name": "mAP",
                 "input_info": {"sample_size": [1, 3, 864, 864]},
                 "compression": [],
-                "log_dir": ".",
+                "log_dir": "/tmp",
                 "accuracy_aware_training": {
                     "mode": "early_exit",
                 },

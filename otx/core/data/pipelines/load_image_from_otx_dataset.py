@@ -82,5 +82,7 @@ class LoadImageFromOTXDataset:
             to_rgb=False,
         )
         results["img_fields"] = ["img"]
+        results["entity_id"] = results.get("entity_id")
+        results["label_id"] = results.get("label_id")
 
         return results

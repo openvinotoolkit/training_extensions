@@ -4,6 +4,7 @@
 #
 
 import copy
+import glob
 import os
 
 import pytest
@@ -251,6 +252,20 @@ class TestMultiClassClassificationCLI:
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_enable_noisy_lable_detection(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        new_args = copy.deepcopy(args)
+        new_args["train_params"] += ["--algo_backend.enable_noisy_label_detection", "True"]
+        otx_train_testing(template, tmp_dir_path, otx_dir, new_args)
+
+        has_export_dir = False
+        for root, _, _ in os.walk(tmp_dir_path):
+            if "noisy_label_detection" == os.path.basename(root):
+                has_export_dir = True
+        assert has_export_dir
 
 
 # Multi-label training w/ 'car', 'tree', 'bug' classes

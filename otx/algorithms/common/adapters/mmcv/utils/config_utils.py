@@ -562,10 +562,11 @@ DEFAULT_META_KEYS = (
 )
 
 
-def get_meta_keys(pipeline_step):
+def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
     """Update meta_keys for ignore_labels."""
     meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
     meta_keys.append("ignored_labels")
+    meta_keys += add_meta_keys
     pipeline_step["meta_keys"] = set(meta_keys)
     return pipeline_step
 

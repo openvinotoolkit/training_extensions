@@ -63,6 +63,7 @@ from otx.api.entities.model import ModelPrecision
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.core.data import caching
+from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook
 
 from .configurer import (
     ClassificationConfigurer,
@@ -140,6 +141,10 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
+
+        # Loss dynamics tracking
+        if getattr(self._hyperparams.algo_backend, "enable_noisy_label_detection", False):
+            LossDynamicsTrackingHook.configure_recipe(self._recipe_cfg, self._output_path)
 
     # pylint: disable=too-many-arguments
     def configure(
@@ -263,7 +268,6 @@ class MMClassificationTask(OTXClassificationTask):
             time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
             time_monitor = time_monitor[0] if time_monitor else None
         if time_monitor is not None:
-
             # pylint: disable=unused-argument
             def pre_hook(module, inp):
                 time_monitor.on_test_batch_begin(None, None)
@@ -377,15 +381,17 @@ class MMClassificationTask(OTXClassificationTask):
         validate = bool(cfg.data.get("val", None))
         if validate:
             val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
-            val_loader_cfg = {
-                "num_gpus": len(cfg.gpu_ids),
-                "dist": cfg.distributed,
-                "round_up": True,
-                "seed": cfg.seed,
-                "shuffle": False,  # Not shuffle by default
-                "sampler_cfg": None,  # Not use sampler by default
-                **cfg.data.get("val_dataloader", {}),
-            }
+            val_loader_cfg = Config(
+                cfg_dict={
+                    "num_gpus": len(cfg.gpu_ids),
+                    "dist": cfg.distributed,
+                    "round_up": True,
+                    "seed": cfg.seed,
+                    "shuffle": False,  # Not shuffle by default
+                    "sampler_cfg": None,  # Not use sampler by default
+                    **cfg.data.get("val_dataloader", {}),
+                }
+            )
             val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
             eval_cfg = cfg.get("evaluation", {})
             eval_cfg["by_epoch"] = cfg.runner["type"] != "IterBasedRunner"
@@ -544,7 +550,7 @@ class MMClassificationTask(OTXClassificationTask):
             if export_options["deploy_cfg"]["codebase_config"]["task"] != "Segmentation":
                 if "saliency_map" not in output_names:
                     output_names.append("saliency_map")
-        export_options["model_builder"] = build_classifier
+        export_options["model_builder"] = getattr(self, "model_builder", build_classifier)
 
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")

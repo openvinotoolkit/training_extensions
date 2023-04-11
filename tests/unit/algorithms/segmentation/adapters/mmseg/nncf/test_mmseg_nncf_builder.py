@@ -30,6 +30,7 @@ def test_build_nncf_segmentor():
         state_to_build = model.state_dict()
         torch.save(state_to_build, model_path)
         mock_config.load_from = model_path
+        mock_config.nncf_config.log_dir = tempdir
         ctrl, model = build_nncf_segmentor(mock_config)
         assert isinstance(model, NNCFNetwork)
         assert len([hook for hook in mock_config.custom_hooks if hook.type == "CompressionHook"]) == 1
