@@ -276,32 +276,27 @@ class MMDetectionTask(OTXDetectionTask):
         validate = bool(cfg.data.get("val", None))
 
         # find maximal batch size ##################################################################
-        origin_max_epohcs = cfg.runner["max_epochs"]
-        cfg.runner["max_epochs"] = 1
-        meta["run_single_iter"] = True
-        for hook in cfg.custom_hooks:
-            if hook["type"] == "AdaptiveTrainSchedulingHook":
-                origin_enable_eval_before_run = hook["enable_eval_before_run"]
-                hook["enable_eval_before_run"] = False
         def train_func(bs):
-            cfg.data.train_dataloader['samples_per_gpu'] = bs
+            copied_cfg = deepcopy(cfg)
+            copied_meta = deepcopy(meta)
+            copied_cfg.runner["max_epochs"] = 1
+            copied_meta["run_single_iter"] = True
+            for hook in copied_cfg.custom_hooks:
+                if hook["type"] == "AdaptiveTrainSchedulingHook":
+                    hook["enable_eval_before_run"] = False
+            copied_cfg.data.train_dataloader['samples_per_gpu'] = bs
             train_detector(
                 model,
                 datasets,
-                cfg,
+                copied_cfg,
                 distributed=False,
                 validate=False,
                 timestamp=timestamp,
-                meta=meta,
+                meta=copied_meta,
             )
 
-        bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'])
-        meta.pop("run_single_iter")
+        bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'], len(datasets[0]))
         cfg.data.train_dataloader['samples_per_gpu'] = bs
-        for hook in cfg.custom_hooks:
-            if hook["type"] == "AdaptiveTrainSchedulingHook":
-                hook["enable_eval_before_run"] = origin_enable_eval_before_run
-        cfg.runner["max_epochs"] = origin_max_epohcs 
         ############################################################################################
 
         train_detector(

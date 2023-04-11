@@ -310,27 +310,34 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         self._config = config
 
     @staticmethod
-    def adapt_batch_size(train_func, current_bs: int):
+    def adapt_batch_size(train_func, default_bs: int, train_set_size: int):
         import datetime
         min_bs = 0
-        max_bs = None
+        if train_set_size < default_bs:
+                default_bs = train_set_size
+        lowest_unavailable_bs = None
         start_time = datetime.datetime.now()
         while True:
             try:
-                train_func(current_bs)
+                print("#"*100, default_bs)
+                train_func(default_bs)
             except RuntimeError:
-                if max_bs is None or current_bs < max_bs:
-                    max_bs = current_bs
-                current_bs = (current_bs + min_bs) // 2
+                if lowest_unavailable_bs is None or default_bs < lowest_unavailable_bs:
+                    lowest_unavailable_bs = default_bs
+                default_bs = (default_bs + min_bs) // 2
             else:
-                if min_bs < current_bs:
-                    min_bs = current_bs
-                if max_bs is None:
-                    current_bs *= 2
-                else:
-                    current_bs = (current_bs + max_bs) // 2
+                min_bs = default_bs
 
-            if max_bs is not None and max_bs - min_bs <= 2:
+                if default_bs >= train_set_size:
+                    break
+                if lowest_unavailable_bs is None:
+                    default_bs *= 2
+                    if default_bs > train_set_size:
+                        default_bs = train_set_size
+                else:
+                    default_bs = (default_bs + lowest_unavailable_bs) // 2
+
+            if lowest_unavailable_bs is not None and lowest_unavailable_bs - min_bs <= 2:
                 break
 
         if min_bs == 0:

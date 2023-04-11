@@ -404,6 +404,30 @@ class MMClassificationTask(OTXClassificationTask):
                 )
             )
 
+        # find maximal batch size ##################################################################
+        def train_func(bs):
+            copied_cfg = deepcopy(cfg)
+            copied_meta = deepcopy(meta)
+            copied_cfg.runner["max_epochs"] = 1
+            copied_meta["run_single_iter"] = True
+            for hook in copied_cfg.custom_hooks:
+                if hook["type"] == "AdaptiveTrainSchedulingHook":
+                    hook["enable_eval_before_run"] = False
+            copied_cfg.data.train_dataloader['samples_per_gpu'] = bs
+            train_model(
+                model,
+                datasets,
+                copied_cfg,
+                distributed=False,
+                validate=False,
+                timestamp=timestamp,
+                meta=copied_meta,
+            )
+
+        bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'], len(datasets[0]))
+        cfg.data.train_dataloader['samples_per_gpu'] = bs
+        ############################################################################################
+
         train_model(
             model,
             datasets,
