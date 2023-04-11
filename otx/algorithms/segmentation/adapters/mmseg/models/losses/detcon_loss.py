@@ -42,7 +42,7 @@ class DetConLoss(nn.Module):
 
     def get_distributed_tensors(self, target1, target2, batch_size, num_samples, num_features, device):
         """Grab tensors across replicas during distributed training."""
-        if torch.distributed.is_initialized() and self.use_replicator_loss:
+        if dist.is_initialized() and self.use_replicator_loss:
             # Grab tensor across replicas and expand first dimension
             world_size = dist.get_world_size()
             target1_large = [torch.zeros_like(target1) for _ in range(world_size)]
