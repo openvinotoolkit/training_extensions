@@ -296,25 +296,25 @@ class TestMMActionTask:
 
     @e2e_pytest_unit
     def test_evaluate(self) -> None:
-        """Test evaluate function.
-
-        <Steps>
-            1. Create model entity
-            2. Create result set entity
-            3. Run evaluate function with same dataset, this should give 100% accuracy
-            4. Run evaluate function with empty dataset, this should give 0% accuracy
-            5. Do 1 - 4 for action detection
-        """
+        """Test evaluate function."""
         _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)
         _model = ModelEntity(self.cls_dataset, _config)
         resultset = ResultSetEntity(_model, self.cls_dataset, self.cls_dataset)
         self.cls_task.evaluate(resultset)
         assert resultset.performance.score.value == 1.0
 
+    @e2e_pytest_unit
+    def test_evaluate_with_empty_annot(self) -> None:
+        """Test evaluate function with empty_annot."""
+        _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)
+        _model = ModelEntity(self.cls_dataset, _config)
         resultset = ResultSetEntity(_model, self.cls_dataset, self.cls_dataset.with_empty_annotations())
         self.cls_task.evaluate(resultset)
         assert resultset.performance.score.value == 0.0
 
+    @e2e_pytest_unit
+    def test_evaluate_det(self) -> None:
+        """Test evaluate function for action detection."""
         _config = ModelConfiguration(ActionConfig(), self.det_label_schema)
         _model = ModelEntity(self.det_dataset, _config)
         resultset = ResultSetEntity(_model, self.det_dataset, self.det_dataset)

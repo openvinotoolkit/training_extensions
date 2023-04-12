@@ -219,7 +219,7 @@ class OTXActionDetDataset(AVADataset):
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
-        self.CLASSES = list(label.name for label in labels)
+        self.CLASSES = [label.name for label in labels]
         self.test_mode = test_mode
         self.modality = modality
         self._FPS = fps

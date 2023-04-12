@@ -133,7 +133,6 @@ class OTXActionTask(OTXTask, ABC):
         model_ckpt = results.get("final_ckpt")
         if model_ckpt is None:
             logger.error("cannot find final checkpoint from the results.")
-            # output_model.model_status = ModelStatus.FAILED
             return
         # update checkpoint to the newly trained model
         self._model_ckpt = model_ckpt
@@ -176,7 +175,7 @@ class OTXActionTask(OTXTask, ABC):
         # compose performance statistics
         performance = metric.get_performance()
         performance.dashboard_metrics.extend(self._generate_training_metrics(self._learning_curves, val_performance))
-        logger.info(f"Final model performance: {str(performance)}")
+        logger.info(f"Final model performance: {performance}")
         # save resulting model
         self.save_model(output_model)
         output_model.performance = performance

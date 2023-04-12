@@ -135,7 +135,7 @@ class MMActionTask(OTXActionTask):
         if "state_dict" in ckpt:
             ckpt = ckpt["state_dict"]
         load_state_dict(model, ckpt)
-        if bool(fp16):
+        if fp16:
             wrap_fp16_model(model)
         return model
 
@@ -250,7 +250,7 @@ class MMActionTask(OTXActionTask):
         meta["exp_name"] = cfg.work_dir
         if cfg.checkpoint_config is not None:
             cfg.checkpoint_config.meta = dict(
-                mmdet_version=__version__ + get_git_hash()[:7],
+                mmaction2_version=__version__ + get_git_hash()[:7],
                 CLASSES=target_classes,
             )
 
@@ -276,7 +276,7 @@ class MMActionTask(OTXActionTask):
         # Save outputs
         output_ckpt_path = os.path.join(cfg.work_dir, "latest.pth")
         best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_*.pth"))
-        if len(best_ckpt_path) > 0:
+        if best_ckpt_path:
             output_ckpt_path = best_ckpt_path[0]
         return dict(
             final_ckpt=output_ckpt_path,
@@ -387,6 +387,7 @@ class MMActionTask(OTXActionTask):
                     eval_predictions.extend(result)
                     for _ in range(len(data)):
                         prog_bar.update()
+        prog_bar.file.write("\n")
 
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
             cfg.evaluation.pop(key, None)
