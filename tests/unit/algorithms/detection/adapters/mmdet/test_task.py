@@ -283,6 +283,8 @@ class TestMMActionTask:
     def test_det_evaluate_with_empty_annotations(self) -> None:
         """Test evaluate function for detection with empty predictions."""
 
+        _config = ModelConfiguration(DetectionConfig(), self.det_label_schema)
+        _model = ModelEntity(self.det_dataset, _config)
         resultset = ResultSetEntity(_model, self.det_dataset, self.det_dataset.with_empty_annotations())
         self.det_task.evaluate(resultset)
         assert resultset.performance.score.value == 0.0
