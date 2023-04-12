@@ -30,10 +30,12 @@ from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
     TrainingProgressCallback,
 )
+from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
+from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
-from otx.api.configuration.helper.utils import ids_to_strings
+from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -50,7 +52,12 @@ from otx.api.entities.metrics import (
     ScoreMetric,
     VisualizationType,
 )
-from otx.api.entities.model import ModelEntity, ModelPrecision
+from otx.api.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+)
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -246,7 +253,6 @@ class OTXDetectionTask(OTXTask, ABC):
         """Get inference results from dataset."""
         raise NotImplementedError
 
-    @abstractmethod
     def export(
         self,
         export_type: ExportType,
@@ -254,7 +260,53 @@ class OTXDetectionTask(OTXTask, ABC):
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = True,
     ):
-        """Export function of OTX Task."""
+        """Export function of OTX Detection Task."""
+        logger.info("Exporting the model")
+        if export_type != ExportType.OPENVINO:
+            raise RuntimeError(f"not supported export type {export_type}")
+        output_model.model_format = ModelFormat.OPENVINO
+        output_model.optimization_type = ModelOptimizationType.MO
+
+        results = self._export_model(precision, dump_features)
+        outputs = results.get("outputs")
+        logger.debug(f"results of run_task = {outputs}")
+        if outputs is None:
+            raise RuntimeError(results.get("msg"))
+
+        bin_file = outputs.get("bin")
+        xml_file = outputs.get("xml")
+        onnx_file = outputs.get("onnx")
+
+        ir_extra_data = get_det_model_api_configuration(
+            self._task_environment.label_schema, self._task_type, self.confidence_threshold
+        )
+        embed_ir_model_data(xml_file, ir_extra_data)
+
+        if xml_file is None or bin_file is None or onnx_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
+        with open(bin_file, "rb") as f:
+            output_model.set_data("openvino.bin", f.read())
+        with open(xml_file, "rb") as f:
+            output_model.set_data("openvino.xml", f.read())
+        with open(onnx_file, "rb") as f:
+            output_model.set_data("model.onnx", f.read())
+        output_model.set_data(
+            "confidence_threshold",
+            np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
+        )
+        output_model.set_data("config.json", config_to_bytes(self._hyperparams))
+        output_model.precision = self._precision
+        output_model.optimization_methods = self._optimization_methods
+        output_model.has_xai = dump_features
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self._task_environment.label_schema),
+        )
+        logger.info("Exporting completed")
+
+    @abstractmethod
+    def _export_model(self, precision: ModelPrecision, dump_features: bool):
+        """Main export function using training backend."""
         raise NotImplementedError
 
     @abstractmethod
