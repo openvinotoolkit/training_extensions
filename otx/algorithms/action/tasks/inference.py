@@ -362,10 +362,13 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             exporter.export()
             bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
             xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
+            onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
             with open(os.path.join(self._output_path, bin_file), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
             with open(os.path.join(self._output_path, xml_file), "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
+            with open(os.path.join(self._output_path, onnx_file), "rb") as file:
+                output_model.set_data("model.onnx", file.read())
             output_model.set_data(
                 "confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes()
             )
