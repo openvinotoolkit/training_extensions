@@ -454,16 +454,6 @@ def patch_early_stopping(config: Config):
         else:
             remove_custom_hook(config, "LazyEarlyStoppingHook")
 
-        # add_custom_hook_if_not_exists(
-        #     config,
-        #     ConfigDict(
-        #         type="FreezeHook",
-        #         # enable_adaptive_interval_hook=False,
-        #         # enable_eval_before_run=True,
-        #         priority=0
-        #     ),
-        # )
-
     # make sure model to be in a training mode even after model is evaluated (mmcv bug)
     update_or_add_custom_hook(
         config,

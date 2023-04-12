@@ -20,10 +20,4 @@ from .semisl_classifier import SemiSLClassifier
 from .semisl_multilabel_classifier import SemiSLMultilabelClassifier
 from .supcon_classifier import SupConClassifier
 
-__all__ = [
-    "BYOL",
-    "SAMImageClassifier",
-    "SemiSLClassifier",
-    "SemiSLMultilabelClassifier",
-    "SupConClassifier",
-]
+__all__ = ["BYOL", "SAMImageClassifier", "SemiSLClassifier", "SemiSLMultilabelClassifier", "SupConClassifier"]
