@@ -161,7 +161,7 @@ class VideoStreamer(BaseStreamer):
                 yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB), self.input_path
             else:
                 if self.loop:
-                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0), None
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 else:
                     break
 

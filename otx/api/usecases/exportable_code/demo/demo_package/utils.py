@@ -47,7 +47,7 @@ def create_output_converter(task_type: TaskType, labels: LabelSchemaEntity):
     return create_converter(converter_type, labels)
 
 
-def create_visualizer(_task_type: TaskType, no_show: bool = False, save_results_to: Path = None):
+def create_visualizer(_task_type: TaskType, no_show: bool = False, save_results_to: str = None):
     """Create visualizer according to kind of task."""
 
     # TODO: use anomaly-specific visualizer for anomaly tasks

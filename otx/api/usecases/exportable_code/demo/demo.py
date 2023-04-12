@@ -77,7 +77,7 @@ def build_argparser():
     args.add_argument(
         "--save-results-to",
         default=None,
-        type=Path,
+        type=str,
         help="Optional. Output path to save input data with predictions.",
     )
 

@@ -107,6 +107,16 @@ def get_predictions(task, frame):
     return item.get_annotations(), elapsed_time
 
 
+def save_frame(frame, path, capture_type, saved_frames):
+    """Saves frames with predictions to saved_frames to to dump it in one time."""
+
+    filename = Path(path).name
+    if capture_type == "VIDEO":
+        saved_frames[filename].append(frame)
+    else:
+        saved_frames[filename] = frame
+
+
 def dump_frames(saved_frames, output_path, capture):
     """Saves images/videos with predictions from saved_frames to file system."""
 
@@ -199,11 +209,7 @@ def main():
 
         # path to input is returned during the first pass through input only
         if args.save_results_to and path:
-            filename = Path(path).name
-            if capture.get_type() == "VIDEO":
-                saved_frames[filename].append(frame)
-            else:
-                saved_frames[filename] = frame
+            save_frame(frame, path, capture.get_type(), saved_frames)
 
     dump_frames(saved_frames, args.save_results_to, capture)
 
