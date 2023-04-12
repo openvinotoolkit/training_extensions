@@ -320,6 +320,20 @@ class OTXDetectionTask(OTXTask, ABC):
             output_model.set_data("openvino.xml", f.read())
         with open(onnx_file, "rb") as f:
             output_model.set_data("model.onnx", f.read())
+
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            tile_classifier = None
+            for partition in outputs.get("partitioned"):
+                if partition.get("tile_classifier"):
+                    tile_classifier = partition.get("tile_classifier")
+                    break
+            if tile_classifier is None:
+                raise RuntimeError("invalid status of exporting. tile_classifier should not be None")
+            with open(tile_classifier["bin"], "rb") as f:
+                output_model.set_data("tile_classifier.bin", f.read())
+            with open(tile_classifier["xml"], "rb") as f:
+                output_model.set_data("tile_classifier.xml", f.read())
+
         output_model.set_data(
             "confidence_threshold",
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),

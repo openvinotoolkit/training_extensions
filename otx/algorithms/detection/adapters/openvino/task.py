@@ -268,7 +268,6 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
         mode (str, optional): run inference in sync or async mode. Defaults to "async".
     """
 
-    @check_input_parameters_type()
     def __init__(
         self,
         inferencer: BaseInferencerWithConverter,
@@ -305,7 +304,6 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
 
         super().__init__(inferencer.configuration, inferencer.model, inferencer.converter)
 
-    @check_input_parameters_type()
     def predict(
         self, image: np.ndarray, mode: str = "async"
     ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
