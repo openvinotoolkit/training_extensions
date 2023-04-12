@@ -8,7 +8,6 @@ on:
 
 jobs:
   Trivy-scan:
-    name: Build
     runs-on: ubuntu-20.04
     permissions:
       security-events: write
@@ -28,7 +27,6 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
   Trivy-gen-sbom:
-    name: Checks
     runs-on: ubuntu-20.04
     permissions:
       contents: write
