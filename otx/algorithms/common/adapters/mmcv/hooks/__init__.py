@@ -50,7 +50,6 @@ from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
 from .two_crop_transform_hook import TwoCropTransformHook
 from .unbiased_teacher_hook import UnbiasedTeacherHook
-from .workflow_hook import WorkflowHook
 
 __all__ = [
     "AdaptiveTrainSchedulingHook",
@@ -87,5 +86,4 @@ __all__ = [
     "TaskAdaptHook",
     "TwoCropTransformHook",
     "UnbiasedTeacherHook",
-    "WorkflowHook",
 ]

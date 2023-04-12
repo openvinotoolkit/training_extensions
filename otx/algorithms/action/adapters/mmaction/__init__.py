@@ -5,8 +5,8 @@
 
 from .data import OTXActionClsDataset, OTXActionDetDataset
 from .models import register_action_backbones
-from .utils import Exporter, patch_config, set_data_classes
+from .utils import Exporter
 
-__all__ = ["OTXActionClsDataset", "OTXActionDetDataset", "patch_config", "set_data_classes", "Exporter"]
+__all__ = ["OTXActionClsDataset", "OTXActionDetDataset", "Exporter"]
 
 register_action_backbones()

@@ -1,4 +1,4 @@
-"""Unit Test for otx.algorithms.action.tasks.openvino."""
+"""Unit Test for otx.algorithms.action.adapters.openvino.task."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -13,7 +13,7 @@ from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
 
 from otx.algorithms.action.adapters.openvino import ActionOVClsDataLoader
 from otx.algorithms.action.configs.base.configuration import ActionConfig
-from otx.algorithms.action.tasks.openvino import (
+from otx.algorithms.action.adapters.openvino.task import (
     ActionOpenVINOInferencer,
     ActionOpenVINOTask,
     DataLoaderWrapper,
@@ -135,8 +135,8 @@ class TestActionOVInferencer:
             group_type=LabelGroupType.EXCLUSIVE,
         )
         self.label_schema.add_group(label_group)
-        mocker.patch("otx.algorithms.action.tasks.openvino.OpenvinoAdapter.__init__", return_value=None)
-        mocker.patch("otx.algorithms.action.tasks.openvino.Model.create_model", return_value=MockModel())
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.OpenvinoAdapter.__init__", return_value=None)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.Model.create_model", return_value=MockModel())
         self.inferencer = ActionOpenVINOInferencer(
             "ACTION_CLASSIFICATION",
             ActionConfig(),
@@ -181,7 +181,7 @@ class TestActionOVInferencer:
     def test_post_process(self, mocker) -> None:
         """Test post_process function."""
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ClassificationToAnnotationConverter.convert_to_annotation",
+            "otx.algorithms.action.adapters.openvino.task.ClassificationToAnnotationConverter.convert_to_annotation",
             side_effect=return_args,
         )
         assert (
@@ -200,14 +200,16 @@ class TestActionOVInferencer:
         """Test predict function."""
 
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ActionOpenVINOInferencer.pre_process",
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOInferencer.pre_process",
             return_value=("data", "metadata"),
         )
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ActionOpenVINOInferencer.forward", return_value="raw_predictions"
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOInferencer.forward",
+            return_value="raw_predictions",
         )
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ActionOpenVINOInferencer.post_process", return_value="predictions"
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOInferencer.post_process",
+            return_value="predictions",
         )
 
         dataset = generate_action_cls_otx_dataset(1, 10, self.labels)
@@ -257,7 +259,9 @@ class TestActionOVTask:
     def test_load_inferencer(self, mocker) -> None:
         """Test load_inferencer function."""
 
-        mocker.patch("otx.algorithms.action.tasks.openvino.ActionOpenVINOInferencer", return_value=MockOVInferencer())
+        mocker.patch(
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOInferencer", return_value=MockOVInferencer()
+        )
         task = ActionOpenVINOTask(self.task_environment)
         assert isinstance(task.inferencer, MockOVInferencer)
 
@@ -270,9 +274,12 @@ class TestActionOVTask:
         """Test infer function."""
 
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ActionOpenVINOTask.load_inferencer", return_value=MockOVInferencer()
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOTask.load_inferencer",
+            return_value=MockOVInferencer(),
         )
-        mocker.patch("otx.algorithms.action.tasks.openvino.get_ovdataloader", return_value=MockDataloader(self.dataset))
+        mocker.patch(
+            "otx.algorithms.action.adapters.openvino.task.get_ovdataloader", return_value=MockDataloader(self.dataset)
+        )
         task = ActionOpenVINOTask(self.task_environment)
         output = task.infer(self.dataset.with_empty_annotations())
         assert output[0].annotation_scene.kind == AnnotationSceneKind.PREDICTION
@@ -286,7 +293,8 @@ class TestActionOVTask:
                 return 1.0
 
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ActionOpenVINOTask.load_inferencer", return_value=MockOVInferencer()
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOTask.load_inferencer",
+            return_value=MockOVInferencer(),
         )
         task = ActionOpenVINOTask(self.task_environment)
 
@@ -311,7 +319,8 @@ class TestActionOVTask:
         """Test function for deploy function."""
 
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ActionOpenVINOTask.load_inferencer", return_value=MockOVInferencer()
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOTask.load_inferencer",
+            return_value=MockOVInferencer(),
         )
         task = ActionOpenVINOTask(self.task_environment)
         assert self.model.exportable_code is None
@@ -335,18 +344,21 @@ class TestActionOVTask:
             with open(os.path.join(tempdir, "model.bin"), "wb") as f:
                 f.write(np.ndarray(1).tobytes())
 
-        mocker.patch("otx.algorithms.action.tasks.openvino.get_ovdataloader", return_value=MockDataloader(self.dataset))
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.DataLoaderWrapper", return_value=MockDataloader(self.dataset)
+            "otx.algorithms.action.adapters.openvino.task.get_ovdataloader", return_value=MockDataloader(self.dataset)
         )
-        mocker.patch("otx.algorithms.action.tasks.openvino.load_model", return_value=self.model)
-        mocker.patch("otx.algorithms.action.tasks.openvino.get_nodes_by_type", return_value=False)
-        mocker.patch("otx.algorithms.action.tasks.openvino.IEEngine", return_value=True)
-        mocker.patch("otx.algorithms.action.tasks.openvino.create_pipeline", return_value=MockPipeline())
-        mocker.patch("otx.algorithms.action.tasks.openvino.compress_model_weights", return_value=True)
-        mocker.patch("otx.algorithms.action.tasks.openvino.save_model", side_effect=mock_save_model)
         mocker.patch(
-            "otx.algorithms.action.tasks.openvino.ActionOpenVINOTask.load_inferencer", return_value=MockOVInferencer()
+            "otx.algorithms.action.adapters.openvino.task.DataLoaderWrapper", return_value=MockDataloader(self.dataset)
+        )
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.load_model", return_value=self.model)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.get_nodes_by_type", return_value=False)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.IEEngine", return_value=True)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.create_pipeline", return_value=MockPipeline())
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.compress_model_weights", return_value=True)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.save_model", side_effect=mock_save_model)
+        mocker.patch(
+            "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOTask.load_inferencer",
+            return_value=MockOVInferencer(),
         )
         task = ActionOpenVINOTask(self.task_environment)
         task.optimize(OptimizationType.POT, self.dataset, self.model, OptimizationParameters())
