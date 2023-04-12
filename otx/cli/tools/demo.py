@@ -15,11 +15,11 @@
 # and limitations under the License.
 
 import time
-from collections import deque, defaultdict
+from collections import defaultdict, deque
+from pathlib import Path
 
 import cv2
 import numpy as np
-from pathlib import Path
 
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
@@ -107,6 +107,31 @@ def get_predictions(task, frame):
     return item.get_annotations(), elapsed_time
 
 
+def dump_frames(saved_frames, output_path, capture):
+    """Saves images/videos with predictions from saved_frames to file system."""
+
+    if len(saved_frames) > 0:
+        output_path = Path(output_path)
+        if not output_path.exists():
+            output_path.mkdir(parents=True)
+
+        if capture.get_type() == "VIDEO":
+            filename, frames = list(saved_frames.items())[0]
+            w, h, _ = frames[0].shape
+            video_path = str(output_path / filename)
+            codec = cv2.VideoWriter_fourcc(*"mp4v")
+            out = cv2.VideoWriter(video_path, codec, capture.fps(), (h, w))
+            for frame in frames:
+                out.write(frame)
+            out.release()
+            print(f"Video was saved to {video_path}")
+        else:
+            for filename, frame in saved_frames.items():
+                image_path = str(output_path / filename)
+                cv2.imwrite(image_path, frame)
+                print(f"Image was saved to {image_path}")
+
+
 def main():
     """Main function that is used for model demonstration."""
 
@@ -114,7 +139,7 @@ def main():
     args, override_param = get_args()
 
     if args.loop and args.save_results_to:
-        raise ValueError('--loop and --save-results-to cannot be both specified')
+        raise ValueError("--loop and --save-results-to cannot be both specified")
 
     config_manager = ConfigManager(args, mode="demo")
     # Auto-Configuration for model template
@@ -146,7 +171,6 @@ def main():
     capture = open_images_capture(args.input, args.loop)
 
     elapsed_times = deque(maxlen=10)
-    frame_index = 0
     saved_frames = defaultdict(list)
     while True:
         frame, path = capture.read()
@@ -171,7 +195,7 @@ def main():
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break
         else:
-            print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
+            print(f"Frame: {elapsed_time=}, {len(predictions)=}")
 
         # path to input is returned during the first pass through input only
         if args.save_results_to and path:
@@ -181,25 +205,7 @@ def main():
             else:
                 saved_frames[filename] = frame
 
-    if len(saved_frames) > 0:
-        if not Path(args.save_results_to).exists():
-            Path(args.save_results_to).mkdir(parents=True)
-
-        if capture.get_type() == "VIDEO":
-            filename, frames = list(saved_frames.items())[0]
-            w, h, _ = frames[0].shape
-            video_path = str(Path(args.save_results_to) / filename)
-            codec = cv2.VideoWriter_fourcc(*'mp4v')
-            out = cv2.VideoWriter(video_path, codec, capture.fps(), (h, w))
-            for frame in frames:
-                out.write(frame)
-            out.release()
-            print(f"Video was saved to {video_path}")
-        else:
-            for filename, frame in saved_frames.items():
-                image_path = str(Path(args.save_results_to, filename))
-                cv2.imwrite(image_path, frame)
-                print(f"Image was saved to {image_path}")
+    dump_frames(saved_frames, args.save_results_to, capture)
 
     return dict(retcode=0, template=template.name)
 

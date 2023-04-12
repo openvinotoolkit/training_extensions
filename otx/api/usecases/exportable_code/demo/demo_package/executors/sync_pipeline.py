@@ -79,10 +79,13 @@ class ChainExecutor:
         """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
 
-        for frame in streamer:
+        for (frame, input_path) in streamer:
             # getting result for single image
             annotation_scene = self.single_run(frame)
             output = self.visualizer.draw(frame, annotation_scene, {})
             self.visualizer.show(output)
+            self.visualizer.save_frame(output, input_path, str(streamer.get_type()))
             if self.visualizer.is_quit():
                 break
+
+        self.visualizer.dump_frames(streamer)

@@ -39,12 +39,13 @@ class AsyncExecutor:
         next_frame_id_to_show = 0
         stop_visualization = False
 
-        for frame in streamer:
+        for (frame, input_path) in streamer:
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             while results:
                 output = self.render_result(results)
                 next_frame_id_to_show += 1
                 self.visualizer.show(output)
+                self.visualizer.save_frame(output, input_path, str(streamer.get_type()))
                 if self.visualizer.is_quit():
                     stop_visualization = True
                 results = self.async_pipeline.get_result(next_frame_id_to_show)
@@ -57,6 +58,8 @@ class AsyncExecutor:
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             output = self.render_result(results)
             self.visualizer.show(output)
+            self.visualizer.save_frame(output, input_path, str(streamer.get_type()))
+        self.visualizer.dump_frames(streamer)
 
     def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:
         """Render for results of inference."""

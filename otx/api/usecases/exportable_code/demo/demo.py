@@ -77,10 +77,9 @@ def build_argparser():
     args.add_argument(
         "--save-results-to",
         default=None,
-        type=str,
-        help="Output path to save input data with predictions.",
+        type=Path,
+        help="Optional. Output path to save input data with predictions.",
     )
-
 
     return parser
 
@@ -105,7 +104,7 @@ def main():
     args = build_argparser().parse_args()
 
     if args.loop and args.save_results_to:
-        raise ValueError('--loop and --save-results-to cannot be both specified')
+        raise ValueError("--loop and --save-results-to cannot be both specified")
 
     # create models
     models = []

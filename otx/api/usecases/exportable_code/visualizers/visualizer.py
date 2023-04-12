@@ -5,12 +5,11 @@
 #
 
 import abc
-from collections import defaultdict
-from typing import Optional
+from pathlib import Path
+from typing import Dict, Optional
 
 import cv2
 import numpy as np
-from pathlib import Path
 
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.utils.shape_drawer import ShapeDrawer
@@ -61,14 +60,15 @@ class Visualizer(IVisualizer):
         >>> visualizer.show(output)
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         window_name: Optional[str] = None,
         show_count: bool = False,
         is_one_label: bool = False,
         no_show: bool = False,
         delay: Optional[int] = None,
-        save_results_to: Optional[str] = None
+        save_results_to: str = None,
+        saved_frames: Dict[str, list] = None,
     ) -> None:
         self.window_name = "Window" if window_name is None else window_name
         self.shape_drawer = ShapeDrawer(show_count, is_one_label)
@@ -78,8 +78,10 @@ class Visualizer(IVisualizer):
         if delay is None:
             self.delay = 1
         self.save_results_to = save_results_to
-        self.saved_frames = defaultdict(list)
-
+        if not saved_frames:
+            self.saved_frames = {}
+        else:
+            self.saved_frames = saved_frames
 
     def draw(
         self,
@@ -129,6 +131,8 @@ class Visualizer(IVisualizer):
 
         if self.save_results_to and input_path:
             filename = Path(input_path).name
+            if filename not in self.saved_frames:
+                self.saved_frames[filename] = []
             if "VIDEO" in streamer_type:
                 self.saved_frames[filename].append(image)
             else:
@@ -140,15 +144,16 @@ class Visualizer(IVisualizer):
         Args:
             streamer (str): The streamer with images to be saved
         """
-        if len(self.saved_frames) > 0:
-            if not Path(self.save_results_to).exists():
-                Path(self.save_results_to).mkdir(parents=True)
+        if len(self.saved_frames) > 0 and self.save_results_to:
+            output_path = Path(self.save_results_to)
+            if not output_path.exists():
+                output_path.mkdir(parents=True)
 
             if "VIDEO" in str(streamer.get_type()):
                 filename, frames = list(self.saved_frames.items())[0]
                 w, h, _ = frames[0].shape
-                video_path = str(Path(self.save_results_to) / filename)
-                codec = cv2.VideoWriter_fourcc(*'mp4v')
+                video_path = str(output_path / filename)
+                codec = cv2.VideoWriter_fourcc(*"mp4v")
                 out = cv2.VideoWriter(video_path, codec, streamer.fps(), (h, w))
                 for frame in frames:
                     out.write(frame)
@@ -156,6 +161,6 @@ class Visualizer(IVisualizer):
                 print(f"Video was saved to {video_path}")
             else:
                 for filename, frame in self.saved_frames.items():
-                    image_path = str(Path(self.save_results_to, filename))
+                    image_path = str(output_path / filename)
                     cv2.imwrite(image_path, frame)
                     print(f"Image was saved to {image_path}")
