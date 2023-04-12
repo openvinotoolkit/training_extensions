@@ -60,7 +60,7 @@ def multiclass_nms(
         max_num (int, optional): Max number of objects filter. Defaults to 200.
 
     Returns:
-        _type_: _description_
+        tuple: (dets, indices), Dets are boxes with scores. Indices are indices of kept boxes.
     """
     labels = detections[:, 0]
     scores = detections[:, 1]

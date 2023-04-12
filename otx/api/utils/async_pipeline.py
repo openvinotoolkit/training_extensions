@@ -29,7 +29,7 @@ class OTXDetectionAsyncPipeline(AsyncPipeline):
             id (int): index of inference
 
         Returns:
-            _type_: _description_
+            result (tuple): tuple of inference result and meta information
         """
         result = self.get_raw_result(id)
         if result:

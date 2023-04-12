@@ -63,7 +63,7 @@ class TileClassifier(torch.nn.Module):
         """Calculate BCE loss.
 
         Args:
-            pred (torch.Tensor): _description_
+            pred (torch.Tensor): logits
             target (torch.Tensor): binary target
 
         Returns:
@@ -242,7 +242,7 @@ if is_mmdeploy_enabled():
             **kwargs: kwargs
 
         Returns:
-            _type_: _description_
+            simple test: MaskRCNN output
         """
         assert isinstance(img, torch.Tensor)
 
@@ -270,7 +270,7 @@ if is_mmdeploy_enabled():
             **kwargs: kwargs
 
         Returns:
-            _type_: _description_
+            MaskRCNN output
         """
         if img_metas is None:
             img_metas = [{}]

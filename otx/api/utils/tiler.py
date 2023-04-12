@@ -227,7 +227,7 @@ class Tiler:
         """Convert detection to tuple.
 
         Args:
-            detections (np.ndarray): _description_
+            detections (np.ndarray): prediction results in numpy array
 
         Returns:
             scores (np.ndarray): scores between 0-1
@@ -243,7 +243,7 @@ class Tiler:
         """Merge results from tiles.
 
         Args:
-            results (List[Dict]): _description_
+            results (List[Dict]): list of tile results
             shape (List[int]): original full-res image shape
         """
 
