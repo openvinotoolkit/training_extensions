@@ -13,3 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+
+# The import required to register the backbone used by the OTX Template with the Registry.
+import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+
+from .task import OTXClassificationTask
+
+__all__ = [
+    "OTXBackbones",
+    "OTXClassificationTask",
+]

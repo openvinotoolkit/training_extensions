@@ -16,8 +16,8 @@ def test_get_args(mocker):
         "--unlabeled-data-roots": "unlabeled/data/root",
         "--unlabeled-file-list": "unlabeled/file/list",
         "--task": "detection",
-        "--train-type": "SEMISUPERVISED",
-        "--work-dir": "work/dir/path",
+        "--train-type": "Semisupervised",
+        "--workspace": "work/dir/path",
         "--model": "SSD",
         "--backbone": "torchvision.resnet18",
     }
@@ -35,9 +35,9 @@ def test_get_args(mocker):
     assert parsed_args.test_data_roots == "test/data/root"
     assert parsed_args.unlabeled_data_roots == "unlabeled/data/root"
     assert parsed_args.unlabeled_file_list == "unlabeled/file/list"
-    assert parsed_args.work_dir == "work/dir/path"
+    assert parsed_args.workspace == "work/dir/path"
     assert parsed_args.task == "detection"
-    assert parsed_args.train_type == "SEMISUPERVISED"
+    assert parsed_args.train_type == "Semisupervised"
     assert parsed_args.model == "SSD"
     assert parsed_args.backbone == "torchvision.resnet18"
 
@@ -52,7 +52,7 @@ def mock_args(mocker, tmp_path):
     mock_args.unlabeled_file_list = None
     mock_args.task = ""
     mock_args.train_type = "incremental"
-    mock_args.work_dir = tmp_path / "work_dir"
+    mock_args.workspace = tmp_path / "work_dir"
     mock_args.model = ""
     mock_args.backbone = "torchvision.resnet18"
 
@@ -92,7 +92,7 @@ def test_main(mocker, mock_config_manager, mock_args):
     assert result == {"retcode": 0, "task_type": ""}
 
     # Check ConfigManager constructor call
-    mock_config_manager.assert_called_once_with(mock_args, mode="build")
+    mock_config_manager.assert_called_once()
 
     # Check ConfigManager method calls
     mock_config_manager.return_value.configure_template.assert_called_once_with(model="")

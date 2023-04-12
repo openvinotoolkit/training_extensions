@@ -48,13 +48,20 @@ def get_args():
         "It could be a trained/optimized model (POT only) or exported model.",
     )
     parser.add_argument(
-        "--save-performance",
-        help="Path to a json file where computed performance will be stored.",
+        "-o",
+        "--output",
+        help="Location where the intermediate output of the task will be stored.",
     )
     parser.add_argument(
-        "--work-dir",
-        help="Location where the intermediate output of the task will be stored.",
+        "--workspace",
+        help="Path to the workspace where the command will run.",
         default=None,
+    )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default=None,
+        help="The data.yaml path want to use in train task.",
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
@@ -82,12 +89,15 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="eval")
+    config_manager = ConfigManager(args, workspace_root=args.workspace, mode="eval")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
     if not args.load_weights and config_manager.check_workspace():
-        args.load_weights = str(config_manager.workspace_root / "models/weights.pth")
+        latest_model_path = (
+            config_manager.workspace_root / "outputs" / "latest_trained_model" / "models" / "weights.pth"
+        )
+        args.load_weights = str(latest_model_path)
 
     # Update Hyper Parameter Configs
     hyper_parameters = config_manager.get_hyparams_config(override_param)
@@ -136,9 +146,8 @@ def main():
     assert resultset.performance is not None
     print(resultset.performance)
 
-    if not args.save_performance:
-        args.save_performance = str(Path(args.load_weights).parent / "performance.json")
-    with open(args.save_performance, "w", encoding="UTF-8") as write_file:
+    output_path = Path(args.output) if args.output else config_manager.output_path
+    with open(output_path / "performance.json", "w", encoding="UTF-8") as write_file:
         json.dump(
             {resultset.performance.score.name: resultset.performance.score.value},
             write_file,

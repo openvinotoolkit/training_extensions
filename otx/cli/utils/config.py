@@ -29,11 +29,10 @@ def override_parameters(overrides, parameters):
                 override_parameters(val, parameters[k])
             else:
                 raise ValueError(f'The "{k}" is not in original parameters.')
+        elif k in allowed_keys:
+            parameters[k] = val
         else:
-            if k in allowed_keys:
-                parameters[k] = val
-            else:
-                raise ValueError(f'The "{k}" is not in allowed_keys: {allowed_keys}')
+            raise ValueError(f'The "{k}" is not in allowed_keys: {allowed_keys}')
 
 
 def configure_dataset(args, data_yaml_path=None):

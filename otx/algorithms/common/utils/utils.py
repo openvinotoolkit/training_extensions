@@ -16,12 +16,14 @@
 
 import importlib
 import inspect
+import os
+import random
 from collections import defaultdict
-from typing import Callable, Literal, Optional, Tuple
+from typing import Callable, Optional, Tuple
 
+import numpy as np
+import torch
 import yaml
-
-from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
 
 
 class UncopiableDefaultDict(defaultdict):
@@ -32,7 +34,6 @@ class UncopiableDefaultDict(defaultdict):
         return self
 
 
-@check_input_parameters_type({"path": YamlFilePathCheck})
 def load_template(path):
     """Loading model template function."""
     with open(path, encoding="UTF-8") as f:
@@ -40,7 +41,6 @@ def load_template(path):
     return template
 
 
-@check_input_parameters_type()
 def get_task_class(path: str):
     """Return Task classes."""
     module_name, class_name = path.rsplit(".", 1)
@@ -48,7 +48,6 @@ def get_task_class(path: str):
     return getattr(module, class_name)
 
 
-@check_input_parameters_type()
 def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
     fn: Callable,  # pylint: disable=invalid-name
     depth: Optional[int] = None,
@@ -96,75 +95,23 @@ def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
     return tuple(args)
 
 
-def left_vlaue_is_better(val1, val2, mode: Literal["max", "min"]) -> bool:
-    """Check left value is better than right value.
-
-    Whether check it's greather or lesser is changed depending on 'model'.
+def set_random_seed(seed, logger, deterministic=False):
+    """Set random seed.
 
     Args:
-        val1 : value to check that it's bigger than other value.
-        val2 : value to check that it's bigger than other value.
-        mode (Literal['max', 'min']): value to decide whether better means greater or lesser.
-
-    Returns:
-        bool: whether val1 is better than val2.
+        seed (int): Seed to be used.
+        logger (logging.Logger): logger for logging seed info
+        deterministic (bool): Whether to set the deterministic option for
+            CUDNN backend, i.e., set `torch.backends.cudnn.deterministic`
+            to True and `torch.backends.cudnn.benchmark` to False.
+            Default: False.
     """
-    check_mode_input(mode)
-    if mode == "max":
-        return val1 > val2
-    return val1 < val2
-
-
-def check_positive(value, variable_name: Optional[str] = None, error_message: Optional[str] = None):
-    """Validate that value is positivle.
-
-    Args:
-        value (Any): value to validate.
-        variable_name (Optional[str], optional): name of value. It's used for error message. Defaults to None.
-        error_message (Optional[str], optional): Error message to use when type is different. Defaults to None.
-
-    Raises:
-        ValueError: If value isn't positive, the error is raised.
-    """
-    if value <= 0:
-        if error_message is not None:
-            message = error_message
-        elif variable_name:
-            message = f"{variable_name} should be positive.\n" f"your value : {value}"
-        else:
-            raise ValueError
-        raise ValueError(message)
-
-
-def check_not_negative(value, variable_name: Optional[str] = None, error_message: Optional[str] = None):
-    """Validate that value isn't negative.
-
-    Args:
-        value (Any): value to validate.
-        variable_name (Optional[str], optional): name of value. It's used for error message. Defaults to None.
-        error_message (Optional[str], optional): Error message to use when type is different. Defaults to None.
-
-    Raises:
-        ValueError: If value is negative, the error is raised.
-    """
-    if value < 0:
-        if error_message is not None:
-            message = error_message
-        elif variable_name:
-            message = f"{variable_name} should be positive.\n" f"your value : {value}"
-        else:
-            raise ValueError
-        raise ValueError(message)
-
-
-def check_mode_input(mode: str):
-    """Validate that mode is 'max' or 'min'.
-
-    Args:
-        mode (str): string to validate.
-
-    Raises:
-        ValueError: If 'mode' is not both 'max' and 'min', the error is raised.
-    """
-    if mode not in ["max", "min"]:
-        raise ValueError("mode should be max or min.\n" f"Your value : {mode}")
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    logger.info(f"Training seed was set to {seed} w/ deterministic={deterministic}.")
+    if deterministic:
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False

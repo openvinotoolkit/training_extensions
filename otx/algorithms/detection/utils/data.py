@@ -40,18 +40,10 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    DirectoryPathCheck,
-    JsonFilePathCheck,
-    OptionalDirectoryPathCheck,
-    check_input_parameters_type,
-)
 from otx.api.utils.shape_factory import ShapeFactory
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
-@check_input_parameters_type({"path": JsonFilePathCheck})
 def get_classes_from_annotation(path):
     """Return classes from annotation."""
     with open(path, encoding="UTF-8") as read_file:
@@ -63,7 +55,6 @@ def get_classes_from_annotation(path):
 class LoadAnnotations:
     """Load Annotations class."""
 
-    @check_input_parameters_type()
     def __init__(self, with_bbox: bool = True, with_label: bool = True, with_mask: bool = False):
         self.with_bbox = with_bbox
         self.with_label = with_label
@@ -93,7 +84,6 @@ class LoadAnnotations:
         results["mask_fields"].append("gt_masks")
         return results
 
-    @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadAnnotations."""
         if self.with_bbox:
@@ -118,7 +108,6 @@ class LoadAnnotations:
 class CocoDataset:
     """CocoDataset."""
 
-    @check_input_parameters_type({"ann_file": JsonFilePathCheck, "data_root": OptionalDirectoryPathCheck})
     def __init__(
         self,
         ann_file: str,
@@ -155,7 +144,6 @@ class CocoDataset:
         """Length of CocoDataset."""
         return len(self.data_infos)
 
-    @check_input_parameters_type()
     def pre_pipeline(self, results: Dict[str, Any]):
         """Initialize pipeline."""
         results["img_prefix"] = self.img_prefix
@@ -168,7 +156,6 @@ class CocoDataset:
         pool = np.where(self.flag == self.flag[idx])[0]
         return np.random.choice(pool)
 
-    @check_input_parameters_type()
     def __getitem__(self, idx: int):
         """Return dataset item from index."""
         return self.prepare_img(idx)
@@ -178,7 +165,6 @@ class CocoDataset:
         for i in range(len(self)):
             yield self[i]
 
-    @check_input_parameters_type()
     def prepare_img(self, idx: int):
         """Load Annotations function with images."""
         img_info = self.data_infos[idx]
@@ -187,7 +173,6 @@ class CocoDataset:
         self.pre_pipeline(results)
         return LoadAnnotations(with_mask=self.with_mask)(results)
 
-    @check_input_parameters_type()
     def get_classes(self, classes: Optional[Sequence[str]] = None):
         """Return classes function."""
         if classes is None:
@@ -198,7 +183,6 @@ class CocoDataset:
 
         raise ValueError(f"Unsupported type {type(classes)} of classes.")
 
-    @check_input_parameters_type({"ann_file": JsonFilePathCheck})
     def load_annotations(self, ann_file):
         """Load annotations function from coco."""
         self.coco = COCO(ann_file)
@@ -212,7 +196,6 @@ class CocoDataset:
             data_infos.append(info)
         return data_infos
 
-    @check_input_parameters_type()
     def get_ann_info(self, idx: int):
         """Getting Annotation info."""
         img_id = self.data_infos[idx]["id"]
@@ -220,7 +203,6 @@ class CocoDataset:
         ann_info = self.coco.load_anns(ann_ids)
         return self._parse_ann_info(self.data_infos[idx], ann_info)
 
-    @check_input_parameters_type()
     def get_cat_ids(self, idx: int):
         """Getting cat_ids."""
         img_id = self.data_infos[idx]["id"]
@@ -306,7 +288,6 @@ class CocoDataset:
         return ann
 
 
-@check_input_parameters_type()
 def find_label_by_name(labels: List[LabelEntity], name: str, domain: Domain):
     """Return label from name."""
     matching_labels = [label for label in labels if label.name == name]
@@ -319,7 +300,6 @@ def find_label_by_name(labels: List[LabelEntity], name: str, domain: Domain):
     raise ValueError("Found multiple matching labels")
 
 
-@check_input_parameters_type({"ann_file_path": JsonFilePathCheck, "data_root_dir": DirectoryPathCheck})
 def load_dataset_items_coco_format(
     ann_file_path: str,
     data_root_dir: str,
@@ -411,7 +391,6 @@ def load_dataset_items_coco_format(
     return dataset_items
 
 
-@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def get_sizes_from_dataset_entity(dataset: DatasetEntity, target_wh: List[int]):
     """Function to get sizes of instances in DatasetEntity and to resize it to the target size.
 
@@ -433,7 +412,6 @@ def get_sizes_from_dataset_entity(dataset: DatasetEntity, target_wh: List[int]):
     return wh_stats
 
 
-@check_input_parameters_type()
 def get_anchor_boxes(wh_stats: List[tuple], group_as: List[int]):
     """Get anchor box widths & heights."""
     from sklearn.cluster import KMeans
@@ -454,7 +432,6 @@ def get_anchor_boxes(wh_stats: List[tuple], group_as: List[int]):
     return widths, heights
 
 
-@check_input_parameters_type()
 def format_list_to_str(value_lists: list):
     """Decrease floating point digits in logs."""
     str_value = ""

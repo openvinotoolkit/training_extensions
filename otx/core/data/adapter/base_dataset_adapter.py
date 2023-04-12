@@ -120,9 +120,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 val_data_type = self._select_data_type(val_data_candidates)
                 val_dataset = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
-            else:
-                if "val" in train_dataset.subsets():
-                    dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
+            elif "val" in train_dataset.subsets():
+                dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
 
         if test_data_roots is not None and train_data_roots is None:
             self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)

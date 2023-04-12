@@ -6,7 +6,9 @@
 # flake8: noqa
 
 from .builder import build_nncf_classifier
+from .task import ClassificationNNCFTask
 
 __all__ = [
     "build_nncf_classifier",
+    "ClassificationNNCFTask",
 ]

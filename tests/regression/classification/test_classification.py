@@ -114,7 +114,9 @@ class TestRegressionMultiClassClassification:
         tmp_dir_path = tmp_dir_path / "multi_class_cls_incr"
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
-        args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr[
+            "--load-weights"
+        ] = f"{sl_template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
         train_start_time = timer()
@@ -170,7 +172,7 @@ class TestRegressionMultiClassClassification:
             "--learning_parameters.num_iters",
             REGRESSION_TEST_EPOCHS,
             "--algo_backend.train_type",
-            "SEMISUPERVISED",
+            "Semisupervised",
         ]
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
@@ -228,7 +230,7 @@ class TestRegressionMultiClassClassification:
             "--learning_parameters.num_iters",
             "10",
             "--algo_backend.train_type",
-            "SELFSUPERVISED",
+            "Selfsupervised",
         ]
 
         # Self-supervised Training
@@ -242,7 +244,7 @@ class TestRegressionMultiClassClassification:
         args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         args_selfsl["--val-data-roots"] = multi_class_data_args["--val-data-roots"]
         args_selfsl["--test-data-roots"] = multi_class_data_args["--test-data-roots"]
-        args_selfsl["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_selfsl["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, new_tmp_dir_path, otx_dir, args_selfsl)
 
         # Evaluation with self + supervised training model
@@ -298,7 +300,7 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            threshold=1.0,
+            threshold=0.02,
             criteria=multi_class_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -325,7 +327,7 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            threshold=1.0,
+            threshold=0.02,
             criteria=multi_class_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -355,7 +357,7 @@ class TestRegressionMultiClassClassification:
             tmp_dir_path,
             otx_dir,
             multi_class_data_args,
-            threshold=1.0,
+            threshold=0.001,
             criteria=multi_class_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -460,7 +462,9 @@ class TestRegressionMultiLabelClassification:
         tmp_dir_path = tmp_dir_path / "multi_label_cls_incr"
         config_cls_incr = load_regression_configuration(otx_dir, TASK_TYPE, "class_incr", self.label_type)
         args_cls_incr = config_cls_incr["data_path"]
-        args_cls_incr["--load-weights"] = f"{sl_template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args_cls_incr[
+            "--load-weights"
+        ] = f"{sl_template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
 
         train_start_time = timer()
@@ -518,7 +522,7 @@ class TestRegressionMultiLabelClassification:
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            threshold=1.0,
+            threshold=0.02,
             criteria=multi_label_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -545,7 +549,7 @@ class TestRegressionMultiLabelClassification:
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            threshold=1.0,
+            threshold=0.02,
             criteria=multi_label_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -575,7 +579,7 @@ class TestRegressionMultiLabelClassification:
             tmp_dir_path,
             otx_dir,
             multi_label_data_args,
-            threshold=1.0,
+            threshold=0.001,
             criteria=multi_label_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -686,7 +690,7 @@ class TestRegressionHierarchicalLabelClassification:
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            threshold=1.0,
+            threshold=0.02,
             criteria=h_label_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -713,7 +717,7 @@ class TestRegressionHierarchicalLabelClassification:
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            threshold=1.0,
+            threshold=0.02,
             criteria=h_label_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -743,7 +747,7 @@ class TestRegressionHierarchicalLabelClassification:
             tmp_dir_path,
             otx_dir,
             h_label_data_args,
-            threshold=1.0,
+            threshold=0.001,
             criteria=h_label_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],

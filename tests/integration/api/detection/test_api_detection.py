@@ -125,7 +125,7 @@ class DetectionTaskAPIBase:
 
 class TestDetectionTaskAPI(DetectionTaskAPIBase):
     """
-    Collection of tests for OTE API and OTE Model Templates
+    Collection of tests for OTX API and OTX Model Templates
     """
 
     @e2e_pytest_api

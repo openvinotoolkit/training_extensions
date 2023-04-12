@@ -22,6 +22,7 @@ from datumaro.plugins.transforms import MasksToPolygons
 from datumaro.util.meta_file_util import parse_meta_file
 from skimage.segmentation import felzenszwalb
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -30,7 +31,6 @@ from otx.api.entities.image import Image
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
-from otx.mpa.utils.logger import get_logger
 
 
 class SegmentationDatasetAdapter(BaseDatasetAdapter):
@@ -153,6 +153,9 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         Args:
             train_data_roots (Optional[str]): Path for training data.
+            val_data_roots (Optional[str]): Path for validation data
+            test_data_roots (Optional[str]): Path for test data.
+            unlabeled_data_roots (Optional[str]): Path for unlabeled data.
             pseudo_mask_dir (str): Directory to save pseudo masks. Defaults to "detcon_mask".
 
         Returns:

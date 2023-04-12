@@ -45,7 +45,7 @@ using the command below:
 
     (otx) ...$ otx deploy otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
                --load-weights outputs/openvino/openvino.xml \
-               --save-model-to outputs/deploy
+               --output outputs/deploy
 
     2023-01-20 09:30:40,938 | INFO : Loading OpenVINO OTXDetectionTask
     2023-01-20 09:30:41,736 | INFO : OpenVINO task initialization completed

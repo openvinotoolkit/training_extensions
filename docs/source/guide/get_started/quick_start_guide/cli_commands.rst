@@ -71,7 +71,7 @@ Building workspace folder
 
     (otx) ...$ otx build --help
     usage: otx build [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--test-data-roots TEST_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS]
-                    [--unlabeled-file-list UNLABELED_FILE_LIST] [--task TASK] [--train-type TRAIN_TYPE] [--work-dir WORK_DIR] [--model MODEL] [--backbone BACKBONE]
+                    [--unlabeled-file-list UNLABELED_FILE_LIST] [--task TASK] [--train-type TRAIN_TYPE] [--workspace WORKSPACE] [--model MODEL] [--backbone BACKBONE]
                     [template]
 
     positional arguments:
@@ -92,8 +92,8 @@ Building workspace folder
                             Comma-separated paths to unlabeled file list
       --task TASK           The currently supported options: ('CLASSIFICATION', 'DETECTION', 'INSTANCE_SEGMENTATION', 'SEGMENTATION', 'ACTION_CLASSIFICATION', 'ACTION_DETECTION', 'ANOMALY_CLASSIFICATION', 'ANOMALY_DETECTION', 'ANOMALY_SEGMENTATION').
       --train-type TRAIN_TYPE
-                            The currently supported options: dict_keys(['INCREMENTAL', 'SEMISUPERVISED', 'SELFSUPERVISED']).
-      --work-dir WORK_DIR   Location where the workspace.
+                            The currently supported options: dict_keys(['Incremental', 'Semisupervised', 'Selfsupervised']).
+      --workspace WORKSPACE   Location where the workspace.
       --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
       --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'.
                             If there is an already created backbone configuration yaml file, enter the corresponding path.
@@ -150,7 +150,7 @@ Training
 - ``weights.pth`` - a model snapshot
 - ``label_schema.json`` - a label schema used in training, created from a dataset
 
-The results will be saved in ``./model`` folder by default. The output folder can be modified by ``--save-model-to`` option. These files are used by other commands: ``export``, ``eval``, ``demo``, etc.
+The results will be saved in ``./outputs/`` folder by default. The output folder can be modified by ``--output`` option. These files are used by other commands: ``export``, ``eval``, ``demo``, etc.
 
 ``otx train`` receives ``template`` as a positional argument. ``template`` can be a path to the specific ``template.yaml`` file, template name or template ID. Also, the path to train and val data root should be passed to the CLI to start training.
 
@@ -160,7 +160,7 @@ However, if you created a workspace with ``otx build``, the training process can
 
     otx train --help
     usage: otx train [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--unlabeled-data-roots UNLABELED_DATA_ROOTS] [--unlabeled-file-list UNLABELED_FILE_LIST]
-                    [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
+                    [--load-weights LOAD_WEIGHTS] [--resume-from RESUME_FROM] [-o OUTPUT] [--workspace WORKSPACE] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO] [--gpus GPUS]
                     [--rdzv-endpoint RDZV_ENDPOINT] [--base-rank BASE_RANK] [--world-size WORLD_SIZE] [--mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE] [--data DATA]
                     [template] {params} ...
 
@@ -181,14 +181,14 @@ However, if you created a workspace with ``otx build``, the training process can
       --unlabeled-file-list UNLABELED_FILE_LIST
                             Comma-separated paths to unlabeled file list
       --train-type TRAIN_TYPE
-                            The currently supported options: dict_keys(['INCREMENTAL', 'SEMISUPERVISED', 'SELFSUPERVISED']).
+                            The currently supported options: dict_keys(['Incremental', 'Semisupervised', 'Selfsupervised']).
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
       --resume-from RESUME_FROM
                             Resume training from previously saved checkpoint
-      --save-model-to SAVE_MODEL_TO
+      -o OUTPUT, --output OUTPUT
                             Location where trained model will be stored.
-      --work-dir WORK_DIR   Location where the intermediate output of the training will be stored.
+      --workspace WORKSPACE   Location where the intermediate output of the training will be stored.
       --enable-hpo          Execute hyper parameters optimization (HPO) before training.
       --hpo-time-ratio HPO_TIME_RATIO
                             Expected ratio of total time to run HPO to time taken for full fine-tuning.
@@ -200,7 +200,7 @@ However, if you created a workspace with ``otx build``, the training process can
       --world-size WORLD_SIZE
                             Total number of workers in a worker group.
       --mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE
-                            Size of memory pool for caching decoded data to load data faster. For example, you can use digits for bytes size (e.g. 1024) or a string with size units (e.g. 7KB = 7 * 2^10, 3MB = 3 * 2^20, and 2GB = 2 * 2^30).
+                            Size of memory pool for caching decoded data to load data faster. For example, you can use digits for bytes size (e.g. 1024) or a string with size units (e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).
       --data DATA           The data.yaml path want to use in train task.
 
 
@@ -261,7 +261,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx export --help
-    usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [--work-dir WORK_DIR] [--dump-features] [--half-precision] [template]
+    usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [--dump-features] [--half-precision] [template]
 
     positional arguments:
       template              Enter the path or ID or name of the template file. 
@@ -271,9 +271,9 @@ With the ``--help`` command, you can list additional information, such as its pa
       -h, --help            show this help message and exit
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
-      --save-model-to SAVE_MODEL_TO
+      -o OUTPUT, --output OUTPUT
                             Location where exported model will be stored.
-      --work-dir WORK_DIR   Location where the intermediate output of the export will be stored.
+      --workspace WORKSPACE   Location where the intermediate output of the export will be stored.
       --dump-features       Whether to return feature vector and saliency map for explanation purposes.
       --half-precision      This flag indicated if model is exported in half precision (FP16).
 
@@ -282,7 +282,7 @@ The command below performs exporting to the ``outputs/openvino`` path.
 
 .. code-block::
 
-    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --save-model-to outputs/openvino
+    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --output outputs/openvino
 
 The command results in ``openvino.xml``, ``openvino.bin`` and ``label_schema.json``
 
@@ -290,7 +290,7 @@ To use the exported model as an input for ``otx explain``, please dump additiona
 
 .. code-block::
 
-    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --save-model-to outputs/openvino/with_features --dump-features 
+    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --output outputs/openvino/with_features --dump-features 
 
 
 ************
@@ -306,8 +306,8 @@ With the ``--help`` command, you can list additional information:
 
 .. code-block::
 
-    usage: otx optimize [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [--save-performance SAVE_PERFORMANCE]
-                        [--work-dir WORK_DIR]
+    usage: otx optimize [-h] [--train-data-roots TRAIN_DATA_ROOTS] [--val-data-roots VAL_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT]
+                        [--workspace WORKSPACE]
                         [template] {params} ...
 
     positional arguments:
@@ -324,11 +324,9 @@ With the ``--help`` command, you can list additional information:
                             Comma-separated paths to validation data folders.
       --load-weights LOAD_WEIGHTS
                             Load weights of trained model
-      --save-model-to SAVE_MODEL_TO
-                            Location where trained model will be stored.
-      --save-performance SAVE_PERFORMANCE
-                            Path to a json file where computed performance will be stored.
-      --work-dir WORK_DIR   Location where the intermediate output of the task will be stored.
+      -o OUTPUT, --output OUTPUT
+                            Location where optimized model will be stored.
+      --workspace WORKSPACE   Location where the intermediate output of the task will be stored.
 
 Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
 
@@ -337,7 +335,7 @@ Command example for optimizing a PyTorch model (.pth) with OpenVINO™ NNCF:
     (otx) ...$ otx optimize SSD --load-weights <path/to/trained/weights.pth> \
                                 --train-data-roots <path/to/train/root> \
                                 --val-data-roots <path/to/val/root> \
-                                --save-model-to outputs/nncf
+                                --output outputs/nncf
 
 
 Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:
@@ -346,7 +344,7 @@ Command example for optimizing OpenVINO™ model (.xml) with OpenVINO™ POT:
 
     (otx) ...$ otx optimize SSD --load-weights <path/to/openvino.xml> \
                                 --val-data-roots <path/to/val/root> \
-                                --save-model-to outputs/pot
+                                --output outputs/pot
 
 
 Thus, to use POT pass the path to exported IR (.xml) model, to use NNCF pass the path to the PyTorch (.pth) weights.
@@ -363,7 +361,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx eval --help
-    usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [--save-performance SAVE_PERFORMANCE] [--work-dir WORK_DIR] [template] {params} ...
+    usage: otx eval [-h] [--test-data-roots TEST_DATA_ROOTS] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [template] {params} ...
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -377,9 +375,9 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Comma-separated paths to test data folders.
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.It could be a trained/optimized model (POT only) or exported model.
-      --save-performance SAVE_PERFORMANCE
-                            Path to a json file where computed performance will be stored.
-      --work-dir WORK_DIR   Location where the intermediate output of the task will be stored.
+      -o OUTPUT, --output OUTPUT
+                            Location where the intermediate output of the task will be stored.
+      --workspace WORKSPACE   Path to the workspace where the command will run.
 
 
 The command below will evaluate the trained model on the provided dataset:
@@ -388,7 +386,7 @@ The command below will evaluate the trained model on the provided dataset:
 
     (otx) ...$ otx eval SSD --test-data-roots <path/to/test/root> \
                             --load-weights <path/to/model_weghts> \
-                            --save-performance outputs/performance.json
+                            --output <path/to/outputs>
 
 .. note::
 
@@ -399,7 +397,7 @@ The command below will evaluate the trained model on the provided dataset:
 Explanation
 ***********
 
-``otx explain`` runs the explanation algorithm of a model on the specific dataset. It helps explain the model's decision-making process in a way that is easily understood by humans.
+``otx explain`` runs the explainable AI (XAI) algorithm on a specific model-dataset pair. It helps explain the model's decision-making process in a way that is easily understood by humans.
 
 With the ``--help`` command, you can list additional information, such as its parameters common to all model templates:
 
@@ -424,8 +422,12 @@ With the ``--help`` command, you can list additional information, such as its pa
                             Load model weights from previously saved checkpoint.
       --explain-algorithm EXPLAIN_ALGORITHM
                             Explain algorithm name, currently support ['activationmap', 'eigencam', 'classwisesaliencymap']. For Openvino task, default method will be selected.
+      --process-saliency-maps PROCESS_SALIENCY_MAPS
+                            Processing of saliency map includes (1) resizing to input image resolution and (2) applying a colormap. Depending on the number of targets to explain, this might take significant time.
+      --explain-all-classes EXPLAIN_ALL_CLASSES
+                            Provides explanations for all classes. Otherwise, explains only predicted classes. This feature is supported by algorithms that can generate explanations per each class.
       --overlay-weight OVERLAY_WEIGHT
-                            Weight of the saliency map when overlaying the saliency map.
+                            Weight of the saliency map when overlaying the input image with saliency map.
 
 
 The command below will generate saliency maps (heatmaps with red colored areas of focus) of the trained model on the provided dataset and save the resulting images to ``save-explanation-to`` path:
@@ -447,7 +449,7 @@ By default, the model is exported to the OpenVINO™ IR format without extra fea
 .. code-block::
 
     (otx) ...$ otx export SSD --load-weights <path/to/trained/weights.pth> \
-                              --save-model-to outputs/openvino/with_features \
+                              --output outputs/openvino/with_features \
                               --dump-features
     (otx) ...$ otx explain SSD --explain-data-roots <path/to/explain/root> \
                                --load-weights outputs/openvino/with_features \
@@ -521,7 +523,7 @@ With the ``--help`` command, you can list additional information, such as its pa
 .. code-block::
 
     (otx) ...$ otx deploy --help
-    usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [--save-model-to SAVE_MODEL_TO] [template]
+    usage: otx deploy [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [template]
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -531,7 +533,7 @@ With the ``--help`` command, you can list additional information, such as its pa
       -h, --help            show this help message and exit
       --load-weights LOAD_WEIGHTS
                             Load model weights from previously saved checkpoint.
-      --save-model-to SAVE_MODEL_TO
+      -o OUTPUT, --output OUTPUT
                             Location where openvino.zip will be stored.
 
 
@@ -540,5 +542,5 @@ Command example:
 .. code-block::
 
     (otx) ...$ otx deploy SSD --load-weights <path/to/openvino.xml> \
-                              --save-model-to outputs/deploy
+                              --output outputs/deploy
 

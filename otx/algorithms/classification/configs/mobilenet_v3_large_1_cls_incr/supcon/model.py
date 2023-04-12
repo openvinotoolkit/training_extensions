@@ -9,6 +9,7 @@ model = dict(
     type="SupConClassifier",
     backbone=dict(mode="large"),
     head=dict(
+        _delete_=True,
         type="SupConClsHead",
         in_channels=-1,
         aux_mlp=dict(hid_channels=0, out_channels=1024),

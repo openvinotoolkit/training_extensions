@@ -12,8 +12,8 @@ framework: OTXAction v2.9.1
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.action.tasks.ActionTrainTask
-  openvino: otx.algorithms.action.tasks.ActionOpenVINOTask
+  base: otx.algorithms.action.adapters.mmaction.task.MMActionTask
+  openvino: otx.algorithms.action.adapters.openvino.task.ActionOpenVINOTask
 
 # Capabilities.
 capabilities:
@@ -45,7 +45,7 @@ hyper_parameters:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: INCREMENTAL
+        default_value: Incremental
 
 # Training resources.
 max_nodes: 1

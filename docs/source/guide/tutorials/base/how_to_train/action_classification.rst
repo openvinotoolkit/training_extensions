@@ -74,7 +74,6 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
     │   │   │   │   ├── 20060723sfjffbartsinger_wave_f_cm_np1_ba_med_0
     │   │   │   │   ├── ...
     │   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
-    |
 
 Once you have the dataset structured properly, copy ``mmaction2/data`` folder, which contains hmdb51 dataset, to ``training_extensions/data``. 
 Then, you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
@@ -128,17 +127,18 @@ To see the list of supported templates, run the following command:
 
 .. note::
 
-  OpenVINO™ Training Extensions is supporting only X3D model template now, other architecture will be supported in near future.
+  OpenVINO™ Training Extensions supports X3D and MoViNet template now, other architecture will be supported in future.
 
 .. code-block::
 
   (otx) ...$ otx find --task action_classification
 
-  +-----------------------+----------------------------------+------+----------------------------------------------------------------+
-  |          TASK         |                ID                | NAME |                           BASE PATH                            |
-  +-----------------------+----------------------------------+------+----------------------------------------------------------------+
-  | ACTION_CLASSIFICATION | Custom_Action_Classification_X3D | X3D  | otx/algorithms/action/configs/classification/x3d/template.yaml |
-  +-----------------------+----------------------------------+------+----------------------------------------------------------------+
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
+  |          TASK         |                  ID                  |   NAME  |                               BASE PATH                               |
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
+  | ACTION_CLASSIFICATION |   Custom_Action_Classification_X3D   |   X3D   |   ../otx/algorithms/action/configs/classification/x3d/template.yaml   |
+  | ACTION_CLASSIFICATION | Custom_Action_Classification_MoViNet | MoViNet | ../otx/algorithms/action/configs/classification/movinet/template.yaml |
+  +-----------------------+--------------------------------------+---------+-----------------------------------------------------------------------+
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
@@ -186,13 +186,13 @@ Keep in mind that ``label_schema.json`` file contains meta information about the
 ``otx eval`` will output a frame-wise accuracy for action classification. Note, that top-1 accuracy during training is video-wise accuracy.
 
 2. The command below will run validation on the dataset
-and save performance results in ``performance.json`` file:
+and save performance results in ``outputs/performance.json`` file:
 
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --output outputs
 
 You will get a similar validation output:
 
@@ -215,12 +215,12 @@ Export
 It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. Run the command line below to export the trained model
-and save the exported model to the ``openvino_models`` folder.
+and save the exported model to the ``openvino`` folder.
 
 .. code-block::
 
   (otx) ...$ otx export --load-weights models/weights.pth \
-                        --save-model-to openvino_models
+                        --output openvino
 
   ...
   2023-02-21 22:54:32,518 - mmaction - INFO - Model architecture: X3D
@@ -241,8 +241,8 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 .. code-block::
 
   (otx) ...$ otx eval --test-data-roots ../data/hmdb51/CVAT/valid \
-                      --load-weights openvino_models/openvino.xml \
-                      --save-performance openvino_models/performance.json
+                      --load-weights openvino/openvino.xml \
+                      --output outputs/openvino
 
   ...
 
@@ -254,7 +254,7 @@ Optimization
 *************
 
 1. You can further optimize the model with ``otx optimize``.
-Currently, only POT is supported for action classsification. NNCF will be supported in near future.
+Currently, quantization jobs that include POT is supported for X3D template. MoViNet will be supported in near future.
 Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
 2. Example command for optimizing
@@ -262,8 +262,8 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights openvino_models/openvino.xml \
-                          --save-model-to pot_model
+  (otx) ...$ otx optimize --load-weights openvino/openvino.xml \
+                          --output pot_model
 
   ...
 

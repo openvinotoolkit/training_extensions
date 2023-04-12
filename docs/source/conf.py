@@ -11,12 +11,14 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 
+# ruff: noqa
+
 # -- Project information ----------------------------------------------------- #
 
 project = 'OpenVINO™ Training Extensions'
 copyright = '2023, OpenVINO™ Training Extensions Contributors'
 author = 'OpenVINO™ Training Extensions Contributors'
-release = '1.0.0'
+release = '1.2.0rc0'
 
 # -- General configuration --------------------------------------------------- #
 
@@ -52,7 +54,15 @@ html_theme_options = {
    "logo": {
       "image_light": 'logos/otx-logo.png',
       "image_dark": 'logos/otx-logo.png',
-   }
+    },
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/openvinotoolkit/training_extensions",
+            "icon": "_static/logos/github_icon.png",
+            "type": "local",
+        },
+    ],
 }
 html_css_files = [
     'css/custom.css',

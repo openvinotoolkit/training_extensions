@@ -23,13 +23,13 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from scipy.stats.qmc import LatinHypercube
 
-from otx.algorithms.common.utils.utils import (
+from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
+from otx.hpo.utils import (
     check_mode_input,
     check_not_negative,
     check_positive,
     left_vlaue_is_better,
 )
-from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 
 logger = logging.getLogger(__name__)
 
@@ -223,9 +223,8 @@ class Rung:
         if asynchronous_sha:
             if (num_promoted_trial + num_finished_trial) // self._reduction_factor > num_promoted_trial:
                 return best_trial
-        else:
-            if self.is_done() and self._num_required_trial // self._reduction_factor > num_promoted_trial:
-                return best_trial
+        elif self.is_done() and self._num_required_trial // self._reduction_factor > num_promoted_trial:
+            return best_trial
 
         return None
 

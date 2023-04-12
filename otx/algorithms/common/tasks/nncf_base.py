@@ -37,6 +37,7 @@ from otx.algorithms.common.adapters.nncf import (
 from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -58,11 +59,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
-from otx.mpa.utils.logger import get_logger
 
 from .training_base import BaseTask
 
@@ -72,7 +68,6 @@ logger = get_logger()
 class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-instance-attributes
     """NNCFBaseTask."""
 
-    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         super().__init__(task_environment, **kwargs)
 
@@ -132,9 +127,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
                     labels=self._labels,
                 )
 
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
         return data_cfg
 
     def _init_nncf_cfg(self):
@@ -268,7 +260,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
     ):
         pass
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
         optimization_type: OptimizationType,
@@ -326,7 +317,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
     def _save_model_post_hook(self, modelinfo):
         pass
 
-    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Saving model function for NNCF Task."""
         assert self._recipe_cfg is not None

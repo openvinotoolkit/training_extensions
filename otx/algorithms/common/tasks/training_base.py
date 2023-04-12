@@ -21,19 +21,31 @@ import os
 import shutil
 import tempfile
 from copy import deepcopy
+from datetime import timedelta
 from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
+from torch import distributed as dist
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
+from otx.algorithms.common.adapters.mmcv.tasks.builder import build
+from otx.algorithms.common.adapters.mmcv.tasks.stage import Stage
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     get_configs_by_pairs,
 )
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    MPAConfig,
+    add_custom_hook_if_not_exists,
+    remove_custom_hook,
+    update_or_add_custom_hook,
+)
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.utils import UncopiableDefaultDict
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -44,24 +56,13 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.core.data import caching
-from otx.mpa.builder import build
-from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
-from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import (
-    MPAConfig,
-    add_custom_hook_if_not_exists,
-    remove_custom_hook,
-    update_or_add_custom_hook,
-)
-from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 TRAIN_TYPE_DIR_PATH = {
-    TrainType.INCREMENTAL.name: ".",
-    TrainType.SELFSUPERVISED.name: "selfsl",
-    TrainType.SEMISUPERVISED.name: "semisl",
+    TrainType.Incremental.name: ".",
+    TrainType.Selfsupervised.name: "selfsl",
+    TrainType.Semisupervised.name: "semisl",
 }
 
 
@@ -71,26 +72,22 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     _task_environment: TaskEnvironment
 
-    @check_input_parameters_type()
     def __init__(self, task_config, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         self._task_config = task_config
         self._task_environment = task_environment
-        self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
+        self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(self._task_config)
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
-        self._model_label_schema = []  # type: List[LabelEntity]
-        self._optimization_methods = []  # type: List[OptimizationMethod]
+        self._model_label_schema: List[LabelEntity] = []
+        self._optimization_methods: List[OptimizationMethod] = []
         self._model_ckpt = None
         self._resume = False
-        self._anchors = {}  # type: Dict[str, int]
+        self._anchors: Dict[str, int] = {}
         self._work_dir_is_temp = False
-        if output_path is None:
-            output_path = tempfile.mkdtemp(prefix="OTX-task-")
-            self._work_dir_is_temp = True
-        self._output_path = output_path
+        self._output_path = output_path if output_path is not None else self._get_tmp_dir()
         logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
@@ -109,11 +106,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._precision = [ModelPrecision.FP32]
         self._data_cfg = None
         self._mode = None
-        self._time_monitor = None  # type: Optional[TimeMonitorCallback]
+        self._time_monitor: Optional[TimeMonitorCallback] = None
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._is_training = False
         self._should_stop = False
-        self.cancel_interface = None
+        self.cancel_interface: Optional[CancelInterfaceHook] = None
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
 
@@ -124,7 +121,33 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         )
 
         # to override configuration at runtime
-        self.override_configs = {}  # type: Dict[str, str]
+        self.override_configs: Dict[str, str] = {}
+
+        if self._is_multi_gpu_training():
+            self._setup_multigpu_training()
+
+    @staticmethod
+    def _is_multi_gpu_training():
+        multi_gpu_env = ["MASTER_ADDR", "MASTER_PORT", "LOCAL_WORLD_SIZE", "WORLD_SIZE", "LOCAL_RANK", "RANK"]
+        for env in multi_gpu_env:
+            if env not in os.environ:
+                return False
+
+        return torch.cuda.is_available()
+
+    @staticmethod
+    def _setup_multigpu_training():
+        if not dist.is_initialized():
+            torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
+            dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
+            logger.info(f"Dist info: rank {dist.get_rank()} / {dist.get_world_size()} world_size")
+
+    def _get_tmp_dir(self):
+        self._work_dir_is_temp = True
+        # If training is excuted with torchrun, set all trainings' output directory same
+        if "TORCHELASTIC_RUN_ID" in os.environ:
+            return os.path.join(tempfile.gettempdir(), f"OTX-task-torchelastic-{os.environ['TORCHELASTIC_RUN_ID']}")
+        return tempfile.mkdtemp(prefix="OTX-task-")
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(kwargs)
@@ -189,6 +212,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def project_path(self):
         """Return output path with logs."""
         return self._output_path
+
+    @property
+    def config(self):
+        """Return output configs used in task."""
+        return self._recipe_cfg
 
     @property
     def model_name(self):
@@ -326,9 +354,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
         if export:
-            if fp16_export:
-                self._precision[0] = ModelPrecision.FP16
             options["deploy_cfg"] = self._init_deploy_cfg()
+            if fp16_export:
+                mo_options = options["deploy_cfg"].backend_config.mo_options
+                mo_options.flags.append("--compress_to_fp16")
+
             if options.get("precision", None) is None:
                 assert len(self._precision) == 1
                 options["precision"] = str(self._precision[0])

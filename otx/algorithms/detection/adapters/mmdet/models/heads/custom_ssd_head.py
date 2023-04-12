@@ -94,7 +94,7 @@ class CustomSSDHead(SSDHead):
                 Has shape (num_total_anchors, num_classes).
             bbox_pred (Tensor): Box energies / deltas for each image
                 level with shape (num_total_anchors, 4).
-            anchors (Tensor): Box reference for each scale level with shape
+            anchor (Tensor): Box reference for each scale level with shape
                 (num_total_anchors, 4).
             labels (Tensor): Labels of each anchors with shape
                 (num_total_anchors,).

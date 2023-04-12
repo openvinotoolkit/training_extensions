@@ -24,7 +24,6 @@ from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 # pylint: disable=invalid-name
 
@@ -32,7 +31,6 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 class ColorPalette:
     """ColorPalette class."""
 
-    @check_input_parameters_type()
     def __init__(self, n: int, rng: Optional[random.Random] = None):
         assert n > 0
 
@@ -67,7 +65,6 @@ class ColorPalette:
     def _hsv2rgb(h, s, v):
         return tuple(round(c * 255) for c in colorsys.hsv_to_rgb(h, s, v))
 
-    @check_input_parameters_type()
     def __getitem__(self, n: int):
         """Return item from index function ColorPalette."""
         return self.palette[n % len(self.palette)]
@@ -77,12 +74,11 @@ class ColorPalette:
         return len(self.palette)
 
 
-@check_input_parameters_type()
 def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Domain.DETECTION):
     """Generating label_schema function."""
     colors = ColorPalette(len(label_names)) if len(label_names) > 0 else []
     not_empty_labels = [
-        LabelEntity(name=name, color=colors[i], domain=label_domain, id=ID(f"{i:08}"))
+        LabelEntity(name=name, color=colors[i], domain=label_domain, id=ID(f"{i:08}"))  # type: ignore
         for i, name in enumerate(label_names)
     ]
     emptylabel = LabelEntity(

@@ -8,7 +8,7 @@
 import abc
 
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.explain_parameters import ExplainParameters
 
 
 class IExplainTask(metaclass=abc.ABCMeta):
@@ -18,7 +18,7 @@ class IExplainTask(metaclass=abc.ABCMeta):
     def explain(
         self,
         dataset: DatasetEntity,
-        explain_parameters: InferenceParameters,
+        explain_parameters: ExplainParameters,
     ) -> DatasetEntity:
         """This is the method that is called upon explanation.
 

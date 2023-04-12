@@ -111,6 +111,7 @@ class CrossDatasetDetectorHead(BaseDenseHead):
                 each has shape (num_gt, 4).
             gt_labels_list (list[Tensor]): Ground truth labels of each box,
                 each has shape (num_gt,).
+            img_metas (list[dict]): Meta information for the image.
 
         Returns:
             tuple:

@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import json
+from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
@@ -55,15 +56,12 @@ def get_args():
         help="Load weights of trained model",
     )
     parser.add_argument(
-        "--save-model-to",
-        help="Location where trained model will be stored.",
+        "-o",
+        "--output",
+        help="Location where optimized model will be stored.",
     )
     parser.add_argument(
-        "--save-performance",
-        help="Path to a json file where computed performance will be stored.",
-    )
-    parser.add_argument(
-        "--work-dir",
+        "--workspace",
         help="Location where the intermediate output of the task will be stored.",
         default=None,
     )
@@ -80,13 +78,16 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
-    config_manager = ConfigManager(args, workspace_root=args.work_dir, mode="train")
+    config_manager = ConfigManager(args, workspace_root=args.workspace, mode="optimize")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
     # The default in the workspace is the model weight of the OTX train.
     if not args.load_weights and config_manager.check_workspace():
-        args.load_weights = str(config_manager.workspace_root / "models/weights.pth")
+        latest_model_path = (
+            config_manager.workspace_root / "outputs" / "latest_trained_model" / "models" / "weights.pth"
+        )
+        args.load_weights = str(latest_model_path)
 
     is_pot = False
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
@@ -128,9 +129,14 @@ def main():
         OptimizationParameters(),
     )
 
-    if "save_model_to" not in args or not args.save_model_to:
-        args.save_model_to = str(config_manager.workspace_root / "model-optimized")
-    save_model_data(output_model, args.save_model_to)
+    opt_method = "pot" if is_pot else "nncf"
+    if not args.output:
+        output_path = config_manager.output_path
+        output_path = output_path / opt_method
+    else:
+        output_path = Path(args.output)
+    output_path.mkdir(exist_ok=True, parents=True)
+    save_model_data(output_model, output_path)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
@@ -147,12 +153,12 @@ def main():
     assert resultset.performance is not None
     print(resultset.performance)
 
-    if args.save_performance:
-        with open(args.save_performance, "w", encoding="UTF-8") as write_file:
-            json.dump(
-                {resultset.performance.score.name: resultset.performance.score.value},
-                write_file,
-            )
+    performance_file_path = config_manager.output_path / f"{opt_method}_performance.json"
+    with open(performance_file_path, "w", encoding="UTF-8") as write_file:
+        json.dump(
+            {resultset.performance.score.name: resultset.performance.score.value},
+            write_file,
+        )
 
     return dict(retcode=0, template=template.name)
 

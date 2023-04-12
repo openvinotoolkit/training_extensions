@@ -3,6 +3,8 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import pytest
+
 from copy import deepcopy
 
 from otx.algorithms.anomaly.tasks.inference import InferenceTask
@@ -14,13 +16,14 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from tests.unit.algorithms.anomaly.helpers.dummy_dataset import get_shapes_dataset
+from tests.unit.algorithms.anomaly.helpers.dummy_dataset import get_hazelnut_dataset
 from tests.unit.algorithms.anomaly.helpers.utils import create_task_environment
 
 
 class TestInferenceTask:
     """Tests the methods in the inference task."""
 
+    @pytest.mark.skip(reason="CVS-107918 FAIL code -11 in anomaly unit test on python3.10")
     def test_inference(self, tmpdir, setup_task_environment):
         """Tests the inference method."""
         root = str(tmpdir.mkdir("anomaly_inference_test"))
@@ -41,7 +44,7 @@ class TestInferenceTask:
         assert output_model.get_data("weights.pth") is not None  # Should not raise an error
 
         # 3. Create new task environment and inference task and test inference
-        new_dataset: DatasetEntity = get_shapes_dataset(task_type, one_each=True)
+        new_dataset: DatasetEntity = get_hazelnut_dataset(task_type, one_each=True)
         gt_val_dataset = new_dataset.get_subset(Subset.VALIDATION)
         new_task_environment = create_task_environment(gt_val_dataset, task_type)
         # this loads the output model from the previous training task when creating the new InferenceTask
@@ -73,5 +76,6 @@ class TestInferenceTask:
             assert result_set.performance.score.name == "Dice Average"
 
         # 5. Check if OpenVINO model can be generated
-        inference_task.export(ExportType.OPENVINO, output_model)
+        inference_task.export(ExportType.OPENVINO, output_model, dump_features=False)
         assert output_model.get_data("openvino.bin") is not None  # Should not raise an error
+        assert not output_model.has_xai

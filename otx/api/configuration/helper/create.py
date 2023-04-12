@@ -37,7 +37,7 @@ from .config_element_mapping import (
 )
 from .utils import deserialize_enum_value, input_to_config_dict
 
-ParameterGroupTypeVar = TypeVar("ParameterGroupTypeVar", bound=ParameterGroup)
+ParameterGroupTypeVar = TypeVar("ParameterGroupTypeVar", ParameterGroup, ConfigurableParameters)
 ExposureTypeVar = TypeVar("ExposureTypeVar", UIRules, Rule)
 
 METADATA_ENUMS = {

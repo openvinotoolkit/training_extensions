@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import torch
 
-from otx.algorithms.common.utils.utils import check_positive
+from otx.hpo.utils import check_positive
 
 logger = logging.getLogger(__name__)
 

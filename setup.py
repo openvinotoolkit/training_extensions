@@ -3,17 +3,15 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+# ruff: noqa
+
 import os
-import subprocess
-import sys
-import warnings
+import platform
 from collections import defaultdict
-from glob import glob
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Union
 
-import Cython
 import numpy
 from Cython.Build import cythonize
 from pkg_resources import Requirement
@@ -93,32 +91,33 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
             for line in file:
                 package = line.strip()
                 if package and not package.startswith(("#", "-f")):
-                    requirement = Requirement.parse(package)
+                    Requirement.parse(package)
                     requirements.append(package)
 
     return requirements
 
 
 def get_extensions():
-    def _cython_modules():
-        package_root = os.path.dirname(__file__)
+    if platform.system() == "Windows":
+        return []
 
+    def _cython_modules():
         cython_files = [
-            "otx/mpa/modules/datasets/pipelines/transforms/cython_augments/pil_augment.pyx",
-            "otx/mpa/modules/datasets/pipelines/transforms/cython_augments/cv_augment.pyx",
+            "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/pil_augment.pyx",
+            "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/cv_augment.pyx"
         ]
 
         ext_modules = [
             Extension(
                 cython_file.rstrip(".pyx").replace("/", "."),
-                [os.path.join(package_root, cython_file)],
+                [cython_file],
                 include_dirs=[numpy.get_include()],
                 extra_compile_args=["-O3"],
             )
             for cython_file in cython_files
         ]
 
-        return cythonize(ext_modules, annotate=True)
+        return cythonize(ext_modules)
 
     extensions = []
     extensions.extend(_cython_modules())
@@ -192,6 +191,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Cython",
     ],
     license="Apache License 2.0",

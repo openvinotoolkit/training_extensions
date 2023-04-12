@@ -6,6 +6,7 @@
 
 import json
 import logging
+import os
 import re
 import shutil
 from copy import deepcopy
@@ -446,12 +447,12 @@ class HpoRunner:
                 self._fixed_hp[batch_size_name] = self._train_dataset_size
                 self._environment.set_hyper_parameter_using_str_key(self._fixed_hp)
 
-    def run_hpo(self, train_func: Callable, data_roots: Dict[str, str]) -> Dict[str, Any]:
+    def run_hpo(self, train_func: Callable, data_roots: Dict[str, Dict]) -> Dict[str, Any]:
         """Run HPO and provides optimized hyper parameters.
 
         Args:
             train_func (Callable): training model function
-            data_roots (Dict[str, str]): dataset path of each dataset type
+            data_roots (Dict[str, Dict]): dataset path of each dataset type
 
         Returns:
             Dict[str, Any]: optimized hyper parameters
@@ -536,15 +537,16 @@ class HpoRunner:
 
 
 def run_hpo(
-    args, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, str]
+    hpo_time_ratio: int, output: Path, environment: TaskEnvironment, dataset: DatasetEntity, data_roots: Dict[str, Dict]
 ) -> Optional[TaskEnvironment]:
     """Run HPO and load optimized hyper parameter and best HPO model weight.
 
     Args:
-        args: arguments passed to otx train
+        hpo_time_ratio(int): expected ratio of total time to run HPO to time taken for full fine-tuning
+        output(Path): directory where HPO output is saved
         environment (TaskEnvironment): otx task environment
         dataset (DatasetEntity): dataset to use for training
-        data_roots (Dict[str, str]): dataset path of each dataset type
+        data_roots (Dict[str, Dict]): dataset path of each dataset type
     """
     task_type = environment.model_template.task_type
     if not _check_hpo_enabled_task(task_type):
@@ -552,15 +554,19 @@ def run_hpo(
             "Currently supported task types are classification, detection, segmentation and anomaly"
             f"{task_type} is not supported yet."
         )
-        return None
+        return environment
 
-    hpo_save_path = (Path(args.save_model_to).parent / "hpo").absolute()
+    if "TORCHELASTIC_RUN_ID" in os.environ:
+        logger.warning("OTX is trained by torchrun. HPO isn't available.")
+        return environment
+
+    hpo_save_path = (output / "hpo").absolute()
     hpo_runner = HpoRunner(
         environment,
         len(dataset.get_subset(Subset.TRAINING)),
         len(dataset.get_subset(Subset.VALIDATION)),
         hpo_save_path,
-        args.hpo_time_ratio,
+        hpo_time_ratio,
     )
 
     logger.info("started hyper-parameter optimization")
@@ -626,7 +632,7 @@ class Trainer:
         hp_config (Dict[str, Any]): hyper parameter to use on training
         report_func (Callable): function to report score
         model_template: model template
-        data_roots (Dict[str, str]): dataset path of each dataset type
+        data_roots (Dict[str, Dict]): dataset path of each dataset type
         task_type (TaskType): OTX task type
         hpo_workdir (Union[str, Path]): work directory for HPO
         initial_weight_name (str): initial model weight name for each trials to load
@@ -640,7 +646,7 @@ class Trainer:
         hp_config: Dict[str, Any],
         report_func: Callable,
         model_template,
-        data_roots: Dict[str, str],
+        data_roots: Dict[str, Dict],
         task_type: TaskType,
         hpo_workdir: Union[str, Path],
         initial_weight_name: str,
@@ -766,7 +772,7 @@ def run_trial(
     hp_config: Dict[str, Any],
     report_func: Callable,
     model_template,
-    data_roots: Dict[str, str],
+    data_roots: Dict[str, Dict],
     task_type: TaskType,
     hpo_workdir: Union[str, Path],
     initial_weight_name: str,
@@ -778,7 +784,7 @@ def run_trial(
         hp_config (Dict[str, Any]): hyper parameter to use on training
         report_func (Callable): function to report score
         model_template: model template
-        data_roots (Dict[str, str]): dataset path of each dataset type
+        data_roots (Dict[str, Dict]): dataset path of each dataset type
         task_type (TaskType): OTX task type
         hpo_workdir (Union[str, Path]): work directory for HPO
         initial_weight_name (str): initial model weight name for each trials to load
