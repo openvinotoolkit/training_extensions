@@ -421,10 +421,12 @@ class MMActionTask(OTXActionTask):
         exporter.export()
         bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
         xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
+        onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
         results = {
             "outputs": {
                 "bin": os.path.join(self._output_path, bin_file),
                 "xml": os.path.join(self._output_path, xml_file),
+                "onnx": os.path.join(self._output_path, onnx_file),
             }
         }
         return results

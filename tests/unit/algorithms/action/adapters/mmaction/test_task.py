@@ -116,14 +116,16 @@ class MockDataLoader:
 class MockExporter:
     """Mock class for Exporter."""
 
-    def __init__(self, recipe_cfg, weights, deploy_cfg, work_dir, half_precision):
-        self.work_dir = work_dir
+    def __init__(self, task):
+        self.work_dir = task._output_path
 
     def export(self):
         dummy_data = np.ndarray((1, 1, 1))
-        with open(self.work_dir + ".bin", "wb") as f:
+        with open(os.path.join(self.work_dir, "openvino.bin"), "wb") as f:
             f.write(dummy_data)
-        with open(self.work_dir + ".xml", "wb") as f:
+        with open(os.path.join(self.work_dir, "openvino.xml"), "wb") as f:
+            f.write(dummy_data)
+        with open(os.path.join(self.work_dir, "model.onnx"), "wb") as f:
             f.write(dummy_data)
 
 
@@ -331,17 +333,10 @@ class TestMMActionTask:
         """
         _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)
         _model = ModelEntity(self.cls_dataset, _config)
-        mocker.patch("otx.algorithms.action.adapters.mmaction.utils.Exporter", side_effect=MockExporter)
-        mocker.patch("otx.algorithms.action.adapters.mmaction.utils.export_utils.export", return_value=True)
-        mocker.patch("otx.algorithms.action.adapters.mmaction.utils.export_utils.from_onnx", return_value=True)
+        mocker.patch("otx.algorithms.action.adapters.mmaction.task.Exporter", return_value=MockExporter(self.cls_task))
         mocker.patch("torch.load", return_value={})
         mocker.patch("torch.nn.Module.load_state_dict", return_value=True)
-        mocker.patch("os.listdir", return_value=["openvino.xml", "openvino.bin"])
 
-        with open(os.path.join(self.cls_task._output_path, "openvino.xml"), "wb") as f:
-            f.write(np.ndarray([0]))
-        with open(os.path.join(self.cls_task._output_path, "openvino.bin"), "wb") as f:
-            f.write(np.ndarray([0]))
         self.cls_task.export(ExportType.OPENVINO, _model, precision, False)
 
         assert _model.model_format == ModelFormat.OPENVINO
