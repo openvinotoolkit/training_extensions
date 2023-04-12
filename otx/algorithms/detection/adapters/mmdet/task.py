@@ -495,7 +495,7 @@ class MMDetectionTask(OTXDetectionTask):
         self,
         dataset: DatasetEntity,
         explain_parameters: Optional[ExplainParameters] = None,
-    ) -> DatasetEntity:
+    ) -> Dict[str, Any]:
         """Main explain function of MMDetectionTask."""
 
         explainer_hook_selector = {
