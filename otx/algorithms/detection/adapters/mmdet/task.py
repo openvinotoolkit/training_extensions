@@ -464,7 +464,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
-        export_options["deploy_cfg"] = self._init_deploy_cfg()
+        export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
         if export_options.get("precision", None) is None:
             assert len(self._precision) == 1
             export_options["precision"] = str(self._precision[0])
@@ -628,7 +628,7 @@ class MMDetectionTask(OTXDetectionTask):
         self.override_configs.update(config)
 
     # This should moved somewhere
-    def _init_deploy_cfg(self) -> Union[Config, None]:
+    def _init_deploy_cfg(self, cfg) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         if self._hyperparams.tiling_parameters.enable_tile_classifier:
             deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
@@ -640,7 +640,7 @@ class MMDetectionTask(OTXDetectionTask):
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Normalize"),
                 )
                 assert len(normalize_cfg) == 1
@@ -683,7 +683,7 @@ class MMDetectionTask(OTXDetectionTask):
 
             def patch_input_shape(deploy_cfg):
                 resize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Resize"),
                 )
                 assert len(resize_cfg) == 1
