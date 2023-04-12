@@ -115,6 +115,8 @@ class MockExporter:
             f.write(dummy_data)
         with open(self.work_dir + ".xml", "wb") as f:
             f.write(dummy_data)
+        with open(self.work_dir + ".onnx", "wb") as f:
+            f.write(dummy_data)
 
 
 class TestActionInferenceTask:
@@ -298,6 +300,7 @@ class TestActionInferenceTask:
         assert _model.precision[0] == precision
         assert _model.get_data("openvino.bin") is not None
         assert _model.get_data("openvino.xml") is not None
+        assert _model.get_data("model.onnx") is not None
         assert _model.get_data("confidence_threshold") is not None
         assert _model.precision == self.cls_task._precision
         assert _model.optimization_methods == self.cls_task._optimization_methods

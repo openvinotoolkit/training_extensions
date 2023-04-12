@@ -96,7 +96,7 @@ class SegmentationConfigurer:
         patch_runner(cfg)
         patch_datasets(
             cfg,
-            **options_for_patch_datasets,
+            **options_for_patch_datasets,  # type: ignore
         )  # for OTX compatibility
         patch_evaluation(cfg)  # for OTX compatibility
         patch_fp16(cfg)
@@ -163,68 +163,10 @@ class SegmentationConfigurer:
         """Patch cfg.data.
 
         Merge cfg and data_cfg
-        Match cfg.data.train.type to super_type
-        Patch for unlabeled data path ==> This may be moved to SemiSegmentationConfigurer
+        Wrap original dataset type to MPAsegDataset
         """
         if data_cfg:
             cfg.merge_from_dict(data_cfg)
-
-        def configure_split(target: str) -> None:
-            def update_transform(opt: Config, pipeline: Config, idx: int, transform: Config) -> None:
-                if isinstance(opt, dict):
-                    if "_delete_" in opt.keys() and opt.get("_delete_", False):
-                        # if option include _delete_=True, remove this transform from pipeline
-                        logger.info(f"configure_data: {transform['type']} is deleted")
-                        del pipeline[idx]
-                        return
-                    logger.info(f"configure_data: {transform['type']} is updated with {opt}")
-                    transform.update(**opt)
-
-            # pylint: disable=too-many-branches, too-many-nested-blocks
-            def update_config(src: Config, pipeline_options: Config) -> None:
-                logger.info(f"update_config() {pipeline_options}")
-                if src.get("pipeline") is not None or (
-                    src.get("dataset") is not None and src.get("dataset").get("pipeline") is not None
-                ):
-                    if src.get("pipeline") is not None:
-                        pipeline = src.get("pipeline", None)
-                    else:
-                        pipeline = src.get("dataset").get("pipeline")
-                    if isinstance(pipeline, list):
-                        for idx, transform in enumerate(pipeline):
-                            for opt_key, opt in pipeline_options.items():
-                                if transform["type"] == opt_key:
-                                    update_transform(opt, pipeline, idx, transform)
-                    elif isinstance(pipeline, dict):
-                        for _, pipe in pipeline.items():
-                            for idx, transform in enumerate(pipe):
-                                for opt_key, opt in pipeline_options.items():
-                                    if transform["type"] == opt_key:
-                                        update_transform(opt, pipe, idx, transform)
-                    else:
-                        raise NotImplementedError(f"pipeline type of {type(pipeline)} is not supported")
-                else:
-                    logger.info("no pipeline in the data split")
-
-            split = cfg.data.get(target)
-            if split is not None:
-                if isinstance(split, list):
-                    for sub_item in split:
-                        update_config(sub_item, pipeline_options)
-                elif isinstance(split, dict):
-                    update_config(split, pipeline_options)
-                else:
-                    logger.warning(f"type of split '{target}'' should be list or dict but {type(split)}")
-
-        logger.info("configure_data()")
-        logger.debug(f"[args] {cfg.data}")
-        pipeline_options = cfg.data.pop("pipeline_options", None)
-        if pipeline_options is not None and isinstance(pipeline_options, dict):
-            configure_split("train")
-            configure_split("val")
-            if not training:
-                configure_split("test")
-            configure_split("unlabeled")
 
         train_data_cfg = self.get_data_cfg(cfg, "train")
         for mode in ["train", "val", "test"]:
@@ -296,11 +238,11 @@ class SegmentationConfigurer:
         # Model architecture
         if "decode_head" in cfg.model:
             decode_head = cfg.model.decode_head
-            if isinstance(decode_head, Config):
-                decode_head.num_classes = len(model_classes)
-            elif isinstance(decode_head, list):
+            if isinstance(decode_head, list):
                 for head in decode_head:
                     head.num_classes = len(model_classes)
+            else:
+                decode_head.num_classes = len(model_classes)
 
             # For SupConDetCon
             if "SupConDetCon" in cfg.model.type:
@@ -546,7 +488,7 @@ class SegmentationConfigurer:
                 dataloader_cfg = cfg.data.get(f"{subset}_dataloader", None)
                 if dataloader_cfg is None:
                     raise AttributeError(f"{subset}_dataloader is not found in config.")
-                dataloader_cfg = {**global_dataloader_cfg, **dataloader_cfg}
+                dataloader_cfg = Config(cfg_dict={**global_dataloader_cfg, **dataloader_cfg})
                 cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
         _configure_dataloader(cfg)

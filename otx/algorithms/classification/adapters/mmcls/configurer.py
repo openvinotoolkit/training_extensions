@@ -566,7 +566,7 @@ class ClassificationConfigurer:
                 dataloader_cfg = cfg.data.get(f"{subset}_dataloader", None)
                 if dataloader_cfg is None:
                     raise AttributeError(f"{subset}_dataloader is not found in config.")
-                dataloader_cfg = {**global_dataloader_cfg, **dataloader_cfg}
+                dataloader_cfg = Config(cfg_dict={**global_dataloader_cfg, **dataloader_cfg})
                 cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
         _configure_dataloader(cfg)

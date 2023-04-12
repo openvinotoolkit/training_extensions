@@ -29,16 +29,11 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.subset import Subset
-from otx.api.utils.argument_checks import (
-    IMAGE_FILE_EXTENSIONS,
-    DirectoryPathCheck,
-    check_input_parameters_type,
-)
+from otx.api.utils.argument_checks import IMAGE_FILE_EXTENSIONS
 
 logger = logging.getLogger(__name__)
 
 
-@check_input_parameters_type({"file_list_path": DirectoryPathCheck})
 def get_unlabeled_filename(base_root: str, file_list_path: str):
     """This method checks and gets image file paths, which are listed in file_list_path.
 
@@ -66,7 +61,6 @@ def get_unlabeled_filename(base_root: str, file_list_path: str):
     return unlabeled_files
 
 
-@check_input_parameters_type({"data_root_dir": DirectoryPathCheck})
 def load_unlabeled_dataset_items(
     data_root_dir: str,
     file_list_path: Optional[str] = None,

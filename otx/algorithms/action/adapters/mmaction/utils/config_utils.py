@@ -26,13 +26,8 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model_template import TaskType
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 
-@check_input_parameters_type()
 def patch_config(config: Config, data_pipeline_path: str, work_dir: str, task_type: TaskType):
     """Patch recipe config suitable to mmaction."""
     # FIXME omnisource is hard coded
@@ -47,7 +42,6 @@ def patch_config(config: Config, data_pipeline_path: str, work_dir: str, task_ty
         raise NotImplementedError(f"{task_type} is not supported in action task")
 
 
-@check_input_parameters_type()
 def _patch_cls_datasets(config: Config):
     """Patch cls dataset config suitable to mmaction."""
 
@@ -61,7 +55,6 @@ def _patch_cls_datasets(config: Config):
         cfg.labels = None
 
 
-@check_input_parameters_type()
 def _patch_det_dataset(config: Config):
     """Patch det dataset config suitable to mmaction."""
     assert "data" in config
@@ -72,7 +65,6 @@ def _patch_det_dataset(config: Config):
         cfg.type = "OTXActionDetDataset"
 
 
-@check_input_parameters_type()
 def set_data_classes(config: Config, labels: List[LabelEntity], task_type: TaskType):
     """Setter data classes into config."""
     for subset in ("train", "val", "test"):
@@ -88,7 +80,6 @@ def set_data_classes(config: Config, labels: List[LabelEntity], task_type: TaskT
             config.model["roi_head"]["bbox_head"]["topk"] = len(labels) - 1
 
 
-@check_input_parameters_type({"train_dataset": DatasetParamTypeCheck, "val_dataset": DatasetParamTypeCheck})
 def prepare_for_training(
     config: Union[Config, ConfigDict],
     train_dataset: DatasetEntity,

@@ -58,10 +58,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 logger = get_logger()
 
@@ -69,7 +65,6 @@ logger = get_logger()
 class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attributes
     """NNCFBaseTask."""
 
-    @check_input_parameters_type()
     def __init__(self):
         check_nncf_is_enabled()
         self._nncf_data_to_build = None
@@ -265,7 +260,6 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
     ):
         pass
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
         optimization_type: OptimizationType,
@@ -323,7 +317,6 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
     def _save_model_post_hook(self, modelinfo):
         pass
 
-    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Saving model function for NNCF Task."""
         assert self._recipe_cfg is not None

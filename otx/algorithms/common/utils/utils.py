@@ -25,8 +25,6 @@ import numpy as np
 import torch
 import yaml
 
-from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
-
 
 class UncopiableDefaultDict(defaultdict):
     """Defauldict type object to avoid deepcopy."""
@@ -36,7 +34,6 @@ class UncopiableDefaultDict(defaultdict):
         return self
 
 
-@check_input_parameters_type({"path": YamlFilePathCheck})
 def load_template(path):
     """Loading model template function."""
     with open(path, encoding="UTF-8") as f:
@@ -44,7 +41,6 @@ def load_template(path):
     return template
 
 
-@check_input_parameters_type()
 def get_task_class(path: str):
     """Return Task classes."""
     module_name, class_name = path.rsplit(".", 1)
@@ -52,7 +48,6 @@ def get_task_class(path: str):
     return getattr(module, class_name)
 
 
-@check_input_parameters_type()
 def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
     fn: Callable,  # pylint: disable=invalid-name
     depth: Optional[int] = None,

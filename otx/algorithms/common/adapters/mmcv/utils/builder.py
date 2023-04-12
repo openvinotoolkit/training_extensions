@@ -8,13 +8,10 @@ from typing import Callable
 from mmcv import Config
 from torch.utils.data import DataLoader, Dataset
 
-from otx.api.utils.argument_checks import check_input_parameters_type
-
 # pylint: disable-next=unused-import
 from ._builder_build_data_parallel import build_data_parallel  # noqa: F401
 
 
-@check_input_parameters_type()
 def build_dataset(
     config: Config,
     subset: str,
@@ -34,7 +31,6 @@ def build_dataset(
     return dataset
 
 
-@check_input_parameters_type()
 def build_dataloader(
     dataset,
     config: Config,
@@ -78,7 +74,7 @@ def build_dataloader(
     specific_loader_cfg = (
         config.data.pop(f"{subset}_dataloader", {}) if consume else config.data.get(f"{subset}_dataloader", {})
     )
-    loader_cfg = {**loader_cfg, **specific_loader_cfg, **kwargs}
+    loader_cfg = Config(cfg_dict={**loader_cfg, **specific_loader_cfg, **kwargs})
 
     dataloader = dataloader_builder(
         dataset,

@@ -39,6 +39,9 @@ from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.inference_parameters import (
+    default_progress_callback as default_infer_progress_callback,
+)
 from otx.api.entities.metrics import (
     CurveMetric,
     InfoMetric,
@@ -67,6 +70,7 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {
@@ -122,17 +126,22 @@ class OTXSegmentationTask(OTXTask, ABC):
         """Main infer function."""
         logger.info("infer()")
 
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress
+            is_evaluation = inference_parameters.is_evaluation
+        else:
+            update_progress_callback = default_infer_progress_callback
+            is_evaluation = False
+
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
 
         predictions = self._infer_model(dataset, InferenceParameters(is_evaluation=True))
         prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
-        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=False)
+        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
 
         logger.info("Inference completed")
         return dataset
@@ -217,13 +226,16 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         bin_file = outputs.get("bin")
         xml_file = outputs.get("xml")
+        onnx_file = outputs.get("onnx")
 
-        if xml_file is None or bin_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        if xml_file is None or bin_file is None or onnx_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
         with open(bin_file, "rb") as f:
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
             output_model.set_data("openvino.xml", f.read())
+        with open(onnx_file, "rb") as f:
+            output_model.set_data("model.onnx", f.read())
         output_model.precision = self._precision
         output_model.optimization_methods = self._optimization_methods
         output_model.has_xai = dump_features
@@ -293,6 +305,9 @@ class OTXSegmentationTask(OTXTask, ABC):
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in SegmentationTrainTask."""
+
+        if is_multigpu_child_process():
+            return
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
