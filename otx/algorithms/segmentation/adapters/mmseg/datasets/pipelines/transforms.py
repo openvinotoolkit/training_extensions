@@ -18,8 +18,6 @@ from PIL import Image
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
 
-from otx.api.utils.argument_checks import check_input_parameters_type
-
 
 @PIPELINES.register_module(force=True)
 class Normalize:
@@ -168,7 +166,6 @@ class TwoCropTransform:
         self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
         self.is_both = True
 
-    @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of TwoCropTransform.
 

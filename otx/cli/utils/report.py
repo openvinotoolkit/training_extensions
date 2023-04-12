@@ -6,7 +6,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from pprint import pformat
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import torch
 
@@ -19,7 +19,7 @@ def get_otx_report(
     task_config: Dict[str, Any],
     data_config: Dict[str, Dict[str, str]],
     results: Dict[str, Any],
-    output_path: str,
+    output_path: Union[str, Path],
 ):
     """Generate CLI reports."""
     dash_line = "-" * 60 + "\n\n"

@@ -11,8 +11,6 @@ from mmcv.runner import BaseRunner
 from mmcv.runner.dist_utils import allreduce_params, master_only
 from mmcv.runner.hooks.hook import HOOKS, Hook
 
-from otx.api.utils.argument_checks import check_input_parameters_type
-
 
 @HOOKS.register_module()
 class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-attributes
@@ -153,7 +151,6 @@ class EnsureCorrectBestCheckpointHook(Hook):
     created in the last epoch.
     """
 
-    @check_input_parameters_type()
     def after_run(self, runner: BaseRunner):
         """Called after train epoch hooks."""
         runner.call_hook("after_train_epoch")

@@ -38,19 +38,12 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.subset import Subset
-from otx.api.utils.argument_checks import (
-    DirectoryPathCheck,
-    JsonFilePathCheck,
-    OptionalDirectoryPathCheck,
-    check_input_parameters_type,
-)
 
 logger = get_logger()
 
 # pylint: disable=too-many-locals
 
 
-@check_input_parameters_type({"annot_path": JsonFilePathCheck})
 def get_classes_from_annotation(annot_path):
     """Getter function of classes from annotation."""
     with open(annot_path, encoding="UTF-8") as input_stream:
@@ -62,7 +55,6 @@ def get_classes_from_annotation(annot_path):
     return categories
 
 
-@check_input_parameters_type({"value": OptionalDirectoryPathCheck})
 def abs_path_if_valid(value):
     """Valid function of abs_path."""
     if value:
@@ -70,7 +62,6 @@ def abs_path_if_valid(value):
     return None
 
 
-@check_input_parameters_type()
 def create_annotation_from_hard_seg_map(hard_seg_map: np.ndarray, labels: List[LabelEntity]):
     """Creation function from hard seg_map."""
     height, width = hard_seg_map.shape[:2]
@@ -115,7 +106,6 @@ def create_annotation_from_hard_seg_map(hard_seg_map: np.ndarray, labels: List[L
     return annotations
 
 
-@check_input_parameters_type({"ann_dir": OptionalDirectoryPathCheck})
 def load_labels_from_annotation(ann_dir):
     """Load labels function from annotation."""
     if ann_dir is None:
@@ -127,7 +117,6 @@ def load_labels_from_annotation(ann_dir):
     return labels
 
 
-@check_input_parameters_type()
 def add_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
     """Add labels function."""
     for label_name, label_id in new_labels:
@@ -140,7 +129,6 @@ def add_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
             cur_labels.append(label)
 
 
-@check_input_parameters_type()
 def check_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
     """Check labels function."""
     cur_names = {label.name for label in cur_labels}
@@ -149,7 +137,6 @@ def check_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
         raise ValueError("Class names don't match from file to file")
 
 
-@check_input_parameters_type()
 def get_extended_label_names(labels: List[LabelEntity]):
     """Getter function of extended label names."""
     target_labels = [v.name for v in sorted(labels, key=lambda x: x.id)]
@@ -168,7 +155,6 @@ def get_valid_label_mask_per_batch(img_metas, num_classes):
     return valid_label_mask_per_batch
 
 
-@check_input_parameters_type()
 def create_pseudo_masks(ann_file_path: str, data_root_dir: str, mode="FH"):
     """Create pseudo masks for Self-SL using DetCon."""
     if not os.path.isdir(ann_file_path):
@@ -211,7 +197,6 @@ def create_pseudo_masks(ann_file_path: str, data_root_dir: str, mode="FH"):
             json.dump(meta, f, indent=4)
 
 
-@check_input_parameters_type({"ann_file_path": DirectoryPathCheck, "data_root_dir": DirectoryPathCheck})
 def load_dataset_items(
     ann_file_path: str,
     data_root_dir: str,

@@ -56,7 +56,6 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.core.data import caching
 
 logger = get_logger()
@@ -73,7 +72,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     _task_environment: TaskEnvironment
 
-    @check_input_parameters_type()
     def __init__(self, task_config, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         self._task_config = task_config
         self._task_environment = task_environment

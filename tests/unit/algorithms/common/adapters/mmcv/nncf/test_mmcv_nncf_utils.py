@@ -105,26 +105,31 @@ def test_wrap_nncf_model():
         distributed=False,
     )
 
-    ctrl, model = wrap_nncf_model(
-        mock_config,
-        mock_model,
-        model_eval_fn=model_eval_fn,
-        get_fake_input_fn=get_fake_input_fn,
-        dataloader_for_init=dataloader,
-        is_accuracy_aware=True,
-    )
+    with tempfile.TemporaryDirectory() as tempdir:
+        mock_config.nncf_config.log_dir = tempdir
+        ctrl, model = wrap_nncf_model(
+            mock_config,
+            mock_model,
+            model_eval_fn=model_eval_fn,
+            get_fake_input_fn=get_fake_input_fn,
+            dataloader_for_init=dataloader,
+            is_accuracy_aware=True,
+        )
     assert isinstance(model, NNCFNetwork)
 
     mock_model = create_model()
     mock_config.nncf_config["input_info"] = {"sample_size": (1, 3, 128, 128)}
-    ctrl, model = wrap_nncf_model(
-        mock_config,
-        mock_model,
-        model_eval_fn=model_eval_fn,
-        get_fake_input_fn=get_fake_input_fn,
-        dataloader_for_init=dataloader,
-        is_accuracy_aware=True,
-    )
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        mock_config.nncf_config.log_dir = tempdir
+        ctrl, model = wrap_nncf_model(
+            mock_config,
+            mock_model,
+            model_eval_fn=model_eval_fn,
+            get_fake_input_fn=get_fake_input_fn,
+            dataloader_for_init=dataloader,
+            is_accuracy_aware=True,
+        )
     assert isinstance(model, NNCFNetwork)
     mock_config.nncf_config.pop("input_info")
 
@@ -154,6 +159,9 @@ def test_wrap_nncf_model():
             "state_dict": model.state_dict(),
         }
         mock_model = create_model()
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        mock_config.nncf_config.log_dir = tempdir
         ctrl, model = wrap_nncf_model(
             mock_config,
             mock_model,
