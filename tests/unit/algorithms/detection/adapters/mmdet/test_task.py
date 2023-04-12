@@ -121,11 +121,14 @@ class MockExporter:
             f.write(np.ndarray([0]))
         with open(os.path.join(self._output_path, "openvino.xml"), "wb") as f:
             f.write(np.ndarray([0]))
+        with open(os.path.join(self._output_path, "model.onnx"), "wb") as f:
+            f.write(np.ndarray([0]))
 
         return {
             "outputs": {
                 "bin": os.path.join(self._output_path, "openvino.bin"),
                 "xml": os.path.join(self._output_path, "openvino.xml"),
+                "onnx": os.path.join(self._output_path, "model.onnx"),
             }
         }
 
@@ -267,25 +270,26 @@ class TestMMActionTask:
             assert output.get_annotations()[-1].get_labels()[0].probability == 0.7
 
     @e2e_pytest_unit
-    def test_evaluate(self) -> None:
-        """Test evaluate function.
+    def test_det_evaluate(self) -> None:
+        """Test evaluate function for detection."""
 
-        <Steps>
-            1. Create model entity
-            2. Create result set entity
-            3. Run evaluate function with same dataset, this should give 100% accuracy
-            4. Run evaluate function with empty dataset, this should give 0% accuracy
-            5. Do 1 - 4 for action detection
-        """
         _config = ModelConfiguration(DetectionConfig(), self.det_label_schema)
         _model = ModelEntity(self.det_dataset, _config)
         resultset = ResultSetEntity(_model, self.det_dataset, self.det_dataset)
         self.det_task.evaluate(resultset)
         assert resultset.performance.score.value == 1.0
 
+    @e2e_pytest_unit
+    def test_det_evaluate_with_empty_annotations(self) -> None:
+        """Test evaluate function for detection with empty predictions."""
+
         resultset = ResultSetEntity(_model, self.det_dataset, self.det_dataset.with_empty_annotations())
         self.det_task.evaluate(resultset)
         assert resultset.performance.score.value == 0.0
+
+    @e2e_pytest_unit
+    def test_iseg_evaluate(self) -> None:
+        """Test evaluate function for instance segmentation."""
 
         _config = ModelConfiguration(DetectionConfig(), self.iseg_label_schema)
         _model = ModelEntity(self.iseg_dataset, _config)
@@ -315,10 +319,6 @@ class TestMMActionTask:
             return_value=True,
         )
 
-        with open(os.path.join(self.det_task._output_path, "openvino.xml"), "wb") as f:
-            f.write(np.ndarray([0]))
-        with open(os.path.join(self.det_task._output_path, "openvino.bin"), "wb") as f:
-            f.write(np.ndarray([0]))
         self.det_task.export(ExportType.OPENVINO, _model, precision, False)
 
         assert _model.model_format == ModelFormat.OPENVINO
