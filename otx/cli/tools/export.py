@@ -114,9 +114,6 @@ def main():
     else:
         output_path = Path(args.output)
     output_path.mkdir(exist_ok=True, parents=True)
-    latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model" / "export_model"
-    latest_path.symlink_to(config_manager.output_path.resolve() / "openvino")
-
     save_model_data(exported_model, str(output_path))
 
     return dict(retcode=0, template=template.name)
