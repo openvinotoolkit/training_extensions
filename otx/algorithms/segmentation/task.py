@@ -70,6 +70,7 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {
@@ -304,6 +305,9 @@ class OTXSegmentationTask(OTXTask, ABC):
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in SegmentationTrainTask."""
+
+        if is_multigpu_child_process():
+            return
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))

@@ -22,7 +22,6 @@ import sys
 import threading
 import time
 from contextlib import closing
-from tempfile import TemporaryDirectory
 from typing import Callable, List, Optional, Union
 
 import psutil
@@ -147,8 +146,7 @@ class MultiGPUManager:
             world_size = len(self._gpu_ids)
         self._world_size = world_size
         self._main_pid = os.getpid()
-        self._processes: Optional[List[mp.Process]] = None
-        self._tmp_dir: Optional[TemporaryDirectory] = None
+        self._processes: List[mp.Process] = []
 
     def is_available(self) -> bool:
         """Check multi GPU training is available.
@@ -192,12 +190,9 @@ class MultiGPUManager:
 
     def finalize(self):
         """Join all child processes."""
-        if self._processes is not None:
-            for p in self._processes:
-                p.join()
-
-        if self._tmp_dir is not None:
-            self._tmp_dir.cleanup()
+        for p in self._processes:
+            if p.join(10) is None and p.exitcode is None:
+                p.kill()
 
     @staticmethod
     def initialize_multigpu_train(
@@ -325,9 +320,6 @@ class MultiGPUManager:
         sys.exit(1)
 
     def _kill_child_process(self):
-        if self._processes is None:
-            return
-
         for process in self._processes:
             if process.is_alive():
                 logger.warning(f"Kill child process {process.pid}")
