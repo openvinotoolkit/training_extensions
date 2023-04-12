@@ -7,6 +7,7 @@
 
 import abc
 import copy
+from inspect import signature
 import itertools
 import logging
 from threading import Lock
@@ -493,14 +494,14 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
     def wrap(self: T, **kwargs) -> T:
         """Creates a new DatasetItemEntity, overriding only the given arguments to the existing ones for this instance."""
-        return self.__class__(
-            media=kwargs.get("media", self.media),
-            annotation_scene=kwargs.get("annotation_scene", self.annotation_scene),
-            roi=kwargs.get("roi", self.roi),
-            metadata=kwargs.get("metadata", self.get_metadata()),
-            subset=kwargs.get("subset", self.subset),
-            ignored_labels=kwargs.get("ignored_labels", self.ignored_labels),
-        )
+        params = {
+            name: getattr(self, name)
+            for name in signature(self.__class__.__init__).parameters.keys()
+            if hasattr(self, name)
+        }
+        params.update(**kwargs)
+
+        return self.__class__(**params)
 
 
 # TODO: This should be removed in the near future and DatasetItemEntity should have id_ field.
@@ -538,15 +539,3 @@ class DatasetItemEntityWithID(DatasetItemEntity):
 
     def __eq__(self, other):
         return super().__eq__(other) and self.id_ == other.id_
-
-    def wrap(self, **kwargs) -> "DatasetItemEntityWithID":
-        """Creates a new DatasetItemEntityWithID, overriding only the given arguments to the existing ones for this instance."""
-        return self.__class__(
-            media=kwargs.get("media", self.media),
-            annotation_scene=kwargs.get("annotation_scene", self.annotation_scene),
-            roi=kwargs.get("roi", self.roi),
-            metadata=kwargs.get("metadata", self.get_metadata()),
-            subset=kwargs.get("subset", self.subset),
-            ignored_labels=kwargs.get("ignored_labels", self.ignored_labels),
-            id_=kwargs.get("id_", self.id_),
-        )
