@@ -13,7 +13,6 @@ from PIL import Image, ImageFilter
 from torchvision import transforms as T
 
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.
@@ -36,7 +35,6 @@ class RandomAppliedTrans:
         t = [build_from_cfg(t, PIPELINES) for t in transforms]  # pylint: disable=invalid-name
         self.trans = T.RandomApply(t, p=p)
 
-    @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of RandomAppliedTrans.
 
@@ -74,12 +72,10 @@ class GaussianBlur:
     :param sigma_max: Maximum value of sigma of gaussian filter.
     """
 
-    @check_input_parameters_type()
     def __init__(self, sigma_min: float, sigma_max: float):
         self.sigma_min = sigma_min
         self.sigma_max = sigma_max
 
-    @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of GaussianBlur.
 

@@ -12,8 +12,6 @@ import torch
 from mmcv import Config
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
-from otx.api.utils.argument_checks import check_input_parameters_type
-
 
 @overload
 def build_data_parallel(
@@ -45,7 +43,6 @@ def build_data_parallel(
     ...
 
 
-@check_input_parameters_type()
 def build_data_parallel(
     model: torch.nn.Module,
     config: Config,

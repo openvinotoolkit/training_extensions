@@ -22,7 +22,6 @@ from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
     get_annotation_mmdet_format,
 )
 from otx.api.entities.label import Domain
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -40,7 +39,6 @@ class LoadAnnotationFromOTXDataset:
         results['ann_info']['label_list']: list of all labels in the project
     """
 
-    @check_input_parameters_type()
     def __init__(
         self,
         min_size: int,
@@ -78,7 +76,6 @@ class LoadAnnotationFromOTXDataset:
         results["gt_masks"] = copy.deepcopy(ann_info["masks"])
         return results
 
-    @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results["dataset_item"]

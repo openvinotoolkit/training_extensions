@@ -96,7 +96,7 @@ class SegmentationConfigurer:
         patch_runner(cfg)
         patch_datasets(
             cfg,
-            **options_for_patch_datasets,
+            **options_for_patch_datasets,  # type: ignore
         )  # for OTX compatibility
         patch_evaluation(cfg)  # for OTX compatibility
         patch_fp16(cfg)
