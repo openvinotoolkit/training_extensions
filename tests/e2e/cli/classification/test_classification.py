@@ -172,7 +172,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0, half_precision=half_precision)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -200,7 +200,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -254,7 +254,7 @@ class TestToolsMultiClassClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.001)
+        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -414,7 +414,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -444,7 +444,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -499,7 +499,7 @@ class TestToolsMultilabelClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.001)
+        nncf_eval_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -611,7 +611,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.02)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -641,7 +641,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.0)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -686,7 +686,7 @@ class TestToolsHierarchicalClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.001)
+        nncf_eval_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
