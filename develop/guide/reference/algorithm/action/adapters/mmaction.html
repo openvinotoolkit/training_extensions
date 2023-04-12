@@ -560,11 +560,6 @@ It is adapted from AVADataset of mmaction, but it supports other dataset such as
 <dd><p>Patch mmdetection’s FastRCNN for exporting to onnx.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -576,11 +571,6 @@ It is adapted from AVADataset of mmaction, but it supports other dataset such as
 <span class="sig-name descname"><span class="pre">simple_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proposal_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proposals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rescale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead.simple_test" title="Permalink to this definition">#</a></dt>
 <dd><p>This is temporary soluition, since otx.mmdet is differnt with latest mmdet.</p>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.AVARoIHead.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -618,11 +608,6 @@ init_std (float): Standard deviation for initialization. Default: 0.1.</p>
 <dd><p>Initialize the parameters from scratch.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.MoViNetHead.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.MoViNetHead.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -640,11 +625,6 @@ init_std (float): Standard deviation for initialization. Default: 0.1.</p>
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state_dict_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.MoViNetRecognizer.state_dict_hook" title="Permalink to this definition">#</a></dt>
 <dd><p>Redirect model as output state_dict for OTX MoviNet compatibility.</p>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.MoViNetRecognizer.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.MoViNetRecognizer.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -688,11 +668,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.models.OTXMoViNet.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.models.OTXMoViNet.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py function">
@@ -718,24 +693,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
 <dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.det_eval">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">det_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_infos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.det_eval" title="Permalink to this definition">#</a></dt>
 <dd><p>Evaluation method for AVA Dataset.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.patch_config">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">patch_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_pipeline_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.model_template.TaskType" title="otx.api.entities.model_template.TaskType"><span class="pre">TaskType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.patch_config" title="Permalink to this definition">#</a></dt>
-<dd><p>Patch recipe config suitable to mmaction.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.prepare_for_training">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">prepare_for_training</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Config</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Config</span></span></span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.prepare_for_training" title="Permalink to this definition">#</a></dt>
-<dd><p>Prepare configs for training phase.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.algorithms.action.adapters.mmaction.utils.set_data_classes">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.mmaction.utils.</span></span><span class="sig-name descname"><span class="pre">set_data_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.model_template.TaskType" title="otx.api.entities.model_template.TaskType"><span class="pre">TaskType</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.mmaction.utils.set_data_classes" title="Permalink to this definition">#</a></dt>
-<dd><p>Setter data classes into config.</p>
 </dd></dl>
 
 </section>
@@ -892,15 +849,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
      </code>
     </a>
    </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVAFastRCNN.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       AVAFastRCNN.training
-      </span>
-     </code>
-    </a>
-   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -917,15 +865,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        AVARoIHead.simple_test()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.AVARoIHead.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       AVARoIHead.training
       </span>
      </code>
     </a>
@@ -959,15 +898,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
      </code>
     </a>
    </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.MoViNetHead.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       MoViNetHead.training
-      </span>
-     </code>
-    </a>
-   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -997,15 +927,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
      </code>
     </a>
    </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.MoViNetRecognizer.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       MoViNetRecognizer.training
-      </span>
-     </code>
-    </a>
-   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -1031,15 +952,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXMoViNet.fill_se_config()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.models.OTXMoViNet.training">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXMoViNet.training
       </span>
      </code>
     </a>
@@ -1080,33 +992,6 @@ padding_avg (tuple[int]): The padding for the average pooling operation.</p>
    <code class="docutils literal notranslate">
     <span class="pre">
      det_eval()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.patch_config">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     patch_config()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.prepare_for_training">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     prepare_for_training()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.mmaction.utils.set_data_classes">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     set_data_classes()
     </span>
    </code>
   </a>

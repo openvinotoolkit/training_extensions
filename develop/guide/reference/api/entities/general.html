@@ -1118,12 +1118,40 @@ If the ROI is not given, the ROI assigned to the DatasetItem will be used as def
 <dd><p>The width of the dataset item, taking into account the ROI.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.dataset_item.DatasetItemEntity.wrap">
+<span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#otx.api.entities.dataset_item.DatasetItemEntity.wrap" title="Permalink to this definition">#</a></dt>
+<dd><p>Creates a new DatasetItemEntity, overriding only the given arguments to the existing ones for this instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.dataset_item.DatasetItemEntityWithID">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.dataset_item.</span></span><span class="sig-name descname"><span class="pre">DatasetItemEntityWithID</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">media</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.media.IMedia2DEntity" title="otx.api.entities.media.IMedia2DEntity"><span class="pre">IMedia2DEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotation_scene</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">AnnotationSceneEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><span class="pre">Annotation</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.metadata.MetadataItemEntity" title="otx.api.entities.metadata.MetadataItemEntity"><span class="pre">MetadataItemEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.subset.Subset" title="otx.api.entities.subset.Subset"><span class="pre">Subset</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Subset.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignored_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ObjectId</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.dataset_item.DatasetItemEntityWithID" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="otx.api.entities.dataset_item.DatasetItemEntityWithID.id_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">ID</span></a></em><a class="headerlink" href="#otx.api.entities.dataset_item.DatasetItemEntityWithID.id_" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns the id of this entity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ID of this entity</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.dataset_item.DatasetItemEntityWithID.wrap">
+<span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.dataset_item.DatasetItemEntityWithID" title="otx.api.entities.dataset_item.DatasetItemEntityWithID"><span class="pre">DatasetItemEntityWithID</span></a></span></span><a class="headerlink" href="#otx.api.entities.dataset_item.DatasetItemEntityWithID.wrap" title="Permalink to this definition">#</a></dt>
+<dd><p>Creates a new DatasetItemEntityWithID, overriding only the given arguments to the existing ones for this instance.</p>
+</dd></dl>
+
 </dd></dl>
 
 <span class="target" id="module-otx.api.entities.datasets"></span><p>This module implements the Dataset entity.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.datasets.DatasetEntity">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.datasets.</span></span><span class="sig-name descname"><span class="pre">DatasetEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">purpose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.datasets.DatasetPurpose" title="otx.api.entities.datasets.DatasetPurpose"><span class="pre">DatasetPurpose</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DatasetPurpose.INFERENCE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.datasets.</span></span><span class="sig-name descname"><span class="pre">DatasetEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">TDatasetItemEntity</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">purpose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.datasets.DatasetPurpose" title="otx.api.entities.datasets.DatasetPurpose"><span class="pre">DatasetPurpose</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DatasetPurpose.INFERENCE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity" title="Permalink to this definition">#</a></dt>
 <dd><p>A dataset consists of a list of DatasetItemEntities and a purpose.</p>
 <p>## With dataset items</p>
 <blockquote>
@@ -1190,7 +1218,7 @@ purpose (DatasetPurpose): Purpose for dataset. Refer to <a class="reference inte
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.datasets.DatasetEntity.append">
-<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity.append" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TDatasetItemEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity.append" title="Permalink to this definition">#</a></dt>
 <dd><p>Append a DatasetItemEntity to the dataset.</p>
 <dl>
 <dt>Example:</dt><dd><p>Appending a dataset item to a dataset</p>
@@ -1255,7 +1283,7 @@ Altering one of the objects in the output of this function, will also alter them
 
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.datasets.DatasetEntity.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TDatasetItemEntity</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity.remove" title="Permalink to this definition">#</a></dt>
 <dd><p>Remove an item from the items.</p>
 <p>This function calls remove_at_indices function.</p>
 <dl class="simple">
@@ -2383,11 +2411,6 @@ is_empty_frame(bool): whether this is empty frame(for action detection)</p>
 <dt class="sig sig-object py" id="otx.api.entities.metrics.BarChartInfo">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">BarChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">palette</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.ColorPalette" title="otx.api.entities.metrics.ColorPalette"><span class="pre">ColorPalette</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ColorPalette.DEFAULT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.metrics.VisualizationType" title="otx.api.entities.metrics.VisualizationType"><span class="pre">VisualizationType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">VisualizationType.BAR</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.metrics.BarChartInfo" title="Permalink to this definition">#</a></dt>
 <dd><p>This represents a visualization using a bar chart.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.metrics.BarChartInfo.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#otx.api.entities.metrics.BarChartInfo.name" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -2853,11 +2876,6 @@ value: The value of the score</p>
 <dt class="sig sig-object py" id="otx.api.entities.metrics.TextChartInfo">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.metrics.</span></span><span class="sig-name descname"><span class="pre">TextChartInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.metrics.TextChartInfo" title="Permalink to this definition">#</a></dt>
 <dd><p>This represents a visualization using text, which uses only a single string.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.metrics.TextChartInfo.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#otx.api.entities.metrics.TextChartInfo.name" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -3340,76 +3358,6 @@ size (float): how much disk space the model will approximately take.</p>
 <dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.model_template.</span></span><span class="sig-name descname"><span class="pre">NullModelTemplate</span></span><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate" title="Permalink to this definition">#</a></dt>
 <dd><p>Represent an empty model template. Note that a task based on this model template cannot be instantiated.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.capabilities">
-<span class="sig-name descname"><span class="pre">capabilities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.capabilities" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.dataset_requirements">
-<span class="sig-name descname"><span class="pre">dataset_requirements</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model_template.DatasetRequirements" title="otx.api.entities.model_template.DatasetRequirements"><span class="pre">DatasetRequirements</span></a></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.dataset_requirements" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.dependencies">
-<span class="sig-name descname"><span class="pre">dependencies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model_template.Dependency" title="otx.api.entities.model_template.Dependency"><span class="pre">Dependency</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.dependencies" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.exportable_code_paths">
-<span class="sig-name descname"><span class="pre">exportable_code_paths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model_template.ExportableCodePaths" title="otx.api.entities.model_template.ExportableCodePaths"><span class="pre">ExportableCodePaths</span></a></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.exportable_code_paths" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.hyper_parameters">
-<span class="sig-name descname"><span class="pre">hyper_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model_template.HyperParameterData" title="otx.api.entities.model_template.HyperParameterData"><span class="pre">HyperParameterData</span></a></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.hyper_parameters" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.inference_targets">
-<span class="sig-name descname"><span class="pre">inference_targets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model_template.TargetDevice" title="otx.api.entities.model_template.TargetDevice"><span class="pre">TargetDevice</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.inference_targets" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.instantiation">
-<span class="sig-name descname"><span class="pre">instantiation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model_template.InstantiationType" title="otx.api.entities.model_template.InstantiationType"><span class="pre">InstantiationType</span></a></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.instantiation" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.model_optimization_methods">
-<span class="sig-name descname"><span class="pre">model_optimization_methods</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model_template.ModelOptimizationMethod" title="otx.api.entities.model_template.ModelOptimizationMethod"><span class="pre">ModelOptimizationMethod</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.model_optimization_methods" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.model_template_id">
-<span class="sig-name descname"><span class="pre">model_template_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.model_template_id" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.model_template_path">
-<span class="sig-name descname"><span class="pre">model_template_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.model_template_path" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.name" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.task_family">
-<span class="sig-name descname"><span class="pre">task_family</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model_template.TaskFamily" title="otx.api.entities.model_template.TaskFamily"><span class="pre">TaskFamily</span></a></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.task_family" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.task_type">
-<span class="sig-name descname"><span class="pre">task_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model_template.TaskType" title="otx.api.entities.model_template.TaskType"><span class="pre">TaskType</span></a></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.task_type" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="otx.api.entities.model_template.NullModelTemplate.training_targets">
-<span class="sig-name descname"><span class="pre">training_targets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model_template.TargetDevice" title="otx.api.entities.model_template.TargetDevice"><span class="pre">TargetDevice</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.model_template.NullModelTemplate.training_targets" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -5187,6 +5135,44 @@ training if for some reason training was suspended.</p>
      </code>
     </a>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.dataset_item.DatasetItemEntity.wrap">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DatasetItemEntity.wrap()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.entities.dataset_item.DatasetItemEntityWithID">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DatasetItemEntityWithID
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.dataset_item.DatasetItemEntityWithID.id_">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DatasetItemEntityWithID.id_
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.dataset_item.DatasetItemEntityWithID.wrap">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DatasetItemEntityWithID.wrap()
+      </span>
+     </code>
+    </a>
+   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -6493,17 +6479,6 @@ training if for some reason training was suspended.</p>
     </span>
    </code>
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.metrics.BarChartInfo.name">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       BarChartInfo.name
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.api.entities.metrics.BarMetricsGroup">
@@ -6991,17 +6966,6 @@ training if for some reason training was suspended.</p>
     </span>
    </code>
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.metrics.TextChartInfo.name">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       TextChartInfo.name
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.api.entities.metrics.TextMetricsGroup">
@@ -7679,134 +7643,6 @@ training if for some reason training was suspended.</p>
     </span>
    </code>
   </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.capabilities">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.capabilities
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.dataset_requirements">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.dataset_requirements
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.dependencies">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.dependencies
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.exportable_code_paths">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.exportable_code_paths
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.hyper_parameters">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.hyper_parameters
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.inference_targets">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.inference_targets
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.instantiation">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.instantiation
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.model_optimization_methods">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.model_optimization_methods
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.model_template_id">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.model_template_id
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.model_template_path">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.model_template_path
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.name">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.name
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.task_family">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.task_family
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.task_type">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.task_type
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model_template.NullModelTemplate.training_targets">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       NullModelTemplate.training_targets
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.api.entities.model_template.TargetDevice">
