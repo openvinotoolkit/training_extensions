@@ -207,7 +207,6 @@ class TestMultiClassClassificationCLI:
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
@@ -226,7 +225,6 @@ class TestMultiClassClassificationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
@@ -244,7 +242,6 @@ class TestMultiClassClassificationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):

@@ -177,7 +177,7 @@ class TestMultiGPUManager:
         normal_process.is_alive.return_value = True
         wrong_process = mocker.MagicMock()
         wrong_process.is_alive.return_value = False
-        wrong_process.exit_code = 1
+        wrong_process.exitcode = 1
         process_arr = []
         for _ in range(self.num_gpu - 2):
             process_arr.append(deepcopy(normal_process))
@@ -326,6 +326,24 @@ class TestMultiGPUManager:
         # check
         for p in process_arr:
             p.join.assert_called_once()
+
+    @e2e_pytest_unit
+    def test_finalize_still_running_child_process(self, mocker, process_arr):
+        # prepare
+        mocker.patch.object(MultiGPUManager, "initialize_multigpu_train")
+        self.mock_process.side_effect = process_arr
+        for p in process_arr:
+            p.exitcode = None
+            p.join.return_value = None
+
+        # run
+        self.multigpu_manager.setup_multi_gpu_train("fake")
+        self.multigpu_manager.finalize()
+
+        # check
+        for p in process_arr:
+            p.join.assert_called_once()
+            p.kill.assert_called_once()
 
     @e2e_pytest_unit
     def test_finalize_before_spawn(self, mocker, process_arr):

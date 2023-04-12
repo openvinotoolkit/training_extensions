@@ -5,7 +5,6 @@ from mmcv.runner import BaseRunner
 from mmcv.runner.hooks import HOOKS, Hook
 
 from otx.algorithms.common.utils.logger import get_logger
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
 
@@ -24,7 +23,6 @@ class TwoCropTransformHook(Hook):
         by_epoch (bool): (TODO) Use `interval` by epoch. Defaults to False.
     """
 
-    @check_input_parameters_type()
     def __init__(self, interval: int = 1, by_epoch: bool = False):
         assert interval > 0, f"interval (={interval}) must be positive value."
         if by_epoch:
@@ -33,7 +31,6 @@ class TwoCropTransformHook(Hook):
         self.interval = interval
         self.cnt = 0
 
-    @check_input_parameters_type()
     def _get_dataset(self, runner: BaseRunner):
         """Get dataset to handle `is_both`."""
         if hasattr(runner.data_loader.dataset, "dataset"):
@@ -45,14 +42,12 @@ class TwoCropTransformHook(Hook):
         return dataset
 
     # pylint: disable=inconsistent-return-statements
-    @check_input_parameters_type()
     def _find_two_crop_transform(self, transforms: List[object]):
         """Find TwoCropTransform among transforms."""
         for transform in transforms:
             if transform.__class__.__name__ == "TwoCropTransform":
                 return transform
 
-    @check_input_parameters_type()
     def before_train_epoch(self, runner: BaseRunner):
         """Called before_train_epoch in TwoCropTransformHook."""
         # Always keep `TwoCropTransform` enabled.
@@ -67,7 +62,6 @@ class TwoCropTransformHook(Hook):
         else:
             two_crop_transform.is_both = False
 
-    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
         """Called after_train_iter in TwoCropTransformHook."""
         # Always keep `TwoCropTransform` enabled.

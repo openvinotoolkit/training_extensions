@@ -11,7 +11,6 @@ from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.hooks import HOOKS, Hook
 
 from otx.algorithms.common.utils.logger import get_logger
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
 
@@ -21,7 +20,6 @@ logger = get_logger()
 class CancelTrainingHook(Hook):
     """CancelTrainingHook for Training Stopping."""
 
-    @check_input_parameters_type()
     def __init__(self, interval: int = 5):
         """Periodically check whether whether a stop signal is sent to the runner during model training.
 
@@ -45,7 +43,6 @@ class CancelTrainingHook(Hook):
             runner.should_stop = True  # Set this flag to true to stop the current training epoch
             os.remove(stop_filepath)
 
-    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
         """Log after_train_iter for CancelTrainingHook."""
         if not self.every_n_iters(runner, self.interval):

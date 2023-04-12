@@ -1,6 +1,7 @@
 import pytest
 import torch
 
+from otx.algorithms.segmentation.adapters.mmseg.models.losses import detcon_loss as detcon_loss_file
 from otx.algorithms.segmentation.adapters.mmseg.models.losses.detcon_loss import (
     DetConLoss,
     manual_cross_entropy,
@@ -54,7 +55,7 @@ def test_manual_cross_entropy(logits, labels, weight, expected):
     ],
 )
 def test_detcon_loss(mocker, inputs, expected):
-    mocker.patch("torch.cuda.device_count", return_value=0)
+    mocker.patch.object(detcon_loss_file, "dist").is_initialized.return_value = False
     detcon_loss = DetConLoss()
 
     loss = detcon_loss(**inputs)

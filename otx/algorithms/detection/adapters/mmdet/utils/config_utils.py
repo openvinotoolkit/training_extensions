@@ -39,11 +39,6 @@ from otx.algorithms.detection.utils.data import (
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    DirectoryPathCheck,
-    check_input_parameters_type,
-)
 
 try:
     from sklearn.cluster import KMeans
@@ -58,7 +53,6 @@ except ImportError:
 logger = get_logger()
 
 
-@check_input_parameters_type({"work_dir": DirectoryPathCheck})
 def patch_config(
     config: Config,
     work_dir: str,
@@ -88,7 +82,6 @@ def patch_config(
     config.work_dir = work_dir
 
 
-@check_input_parameters_type()
 def patch_model_config(
     config: Config,
     labels: List[LabelEntity],
@@ -97,7 +90,6 @@ def patch_model_config(
     set_num_classes(config, len(labels))
 
 
-@check_input_parameters_type()
 def set_hyperparams(config: Config, hyperparams: DetectionConfig):
     """Set function for hyperparams (DetectionConfig)."""
     config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
@@ -115,7 +107,6 @@ def set_hyperparams(config: Config, hyperparams: DetectionConfig):
         config.runner.max_iters = total_iterations
 
 
-@check_input_parameters_type()
 def patch_adaptive_repeat_dataset(
     config: Union[Config, ConfigDict],
     num_samples: int,
@@ -149,7 +140,6 @@ def patch_adaptive_repeat_dataset(
             data_train.times = new_repeat
 
 
-@check_input_parameters_type()
 def prepare_for_training(
     config: Union[Config, ConfigDict],
     data_config: ConfigDict,
@@ -180,7 +170,6 @@ def prepare_for_training(
     return config
 
 
-@check_input_parameters_type()
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     """Setter data classes into config."""
     # Save labels in data configs.
@@ -190,7 +179,6 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
             #  config.data[subset].labels = labels
 
 
-@check_input_parameters_type()
 def set_num_classes(config: Config, num_classes: int):
     """Set num classes."""
     # Set proper number of classes in model's detection heads.
@@ -211,7 +199,6 @@ def set_num_classes(config: Config, num_classes: int):
     # self.config.model.CLASSES = label_names
 
 
-@check_input_parameters_type()
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.DETECTION,
@@ -291,7 +278,6 @@ def should_cluster_anchors(model_cfg: Config):
     return False
 
 
-@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
     """Update configs for cluster_anchors."""
     if not KMEANS_IMPORT:

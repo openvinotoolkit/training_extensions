@@ -39,7 +39,7 @@ class MockOTXSegmentationTask(OTXSegmentationTask):
         pass
 
     def _export_model(*args, **kwargs):
-        return {"outputs": {"bin": f"/tmp/model.xml", "xml": f"/tmp/model.bin"}}
+        return {"outputs": {"bin": f"/tmp/model.xml", "xml": f"/tmp/model.bin", "onnx": f"/tmp/model.onnx"}}
 
 
 class MockModel:
