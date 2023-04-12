@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .clip_projection import CLIPProjection
 from .mmov_neck import MMOVNeck
 from .selfsl_mlp import SelfSLMLP
 
-__all__ = ["SelfSLMLP", "MMOVNeck", "CLIPProjection"]
+__all__ = ["SelfSLMLP", "MMOVNeck"]

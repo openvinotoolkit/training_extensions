@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .clip_vision_transformer import CLIPVisionTransformer
 from .mmov_backbone import MMOVBackbone
 
-__all__ = ["MMOVBackbone", "CLIPVisionTransformer"]
+__all__ = ["MMOVBackbone"]

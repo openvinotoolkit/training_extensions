@@ -24,7 +24,6 @@ from .custom_multi_label_linear_cls_head import CustomMultiLabelLinearClsHead
 from .custom_multi_label_non_linear_cls_head import CustomMultiLabelNonLinearClsHead
 from .mmov_cls_head import MMOVClsHead
 from .non_linear_cls_head import NonLinearClsHead
-from .res_mlp_head import ResMLPHead
 from .semisl_cls_head import SemiLinearClsHead, SemiNonLinearClsHead
 from .semisl_multilabel_cls_head import (
     SemiLinearMultilabelClsHead,
@@ -44,7 +43,6 @@ __all__ = [
     "SemiNonLinearMultilabelClsHead",
     "NonLinearClsHead",
     "SemiLinearClsHead",
-    "ResMLPHead",
     "SemiNonLinearClsHead",
     "SupConClsHead",
     "MMOVClsHead",
