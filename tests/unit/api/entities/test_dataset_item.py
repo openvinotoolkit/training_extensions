@@ -982,3 +982,9 @@ class TestDatasetItemEntity:
         assert item.subset != new_subset
         new_item = item.wrap(subset=new_subset)
         assert new_item.subset == new_subset
+
+        if hasattr(item, "id_"):
+            new_id = ID("new_id")
+            assert item.id_ != new_id
+            item.id_ = new_id
+            assert item.id_ == new_id
