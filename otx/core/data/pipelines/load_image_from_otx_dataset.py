@@ -8,7 +8,6 @@ from typing import Any, Dict, Tuple
 import numpy as np
 
 from otx.algorithms.common.utils.data import get_image
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 from ..caching import MemCacheHandlerError, MemCacheHandlerSingleton
 
@@ -30,7 +29,6 @@ class LoadImageFromOTXDataset:
     :param to_float32: optional bool, True to convert images to fp32. defaults to False
     """
 
-    @check_input_parameters_type()
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
         try:
@@ -48,7 +46,6 @@ class LoadImageFromOTXDataset:
         d_item = results["dataset_item"]
         return d_item.media.path, d_item.roi.id
 
-    @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
         key = self._get_unique_key(results)

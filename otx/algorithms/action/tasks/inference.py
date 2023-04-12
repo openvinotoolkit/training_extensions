@@ -61,10 +61,6 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 from otx.api.utils.vis_utils import get_actmap
 
 logger = get_root_logger()
@@ -74,12 +70,10 @@ logger = get_root_logger()
 class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Action Task."""
 
-    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         super().__init__(ActionConfig, task_environment, **kwargs)
         self.deploy_cfg = None
 
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self,
         dataset: DatasetEntity,
@@ -287,11 +281,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             model = build_model(model_cfg)
         return model
 
-    @check_input_parameters_type()
-    def evaluate(
-        self,
-        output_resultset: ResultSetEntity,
-    ):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
         self._remove_empty_frames(output_resultset.ground_truth_dataset)
@@ -321,7 +311,6 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         if self._work_dir_is_temp:
             self._delete_scratch_space()
 
-    @check_input_parameters_type()
     def export(
         self,
         export_type: ExportType,
@@ -362,10 +351,13 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             exporter.export()
             bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
             xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
+            onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
             with open(os.path.join(self._output_path, bin_file), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
             with open(os.path.join(self._output_path, xml_file), "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
+            with open(os.path.join(self._output_path, onnx_file), "rb") as file:
+                output_model.set_data("model.onnx", file.read())
             output_model.set_data(
                 "confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes()
             )

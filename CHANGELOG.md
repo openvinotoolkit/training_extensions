@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
 - Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
+- Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
 
 ### Enhancements
 

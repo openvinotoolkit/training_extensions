@@ -510,14 +510,15 @@ class MMDetectionTask(OTXDetectionTask):
 
         bin_file = outputs.get("bin")
         xml_file = outputs.get("xml")
+        onnx_file = outputs.get("onnx")
 
         ir_extra_data = get_det_model_api_configuration(
             self._task_environment.label_schema, self._task_type, self.confidence_threshold
         )
         embed_ir_model_data(xml_file, ir_extra_data)
 
-        if xml_file is None or bin_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
+        if xml_file is None or bin_file is None or onnx_file is None:
+            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
         with open(bin_file, "rb") as f:
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
@@ -536,6 +537,8 @@ class MMDetectionTask(OTXDetectionTask):
             with open(tile_classifier["xml"], "rb") as f:
                 output_model.set_data("tile_classifier.xml", f.read())
 
+        with open(onnx_file, "rb") as f:
+            output_model.set_data("model.onnx", f.read())
         output_model.set_data(
             "confidence_threshold",
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),

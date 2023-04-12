@@ -11,7 +11,6 @@ from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
 
 from otx.algorithms.common.utils.logger import get_logger
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
 
@@ -50,7 +49,6 @@ class EarlyStoppingHook(Hook):
     greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc", "MHAcc"]
     less_keys = ["loss"]
 
-    @check_input_parameters_type()
     def __init__(
         self,
         interval: int,
@@ -109,7 +107,6 @@ class EarlyStoppingHook(Hook):
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
 
-    @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
         """Called before_run in EarlyStoppingHook."""
         if runner.max_epochs is None:
@@ -121,13 +118,11 @@ class EarlyStoppingHook(Hook):
         if getattr(self, "warmup_iters", None) is None:
             raise ValueError("LrUpdaterHook must be registered to runner.")
 
-    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
         """Called after every training iter to evaluate the results."""
         if not self.by_epoch:
             self._do_check_stopping(runner)
 
-    @check_input_parameters_type()
     def after_train_epoch(self, runner: BaseRunner):
         """Called after every training epoch to evaluate the results."""
         if self.by_epoch:
@@ -248,7 +243,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
     greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc", "MHAcc"]
     less_keys = ["loss"]
 
-    @check_input_parameters_type()
     def __init__(
         self,
         min_lr: float,
@@ -322,7 +316,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         """Check whether current iter is a next iter after multiples of interval."""
         return runner.iter % interval == 0 if interval > 0 and runner.iter != 0 else False
 
-    @check_input_parameters_type()
     def get_lr(self, runner: BaseRunner, base_lr: float):
         """Called get_lr in ReduceLROnPlateauLrUpdaterHook."""
         if self.current_lr < 0:
@@ -368,7 +361,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             self.current_lr = max(self.current_lr * self.factor, self.min_lr)
         return self.current_lr
 
-    @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
         """Called before_run in ReduceLROnPlateauLrUpdaterHook."""
         # TODO: remove overloaded method after fixing the issue
@@ -386,7 +378,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
 class StopLossNanTrainingHook(Hook):
     """StopLossNanTrainingHook."""
 
-    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
         """Called after_train_iter in StopLossNanTrainingHook."""
         if isnan(runner.outputs["loss"].item()):

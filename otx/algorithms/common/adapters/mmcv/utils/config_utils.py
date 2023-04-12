@@ -35,10 +35,6 @@ from mmcv.utils.path import check_file_exist
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
@@ -250,7 +246,6 @@ def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict):
         cfg["custom_hooks"] = custom_hooks
 
 
-@check_input_parameters_type()
 def remove_from_config(config: Union[Config, ConfigDict], key: str):
     """Update & Remove configs."""
     if key in config:
@@ -262,7 +257,6 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
             raise ValueError(f"Unknown config type {type(config)}")
 
 
-@check_input_parameters_type()
 def remove_from_configs_by_type(configs: List[ConfigDict], type_name: str):
     """Update & remove by type."""
     indices = []
@@ -296,7 +290,6 @@ def update_config(
             ptr = ptr[key]
 
 
-@check_input_parameters_type()
 def get_dataset_configs(config: Union[Config, ConfigDict], subset: str) -> List[ConfigDict]:
     """A function that retrieves 'datasets' configurations from the input `Config` object or `ConfigDict` object.
 
@@ -312,7 +305,6 @@ def get_dataset_configs(config: Union[Config, ConfigDict], subset: str) -> List[
     return data_cfgs if data_cfgs else [data_cfg]
 
 
-@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntity) -> Config:
     """Prepare configs for testing phase."""
     config = copy.deepcopy(config)
@@ -321,13 +313,11 @@ def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntit
     return config
 
 
-@check_input_parameters_type()
 def is_epoch_based_runner(runner_config: ConfigDict):
     """Check Epoch based or Iter based runner."""
     return "Epoch" in runner_config.type
 
 
-@check_input_parameters_type()
 def config_from_string(config_string: str) -> Config:
     """Generate an mmcv config dict object from a string.
 
@@ -340,7 +330,6 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-@check_input_parameters_type()
 def patch_default_config(config: Config):
     """Patch default config."""
     if "runner" not in config:
@@ -353,7 +342,6 @@ def patch_default_config(config: Config):
         config.checkpoint_config = ConfigDict({"type": "CheckpointHook", "interval": 1})
 
 
-@check_input_parameters_type()
 def patch_data_pipeline(config: Config, data_pipeline: str = ""):
     """Replace data pipeline to data_pipeline.py if it exist."""
     if os.path.isfile(data_pipeline):
@@ -363,7 +351,6 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
         raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
 
 
-@check_input_parameters_type()
 def patch_color_conversion(config: Config):
     """Patch color conversion."""
     assert "data" in config
@@ -375,7 +362,6 @@ def patch_color_conversion(config: Config):
         cfg.to_rgb = not bool(to_rgb)
 
 
-@check_input_parameters_type()
 def patch_runner(config: Config):
     """Patch runner."""
     assert "runner" in config
@@ -529,7 +515,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
     config.merge_from_dict(hparams)
 
 
-@check_input_parameters_type()
 def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
     """Align data_cfg with recipe_cfg."""
     # we assumed config has 'otx_dataset' and 'labels' key in it
@@ -569,7 +554,6 @@ def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
     return pipeline_step
 
 
-@check_input_parameters_type()
 def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     """Prepare configs of working directory."""
     base_work_dir = config.work_dir
@@ -583,7 +567,6 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     return train_round_checkpoint_dir
 
 
-@check_input_parameters_type()
 def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
     """Return dataset configs."""
     data_cfg = config.data[subset]

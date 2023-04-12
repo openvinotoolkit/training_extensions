@@ -96,7 +96,7 @@ class SegmentationConfigurer:
         patch_runner(cfg)
         patch_datasets(
             cfg,
-            **options_for_patch_datasets,
+            **options_for_patch_datasets,  # type: ignore
         )  # for OTX compatibility
         patch_evaluation(cfg)  # for OTX compatibility
         patch_fp16(cfg)
@@ -238,11 +238,11 @@ class SegmentationConfigurer:
         # Model architecture
         if "decode_head" in cfg.model:
             decode_head = cfg.model.decode_head
-            if isinstance(decode_head, Config):
-                decode_head.num_classes = len(model_classes)
-            elif isinstance(decode_head, list):
+            if isinstance(decode_head, list):
                 for head in decode_head:
                     head.num_classes = len(model_classes)
+            else:
+                decode_head.num_classes = len(model_classes)
 
             # For SupConDetCon
             if "SupConDetCon" in cfg.model.type:

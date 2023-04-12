@@ -21,10 +21,8 @@ from typing import Any, Dict
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 
-@check_input_parameters_type()
 def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disable=too-many-locals
     """Get multihead info by label schema."""
     all_groups = label_schema.get_groups(include_empty=False)

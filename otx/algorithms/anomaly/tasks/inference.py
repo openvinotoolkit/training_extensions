@@ -292,6 +292,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             output_model.set_data("openvino.bin", file.read())
         with open(xml_file, "rb") as file:
             output_model.set_data("openvino.xml", file.read())
+        with open(onnx_path, "rb") as file:
+            output_model.set_data("model.onnx", file.read())
 
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
