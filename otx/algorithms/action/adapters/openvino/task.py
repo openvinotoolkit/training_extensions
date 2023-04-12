@@ -29,6 +29,7 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
+from mmcv.utils import ProgressBar
 
 from otx.algorithms.action.adapters.openvino import (
     ActionOVClsDataLoader,
@@ -201,6 +202,7 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
         height = self.inferencer.model.h
         dataloader = get_ovdataloader(dataset, self.task_type, clip_len, width, height)
         dataset_size = len(dataloader)
+        prog_bar = ProgressBar(len(dataloader))
         for i, data in enumerate(dataloader):
             prediction = self.inferencer.predict(data)
             if isinstance(dataloader, ActionOVClsDataLoader):
@@ -208,6 +210,8 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
             else:
                 dataloader.add_prediction(data, prediction)
             update_progress_callback(int(i / dataset_size * 100))
+            prog_bar.update()
+        print("")
         return dataset
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
