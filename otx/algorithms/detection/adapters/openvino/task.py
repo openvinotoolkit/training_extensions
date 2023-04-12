@@ -22,7 +22,7 @@ import os
 import tempfile
 import time
 import warnings
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import attr
@@ -401,7 +401,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             self.model.get_data("openvino.bin"),
         ]
         if self.task_type == TaskType.DETECTION:
-            inferencer = OpenVINODetectionInferencer(*args)
+            inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
@@ -469,7 +469,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
 
-                predicted_scored_labels = []
+                predicted_scored_labels: List = []
                 for bbox in predicted_scene.annotations:
                     predicted_scored_labels += bbox.get_labels()
 
@@ -524,7 +524,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
-            predicted_scored_labels = []
+            predicted_scored_labels: List = []
             for bbox in predicted_scene.annotations:
                 predicted_scored_labels += bbox.get_labels()
 
