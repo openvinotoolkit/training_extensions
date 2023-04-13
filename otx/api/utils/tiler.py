@@ -100,15 +100,20 @@ class Tiler:
             detection: prediction results
             features: saliency map and feature vector
         """
-        if mode == "sync":
-            return self.predict_sync(image)
-        return self.predict_async(image)
+        tile_coords = self.tile(image)
+        if isinstance(self.classifier, Model):
+            tile_coords = self.filter_tiles_by_objectness(image, tile_coords)
 
-    def predict_sync(self, image: np.ndarray):
+        if mode == "sync":
+            return self.predict_sync(image, tile_coords)
+        return self.predict_async(image, tile_coords)
+
+    def predict_sync(self, image: np.ndarray, tile_coords: List[List[int]]):
         """Predict by cropping full image to tiles synchronously.
 
         Args:
             image (np.ndarray): full size image
+            tile_coords (List[List[int]]): tile coordinates
 
         Returns:
             detection: prediction results
@@ -116,9 +121,6 @@ class Tiler:
         """
         features = (None, None)
         tile_results = []
-        tile_coords = self.tile(image)
-        if isinstance(self.classifier, Model):
-            tile_coords = self.filter_tiles_by_objectness(image, tile_coords)
 
         for i, coord in enumerate(tile_coords):
             tile_img = self.crop_tile(image, coord)
@@ -138,19 +140,17 @@ class Tiler:
         results = self.merge_results(tile_results, image.shape)
         return results, features
 
-    def predict_async(self, image: np.ndarray):
+    def predict_async(self, image: np.ndarray, tile_coords: List[List[int]]):
         """Predict by cropping full image to tiles asynchronously.
 
         Args:
             image (np.ndarray): full size image
+            tile_coords (List[List[int]]): tile coordinates
 
         Returns:
             detection: prediction results
             features: saliency map and feature vector
         """
-        tile_coords = self.tile(image)
-        if isinstance(self.classifier, Model):
-            tile_coords = self.filter_tiles_by_objectness(image, tile_coords)
         num_tiles = len(tile_coords)
 
         processed_tiles = 0
