@@ -107,39 +107,42 @@ def get_predictions(task, frame):
     return item.get_annotations(), elapsed_time
 
 
-def save_frame(frame, path, capture_type, saved_frames):
-    """Saves frames with predictions to saved_frames to to dump it in one time."""
+def get_input_names_list(input_path, capture):
+    """Lists the filenames of all inputs for demo."""
 
-    filename = Path(path).name
-    if capture_type == "VIDEO":
-        saved_frames[filename].append(frame)
+    if "DIR" in capture.get_type():
+        return [f.name for f in Path(input_path).iterdir() if f.is_file()]
     else:
-        saved_frames[filename] = frame
+        return [Path(input_path).name]
+    
 
+def dump_frames(saved_frames, output_path, input_path, capture):
+    """Saves images/videos with predictions from saved_frames to output folder with proper names."""
 
-def dump_frames(saved_frames, output_path, capture):
-    """Saves images/videos with predictions from saved_frames to file system."""
+    if not saved_frames:
+        return
 
-    if len(saved_frames) > 0:
-        output_path = Path(output_path)
-        if not output_path.exists():
-            output_path.mkdir(parents=True)
+    output_path = Path(output_path)
+    if not output_path.exists():
+        output_path.mkdir(parents=True)
+    
+    filenames = get_input_names_list(input_path, capture)
 
-        if capture.get_type() == "VIDEO":
-            filename, frames = list(saved_frames.items())[0]
-            w, h, _ = frames[0].shape
-            video_path = str(output_path / filename)
-            codec = cv2.VideoWriter_fourcc(*"mp4v")
-            out = cv2.VideoWriter(video_path, codec, capture.fps(), (h, w))
-            for frame in frames:
-                out.write(frame)
-            out.release()
-            print(f"Video was saved to {video_path}")
-        else:
-            for filename, frame in saved_frames.items():
-                image_path = str(output_path / filename)
-                cv2.imwrite(image_path, frame)
-                print(f"Image was saved to {image_path}")
+    if "VIDEO" in capture.get_type():
+        filename = filenames[0]
+        w, h, _ = saved_frames[0].shape
+        video_path = str(output_path / filename)
+        codec = cv2.VideoWriter_fourcc(*"mp4v")
+        out = cv2.VideoWriter(video_path, codec, capture.fps(), (h, w))
+        for frame in saved_frames:
+            out.write(frame)
+        out.release()
+        print(f"Video was saved to {video_path}")
+    else:
+        for filename, frame in zip(filenames, saved_frames):
+            image_path = str(output_path / filename)
+            cv2.imwrite(image_path, frame)
+            print(f"Image was saved to {image_path}")
 
 
 def main():
@@ -181,9 +184,9 @@ def main():
     capture = open_images_capture(args.input, args.loop)
 
     elapsed_times = deque(maxlen=10)
-    saved_frames = defaultdict(list)
+    saved_frames = []
     while True:
-        frame, path = capture.read()
+        frame = capture.read()
         if frame is None:
             break
 
@@ -207,11 +210,10 @@ def main():
         else:
             print(f"Frame: {elapsed_time=}, {len(predictions)=}")
 
-        # path to input is returned during the first pass through input only
-        if args.save_results_to and path:
-            save_frame(frame, path, capture.get_type(), saved_frames)
+        if args.save_results_to:
+            saved_frames.append(frame)
 
-    dump_frames(saved_frames, args.save_results_to, capture)
+    dump_frames(saved_frames, args.save_results_to, args.input, capture)
 
     return dict(retcode=0, template=template.name)
 

@@ -14,6 +14,8 @@ from otx.api.usecases.exportable_code.demo.demo_package.utils import (
 from otx.api.usecases.exportable_code.streamer import get_streamer
 from otx.api.usecases.exportable_code.visualizers import Visualizer
 
+from otx.cli.tools.demo import get_input_names_list, dump_frames
+
 
 class SyncExecutor:
     """Synchronous executor for model inference.
@@ -31,6 +33,7 @@ class SyncExecutor:
     def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
         """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
+        saved_frames = []
 
         for (frame, input_path) in streamer:
             # getting result include preprocessing, infer, postprocessing for sync infer
@@ -38,8 +41,10 @@ class SyncExecutor:
             annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
             output = self.visualizer.draw(frame, annotation_scene, frame_meta)
             self.visualizer.show(output)
-            self.visualizer.save_frame(output, input_path, str(streamer.get_type()))
+            if self.visualizer.save_results_to:
+                saved_frames.append(frame)
+            # self.visualizer.save_frame(output, input_path, str(streamer.get_type()))
             if self.visualizer.is_quit():
                 break
 
-        self.visualizer.dump_frames(streamer)
+        dump_frames(saved_frames, self.visualizer.save_results_to, input_stream, streamer)
