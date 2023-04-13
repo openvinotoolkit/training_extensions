@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-# TODO[EUGENE]: SKIP MOSAIC AND MultiImageMixDataset in tiling
+# NOTE: SKIP MOSAIC AND MultiImageMixDataset in tiling
 
 dataset_type = "CocoDataset"
 
