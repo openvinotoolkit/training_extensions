@@ -18,8 +18,6 @@ import io
 import os
 import shutil
 import tempfile
-import time
-import threading
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional
@@ -310,50 +308,3 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     @config.setter
     def config(self, config: Dict[Any, Any]):
         self._config = config
-
-    @staticmethod
-    def adapt_batch_size(train_func, default_bs: int, train_set_size: int):
-        import datetime
-        min_bs = 0
-        if train_set_size < default_bs:
-                default_bs = train_set_size
-        lowest_unavailable_bs = None
-        start_time = datetime.datetime.now()
-        _, total_mem = torch.cuda.mem_get_info()
-        while True:
-            cuda_oom = False
-            torch.cuda.reset_max_memory_allocated(device=None)
-            try:
-                print("*"*100, default_bs, "start")
-                train_func(default_bs)
-            except RuntimeError:
-                cuda_oom = True
-            finally:
-                max_memory_usage = torch.cuda.max_memory_allocated(device=None) / total_mem
-                print("*"*100, default_bs, f"{torch.cuda.max_memory_allocated(device=None)}/{total_mem} {torch.cuda.max_memory_allocated(device=None)/total_mem}")
-                if cuda_oom or max_memory_usage >= 0.87:
-                    if lowest_unavailable_bs is None or default_bs < lowest_unavailable_bs:
-                        lowest_unavailable_bs = default_bs
-                    default_bs = (default_bs + min_bs) // 2
-                else:
-                    min_bs = default_bs
-
-                    if default_bs >= train_set_size:
-                        break
-                    if lowest_unavailable_bs is None:
-                        default_bs *= 2
-                        if default_bs > train_set_size:
-                            default_bs = train_set_size
-                    else:
-                        default_bs = (default_bs + lowest_unavailable_bs) // 2
-
-            torch.cuda.empty_cache()
-            if lowest_unavailable_bs is not None and lowest_unavailable_bs - min_bs <= 2:
-                break
-
-        if min_bs == 0:
-            raise RuntimeError("Current device can't train model even with 2!")
-
-        print("*"*100, f"max bs : {min_bs} / elapsed_time : {datetime.datetime.now() - start_time}")
-
-        return min_bs

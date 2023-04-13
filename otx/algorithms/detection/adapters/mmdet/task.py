@@ -21,6 +21,7 @@ import time
 from contextlib import nullcontext
 from copy import deepcopy
 from typing import Any, Dict, Optional, Union
+from functools import partial
 
 import torch
 from mmcv.runner import wrap_fp16_model
@@ -49,6 +50,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
+from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.configurer import (
@@ -198,6 +200,7 @@ class MMDetectionTask(OTXDetectionTask):
     def _train_model(
         self,
         dataset: DatasetEntity,
+        auto_adapt_bs: bool = False,
     ):
         """Train function in MMDetectionTask."""
         logger.info("init data cfg.")
@@ -275,29 +278,9 @@ class MMDetectionTask(OTXDetectionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        # find maximal batch size ##################################################################
-        def train_func(bs):
-            copied_cfg = deepcopy(cfg)
-            copied_meta = deepcopy(meta)
-            copied_cfg.runner["max_epochs"] = 1
-            copied_meta["run_single_iter"] = True
-            for hook in copied_cfg.custom_hooks:
-                if hook["type"] == "AdaptiveTrainSchedulingHook":
-                    hook["enable_eval_before_run"] = False
-            copied_cfg.data.train_dataloader['samples_per_gpu'] = bs
-            train_detector(
-                model,
-                datasets,
-                copied_cfg,
-                distributed=False,
-                validate=False,
-                timestamp=timestamp,
-                meta=copied_meta,
-            )
-
-        bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'], len(datasets[0]))
-        cfg.data.train_dataloader['samples_per_gpu'] = bs
-        ############################################################################################
+        if auto_adapt_bs:
+            train_func = partial(train_detector, model=model, distributed=False, validate=False)
+            adapt_batch_size(train_func, cfg, meta, datasets)
 
         train_detector(
             model,

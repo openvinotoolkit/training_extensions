@@ -30,6 +30,7 @@ from .config_utils import (
     remove_from_configs_by_type,
     update_config,
 )
+from .adapt_batch_size import adapt_batch_size
 
 __all__ = [
     "build_dataset",
@@ -58,4 +59,5 @@ __all__ = [
     "prepare_work_dir",
     "get_data_cfg",
     "MPAConfig",
+    "adapt_batch_size",
 ]

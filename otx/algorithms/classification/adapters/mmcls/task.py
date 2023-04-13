@@ -20,6 +20,7 @@ import time
 from contextlib import nullcontext
 from copy import deepcopy
 from typing import Any, Dict, Optional, Union
+from functools import partial
 
 import torch
 from mmcls.apis import train_model
@@ -48,6 +49,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
 )
 from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
+from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
@@ -324,6 +326,7 @@ class MMClassificationTask(OTXClassificationTask):
     def _train_model(
         self,
         dataset: DatasetEntity,
+        auto_adapt_bs: bool = False,
     ):
         """Train function in MMClassificationTask."""
         self._data_cfg = ConfigDict(data=ConfigDict())
@@ -404,29 +407,9 @@ class MMClassificationTask(OTXClassificationTask):
                 )
             )
 
-        # find maximal batch size ##################################################################
-        def train_func(bs):
-            copied_cfg = deepcopy(cfg)
-            copied_meta = deepcopy(meta)
-            copied_cfg.runner["max_epochs"] = 1
-            copied_meta["run_single_iter"] = True
-            for hook in copied_cfg.custom_hooks:
-                if hook["type"] == "AdaptiveTrainSchedulingHook":
-                    hook["enable_eval_before_run"] = False
-            copied_cfg.data.train_dataloader['samples_per_gpu'] = bs
-            train_model(
-                model,
-                datasets,
-                copied_cfg,
-                distributed=False,
-                validate=False,
-                timestamp=timestamp,
-                meta=copied_meta,
-            )
-
-        bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'], len(datasets[0]))
-        cfg.data.train_dataloader['samples_per_gpu'] = bs
-        ############################################################################################
+        if auto_adapt_bs:
+            train_func = partial(train_model, model=model, distributed=False, validate=False)
+            adapt_batch_size(train_func, cfg, meta, datasets)
 
         train_model(
             model,

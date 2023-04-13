@@ -142,6 +142,12 @@ def get_args():
         help="The data.yaml path want to use in train task.",
     )
 
+    parser.add_argument(
+        "--auto-decrease-bs",
+        action="store_true",
+        help="Decrease batch size check current batch size is out of CUDA memory.",
+    )
+
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
@@ -250,7 +256,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
-    task.train(dataset, output_model, train_parameters=TrainParameters())
+    task.train(dataset, output_model, train_parameters=TrainParameters(auto_adapt_bs=args.auto_decrease_bs))
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))

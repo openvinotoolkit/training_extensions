@@ -21,6 +21,7 @@ import time
 from contextlib import nullcontext
 from copy import deepcopy
 from typing import Any, Dict, Optional, Union
+from functools import partial
 
 import torch
 from mmcv.runner import wrap_fp16_model
@@ -54,6 +55,7 @@ from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     SemiSLSegmentationConfigurer,
 )
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
+from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
 from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegmentationExporter
 from otx.algorithms.segmentation.task import OTXSegmentationTask
 
@@ -293,6 +295,7 @@ class MMSegmentationTask(OTXSegmentationTask):
     def _train_model(
         self,
         dataset: DatasetEntity,
+        auto_adapt_bs: bool = False,
     ):
         """Train function in MMSegmentationTask."""
         logger.info("init data cfg.")
@@ -368,29 +371,9 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        # find maximal batch size ##################################################################
-        def train_func(bs):
-            copied_cfg = deepcopy(cfg)
-            copied_meta = deepcopy(meta)
-            copied_cfg.runner["max_epochs"] = 1
-            copied_meta["run_single_iter"] = True
-            for hook in copied_cfg.custom_hooks:
-                if hook["type"] == "AdaptiveTrainSchedulingHook":
-                    hook["enable_eval_before_run"] = False
-            copied_cfg.data.train_dataloader['samples_per_gpu'] = bs
-            train_segmentor(
-                model,
-                datasets,
-                copied_cfg,
-                distributed=False,
-                validate=False,
-                timestamp=timestamp,
-                meta=copied_meta,
-            )
-
-        bs = self.adapt_batch_size(train_func, cfg.data.train_dataloader['samples_per_gpu'], len(datasets[0]))
-        cfg.data.train_dataloader['samples_per_gpu'] = bs
-        ############################################################################################
+        if auto_adapt_bs:
+            train_func = partial(train_segmentor, model=model, distributed=False, validate=False)
+            adapt_batch_size(train_func, cfg, meta, datasets)
 
         train_segmentor(
             model,
