@@ -13,7 +13,7 @@ import pytest
 from bson import ObjectId
 
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
-from otx.algorithms.common.tasks.training_base import BaseTask
+from otx.algorithms.common.tasks.base_task import OTXTask
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
@@ -42,7 +42,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_api
 DEFAULT_CLS_TEMPLATE_DIR = osp.join("otx/algorithms/classification", "configs", "efficientnet_b0_cls_incr")
 
 
-def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
+def task_eval(task: OTXTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
     start_time = time.time()
     result_dataset = task.infer(dataset.with_empty_annotations())
     end_time = time.time()

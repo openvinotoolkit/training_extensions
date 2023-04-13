@@ -3,7 +3,7 @@
 #
 import datetime
 from copy import deepcopy
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import pytest
@@ -15,7 +15,7 @@ from otx.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.api.entities.color import Color
-from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.dataset_item import DatasetItemEntity, DatasetItemEntityWithID
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
@@ -138,6 +138,17 @@ class DatasetItemParameters:
 
     def dataset_item(self) -> DatasetItemEntity:
         return DatasetItemEntity(
+            media=self.generate_random_image(),
+            annotation_scene=self.annotations_entity(),
+            roi=self.roi(),
+            metadata=self.metadata(),
+            subset=Subset.TESTING,
+            ignored_labels={self.labels()[1]},
+        )
+
+    def dataset_item_with_id(self) -> DatasetItemEntityWithID:
+        return DatasetItemEntityWithID(
+            id_=ID("test"),
             media=self.generate_random_image(),
             annotation_scene=self.annotations_entity(),
             roi=self.roi(),
@@ -952,3 +963,32 @@ class TestDatasetItemEntity:
         new_annotation_scene = AnnotationSceneEntity([new_annotation], AnnotationSceneKind.PREDICTION)
         dataset_item.annotation_scene = new_annotation_scene
         assert dataset_item.annotation_scene == new_annotation_scene
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.parametrize("func_name", ["dataset_item", "dataset_item_with_id"])
+    def test_wrap(self, func_name):
+        constructor = DatasetItemParameters()
+        func = getattr(constructor, func_name)
+        item: DatasetItemEntity = func()
+
+        new_media = DatasetItemParameters().generate_random_image()
+        assert item.media != new_media
+
+        new_subset = Subset.PSEUDOLABELED
+        assert item.subset != new_subset
+
+        new_metadata = DatasetItemParameters().metadata()
+        assert item.get_metadata() != new_metadata
+
+        new_item = item.wrap(media=new_media, subset=new_subset, metadata=new_metadata)
+        assert new_item.media == new_media
+        assert new_item.subset == new_subset
+        assert new_item.get_metadata() == new_metadata
+
+        if hasattr(item, "id_"):
+            new_id = ID("new_id")
+            assert item.id_ != new_id
+            item = item.wrap(id_=new_id)
+            assert item.id_ == new_id

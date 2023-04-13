@@ -14,7 +14,7 @@ def generate_random_torch_image(batch=1, width=3, height=3, channels=3, channel_
         channel_last (bool, optional): if this is True, image shape will follow BHWC. Defaults to True.
 
     Returns:
-        _type_: _description_
+        torch.tensor: random image tensor.
     """
     if channel_last is False:
         img = torch.rand(batch, channels, height, width)

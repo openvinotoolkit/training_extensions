@@ -20,7 +20,7 @@ from typing import List, Sequence, Union
 
 import torch
 
-from otx import MMCLS_AVAILABLE
+from otx.algorithms.classification import MMCLS_AVAILABLE
 
 if MMCLS_AVAILABLE:
     from mmcls.models.necks.gap import GlobalAveragePooling

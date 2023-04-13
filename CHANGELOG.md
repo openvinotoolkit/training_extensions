@@ -87,6 +87,7 @@ All notable changes to this project will be documented in this file.
 - Refine documents by proof review
 - Separate installation for each tasks
 - Improve POT efficiency by setting stat_requests_number parameter to 1
+- Introduce new tile classifier to enhance tiling inference performance in MaskRCNN.
 
 ### Bug fixes
 

@@ -53,7 +53,7 @@ class MockOTXMaskRCNNModel(OTXMaskRCNNModel):
         self.is_segmentoly = len(self.inputs) == 2
         self.output_blob_name = self._get_outputs()
         self.confidence_threshold = 0.5
-        super().__init__(MockOpenvinoAdapter)
+        super().__init__(MockOpenvinoAdapter, {})
 
 
 class MockOTXSSDModel(OTXSSDModel):
