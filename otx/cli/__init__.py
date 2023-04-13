@@ -5,7 +5,7 @@
 
 import os
 
-from otx import MMACTION_AVAILABLE
-
-if MMACTION_AVAILABLE:
-    os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
+# How to make an Action Template invisible in Geti
+# Check FEATURE_FLAGS_OTX_ACTION_TASKS in the API to determine whether to use the Action
+# Always 1 in the OTX CLI
+os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
