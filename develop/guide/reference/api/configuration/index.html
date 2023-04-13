@@ -529,6 +529,36 @@ are automatically converted and this option is disregarded.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.helper.flatten_config_values">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">flatten_config_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.helper.flatten_config_values" title="Permalink to this definition">#</a></dt>
+<dd><p>Extracts the “value” field from any nested config.</p>
+<p>Flattening the structure of the config dictionary. The original config dictionary is modified in-place.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>config (dict): config dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.helper.merge_a_into_b">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">merge_a_into_b</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.helper.merge_a_into_b" title="Permalink to this definition">#</a></dt>
+<dd><p>Inspired by mmcv.Config.merge_a_into_b by merging dict <code class="docutils literal notranslate"><span class="pre">a</span></code> into dict <code class="docutils literal notranslate"><span class="pre">b</span></code> (non-inplace).</p>
+<p>Values in <code class="docutils literal notranslate"><span class="pre">a</span></code> will overwrite <code class="docutils literal notranslate"><span class="pre">b</span></code>. <code class="docutils literal notranslate"><span class="pre">b</span></code> is copied first to avoid
+in-place modifications.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dict_a (dict): The source dict to be merged into <code class="docutils literal notranslate"><span class="pre">b</span></code>.
+dict_b (dict): The origin dict to be fetch keys from <code class="docutils literal notranslate"><span class="pre">a</span></code>.</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict: The modified dict of <code class="docutils literal notranslate"><span class="pre">b</span></code> using <code class="docutils literal notranslate"><span class="pre">a</span></code>.</p>
+</dd>
+<dt>Examples:</dt><dd><p># Normally merge a into b.
+&gt;&gt;&gt; merge_a_into_b({‘a’: {‘d’: 5, ‘e’: 6}, ‘b’: 4}, {‘a’: {‘c’: 1, ‘d’: 4}, ‘b’: 3})
+{‘a’: {‘c’: 1, ‘d’: 5, ‘e’: 6}, ‘b’: 4}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="otx.api.configuration.helper.substitute_values">
 <span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">substitute_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">ConfigurableParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">ConfigurableParameters</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_missing_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.helper.substitute_values" title="Permalink to this definition">#</a></dt>
 <dd><p>Substitutes values from value_input into the config object.</p>
@@ -966,6 +996,24 @@ this method is called</p>
    <code class="docutils literal notranslate">
     <span class="pre">
      create()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.configuration.helper.flatten_config_values">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     flatten_config_values()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.api.configuration.helper.merge_a_into_b">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     merge_a_into_b()
     </span>
    </code>
   </a>
