@@ -104,14 +104,14 @@ For example, the model inference on image from WGISD dataset, which we used for 
 
 To learn how to run the demo on Windows and MacOS, please refer to the ``outputs/deploy/python/README.md`` file in exportable code.
 
-4. To save inferenced results with predictions on it, we can specify the folder path, using ``--save-results-to``. 
+4. To save inferenced results with predictions on it, we can specify the folder path, using ``--output``. 
 It works for images, videos and image folders. To prevent issues, do not specify it together with a ``--loop`` parameter.
 
 .. code-block::
 
     (demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
                                                       --models outputs/deploy/model \
-                                                      --save-results-to resulted_images
+                                                      --output resulted_images
 
 5. To run a demo on a web camera, we need to know its ID. 
 We can check a list of camera devices by running this command line on Linux system:

@@ -75,7 +75,7 @@ def build_argparser():
         type=str,
     )
     args.add_argument(
-        "--save-results-to",
+        "--output",
         default=None,
         type=str,
         help="Optional. Output path to save input data with predictions.",
@@ -103,8 +103,8 @@ def main():
     """Main function that is used to run demo."""
     args = build_argparser().parse_args()
 
-    if args.loop and args.save_results_to:
-        raise ValueError("--loop and --save-results-to cannot be both specified")
+    if args.loop and args.output:
+        raise ValueError("--loop and --output cannot be both specified")
 
     # create models
     models = []
@@ -115,7 +115,7 @@ def main():
     inferencer = get_inferencer_class(args.inference_type, models)
 
     # create visualizer
-    visualizer = create_visualizer(models[-1].task_type, no_show=args.no_show, save_results_to=args.save_results_to)
+    visualizer = create_visualizer(models[-1].task_type, no_show=args.no_show, output=args.output)
 
     if len(models) == 1:
         models = models[0]

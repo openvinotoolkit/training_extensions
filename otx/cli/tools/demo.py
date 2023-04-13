@@ -15,8 +15,7 @@
 # and limitations under the License.
 
 import time
-from collections import defaultdict, deque
-from pathlib import Path
+from collections import deque
 
 import cv2
 import numpy as np
@@ -28,7 +27,7 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
 from otx.cli.tools.utils.demo.images_capture import open_images_capture
-from otx.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
+from otx.cli.tools.utils.demo.visualization import draw_predictions, dump_frames, put_text_on_rect_bg
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
 from otx.cli.utils.parser import (
@@ -73,7 +72,7 @@ def get_args():
         "frame reading, pre-processing and post-processing.",
     )
     parser.add_argument(
-        "--save-results-to",
+        "--output",
         default=None,
         type=str,
         help="Output path to save input data with predictions.",
@@ -107,52 +106,14 @@ def get_predictions(task, frame):
     return item.get_annotations(), elapsed_time
 
 
-def get_input_names_list(input_path, capture):
-    """Lists the filenames of all inputs for demo."""
-
-    if "DIR" in capture.get_type():
-        return [f.name for f in Path(input_path).iterdir() if f.is_file()]
-    else:
-        return [Path(input_path).name]
-    
-
-def dump_frames(saved_frames, output_path, input_path, capture):
-    """Saves images/videos with predictions from saved_frames to output folder with proper names."""
-
-    if not saved_frames:
-        return
-
-    output_path = Path(output_path)
-    if not output_path.exists():
-        output_path.mkdir(parents=True)
-    
-    filenames = get_input_names_list(input_path, capture)
-
-    if "VIDEO" in capture.get_type():
-        filename = filenames[0]
-        w, h, _ = saved_frames[0].shape
-        video_path = str(output_path / filename)
-        codec = cv2.VideoWriter_fourcc(*"mp4v")
-        out = cv2.VideoWriter(video_path, codec, capture.fps(), (h, w))
-        for frame in saved_frames:
-            out.write(frame)
-        out.release()
-        print(f"Video was saved to {video_path}")
-    else:
-        for filename, frame in zip(filenames, saved_frames):
-            image_path = str(output_path / filename)
-            cv2.imwrite(image_path, frame)
-            print(f"Image was saved to {image_path}")
-
-
 def main():
     """Main function that is used for model demonstration."""
 
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
-    if args.loop and args.save_results_to:
-        raise ValueError("--loop and --save-results-to cannot be both specified")
+    if args.loop and args.output:
+        raise ValueError("--loop and --output cannot be both specified")
 
     config_manager = ConfigManager(args, mode="demo")
     # Auto-Configuration for model template
@@ -210,10 +171,10 @@ def main():
         else:
             print(f"Frame: {elapsed_time=}, {len(predictions)=}")
 
-        if args.save_results_to:
+        if args.output:
             saved_frames.append(frame)
 
-    dump_frames(saved_frames, args.save_results_to, args.input, capture)
+    dump_frames(saved_frames, args.output, args.input, capture)
 
     return dict(retcode=0, template=template.name)
 

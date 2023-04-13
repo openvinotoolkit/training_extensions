@@ -50,14 +50,14 @@ so the ``--fit-to-size`` parameter would be quite useful. It resizes the resulti
                          --load-weights outputs/weights.pth --loop --fit-to-size 800 600
 
 
-5. To save inferenced results with predictions on it, we can specify the folder path, using ``--save-results-to``. 
+5. To save inferenced results with predictions on it, we can specify the folder path, using ``--output``. 
 It works for images, videos and image folders. To prevent issues, do not specify it together with a ``--loop`` parameter.
 
 .. code-block::
 
     (demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
                          --load-weights outputs/weights.pth \
-                         --save-results-to resulted_images
+                         --output resulted_images
 
 6. If we want to show inference speed right on images, 
 we can run the following line:

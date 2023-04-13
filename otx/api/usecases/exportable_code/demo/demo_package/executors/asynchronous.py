@@ -16,6 +16,7 @@ from otx.api.usecases.exportable_code.demo.demo_package.utils import (
 )
 from otx.api.usecases.exportable_code.streamer import get_streamer
 from otx.api.usecases.exportable_code.visualizers import Visualizer
+from otx.cli.tools.utils.demo.visualization import dump_frames
 
 
 class AsyncExecutor:
@@ -38,14 +39,16 @@ class AsyncExecutor:
         next_frame_id = 0
         next_frame_id_to_show = 0
         stop_visualization = False
+        saved_frames = []
 
-        for (frame, input_path) in streamer:
+        for frame in streamer:
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             while results:
                 output = self.render_result(results)
                 next_frame_id_to_show += 1
                 self.visualizer.show(output)
-                self.visualizer.save_frame(output, input_path, str(streamer.get_type()))
+                if self.visualizer.output:
+                    saved_frames.append(frame)
                 if self.visualizer.is_quit():
                     stop_visualization = True
                 results = self.async_pipeline.get_result(next_frame_id_to_show)
@@ -58,7 +61,7 @@ class AsyncExecutor:
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             output = self.render_result(results)
             self.visualizer.show(output)
-        self.visualizer.dump_frames(streamer)
+        dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)
 
     def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:
         """Render for results of inference."""

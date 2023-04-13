@@ -143,7 +143,6 @@ class VideoStreamer(BaseStreamer):
 
     def __init__(self, input_path: str, loop: bool = False) -> None:
         self.media_type = MediaType.VIDEO
-        self.input_path = input_path
         self.loop = loop
         self.cap = cv2.VideoCapture()
         status = self.cap.open(input_path)
@@ -158,7 +157,7 @@ class VideoStreamer(BaseStreamer):
         while True:
             status, image = self.cap.read()
             if status:
-                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB), self.input_path
+                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             else:
                 if self.loop:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -209,7 +208,7 @@ class CameraStreamer(BaseStreamer):
             if not frame_available:
                 break
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            yield frame, None
+            yield frame
 
         self.stream.release()
 
@@ -235,7 +234,6 @@ class ImageStreamer(BaseStreamer):
     def __init__(self, input_path: str, loop: bool = False) -> None:
         self.loop = loop
         self.media_type = MediaType.IMAGE
-        self.input_path = input_path
         if not os.path.isfile(input_path):
             raise InvalidInput(f"Can't find the image by {input_path}")
         self.image = cv2.imread(input_path, cv2.IMREAD_COLOR)
@@ -246,10 +244,10 @@ class ImageStreamer(BaseStreamer):
     def __iter__(self) -> Iterator[np.ndarray]:
         """If loop is True, yield the image again and again."""
         if not self.loop:
-            yield self.image, self.input_path
+            yield self.image
         else:
             while True:
-                yield self.image, None
+                yield self.image
 
     def get_type(self) -> MediaType:
         """Returns the type of the streamer."""
@@ -299,7 +297,7 @@ class DirStreamer(BaseStreamer):
             else:
                 self.file_id = self.file_id + 1 if not self.loop else 0
             if image is not None:
-                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB), filename
+                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     def get_type(self) -> MediaType:
         """Returns the type of the streamer."""
