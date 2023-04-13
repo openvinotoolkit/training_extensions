@@ -971,20 +971,24 @@ class TestDatasetItemEntity:
     def test_wrap(self, func_name):
         constructor = DatasetItemParameters()
         func = getattr(constructor, func_name)
-        item = func()
+        item: DatasetItemEntity = func()
 
         new_media = DatasetItemParameters().generate_random_image()
         assert item.media != new_media
-        new_item = item.wrap(media=new_media)
-        assert new_item.media == new_media
 
         new_subset = Subset.PSEUDOLABELED
         assert item.subset != new_subset
-        new_item = item.wrap(subset=new_subset)
+
+        new_metadata = DatasetItemParameters().metadata()
+        assert item.get_metadata() != new_metadata
+
+        new_item = item.wrap(media=new_media, subset=new_subset, metadata=new_metadata)
+        assert new_item.media == new_media
         assert new_item.subset == new_subset
+        assert new_item.get_metadata() == new_metadata
 
         if hasattr(item, "id_"):
             new_id = ID("new_id")
             assert item.id_ != new_id
-            item.id_ = new_id
+            item = item.wrap(id_=new_id)
             assert item.id_ == new_id

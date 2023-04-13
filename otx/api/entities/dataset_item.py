@@ -499,6 +499,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             for name in signature(self.__class__.__init__).parameters.keys()
             if hasattr(self, name)
         }
+        params.update({"metadata": self.get_metadata()})
         params.update(**kwargs)
 
         return self.__class__(**params)
