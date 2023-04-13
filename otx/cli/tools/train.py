@@ -141,7 +141,6 @@ def get_args():
         default=None,
         help="The data.yaml path want to use in train task.",
     )
-
     parser.add_argument(
         "--auto-decrease-bs",
         action="store_true",

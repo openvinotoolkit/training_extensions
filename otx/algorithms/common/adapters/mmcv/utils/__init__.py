@@ -1,6 +1,6 @@
 """OTX Adapters - mmcv.utils."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 from ._builder_build_data_parallel import build_data_parallel
@@ -30,7 +30,7 @@ from .config_utils import (
     remove_from_configs_by_type,
     update_config,
 )
-from .adapt_batch_size import adapt_batch_size
+from .automatic_bs import adapt_batch_size
 
 __all__ = [
     "build_dataset",
