@@ -323,7 +323,7 @@ class OTXDetectionTask(OTXTask, ABC):
 
         if self._hyperparams.tiling_parameters.enable_tile_classifier:
             tile_classifier = None
-            for partition in outputs.get("partitioned"):
+            for partition in outputs.get("partitioned", {}):
                 if partition.get("tile_classifier"):
                     tile_classifier = partition.get("tile_classifier")
                     break
