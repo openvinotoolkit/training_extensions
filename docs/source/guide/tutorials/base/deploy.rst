@@ -100,12 +100,12 @@ For example, the model inference on image from WGISD dataset, which we used for 
 
     If you provide a single image as input, the demo processes and renders it quickly, then exits. To continuously
     visualize inference results on the screen, apply the ``loop`` option, which enforces processing a single image in a loop.
-    In this case, you can stop the demo by pressing `Esc` button or killing the process in the terminal (``Ctrl+C`` for Linux).
+    In this case, you can stop the demo by pressing `Q` button or killing the process in the terminal (``Ctrl+C`` for Linux).
 
 To learn how to run the demo on Windows and MacOS, please refer to the ``outputs/deploy/python/README.md`` file in exportable code.
 
 4. To save inferenced results with predictions on it, we can specify the folder path, using ``--output``. 
-It works for images, videos and image folders. To prevent issues, do not specify it together with a ``--loop`` parameter.
+It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a ``--loop`` parameter.
 
 .. code-block::
 

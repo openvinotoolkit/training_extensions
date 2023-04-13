@@ -34,7 +34,7 @@ But if we'll provide a single image the demo processes and renders it quickly, t
     (demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
                          --load-weights outputs/weights.pth --loop
 
-In this case, you can stop the demo by pressing `Esc` button or killing the process in the terminal (``Ctrl+C`` for Linux).
+In this case, you can stop the demo by pressing `Q` button or killing the process in the terminal (``Ctrl+C`` for Linux).
 
 3. If we want to pass an images folder, it's better to specify the delay parameter, that defines, how much millisecond pause will be held between showing the next image.
 For example ``--delay 100`` will make this pause 0.1 ms.
@@ -51,7 +51,7 @@ so the ``--fit-to-size`` parameter would be quite useful. It resizes the resulti
 
 
 5. To save inferenced results with predictions on it, we can specify the folder path, using ``--output``. 
-It works for images, videos and image folders. To prevent issues, do not specify it together with a ``--loop`` parameter.
+It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a ``--loop`` parameter.
 
 .. code-block::
 
