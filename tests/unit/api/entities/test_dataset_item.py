@@ -298,7 +298,7 @@ class TestDatasetItemEntity:
         generated_roi = default_values_dataset_item.roi
 
         assert repr(default_values_dataset_item) == (
-            f"DatasetItemEntity(media=Image(with data, width=16, height=10), "
+            f"DatasetItemEntity(media=Image(with data), "
             f"annotation_scene={annotation_scene}, roi={generated_roi}, "
             f"subset=NONE), meta=[]"
         )
@@ -308,7 +308,7 @@ class TestDatasetItemEntity:
         subset = Subset.TESTING
         specified_values_dataset_item = DatasetItemEntity(media, annotation_scene, roi, metadata, subset)
         assert repr(specified_values_dataset_item) == (
-            f"DatasetItemEntity(media=Image(with data, width=16, height=10), annotation_scene={annotation_scene}, "
+            f"DatasetItemEntity(media=Image(with data), annotation_scene={annotation_scene}, "
             f"roi={roi}, subset=TESTING), meta={metadata}"
         )
 
