@@ -5,8 +5,7 @@
 #
 
 import abc
-from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 import cv2
 import numpy as np
