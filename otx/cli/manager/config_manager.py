@@ -362,16 +362,23 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
         if str(self.train_type).upper() == "INCREMENTAL" and "unlabeled" in subsets:
             subsets.remove("unlabeled")
-        dataset_config = {"task_type": self.task_type, "train_type": self.train_type}
+        dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
             if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
                 dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})
         if hyper_parameters is not None:
-            algo_backend = getattr(hyper_parameters, "algo_backend")
-            storage_cache_scheme = getattr(algo_backend, "storage_cache_scheme", None)
-            if storage_cache_scheme is not None:
-                storage_cache_scheme = str(storage_cache_scheme)
-            dataset_config["storage_cache_scheme"] = storage_cache_scheme
+            dataset_config["cache_config"] = {}
+            algo_backend = getattr(hyper_parameters, "algo_backend", None)
+            if algo_backend:
+                storage_cache_scheme = getattr(algo_backend, "storage_cache_scheme", None)
+                if storage_cache_scheme is not None:
+                    storage_cache_scheme = str(storage_cache_scheme)
+                dataset_config["cache_config"]["scheme"] = storage_cache_scheme
+
+            learning_parameters = getattr(hyper_parameters, "learning_parameters", None)
+            if learning_parameters:
+                num_workers = getattr(learning_parameters, "num_workers", 0)
+                dataset_config["cache_config"]["num_workers"] = num_workers
         return dataset_config
 
     def update_data_config(self, data_yaml: dict) -> None:

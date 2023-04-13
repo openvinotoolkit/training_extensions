@@ -13,14 +13,15 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 import cv2
 import datumaro
+import numpy as np
 from datumaro.components.annotation import Annotation as DatumAnnotation
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import Categories as DatumCategories
 from datumaro.components.dataset import Dataset as DatumDataset
 from datumaro.components.dataset import DatasetSubset as DatumDatasetSubset
+from datumaro.components.dataset import eager_mode
 from datumaro.components.media import Image as DatumImage
 from datumaro.components.media import MediaElement as DatumMediaElement
-import numpy as np
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -70,7 +71,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         val_data_roots: Optional[str] = None,
         test_data_roots: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
-        storage_cache_scheme: Optional[str] = None,
+        cache_config: Optional[Dict[str, Any]] = None,
     ):
         self.task_type = task_type
         self.domain = task_type.domain
@@ -84,8 +85,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             unlabeled_data_roots=unlabeled_data_roots,
         )
 
+        if cache_config is None:
+            cache_config = {}
         for subset, dataset in self.dataset.items():
-            self.dataset[subset] = init_arrow_cache(dataset, storage_cache_scheme)
+            self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
 
         self.category_items: Dict[DatumAnnotationType, DatumCategories]
         self.label_groups: List[str]
@@ -158,15 +161,14 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _get_subset_data(self, subset: str, dataset: DatumDataset) -> DatumDatasetSubset:
         """Get subset dataset according to subset."""
-        for k, v in dataset.subsets().items():
-            if subset in k or "default" in k:
-                v = v.as_dataset()
-                v.init_cache()
-                return v
-            if subset == "test" and "val" in k:
-                v = v.as_dataset()
-                v.init_cache()
-                return v
+        with eager_mode(True, dataset):
+            for k, v in dataset.subsets().items():
+                if subset in k or "default" in k:
+                    v = v.as_dataset()
+                    return v
+                if subset == "test" and "val" in k:
+                    v = v.as_dataset()
+                    return v
 
         raise ValueError("Can't find proper dataset.")
 

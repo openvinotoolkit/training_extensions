@@ -114,6 +114,7 @@ def get_dataset_adapter(
         val_data_roots: the path of data root for validation data
         test_data_roots: the path of data root for test data
         unlabeled_data_roots: the path of data root for unlabeled data
+        kwargs: optional kwargs
     """
 
     train_type_to_be_called = TrainType.Incremental.value

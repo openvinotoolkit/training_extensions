@@ -8,7 +8,7 @@ import json
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -47,8 +47,16 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         val_data_roots: Optional[str] = None,
         test_data_roots: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        cache_config: Optional[Dict[str, Any]] = None,
     ):
-        super().__init__(task_type, train_data_roots, val_data_roots, test_data_roots, unlabeled_data_roots)
+        super().__init__(
+            task_type,
+            train_data_roots,
+            val_data_roots,
+            test_data_roots,
+            unlabeled_data_roots,
+            cache_config,
+        )
         self.updated_label_id: Dict[int, int] = {}
 
     def get_otx_dataset(self) -> DatasetEntity:
