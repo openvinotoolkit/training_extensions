@@ -9,7 +9,6 @@ import stat
 from typing import List, Optional
 
 from datumaro.components.dataset import Dataset as DatumDataset
-from datumaro.components.progress_reporting import SimpleProgressReporter
 
 from otx.core.file import OTX_CACHE
 
@@ -25,15 +24,20 @@ def arrow_cache_helper(
 ) -> List[str]:
     """A helper for dumping Datumaro arrow format."""
 
-    def get_hash(source_dir, scheme):
+    def get_hash(source_path, scheme):
         _hash = hashlib.sha256()
-        _hash.update(f"{source_dir}".encode("utf-8"))
+        _hash.update(f"{source_path}".encode("utf-8"))
         _hash.update(f"{scheme}".encode("utf-8"))
-        for root, dirs, files in os.walk(source_dir):
-            for file in files:
-                _hash.update(str(os.stat(os.path.join(root, file))[stat.ST_MTIME]).encode("utf-8"))
-            for _dir in dirs:
-                _hash.update(str(os.stat(os.path.join(root, _dir))[stat.ST_MTIME]).encode("utf-8"))
+        if source_path:
+            _hash.update(str(os.stat(source_path)[stat.ST_MTIME]).encode("utf-8"))
+            if os.path.isdir(source_path):
+                for root, dirs, files in os.walk(source_path):
+                    for file in files:
+                        file = os.path.join(root, file)
+                        _hash.update(str(os.stat(file)[stat.ST_MTIME]).encode("utf-8"))
+                    for _dir in dirs:
+                        _dir = os.path.join(root, _dir)
+                        _hash.update(str(os.stat(_dir)[stat.ST_MTIME]).encode("utf-8"))
         return _hash.hexdigest()
 
     def get_file_hash(file):
@@ -68,7 +72,6 @@ def arrow_cache_helper(
         save_media=True,
         image_ext=scheme,
         num_workers=num_workers,
-        progress_reporter=SimpleProgressReporter(0, 10),
     )
 
     cache_paths = []

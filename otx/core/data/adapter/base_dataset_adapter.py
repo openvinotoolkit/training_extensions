@@ -318,9 +318,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 if len(data.shape) == 2:
                     return cv2.cvtColor(data, cv2.COLOR_GRAY2RGB)
                 if len(data.shape) == 3:
-                    return cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
-                if len(data.shape) == 4:
-                    return cv2.cvtColor(data, cv2.COLOR_BGRA2RGB)
+                    if data.shape[-1] == 3:
+                        return cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                    if data.shape[-1] == 4:
+                        return cv2.cvtColor(data, cv2.COLOR_BGRA2RGB)
                 raise NotImplementedError
 
             return Image(data=helper, size=size)
