@@ -1,4 +1,4 @@
-"""Task of OTX Detection."""
+"""Task of OTX Video Recognition."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -17,31 +17,25 @@
 import io
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Union
 
-import cv2
 import numpy as np
-import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import ConfigDict
 
+from otx.algorithms.action.configs.base import ActionConfig
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
     TrainingProgressCallback,
 )
-from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
-from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.metrics import (
     BarChartInfo,
     BarMetricsGroup,
@@ -59,37 +53,37 @@ from otx.api.entities.model import (
     ModelPrecision,
 )
 from otx.api.entities.model_template import TaskType
+from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
+from otx.api.usecases.evaluation.accuracy import Accuracy
+from otx.api.usecases.evaluation.f_measure import FMeasure
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
-from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.api.utils.vis_utils import get_actmap
 
 logger = get_logger()
 
 
-class OTXDetectionTask(OTXTask, ABC):
-    """Task class for OTX detection."""
+class OTXActionTask(OTXTask, ABC):
+    """Task class for OTX action."""
 
     # pylint: disable=too-many-instance-attributes, too-many-locals
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         super().__init__(task_environment, output_path)
-        self._task_config = DetectionConfig
+        self._task_config = ActionConfig
         self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(self._task_config)
         self._train_type = self._hyperparams.algo_backend.train_type
         self._model_dir = os.path.join(
             os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),
             TRAIN_TYPE_DIR_PATH[self._train_type.name],
         )
-        self._anchors: Dict[str, int] = {}
 
         if hasattr(self._hyperparams, "postprocessing") and hasattr(
             self._hyperparams.postprocessing, "confidence_threshold"
@@ -101,38 +95,12 @@ class OTXDetectionTask(OTXTask, ABC):
         if task_environment.model is not None:
             self._load_model()
 
-        if self._hyperparams.tiling_parameters.enable_tiling:
-            self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
-        else:
-            self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
-
-    def _load_model_ckpt(self, model: Optional[ModelEntity]):
-        if model and "weights.pth" in model.model_adapters:
-            # If a model has been trained and saved for the task already, create empty model and load weights here
-            buffer = io.BytesIO(model.get_data("weights.pth"))
-            model_data = torch.load(buffer, map_location=torch.device("cpu"))
-
-            # set confidence_threshold as well
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
-            if model_data.get("anchors"):
-                self._anchors = model_data["anchors"]
-
-            # Get config
-            if model_data.get("config"):
-                tiling_parameters = model_data.get("config").get("tiling_parameters")
-                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
-                    logger.info("Load tiling parameters")
-                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
-                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
-                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
-                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
-            return model_data
-        return None
+        self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
     def train(
         self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
     ):
-        """Train function for OTX detection task.
+        """Train function for OTX action task.
 
         Actual training is processed by _train_model fucntion
         """
@@ -165,7 +133,6 @@ class OTXDetectionTask(OTXTask, ABC):
         model_ckpt = results.get("final_ckpt")
         if model_ckpt is None:
             logger.error("cannot find final checkpoint from the results.")
-            # output_model.model_status = ModelStatus.FAILED
             return
         # update checkpoint to the newly trained model
         self._model_ckpt = model_ckpt
@@ -173,10 +140,13 @@ class OTXDetectionTask(OTXTask, ABC):
         # get prediction on validation set
         self._is_training = False
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
+        val_preds, val_performance = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
-        self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
+        if self._task_type == TaskType.ACTION_CLASSIFICATION:
+            self._add_cls_predictions_to_dataset(val_preds, preds_val_dataset)
+        elif self._task_type == TaskType.ACTION_DETECTION:
+            self._add_det_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
 
         result_set = ResultSetEntity(
             model=output_model,
@@ -184,25 +154,28 @@ class OTXDetectionTask(OTXTask, ABC):
             prediction_dataset=preds_val_dataset,
         )
 
-        # adjust confidence threshold
-        if self._hyperparams.postprocessing.result_based_confidence_threshold:
-            best_confidence_threshold = None
-            logger.info("Adjusting the confidence threshold")
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
-            if metric.best_confidence_threshold:
-                best_confidence_threshold = metric.best_confidence_threshold.value
-            if best_confidence_threshold is None:
-                raise ValueError("Cannot compute metrics: Invalid confidence threshold!")
-            logger.info(f"Setting confidence threshold to {best_confidence_threshold} based on results")
-            self.confidence_threshold = best_confidence_threshold
-        else:
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
+        metric: Union[Accuracy, FMeasure]
+
+        if self._task_type == TaskType.ACTION_CLASSIFICATION:
+            metric = MetricsHelper.compute_accuracy(result_set)
+        if self._task_type == TaskType.ACTION_DETECTION:
+            if self._hyperparams.postprocessing.result_based_confidence_threshold:
+                best_confidence_threshold = None
+                logger.info("Adjusting the confidence threshold")
+                metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
+                if metric.best_confidence_threshold:
+                    best_confidence_threshold = metric.best_confidence_threshold.value
+                if best_confidence_threshold is None:
+                    raise ValueError("Cannot compute metrics: Invalid confidence threshold!")
+                logger.info(f"Setting confidence threshold to {best_confidence_threshold} based on results")
+                self.confidence_threshold = best_confidence_threshold
+            else:
+                metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
 
         # compose performance statistics
-        # TODO[EUGENE]: HOW TO ADD A MAE CURVE FOR TaskType.COUNTING?
         performance = metric.get_performance()
-        performance.dashboard_metrics.extend(self._generate_training_metrics(self._learning_curves, val_map))
-        logger.info(f"Final model performance: {str(performance)}")
+        performance.dashboard_metrics.extend(self._generate_training_metrics(self._learning_curves, val_performance))
+        logger.info(f"Final model performance: {performance}")
         # save resulting model
         self.save_model(output_model)
         output_model.performance = performance
@@ -220,14 +193,10 @@ class OTXDetectionTask(OTXTask, ABC):
     ) -> DatasetEntity:
         """Main infer function."""
         logger.info("infer()")
-        process_saliency_maps = False
-        explain_predicted_classes = True
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
-            process_saliency_maps = inference_parameters.process_saliency_maps
-            explain_predicted_classes = inference_parameters.explain_predicted_classes
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
@@ -238,9 +207,10 @@ class OTXDetectionTask(OTXTask, ABC):
 
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
 
-        self._add_predictions_to_dataset(
-            prediction_results, dataset, self.confidence_threshold, process_saliency_maps, explain_predicted_classes
-        )
+        if self._task_type == TaskType.ACTION_CLASSIFICATION:
+            self._add_cls_predictions_to_dataset(prediction_results, dataset)
+        elif self._task_type == TaskType.ACTION_DETECTION:
+            self._add_det_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info("Inference completed")
         return dataset
 
@@ -260,14 +230,23 @@ class OTXDetectionTask(OTXTask, ABC):
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = True,
     ):
-        """Export function of OTX Detection Task."""
+        """Export function of OTX Task."""
+        if dump_features:
+            raise NotImplementedError(
+                "Feature dumping is not implemented for the action task."
+                "The saliency maps and representation vector outputs will not be dumped in the exported model."
+            )
+
+        # copied from OTX inference_task.py
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
+        output_model.has_xai = dump_features
 
         results = self._export_model(precision, dump_features)
+
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
@@ -277,13 +256,8 @@ class OTXDetectionTask(OTXTask, ABC):
         xml_file = outputs.get("xml")
         onnx_file = outputs.get("onnx")
 
-        ir_extra_data = get_det_model_api_configuration(
-            self._task_environment.label_schema, self._task_type, self.confidence_threshold
-        )
-        embed_ir_model_data(xml_file, ir_extra_data)
-
         if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
+            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
         with open(bin_file, "rb") as f:
             output_model.set_data("openvino.bin", f.read())
         with open(xml_file, "rb") as f:
@@ -305,46 +279,102 @@ class OTXDetectionTask(OTXTask, ABC):
         logger.info("Exporting completed")
 
     @abstractmethod
-    def _export_model(self, precision: ModelPrecision, dump_features: bool):
-        """Main export function using training backend."""
+    def _export_model(self, precision: ModelPrecision, dump_features: bool = True):
         raise NotImplementedError
 
-    @abstractmethod
     def explain(
         self,
         dataset: DatasetEntity,
         explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Task."""
-        raise NotImplementedError
+        raise NotImplementedError("Video recognition task don't support otx explain yet.")
 
     def evaluate(
         self,
         output_resultset: ResultSetEntity,
         evaluation_metric: Optional[str] = None,
     ):
-        """Evaluate function of OTX Detection Task."""
+        """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
         if evaluation_metric is not None:
             logger.warning(
                 f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
             )
-        metric = MetricsHelper.compute_f_measure(output_resultset)
-        logger.info(f"F-measure after evaluation: {metric.f_measure.value}")
+        self._remove_empty_frames(output_resultset.ground_truth_dataset)
+
+        metric: Union[Accuracy, FMeasure]
+        if self._task_type == TaskType.ACTION_CLASSIFICATION:
+            metric = MetricsHelper.compute_accuracy(output_resultset)
+        if self._task_type == TaskType.ACTION_DETECTION:
+            metric = MetricsHelper.compute_f_measure(output_resultset)
+        performance = metric.get_performance()
+        logger.info(f"Final model performance: {str(performance)}")
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def _add_predictions_to_dataset(
-        self,
-        prediction_results,
-        dataset,
-        confidence_threshold=0.0,
-        process_saliency_maps=False,
-        explain_predicted_classes=True,
+    def _remove_empty_frames(self, dataset: DatasetEntity):
+        """Remove empty frame for action detection dataset."""
+        remove_indices = []
+        for idx, item in enumerate(dataset):
+            if item.get_metadata()[0].data.is_empty_frame:
+                remove_indices.append(idx)
+        dataset.remove_at_indices(remove_indices)
+
+    def _add_cls_predictions_to_dataset(self, prediction_results: Iterable, dataset: DatasetEntity):
+        """Loop over dataset again to assign predictions. Convert from MM format to OTX format."""
+        prediction_results = list(prediction_results)
+        video_info: Dict[str, int] = {}
+        for dataset_item in dataset:
+            video_id = dataset_item.get_metadata()[0].data.video_id
+            if video_id not in video_info:
+                video_info[video_id] = len(video_info)
+        for dataset_item in dataset:
+            video_id = dataset_item.get_metadata()[0].data.video_id
+            all_results, feature_vector, saliency_map = prediction_results[video_info[video_id]]
+            item_labels = []
+            label = ScoredLabel(label=self._labels[all_results.argmax()], probability=all_results.max())
+            item_labels.append(label)
+            dataset_item.append_labels(item_labels)
+
+            if feature_vector is not None:
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
+
+            if saliency_map is not None:
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                saliency_map_media = ResultMediaEntity(
+                    name="Saliency Map",
+                    type="saliency_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=saliency_map,
+                    roi=dataset_item.roi,
+                )
+                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+
+    def _add_det_predictions_to_dataset(
+        self, prediction_results: Iterable, dataset: DatasetEntity, confidence_threshold: float = 0.05
     ):
-        """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
+        self._remove_empty_frames(dataset)
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
-            shapes = self._get_shapes(all_results, dataset_item.width, dataset_item.height, confidence_threshold)
+            shapes = []
+            for label_idx, detections in enumerate(all_results):
+                for i in range(detections.shape[0]):
+                    probability = float(detections[i, 4])
+                    coords = detections[i, :4]
+
+                    if probability < confidence_threshold:
+                        continue
+                    if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
+                        continue
+
+                    assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
+                    shapes.append(
+                        Annotation(
+                            Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
+                            labels=assigned_label,
+                        )
+                    )
             dataset_item.append_annotations(shapes)
 
             if feature_vector is not None:
@@ -352,118 +382,22 @@ class OTXDetectionTask(OTXTask, ABC):
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                labels = self._labels.copy()
-                if saliency_map.shape[0] == len(labels) + 1:
-                    # Include the background as the last category
-                    labels.append(LabelEntity("background", Domain.DETECTION))
-
-                predicted_scored_labels = []
-                for shape in shapes:
-                    predicted_scored_labels += shape.get_labels()
-
-                add_saliency_maps_to_dataset_item(
-                    dataset_item=dataset_item,
-                    saliency_map=saliency_map,
-                    model=self._task_environment.model,
-                    labels=labels,
-                    predicted_scored_labels=predicted_scored_labels,
-                    explain_predicted_classes=explain_predicted_classes,
-                    process_saliency_maps=process_saliency_maps,
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                saliency_map_media = ResultMediaEntity(
+                    name="Saliency Map",
+                    type="saliency_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=saliency_map,
+                    roi=dataset_item.roi,
                 )
-
-    def _get_shapes(self, all_results, width, height, confidence_threshold):
-        if self._task_type == TaskType.DETECTION:
-            shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-        elif self._task_type in {
-            TaskType.INSTANCE_SEGMENTATION,
-            TaskType.ROTATED_DETECTION,
-        }:
-            shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
-        else:
-            raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
-        return shapes
-
-    def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
-        shapes = []
-        for label_idx, detections in enumerate(all_results):
-            for i in range(detections.shape[0]):
-                probability = float(detections[i, 4])
-                coords = detections[i, :4].astype(float).copy()
-                coords /= np.array([width, height, width, height], dtype=float)
-                coords = np.clip(coords, 0, 1)
-
-                if probability < confidence_threshold:
-                    continue
-
-                assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                    continue
-
-                shapes.append(
-                    Annotation(
-                        Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
-                        labels=assigned_label,
-                    )
-                )
-        return shapes
-
-    def _ins_seg_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
-        shapes = []
-        for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
-            for mask, probability in zip(masks, boxes[:, 4]):
-                if isinstance(mask, dict):
-                    mask = mask_util.decode(mask)
-                mask = mask.astype(np.uint8)
-                probability = float(probability)
-                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-                if hierarchies is None:
-                    continue
-                for contour, hierarchy in zip(contours, hierarchies[0]):
-                    if hierarchy[3] != -1:
-                        continue
-                    if len(contour) <= 2 or probability < confidence_threshold:
-                        continue
-                    if self._task_type == TaskType.INSTANCE_SEGMENTATION:
-                        points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
-                    else:
-                        box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                        points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
-                    labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                    polygon = Polygon(points=points)
-                    if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
-                        shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
-        return shapes
-
-    def _add_explanations_to_dataset(
-        self, detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
-    ):
-        """Add saliency map to the dataset."""
-        for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
-            labels = self._labels.copy()
-            if saliency_map.shape[0] == len(labels) + 1:
-                # Include the background as the last category
-                labels.append(LabelEntity("background", Domain.DETECTION))
-
-            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4)
-            predicted_scored_labels = []
-            for shape in shapes:
-                predicted_scored_labels += shape.get_labels()
-
-            add_saliency_maps_to_dataset_item(
-                dataset_item=dataset_item,
-                saliency_map=saliency_map,
-                model=self._task_environment.model,
-                labels=labels,
-                predicted_scored_labels=predicted_scored_labels,
-                explain_predicted_classes=explain_predicted_classes,
-                process_saliency_maps=process_saliency_maps,
-            )
+                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
     @staticmethod
-    def _generate_training_metrics(learning_curves, scores) -> Iterable[MetricsGroup[Any, Any]]:
+    # TODO Implement proper function for action classification
+    def _generate_training_metrics(learning_curves, scores, metric_name="mAP") -> Iterable[MetricsGroup[Any, Any]]:
         """Get Training metrics (epochs & scores).
 
-        Parses the mmdetection logs to get metrics from the latest training run
+        Parses the mmaction logs to get metrics from the latest training run
         :return output List[MetricsGroup]
         """
         output: List[MetricsGroup] = []
@@ -487,7 +421,7 @@ class OTXDetectionTask(OTXTask, ABC):
         # Final mAP value on the validation set.
         output.append(
             BarMetricsGroup(
-                metrics=[ScoreMetric(value=scores, name="mAP")],
+                metrics=[ScoreMetric(value=scores, name=f"{metric_name}")],
                 visualization_info=BarChartInfo("Validation score", visualization_type=VisualizationType.RADIAL_BAR),
             )
         )
@@ -495,17 +429,14 @@ class OTXDetectionTask(OTXTask, ABC):
         return output
 
     def save_model(self, output_model: ModelEntity):
-        """Save best model weights in DetectionTrainTask."""
-        if is_multigpu_child_process():
-            return
-
+        """Save best model weights in ActionTrainTask."""
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {
-            "model": model_ckpt,
+            "model": model_ckpt["state_dict"],
             "config": hyperparams_str,
             "labels": labels,
             "confidence_threshold": self.confidence_threshold,
