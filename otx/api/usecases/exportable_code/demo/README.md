@@ -124,9 +124,8 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
    > Also you can change `config.json` that specifies the confidence threshold and color for each class visualization, but any
    > changes should be made with caution.
 
-
-3. To save inferenced results with predictions on it, you can specify the folder path, using `--output`. 
-It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a `--loop` parameter.
+3. To save inferenced results with predictions on it, you can specify the folder path, using `--output`.
+   It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a `--loop` parameter.
 
    ```bash
    python3 demo.py \
@@ -135,8 +134,8 @@ It works for images, videos, image folders and web cameras. To prevent issues, d
       --output resulted_images
    ```
 
-4. To run a demo on a web camera, you need to know its ID. 
-You can check a list of camera devices by running this command line on Linux system:
+4. To run a demo on a web camera, you need to know its ID.
+   You can check a list of camera devices by running this command line on Linux system:
 
    ```bash
    sudo apt-get install v4l-utils
@@ -151,9 +150,6 @@ You can check a list of camera devices by running this command line on Linux sys
    ```
 
    After that, you can use this `/dev/video0` as a camera ID for `--input`.
-
-
-
 
 ## Troubleshooting
 
