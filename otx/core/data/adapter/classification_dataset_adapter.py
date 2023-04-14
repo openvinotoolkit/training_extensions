@@ -73,7 +73,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
         return self._generate_classification_label_schema(self.label_groups, self.label_entities)
 
     def _generate_classification_label_schema(
-        self, label_groups: List[DatumLabelCategories.LabelGroup], label_entities: Dict[int, LabelEntity]
+        self, label_groups: List[DatumLabelCategories.LabelGroup], label_entities: List[LabelEntity]
     ) -> LabelSchemaEntity:
         """Generate LabelSchema for Classification."""
         label_schema = LabelSchemaEntity()
@@ -82,7 +82,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
             for label_group in label_groups:
                 group_label_entity_list = []
                 for label in label_group.labels:
-                    label_entity = [le for le in label_entities.values() if le.name == label]
+                    label_entity = [le for le in label_entities if le.name == label]
                     group_label_entity_list.append(label_entity[0])
 
                 label_schema.add_group(

@@ -66,7 +66,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         self.label_entities = label_information["label_entities"]
 
         dataset_items: List[DatasetItemEntity] = []
-        used_labels = set()
+        used_labels: List[int] = []
 
         if hasattr(self, "data_type_candidates"):
             if self.data_type_candidates[0] == "voc":
@@ -100,7 +100,8 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                                     continue
 
                                 shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
-                                used_labels.add(d_polygon.label)
+                                if d_polygon.label not in used_labels:
+                                    used_labels.append(d_polygon.label)
 
                     if len(shapes) > 0 or subset == Subset.UNLABELED:
                         dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
@@ -126,16 +127,16 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
     def _remove_labels(self, label_names: List):
         """Remove background label in label entity set."""
         is_removed = False
-        new_label_entities = {}
-        for i, entity in self.label_entities.items():
+        new_label_entities = []
+        for i, entity in enumerate(self.label_entities):
             if entity.name not in label_names:
-                new_label_entities[i] = entity
+                new_label_entities.append(entity)
             else:
                 is_removed = True
 
         self.label_entities = new_label_entities
 
-        for i, entity in self.label_entities.items():
+        for i, entity in enumerate(self.label_entities):
             self.updated_label_id[int(entity.id)] = i
             entity.id = ID(i)
 

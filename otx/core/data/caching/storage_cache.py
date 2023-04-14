@@ -9,7 +9,6 @@ import stat
 from typing import List, Optional
 
 from datumaro.components.dataset import Dataset as DatumDataset
-from datumaro.components.progress_reporting import SimpleProgressReporter
 
 from otx.core.file import OTX_CACHE
 
@@ -82,7 +81,6 @@ def arrow_cache_helper(
         save_media=True,
         image_ext=scheme,
         num_workers=num_workers,
-        progress_reporter=SimpleProgressReporter(0, 10),
     )
 
     cache_paths = []

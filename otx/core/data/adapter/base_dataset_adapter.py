@@ -92,7 +92,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         self.category_items: Dict[DatumAnnotationType, DatumCategories]
         self.label_groups: List[str]
-        self.label_entities: Dict[int, LabelEntity]
+        self.label_entities: List[LabelEntity]
         self.label_schema: LabelSchemaEntity
 
     def _import_dataset(
@@ -182,12 +182,12 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         return empty_group
 
-    def _generate_default_label_schema(self, label_entities: Dict[int, LabelEntity]) -> LabelSchemaEntity:
+    def _generate_default_label_schema(self, label_entities: List[LabelEntity]) -> LabelSchemaEntity:
         """Generate Default Label Schema for Multi-class Classification, Detecion, Etc."""
         label_schema = LabelSchemaEntity()
         main_group = LabelGroup(
             name="labels",
-            labels=list(label_entities.values()),
+            labels=label_entities,
             group_type=LabelGroupType.EXCLUSIVE,
         )
         label_schema.add_group(main_group)
@@ -206,10 +206,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         label_groups = label_categories_list.label_groups
 
         # LabelEntities
-        label_entities = {
-            i: LabelEntity(name=class_name.name, domain=self.domain, is_empty=False, id=ID(i))
+        label_entities = [
+            LabelEntity(name=class_name.name, domain=self.domain, is_empty=False, id=ID(i))
             for i, class_name in enumerate(category_items)
-        }
+        ]
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
@@ -285,7 +285,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
-    def remove_unused_label_entities(self, used_labels: Set):
+    def remove_unused_label_entities(self, used_labels: List):
         """Remove unused label from label entities.
 
         Because label entities will be used to make Label Schema,
@@ -293,11 +293,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         So, remove the unused label from label entities.
 
         Args:
-            used_labels (Set): list for index of used label
+            used_labels (List): list for index of used label
         """
-        clean_label_entities = {}
+        clean_label_entities = []
         for used_label in used_labels:
-            clean_label_entities[used_label] = self.label_entities[used_label]
+            clean_label_entities.append(self.label_entities[used_label])
         self.label_entities = clean_label_entities
 
     @staticmethod
