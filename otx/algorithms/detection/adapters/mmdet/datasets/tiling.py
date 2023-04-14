@@ -107,7 +107,7 @@ class Tile:
         """
         tiles = []
         cache_result = []
-        for result in tqdm(self.dataset, desc="Caching dataset annotations..."):
+        for result in tqdm(self.dataset, desc="Loading dataset annotations..."):
             cache_result.append(result)
 
         pbar = tqdm(total=len(self.dataset) * 2, desc="Generating tile annotations...")
