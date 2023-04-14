@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
 - Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
 - Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
+- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
 
 ### Enhancements
 
