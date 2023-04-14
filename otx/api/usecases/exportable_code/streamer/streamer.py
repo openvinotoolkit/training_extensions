@@ -164,6 +164,10 @@ class VideoStreamer(BaseStreamer):
                 else:
                     break
 
+    def fps(self):
+        """Returns a frequency of getting images from source."""
+        return self.cap.get(cv2.CAP_PROP_FPS)
+
     def get_type(self) -> MediaType:
         """Returns the type of media."""
         return MediaType.VIDEO

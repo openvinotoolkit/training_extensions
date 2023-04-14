@@ -474,7 +474,7 @@ Demonstration
 .. code-block::
 
     (otx) ...$ otx demo --help
-    usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] [template] {params} ...
+    usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] [--output OUTPUT] [template] {params} ...
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -493,7 +493,8 @@ Demonstration
       --loop                Enable reading the input in a loop.
       --delay DELAY         Frame visualization time in ms.
       --display-perf        This option enables writing performance metrics on displayed frame. These metrics take into account not only model inference time, but also frame reading, pre-processing and post-processing.
-
+      --output OUTPUT
+                            Output path to save input data with predictions.
 
 Command example of the demonstration:
 
