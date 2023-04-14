@@ -5,7 +5,7 @@
 #
 
 
-from typing import Callable, Optional, Tuple, Union
+from typing import Optional, Tuple, Callable, Union
 
 import cv2
 import imagesize
@@ -38,11 +38,18 @@ class Image(IMedia2DEntity):
             raise ValueError("Either path to image file or image data should be provided.")
         self.__data: Optional[Union[np.ndarray, Callable[[], np.ndarray]]] = data
         self.__file_path: Optional[str] = file_path
+        self.__height: Optional[int] = None
+        self.__width: Optional[int] = None
+        # TODO: refactor this
         self.__size: Optional[Union[Tuple[int, int], Callable[[], Tuple[int, int]]]] = size
 
     def __str__(self):
         """String representation of the image. Returns the image format, name and dimensions."""
-        return f"{self.__class__.__name__}" f"({self.__file_path if self.__file_path is not None else 'with data'})"
+        return (
+            f"{self.__class__.__name__}"
+            f"({self.__file_path if self.__data is None else 'with data'}, "
+            f"width={self.width}, height={self.height})"
+        )
 
     def __get_size(self) -> Tuple[int, int]:
         """Returns image size.
@@ -51,7 +58,13 @@ class Image(IMedia2DEntity):
             Tuple[int, int]: Image size as a (height, width) tuple.
         """
         if callable(self.__size):
-            return self.__size()
+            height, width = self.__size()
+            self._size = None
+            return height, width
+        if self.__size is not None:
+            height, width = self.__size
+            self.__size = None
+            return height, width
         if callable(self.__data):
             height, width = self.__data().shape[:2]
             return height, width
@@ -87,7 +100,8 @@ class Image(IMedia2DEntity):
     def numpy(self, value: np.ndarray):
         self.__data = value
         self.__file_path = None
-        self.__size = self.__get_size()
+        self.__size = None
+        self.__height, self.__width = self.__get_size()
 
     def roi_numpy(self, roi: Optional[Annotation] = None) -> np.ndarray:
         """Obtains the numpy representation of the image for a selection region of interest (roi).
@@ -117,16 +131,16 @@ class Image(IMedia2DEntity):
     @property
     def height(self) -> int:
         """Returns the height of the image."""
-        if not isinstance(self.__size, tuple):
-            self.__size = self.__get_size()
-        return self.__size[0]
+        if self.__height is None:
+            self.__height, self.__width = self.__get_size()
+        return self.__height
 
     @property
     def width(self) -> int:
         """Returns the width of the image."""
-        if not isinstance(self.__size, tuple):
-            self.__size = self.__get_size()
-        return self.__size[1]
+        if self.__width is None:
+            self.__height, self.__width = self.__get_size()
+        return self.__width
 
     @property
     def path(self) -> Optional[str]:
