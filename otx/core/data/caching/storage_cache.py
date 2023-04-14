@@ -9,6 +9,7 @@ import stat
 from typing import List, Optional
 
 from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.progress_reporting import SimpleProgressReporter
 
 from otx.core.file import OTX_CACHE
 
@@ -22,7 +23,15 @@ def arrow_cache_helper(
     cache_dir: str = DATASET_CACHE,
     force: bool = False,
 ) -> List[str]:
-    """A helper for dumping Datumaro arrow format."""
+    """A helper for dumping Datumaro arrow format.
+
+    Args:
+        dataset: Datumaro dataset to export in apache arrow.
+        scheme: Datumaro apache arrow image encoding scheme.
+        num_workers: The number of workers to build arrow format.
+        cache_dir: The directory to save.
+        force: If true, rebuild arrow even if cache is hit.
+    """
 
     def get_hash(source_path, scheme):
         _hash = hashlib.sha256()
@@ -51,17 +60,18 @@ def arrow_cache_helper(
     os.makedirs(cache_dir, exist_ok=True)
 
     cache_hit = []
-    for cache_path in os.listdir(cache_dir):
-        if not cache_path.endswith(".arrow"):
-            continue
-        cache_hit.append(False)
-        cache_path = os.path.join(cache_dir, cache_path)
-        cache_paths.append(cache_path)
-        hash_path = f"{cache_path}.hash"
-        if os.path.exists(cache_path) and os.path.exists(hash_path) and not force:
-            with open(hash_path, "r", encoding="utf-8") as f:
-                if get_file_hash(cache_path) == f.read():
-                    cache_hit[-1] = True
+    if not force:
+        for cache_path in os.listdir(cache_dir):
+            if not cache_path.endswith(".arrow"):
+                continue
+            cache_hit.append(False)
+            cache_path = os.path.join(cache_dir, cache_path)
+            cache_paths.append(cache_path)
+            hash_path = f"{cache_path}.hash"
+            if os.path.exists(cache_path) and os.path.exists(hash_path):
+                with open(hash_path, "r", encoding="utf-8") as f:
+                    if get_file_hash(cache_path) == f.read():
+                        cache_hit[-1] = True
 
     if cache_hit and all(cache_hit):
         return cache_paths
@@ -72,6 +82,7 @@ def arrow_cache_helper(
         save_media=True,
         image_ext=scheme,
         num_workers=num_workers,
+        progress_reporter=SimpleProgressReporter(0, 10),
     )
 
     cache_paths = []
@@ -88,7 +99,13 @@ def arrow_cache_helper(
 
 
 def init_arrow_cache(dataset: DatumDataset, scheme: Optional[str] = None, num_workers: int = 0) -> DatumDataset:
-    """Init arrow format cache from Datumaro."""
+    """Init arrow format cache from Datumaro.
+
+    Args:
+        dataset: Datumaro dataset
+        scheme: Datumaro apache arrow image encoding scheme.
+        num_workers: The number of workers to build arrow format.
+    """
     if scheme is None or scheme == "NONE":
         return dataset
     cache_paths = arrow_cache_helper(dataset, scheme, num_workers)
