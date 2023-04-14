@@ -353,13 +353,36 @@ class OTXDetectionTask(OTXTask, ABC):
         """Main export function using training backend."""
         raise NotImplementedError
 
-    @abstractmethod
     def explain(
         self,
         dataset: DatasetEntity,
         explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Task."""
+        logger.info("explain()")
+
+        update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
+        if explain_parameters is not None:
+            update_progress_callback = explain_parameters.update_progress  # type: ignore
+            process_saliency_maps = explain_parameters.process_saliency_maps
+            explain_predicted_classes = explain_parameters.explain_predicted_classes
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
+
+        outputs = self._explain_model(dataset, explain_parameters)
+        detections = outputs["detections"]
+        explain_results = outputs["saliency_maps"]
+
+        self._add_explanations_to_dataset(
+            detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
+        )
+        logger.info("Explain completed")
+        return dataset
+
+    @abstractmethod
+    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
         raise NotImplementedError
 
     def evaluate(
