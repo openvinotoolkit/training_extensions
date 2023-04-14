@@ -22,14 +22,14 @@ from tests.test_suite.run_test_command import (
     otx_train_testing,
 )
 
-from tests.regression.regression_command import(
+from tests.regression.regression_command import (
     regression_eval_testing,
     regression_openvino_testing,
     regression_deployment_testing,
     regression_nncf_eval_testing,
     regression_pot_eval_testing,
     regression_train_time_testing,
-    regression_eval_time_testing
+    regression_eval_time_testing,
 )
 
 # Configurations for regression test.
@@ -84,7 +84,7 @@ class TestRegressionActionDetection:
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -104,6 +104,6 @@ class TestRegressionActionDetection:
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
-        
+
         assert kpi_train_result["passed"] is True, kpi_train_result["log"]
         assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]

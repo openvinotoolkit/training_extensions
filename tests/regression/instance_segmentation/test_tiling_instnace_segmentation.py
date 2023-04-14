@@ -26,14 +26,14 @@ from tests.test_suite.run_test_command import (
     pot_optimize_testing,
 )
 
-from tests.regression.regression_command import(
+from tests.regression.regression_command import (
     regression_eval_testing,
     regression_openvino_testing,
     regression_deployment_testing,
     regression_nncf_eval_testing,
     regression_pot_eval_testing,
     regression_train_time_testing,
-    regression_eval_time_testing
+    regression_eval_time_testing,
 )
 
 # Configurations for regression test.
@@ -95,7 +95,7 @@ class TestRegressionTilingInstanceSegmentation:
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -115,7 +115,7 @@ class TestRegressionTilingInstanceSegmentation:
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
-        
+
         assert kpi_train_result["passed"] is True, kpi_train_result["log"]
         assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
@@ -145,7 +145,7 @@ class TestRegressionTilingInstanceSegmentation:
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -176,7 +176,7 @@ class TestRegressionTilingInstanceSegmentation:
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
-        
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.skip(reason="CVS-98026")
@@ -209,7 +209,7 @@ class TestRegressionTilingInstanceSegmentation:
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
-        
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize_eval(self, template, tmp_dir_path):

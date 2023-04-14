@@ -28,14 +28,14 @@ from tests.test_suite.run_test_command import (
     pot_optimize_testing,
 )
 
-from tests.regression.regression_command import(
+from tests.regression.regression_command import (
     regression_eval_testing,
     regression_openvino_testing,
     regression_deployment_testing,
     regression_nncf_eval_testing,
     regression_pot_eval_testing,
     regression_train_time_testing,
-    regression_eval_time_testing
+    regression_eval_time_testing,
 )
 
 # Configurations for regression test.
@@ -91,7 +91,7 @@ class TestRegressionSegmentation:
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
-        
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, template):
@@ -112,7 +112,7 @@ class TestRegressionSegmentation:
 
         assert kpi_train_result["passed"] is True, kpi_train_result["log"]
         assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
-        
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr(self, template, tmp_dir_path):
@@ -146,7 +146,7 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -167,7 +167,7 @@ class TestRegressionSegmentation:
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
-        
+
         assert kpi_train_result["passed"] is True, kpi_train_result["log"]
         assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
@@ -206,7 +206,7 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE]["semi_supervised"]["train"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -227,7 +227,7 @@ class TestRegressionSegmentation:
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
-        
+
         assert kpi_train_result["passed"] is True, kpi_train_result["log"]
         assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
@@ -273,7 +273,7 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["self_supervised"]["train"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -294,7 +294,7 @@ class TestRegressionSegmentation:
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
-        
+
         assert kpi_train_result["passed"] is True, kpi_train_result["log"]
         assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
@@ -324,7 +324,7 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -353,7 +353,7 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
@@ -385,7 +385,7 @@ class TestRegressionSegmentation:
         self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
-        
+
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
