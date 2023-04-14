@@ -61,13 +61,13 @@ from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
 )
+from otx.algorithms.detection.adapters.mmdet.utils import patch_tiling
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.exporter import DetectionExporter
 from otx.algorithms.detection.task import OTXDetectionTask
-from otx.algorithms.detection.utils.data import adaptive_tile_params
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -99,9 +99,8 @@ class MMDetectionTask(OTXDetectionTask):
         self._recipe_cfg: Optional[Config] = None
 
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, export: bool = False):  # noqa
+    def _init_task(self, dataset: Optional[DatasetEntity] = None, export: bool = False):  # noqa
         """Initialize task."""
-
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
@@ -110,6 +109,9 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+
+        # Patch tiling parameters
+        patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
 
         if not export:
             patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
@@ -216,12 +218,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._is_training = True
 
-        if bool(self._hyperparams.tiling_parameters.enable_tiling) and bool(
-            self._hyperparams.tiling_parameters.enable_adaptive_params
-        ):
-            adaptive_tile_params(self._hyperparams.tiling_parameters, dataset)
-
-        self._init_task()
+        self._init_task(dataset)
 
         cfg = self.configure(True, "train", None)
         logger.info("train!")
@@ -320,7 +317,7 @@ class MMDetectionTask(OTXDetectionTask):
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
-        self._init_task()
+        self._init_task(dataset)
 
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
@@ -633,7 +630,10 @@ class MMDetectionTask(OTXDetectionTask):
     # This should moved somewhere
     def _init_deploy_cfg(self) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
-        deploy_cfg_path = os.path.join(base_dir, "deployment.py")
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
+        else:
+            deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)

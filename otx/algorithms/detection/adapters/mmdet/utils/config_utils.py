@@ -33,11 +33,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
+    adaptive_tile_params,
     format_list_to_str,
     get_anchor_boxes,
     get_sizes_from_dataset_entity,
 )
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.label import Domain, LabelEntity
 
 try:
@@ -316,3 +317,59 @@ def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
     config_generator.widths, config_generator.heights = widths, heights
 
     recipe_config.model.bbox_head.anchor_generator = config_generator
+
+
+def patch_tiling(config, hparams, dataset=None):
+    """Update config for tiling.
+
+    Args:
+        config (dict): MPA config containing configuration settings.
+        hparams (DetectionConfig): DetectionConfig containing hyperparameters.
+        dataset (DatasetEntity, optional): A dataset entity. Defaults to None.
+
+    Returns:
+        dict: The updated configuration dictionary.
+    """
+    if hparams.tiling_parameters.enable_tiling:
+        logger.info("Tiling enabled")
+
+        if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
+            adaptive_tile_params(hparams.tiling_parameters, dataset)
+            tiling_params = ConfigDict(
+                tile_size=int(hparams.tiling_parameters.tile_size),
+                overlap_ratio=float(hparams.tiling_parameters.tile_overlap),
+                max_per_img=int(hparams.tiling_parameters.tile_max_number),
+            )
+            config.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        train=tiling_params,
+                        val=tiling_params,
+                        test=tiling_params,
+                    )
+                )
+            )
+
+        if dataset and dataset.purpose == DatasetPurpose.INFERENCE:
+            config.get("data", ConfigDict()).get("val_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
+            config.get("data", ConfigDict()).get("test_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
+            config.get("data", ConfigDict(samples_per_gpu=1))
+
+        if hparams.tiling_parameters.enable_tile_classifier:
+            logger.info("Tile classifier enabled")
+            logger.info(f"Patch model from: {config.model.type} to CustomMaskRCNNTileOptimized")
+            config.model.type = "CustomMaskRCNNTileOptimized"
+
+            if config.model.backbone.type == "efficientnet_b2b":
+                learning_rate = 0.002
+                logger.info(
+                    f"Patched {config.model.backbone.type} LR: "
+                    f"{hparams.learning_parameters.learning_rate} -> {learning_rate}"
+                )
+                hparams.learning_parameters.learning_rate = learning_rate
+
+            config.data.train.filter_empty_gt = False
+
+        config.update(dict(evaluation=dict(iou_thr=[0.5])))
+
+    return config
