@@ -15,17 +15,21 @@
 # and limitations under the License.
 
 
-from typing import List, Tuple
+from pathlib import Path
+from typing import List, Tuple, Union
 from warnings import warn
 
 import cv2
 import numpy as np
 from cv2 import Mat
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+
+logger = get_logger()
 
 
 def put_text_on_rect_bg(frame: Mat, message: str, position: Tuple[int, int], color=(255, 255, 0)):
@@ -161,3 +165,46 @@ def draw_predictions(task_type: TaskType, predictions: List[Annotation], frame: 
     else:
         raise ValueError(f"Unknown task type: {task_type}")
     return frame
+
+
+def get_input_names_list(input_path: Union[str, int], capture):
+    """Lists the filenames of all inputs for demo."""
+
+    # Web camera input
+    if isinstance(input_path, int):
+        return []
+    if "DIR" in capture.get_type():
+        return [f.name for f in Path(input_path).iterdir() if f.is_file()]
+    else:
+        return [Path(input_path).name]
+
+
+def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], capture):
+    """Saves images/videos with predictions from saved_frames to output folder with proper names."""
+
+    if not saved_frames:
+        return
+
+    output_path = Path(output)
+    if not output_path.exists():
+        output_path.mkdir(parents=True)
+
+    filenames = get_input_names_list(input_path, capture)
+
+    if "VIDEO" in capture.get_type():
+        filename = filenames[0]
+        w, h, _ = saved_frames[0].shape
+        video_path = str(output_path / filename)
+        codec = cv2.VideoWriter_fourcc(*"mp4v")
+        out = cv2.VideoWriter(video_path, codec, capture.fps(), (h, w))
+        for frame in saved_frames:
+            out.write(frame)
+        out.release()
+        logger.info(f"Video was saved to {video_path}")
+    else:
+        if len(filenames) < len(saved_frames):
+            filenames = [f"output_{i}" for i, _ in enumerate(saved_frames)]
+        for filename, frame in zip(filenames, saved_frames):
+            image_path = str(output_path / filename)
+            cv2.imwrite(image_path, frame)
+            logger.info(f"Image was saved to {image_path}")

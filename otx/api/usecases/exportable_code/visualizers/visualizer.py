@@ -66,6 +66,7 @@ class Visualizer(IVisualizer):
         is_one_label: bool = False,
         no_show: bool = False,
         delay: Optional[int] = None,
+        output: Optional[str] = None,
     ) -> None:
         self.window_name = "Window" if window_name is None else window_name
         self.shape_drawer = ShapeDrawer(show_count, is_one_label)
@@ -74,6 +75,7 @@ class Visualizer(IVisualizer):
         self.no_show = no_show
         if delay is None:
             self.delay = 1
+        self.output = output
 
     def draw(
         self,

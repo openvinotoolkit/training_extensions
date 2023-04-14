@@ -409,7 +409,7 @@ class MMActionTask(OTXActionTask):
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
-        deploy_cfg = self._init_deploy_cfg()
+        deploy_cfg = self._init_deploy_cfg(cfg)
 
         state_dict = torch.load(self._model_ckpt)
         if "model" in state_dict.keys():
@@ -440,7 +440,7 @@ class MMActionTask(OTXActionTask):
         self.override_configs.update(config)
 
     # This should moved somewhere
-    def _init_deploy_cfg(self) -> Union[Config, None]:
+    def _init_deploy_cfg(self, cfg: Config) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
@@ -449,7 +449,7 @@ class MMActionTask(OTXActionTask):
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Normalize"),
                 )
                 assert len(normalize_cfg) == 1
