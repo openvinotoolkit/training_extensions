@@ -19,18 +19,21 @@ from tests.regression.regression_test_helpers import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
-    nncf_eval_testing,
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
-    otx_eval_compare,
-    otx_eval_deployment_testing,
-    otx_eval_e2e_eval_time,
-    otx_eval_e2e_train_time,
-    otx_eval_openvino_testing,
     otx_export_testing,
     otx_train_testing,
-    pot_eval_testing,
     pot_optimize_testing,
+)
+
+from tests.regression.regression_command import(
+    regression_eval_testing,
+    regression_openvino_testing,
+    regression_deployment_testing,
+    regression_nncf_eval_testing,
+    regression_pot_eval_testing,
+    regression_train_time_testing,
+    regression_eval_time_testing
 )
 
 # Configurations for regression test.
@@ -58,7 +61,6 @@ tiling_detection_data_args["train_params"] = [
     "1",
 ]
 
-
 class TestRegressionTilingDetection:
     def setup_method(self):
         self.label_type = LABEL_TYPE
@@ -79,7 +81,7 @@ class TestRegressionTilingDetection:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -92,6 +94,8 @@ class TestRegressionTilingDetection:
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
+        
+        assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -99,17 +103,20 @@ class TestRegressionTilingDetection:
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=tiling_detection_regression_config["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=tiling_detection_regression_config["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+        
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -122,7 +129,7 @@ class TestRegressionTilingDetection:
         export_elapsed_time = timer() - export_start_time
 
         export_eval_start_time = timer()
-        otx_eval_openvino_testing(
+        test_result = regression_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -137,6 +144,8 @@ class TestRegressionTilingDetection:
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
+        
+        assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -149,7 +158,7 @@ class TestRegressionTilingDetection:
         deploy_elapsed_time = timer() - deploy_start_time
 
         deploy_eval_start_time = timer()
-        otx_eval_deployment_testing(
+        test_result = regression_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -165,6 +174,8 @@ class TestRegressionTilingDetection:
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+        
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.skip(reason="CVS-98026")
@@ -180,7 +191,7 @@ class TestRegressionTilingDetection:
         nncf_elapsed_time = timer() - nncf_start_time
 
         nncf_eval_start_time = timer()
-        nncf_eval_testing(
+        test_result = regression_nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -195,6 +206,8 @@ class TestRegressionTilingDetection:
         self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
+        
+        assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -207,7 +220,7 @@ class TestRegressionTilingDetection:
         pot_elapsed_time = timer() - pot_start_time
 
         pot_eval_start_time = timer()
-        pot_eval_testing(
+        test_result = regression_pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -221,3 +234,5 @@ class TestRegressionTilingDetection:
         self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
+        
+        assert test_result["passed"] is True, test_result["log"]
