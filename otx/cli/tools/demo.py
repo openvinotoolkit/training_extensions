@@ -27,7 +27,7 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager
 from otx.cli.tools.utils.demo.images_capture import open_images_capture
-from otx.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
+from otx.cli.tools.utils.demo.visualization import draw_predictions, dump_frames, put_text_on_rect_bg
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_label_schema, read_model
 from otx.cli.utils.parser import (
@@ -71,6 +71,12 @@ def get_args():
         "These metrics take into account not only model inference time, but also "
         "frame reading, pre-processing and post-processing.",
     )
+    parser.add_argument(
+        "--output",
+        default=None,
+        type=str,
+        help="Output path to save input data with predictions.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
@@ -106,6 +112,9 @@ def main():
     # Dynamically create an argument parser based on override parameters.
     args, override_param = get_args()
 
+    if args.loop and args.output:
+        raise ValueError("--loop and --output cannot be both specified")
+
     config_manager = ConfigManager(args, mode="demo")
     # Auto-Configuration for model template
     config_manager.configure_template()
@@ -136,7 +145,7 @@ def main():
     capture = open_images_capture(args.input, args.loop)
 
     elapsed_times = deque(maxlen=10)
-    frame_index = 0
+    saved_frames = []
     while True:
         frame = capture.read()
         if frame is None:
@@ -155,12 +164,17 @@ def main():
                 color=(255, 255, 255),
             )
 
-        if args.delay >= 0:
+        if args.delay > 0:
             cv2.imshow("frame", frame)
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break
         else:
-            print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
+            print(f"Frame: {elapsed_time=}, {len(predictions)=}")
+
+        if args.output:
+            saved_frames.append(frame)
+
+    dump_frames(saved_frames, args.output, args.input, capture)
 
     return dict(retcode=0, template=template.name)
 

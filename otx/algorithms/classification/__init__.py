@@ -14,12 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# The import required to register the backbone used by the OTX Template with the Registry.
-import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+MMCLS_AVAILABLE = True
 
-from .task import OTXClassificationTask
-
-__all__ = [
-    "OTXBackbones",
-    "OTXClassificationTask",
-]
+try:
+    import mmcls  # noqa: F401
+except ImportError:
+    MMCLS_AVAILABLE = False

@@ -22,7 +22,6 @@ from contextlib import nullcontext
 from copy import deepcopy
 from typing import Any, Dict, Optional, Union
 
-import numpy as np
 import torch
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, get_git_hash
@@ -50,9 +49,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
-from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,
@@ -63,30 +60,25 @@ from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
 )
+from otx.algorithms.detection.adapters.mmdet.utils import patch_tiling
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.exporter import DetectionExporter
 from otx.algorithms.detection.task import OTXDetectionTask
-from otx.algorithms.detection.utils import get_det_model_api_configuration
-from otx.algorithms.detection.utils.data import adaptive_tile_params
 from otx.api.configuration import cfg_helper
-from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
+from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.entities.train_parameters import default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
-from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
 
 logger = get_logger()
@@ -105,9 +97,8 @@ class MMDetectionTask(OTXDetectionTask):
         self._recipe_cfg: Optional[Config] = None
 
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, export: bool = False):  # noqa
+    def _init_task(self, dataset: Optional[DatasetEntity] = None, export: bool = False):  # noqa
         """Initialize task."""
-
         self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
@@ -116,6 +107,9 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+
+        # Patch tiling parameters
+        patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
 
         if not export:
             patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
@@ -222,12 +216,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._is_training = True
 
-        if bool(self._hyperparams.tiling_parameters.enable_tiling) and bool(
-            self._hyperparams.tiling_parameters.enable_adaptive_params
-        ):
-            adaptive_tile_params(self._hyperparams.tiling_parameters, dataset)
-
-        self._init_task()
+        self._init_task(dataset)
 
         cfg = self.configure(True, "train", None)
         logger.info("train!")
@@ -326,7 +315,7 @@ class MMDetectionTask(OTXDetectionTask):
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
-        self._init_task()
+        self._init_task(dataset)
 
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
@@ -461,28 +450,19 @@ class MMDetectionTask(OTXDetectionTask):
         return prediction_results, metric
 
     # pylint: disable=too-many-statements
-    def export(
+    def _export_model(
         self,
-        export_type: ExportType,
-        output_model: ModelEntity,
-        precision: ModelPrecision = ModelPrecision.FP32,
-        dump_features: bool = True,
+        precision: ModelPrecision,
+        dump_features: bool,
     ):
-        """Export function of OTX Detection Task."""
-        # copied from OTX inference_task.py
-        logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
-
+        """Main export function of OTX MMDetection Task."""
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
-        export_options["deploy_cfg"] = self._init_deploy_cfg()
+        export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
         if export_options.get("precision", None) is None:
             assert len(self._precision) == 1
             export_options["precision"] = str(self._precision[0])
@@ -506,47 +486,13 @@ class MMDetectionTask(OTXDetectionTask):
             **export_options,
         )
 
-        outputs = results.get("outputs")
-        logger.debug(f"results of run_task = {outputs}")
-        if outputs is None:
-            raise RuntimeError(results.get("msg"))
+        return results
 
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        onnx_file = outputs.get("onnx")
-
-        ir_extra_data = get_det_model_api_configuration(
-            self._task_environment.label_schema, self._task_type, self.confidence_threshold
-        )
-        embed_ir_model_data(xml_file, ir_extra_data)
-
-        if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        with open(onnx_file, "rb") as f:
-            output_model.set_data("model.onnx", f.read())
-        output_model.set_data(
-            "confidence_threshold",
-            np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
-        )
-        output_model.set_data("config.json", config_to_bytes(self._hyperparams))
-        output_model.precision = self._precision
-        output_model.optimization_methods = self._optimization_methods
-        output_model.has_xai = dump_features
-        output_model.set_data(
-            "label_schema.json",
-            label_schema_to_bytes(self._task_environment.label_schema),
-        )
-        logger.info("Exporting completed")
-
-    def explain(
+    def _explain_model(
         self,
         dataset: DatasetEntity,
         explain_parameters: Optional[ExplainParameters] = None,
-    ) -> DatasetEntity:
+    ) -> Dict[str, Any]:
         """Main explain function of MMDetectionTask."""
 
         explainer_hook_selector = {
@@ -554,18 +500,6 @@ class MMDetectionTask(OTXDetectionTask):
             "eigencam": EigenCamHook,
             "activationmap": ActivationMapHook,
         }
-        logger.info("explain()")
-
-        update_progress_callback = default_progress_callback
-        process_saliency_maps = False
-        explain_predicted_classes = True
-        if explain_parameters is not None:
-            update_progress_callback = explain_parameters.update_progress  # type: ignore
-            process_saliency_maps = explain_parameters.process_saliency_maps
-            explain_predicted_classes = explain_parameters.explain_predicted_classes
-
-        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -662,15 +596,7 @@ class MMDetectionTask(OTXDetectionTask):
             saliency_maps = [saliency_maps[i] for i in range(mm_dataset.num_samples)]
 
         outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
-
-        detections = outputs["detections"]
-        explain_results = outputs["saliency_maps"]
-
-        self._add_explanations_to_dataset(
-            detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
-        )
-        logger.info("Explain completed")
-        return dataset
+        return outputs
 
     # This should be removed
     def update_override_configurations(self, config):
@@ -680,16 +606,19 @@ class MMDetectionTask(OTXDetectionTask):
         self.override_configs.update(config)
 
     # This should moved somewhere
-    def _init_deploy_cfg(self) -> Union[Config, None]:
+    def _init_deploy_cfg(self, cfg) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
-        deploy_cfg_path = os.path.join(base_dir, "deployment.py")
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
+        else:
+            deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Normalize"),
                 )
                 assert len(normalize_cfg) == 1
@@ -732,7 +661,7 @@ class MMDetectionTask(OTXDetectionTask):
 
             def patch_input_shape(deploy_cfg):
                 resize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Resize"),
                 )
                 assert len(resize_cfg) == 1

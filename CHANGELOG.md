@@ -9,14 +9,17 @@ All notable changes to this project will be documented in this file.
 - Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
 - Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
 - Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
+- Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
 
 ### Enhancements
 
 - Clean up and refactor the output of the OTX CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1946>)
 - Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
+- Detection task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1955>)
 - Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
 - Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
 - Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
+- Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
 
 ### Bug fixes
 
@@ -84,6 +87,7 @@ All notable changes to this project will be documented in this file.
 - Refine documents by proof review
 - Separate installation for each tasks
 - Improve POT efficiency by setting stat_requests_number parameter to 1
+- Introduce new tile classifier to enhance tiling inference performance in MaskRCNN.
 
 ### Bug fixes
 

@@ -16,6 +16,8 @@
 
 # pylint: disable=invalid-name
 
+_base_ = ["../base/supervised.py"]
+
 num_classes = 400
 model = dict(
     type="MoViNetRecognizer",
@@ -32,34 +34,5 @@ model = dict(
     test_cfg=dict(average_clips="prob"),
 )
 
-
-evaluation = dict(interval=1, metrics=["top_k_accuracy", "mean_class_accuracy"], final_metric="mean_class_accuracy")
-
-optimizer = dict(
-    type="AdamW",
-    lr=0.003,
-    weight_decay=0.0001,
-)
-
-optimizer_config = dict(grad_clip=dict(max_norm=40.0, norm_type=2))
-lr_config = dict(policy="CosineAnnealing", min_lr=0)
-total_epochs = 5
-
-# runtime settings
-checkpoint_config = dict(interval=1)
-log_config = dict(
-    interval=10,
-    hooks=[
-        dict(type="TextLoggerHook", ignore_last=False),
-    ],
-)
-# runtime settings
-log_level = "INFO"
-workflow = [("train", 1)]
-
-find_unused_parameters = False
-gpu_ids = range(0, 1)
-
-dist_params = dict(backend="nccl")
 resume_from = None
 load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"

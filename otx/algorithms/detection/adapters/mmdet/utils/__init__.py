@@ -9,6 +9,7 @@ from .config_utils import (
     patch_config,
     patch_datasets,
     patch_evaluation,
+    patch_tiling,
     prepare_for_training,
     set_hyperparams,
 )
@@ -21,4 +22,5 @@ __all__ = [
     "prepare_for_training",
     "set_hyperparams",
     "build_detector",
+    "patch_tiling",
 ]
