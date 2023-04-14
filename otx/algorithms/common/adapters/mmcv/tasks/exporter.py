@@ -64,8 +64,10 @@ class Exporter:
                 "onnx": os.path.join(cfg.work_dir, f"{model_name}.onnx"),
                 "partitioned": [
                     {
-                        "bin": os.path.join(cfg.work_dir, name.replace(".xml", ".bin")),
-                        "xml": os.path.join(cfg.work_dir, name),
+                        f"{os.path.splitext(name)[0]}": {
+                            "bin": os.path.join(cfg.work_dir, name.replace(".xml", ".bin")),
+                            "xml": os.path.join(cfg.work_dir, name),
+                        }
                     }
                     for name in os.listdir(cfg.work_dir)
                     if name.endswith(".xml")

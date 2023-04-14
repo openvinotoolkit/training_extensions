@@ -85,44 +85,71 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
 
 ## Usecase
 
-Running the `demo.py` application with the `-h` option yields the following usage message:
+1. Running the `demo.py` application with the `-h` option yields the following usage message:
 
-```bash
-usage: demo.py [-h] -i INPUT -m MODELS [MODELS ...] [-it {sync,async}] [-l]
-Options:
-  -h, --help            Show this help message and exit.
-  -i INPUT, --input INPUT
-                        Required. An input to process. The input must be a
-                        single image, a folder of images, video file or camera
-                        id.
-  -m MODELS [MODELS ...], --models MODELS [MODELS ...]
-                        Required. Path to directory with trained model and
-                        configuration file. If you provide several models you
-                        will start the task chain pipeline with the provided
-                        models in the order in which they were specified
-  -it {sync,async}, --inference_type {sync,async}
-                        Optional. Type of inference for single model
-  -l, --loop            Optional. Enable reading the input in a loop.
-  --no_show
-                        Optional. If this flag is specified, the demo
-                        won't show the inference results on UI.
-```
+   ```bash
+   usage: demo.py [-h] -i INPUT -m MODELS [MODELS ...] [-it {sync,async}] [-l] [--no_show] [-d {CPU,GPU}] [--output OUTPUT]
 
-As a model, you can use path to model directory from generated zip. So you can use the following command to do inference with a pre-trained model:
+   Options:
+   -h, --help            Show this help message and exit.
+   -i INPUT, --input INPUT
+                           Required. An input to process. The input must be a single image, a folder of images, video file or camera id.
+   -m MODELS [MODELS ...], --models MODELS [MODELS ...]
+                           Required. Path to directory with trained model and configuration file. If you provide several models you will start the task chain pipeline with the provided models in the order in
+                           which they were specified.
+   -it {sync,async}, --inference_type {sync,async}
+                           Optional. Type of inference for single model.
+   -l, --loop            Optional. Enable reading the input in a loop.
+   --no_show             Optional. Disables showing inference results on UI.
+   -d {CPU,GPU}, --device {CPU,GPU}
+                           Optional. Device to infer the model.
+   --output OUTPUT       Optional. Output path to save input data with predictions.
+   ```
 
-```bash
-python3 demo.py \
-  -i <path_to_video>/inputVideo.mp4 \
-  -m <path_to_model_directory>
-```
+2. As a `model`, you can use path to model directory from generated zip. You can pass as `input` a single image, a folder of images, a video file, or a web camera id. So you can use the following command to do inference with a pre-trained model:
 
-You can press `Q` to stop inference during demo running.
+   ```bash
+   python3 demo.py \
+   -i <path_to_video>/inputVideo.mp4 \
+   -m <path_to_model_directory>
+   ```
 
-> **NOTE**: If you provide a single image as an input, the demo processes and renders it quickly, then exits. To continuously
-> visualize inference results on the screen, apply the `loop` option, which enforces processing a single image in a loop.
->
-> **NOTE**: Default configuration contains info about pre- and post processing for inference and is guaranteed to be correct.
-> Also you can change `config.json` that specifies needed parameters, but any changes should be made with caution.
+   You can press `Q` to stop inference during demo running.
+
+   > **NOTE**: If you provide a single image as input, the demo processes and renders it quickly, then exits. To continuously
+   > visualize inference results on the screen, apply the `--loop` option, which enforces processing a single image in a loop.
+   > In this case, you can stop the demo by pressing `Q` button or killing the process in the terminal (`Ctrl+C` for Linux).
+   >
+   > **NOTE**: Default configuration contains info about pre- and post processing for inference and is guaranteed to be correct.
+   > Also you can change `config.json` that specifies the confidence threshold and color for each class visualization, but any
+   > changes should be made with caution.
+
+3. To save inferenced results with predictions on it, you can specify the folder path, using `--output`.
+   It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a `--loop` parameter.
+
+   ```bash
+   python3 demo.py \
+      --input <path_to_image>/inputImage.jpg \
+      --models ../model \
+      --output resulted_images
+   ```
+
+4. To run a demo on a web camera, you need to know its ID.
+   You can check a list of camera devices by running this command line on Linux system:
+
+   ```bash
+   sudo apt-get install v4l-utils
+   v4l2-ctl --list-devices
+   ```
+
+   The output will look like this:
+
+   ```bash
+   Integrated Camera (usb-0000:00:1a.0-1.6):
+      /dev/video0
+   ```
+
+   After that, you can use this `/dev/video0` as a camera ID for `--input`.
 
 ## Troubleshooting
 
