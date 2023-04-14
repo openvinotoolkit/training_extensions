@@ -489,16 +489,24 @@ a folder of images, a video file, or a web camera id. We can run the demo on PyT
                      --load-weights outputs/weights.pth --loop
 </pre></div>
 </div>
-<p>In this case, you can stop the demo by killing the process in the terminal (<code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code> for Linux).</p>
-<p>3. In WGISD dataset we have high-resolution images,
+<p>In this case, you can stop the demo by pressing <cite>Q</cite> button or killing the process in the terminal (<code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code> for Linux).</p>
+<p>3. If we want to pass an images folder, it’s better to specify the delay parameter, that defines, how much millisecond pause will be held between showing the next image.
+For example <code class="docutils literal notranslate"><span class="pre">--delay</span> <span class="pre">100</span></code> will make this pause 0.1 ms.
+If you want to skip showing the resulting image and instead see the number of predictions and time spent on each image inference, specify <code class="docutils literal notranslate"><span class="pre">--delay</span> <span class="pre">0</span></code>.</p>
+<p>4. In WGISD dataset we have high-resolution images,
 so the <code class="docutils literal notranslate"><span class="pre">--fit-to-size</span></code> parameter would be quite useful. It resizes the resulting image to a specified:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
                      --load-weights outputs/weights.pth --loop --fit-to-size 800 600
 </pre></div>
 </div>
-<p>4. If we want to pass an images folder, it’s better to specify the delay parameter, that defines, how much millisecond pause will be held between showing the next image.
-For example <code class="docutils literal notranslate"><span class="pre">--delay</span> <span class="pre">100</span></code> will make this pause 0.1 ms.</p>
-<p>5. If we want to show inference speed right on images,
+<p>5. To save inferenced results with predictions on it, we can specify the folder path, using <code class="docutils literal notranslate"><span class="pre">--output</span></code>.
+It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a <code class="docutils literal notranslate"><span class="pre">--loop</span></code> parameter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
+                     --load-weights outputs/weights.pth \
+                     --output resulted_images
+</pre></div>
+</div>
+<p>6. If we want to show inference speed right on images,
 we can run the following line:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
                      --load-weights outputs/weights.pth --loop \

@@ -543,10 +543,17 @@ using the model in the <code class="docutils literal notranslate"><span class="p
 <p class="admonition-title">Note</p>
 <p>If you provide a single image as input, the demo processes and renders it quickly, then exits. To continuously
 visualize inference results on the screen, apply the <code class="docutils literal notranslate"><span class="pre">loop</span></code> option, which enforces processing a single image in a loop.
-In this case, you can stop the demo by killing the process in the terminal (<code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code> for Linux).</p>
+In this case, you can stop the demo by pressing <cite>Q</cite> button or killing the process in the terminal (<code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code> for Linux).</p>
 </div>
 <p>To learn how to run the demo on Windows and MacOS, please refer to the <code class="docutils literal notranslate"><span class="pre">outputs/deploy/python/README.md</span></code> file in exportable code.</p>
-<p>4. To run a demo on a web camera, we need to know its ID.
+<p>4. To save inferenced results with predictions on it, we can specify the folder path, using <code class="docutils literal notranslate"><span class="pre">--output</span></code>.
+It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a <code class="docutils literal notranslate"><span class="pre">--loop</span></code> parameter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
+                                                  --models outputs/deploy/model \
+                                                  --output resulted_images
+</pre></div>
+</div>
+<p>5. To run a demo on a web camera, we need to know its ID.
 We can check a list of camera devices by running this command line on Linux system:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">v4l</span><span class="o">-</span><span class="n">utils</span>
 <span class="n">v4l2</span><span class="o">-</span><span class="n">ctl</span> <span class="o">--</span><span class="nb">list</span><span class="o">-</span><span class="n">devices</span>
@@ -558,7 +565,7 @@ We can check a list of camera devices by running this command line on Linux syst
 </pre></div>
 </div>
 <p>After that, we can use this <code class="docutils literal notranslate"><span class="pre">/dev/video0</span></code> as a camera ID for <code class="docutils literal notranslate"><span class="pre">--input</span></code>.</p>
-<p>5. We can also change <code class="docutils literal notranslate"><span class="pre">config.json</span></code> that specifies the confidence threshold and
+<p>6. We can also change <code class="docutils literal notranslate"><span class="pre">config.json</span></code> that specifies the confidence threshold and
 color for each class visualization, but any changes should be made with caution.</p>
 <p>For example, in our image of the winery we see, that a lot of objects weren’t detected.
 The original confidence threshold was chosen based on the validation split results to maximize the final F1 metric, balancing precision and recall values. So, visual results can be not suitable enough for a user.
