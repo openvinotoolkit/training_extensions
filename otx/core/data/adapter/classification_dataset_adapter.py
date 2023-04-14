@@ -5,7 +5,7 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member
-from typing import Dict, List, Union
+from typing import List, Union
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import LabelCategories as DatumLabelCategories

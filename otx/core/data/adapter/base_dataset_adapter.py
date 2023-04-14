@@ -9,7 +9,7 @@
 import abc
 import os
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import datumaro
