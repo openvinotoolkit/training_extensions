@@ -1780,17 +1780,17 @@ class TestLabelSchemaEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_schema_resolve_labels_probabilistic(self):
+    def test_label_schema_resolve_labels(self):
         """
         <b>Description:</b>
-        Check LabelSchemaEntity class resolve_labels_probabilistic method
+        Check LabelSchemaEntity label resolving algorithms
 
         <b>Input data:</b>
         LabelSchemaEntity objects with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if LabelSchemaEntity object returned by resolve_labels_probabilistic
-        method is equal expected
+        Test passes if labels list returned by resolving methods
+        is equal expected
         """
         label_schema = LabelSchemaEntity()
         labels_1 = [
@@ -1838,10 +1838,15 @@ class TestLabelSchemaEntity:
             ScoredLabel(labels_2[1], 0.5),
         ]
         resloved_labels = label_schema.resolve_labels_probabilistic(predicted_labels)
-        assert [
+
+        ref_labels = [
             ScoredLabel(labels_1[1], 0.5),
             ScoredLabel(labels_2[1], 0.5),
-        ] == resloved_labels
+        ]
+        assert ref_labels == resloved_labels
+
+        resloved_labels_greedy = label_schema.resolve_labels_greedy(predicted_labels)
+        assert ref_labels == resloved_labels_greedy
 
         # supress children of non-maximum labels
         predicted_labels = [
@@ -1850,4 +1855,62 @@ class TestLabelSchemaEntity:
             ScoredLabel(labels_3[0], 0.4),
         ]
         resloved_labels = label_schema.resolve_labels_probabilistic(predicted_labels)
-        assert [ScoredLabel(labels_2[1], 0.5)] == resloved_labels
+        ref_labels = [ScoredLabel(labels_2[1], 0.5)]
+        assert ref_labels == resloved_labels
+
+        resloved_labels_greedy = label_schema.resolve_labels_greedy(predicted_labels)
+        assert ref_labels == resloved_labels_greedy
+
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_label_schema_resolve_labels_greedy(self):
+        """
+        <b>Description:</b>
+        Check LabelSchemaEntity label gredy resolving algorithm
+
+        <b>Input data:</b>
+        LabelSchemaEntity objects with specified label_tree and label_groups parameters
+
+        <b>Expected results:</b>
+        Test passes if labels list returned by resolving method
+        is equal expected
+        """
+
+        label_schema = LabelSchemaEntity()
+        g1_labels = [
+            LabelEntity("A", Domain.CLASSIFICATION),
+            LabelEntity("B", Domain.CLASSIFICATION),
+            LabelEntity("C", Domain.CLASSIFICATION),
+        ]
+        g2_labels = [LabelEntity("D", Domain.CLASSIFICATION), LabelEntity("E", Domain.CLASSIFICATION)]
+        g3_labels = [LabelEntity("F", Domain.CLASSIFICATION), LabelEntity("G", Domain.CLASSIFICATION)]
+        g4_labels = [LabelEntity("H", Domain.CLASSIFICATION)]
+
+        label_schema.add_group(LabelGroup(name="labels1", labels=g1_labels, group_type=LabelGroupType.EXCLUSIVE))
+        label_schema.add_group(LabelGroup(name="labels2", labels=g2_labels, group_type=LabelGroupType.EXCLUSIVE))
+        label_schema.add_group(LabelGroup(name="labels3", labels=g3_labels, group_type=LabelGroupType.EXCLUSIVE))
+        label_schema.add_group(LabelGroup(name="labels4", labels=g4_labels, group_type=LabelGroupType.EXCLUSIVE))
+
+        label_schema.add_child(g1_labels[0], g2_labels[0])
+        label_schema.add_child(g1_labels[0], g2_labels[1])
+
+        label_schema.add_child(g1_labels[1], g3_labels[0])
+        label_schema.add_child(g1_labels[1], g3_labels[1])
+
+        predicted_labels = [
+            ScoredLabel(g1_labels[0], 0.6),
+            ScoredLabel(g1_labels[1], 0.3),
+            ScoredLabel(g1_labels[2], 0.1),
+            ScoredLabel(g2_labels[0], 0.2),
+            ScoredLabel(g2_labels[1], 0.8),
+            ScoredLabel(g3_labels[0], 0.7),
+            ScoredLabel(g3_labels[1], 0.3),
+            ScoredLabel(g4_labels[0], 0.9),
+        ]
+
+        ref_labels = [
+            ScoredLabel(g1_labels[0], 0.6),
+            ScoredLabel(g2_labels[1], 0.8),
+            ScoredLabel(g4_labels[0], 0.9),
+        ]
+
+        assert ref_labels == label_schema.resolve_labels_greedy(predicted_labels)
