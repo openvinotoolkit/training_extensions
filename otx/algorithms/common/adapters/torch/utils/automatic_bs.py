@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 from typing import Callable
-from copy import deepcopy
 
 import torch
 

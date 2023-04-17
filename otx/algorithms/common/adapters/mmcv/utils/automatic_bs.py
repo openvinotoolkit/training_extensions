@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Callable, Dict, List, Optional
+from typing import Callable, List
 from copy import deepcopy
 
 import numpy as np
