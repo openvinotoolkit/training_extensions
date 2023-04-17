@@ -96,9 +96,10 @@ class AdaptiveTrainSchedulingHook(Hook):
                         math.ceil((self.base_lr_patience / adaptive_interval)),
                         self.min_lr_patience,
                     )
-                    logger.info(f"Update LrUpdaterHook patience: {hook.patience} -> {patience}")
-                    hook.interval = adaptive_interval
-                    hook.patience = patience
+                    if hasattr(hook, "interval") and hasattr(hook, "patience"):
+                        hook.interval = adaptive_interval
+                        hook.patience = patience
+                        logger.info(f"Update LrUpdaterHook patience: {hook.patience} -> {patience}")
                 elif isinstance(hook, EarlyStoppingHook):
                     patience = max(
                         math.ceil((self.base_es_patience / adaptive_interval)),

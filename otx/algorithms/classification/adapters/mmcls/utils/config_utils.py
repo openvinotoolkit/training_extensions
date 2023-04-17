@@ -26,12 +26,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.label import Domain
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
 
 
-@check_input_parameters_type()
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.CLASSIFICATION,
@@ -48,7 +46,7 @@ def patch_datasets(
     def update_pipeline(cfg):
         if subset == "train":
             for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
-                get_meta_keys(collect_cfg)
+                get_meta_keys(collect_cfg, ["entity_id", "label_id"])
 
     for subset in subsets:
         if subset not in config.data:

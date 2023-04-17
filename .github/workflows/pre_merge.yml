@@ -10,7 +10,6 @@ on:
       - opened
       - reopened
       - synchronize
-      - ready_for_review
   workflow_dispatch: # run on request (no need for PR)
 
 # This is what will cancel the workflow concurrency
@@ -27,23 +26,36 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Code Quality Checks
-        run: tox -e pre-commit
+      - name: Code quality checks
+        run: tox -e pre-commit-all-py310
   Pre-Merge-Unit-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Code-Quality-Checks
     timeout-minutes: 120
-    if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        include:
+          - python-version: "3.8"
+            tox-env: "py38"
+          - python-version: "3.9"
+            tox-env: "py39"
+          - python-version: "3.10"
+            tox-env: "py310"
+    name: Unit-Test-with-Python${{ matrix.python-version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Unit-testing
-        run: tox -e pre-merge -- tests/unit
+      - name: Run unit test
+        run: tox -e pre-merge-all-${{ matrix.tox-env }} -- tests/unit
       - name: Upload coverage reports to Codecov
         run: |
           # If the workflow is triggered from PR then it gets the commit id from the PR.
@@ -61,7 +73,7 @@ jobs:
           # so we use the latest version of codecov uploader binary
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
-          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
   Pre-Merge-Integration-Common-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -69,10 +81,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Integration-testing
-        run: tox -e pre-merge -- tests/integration/cli/test_cli.py
+      - name: Run integration test
+        run: tox -e pre-merge-all-py310 -- tests/integration/cli/test_cli.py
   Pre-Merge-Integration-Cls-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -80,10 +96,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Integration-testing
-        run: tox -e pre-merge-cls
+      - name: Run integration test
+        run: tox -e pre-merge-cls-py310
   Pre-Merge-Integration-Det-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -91,21 +111,44 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Integration-testing
-        run: tox -e pre-merge-det
-  Pre-Merge-Integration-Seg-Test:
+      - name: Run integration test
+        run: tox -e pre-merge-det-py310 -- tests/integration/cli/detection
+  Pre-Merge-Integration-Instance-Seg-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
     timeout-minutes: 120
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Integration-testing
-        run: tox -e pre-merge-seg
+      - name: Run integration test
+        run: tox -e pre-merge-det-py310 -- tests/integration/cli/instance_segmentation
+  Pre-Merge-Integration-Semantic-Seg-Test:
+    runs-on: [self-hosted, linux, x64, dev]
+    needs: Pre-Merge-Unit-Test
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Run integration test
+        run: tox -e pre-merge-seg-py310 -- tests/integration/cli/semantic_segmentation
   Pre-Merge-Integration-Action-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -113,10 +156,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Integration-testing
-        run: tox -e pre-merge-action
+      - name: Run integration test
+        run: tox -e pre-merge-act-py310
   Pre-Merge-Integration-Anomaly-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
@@ -124,7 +171,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: Integration-testing
-        run: tox -e pre-merge-anomaly
+      - name: Run integration test
+        run: tox -e pre-merge-ano-py310

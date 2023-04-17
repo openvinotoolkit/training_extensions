@@ -8,13 +8,13 @@ summary: Class-Incremental Image Classification for EfficientNet-B0
 application: ~
 
 # Algo backend.
-framework: OTEClassification v1.2.3
+framework: OTXClassification v1.2.3
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.classification.tasks.ClassificationTrainTask
-  openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
-  nncf: otx.algorithms.classification.tasks.nncf.ClassificationNNCFTask
+  base: otx.algorithms.classification.adapters.mmcls.task.MMClassificationTask
+  openvino: otx.algorithms.classification.adapters.openvino.task.ClassificationOpenVINOTask
+  nncf: otx.algorithms.classification.adapters.mmcls.nncf.task.ClassificationNNCFTask
 
 # Capabilities.
 capabilities:

@@ -8,12 +8,12 @@ import numpy as np
 import pytest
 from openvino.model_zoo.model_api.models import Model
 
-import otx.algorithms.classification.tasks.openvino
-from otx.algorithms.classification.configs.base import ClassificationConfig
-from otx.algorithms.classification.tasks.openvino import (
+import otx.algorithms.classification.adapters.openvino.task
+from otx.algorithms.classification.adapters.openvino.task import (
     ClassificationOpenVINOInferencer,
     ClassificationOpenVINOTask,
 )
+from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.annotation import (
     Annotation,
@@ -54,7 +54,7 @@ class TestOpenVINOClassificationInferencer:
         cls_params = ClassificationConfig(header=hyper_parameters.header)
         environment, dataset = init_environment(hyper_parameters, model_template)
         self.label_schema = environment.label_schema
-        mocker.patch("otx.algorithms.classification.tasks.openvino.OpenvinoAdapter")
+        mocker.patch("otx.algorithms.classification.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, self.label_schema, "")
         model_path = "otx.algorithms.classification.adapters.openvino.model_wrappers.openvino_models.OTXClassification"
@@ -115,7 +115,7 @@ class TestOpenVINOClassificationTask:
         cls_params = ClassificationConfig(header=hyper_parameters.header)
         self.task_env, self.dataset = init_environment(params=hyper_parameters, model_template=model_template)
         self.label_schema = self.task_env.label_schema
-        mocker.patch("otx.algorithms.classification.tasks.openvino.OpenvinoAdapter")
+        mocker.patch("otx.algorithms.classification.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, self.label_schema, "")
         self.task_env.model = otx_model
@@ -201,10 +201,10 @@ class TestOpenVINOClassificationTask:
         output_model = copy.deepcopy(otx_model)
         self.cls_ov_task.model.set_data("openvino.bin", b"foo")
         self.cls_ov_task.model.set_data("openvino.xml", b"bar")
-        mocker.patch("otx.algorithms.classification.tasks.openvino.load_model", autospec=True)
-        mocker.patch("otx.algorithms.classification.tasks.openvino.create_pipeline", autospec=True)
-        mocker.patch("otx.algorithms.classification.tasks.openvino.save_model", new=patch_save_model)
-        spy_compress = mocker.spy(otx.algorithms.classification.tasks.openvino, "compress_model_weights")
+        mocker.patch("otx.algorithms.classification.adapters.openvino.task.load_model", autospec=True)
+        mocker.patch("otx.algorithms.classification.adapters.openvino.task.create_pipeline", autospec=True)
+        mocker.patch("otx.algorithms.classification.adapters.openvino.task.save_model", new=patch_save_model)
+        spy_compress = mocker.spy(otx.algorithms.classification.adapters.openvino.task, "compress_model_weights")
         self.cls_ov_task.optimize(OptimizationType.POT, dataset=self.dataset, output_model=output_model)
 
         spy_compress.assert_called_once()

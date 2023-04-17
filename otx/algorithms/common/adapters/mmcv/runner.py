@@ -34,8 +34,6 @@ from mmcv.runner import (
 from mmcv.runner.utils import get_host_info
 from torch.utils.data.dataloader import DataLoader
 
-from otx.api.utils.argument_checks import check_input_parameters_type
-
 
 # pylint: disable=too-many-instance-attributes, attribute-defined-outside-init
 @RUNNERS.register_module()
@@ -68,7 +66,6 @@ class EpochRunnerWithCancel(EpochBasedRunner):
             self._max_epochs = self.epoch
         return broadcast_obj[0]
 
-    @check_input_parameters_type()
     def train(self, data_loader: DataLoader, **kwargs):
         """Train call hook."""
         self.model.train()
@@ -106,7 +103,6 @@ class IterBasedRunnerWithCancel(IterBasedRunner):
         super().__init__(*args, **kwargs)
         self.should_stop = False
 
-    @check_input_parameters_type()
     def main_loop(self, workflow: List[tuple], iter_loaders: Sequence[IterLoader], **kwargs):
         """Main loop function in IterBasedRunnerWithCancel."""
         while self.iter < self._max_iters:
@@ -123,7 +119,6 @@ class IterBasedRunnerWithCancel(IterBasedRunner):
                     if self.should_stop:
                         return
 
-    @check_input_parameters_type()
     def run(self, data_loaders: Sequence[DataLoader], workflow: List[tuple], max_iters: Optional[int] = None, **kwargs):
         """Function of main run."""
         assert isinstance(data_loaders, list)

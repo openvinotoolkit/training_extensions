@@ -21,10 +21,8 @@ from typing import Any, Dict
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 
-@check_input_parameters_type()
 def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disable=too-many-locals
     """Get multihead info by label schema."""
     all_groups = label_schema.get_groups(include_empty=False)
@@ -97,7 +95,7 @@ def get_cls_deploy_config(label_schema: LabelSchemaEntity, inference_config: Dic
 def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_config: Dict[str, Any]):
     """Get ModelAPI config."""
     mapi_config = {}
-    mapi_config[("model_info", "model_type")] = "classification"
+    mapi_config[("model_info", "model_type")] = "Classification"
     mapi_config[("model_info", "confidence_threshold")] = str(inference_config["confidence_threshold"])
     mapi_config[("model_info", "multilabel")] = str(inference_config["multilabel"])
 

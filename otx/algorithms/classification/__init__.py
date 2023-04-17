@@ -13,3 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+
+MMCLS_AVAILABLE = True
+
+try:
+    import mmcls  # noqa: F401
+except ImportError:
+    MMCLS_AVAILABLE = False

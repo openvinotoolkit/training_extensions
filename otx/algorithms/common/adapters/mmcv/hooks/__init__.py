@@ -35,6 +35,7 @@ from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
 from .ib_loss_hook import IBLossHook
 from .logger_hook import LoggerReplaceHook, OTXLoggerHook
+from .lr_updater_hook import CustomstepLrUpdaterHook
 from .model_ema_v2_hook import ModelEmaV2Hook
 from .no_bias_decay_hook import NoBiasDecayHook
 from .progress_hook import OTXProgressHook
@@ -49,12 +50,12 @@ from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
 from .two_crop_transform_hook import TwoCropTransformHook
 from .unbiased_teacher_hook import UnbiasedTeacherHook
-from .workflow_hook import WorkflowHook
 
 __all__ = [
     "AdaptiveTrainSchedulingHook",
     "CancelInterfaceHook",
     "CancelTrainingHook",
+    "CustomstepLrUpdaterHook",
     "CheckpointHookWithValResults",
     "EnsureCorrectBestCheckpointHook",
     "ComposedDataLoadersHook",
@@ -85,5 +86,4 @@ __all__ = [
     "TaskAdaptHook",
     "TwoCropTransformHook",
     "UnbiasedTeacherHook",
-    "WorkflowHook",
 ]

@@ -63,7 +63,7 @@ class IInferencer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def post_process(self, prediction: Any, metadata: Any) -> AnnotationSceneEntity:
+    def post_process(self, prediction: Any, metadata: Any) -> Union[AnnotationSceneEntity, Tuple[Any, ...]]:
         """Post-process the raw predictions, and return the AnnotationSceneEntity.
 
         This method should include the post-processing methods that are applied to the raw predictions from the
@@ -72,7 +72,7 @@ class IInferencer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def predict(self, image: np.ndarray) -> AnnotationSceneEntity:
+    def predict(self, image: np.ndarray) -> Union[AnnotationSceneEntity, Tuple[Any, ...]]:
         """This method performs a prediction."""
         raise NotImplementedError
 
@@ -87,7 +87,7 @@ class BaseInferencer(IInferencer, abc.ABC):
         + `post_process`
     """
 
-    def predict(self, image: np.ndarray) -> AnnotationSceneEntity:
+    def predict(self, image: np.ndarray) -> Union[AnnotationSceneEntity, Tuple[Any, ...]]:
         """Perform a prediction for a given input image.
 
         Args:

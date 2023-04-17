@@ -5,9 +5,9 @@
 import pytest
 from mmcv.utils import Config
 
-from otx.algorithms.classification.tasks import ClassificationNNCFTask
-from otx.algorithms.common.tasks import BaseTask
-from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
+from otx.algorithms.classification.adapters.mmcls.nncf.task import (
+    ClassificationNNCFTask,
+)
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
@@ -60,19 +60,17 @@ class TestOTXClsTaskNNCF:
         mock_lcurve_val.x = [0, 1]
         mock_lcurve_val.y = [0.1, 0.2]
         # patch training process
-        mocker.patch.object(BaseTask, "_run_task", return_value={"final_ckpt": ""})
         self.cls_nncf_task._learning_curves = {"val/accuracy_top-1": mock_lcurve_val}
         mocker.patch.object(ClassificationNNCFTask, "save_model")
+        mocker.patch.object(ClassificationNNCFTask, "_train_model")
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.nncf.task.build_nncf_classifier",
+            return_value=(
+                mocker.MagicMock(),
+                mocker.MagicMock(),
+            ),
+        )
         self.cls_nncf_task.optimize(OptimizationType.NNCF, self.dataset, self.model)
 
         assert self.model.performance != NullPerformance()
         assert self.model.performance.score.value == 0.2
-
-    @e2e_pytest_unit
-    def test_initialize(self, mocker):
-        """Test initialize method in OTXDetTaskNNCF."""
-        options = {}
-        self.cls_nncf_task._initialize(options)
-
-        assert "model_builder" in options
-        assert NNCFBaseTask.model_builder == options["model_builder"].func

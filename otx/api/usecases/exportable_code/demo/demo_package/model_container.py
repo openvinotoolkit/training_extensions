@@ -6,7 +6,7 @@
 import importlib
 import json
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy as np
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
@@ -56,24 +56,29 @@ class ModelContainer:
             preload=True,
         )
 
-        self.tiler = self.setup_tiler()
+        self.tiler = self.setup_tiler(model_dir, device)
 
-    def setup_tiler(self):
-        """Setup tiler.
+    def setup_tiler(self, model_dir, device) -> Optional[Tiler]:
+        """Setup tiler for model.
 
+        Args:
+            model_dir (str): model directory
+            device (str): device to run model on
         Returns:
-            Tiler: tiler module
+            Optional: Tiler object or None
         """
-        if (
-            not self.parameters.get("tiling_parameters")
-            or not self.parameters["tiling_parameters"]["enable_tiling"]["value"]
-        ):
+        if not self.parameters.get("tiling_parameters") or not self.parameters["tiling_parameters"]["enable_tiling"]:
             return None
 
-        tile_size = self.parameters["tiling_parameters"]["tile_size"]["value"]
-        tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]["value"]
-        max_number = self.parameters["tiling_parameters"]["tile_max_number"]["value"]
-        tiler = Tiler(tile_size, tile_overlap, max_number, self.core_model, self.segm)
+        classifier = {}
+        if self.parameters["tiling_parameters"].get("enable_tile_classifier", False):
+            adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "tile_classifier.xml"), device=device)
+            classifier = Model(model_adapter=adapter, preload=True)
+
+        tile_size = self.parameters["tiling_parameters"]["tile_size"]
+        tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]
+        max_number = self.parameters["tiling_parameters"]["tile_max_number"]
+        tiler = Tiler(tile_size, tile_overlap, max_number, self.core_model, classifier, self.segm)
         return tiler
 
     @property

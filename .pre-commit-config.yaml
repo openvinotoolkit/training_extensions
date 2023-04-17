@@ -4,39 +4,22 @@ default_language_version:
   ruby: 2.7.2
 
 repos:
-  - repo: https://github.com/PyCQA/isort
-    rev: "5.12.0"
-    hooks:
-      - id: isort
-        files: '^(otx|tests)/.*\.py'
-        exclude: "tests/ote_cli"
-
   - repo: https://github.com/psf/black
     rev: 22.6.0
     hooks:
       - id: black
         args: [--line-length, "120"]
         files: '^(otx|tests)/.*\.py'
-        exclude: "tests/ote_cli"
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: "5.0.3"
-    hooks:
-      - id: flake8
-        name: "flake8"
-        files: '^(otx|tests)/.*\.py'
-        args: ["--config", ".flake8", "--max-complexity", "20"]
-        exclude: "^(.*/protobuf|tests/ote_cli)|otx/mpa|otx/recipes"
 
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
     hooks:
       - id: prettier
-        exclude: "external|otx/mpa|otx/recipes"
+        exclude: "otx/recipes"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.971"
+    rev: "v1.1.1"
     hooks:
       - id: mypy
         files: '^(otx)/.*\.py'
@@ -50,40 +33,10 @@ repos:
             types-docutils,
             types_futures,
             types-python-dateutil,
+            tokenize-rt==3.2.0,
           ]
-        exclude: "^otx/algorithms/anomaly/tests|otx/recipes|otx/mpa"
-
-  - repo: https://github.com/PyCQA/pylint
-    rev: "v2.14.5"
-    hooks:
-      - id: pylint
-        name: "pylint"
-        files: '^(otx)/.*\.py'
-        exclude: "tests|otx/mpa|otx/recipes"
-        entry: pylint
-        language: system
-        types: [python]
-        args: ["--score=no"]
-
-  - repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.1.1
-    hooks:
-      - id: pydocstyle
-        additional_dependencies: [toml]
-        name: pydocstyle
-        entry: pydocstyle
-        language: python
-        types: [python]
-        files: '^otx/.*\.py'
-        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests|otx/cli/utils/tests.py|otx/mpa|otx/recipes"
-
-    # Will use rst
-    # - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    #   rev: 2.1.6
-    #   hooks:
-    #     - id: markdownlint
-    #       # TODO: Check all files even tests after migration to otx is complete
-    #       exclude: "^(ote_sdk|tests|.github|external)"
+        args: [--no-strict-optional, --ignore-missing-imports]
+        exclude: "^otx/recipes"
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.10.0
@@ -96,3 +49,24 @@ repos:
     rev: v0.8.0.4
     hooks:
       - id: shellcheck # TODO remove this when all shell scripts have been removed from otx
+
+  # markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.33.0
+    hooks:
+      - id: markdownlint
+        args: [--config=.markdownlint.yaml]
+
+  # Ruff
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: "v0.0.258"
+    hooks:
+      - id: ruff
+        exclude: "tests|otx/recipes"
+        args: [--fix]
+
+  # # Git conflict marker
+  # - repo: https://github.com/jumanjihouse/pre-commit-hooks
+  #   rev: 3.0.0
+  #   hooks:
+  #     - id: git-check # Configure in .gitattributes

@@ -33,17 +33,13 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
+    adaptive_tile_params,
     format_list_to_str,
     get_anchor_boxes,
     get_sizes_from_dataset_entity,
 )
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    DirectoryPathCheck,
-    check_input_parameters_type,
-)
 
 try:
     from sklearn.cluster import KMeans
@@ -58,7 +54,6 @@ except ImportError:
 logger = get_logger()
 
 
-@check_input_parameters_type({"work_dir": DirectoryPathCheck})
 def patch_config(
     config: Config,
     work_dir: str,
@@ -88,7 +83,6 @@ def patch_config(
     config.work_dir = work_dir
 
 
-@check_input_parameters_type()
 def patch_model_config(
     config: Config,
     labels: List[LabelEntity],
@@ -97,7 +91,6 @@ def patch_model_config(
     set_num_classes(config, len(labels))
 
 
-@check_input_parameters_type()
 def set_hyperparams(config: Config, hyperparams: DetectionConfig):
     """Set function for hyperparams (DetectionConfig)."""
     config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
@@ -115,7 +108,6 @@ def set_hyperparams(config: Config, hyperparams: DetectionConfig):
         config.runner.max_iters = total_iterations
 
 
-@check_input_parameters_type()
 def patch_adaptive_repeat_dataset(
     config: Union[Config, ConfigDict],
     num_samples: int,
@@ -149,7 +141,6 @@ def patch_adaptive_repeat_dataset(
             data_train.times = new_repeat
 
 
-@check_input_parameters_type()
 def prepare_for_training(
     config: Union[Config, ConfigDict],
     data_config: ConfigDict,
@@ -180,7 +171,6 @@ def prepare_for_training(
     return config
 
 
-@check_input_parameters_type()
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     """Setter data classes into config."""
     # Save labels in data configs.
@@ -190,7 +180,6 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
             #  config.data[subset].labels = labels
 
 
-@check_input_parameters_type()
 def set_num_classes(config: Config, num_classes: int):
     """Set num classes."""
     # Set proper number of classes in model's detection heads.
@@ -211,7 +200,6 @@ def set_num_classes(config: Config, num_classes: int):
     # self.config.model.CLASSES = label_names
 
 
-@check_input_parameters_type()
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.DETECTION,
@@ -221,6 +209,10 @@ def patch_datasets(
     """Update dataset configs."""
     assert "data" in config
     assert "type" in kwargs
+
+    # This code is for nncf, if we don't consider nncf, this code could be
+    # domain = config.get("domain", Domain.DETECTION)
+    domain = config.get("domain", domain)
 
     if subsets is None:
         subsets = ["train", "val", "test", "unlabeled"]
@@ -287,7 +279,6 @@ def should_cluster_anchors(model_cfg: Config):
     return False
 
 
-@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
     """Update configs for cluster_anchors."""
     if not KMEANS_IMPORT:
@@ -326,3 +317,59 @@ def cluster_anchors(recipe_config: Config, dataset: DatasetEntity):
     config_generator.widths, config_generator.heights = widths, heights
 
     recipe_config.model.bbox_head.anchor_generator = config_generator
+
+
+def patch_tiling(config, hparams, dataset=None):
+    """Update config for tiling.
+
+    Args:
+        config (dict): MPA config containing configuration settings.
+        hparams (DetectionConfig): DetectionConfig containing hyperparameters.
+        dataset (DatasetEntity, optional): A dataset entity. Defaults to None.
+
+    Returns:
+        dict: The updated configuration dictionary.
+    """
+    if hparams.tiling_parameters.enable_tiling:
+        logger.info("Tiling enabled")
+
+        if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
+            adaptive_tile_params(hparams.tiling_parameters, dataset)
+            tiling_params = ConfigDict(
+                tile_size=int(hparams.tiling_parameters.tile_size),
+                overlap_ratio=float(hparams.tiling_parameters.tile_overlap),
+                max_per_img=int(hparams.tiling_parameters.tile_max_number),
+            )
+            config.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        train=tiling_params,
+                        val=tiling_params,
+                        test=tiling_params,
+                    )
+                )
+            )
+
+        if dataset and dataset.purpose == DatasetPurpose.INFERENCE:
+            config.get("data", ConfigDict()).get("val_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
+            config.get("data", ConfigDict()).get("test_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
+            config.get("data", ConfigDict(samples_per_gpu=1))
+
+        if hparams.tiling_parameters.enable_tile_classifier:
+            logger.info("Tile classifier enabled")
+            logger.info(f"Patch model from: {config.model.type} to CustomMaskRCNNTileOptimized")
+            config.model.type = "CustomMaskRCNNTileOptimized"
+
+            if config.model.backbone.type == "efficientnet_b2b":
+                learning_rate = 0.002
+                logger.info(
+                    f"Patched {config.model.backbone.type} LR: "
+                    f"{hparams.learning_parameters.learning_rate} -> {learning_rate}"
+                )
+                hparams.learning_parameters.learning_rate = learning_rate
+
+            config.data.train.filter_empty_gt = False
+
+        config.update(dict(evaluation=dict(iou_thr=[0.5])))
+
+    return config

@@ -29,7 +29,6 @@ from tests.test_suite.run_test_command import (
     otx_explain_openvino_testing,
     otx_explain_testing,
     otx_export_testing,
-    otx_export_testing_w_features,
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
@@ -114,7 +113,7 @@ class TestToolsMultiClassClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -126,22 +125,25 @@ class TestToolsMultiClassClassification:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export_w_features(self, template, tmp_dir_path):
+    def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -167,9 +169,10 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -285,7 +288,6 @@ class TestToolsMultiClassClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -314,7 +316,6 @@ class TestToolsMultiClassSemiSLClassification:
         otx_eval_testing(template, tmp_dir_path, otx_dir, args0)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -367,7 +368,7 @@ class TestToolsMultilabelClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args0_m)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_m)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -379,22 +380,18 @@ class TestToolsMultilabelClassification:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args0_m)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_export_testing(template, tmp_dir_path)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export_w_features(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -534,7 +531,6 @@ class TestToolsMultilabelClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -568,7 +564,7 @@ class TestToolsHierarchicalClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_h)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
@@ -580,21 +576,18 @@ class TestToolsHierarchicalClassification:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args_h)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_export_testing(template, tmp_dir_path)
-
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export_w_features(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -727,7 +720,6 @@ class TestToolsHierarchicalClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
@@ -770,7 +762,7 @@ class TestToolsSelfSLClassification:
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
         args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         tmp_dir_path_2 = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
         otx_train_testing(template, tmp_dir_path_2, otx_dir, args1)
 
@@ -782,7 +774,6 @@ class TestToolsSelfSLClassification:
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

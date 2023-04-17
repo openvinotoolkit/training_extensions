@@ -42,19 +42,18 @@ class Patcher:
             except AttributeError:
                 return
             self._patch_module_fn(obj_cls, fn_name, fn, wrapper, force)
+        elif inspect.isclass(obj_cls):
+            try:
+                fn = obj_cls.__getattribute__(obj_cls, fn_name)  # type: ignore
+            except AttributeError:
+                return
+            self._patch_class_fn(obj_cls, fn_name, fn, wrapper, force)
         else:
-            if inspect.isclass(obj_cls):
-                try:
-                    fn = obj_cls.__getattribute__(obj_cls, fn_name)  # type: ignore
-                except AttributeError:
-                    return
-                self._patch_class_fn(obj_cls, fn_name, fn, wrapper, force)
-            else:
-                try:
-                    fn = obj_cls.__getattribute__(fn_name)
-                except AttributeError:
-                    return
-                self._patch_instance_fn(obj_cls, fn_name, fn, wrapper, force)
+            try:
+                fn = obj_cls.__getattribute__(fn_name)
+            except AttributeError:
+                return
+            self._patch_instance_fn(obj_cls, fn_name, fn, wrapper, force)
 
     def unpatch(self, obj_cls=None, depth=0):
         """Undo monkey patch."""
@@ -78,12 +77,11 @@ class Patcher:
             n_args = len(inspect.getfullargspec(obj_cls.__getattribute__)[0])
             if n_args == 1:
                 key = (obj_cls.__name__, fn_name)
+            elif inspect.isclass(obj_cls):
+                obj_cls_path = obj_cls.__module__ + "." + obj_cls.__name__
+                key = (obj_cls_path, fn_name)
             else:
-                if inspect.isclass(obj_cls):
-                    obj_cls_path = obj_cls.__module__ + "." + obj_cls.__name__
-                    key = (obj_cls_path, fn_name)
-                else:
-                    key = (id(obj_cls), fn_name)
+                key = (id(obj_cls), fn_name)
             _unpatch(obj_cls, fn_name, key, depth)
             return
 

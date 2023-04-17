@@ -18,13 +18,3 @@ class TestSingleRoIExtractor:
             featmap_strides=[8],
         )
         assert all(isinstance(layer, RoIInterpolationPool) for layer in extractor.roi_layers)
-
-
-#  class TestRoIInterpolationPool:
-#      @pytest.fixture(autouse=True)
-#      def setup(self):
-#          self.pool = RoIInterpolationPool(14, 1/8)
-#
-#      @e2e_pytest_unit
-#      def test_forward(self):
-#          self.pool()

@@ -64,7 +64,7 @@ for **self-supervised learning** by running the following command:
 
 .. code-block::
 
-    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type Selfsupervised --work-dir otx-workspace-CLASSIFICATION-Selfsupervised
+    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type SELFSUPERVISED --workspace otx-workspace-CLASSIFICATION-Selfsupervised
 
     [*] Workspace Path: otx-workspace-CLASSIFICATION-Selfsupervised
     [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
@@ -82,7 +82,7 @@ for **self-supervised learning** by running the following command:
 
     1. add ``--train-type Selfsupervised`` in the command to get the training components for self-supervised learning,
     2. update the path set as ``train-data-roots``,
-    3. and add ``--work-dir`` to distinguish self-supervised learning workspace from supervised learning workspace.
+    3. and add ``--workspace`` to distinguish self-supervised learning workspace from supervised learning workspace.
 
 After the workspace creation, the workspace structure is as follows:
 

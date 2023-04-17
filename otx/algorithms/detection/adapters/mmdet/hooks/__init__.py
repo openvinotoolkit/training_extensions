@@ -3,6 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .det_saliency_map_hook import DetSaliencyMapHook
+from .det_class_probability_map_hook import DetClassProbabilityMapHook
 
-__all__ = ["DetSaliencyMapHook"]
+__all__ = ["DetClassProbabilityMapHook"]

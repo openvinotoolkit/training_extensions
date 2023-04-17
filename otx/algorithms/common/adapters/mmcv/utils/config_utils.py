@@ -27,6 +27,7 @@ from collections.abc import Mapping
 from importlib import import_module
 from typing import Any, Callable, Dict, List, Tuple, Union
 
+import torch
 from mmcv import Config, ConfigDict
 from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
 from mmcv.utils.misc import import_modules_from_strings
@@ -34,10 +35,6 @@ from mmcv.utils.path import check_file_exist
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
@@ -249,7 +246,6 @@ def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict):
         cfg["custom_hooks"] = custom_hooks
 
 
-@check_input_parameters_type()
 def remove_from_config(config: Union[Config, ConfigDict], key: str):
     """Update & Remove configs."""
     if key in config:
@@ -261,7 +257,6 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
             raise ValueError(f"Unknown config type {type(config)}")
 
 
-@check_input_parameters_type()
 def remove_from_configs_by_type(configs: List[ConfigDict], type_name: str):
     """Update & remove by type."""
     indices = []
@@ -295,7 +290,6 @@ def update_config(
             ptr = ptr[key]
 
 
-@check_input_parameters_type()
 def get_dataset_configs(config: Union[Config, ConfigDict], subset: str) -> List[ConfigDict]:
     """A function that retrieves 'datasets' configurations from the input `Config` object or `ConfigDict` object.
 
@@ -311,7 +305,6 @@ def get_dataset_configs(config: Union[Config, ConfigDict], subset: str) -> List[
     return data_cfgs if data_cfgs else [data_cfg]
 
 
-@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntity) -> Config:
     """Prepare configs for testing phase."""
     config = copy.deepcopy(config)
@@ -320,13 +313,11 @@ def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntit
     return config
 
 
-@check_input_parameters_type()
 def is_epoch_based_runner(runner_config: ConfigDict):
     """Check Epoch based or Iter based runner."""
     return "Epoch" in runner_config.type
 
 
-@check_input_parameters_type()
 def config_from_string(config_string: str) -> Config:
     """Generate an mmcv config dict object from a string.
 
@@ -339,7 +330,6 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-@check_input_parameters_type()
 def patch_default_config(config: Config):
     """Patch default config."""
     if "runner" not in config:
@@ -352,7 +342,6 @@ def patch_default_config(config: Config):
         config.checkpoint_config = ConfigDict({"type": "CheckpointHook", "interval": 1})
 
 
-@check_input_parameters_type()
 def patch_data_pipeline(config: Config, data_pipeline: str = ""):
     """Replace data pipeline to data_pipeline.py if it exist."""
     if os.path.isfile(data_pipeline):
@@ -362,7 +351,6 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
         raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
 
 
-@check_input_parameters_type()
 def patch_color_conversion(config: Config):
     """Patch color conversion."""
     assert "data" in config
@@ -374,7 +362,6 @@ def patch_color_conversion(config: Config):
         cfg.to_rgb = not bool(to_rgb)
 
 
-@check_input_parameters_type()
 def patch_runner(config: Config):
     """Patch runner."""
     assert "runner" in config
@@ -391,15 +378,143 @@ def patch_runner(config: Config):
         remove_from_config(config, "total_epochs")
 
     # Change runner's type.
-    if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
-        logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-        config.runner.type = "EpochRunnerWithCancel"
-    elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
-        logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-        config.runner.type = "IterBasedRunnerWithCancel"
+    if config.runner.type != "AccuracyAwareRunner":
+        if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
+            logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
+            config.runner.type = "EpochRunnerWithCancel"
+        elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
+            logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
+            config.runner.type = "IterBasedRunnerWithCancel"
 
 
-@check_input_parameters_type()
+def patch_fp16(config: Config):
+    """Remove FP16 config if running on CPU device and revert to FP32.
+
+    Please refer https://github.com/pytorch/pytorch/issues/23377
+    """
+    if not torch.cuda.is_available() and "fp16" in config:
+        logger.info("Revert FP16 to FP32 on CPU device")
+        if isinstance(config, Config):
+            del config._cfg_dict["fp16"]  # pylint: disable=protected-access
+        elif isinstance(config, ConfigDict):
+            del config["fp16"]
+
+
+def patch_adaptive_interval_training(config: Config):
+    """Update adaptive interval settings for OTX training.
+
+    This function can be removed by adding custom hook cfg into recipe.py directly.
+    """
+    # default adaptive hook for evaluating before and after training
+    add_custom_hook_if_not_exists(
+        config,
+        ConfigDict(
+            type="AdaptiveTrainSchedulingHook",
+            enable_adaptive_interval_hook=False,
+            enable_eval_before_run=True,
+        ),
+    )
+    # Add/remove adaptive interval hook
+    if config.get("use_adaptive_interval", False):
+        update_or_add_custom_hook(
+            config,
+            ConfigDict(
+                {
+                    "type": "AdaptiveTrainSchedulingHook",
+                    "max_interval": 5,
+                    "enable_adaptive_interval_hook": True,
+                    "enable_eval_before_run": True,
+                    **config.pop("adaptive_validation_interval", {}),
+                }
+            ),
+        )
+    else:
+        config.pop("adaptive_validation_interval", None)
+
+
+def patch_early_stopping(config: Config):
+    """Update early stop settings for OTX training.
+
+    This function can be removed by adding custom hook cfg into recipe.py directly.
+    """
+    if "early_stop" in config:
+        remove_custom_hook(config, "EarlyStoppingHook")
+        early_stop = config.get("early_stop", False)
+        if early_stop:
+            early_stop_hook = ConfigDict(
+                type="LazyEarlyStoppingHook",
+                start=early_stop.start,
+                patience=early_stop.patience,
+                iteration_patience=early_stop.iteration_patience,
+                interval=1,
+                metric=config.early_stop_metric,
+                priority=75,
+            )
+            update_or_add_custom_hook(config, early_stop_hook)
+        else:
+            remove_custom_hook(config, "LazyEarlyStoppingHook")
+
+    # make sure model to be in a training mode even after model is evaluated (mmcv bug)
+    update_or_add_custom_hook(
+        config,
+        ConfigDict(type="ForceTrainModeHook", priority="LOWEST"),
+    )
+
+
+def patch_persistent_workers(config: Config):
+    """If num_workers is 0, persistent_workers must be False."""
+    data_cfg = config.data
+    for subset in ["train", "val", "test", "unlabeled"]:
+        if subset not in data_cfg:
+            continue
+        dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
+        workers_per_gpu = dataloader_cfg.get(
+            "workers_per_gpu",
+            data_cfg.get("workers_per_gpu", 0),
+        )
+        if workers_per_gpu == 0:
+            dataloader_cfg["persistent_workers"] = False
+            data_cfg[f"{subset}_dataloader"] = dataloader_cfg
+
+
+def patch_from_hyperparams(config: Config, hyperparams):
+    """Patch config parameters from hyperparams."""
+    params = hyperparams.learning_parameters
+    warmup_iters = int(params.learning_rate_warmup_iters)
+    lr_config = (
+        ConfigDict(warmup_iters=warmup_iters)
+        if warmup_iters > 0
+        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+    )
+
+    if params.enable_early_stopping and config.get("evaluation", None):
+        early_stop = ConfigDict(
+            start=int(params.early_stop_start),
+            patience=int(params.early_stop_patience),
+            iteration_patience=int(params.early_stop_iteration_patience),
+        )
+    else:
+        early_stop = False
+
+    runner = ConfigDict(max_epochs=int(params.num_iters))
+    if config.get("runner", None) and config.runner.get("type").startswith("IterBasedRunner"):
+        runner = ConfigDict(max_iters=int(params.num_iters))
+
+    hparams = ConfigDict(
+        optimizer=ConfigDict(lr=params.learning_rate),
+        lr_config=lr_config,
+        early_stop=early_stop,
+        data=ConfigDict(
+            samples_per_gpu=int(params.batch_size),
+            workers_per_gpu=int(params.num_workers),
+        ),
+        runner=runner,
+    )
+
+    hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
+    config.merge_from_dict(hparams)
+
+
 def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
     """Align data_cfg with recipe_cfg."""
     # we assumed config has 'otx_dataset' and 'labels' key in it
@@ -430,15 +545,15 @@ DEFAULT_META_KEYS = (
 )
 
 
-def get_meta_keys(pipeline_step):
+def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
     """Update meta_keys for ignore_labels."""
     meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
     meta_keys.append("ignored_labels")
+    meta_keys += add_meta_keys
     pipeline_step["meta_keys"] = set(meta_keys)
     return pipeline_step
 
 
-@check_input_parameters_type()
 def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     """Prepare configs of working directory."""
     base_work_dir = config.work_dir
@@ -452,7 +567,6 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     return train_round_checkpoint_dir
 
 
-@check_input_parameters_type()
 def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
     """Return dataset configs."""
     data_cfg = config.data[subset]

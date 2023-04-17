@@ -10,9 +10,15 @@
 [License](#license)
 
 [![PyPI](https://img.shields.io/pypi/v/otx)](https://pypi.org/project/otx)
+
+<!-- markdownlint-disable MD042 -->
+
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![pytorch](https://img.shields.io/badge/pytorch-1.13.1%2B-orange)]()
 [![openvino](https://img.shields.io/badge/openvino-2022.3.0-purple)]()
+
+<!-- markdownlint-enable  MD042 -->
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f9ba89f9ea2a47eeb9d52c2acc311e6c)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
 [![Codecov](https://codecov.io/gh/openvinotoolkit/training_extensions/branch/develop/graph/badge.svg?token=9HVFNMPFGD)](https://codecov.io/gh/openvinotoolkit/training_extensions)
 [![Pre-Merge Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml)
@@ -89,21 +95,12 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.1.0 (1Q23)
+### v1.2.0 (2Q23)
 
-- Add FP16 IR export support (<https://github.com/openvinotoolkit/training_extensions/pull/1683>)
-- Add in-memory caching in dataloader (<https://github.com/openvinotoolkit/training_extensions/pull/1694>)
-- Add MoViNet template for action classification (<https://github.com/openvinotoolkit/training_extensions/pull/1742>)
-- Add Semi-SL multilabel classification algorithm (<https://github.com/openvinotoolkit/training_extensions/pull/1805>)
-- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (<https://github.com/openvinotoolkit/training_extensions/pull/1534>)
-- Add train-type parameter to otx train (<https://github.com/openvinotoolkit/training_extensions/pull/1874>)
-- Add embedding of inference configuration to IR for classification (<https://github.com/openvinotoolkit/training_extensions/pull/1842>)
-- Enable VOC dataset in OTX (<https://github.com/openvinotoolkit/training_extensions/pull/1862>)
-- Add mmcls.VisionTransformer backbone support (<https://github.com/openvinotoolkit/training_extensions/pull/1908>)
-
-### v1.2+ (2Q23)
-
-- In planning
+- Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
+- Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
+- Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
+- Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
 
 ### Release History
 

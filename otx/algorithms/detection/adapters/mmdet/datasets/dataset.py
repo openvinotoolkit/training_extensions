@@ -32,17 +32,12 @@ from otx.algorithms.detection.adapters.mmdet.evaluation import eval_segm
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 from otx.api.utils.shape_factory import ShapeFactory
 
 from .tiling import Tile
 
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
-@check_input_parameters_type()
 def get_annotation_mmdet_format(
     dataset_item: DatasetItemEntity,
     labels: List[LabelEntity],
@@ -156,7 +151,6 @@ class OTXDetDataset(CustomDataset):
 
             return data_info
 
-    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     def __init__(
         self,
         otx_dataset: DatasetEntity,
@@ -206,7 +200,6 @@ class OTXDetDataset(CustomDataset):
         _ = idx
         return np.random.choice(len(self))
 
-    @check_input_parameters_type()
     def prepare_train_img(self, idx: int) -> dict:
         """Get training data and annotations after pipeline.
 
@@ -217,7 +210,6 @@ class OTXDetDataset(CustomDataset):
         self.pre_pipeline(item)
         return self.pipeline(item)
 
-    @check_input_parameters_type()
     def prepare_test_img(self, idx: int) -> dict:
         """Get testing data after pipeline.
 
@@ -229,14 +221,12 @@ class OTXDetDataset(CustomDataset):
         return self.pipeline(item)
 
     @staticmethod
-    @check_input_parameters_type()
     def pre_pipeline(results: Dict[str, Any]):
         """Prepare results dict for pipeline. Add expected keys to the dict."""
         results["bbox_fields"] = []
         results["mask_fields"] = []
         results["seg_fields"] = []
 
-    @check_input_parameters_type()
     def get_ann_info(self, idx: int):
         """This method is used for evaluation of predictions.
 
@@ -390,6 +380,7 @@ class ImageTilingDataset:
 
         Args:
             results (list[list | tuple]): Testing results of the dataset.
+            **kwargs: Addition keyword arguments.
 
         Returns:
             dict[str, float]: evaluation metric.

@@ -68,6 +68,7 @@ class SupConClsHead(BaseHead):
 
         Args:
             x (Tensor): features from the backbone.
+            gt_label (Tensor): ground truth.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.

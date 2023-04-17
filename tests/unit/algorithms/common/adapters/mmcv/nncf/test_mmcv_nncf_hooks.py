@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import tempfile
 from mmcv.utils import get_logger
 
 from otx.algorithms.common.adapters.mmcv.nncf.hooks import CompressionHook
@@ -20,7 +21,8 @@ class TestCompressionHook:
                 self.rank = 0
 
         runner = SimpleRunner()
-        ctrl, _ = create_nncf_model()
+        with tempfile.TemporaryDirectory() as tempdir:
+            ctrl, _ = create_nncf_model(tempdir)
         compression_hook = CompressionHook(ctrl)
         compression_hook.after_train_iter(runner)
 
@@ -32,7 +34,8 @@ class TestCompressionHook:
                 self.rank = 0
 
         runner = SimpleRunner()
-        ctrl, _ = create_nncf_model()
+        with tempfile.TemporaryDirectory() as tempdir:
+            ctrl, _ = create_nncf_model(tempdir)
         compression_hook = CompressionHook(ctrl)
         compression_hook.after_train_epoch(runner)
 
@@ -44,6 +47,7 @@ class TestCompressionHook:
                 self.rank = 0
 
         runner = SimpleRunner()
-        ctrl, _ = create_nncf_model()
+        with tempfile.TemporaryDirectory() as tempdir:
+            ctrl, _ = create_nncf_model(tempdir)
         compression_hook = CompressionHook(ctrl)
         compression_hook.before_run(runner)

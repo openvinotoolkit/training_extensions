@@ -24,7 +24,7 @@ def timeit(func) -> Callable:
     """Decorator to measure time of function execution.
 
     Args:
-        func:
+        func: Function to be the target for measuring.
 
     Returns:
         Callable function with time measurement.
@@ -390,10 +390,10 @@ class Tile:
         """Shift tile-level mask to image-level mask.
 
         Args:
-            tile_rle (Dict): _description_
+            tile_rle (Dict): tile-level mask result.
 
         Returns:
-            _type_: _description_
+            np.ndarray: image-level mask result.
         """
         x1, y1, x2, y2 = tile_rle.pop("tile_box")
         height, width = tile_rle.pop("img_size")
@@ -401,17 +401,19 @@ class Tile:
         tile_mask = np.pad(tile_mask, ((y1, height - y2), (x1, width - x2)))
         return mask_util.encode(tile_mask)
 
-    def process_masks(self, tile_masks: List[Dict]):
+    def process_masks(self, tile_masks: List) -> List[np.ndarray]:
         """Decode Mask Result to Numpy mask, add paddings then encode masks again.
 
         Args:
-            tile_masks (_type_): _description_
+            tile_masks (List): list of tile-level mask results.
 
         Returns:
-            _type_: _description_
+            List[np.ndarray]: list of image-level mask results.
         """
-        with Pool(self.nproc) as pool:
-            results = pool.map(Tile.readjust_tile_mask, tile_masks)
+        results = []
+        if tile_masks:
+            with Pool(self.nproc) as pool:
+                results = pool.map(Tile.readjust_tile_mask, tile_masks)
         return results
 
     # pylint: disable=too-many-locals

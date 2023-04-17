@@ -8,13 +8,13 @@ summary: Class-Incremental Semantic Segmentation with middle-sized architecture 
 application: ~
 
 # Algo backend.
-framework: OTESegmentation v0.14.0
+framework: OTXSegmentation v0.14.0
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.segmentation.tasks.SegmentationTrainTask
-  openvino: otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask
-  nncf: otx.algorithms.segmentation.tasks.SegmentationNNCFTask
+  base: otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask
+  openvino: otx.algorithms.segmentation.adapters.openvino.task.OpenVINOSegmentationTask
+  nncf: otx.algorithms.segmentation.adapters.mmseg.nncf.task.SegmentationNNCFTask
 
 # Capabilities.
 capabilities:

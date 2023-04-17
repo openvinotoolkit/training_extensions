@@ -10,7 +10,7 @@ import copy
 import itertools
 import logging
 from enum import Enum
-from typing import Iterator, List, Optional, Union, cast, overload
+from typing import Generic, Iterator, List, Optional, TypeVar, Union, cast, overload
 
 from bson.objectid import ObjectId
 
@@ -82,7 +82,10 @@ class DatasetIterator(collections.abc.Iterator):
         return item
 
 
-class DatasetEntity:
+TDatasetItemEntity = TypeVar("TDatasetItemEntity", bound="DatasetItemEntity")
+
+
+class DatasetEntity(Generic[TDatasetItemEntity]):
     """A dataset consists of a list of DatasetItemEntities and a purpose.
 
     ## With dataset items
@@ -146,7 +149,7 @@ class DatasetEntity:
 
     def __init__(
         self,
-        items: Optional[List[DatasetItemEntity]] = None,
+        items: Optional[List[TDatasetItemEntity]] = None,
         purpose: DatasetPurpose = DatasetPurpose.INFERENCE,
     ):
         self._items = [] if items is None else items
@@ -270,7 +273,7 @@ class DatasetEntity:
         """
         return self._fetch(key)
 
-    def __iter__(self) -> Iterator[DatasetItemEntity]:
+    def __iter__(self) -> Iterator[TDatasetItemEntity]:
         """Return an iterator for the DatasetEntity.
 
         This iterator is able to iterate over the DatasetEntity lazily.
@@ -308,7 +311,8 @@ class DatasetEntity:
         Returns:
             DatasetEntity: a new dataset containing the same items, with empty annotation objects.
         """
-        new_dataset = DatasetEntity(purpose=self.purpose)
+        new_dataset = DatasetEntity[TDatasetItemEntity](purpose=self.purpose)
+
         for dataset_item in self:
             if isinstance(dataset_item, DatasetItemEntity):
                 empty_annotation = AnnotationSceneEntity(annotations=[], kind=annotation_kind)
@@ -318,7 +322,7 @@ class DatasetEntity:
                 roi.id_ = ID(ObjectId())
                 roi.set_labels([])
 
-                new_dataset_item = DatasetItemEntity(
+                new_dataset_item = dataset_item.wrap(
                     media=dataset_item.media,
                     annotation_scene=empty_annotation,
                     roi=roi,
@@ -351,7 +355,7 @@ class DatasetEntity:
         )
         return dataset
 
-    def remove(self, item: DatasetItemEntity) -> None:
+    def remove(self, item: TDatasetItemEntity) -> None:
         """Remove an item from the items.
 
         This function calls remove_at_indices function.
@@ -365,7 +369,7 @@ class DatasetEntity:
         index = self._items.index(item)
         self.remove_at_indices([index])
 
-    def append(self, item: DatasetItemEntity) -> None:
+    def append(self, item: TDatasetItemEntity) -> None:
         """Append a DatasetItemEntity to the dataset.
 
         Example:

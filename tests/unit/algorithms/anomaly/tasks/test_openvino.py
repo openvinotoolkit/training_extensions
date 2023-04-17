@@ -3,6 +3,7 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import pytest
 from copy import deepcopy
 
 import numpy as np
@@ -33,6 +34,7 @@ class TestOpenVINOTask:
         output_model.set_data("min", np.float32(0).tobytes())
         output_model.set_data("max", np.float32(1).tobytes())
 
+    @pytest.mark.skip(reason="CVS-107918 FAIL code -11 in anomaly unit test on python3.10")
     def test_openvino(self, tmpdir, setup_task_environment):
         """Tests the OpenVINO optimize method."""
         root = str(tmpdir.mkdir("anomaly_openvino_test"))
