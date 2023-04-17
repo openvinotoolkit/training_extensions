@@ -185,7 +185,6 @@ class SegmentationConfigurer:
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
             logger.info(f"task config!!!!: training={training}")
-            cfg["task_adapt"].get("op", "REPLACE")
 
             # Task classes
             self.configure_classes(cfg)
@@ -501,10 +500,13 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
         """Patch config to support incremental learning."""
         super().configure_task(cfg, training)
 
-        new_classes: List[str] = np.setdiff1d(self.model_classes, self.org_model_classes).tolist()
-
-        # Check if new classes are added
-        has_new_class: bool = len(new_classes) > 0
+        # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
+        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
+            self.model_classes
+        ):
+            has_new_class = False
+        else:
+            has_new_class = True
 
         # Update TaskAdaptHook (use incremental sampler)
         task_adapt_hook = ConfigDict(
