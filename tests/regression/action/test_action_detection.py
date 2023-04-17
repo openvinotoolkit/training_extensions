@@ -19,10 +19,17 @@ from tests.regression.regression_test_helpers import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
-    otx_eval_compare,
-    otx_eval_e2e_eval_time,
-    otx_eval_e2e_train_time,
     otx_train_testing,
+)
+
+from tests.regression.regression_command import (
+    regression_eval_testing,
+    regression_openvino_testing,
+    regression_deployment_testing,
+    regression_nncf_eval_testing,
+    regression_pot_eval_testing,
+    regression_train_time_testing,
+    regression_eval_time_testing,
 )
 
 # Configurations for regression test.
@@ -64,7 +71,7 @@ class TestRegressionActionDetection:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -78,20 +85,25 @@ class TestRegressionActionDetection:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][LABEL_TYPE][TRAIN_TYPE]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, template):
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=action_det_regression_config["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=action_det_regression_config["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
