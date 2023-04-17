@@ -200,7 +200,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -442,7 +442,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.05)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -638,7 +638,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.05)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

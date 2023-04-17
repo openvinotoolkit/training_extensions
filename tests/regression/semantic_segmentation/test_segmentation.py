@@ -318,7 +318,7 @@ class TestRegressionSegmentation:
             tmp_dir_path,
             otx_dir,
             segmentation_data_args,
-            threshold=0.05,
+            threshold=0.0,
             criteria=segmentation_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],

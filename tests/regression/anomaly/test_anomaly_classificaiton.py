@@ -169,7 +169,7 @@ class TestRegressionAnomalyClassification:
             tmp_dir_path,
             otx_dir,
             category_data_args,
-            threshold=0.05,
+            threshold=0.0,
             criteria=anomaly_classification_regression_config["regression_criteria"]["deploy"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],

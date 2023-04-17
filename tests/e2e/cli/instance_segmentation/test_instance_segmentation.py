@@ -178,7 +178,7 @@ class TestToolsMPAInstanceSegmentation:
     @pytest.mark.skip(reason="CVS-104657")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

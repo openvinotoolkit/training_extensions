@@ -171,7 +171,7 @@ class TestToolsTilingDetection:
         if template.name in ["ATSS", "SSD"]:
             pytest.skip(reason="[CVS-108291] Tiling ATSS, SSD show performance drop")
         tmp_dir_path = tmp_dir_path / "tiling_det"
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
