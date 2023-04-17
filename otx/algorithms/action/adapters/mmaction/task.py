@@ -268,8 +268,8 @@ class MMActionTask(OTXActionTask):
         validate = bool(cfg.data.get("val", None))
 
         if auto_adapt_bs:
-            train_func = partial(train_model, model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, meta, datasets, validate)
+            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(train_func, cfg, datasets, validate)
 
         train_model(
             model,

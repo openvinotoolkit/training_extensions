@@ -25,7 +25,7 @@ from otx.algorithms.common.utils.logger import get_logger
 logger = get_logger()
 
 
-def adapt_batch_size(train_func: Callable, cfg, meta: Dict, datasets: List, validate: bool = False):
+def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False):
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
     This function just setup for single iteration training to reduce time for adapting.
@@ -41,7 +41,6 @@ def adapt_batch_size(train_func: Callable, cfg, meta: Dict, datasets: List, vali
     """
     def train_func_single_iter(batch_size):
         copied_cfg = deepcopy(cfg)
-        copied_meta = deepcopy(meta)
         _set_batch_size(copied_cfg, batch_size)
         
         # setup for training a single iter to reduce time
@@ -56,7 +55,6 @@ def adapt_batch_size(train_func: Callable, cfg, meta: Dict, datasets: List, vali
         train_func(
             dataset=new_datasets,
             cfg=copied_cfg,
-            meta=copied_meta,
             validate=validate,
         )
 
@@ -68,7 +66,7 @@ def adapt_batch_size(train_func: Callable, cfg, meta: Dict, datasets: List, vali
     )
     _set_batch_size(cfg, available_bs)
     cfg.optimizer.lr *= available_bs / default_bs
-    logger.info(f"Adpating batch size : {default_bs} -> {available_bs}")
+    logger.info(f"Result of the adpated batch size : {default_bs} -> {available_bs}")
 
 
 def _get_batch_size(cfg) -> int:
@@ -85,15 +83,17 @@ def _set_batch_size(cfg, batch_size: int):
 
 
 class SubDataset:
-    """Wrapper class for DatasetEntity of dataset. It's used to make subset during HPO.
+    """Wrapper class to make dataset pretend to have specified number of images.
 
     Args:
-        fullset: full dataset
-        config (Optional[Dict[str, Any]], optional): hyper parameter trial config
-        indices (Optional[List[int]]): dataset index. Defaults to None.
+        fullset: Original dataset.
+        num_samples (int): Number of images to pretend to have. It should be positive.
     """
 
-    def __init__(self, fullset, num_sampels: Optional[int] = None):
+    def __init__(self, fullset, num_sampels: int):
+        if num_sampels <= 0:
+            raise ValueError(f"num_sampels should be positive. But, current value is {num_sampels}.")
+
         self.fullset = fullset
         self.num_sampels = num_sampels
 
