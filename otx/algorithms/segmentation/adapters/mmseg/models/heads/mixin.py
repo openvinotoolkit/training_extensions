@@ -26,6 +26,7 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 
 class SegMixinModule(nn.Module):
     """Pixel weight mixin class for segmentation.
+
     It includes SegmentOutNormMixin, loss mixing module and aggregator for class incremental.
     """
 
@@ -168,6 +169,7 @@ class SegMixinModule(nn.Module):
         return_logits=False,
     ):
         """Forward function for training.
+
         Args:
             inputs (list[Tensor]): List of multi-level img features.
             img_metas (list[dict]): List of image info dict where each dict
@@ -180,8 +182,11 @@ class SegMixinModule(nn.Module):
                 used if the architecture supports semantic segmentation task.
             train_cfg (dict): The training config.
             pixel_weights (Tensor): Pixels weights.
+            return_logits (bool): whether or not to return logits
+
+
         Returns:
-            dict[str, Tensor]: a dictionary of loss components
+            dict[str, Tensor]: a dictionary of loss components.
         """
         seg_logits = self(inputs)
         valid_label_mask = get_valid_label_mask_per_batch(img_metas, self.num_classes)

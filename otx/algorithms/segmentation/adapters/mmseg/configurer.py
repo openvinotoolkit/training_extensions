@@ -6,8 +6,8 @@
 import importlib
 import json
 import os
-from typing import Any, Dict, List, Optional
 from collections import OrderedDict
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -162,6 +162,7 @@ class SegmentationConfigurer:
     def configure_data(
         self,
         cfg: Config,
+        training: bool,
         data_cfg: Optional[Config],
     ) -> None:
         """Patch cfg.data.
@@ -192,7 +193,7 @@ class SegmentationConfigurer:
                 # substitute head.type with OTX Head factory function
                 head.type = otx_head_factory
                 if "base_type" not in head:
-                    raise KeyError(f"base_type for model head should be provided in model config!")
+                    raise KeyError("base_type for model head should be provided in model config!")
 
     def configure_task(
         self,
@@ -291,6 +292,7 @@ class SegmentationConfigurer:
 
     @staticmethod
     def patch_chkpt(ckpt_path: str, new_path: Optional[str] = None) -> str:
+        """Modify state dict for pretrained weights to match model state dict."""
         ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
         local_torch_hub_folder = torch.hub.get_dir()
         if "state_dict" in ckpt:
@@ -325,6 +327,7 @@ class SegmentationConfigurer:
             if not torch.distributed.is_initialized() or dist.get_rank() == 0:
                 torch.save(ckpt, new_path)
             return new_path
+        return ckpt_path
 
     @staticmethod
     def get_model_classes(cfg: Config) -> List[str]:
