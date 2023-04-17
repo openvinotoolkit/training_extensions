@@ -1,4 +1,4 @@
-"""Initialization of OCR-Lite-HRnet-s-mod2 model for Segmentation Task."""
+"""Initialization of DeepLabV3Plus_ResNet18 model for Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

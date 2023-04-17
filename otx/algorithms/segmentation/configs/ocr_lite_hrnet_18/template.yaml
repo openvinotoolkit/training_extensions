@@ -33,9 +33,9 @@ hyper_parameters:
       learning_rate_fixed_iters:
         default_value: 0
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 20
       num_iters:
-        default_value: 1
+        default_value: 100
     algo_backend:
       train_type:
         default_value: Incremental

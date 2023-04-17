@@ -21,7 +21,9 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.utils.shape_factory import ShapeFactory
 
 
-def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
+def mask_from_dataset_item(
+    dataset_item: DatasetItemEntity, labels: List[LabelEntity], use_otx_adapter: bool = True
+) -> np.ndarray:
     """Creates a mask from dataset item.
 
     The mask will be two dimensional, and the value of each pixel matches the class index with offset 1. The background
@@ -37,34 +39,28 @@ def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEn
         Numpy array of mask
     """
     # todo: cache this so that it does not have to be redone for all the same media
-
-    mask = mask_from_file(
-        dataset_item,
-        labels
-    )
-
+    if use_otx_adapter:
+        mask = mask_from_annotation(dataset_item.get_annotations(), labels, dataset_item.width, dataset_item.height)
+    else:
+        mask = mask_from_file(dataset_item)
     return mask
 
-def mask_from_file(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
 
-    labels = sorted(labels)  # type: ignore
-    labels = [int(l.id) + 1 for l in labels]
-    labels.insert(0, 0)
+def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
+    """Loads masks directly from annotation image.
+
+    Only Common Sematic Segmentation format is supported.
+    """
+
     mask_form_file = dataset_item.media.path
-    mask_form_file = mask_form_file.replace("images", "masks")
-    mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
-    new_mask = np.zeros_like(mask)
+    if mask_form_file is not None:
+        mask_form_file = mask_form_file.replace("images", "masks")
+        mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
+        mask = np.expand_dims(mask, axis=2)
+    else:
+        mask = None
+    return mask
 
-    for l in np.unique(mask):
-        if l == 255:
-            new_mask[mask == l] = 255
-        else:
-            new_mask[mask == l] = labels[l]
-    if len(labels) <= 10:
-        assert np.sum(new_mask != mask) == 0
-
-    return np.expand_dims(new_mask, axis=2).astype(np.int8)
 
 def mask_from_annotation(
     annotations: List[Annotation], labels: List[LabelEntity], width: int, height: int
@@ -86,7 +82,6 @@ def mask_from_annotation(
         2d numpy array of mask
     """
 
-    labels = sorted(labels)  # type: ignore
     mask = np.zeros(shape=(height, width), dtype=np.uint8)
     for annotation in annotations:
         shape = annotation.shape
@@ -109,7 +104,6 @@ def mask_from_annotation(
         mask = cv2.drawContours(mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1)
 
     mask = np.expand_dims(mask, axis=2)
-
 
     return mask
 
