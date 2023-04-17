@@ -408,8 +408,8 @@ class MMClassificationTask(OTXClassificationTask):
             )
 
         if auto_adapt_bs:
-            train_func = partial(train_model, model=model, distributed=False, validate=False)
-            adapt_batch_size(train_func, cfg, meta, datasets)
+            train_func = partial(train_model, model=model, distributed=False)
+            adapt_batch_size(train_func, cfg, meta, datasets, False)
 
         train_model(
             model,

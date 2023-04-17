@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 from typing import Callable
+from copy import deepcopy
 
 import torch
 
@@ -56,16 +57,20 @@ def adapt_batch_size(train_func: Callable[[int], None], default_bs: int, trainse
         cuda_oom = False
         torch.cuda.reset_max_memory_allocated(device=None)
 
+        logger.info("*"*100 + f"start {default_bs}")
         try:
             train_func(default_bs)
         except RuntimeError as e:
             if str(e).startswith('CUDA out of memory.'):
+                print(str(e))
                 cuda_oom = True
             else:
                 raise e
 
         gpu_memory_usage = torch.cuda.max_memory_allocated(device=None) / total_mem
-        logger.debug(f"Adapting Batch size => bs : {default_bs}, CUDA_OOM : {cuda_oom}, GPU memory usage : {gpu_memory_usage}%")
+        logger.info(
+            "*"*100 + f"Adapting Batch size => bs : {default_bs}, CUDA_OOM : {cuda_oom}, GPU memory usage : {gpu_memory_usage}%"
+        )
 
         # If GPU memory usage is too close to limit, CUDA OOM can be raised during training
         if cuda_oom or torch.cuda.max_memory_allocated(device=None) / total_mem >= 0.87:

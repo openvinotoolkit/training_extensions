@@ -19,6 +19,7 @@ import os
 import time
 from copy import deepcopy
 from typing import Optional, Union
+from functools import partial
 
 import torch
 from mmaction import __version__
@@ -48,6 +49,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
+from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -198,6 +200,7 @@ class MMActionTask(OTXActionTask):
     def _train_model(
         self,
         dataset: DatasetEntity,
+        auto_adapt_bs: bool = False,
     ):
         """Train function in MMActionTask."""
         logger.info("init data cfg.")
@@ -263,6 +266,11 @@ class MMActionTask(OTXActionTask):
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
+
+        if auto_adapt_bs:
+            train_func = partial(train_model, model=deepcopy(model), distributed=False)
+            adapt_batch_size(train_func, cfg, meta, datasets, validate)
+
         train_model(
             model,
             datasets,

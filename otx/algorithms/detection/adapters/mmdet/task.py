@@ -48,6 +48,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.adapters.mmcv.utils.automatic_bs import SubDataset
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
@@ -279,8 +280,8 @@ class MMDetectionTask(OTXDetectionTask):
         validate = bool(cfg.data.get("val", None))
 
         if auto_adapt_bs:
-            train_func = partial(train_detector, model=model, distributed=False, validate=False)
-            adapt_batch_size(train_func, cfg, meta, datasets)
+            train_func = partial(train_detector, model=model, distributed=False)
+            adapt_batch_size(train_func, cfg, meta, datasets, False)
 
         train_detector(
             model,
