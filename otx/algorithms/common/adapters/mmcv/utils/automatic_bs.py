@@ -60,22 +60,24 @@ def adapt_batch_size(train_func: Callable, cfg, meta: Dict, datasets: List, vali
             validate=validate,
         )
 
+    default_bs = _get_batch_size(cfg)
     available_bs =  adapt_torch_model_bs(
         train_func=train_func_single_iter,
-        default_bs=_get_batch_size(cfg),
+        default_bs=default_bs,
         trainset_size=len(datasets[0]),
     )
     _set_batch_size(cfg, available_bs)
-    logger.info(f"batch size is set as {available_bs} after adapting.")
+    cfg.optimizer.lr *= available_bs / default_bs
+    logger.info(f"Adpating batch size : {default_bs} -> {available_bs}")
 
 
-def _get_batch_size(cfg):
+def _get_batch_size(cfg) -> int:
     if "action" in str(cfg.domain).lower():
         return cfg.data.videos_per_gpu
     return cfg.data.train_dataloader['samples_per_gpu']
 
 
-def _set_batch_size(cfg, batch_size):
+def _set_batch_size(cfg, batch_size: int):
     if "action" in str(cfg.domain).lower():
         cfg.data.videos_per_gpu = batch_size
     else:

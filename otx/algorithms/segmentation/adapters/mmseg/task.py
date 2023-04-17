@@ -372,7 +372,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         validate = bool(cfg.data.get("val", None))
 
         if auto_adapt_bs:
-            train_func = partial(train_segmentor, model=model, distributed=False)
+            train_func = partial(train_segmentor, model=deepcopy(model), distributed=False)
             adapt_batch_size(train_func, cfg, meta, datasets, False)
 
         train_segmentor(
