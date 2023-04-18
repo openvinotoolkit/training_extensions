@@ -74,7 +74,7 @@ class TestOTXDatasetManager:
         random_data = DatasetManager.get_image_path(
             generate_datumaro_dataset_item(item_id="0", subset=subset, task=task)
         )
-        assert random_data is not None
+        assert random_data is None
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("task", AVAILABLE_TASKS)
