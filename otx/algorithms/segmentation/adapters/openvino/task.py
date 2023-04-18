@@ -226,9 +226,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                     )
                     dataset_item.append_metadata_item(result_media, model=self.model)
 
-            # breakpoint()
-
             update_progress_callback(int(i / dataset_size * 100), None)
+
         return dataset
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
