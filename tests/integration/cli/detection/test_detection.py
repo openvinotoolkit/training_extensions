@@ -209,3 +209,11 @@ class TestDetectionCLI:
         args_semisl_multigpu = copy.deepcopy(args_semisl)
         args_semisl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=default_templates_ids)
+    def test_otx_train_auto_decrease_bs(self, template, tmp_dir_path):
+        decrease_bs_args = copy.deepcopy(args)
+        decrease_bs_args["train_params"].extend(["--learning_parameters.auto_decrease_bs", "true"])
+        tmp_dir_path = tmp_dir_path / "detection_auto_decrease_bs"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args)
