@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Callable, List
 from copy import deepcopy
+from typing import Callable, List
 
 import numpy as np
 
@@ -39,10 +39,11 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         datasets (List): List of datasets.
         validate (bool): Whether do vlidation or not.
     """
+
     def train_func_single_iter(batch_size):
         copied_cfg = deepcopy(cfg)
         _set_batch_size(copied_cfg, batch_size)
-        
+
         # setup for training a single iter to reduce time
         copied_cfg.runner["max_epochs"] = 1
         if not validate:
@@ -59,7 +60,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         )
 
     default_bs = _get_batch_size(cfg)
-    available_bs =  adapt_torch_model_bs(
+    available_bs = adapt_torch_model_bs(
         train_func=train_func_single_iter,
         default_bs=default_bs,
         trainset_size=len(datasets[0]),
@@ -72,14 +73,14 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
 def _get_batch_size(cfg) -> int:
     if "action" in str(cfg.domain).lower():
         return cfg.data.videos_per_gpu
-    return cfg.data.train_dataloader['samples_per_gpu']
+    return cfg.data.train_dataloader["samples_per_gpu"]
 
 
 def _set_batch_size(cfg, batch_size: int):
     if "action" in str(cfg.domain).lower():
         cfg.data.videos_per_gpu = batch_size
     else:
-        cfg.data.train_dataloader['samples_per_gpu'] = batch_size
+        cfg.data.train_dataloader["samples_per_gpu"] = batch_size
 
 
 class SubDataset:
@@ -115,8 +116,8 @@ class SubDataset:
     def flag(self):
         """Getter of flag for detection task.
 
-            Sampler of the detection task decides length of dataset checking sum of flag array.
-            To consider that case, return flag array with length of num_samples.
-        
+        Sampler of the detection task decides length of dataset checking sum of flag array.
+        To consider that case, return flag array with length of num_samples.
+
         """
         return np.zeros(self.num_sampels, dtype=np.uint8)

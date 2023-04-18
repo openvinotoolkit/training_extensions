@@ -495,7 +495,7 @@ class OTXClassificationTask(OTXTask, ABC):
         return output, best_acc
 
     @abstractmethod
-    def _train_model(self, dataset: DatasetEntity):
+    def _train_model(self, dataset: DatasetEntity, auto_adapt_bs: bool = False):
         """Train model and return the results."""
         raise NotImplementedError
 

@@ -6,6 +6,7 @@
 from ._builder_build_data_parallel import build_data_parallel
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
+from .automatic_bs import adapt_batch_size
 from .builder import build_dataloader, build_dataset
 from .config_utils import (
     MPAConfig,
@@ -30,7 +31,6 @@ from .config_utils import (
     remove_from_configs_by_type,
     update_config,
 )
-from .automatic_bs import adapt_batch_size
 
 __all__ = [
     "build_dataset",

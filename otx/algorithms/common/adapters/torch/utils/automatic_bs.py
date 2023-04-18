@@ -40,7 +40,7 @@ def adapt_batch_size(train_func: Callable[[int], None], default_bs: int, trainse
         raise ValueError("train data set size should be bigger than 0.")
 
     if trainset_size < default_bs:
-            default_bs = trainset_size
+        default_bs = trainset_size
 
     min_bs = 0
     lowest_unavailable_bs = default_bs + 2
@@ -59,7 +59,7 @@ def adapt_batch_size(train_func: Callable[[int], None], default_bs: int, trainse
         try:
             train_func(default_bs)
         except RuntimeError as e:
-            if str(e).startswith('CUDA out of memory.'):
+            if str(e).startswith("CUDA out of memory."):
                 print(str(e))
                 cuda_oom = True
             else:
@@ -71,7 +71,7 @@ def adapt_batch_size(train_func: Callable[[int], None], default_bs: int, trainse
         )
 
         # If GPU memory usage is too close to limit, CUDA OOM can be raised during training
-        if cuda_oom or torch.cuda.max_memory_allocated(device=None) / total_mem >= 0.87:
+        if cuda_oom or torch.cuda.max_memory_allocated(device=None) / total_mem >= 0.85:
             if default_bs < lowest_unavailable_bs:
                 lowest_unavailable_bs = default_bs
             default_bs = _get_even_center_val(default_bs, min_bs)
@@ -85,5 +85,5 @@ def adapt_batch_size(train_func: Callable[[int], None], default_bs: int, trainse
 
     if min_bs == 0:
         raise RuntimeError("Current device can't train model even with 2!")
-    
+
     return min_bs

@@ -8,6 +8,7 @@ DEFAULT_BS = 8
 DEFAULT_LR = 0.001
 TRAINSET_SIZE = 100
 
+
 def bs_adapt_func(train_func, default_bs, trainset_size):
     train_func(default_bs)
     train_func(default_bs // 2)
@@ -24,15 +25,15 @@ def mock_adapt_func(mocker):
 @pytest.fixture
 def common_cfg(mocker):
     mock_cfg = mocker.MagicMock()
-    mock_cfg.runner = {"max_epochs" : 100}
-    mock_cfg.custom_hooks = [{"type" : "AdaptiveTrainSchedulingHook", "enable_eval_before_run" : True}]
+    mock_cfg.runner = {"max_epochs": 100}
+    mock_cfg.custom_hooks = [{"type": "AdaptiveTrainSchedulingHook", "enable_eval_before_run": True}]
     mock_cfg.optimizer.lr = DEFAULT_LR
     return mock_cfg
 
 
 @pytest.fixture
 def mock_cfg_not_action(common_cfg):
-    common_cfg.data.train_dataloader = {"samples_per_gpu" : DEFAULT_BS}
+    common_cfg.data.train_dataloader = {"samples_per_gpu": DEFAULT_BS}
     return common_cfg
 
 

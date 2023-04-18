@@ -18,8 +18,8 @@ import glob
 import os
 import time
 from copy import deepcopy
-from typing import Optional, Union
 from functools import partial
+from typing import Optional, Union
 
 import torch
 from mmaction import __version__
@@ -35,6 +35,7 @@ from otx.algorithms.action.adapters.mmaction import (
 )
 from otx.algorithms.action.task import OTXActionTask
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_adaptive_interval_training,
@@ -49,7 +50,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters

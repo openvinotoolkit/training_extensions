@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
- 
+
 from .automatic_bs import adapt_batch_size
 
-__all__ = ["automatic_bs"]
+__all__ = ["adapt_batch_size"]

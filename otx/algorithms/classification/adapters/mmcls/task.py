@@ -19,8 +19,8 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
-from typing import Any, Dict, Optional, Union
 from functools import partial
+from typing import Any, Dict, Optional, Union
 
 import torch
 from mmcls.apis import train_model
@@ -41,6 +41,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_data_pipeline,
@@ -49,7 +50,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
 )
 from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
-from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,

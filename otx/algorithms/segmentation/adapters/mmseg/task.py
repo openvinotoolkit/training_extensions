@@ -20,8 +20,8 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
-from typing import Any, Dict, Optional, Union
 from functools import partial
+from typing import Any, Dict, Optional, Union
 
 import torch
 from mmcv.runner import wrap_fp16_model
@@ -36,6 +36,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_data_pipeline,
@@ -55,7 +56,6 @@ from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     SemiSLSegmentationConfigurer,
 )
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
-from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
 from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegmentationExporter
 from otx.algorithms.segmentation.task import OTXSegmentationTask
 
