@@ -11,7 +11,14 @@ optimizer = dict(
 optimizer_config = dict()
 # learning policy
 lr_config = dict(
-    _delete_=True, policy="poly", warmup="linear", warmup_iters=300, warmup_ratio=1e-6, power=0.9,  min_lr=1e-6, by_epoch=False
+    _delete_=True,
+    policy="poly",
+    warmup="linear",
+    warmup_iters=300,
+    warmup_ratio=1e-6,
+    power=0.9,
+    min_lr=1e-6,
+    by_epoch=False,
 )
 
 log_config = dict(
