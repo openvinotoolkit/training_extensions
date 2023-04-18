@@ -25,6 +25,7 @@ from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.image import Image
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.utils.vis_utils import dump_frames
 from otx.cli.manager import ConfigManager
 from otx.cli.tools.utils.demo.images_capture import open_images_capture
 from otx.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg

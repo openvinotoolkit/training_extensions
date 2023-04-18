@@ -33,6 +33,7 @@ def get_actmap(
     saliency_map = cv2.applyColorMap(saliency_map, cv2.COLORMAP_JET)
     return saliency_map
 
+
 def get_input_names_list(input_path: Union[str, int], capture):
     """Lists the filenames of all inputs for demo."""
 

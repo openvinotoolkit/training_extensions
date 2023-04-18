@@ -95,7 +95,6 @@ def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
 
 
 def set_random_seed(seed, logger, deterministic=False):
-    import torch
     """Set random seed.
 
     Args:
@@ -106,6 +105,8 @@ def set_random_seed(seed, logger, deterministic=False):
             to True and `torch.backends.cudnn.benchmark` to False.
             Default: False.
     """
+    import torch
+
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

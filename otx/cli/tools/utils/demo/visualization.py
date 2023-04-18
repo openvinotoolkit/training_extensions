@@ -161,4 +161,3 @@ def draw_predictions(task_type: TaskType, predictions: List[Annotation], frame: 
     else:
         raise ValueError(f"Unknown task type: {task_type}")
     return frame
-
