@@ -246,9 +246,13 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
         TaskType.ANOMALY_DETECTION: Domain.ANOMALY_DETECTION,
         TaskType.ANOMALY_SEGMENTATION: Domain.ANOMALY_SEGMENTATION,
         TaskType.ROTATED_DETECTION: Domain.ROTATED_DETECTION,
-        TaskType.ACTION_CLASSIFICATION: Domain.ACTION_CLASSIFICATION,
-        TaskType.ACTION_DETECTION: Domain.ACTION_DETECTION,
     }
+    if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+        mapping = {
+            **mapping,
+            TaskType.ACTION_CLASSIFICATION: Domain.ACTION_CLASSIFICATION,
+            TaskType.ACTION_DETECTION: Domain.ACTION_DETECTION,
+        }
 
     try:
         return mapping[task_type]
