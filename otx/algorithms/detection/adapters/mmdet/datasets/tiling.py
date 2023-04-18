@@ -96,12 +96,12 @@ class Tile:
         self.tiles, self.cached_results = self.gen_tile_ann()
 
     @timeit
-    def gen_tile_ann(self) -> List[Dict]:
-        """Generate tile information and tile annotation from dataset.
+    def gen_tile_ann(self) -> Tuple[List[Dict], List[Dict]]:
+        """Generate tile annotations and cache the original image-level annotations.
 
         Returns:
-            List[Dict]: A list of tiles generated from the dataset. Each item comprises tile annotation and tile
-                        coordinates relative to the original image.
+            tiles: a list of tile annotations with some other useful information for data pipeline.
+            cache_result: a list of original image-level annotations.
         """
         tiles = []
         cache_result = []
