@@ -40,13 +40,13 @@ from tests.test_suite.run_test_command import (
     pot_validate_fq_testing,
 )
 
-# Pre-train w/ 'person' class ##TODO: Currently, it is closed to sample test. need to change other sample
+# Pre-train w/ 'person' class
 args0 = {
     "--train-data-roots": "tests/assets/car_tree_bug",
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "10", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "20", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
