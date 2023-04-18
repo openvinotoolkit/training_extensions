@@ -41,6 +41,11 @@ jobs:
           output: dependency-results.sbom.json
           image-ref: "."
           github-pat: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Trivy-gen-sbom artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-sbom
+          path: ./dependency-results.sbom.json
   Bandit:
     runs-on: ubuntu-20.04
     steps:
