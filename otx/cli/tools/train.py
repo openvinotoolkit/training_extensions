@@ -144,7 +144,7 @@ def get_args():
     parser.add_argument(
         "--auto-decrease-bs",
         action="store_true",
-        help="Decrease batch size if current batch size is out of CUDA memory.",
+        help="Decrease batch size if current batch size isn't fit to CUDA memory.",
     )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
