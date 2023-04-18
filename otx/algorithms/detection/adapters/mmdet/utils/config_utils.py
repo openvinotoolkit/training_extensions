@@ -357,10 +357,10 @@ def patch_tiling(config, hparams, dataset=None):
             config.data.train.filter_empty_gt = False
 
         tiling_params = ConfigDict(
-                tile_size=int(hparams.tiling_parameters.tile_size),
-                overlap_ratio=float(hparams.tiling_parameters.tile_overlap),
-                max_per_img=int(hparams.tiling_parameters.tile_max_number),
-            )
+            tile_size=int(hparams.tiling_parameters.tile_size),
+            overlap_ratio=float(hparams.tiling_parameters.tile_overlap),
+            max_per_img=int(hparams.tiling_parameters.tile_max_number),
+        )
         config.update(
             ConfigDict(
                 data=ConfigDict(
