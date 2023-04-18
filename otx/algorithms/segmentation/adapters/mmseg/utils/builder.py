@@ -65,6 +65,6 @@ def build_segmentor(
     if checkpoint is not None and not from_scratch:
         load_checkpoint(model, checkpoint, map_location=device)
         if is_training is True:
-            config.load_from = None # To prevent the repeated ckpt loading in mmseg.apis.train_segmentor
-    
+            config.load_from = None  # To prevent the repeated ckpt loading in mmseg.apis.train_segmentor
+
     return model

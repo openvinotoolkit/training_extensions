@@ -34,6 +34,7 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
     device: Union[str, torch.device] = "cpu",
     cfg_options: Optional[Union[Config, ConfigDict]] = None,
     distributed=False,
+    **kwargs
 ):
     """A function to build NNCF wrapped mmcls model."""
 
