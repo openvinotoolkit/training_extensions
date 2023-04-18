@@ -11,7 +11,6 @@ import os
 import sys
 from typing import Callable
 
-import torch.distributed as dist
 
 # __all__ = ['config_logger', 'get_log_dir', 'get_logger']
 __all__ = ["config_logger", "get_log_dir"]
@@ -116,6 +115,7 @@ class _DummyLogger(logging.Logger):
 
 
 def local_master_only(func: Callable) -> Callable:
+    import torch.distributed as dist
     """A decorator that allows a function to be executed only by the local master process in distributed training setup.
 
     Args:

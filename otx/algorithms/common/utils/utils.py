@@ -22,7 +22,6 @@ from collections import defaultdict
 from typing import Callable, Optional, Tuple
 
 import numpy as np
-import torch
 import yaml
 
 
@@ -96,6 +95,7 @@ def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
 
 
 def set_random_seed(seed, logger, deterministic=False):
+    import torch
     """Set random seed.
 
     Args:
