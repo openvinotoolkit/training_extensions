@@ -95,7 +95,7 @@ class Tile:
                 break
 
         self.dataset = dataset
-        self.tiles = self.gen_tile_ann()
+        self.tiles, self.cached_results = self.gen_tile_ann()
 
     @timeit
     def gen_tile_ann(self) -> List[Dict]:
@@ -118,7 +118,7 @@ class Tile:
         for idx, result in enumerate(cache_result):
             tiles.extend(self.gen_tiles_single_img(result, dataset_idx=idx))
             pbar.update(1)
-        return tiles
+        return tiles, cache_result
 
     def gen_single_img(self, result: Dict, dataset_idx: int) -> Dict:
         """Add full-size image for inference or training.
@@ -356,21 +356,10 @@ class Tile:
             dict: Training/test data.
         """
         result = copy.deepcopy(self.tiles[idx])
-        if result.get("tile_path") and osp.isfile(result["tile_path"]):
-            img = mmcv.imread(result["tile_path"])
-            if self.img2fp32:
-                img = img.astype(np.float32)
-            result["img"] = img
-            return result
         dataset_idx = result["dataset_idx"]
         x_1, y_1, x_2, y_2 = result["tile_box"]
-        ori_img = self.dataset[dataset_idx]["img"]
+        ori_img = self.cached_results[dataset_idx]["img"]
         cropped_tile = ori_img[y_1:y_2, x_1:x_2, :]
-        tile_path = osp.join(
-            self.tmp_folder, "_".join([str(dataset_idx), result["uuid"], result["ori_filename"], ".jpg"])
-        )
-        self.tiles[idx]["tile_path"] = tile_path
-        mmcv.imwrite(cropped_tile, tile_path)
         if self.img2fp32:
             cropped_tile = cropped_tile.astype(np.float32)
         result["img"] = cropped_tile
