@@ -284,7 +284,7 @@ class SegmentationConfigurer:
             cfg.load_from = self.get_model_ckpt(model_ckpt)
         if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
             cfg.model.backbone.pretrained = None
-        else:
+        elif cfg.get("load_from", None):
             # patch checkpoint if needed (e.g. pretrained weights from mmseg)
             cfg.load_from = self.patch_chkpt(cfg.load_from)
         if cfg.get("resume", False):

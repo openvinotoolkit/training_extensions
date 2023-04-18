@@ -70,7 +70,7 @@ learning_parameters:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: 100
+    default_value: 300
     description: ""
     editable: true
     header: Number of iterations for learning rate warmup
@@ -82,7 +82,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 100
+    value: 300
     visible_in_ui: true
     warning: null
   num_checkpoints:
@@ -163,7 +163,7 @@ learning_parameters:
     warning: null
   early_stop_start:
     affects_outcome_of: TRAINING
-    default_value: 3
+    default_value: 10
     editable: true
     header: Start epoch for early stopping
     max_value: 1000
@@ -174,11 +174,11 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 3
+    value: 10
     visible_in_ui: false
   early_stop_patience:
     affects_outcome_of: TRAINING
-    default_value: 8
+    default_value: 10
     description: Training will stop if the model does not improve within the number of epochs of patience.
     editable: true
     header: Patience for early stopping
@@ -190,7 +190,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 8
+    value: 10
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
   early_stop_iteration_patience:

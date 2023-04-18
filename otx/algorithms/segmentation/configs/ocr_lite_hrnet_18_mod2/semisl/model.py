@@ -29,7 +29,7 @@ model = dict(
     test_cfg=dict(mode="whole", output_scale=5.0),
     pretrained=None,
     decode_head=dict(
-        type="FCNHead",
+        base_type="FCNHead",
         in_channels=[40, 80, 160, 320],
         in_index=[0, 1, 2, 3],
         input_transform="multiple_select",
