@@ -143,6 +143,11 @@ def gen_params_dict_from_args(
         value_type = None
         if type_hint is not None:
             value_type = type_hint.get(origin_key, {}).get("type", None)
+        # FIXME[HARIM]: There's no template in args, and it's not inside the workspace, but with --workspace,
+        # the template is not found in args, so params, which are all bools, go into str.
+        # This is a temporary solution.
+        elif value_type is None and isinstance(value, str) and value in ("True", "true", "False", "false"):
+            value_type = bool
 
         leaf_node_dict, node_key = _get_leaf_node(params_dict, origin_key)
         leaf_node_dict[node_key] = {"value": value_type(value) if value_type else value}
@@ -249,6 +254,8 @@ def get_parser_and_hprams_data():
         template_config = parse_model_template("./template.yaml")
         hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template", nargs="?", default="./template.yaml", help=template_help_str)
+    # TODO: Need fix for how to get hyper_parameters when no template is given and ./template.yaml doesn't exist
+    # Ex. When using --workspace outside of a workspace, but cannot access --workspace from this function.
     else:
         parser.add_argument("template", nargs="?", default=None, help=template_help_str)
 
