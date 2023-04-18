@@ -1,18 +1,7 @@
 """Algorithm to find a proper batch size which is fit to current GPU device for tasks using mmcv."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
 from typing import Callable, List
@@ -60,14 +49,23 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         )
 
     default_bs = _get_batch_size(cfg)
+
     available_bs = adapt_torch_model_bs(
         train_func=train_func_single_iter,
-        default_bs=default_bs,
+        current_bs=default_bs,
         trainset_size=len(datasets[0]),
     )
-    _set_batch_size(cfg, available_bs)
-    cfg.optimizer.lr *= available_bs / default_bs
-    logger.info(f"Result of the adpated batch size : {default_bs} -> {available_bs}")
+
+    if default_bs != available_bs:
+        _set_batch_size(cfg, available_bs)
+        origin_lr = cfg.optimizer.lr
+        cfg.optimizer.lr *= available_bs / default_bs
+
+        logger.info("Adapting batch size is done.")
+        logger.info(f"Batch size is adapted : {default_bs} -> {available_bs}")
+        logger.info(f"learning rate is adapted : {origin_lr} -> {cfg.optimizer.lr}")
+    else:
+        logger.info("Adapting batch size is done. Current batch size is availble.")
 
 
 def _get_batch_size(cfg) -> int:

@@ -141,11 +141,6 @@ def get_args():
         default=None,
         help="The data.yaml path want to use in train task.",
     )
-    parser.add_argument(
-        "--auto-decrease-bs",
-        action="store_true",
-        help="Decrease batch size if current batch size isn't fit to CUDA memory.",
-    )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
