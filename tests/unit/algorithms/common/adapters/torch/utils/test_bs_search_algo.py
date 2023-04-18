@@ -1,11 +1,11 @@
 import pytest
 
 from otx.algorithms.common.adapters.torch.utils import adapt_batch_size
-from otx.algorithms.common.adapters.torch.utils import automatic_bs
+from otx.algorithms.common.adapters.torch.utils import bs_search_algo
 
 
 def test_adapt_batch_size(mocker):
-    mocker_torch = mocker.patch.object(automatic_bs, "torch")
+    mocker_torch = mocker.patch.object(bs_search_algo, "torch")
     mocker_torch.cuda.mem_get_info.return_value = (1, 10000)
 
     def mock_train_func(batch_size):
@@ -23,7 +23,7 @@ def test_adapt_batch_size(mocker):
 
 
 def test_adapt_batch_size_gpu_memory_too_small(mocker):
-    mocker_torch = mocker.patch.object(automatic_bs, "torch")
+    mocker_torch = mocker.patch.object(bs_search_algo, "torch")
     mocker_torch.cuda.mem_get_info.return_value = (1, 10000)
 
     def mock_train_func(batch_size):

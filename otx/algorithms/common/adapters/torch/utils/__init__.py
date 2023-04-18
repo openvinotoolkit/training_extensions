@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .automatic_bs import adapt_batch_size
+from .bs_search_algo import adapt_batch_size
 
 __all__ = ["adapt_batch_size"]
