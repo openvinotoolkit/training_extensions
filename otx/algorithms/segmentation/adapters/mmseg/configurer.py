@@ -420,6 +420,8 @@ class SegmentationConfigurer:
             # batch size of 1 is a runtime error for training batch normalization layer
             if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
                 dataloader_cfg.drop_last = True
+            else:
+                dataloader_cfg.drop_last = False
 
             cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
