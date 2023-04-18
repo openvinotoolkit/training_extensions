@@ -19,7 +19,7 @@ from tests.unit.core.data.test_helpers import (
 AVAILABLE_TASKS = ["classification", "detection", "segmentation"]
 AVAILABLE_SUBSETS = ["train", "val"]
 AVAILABLE_DATA_ROOTS = [
-    "tests/assets/imagenet_dataset",
+    "tests/assets/classification_dataset",
     "tests/assets/car_tree_bug",
     "tests/assets/cityscapes_dataset/dataset",
     "tests/assets/anomaly/hazelnut",
@@ -27,7 +27,7 @@ AVAILABLE_DATA_ROOTS = [
 ]
 
 DATA_ROOTS2FORMAT = {
-    "tests/assets/imagenet_dataset": "imagenet",
+    "tests/assets/classification_dataset": "imagenet",
     "tests/assets/car_tree_bug": "coco",
     "tests/assets/cityscapes_dataset/dataset": "cityscapes",
 }
