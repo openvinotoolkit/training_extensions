@@ -146,8 +146,8 @@ def gen_params_dict_from_args(
         # FIXME[HARIM]: There's no template in args, and it's not inside the workspace, but with --workspace,
         # the template is not found in args, so params, which are all bools, go into str.
         # This is a temporary solution.
-        elif value_type is None and isinstance(value, str) and value in ("True", "true", "False", "false"):
-            value_type = bool
+        if isinstance(value, str) and value.lower() in ("true", "false", "1", "0"):
+            value_type = str2bool
 
         leaf_node_dict, node_key = _get_leaf_node(params_dict, origin_key)
         leaf_node_dict[node_key] = {"value": value_type(value) if value_type else value}
