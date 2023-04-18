@@ -224,8 +224,7 @@ learning_parameters:
   auto_decrease_bs:
     affects_outcome_of: TRAINING
     default_value: false
-    description:
-      Find a proper batch size by training for an iteration with various batch size a few times.
+    description: Find a proper batch size by training for an iteration with various batch size a few times.
     editable: true
     header: Decrease batch size if current batch size isn't fit to CUDA memory.
     type: BOOLEAN
