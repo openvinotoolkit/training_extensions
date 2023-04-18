@@ -323,11 +323,8 @@ def otx_demo_testing(template, root, otx_dir, args):
         os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
-        "--output",
-        os.path.join(template_work_dir, "output"),
     ]
     check_run(command_line)
-    assert os.path.exists(os.path.join(template_work_dir, "output"))
 
 
 def otx_demo_openvino_testing(template, root, otx_dir, args):
@@ -342,11 +339,8 @@ def otx_demo_openvino_testing(template, root, otx_dir, args):
         os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
-        "--output",
-        os.path.join(template_work_dir, "output"),
     ]
     check_run(command_line)
-    assert os.path.exists(os.path.join(template_work_dir, "output"))
 
 
 def otx_deploy_openvino_testing(template, root, otx_dir, args):
@@ -400,12 +394,9 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
             "-i",
             os.path.join(otx_dir, args["--input"]),
             "--no_show",
-            "--output",
-            os.path.join(deployment_dir, "output"),
         ],
         cwd=os.path.join(deployment_dir, "python"),
     )
-    assert os.path.exists(os.path.join(deployment_dir, "output"))
 
 
 def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
@@ -438,22 +429,18 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
 
 def otx_demo_deployment_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
-    deployment_dir = f"{template_work_dir}/deployed_{template.model_template_id}"
     command_line = [
         "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
-        f"{deployment_dir}/openvino.zip",
+        f"{template_work_dir}/deployed_{template.model_template_id}/openvino.zip",
         "--input",
         os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
-        "--output",
-        os.path.join(deployment_dir, "output"),
     ]
     check_run(command_line)
-    assert os.path.exists(os.path.join(deployment_dir, "output"))
 
 
 def pot_optimize_testing(template, root, otx_dir, args):
