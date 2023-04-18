@@ -78,7 +78,7 @@ class Tile:
         self.filter_empty_gt = filter_empty_gt
         self.iou_threshold = iou_threshold
         self.max_per_img = max_per_img
-        self.tile_size = tile_size
+        self.tile_size = 600
         self.overlap = overlap
         self.stride = int(tile_size * (1 - overlap))
         self.num_images = len(dataset)
