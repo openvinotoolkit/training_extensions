@@ -326,7 +326,6 @@ class MMClassificationTask(OTXClassificationTask):
     def _train_model(
         self,
         dataset: DatasetEntity,
-        auto_adapt_bs: bool = False,
     ):
         """Train function in MMClassificationTask."""
         self._data_cfg = ConfigDict(data=ConfigDict())
@@ -407,7 +406,7 @@ class MMClassificationTask(OTXClassificationTask):
                 )
             )
 
-        if auto_adapt_bs:
+        if self._hyperparams.learning_parameters.auto_decrease_bs:
             train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(train_func, cfg, datasets, False)
 

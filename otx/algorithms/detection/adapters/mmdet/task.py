@@ -200,7 +200,6 @@ class MMDetectionTask(OTXDetectionTask):
     def _train_model(
         self,
         dataset: DatasetEntity,
-        auto_adapt_bs: bool = False,
     ):
         """Train function in MMDetectionTask."""
         logger.info("init data cfg.")
@@ -278,7 +277,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if auto_adapt_bs:
+        if self._hyperparams.learning_parameters.auto_decrease_bs:
             train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(train_func, cfg, datasets, False)
 

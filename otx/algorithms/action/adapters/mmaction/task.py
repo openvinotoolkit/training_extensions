@@ -200,7 +200,6 @@ class MMActionTask(OTXActionTask):
     def _train_model(
         self,
         dataset: DatasetEntity,
-        auto_adapt_bs: bool = False,
     ):
         """Train function in MMActionTask."""
         logger.info("init data cfg.")
@@ -267,7 +266,7 @@ class MMActionTask(OTXActionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if auto_adapt_bs:
+        if self._hyperparams.learning_parameters.auto_decrease_bs:
             train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(train_func, cfg, datasets, validate)
 

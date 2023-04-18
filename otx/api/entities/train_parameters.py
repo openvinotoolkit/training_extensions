@@ -62,4 +62,3 @@ class TrainParameters:
     resume: bool = False
     update_progress: Callable[[int, Optional[float]], Any] = default_progress_callback
     save_model: Callable[[], None] = default_save_model_callback
-    auto_adapt_bs: bool = False

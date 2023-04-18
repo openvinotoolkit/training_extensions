@@ -250,11 +250,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
-    if template.task_type.is_anomaly:
-        print("Warning: Auto decreasing batch size doesn't support anomaly tasks yet.")
-        args.auto_decrease_bs = False
-
-    task.train(dataset, output_model, train_parameters=TrainParameters(auto_adapt_bs=args.auto_decrease_bs))
+    task.train(dataset, output_model, train_parameters=TrainParameters())
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))

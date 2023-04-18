@@ -116,12 +116,11 @@ class OTXActionTask(OTXTask, ABC):
         # Set OTX LoggerHook & Time Monitor
         if train_parameters:
             update_progress_callback = train_parameters.update_progress
-            auto_adapt_bs = train_parameters.auto_adapt_bs
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
 
-        results = self._train_model(dataset, auto_adapt_bs)
+        results = self._train_model(dataset)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
@@ -183,7 +182,7 @@ class OTXActionTask(OTXTask, ABC):
         logger.info("train done.")
 
     @abstractmethod
-    def _train_model(self, dataset: DatasetEntity, auto_adapt_bs: bool = False):
+    def _train_model(self, dataset: DatasetEntity):
         """Train model and return the results."""
         raise NotImplementedError
 

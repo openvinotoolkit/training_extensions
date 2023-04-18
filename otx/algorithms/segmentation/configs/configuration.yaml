@@ -230,6 +230,21 @@ learning_parameters:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
+  auto_decrease_bs:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description:
+      Find a proper batch size by training for an iteration with various batch size a few times.
+    editable: true
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
 postprocessing:
   confidence_threshold:
     affects_outcome_of: INFERENCE

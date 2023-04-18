@@ -190,6 +190,13 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        auto_decrease_bs = configurable_boolean(
+            default_value=False,
+            header="Decrease batch size if current batch size isn't fit to CUDA memory.",
+            description="Find a proper batch size by training for an iteration with various batch size a few times.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""
