@@ -173,7 +173,7 @@ def get_input_names_list(input_path: Union[str, int], capture):
     # Web camera input
     if isinstance(input_path, int):
         return []
-    if "DIR" in capture.get_type():
+    if "DIR" in str(capture.get_type()):
         return [f.name for f in Path(input_path).iterdir() if f.is_file()]
     else:
         return [Path(input_path).name]
@@ -191,7 +191,7 @@ def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], ca
 
     filenames = get_input_names_list(input_path, capture)
 
-    if "VIDEO" in capture.get_type():
+    if "VIDEO" in str(capture.get_type()):
         filename = filenames[0]
         w, h, _ = saved_frames[0].shape
         video_path = str(output_path / filename)
