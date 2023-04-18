@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import tempfile
 from collections import OrderedDict
 from copy import copy
 from typing import Any, Dict, List, Sequence, Tuple, Union
@@ -340,12 +339,10 @@ class ImageTilingDataset:
     ):
         self.dataset = build_dataset(dataset)
         self.CLASSES = self.dataset.CLASSES
-        self.tmp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
 
         self.tile_dataset = Tile(
             self.dataset,
             pipeline,
-            tmp_dir=self.tmp_dir,
             tile_size=tile_size,
             overlap=overlap_ratio,
             min_area_ratio=min_area_ratio,
@@ -399,8 +396,3 @@ class ImageTilingDataset:
         """
         self.merged_results = self.tile_dataset.merge(results)
         return self.merged_results
-
-    def __del__(self):
-        """Delete the temporary directory when the object is deleted."""
-        if getattr(self, "tmp_dir", False):
-            self.tmp_dir.cleanup()

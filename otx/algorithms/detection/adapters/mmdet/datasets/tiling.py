@@ -4,9 +4,9 @@
 #
 
 import copy
-import tempfile
 import uuid
 from itertools import product
+from multiprocessing import Pool
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
@@ -64,7 +64,6 @@ class Tile:
         self,
         dataset,
         pipeline,
-        tmp_dir: tempfile.TemporaryDirectory,
         tile_size: int = 400,
         overlap: float = 0.2,
         min_area_ratio: float = 0.9,
@@ -83,7 +82,7 @@ class Tile:
         self.num_images = len(dataset)
         self.num_classes = len(dataset.CLASSES)
         self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
-        self.tmp_folder = tmp_dir.name
+        self.nproc = nproc
         self.img2fp32 = False
         for p in pipeline:
             if p.type == "PhotoMetricDistortion":
@@ -388,8 +387,8 @@ class Tile:
         """
         results = []
         if tile_masks:
-            for tile_mask in tile_masks:
-                results.append(Tile.readjust_tile_mask(tile_mask))
+            with Pool(self.nproc) as pool:
+                results = pool.map(Tile.readjust_tile_mask, tile_masks)
         return results
 
     # pylint: disable=too-many-locals
