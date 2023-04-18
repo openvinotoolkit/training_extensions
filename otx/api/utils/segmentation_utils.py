@@ -53,12 +53,11 @@ def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
     """
 
     mask_form_file = dataset_item.media.path
-    if mask_form_file is not None:
-        mask_form_file = mask_form_file.replace("images", "masks")
-        mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
-        mask = np.expand_dims(mask, axis=2)
-    else:
-        mask = None
+    if mask_form_file is None:
+        raise ValueError("Mask file doesn't exist or corrupted")
+    mask_form_file = mask_form_file.replace("images", "masks")
+    mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
+    mask = np.expand_dims(mask, axis=2)
     return mask
 
 

@@ -250,8 +250,9 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
             self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)
 
         for pipe in pipeline:
-            if pipe["type"] == "LoadImageFromFile" and "use_otx_adapter" in pipe:
+            if pipe["type"] == "LoadImageFromOTXDataset" and "use_otx_adapter" in pipe:
                 use_otx_adapter = pipe["use_otx_adapter"]
+                break
 
         if classes:
             classes = [c.name for c in classes]
