@@ -4,7 +4,6 @@
 #
 
 import copy
-import os.path as osp
 import tempfile
 import uuid
 from itertools import product
@@ -12,7 +11,6 @@ from multiprocessing import Pool
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
-import mmcv
 import numpy as np
 import pycocotools.mask as mask_util
 from mmcv.ops import nms
