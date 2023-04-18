@@ -74,7 +74,7 @@ class Tile:
         iou_threshold: float = 0.45,
         max_per_img: int = 1500,
         filter_empty_gt: bool = True,
-        nproc: int = 4,
+        nproc: int = 2,
     ):
         self.min_area_ratio = min_area_ratio
         self.filter_empty_gt = filter_empty_gt

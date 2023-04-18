@@ -32,6 +32,8 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.num_workers",
+        "0",
         "--tiling_parameters.enable_tiling",
         "1",
         "--tiling_parameters.enable_adaptive_params",
