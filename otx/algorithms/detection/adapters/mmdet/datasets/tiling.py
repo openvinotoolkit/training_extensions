@@ -7,7 +7,6 @@ import copy
 import tempfile
 import uuid
 from itertools import product
-from multiprocessing import Pool
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
@@ -78,14 +77,13 @@ class Tile:
         self.filter_empty_gt = filter_empty_gt
         self.iou_threshold = iou_threshold
         self.max_per_img = max_per_img
-        self.tile_size = 600
+        self.tile_size = tile_size
         self.overlap = overlap
         self.stride = int(tile_size * (1 - overlap))
         self.num_images = len(dataset)
         self.num_classes = len(dataset.CLASSES)
         self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
         self.tmp_folder = tmp_dir.name
-        self.nproc = nproc
         self.img2fp32 = False
         for p in pipeline:
             if p.type == "PhotoMetricDistortion":
@@ -390,8 +388,8 @@ class Tile:
         """
         results = []
         if tile_masks:
-            with Pool(self.nproc) as pool:
-                results = pool.map(Tile.readjust_tile_mask, tile_masks)
+            for tile_mask in tile_masks:
+                results.append(Tile.readjust_tile_mask(tile_mask))
         return results
 
     # pylint: disable=too-many-locals
