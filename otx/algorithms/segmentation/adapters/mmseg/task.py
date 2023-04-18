@@ -57,7 +57,6 @@ from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segme
 from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegmentationExporter
 from otx.algorithms.segmentation.task import OTXSegmentationTask
 
-# from otx.algorithms.segmentation.utils import get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
