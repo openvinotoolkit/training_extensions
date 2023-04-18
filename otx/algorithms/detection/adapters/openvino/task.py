@@ -584,6 +584,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             )
             # model_wrappers files
             for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
+                # skip coping __pycache__ folder
+                if "__pycache__" in root:
+                    continue
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(

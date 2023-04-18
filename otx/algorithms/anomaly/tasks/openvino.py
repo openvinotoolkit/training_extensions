@@ -449,6 +449,9 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             for root, _, files in os.walk(
                 os.path.dirname(otx.algorithms.anomaly.adapters.anomalib.exportable_code.__file__)
             ):
+                # skip coping __pycache__ folder
+                if "__pycache__" in root:
+                    continue
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(
