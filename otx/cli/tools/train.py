@@ -279,6 +279,11 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     print("otx train time elapsed: ", total_time)
     model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
 
+    if args.gpus and exit_stack is None:
+        multigpu_manager.finalize()
+    elif is_multigpu_child_process():
+        return
+
     get_otx_report(
         model_template=config_manager.template,
         task_config=task.config,
@@ -297,8 +302,6 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     if not is_multigpu_child_process():
         task.cleanup()
-    elif args.gpus and exit_stack is None:
-        multigpu_manager.finalize()
 
     return dict(retcode=0, template=template.name)
 
