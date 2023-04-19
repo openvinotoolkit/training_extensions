@@ -59,7 +59,7 @@ class Image(IMedia2DEntity):
         """
         if callable(self.__size):
             height, width = self.__size()
-            self._size = None
+            self.__size = None
             return height, width
         if self.__size is not None:
             height, width = self.__size
