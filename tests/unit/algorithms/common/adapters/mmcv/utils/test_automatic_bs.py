@@ -9,10 +9,10 @@ DEFAULT_LR = 0.001
 TRAINSET_SIZE = 100
 
 
-def bs_adapt_func(train_func, default_bs, trainset_size):
-    train_func(default_bs)
-    train_func(default_bs // 2)
-    return default_bs // 2
+def bs_adapt_func(train_func, current_bs, trainset_size):
+    train_func(current_bs)
+    train_func(current_bs // 2)
+    return current_bs // 2
 
 
 @pytest.fixture
@@ -63,7 +63,7 @@ def test_adapt_batch_size_not_action_task(mocker, mock_adapt_func, mock_cfg_not_
     # check leanring rate is updated depending on adapted batch size
     assert mock_cfg_not_action.optimizer.lr == pytest.approx(DEFAULT_LR / 2)
     # check adapt function gets proper arguments
-    assert mock_adapt_func.call_args.kwargs["default_bs"] == DEFAULT_BS
+    assert mock_adapt_func.call_args.kwargs["current_bs"] == DEFAULT_BS
     assert mock_adapt_func.call_args.kwargs["trainset_size"] == TRAINSET_SIZE
     # check length of dataset is decreased to reduce time
     assert len(mock_train_func.call_args_list[0].kwargs["dataset"][0]) == DEFAULT_BS
@@ -88,7 +88,7 @@ def test_adapt_batch_size_action_task(mocker, mock_adapt_func, mock_cfg_action, 
     # check leanring rate is updated depending on adapted batch size
     assert mock_cfg_action.optimizer.lr == pytest.approx(DEFAULT_LR / 2)
     # check adapt function gets proper arguments
-    assert mock_adapt_func.call_args.kwargs["default_bs"] == DEFAULT_BS
+    assert mock_adapt_func.call_args.kwargs["current_bs"] == DEFAULT_BS
     assert mock_adapt_func.call_args.kwargs["trainset_size"] == TRAINSET_SIZE
     # check length of dataset is decreased to reduce time
     assert len(mock_train_func.call_args_list[0].kwargs["dataset"][0]) == DEFAULT_BS
