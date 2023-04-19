@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
--
+- Make semantic segmentation OpenVINO models compatible with ModelAPI (<https://github.com/openvinotoolkit/training_extensions/pull/2029>).
 
 ### Bug fixes
 
