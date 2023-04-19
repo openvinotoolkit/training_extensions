@@ -6,14 +6,20 @@
 import torch
 from mmseg.models import SEGMENTORS
 from mmseg.models.segmentors.encoder_decoder import EncoderDecoder
+from mmseg.utils import get_root_logger
 
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.utils.task_adapt import map_class_names
 
 
 # pylint: disable=unused-argument, line-too-long
 @SEGMENTORS.register_module()
 class OTXEncoderDecoder(EncoderDecoder):
     """OTX encoder decoder."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("task_adapt", None)
+        super().__init__(*args, **kwargs)
 
     def simple_test(self, img, img_meta, rescale=True, output_logits=False):
         """Simple test with single image."""
@@ -32,6 +38,41 @@ class OTXEncoderDecoder(EncoderDecoder):
         seg_pred = seg_pred.cpu().numpy()
         seg_pred = list(seg_pred)
         return seg_pred
+
+    @staticmethod
+    def load_state_dict_pre_hook(
+        model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs
+    ):  # pylint: disable=too-many-locals, unused-argument
+        """Modify input state_dict according to class name matching before weight loading."""
+        logger = get_root_logger("INFO")
+        logger.info(f"----------------- ClassIncrEncoderDecoder.load_state_dict_pre_hook() called w/ prefix: {prefix}")
+
+        # Dst to src mapping index
+        model_classes = list(model_classes)
+        chkpt_classes = list(chkpt_classes)
+        model2chkpt = map_class_names(model_classes, chkpt_classes)
+        logger.info(f"{chkpt_classes} -> {model_classes} ({model2chkpt})")
+
+        model_dict = model.state_dict()
+        param_names = [
+            "decode_head.conv_seg.weight",
+            "decode_head.conv_seg.bias",
+        ]
+        for model_name in param_names:
+            chkpt_name = prefix + model_name
+            if model_name not in model_dict or chkpt_name not in chkpt_dict:
+                logger.info(f"Skipping weight copy: {chkpt_name}")
+                continue
+
+            # Mix weights
+            model_param = model_dict[model_name].clone()
+            chkpt_param = chkpt_dict[chkpt_name]
+            for model_key, c in enumerate(model2chkpt):
+                if c >= 0:
+                    model_param[model_key].copy_(chkpt_param[c])
+
+            # Replace checkpoint weight by mixed weights
+            chkpt_dict[chkpt_name] = model_param
 
 
 if is_mmdeploy_enabled():

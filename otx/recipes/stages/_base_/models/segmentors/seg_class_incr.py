@@ -2,28 +2,22 @@ _base_ = "./encoder_decoder.ote.py"
 
 __norm_cfg = dict(type="BN", requires_grad=True)
 model = dict(
-    type="ClassIncrEncoderDecoder",
+    type="OTXEncoderDecoder",
+    pretrained=None,
     decode_head=dict(
         type="FCNHead",
-        in_channels=40,
-        in_index=0,
-        channels=40,
-        input_transform=None,
+        in_channels=[40, 80, 160, 320],
+        in_index=[0, 1, 2, 3],
+        input_transform="resize_concat",
+        channels=600,
         kernel_size=1,
-        num_convs=0,
+        num_convs=1,
         concat_input=False,
         dropout_ratio=-1,
-        num_classes=19,
-        norm_cfg=__norm_cfg,
+        num_classes=2,
+        norm_cfg=dict(type="BN", requires_grad=True),
         align_corners=False,
-        enable_out_norm=False,
-        loss_decode=[
-            dict(
-                type="CrossEntropyLoss",
-                use_sigmoid=False,
-                loss_weight=1.0,
-            )
-        ],
+        loss_decode=[dict(type="CrossEntropyLoss", loss_weight=1.0)],
     ),
     test_cfg=dict(
         mode="whole",

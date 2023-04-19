@@ -4,30 +4,28 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from mmcv.runner import force_fp32
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.fcn_head import FCNHead
 
-from .mixin import (
-    AggregatorMixin,
-    MixLossMixin,
-    PixelWeightsMixin2,
-    SegmentOutNormMixin,
-)
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import LossEqualizer
 
 
 @HEADS.register_module()
-class CustomFCNHead(
-    SegmentOutNormMixin, AggregatorMixin, MixLossMixin, PixelWeightsMixin2, FCNHead
-):  # pylint: disable=too-many-ancestors
+class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
     """Custom Fully Convolution Networks for Semantic Segmentation."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, enable_loss_equalizer=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.loss_equalizer = False
+        if enable_loss_equalizer:
+            self.loss_equalizer = LossEqualizer()
 
-        # get rid of last activation of convs module
-        if self.act_cfg:
-            self.convs[-1].with_activation = False
-            delattr(self.convs[-1], "activate")
-
-        if kwargs.get("init_cfg", {}):
-            self.init_weights()
+    @force_fp32(apply_to=("seg_logit",))
+    def losses(self, seg_logit, seg_label):
+        loss = super().losses(seg_logit, seg_label)
+        if self.loss_equalizer:
+            out_loss = self.loss_equalizer.reweight(loss)
+            for loss_name, loss_value in out_loss.items():
+                loss[loss_name] = loss_value
+        return loss
