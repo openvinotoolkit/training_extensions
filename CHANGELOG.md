@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
 - Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
 - Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
+- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
 
 ### Enhancements
 
@@ -20,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
 - Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
 - Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
+- Optimize data preprocessing time and enhance overall performance in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2020>)
 
 ### Bug fixes
 

@@ -5,7 +5,7 @@
 #
 
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Callable, Union
 
 import cv2
 import imagesize
@@ -30,15 +30,18 @@ class Image(IMedia2DEntity):
     # pylint: disable=too-many-arguments, redefined-builtin
     def __init__(
         self,
-        data: Optional[np.ndarray] = None,
+        data: Optional[Union[np.ndarray, Callable[[], np.ndarray]]] = None,
         file_path: Optional[str] = None,
+        size: Optional[Union[Tuple[int, int], Callable[[], Tuple[int, int]]]] = None,
     ):
         if (data is None) == (file_path is None):
             raise ValueError("Either path to image file or image data should be provided.")
-        self.__data: Optional[np.ndarray] = data
+        self.__data: Optional[Union[np.ndarray, Callable[[], np.ndarray]]] = data
         self.__file_path: Optional[str] = file_path
         self.__height: Optional[int] = None
         self.__width: Optional[int] = None
+        # TODO: refactor this
+        self.__size: Optional[Union[Tuple[int, int], Callable[[], Tuple[int, int]]]] = size
 
     def __str__(self):
         """String representation of the image. Returns the image format, name and dimensions."""
@@ -54,16 +57,29 @@ class Image(IMedia2DEntity):
         Returns:
             Tuple[int, int]: Image size as a (height, width) tuple.
         """
+        if callable(self.__size):
+            height, width = self.__size()
+            self.__size = None
+            return height, width
+        if self.__size is not None:
+            height, width = self.__size
+            self.__size = None
+            return height, width
+        if callable(self.__data):
+            height, width = self.__data().shape[:2]
+            return height, width
         if self.__data is not None:
             return self.__data.shape[0], self.__data.shape[1]
-        try:
-            width, height = imagesize.get(self.__file_path)
-            if width <= 0 or height <= 0:
-                raise ValueError("Invalide image size")
-        except ValueError:
-            image = cv2.imread(self.__file_path)
-            height, width = image.shape[:2]
-        return height, width
+        if self.__file_path is not None:
+            try:
+                width, height = imagesize.get(self.__file_path)
+                if width <= 0 or height <= 0:
+                    raise ValueError("Invalide image size")
+            except ValueError:
+                image = cv2.imread(self.__file_path)
+                height, width = image.shape[:2]
+            return height, width
+        raise NotImplementedError
 
     @property
     def numpy(self) -> np.ndarray:
@@ -76,12 +92,15 @@ class Image(IMedia2DEntity):
         """
         if self.__data is None:
             return cv2.cvtColor(cv2.imread(self.__file_path), cv2.COLOR_BGR2RGB)
+        if callable(self.__data):
+            return self.__data()
         return self.__data
 
     @numpy.setter
     def numpy(self, value: np.ndarray):
         self.__data = value
         self.__file_path = None
+        self.__size = None
         self.__height, self.__width = self.__get_size()
 
     def roi_numpy(self, roi: Optional[Annotation] = None) -> np.ndarray:

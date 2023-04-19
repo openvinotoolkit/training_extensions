@@ -7,7 +7,8 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 from typing import List, Union
 
-from datumaro.components.annotation import AnnotationType, LabelCategories
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.components.annotation import LabelCategories as DatumLabelCategories
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntityWithID
@@ -43,10 +44,11 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
-                    image = Image(file_path=datumaro_item.media.path)
+                    image = self.datum_media_2_otx_media(datumaro_item.media)
+                    assert isinstance(image, Image)
                     datumaro_labels = []
                     for ann in datumaro_item.annotations:
-                        if ann.type == AnnotationType.label:
+                        if ann.type == DatumAnnotationType.label:
                             datumaro_labels.append(ann.label)
 
                     shapes = self._get_cls_shapes(datumaro_labels)
@@ -71,7 +73,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
         return self._generate_classification_label_schema(self.label_groups, self.label_entities)
 
     def _generate_classification_label_schema(
-        self, label_groups: List[LabelCategories.LabelGroup], label_entities: List[LabelEntity]
+        self, label_groups: List[DatumLabelCategories.LabelGroup], label_entities: List[LabelEntity]
     ) -> LabelSchemaEntity:
         """Generate LabelSchema for Classification."""
         label_schema = LabelSchemaEntity()

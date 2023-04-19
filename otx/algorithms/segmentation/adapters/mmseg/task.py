@@ -352,7 +352,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             )
 
         # Model
-        model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        model = self.build_model(cfg, fp16=cfg.get("fp16", False), is_training=self._is_training)
         model.train()
         model.CLASSES = target_classes
 
