@@ -231,7 +231,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         onnx_file = outputs.get("onnx")
 
         ir_extra_data = get_seg_model_api_configuration(
-            self._task_environment.label_schema, self._task_type, self._hyperparams
+            self._task_environment.label_schema, self._hyperparams
         )
         embed_ir_model_data(xml_file, ir_extra_data)
 
