@@ -230,9 +230,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         xml_file = outputs.get("xml")
         onnx_file = outputs.get("onnx")
 
-        ir_extra_data = get_seg_model_api_configuration(
-            self._task_environment.label_schema, self._hyperparams
-        )
+        ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
         embed_ir_model_data(xml_file, ir_extra_data)
 
         if xml_file is None or bin_file is None or onnx_file is None:
