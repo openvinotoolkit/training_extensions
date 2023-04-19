@@ -32,7 +32,7 @@ class SemiSLClassifier(SAMImageClassifier):
             raise ValueError("'gt_label' does not exist in the labeled image")
         if "extra_0" not in kwargs:
             raise ValueError("'extra_0' does not exist in the dataset")
-        target = kwargs["gt_label"].squeeze()
+        target = kwargs["gt_label"].squeeze(dim=1)
         unlabeled_data = kwargs["extra_0"]
         x = {}
         x["labeled"] = self.extract_feat(imgs)

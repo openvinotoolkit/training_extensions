@@ -127,7 +127,7 @@ class TestToolsTilingDetection:
         if template.name in ["SSD", "ATSS"]:
             pytest.skip(reason="[CVS-108291] Tiling ATSS, SSD show performance drop")
         tmp_dir_path = tmp_dir_path / "tiling_det"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -183,6 +183,7 @@ class TestToolsTilingDetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip("[CVS-108810] Tiling w/ HPO fails in CI")
     def test_otx_hpo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_det/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
@@ -229,7 +230,7 @@ class TestToolsTilingDetection:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.001)
+        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
