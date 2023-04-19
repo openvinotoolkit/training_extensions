@@ -3,6 +3,7 @@
 #
 
 
+from copy import deepcopy
 import os
 import stat
 import tempfile
@@ -101,22 +102,20 @@ class TestStorageCache:
 
     def test_cache_hit(self, fxt_datumaro_dataset):
         with tempfile.TemporaryDirectory() as tempdir:
-            source_dataset = fxt_datumaro_dataset
-            cached_dataset = init_arrow_cache(source_dataset, scheme="AS-IS", cache_dir=tempdir)
+            cached_dataset = init_arrow_cache(deepcopy(fxt_datumaro_dataset), scheme="AS-IS", cache_dir=tempdir)
 
             mapping = {}
             for file in os.listdir(cached_dataset.data_path):
                 mapping[file] = os.stat(os.path.join(cached_dataset.data_path, file))[stat.ST_MTIME]
 
-            cached_dataset = init_arrow_cache(source_dataset, scheme="AS-IS", cache_dir=tempdir)
+            cached_dataset = init_arrow_cache(deepcopy(fxt_datumaro_dataset), scheme="AS-IS", cache_dir=tempdir)
 
             for file in os.listdir(cached_dataset.data_path):
                 assert mapping[file] == os.stat(os.path.join(cached_dataset.data_path, file))[stat.ST_MTIME]
 
     def test_no_cache_hit(self, fxt_datumaro_dataset):
         with tempfile.TemporaryDirectory() as tempdir:
-            source_dataset = fxt_datumaro_dataset
-            cached_dataset = init_arrow_cache(source_dataset, scheme="AS-IS", cache_dir=tempdir)
+            cached_dataset = init_arrow_cache(deepcopy(fxt_datumaro_dataset), scheme="AS-IS", cache_dir=tempdir)
 
             mapping = {}
             for file in os.listdir(cached_dataset.data_path):
@@ -125,7 +124,7 @@ class TestStorageCache:
             # sleep 1 second to invalidate cache
             time.sleep(1)
 
-            cached_dataset = init_arrow_cache(source_dataset, scheme="AS-IS", cache_dir=tempdir, force=True)
+            cached_dataset = init_arrow_cache(deepcopy(fxt_datumaro_dataset), scheme="AS-IS", cache_dir=tempdir, force=True)
 
             for file in os.listdir(cached_dataset.data_path):
                 assert mapping[file] != os.stat(os.path.join(cached_dataset.data_path, file))[stat.ST_MTIME]
