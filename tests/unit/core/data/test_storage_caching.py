@@ -124,7 +124,9 @@ class TestStorageCache:
             # sleep 1 second to invalidate cache
             time.sleep(1)
 
-            cached_dataset = init_arrow_cache(deepcopy(fxt_datumaro_dataset), scheme="AS-IS", cache_dir=tempdir, force=True)
+            cached_dataset = init_arrow_cache(
+                deepcopy(fxt_datumaro_dataset), scheme="AS-IS", cache_dir=tempdir, force=True
+            )
 
             for file in os.listdir(cached_dataset.data_path):
                 assert mapping[file] != os.stat(os.path.join(cached_dataset.data_path, file))[stat.ST_MTIME]
