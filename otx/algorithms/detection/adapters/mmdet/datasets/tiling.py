@@ -74,7 +74,7 @@ class Tile:
         iou_threshold: float = 0.45,
         max_per_img: int = 1500,
         filter_empty_gt: bool = True,
-        nproc: int = 4,
+        nproc: int = 2,
     ):
         self.min_area_ratio = min_area_ratio
         self.filter_empty_gt = filter_empty_gt
@@ -96,25 +96,6 @@ class Tile:
 
         self.dataset = dataset
         self.tiles = self.gen_tile_ann()
-        self.cache_tiles()
-
-    @timeit
-    def cache_tiles(self):
-        """Cache tiles to disk."""
-        pbar = tqdm(total=len(self.tiles))
-        pre_img_idx = None
-        for i, tile in enumerate(self.tiles):
-            tile["tile_path"] = osp.join(
-                self.tmp_folder, "_".join([str(i), tile["uuid"], tile["ori_filename"], ".jpg"])
-            )
-            x_1, y_1, x_2, y_2 = tile["tile_box"]
-            dataset_idx = tile["dataset_idx"]
-            if dataset_idx != pre_img_idx:
-                ori_img = self.dataset[dataset_idx]["img"]
-                pre_img_idx = dataset_idx
-
-            mmcv.imwrite(ori_img[y_1:y_2, x_1:x_2, :], tile["tile_path"])
-            pbar.update(1)
 
     @timeit
     def gen_tile_ann(self) -> List[Dict]:
@@ -125,12 +106,16 @@ class Tile:
                         coordinates relative to the original image.
         """
         tiles = []
-        pbar = tqdm(total=len(self.dataset))
+        cache_result = []
+        for result in tqdm(self.dataset, desc="Loading dataset annotations..."):
+            cache_result.append(result)
 
-        for idx, result in enumerate(self.dataset):
+        pbar = tqdm(total=len(self.dataset) * 2, desc="Generating tile annotations...")
+        for idx, result in enumerate(cache_result):
             tiles.append(self.gen_single_img(result, dataset_idx=idx))
+            pbar.update(1)
 
-        for idx, result in enumerate(self.dataset):
+        for idx, result in enumerate(cache_result):
             tiles.extend(self.gen_tiles_single_img(result, dataset_idx=idx))
             pbar.update(1)
         return tiles
@@ -145,7 +130,7 @@ class Tile:
         Returns:
             Dict: annotation with some other useful information for data pipeline.
         """
-        result["tile_box"] = (0, 0, result["dataset_item"].width, result["dataset_item"].height)
+        result["tile_box"] = (0, 0, result["img_shape"][1], result["img_shape"][0])
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
@@ -163,11 +148,11 @@ class Tile:
             List[Dict]: a list of tile annotation with some other useful information for data pipeline.
         """
         tile_list = []
-        gt_bboxes = result.pop("gt_bboxes", np.zeros((0, 4), dtype=np.float32))
-        gt_masks = result.pop("gt_masks", None)
-        gt_bboxes_ignore = result.pop("gt_bboxes_ignore", np.zeros((0, 4), dtype=np.float32))
-        gt_labels = result.pop("gt_labels", np.array([], dtype=np.int64))
-        img_shape = result.pop("img_shape")
+        gt_bboxes = result.get("gt_bboxes", np.zeros((0, 4), dtype=np.float32))
+        gt_masks = result.get("gt_masks", None)
+        gt_bboxes_ignore = result.get("gt_bboxes_ignore", np.zeros((0, 4), dtype=np.float32))
+        gt_labels = result.get("gt_labels", np.array([], dtype=np.int64))
+        img_shape = result.get("img_shape")
         height, width = img_shape[:2]
         _tile = self.prepare_result(result)
 
@@ -380,9 +365,15 @@ class Tile:
         dataset_idx = result["dataset_idx"]
         x_1, y_1, x_2, y_2 = result["tile_box"]
         ori_img = self.dataset[dataset_idx]["img"]
+        cropped_tile = ori_img[y_1:y_2, x_1:x_2, :]
+        tile_path = osp.join(
+            self.tmp_folder, "_".join([str(dataset_idx), result["uuid"], result["ori_filename"], ".jpg"])
+        )
+        self.tiles[idx]["tile_path"] = tile_path
+        mmcv.imwrite(cropped_tile, tile_path)
         if self.img2fp32:
-            ori_img = ori_img.astype(np.float32)
-        result["img"] = ori_img[y_1:y_2, x_1:x_2, :]
+            cropped_tile = cropped_tile.astype(np.float32)
+        result["img"] = cropped_tile
         return result
 
     @staticmethod

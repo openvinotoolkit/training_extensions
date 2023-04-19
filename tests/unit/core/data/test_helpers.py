@@ -26,10 +26,10 @@ TASK_NAME_TO_TASK_TYPE = {
 
 TASK_NAME_TO_DATA_ROOT = {
     "classification": {
-        "train": "tests/assets/imagenet_dataset",
-        "val": "tests/assets/imagenet_dataset",
-        "test": "tests/assets/imagenet_dataset",
-        "unlabeled": "tests/assets/imagenet_dataset",
+        "train": "tests/assets/classification_dataset",
+        "val": "tests/assets/classification_dataset",
+        "test": "tests/assets/classification_dataset",
+        "unlabeled": "tests/assets/classification_dataset",
     },
     "detection": {
         "train": "tests/assets/car_tree_bug",

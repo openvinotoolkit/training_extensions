@@ -5,8 +5,8 @@
 ---
 
 [Key Features](#key-features) •
-[Quick Start](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/index.html) •
-[Documentation](https://openvinotoolkit.github.io/training_extensions/latest/index.html) •
+[Quick Start](https://openvinotoolkit.github.io/training_extensions/releases/1.2.0/guide/get_started/quick_start_guide/index.html) •
+[Documentation](https://openvinotoolkit.github.io/training_extensions/releases/1.2.0/index.html) •
 [License](#license)
 
 [![PyPI](https://img.shields.io/pypi/v/otx)](https://pypi.org/project/otx)
@@ -55,7 +55,7 @@ OpenVINO™ Training Extensions supports the following computer vision tasks:
 - **Action recognition** including action classification and detection
 - **Anomaly recognition** tasks including anomaly classification, detection and segmentation
 
-OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/algorithms/index.html):
+OpenVINO™ Training Extensions supports the [following learning methods](https://openvinotoolkit.github.io/training_extensions/releases/1.2.0/guide/explanation/algorithms/index.html):
 
 - **Supervised**, incremental training, which includes class incremental scenario and contrastive learning for classification and semantic segmentation tasks
 - **Semi-supervised learning**
@@ -65,9 +65,9 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Half-precision training** to save GPUs memory and use larger batch sizes
-- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
+- Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/releases/1.2.0/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 - OpenVINO™ Training Extensions uses [Datumaro](https://openvinotoolkit.github.io/datumaro/docs/) as the backend to hadle datasets. Thanks to that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
-- [Auto-configuration functionality](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model template to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
+- [Auto-configuration functionality](https://openvinotoolkit.github.io/training_extensions/releases/1.2.0/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model template to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 
 ---
 
@@ -75,7 +75,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 ### Installation
 
-Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/installation.html).
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/releases/1.2.0/guide/get_started/quick_start_guide/installation.html).
 
 ### OpenVINO™ Training Extensions CLI Commands
 
@@ -89,27 +89,18 @@ Please refer to the [installation guide](https://openvinotoolkit.github.io/train
 - `otx demo` allows one to apply a trained model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario.
 - `otx explain` runs explain algorithm on the provided data and outputs images with the saliency maps to show how your model makes predictions.
 
-You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/cli_commands.html).
+You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/releases/1.2.0/guide/get_started/quick_start_guide/cli_commands.html).
 
 ---
 
 ## Updates
 
-### v1.1.0 (1Q23)
+### v1.2.0 (2Q23)
 
-- Add FP16 IR export support (<https://github.com/openvinotoolkit/training_extensions/pull/1683>)
-- Add in-memory caching in dataloader (<https://github.com/openvinotoolkit/training_extensions/pull/1694>)
-- Add MoViNet template for action classification (<https://github.com/openvinotoolkit/training_extensions/pull/1742>)
-- Add Semi-SL multilabel classification algorithm (<https://github.com/openvinotoolkit/training_extensions/pull/1805>)
-- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (<https://github.com/openvinotoolkit/training_extensions/pull/1534>)
-- Add train-type parameter to otx train (<https://github.com/openvinotoolkit/training_extensions/pull/1874>)
-- Add embedding of inference configuration to IR for classification (<https://github.com/openvinotoolkit/training_extensions/pull/1842>)
-- Enable VOC dataset in OTX (<https://github.com/openvinotoolkit/training_extensions/pull/1862>)
-- Add mmcls.VisionTransformer backbone support (<https://github.com/openvinotoolkit/training_extensions/pull/1908>)
-
-### v1.2+ (2Q23)
-
-- In planning
+- Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
+- Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
+- Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
+- Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
 
 ### Release History
 

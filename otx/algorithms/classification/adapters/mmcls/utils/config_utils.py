@@ -55,7 +55,7 @@ def patch_datasets(
 
         # For stable hierarchical information indexing
         if subset == "train" and kwargs["type"] == "OTXHierarchicalClsDataset":
-            config.data[f"{subset}_dataloader"].drop_last = True
+            config.data[f"{subset}_dataloader"]["drop_last"] = True
 
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
