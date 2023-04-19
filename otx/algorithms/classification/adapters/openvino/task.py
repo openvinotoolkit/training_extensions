@@ -304,7 +304,6 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
             # model_wrappers files
             for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
-                # skip coping __pycache__ folder
                 if "__pycache__" in root:
                     continue
                 for file in files:

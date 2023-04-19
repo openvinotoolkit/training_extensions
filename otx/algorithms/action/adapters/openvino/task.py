@@ -246,8 +246,7 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
             # model_wrappers files
-            for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
-                # skip coping __pycache__ folder
+            for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):          
                 if "__pycache__" in root:
                     continue
                 for file in files:
