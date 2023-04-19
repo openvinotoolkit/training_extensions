@@ -105,6 +105,8 @@ jobs:
       - name: Run integration test
         run: tox -e pre-merge-cls-py310
   Pre-Merge-Integration-Det-Test:
+    env:
+      CUDA_LAUNCH_BLOCKING: 1
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
     timeout-minutes: 120
