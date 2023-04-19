@@ -47,6 +47,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.training_base import TrainType
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
@@ -370,7 +371,7 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if self._hyperparams.learning_parameters.auto_decrease_bs:
+        if self._hyperparams.learning_parameters.auto_decrease_bs and not isinstance(self, NNCFBaseTask):
             train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(train_func, cfg, datasets, False)
 
