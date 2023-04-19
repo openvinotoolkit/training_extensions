@@ -21,7 +21,7 @@ by adding the argument ``--algo_backend.enable_noisy_label_detection true.`` as 
     Currently, it only supports multi-class classification task and single GPU training.
 
 .. note:: **Important!**
-    The post-processing step to analyze the training loss dynamics require `Datumaro <https://github.com/openvinotoolkit/datumaro>`_.
-    Please see `this end-to-end example written in Jupyter notebook <https://github.com/openvinotoolkit/datumaro/blob/develop/notebooks/10_noisy_label_detection.ipynb>`_.
+    The post-processing step to analyze the training loss dynamics requires `Datumaro <https://github.com/openvinotoolkit/datumaro>`_.
+    Please see `this end-to-end Jupyter notebook example <https://github.com/openvinotoolkit/datumaro/blob/develop/notebooks/10_noisy_label_detection.ipynb>`_.
 
 .. [1] Zhou, Tianyi, Shengjie Wang, and Jeff Bilmes. "Robust curriculum learning: from clean label detection to noisy label self-correction." International Conference on Learning Representations. 2021.
