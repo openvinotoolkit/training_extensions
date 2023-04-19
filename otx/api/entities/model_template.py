@@ -205,16 +205,17 @@ class TaskType(Enum):
         is_global=False,
         is_local=True,
     )
-    ACTION_CLASSIFICATION = 14, TaskInfo(
-        domain=Domain.ACTION_CLASSIFICATION,
-        is_trainable=True,
-        is_anomaly=False,
-        is_global=False,
-        is_local=True,
-    )
-    ACTION_DETECTION = 15, TaskInfo(
-        domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
-    )
+    if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
+        ACTION_CLASSIFICATION = 14, TaskInfo(
+            domain=Domain.ACTION_CLASSIFICATION,
+            is_trainable=True,
+            is_anomaly=False,
+            is_global=False,
+            is_local=True,
+        )
+        ACTION_DETECTION = 15, TaskInfo(
+            domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
+        )
 
     def __str__(self) -> str:
         """Returns name."""
