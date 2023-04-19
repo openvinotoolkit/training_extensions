@@ -21,18 +21,21 @@ from tests.regression.regression_test_helpers import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     get_template_dir,
-    nncf_eval_testing,
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
-    otx_eval_compare,
-    otx_eval_deployment_testing,
-    otx_eval_e2e_eval_time,
-    otx_eval_e2e_train_time,
-    otx_eval_openvino_testing,
     otx_export_testing,
     otx_train_testing,
-    pot_eval_testing,
     pot_optimize_testing,
+)
+
+from tests.regression.regression_command import (
+    regression_eval_testing,
+    regression_openvino_testing,
+    regression_deployment_testing,
+    regression_nncf_eval_testing,
+    regression_pot_eval_testing,
+    regression_train_time_testing,
+    regression_eval_time_testing,
 )
 
 # Configurations for regression test.
@@ -72,7 +75,7 @@ class TestRegressionMultiClassClassification:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -86,23 +89,28 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, template):
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=multi_class_regression_config["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=multi_class_regression_config["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -124,7 +132,7 @@ class TestRegressionMultiClassClassification:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -138,6 +146,8 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr_kpi_test(self, template):
@@ -146,17 +156,20 @@ class TestRegressionMultiClassClassification:
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_cls_incr["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=config_cls_incr["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -179,7 +192,7 @@ class TestRegressionMultiClassClassification:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -193,6 +206,8 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["semi_supervised"]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_semisl_kpi_test(self, template):
@@ -201,17 +216,20 @@ class TestRegressionMultiClassClassification:
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_semisl["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=config_semisl["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -250,7 +268,7 @@ class TestRegressionMultiClassClassification:
         # Evaluation with self + supervised training model
         args_selfsl.pop("--load-weights")
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             new_tmp_dir_path,
             otx_dir,
@@ -264,6 +282,8 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["self_supervised"]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl_kpi_test(self, template):
@@ -272,17 +292,20 @@ class TestRegressionMultiClassClassification:
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_selfsl["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=config_selfsl["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -295,7 +318,7 @@ class TestRegressionMultiClassClassification:
         export_elapsed_time = timer() - export_start_time
 
         export_eval_start_time = timer()
-        otx_eval_openvino_testing(
+        test_result = regression_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -311,6 +334,8 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
@@ -322,7 +347,7 @@ class TestRegressionMultiClassClassification:
         deploy_elapsed_time = timer() - deploy_start_time
 
         deploy_eval_start_time = timer()
-        otx_eval_deployment_testing(
+        test_result = regression_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -338,6 +363,8 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
@@ -352,7 +379,7 @@ class TestRegressionMultiClassClassification:
         nncf_elapsed_time = timer() - nncf_start_time
 
         nncf_eval_start_time = timer()
-        nncf_eval_testing(
+        test_result = regression_nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -368,6 +395,8 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize_eval(self, template, tmp_dir_path):
@@ -379,7 +408,7 @@ class TestRegressionMultiClassClassification:
         pot_elapsed_time = timer() - pot_start_time
 
         pot_eval_start_time = timer()
-        pot_eval_testing(
+        test_result = regression_pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -393,6 +422,8 @@ class TestRegressionMultiClassClassification:
         self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]
 
 
 multi_label_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, "multi_label")
@@ -420,7 +451,7 @@ class TestRegressionMultiLabelClassification:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -434,23 +465,28 @@ class TestRegressionMultiLabelClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, template):
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=multi_label_regression_config["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=multi_label_regression_config["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -472,7 +508,7 @@ class TestRegressionMultiLabelClassification:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -486,6 +522,8 @@ class TestRegressionMultiLabelClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type]["class_incr"]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr_kpi_test(self, template):
@@ -494,17 +532,20 @@ class TestRegressionMultiLabelClassification:
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_cls_incr["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=config_cls_incr["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -517,7 +558,7 @@ class TestRegressionMultiLabelClassification:
         export_elapsed_time = timer() - export_start_time
 
         export_eval_start_time = timer()
-        otx_eval_openvino_testing(
+        test_result = regression_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -533,6 +574,8 @@ class TestRegressionMultiLabelClassification:
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
@@ -544,7 +587,7 @@ class TestRegressionMultiLabelClassification:
         deploy_elapsed_time = timer() - deploy_start_time
 
         deploy_eval_start_time = timer()
-        otx_eval_deployment_testing(
+        test_result = regression_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -560,6 +603,8 @@ class TestRegressionMultiLabelClassification:
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
@@ -574,7 +619,7 @@ class TestRegressionMultiLabelClassification:
         nncf_elapsed_time = timer() - nncf_start_time
 
         nncf_eval_start_time = timer()
-        nncf_eval_testing(
+        test_result = regression_nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -590,6 +635,8 @@ class TestRegressionMultiLabelClassification:
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize_eval(self, template, tmp_dir_path):
@@ -601,7 +648,7 @@ class TestRegressionMultiLabelClassification:
         pot_elapsed_time = timer() - pot_start_time
 
         pot_eval_start_time = timer()
-        pot_eval_testing(
+        test_result = regression_pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -615,6 +662,8 @@ class TestRegressionMultiLabelClassification:
         self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]
 
 
 h_label_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, "h_label")
@@ -642,7 +691,7 @@ class TestRegressionHierarchicalLabelClassification:
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -656,23 +705,28 @@ class TestRegressionHierarchicalLabelClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, template):
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=h_label_regression_config["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=h_label_regression_config["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -685,7 +739,7 @@ class TestRegressionHierarchicalLabelClassification:
         export_elapsed_time = timer() - export_start_time
 
         export_eval_start_time = timer()
-        otx_eval_openvino_testing(
+        test_result = regression_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -701,6 +755,8 @@ class TestRegressionHierarchicalLabelClassification:
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["export"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
@@ -712,7 +768,7 @@ class TestRegressionHierarchicalLabelClassification:
         deploy_elapsed_time = timer() - deploy_start_time
 
         deploy_eval_start_time = timer()
-        otx_eval_deployment_testing(
+        test_result = regression_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -728,6 +784,8 @@ class TestRegressionHierarchicalLabelClassification:
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["deploy"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
@@ -742,7 +800,7 @@ class TestRegressionHierarchicalLabelClassification:
         nncf_elapsed_time = timer() - nncf_start_time
 
         nncf_eval_start_time = timer()
-        nncf_eval_testing(
+        test_result = regression_nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -758,6 +816,8 @@ class TestRegressionHierarchicalLabelClassification:
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["nncf"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize_eval(self, template, tmp_dir_path):
@@ -769,7 +829,7 @@ class TestRegressionHierarchicalLabelClassification:
         pot_elapsed_time = timer() - pot_start_time
 
         pot_eval_start_time = timer()
-        pot_eval_testing(
+        test_result = regression_pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -783,6 +843,8 @@ class TestRegressionHierarchicalLabelClassification:
         self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]
 
 
 class TestRegressionSupconClassification:
@@ -817,7 +879,7 @@ class TestRegressionSupconClassification:
 
         # Evaluation with supcon + supervised training
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -831,6 +893,8 @@ class TestRegressionSupconClassification:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, template):
@@ -838,14 +902,17 @@ class TestRegressionSupconClassification:
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
 
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=config_supcon["kpi_e2e_train_time_criteria"]["train"],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=config_supcon["kpi_e2e_eval_time_criteria"]["train"],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
