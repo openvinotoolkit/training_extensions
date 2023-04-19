@@ -26,7 +26,7 @@ fp16 = dict(loss_scale=512.0)
 model = dict(
     type="ClassIncrEncoderDecoder",
     decode_head=dict(
-        base_type="ASPPHead",
+        type="ASPPHead",
         in_channels=2048,
         in_index=3,
         channels=512,
@@ -40,7 +40,7 @@ model = dict(
         loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0),
     ),
     auxiliary_head=dict(
-        base_type="FCNHead",
+        type="FCNHead",
         in_channels=1024,
         in_index=2,
         channels=256,

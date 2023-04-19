@@ -156,9 +156,6 @@ class SegmentationConfigurer:
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-        # configure head
-        self.configure_head(cfg)
-
     def configure_data(
         self,
         cfg: Config,
@@ -182,19 +179,6 @@ class SegmentationConfigurer:
                     cfg.data[mode]["type"] = "MPASegDataset"
                     cfg.data[mode]["org_type"] = org_type
 
-    def configure_head(self, cfg):
-        """Change head to custom head to align with otx inteface for class incremental learning."""
-
-        decode_head = cfg.model.get("decode_head", None)
-        auxiliary_head = cfg.model.get("auxiliary_head", None)
-
-        for head in (decode_head, auxiliary_head):
-            if head is not None:
-                # substitute head.type with OTX Head factory function
-                head.type = otx_head_factory
-                if "base_type" not in head:
-                    raise KeyError("base_type for model head should be provided in model config!")
-
     def configure_task(
         self,
         cfg: Config,
@@ -208,24 +192,25 @@ class SegmentationConfigurer:
             # Task classes
             self.configure_classes(cfg)
             # Ignored mode
-            self.configure_ignore(cfg)
+            self.configure_decode_head(cfg)
 
-    def configure_ignore(self, cfg: Config) -> None:
-        """Change to incremental loss (ignore mode)."""
-        if cfg.get("ignore", False):
+    def configure_decode_head(self, cfg: Config) -> None:
+        """Change to incremental loss (ignore mode) and substitute head with otx universal head."""
+        ignore = cfg.get("ignore", False)
+        if ignore:
             cfg_loss_decode = ConfigDict(
                 type="CrossEntropyLossWithIgnore",
                 use_sigmoid=False,
                 loss_weight=1.0,
             )
 
-            if "decode_head" in cfg.model:
-                decode_head = cfg.model.decode_head
-                decode_head.loss_decode = cfg_loss_decode
-
-            if "auxiliary_head" in cfg.model:
-                auxiliary_head = cfg.model.auxiliary_head
-                auxiliary_head.loss_decode = cfg_loss_decode
+        for head in ("decode_head", "auxiliary_head"):
+            decode_head = cfg.model.get(head, None)
+            if decode_head is not None:
+                decode_head.base_type = decode_head.type
+                decode_head.type = otx_head_factory
+                if ignore:
+                    decode_head.loss_decode = cfg_loss_decode
 
     # pylint: disable=too-many-branches
     def configure_classes(self, cfg: Config) -> None:
@@ -282,13 +267,13 @@ class SegmentationConfigurer:
         """
         if model_ckpt:
             cfg.load_from = self.get_model_ckpt(model_ckpt)
-        if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
-            cfg.model.backbone.pretrained = None
-        elif cfg.get("load_from", None):
-            # patch checkpoint if needed (e.g. pretrained weights from mmseg)
-            cfg.load_from = self.patch_chkpt(cfg.load_from)
         if cfg.get("resume", False):
             cfg.resume_from = cfg.load_from
+        if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
+            cfg.model.backbone.pretrained = None
+        # patch checkpoint if needed (e.g. pretrained weights from mmseg)
+        if cfg.get("load_from", None) and not model_ckpt and not cfg.get("resume", False):
+            cfg.load_from = self.patch_chkpt(cfg.load_from)
 
     @staticmethod
     def patch_chkpt(ckpt_path: str, new_path: Optional[str] = None) -> str:
