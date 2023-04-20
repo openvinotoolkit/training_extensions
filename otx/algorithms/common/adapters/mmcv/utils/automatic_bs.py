@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
-from typing import Callable, List
+from typing import Callable, Dict, List
 
 import numpy as np
 
@@ -12,6 +12,28 @@ from otx.algorithms.common.adapters.torch.utils import adapt_batch_size as adapt
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
+
+
+def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
+    """Set value at dictionary hierarchy structure.
+
+    This function is for setting a value at leaf dictionary node in dictionary hierarchy structure.
+    If key doesn't exist in the middle node dictionaray, then make a new dictionary at that and keep going.
+    For example, if you want to set value at target["a"]["b"]["c"], then you can call the function as below.
+    _set_value_at_dict_in_dict(target, "a.b.c", value)
+
+    Args:
+        target (Dict): Target variable.
+        key_path (str): Dot delimited dictionary key string.
+        value : Value to set.
+    """
+    keys = key_path.split(".")
+    for key in keys[:-1]:
+        if key not in target:
+            target[key] = {}
+        target = target[key]
+
+    target[keys[-1]] = value
 
 
 def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False):
@@ -35,7 +57,10 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
 
         # setup for training a single iter to reduce time
         if copied_cfg.runner["type"] == "AccuracyAwareRunner":  # nncf case
-            copied_cfg.runner["nncf_config"]["accuracy_aware_training"]["params"]["maximal_total_epochs"] = 1
+            if "nncf_config" in copied_cfg.runner:
+                _set_value_at_dict_in_dict(
+                    copied_cfg.runner["nncf_config"], "accuracy_aware_training.params.maximal_total_epochs", 1
+                )
         else:
             copied_cfg.runner["max_epochs"] = 1
 
