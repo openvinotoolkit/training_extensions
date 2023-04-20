@@ -72,8 +72,8 @@ class TestToolsOTXActionClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_train_auto_decrease_bs(self, template, tmp_dir_path):
+    def test_otx_train_auto_decrease_batch_size(self, template, tmp_dir_path):
         decrease_bs_args = deepcopy(args)
-        decrease_bs_args["train_params"].extend(["--learning_parameters.auto_decrease_bs", "true"])
-        tmp_dir_path = tmp_dir_path / "action_cls_auto_decrease_bs"
+        decrease_bs_args["train_params"].extend(["--learning_parameters.auto_decrease_batch_size", "true"])
+        tmp_dir_path = tmp_dir_path / "action_cls_auto_decrease_batch_size"
         otx_train_testing(template, tmp_dir_path, otx_dir, decrease_bs_args)

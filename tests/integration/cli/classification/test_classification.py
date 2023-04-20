@@ -266,10 +266,10 @@ class TestMultiClassClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_train_auto_decrease_bs(self, template, tmp_dir_path):
+    def test_otx_train_auto_decrease_batch_size(self, template, tmp_dir_path):
         decrease_bs_args = copy.deepcopy(args)
-        decrease_bs_args["train_params"].extend(["--learning_parameters.auto_decrease_bs", "true"])
-        tmp_dir_path = tmp_dir_path / "multi_class_cls_auto_decrease_bs"
+        decrease_bs_args["train_params"].extend(["--learning_parameters.auto_decrease_batch_size", "true"])
+        tmp_dir_path = tmp_dir_path / "multi_class_cls_auto_decrease_batch_size"
         otx_train_testing(template, tmp_dir_path, otx_dir, decrease_bs_args)
 
 
