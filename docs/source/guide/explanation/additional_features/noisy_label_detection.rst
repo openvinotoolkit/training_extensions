@@ -11,7 +11,7 @@ Finally, Datumaro ranks the top-k samples, which can be considered as noisy labe
 We provide an end-to-end example written in a Jupyter notebook, which you can find at the link in the note below.
 
 In OpenVINO™ Training Extensions CLI, you can enable this feature
-by adding the argument ``--algo_backend.enable_noisy_label_detection true.`` as follows.
+by adding the argument ``--algo_backend.enable_noisy_label_detection true`` as follows.
 
 .. code-block::
 
