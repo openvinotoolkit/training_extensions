@@ -19,6 +19,7 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
+from functools import partial
 from typing import Any, Dict, Optional, Union
 
 import torch
@@ -40,6 +41,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_data_pipeline,
@@ -53,6 +55,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.training_base import TrainType
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
@@ -403,6 +406,11 @@ class MMClassificationTask(OTXClassificationTask):
                     **eval_cfg,
                 )
             )
+
+        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+            validate = isinstance(self, NNCFBaseTask)  # nncf needs eval hooks
+            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(train_func, cfg, datasets, validate)
 
         train_model(
             model,

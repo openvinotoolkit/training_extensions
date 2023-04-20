@@ -190,6 +190,16 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        auto_decrease_batch_size = configurable_boolean(
+            default_value=False,
+            header="Decrease batch size if current batch size isn't fit to CUDA memory.",
+            description="Find a proper batch size by training for an iteration with various batch size a few times.",
+            warning="Enabling this option could reduce the actual batch size if the current setting results in "
+            "out-of-memory error. The learning rate also could be adjusted according to the adapted batch size. "
+            "This process might take some extra computation time to try a few batch size candidates.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""
