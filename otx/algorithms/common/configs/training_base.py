@@ -281,7 +281,7 @@ class BaseConfig(ConfigurableParameters):
             header="train type",
             description="Training scheme option that determines how to train the model",
             editable=False,
-            visible_in_ui=True,
+            visible_in_ui=False,
         )
 
         mem_cache_size = configurable_integer(
@@ -299,7 +299,7 @@ class BaseConfig(ConfigurableParameters):
             header="Scheme for storage cache",
             description="Scheme for storage cache",
             editable=False,
-            visible_in_ui=True,
+            visible_in_ui=False,
         )
 
     @attrs

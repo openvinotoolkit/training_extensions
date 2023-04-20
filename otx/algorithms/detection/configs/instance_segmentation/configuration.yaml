@@ -260,7 +260,7 @@ algo_backend:
       rules: []
       type: UI_RULES
     value: Incremental
-    visible_in_ui: True
+    visible_in_ui: false
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
