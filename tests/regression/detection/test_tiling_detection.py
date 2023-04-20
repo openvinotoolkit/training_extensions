@@ -179,7 +179,7 @@ class TestRegressionTilingDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
+    @pytest.mark.skip(reason="CVS-109001")
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
