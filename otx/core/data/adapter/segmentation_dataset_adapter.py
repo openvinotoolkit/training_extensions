@@ -8,12 +8,13 @@ import json
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import cv2
 import numpy as np
-from datumaro.components.annotation import AnnotationType, Mask
-from datumaro.components.dataset import Dataset as DatumaroDataset
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.components.annotation import Mask
+from datumaro.components.dataset import Dataset as DatumDataset
 from datumaro.plugins.data_formats.common_semantic_segmentation import (
     CommonSemanticSegmentationBase,
     make_categories,
@@ -46,8 +47,16 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         val_data_roots: Optional[str] = None,
         test_data_roots: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        cache_config: Optional[Dict[str, Any]] = None,
     ):
-        super().__init__(task_type, train_data_roots, val_data_roots, test_data_roots, unlabeled_data_roots)
+        super().__init__(
+            task_type,
+            train_data_roots,
+            val_data_roots,
+            test_data_roots,
+            unlabeled_data_roots,
+            cache_config,
+        )
         self.updated_label_id: Dict[int, int] = {}
 
     def get_otx_dataset(self) -> DatasetEntity:
@@ -76,10 +85,11 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
-                    image = Image(file_path=datumaro_item.media.path)
+                    image = self.datum_media_2_otx_media(datumaro_item.media)
+                    assert isinstance(image, Image)
                     shapes: List[Annotation] = []
                     for ann in datumaro_item.annotations:
-                        if ann.type == AnnotationType.mask:
+                        if ann.type == DatumAnnotationType.mask:
                             # TODO: consider case -> didn't include the background information
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
@@ -144,7 +154,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         test_data_roots: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         pseudo_mask_dir: str = "detcon_mask",
-    ) -> Dict[Subset, DatumaroDataset]:
+    ) -> Dict[Subset, DatumDataset]:
         """Import custom Self-SL dataset for using DetCon.
 
         Self-SL for semantic segmentation using DetCon uses pseudo masks as labels,
@@ -168,7 +178,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         logger.warning(f"Please check if {train_data_roots} is data roots only for images, not annotations.")
 
         dataset = {}
-        dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
+        dataset[Subset.TRAINING] = DatumDataset.import_from(train_data_roots, format="image_dir")
         self.is_train_phase = True
 
         # Load pseudo masks

@@ -335,20 +335,6 @@ def patch_tiling(config, hparams, dataset=None):
 
         if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
             adaptive_tile_params(hparams.tiling_parameters, dataset)
-            tiling_params = ConfigDict(
-                tile_size=int(hparams.tiling_parameters.tile_size),
-                overlap_ratio=float(hparams.tiling_parameters.tile_overlap),
-                max_per_img=int(hparams.tiling_parameters.tile_max_number),
-            )
-            config.update(
-                ConfigDict(
-                    data=ConfigDict(
-                        train=tiling_params,
-                        val=tiling_params,
-                        test=tiling_params,
-                    )
-                )
-            )
 
         if dataset and dataset.purpose == DatasetPurpose.INFERENCE:
             config.get("data", ConfigDict()).get("val_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
@@ -370,6 +356,20 @@ def patch_tiling(config, hparams, dataset=None):
 
             config.data.train.filter_empty_gt = False
 
+        tiling_params = ConfigDict(
+            tile_size=int(hparams.tiling_parameters.tile_size),
+            overlap_ratio=float(hparams.tiling_parameters.tile_overlap),
+            max_per_img=int(hparams.tiling_parameters.tile_max_number),
+        )
+        config.update(
+            ConfigDict(
+                data=ConfigDict(
+                    train=tiling_params,
+                    val=tiling_params,
+                    test=tiling_params,
+                )
+            )
+        )
         config.update(dict(evaluation=dict(iou_thr=[0.5])))
 
     return config

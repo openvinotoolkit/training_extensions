@@ -191,7 +191,7 @@ class MultiGPUManager:
     def finalize(self):
         """Join all child processes."""
         for p in self._processes:
-            if p.join(10) is None and p.exitcode is None:
+            if p.join(30) is None and p.exitcode is None:
                 p.kill()
 
     @staticmethod

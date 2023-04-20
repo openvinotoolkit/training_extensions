@@ -18,6 +18,7 @@ import glob
 import os
 import time
 from copy import deepcopy
+from functools import partial
 from typing import Optional, Union
 
 import torch
@@ -34,6 +35,7 @@ from otx.algorithms.action.adapters.mmaction import (
 )
 from otx.algorithms.action.task import OTXActionTask
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_adaptive_interval_training,
@@ -263,6 +265,11 @@ class MMActionTask(OTXActionTask):
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
+
+        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(train_func, cfg, datasets, validate)
+
         train_model(
             model,
             datasets,

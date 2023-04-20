@@ -4,6 +4,7 @@
 #
 import shutil
 from typing import List
+from tempfile import TemporaryDirectory
 
 import datumaro as dm
 import pytest
@@ -19,7 +20,7 @@ from tests.unit.core.data.test_helpers import (
 AVAILABLE_TASKS = ["classification", "detection", "segmentation"]
 AVAILABLE_SUBSETS = ["train", "val"]
 AVAILABLE_DATA_ROOTS = [
-    "tests/assets/imagenet_dataset",
+    "tests/assets/classification_dataset",
     "tests/assets/car_tree_bug",
     "tests/assets/cityscapes_dataset/dataset",
     "tests/assets/anomaly/hazelnut",
@@ -27,7 +28,7 @@ AVAILABLE_DATA_ROOTS = [
 ]
 
 DATA_ROOTS2FORMAT = {
-    "tests/assets/imagenet_dataset": "imagenet",
+    "tests/assets/classification_dataset": "imagenet",
     "tests/assets/car_tree_bug": "coco",
     "tests/assets/cityscapes_dataset/dataset": "cityscapes",
 }
@@ -74,7 +75,13 @@ class TestOTXDatasetManager:
         random_data = DatasetManager.get_image_path(
             generate_datumaro_dataset_item(item_id="0", subset=subset, task=task)
         )
-        assert random_data is not None
+        assert random_data is None
+
+        with TemporaryDirectory() as temp_dir:
+            random_data = DatasetManager.get_image_path(
+                generate_datumaro_dataset_item(item_id="0", subset=subset, task=task, temp_dir=temp_dir)
+            )
+            assert random_data is not None
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("task", AVAILABLE_TASKS)
