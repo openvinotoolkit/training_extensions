@@ -34,8 +34,12 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         _set_batch_size(copied_cfg, batch_size)
 
         # setup for training a single iter to reduce time
-        copied_cfg.runner["max_epochs"] = 1
-        if not validate:
+        if copied_cfg.runner["type"] == "AccuracyAwareRunner":  # nncf case
+            copied_cfg.runner["nncf_config"]["accuracy_aware_training"]["params"]["maximal_total_epochs"] = 1
+        else:
+            copied_cfg.runner["max_epochs"] = 1
+
+        if not validate:  # disable validation
             for hook in copied_cfg.custom_hooks:
                 if hook["type"] == "AdaptiveTrainSchedulingHook":
                     hook["enable_eval_before_run"] = False
