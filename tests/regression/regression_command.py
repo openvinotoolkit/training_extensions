@@ -128,14 +128,7 @@ def regression_openvino_testing(
 
 
 def regression_deployment_testing(
-    template, 
-    root, 
-    otx_dir, 
-    args, 
-    threshold=0.0, 
-    criteria=None, 
-    reg_threshold=0.10, 
-    result_dict=None
+    template, root, otx_dir, args, threshold=0.0, criteria=None, reg_threshold=0.10, result_dict=None
 ):
     regression_result = {
         "passed": True,
@@ -185,14 +178,7 @@ def regression_deployment_testing(
 
 
 def regression_nncf_eval_testing(
-    template, 
-    root, 
-    otx_dir, 
-    args, 
-    threshold=0.01, 
-    criteria=None, 
-    reg_threshold=0.10, 
-    result_dict=None
+    template, root, otx_dir, args, threshold=0.01, criteria=None, reg_threshold=0.10, result_dict=None
 ):
     regression_result = {
         "passed": True,
@@ -241,15 +227,7 @@ def regression_nncf_eval_testing(
     return regression_result
 
 
-def regression_pot_eval_testing(
-    template, 
-    root, 
-    otx_dir, 
-    args, 
-    criteria=None, 
-    reg_threshold=0.10, 
-    result_dict=None
-):
+def regression_pot_eval_testing(template, root, otx_dir, args, criteria=None, reg_threshold=0.10, result_dict=None):
     regression_result = {
         "passed": True,
         "log": "",
