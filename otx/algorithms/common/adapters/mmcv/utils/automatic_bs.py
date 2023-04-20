@@ -56,7 +56,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         _set_batch_size(copied_cfg, batch_size)
 
         # setup for training a single iter to reduce time
-        if copied_cfg.runner["type"] == "AccuracyAwareRunner":  # nncf case
+        if copied_cfg.runner.get("type") == "AccuracyAwareRunner":  # nncf case
             if "nncf_config" in copied_cfg.runner:
                 _set_value_at_dict_in_dict(
                     copied_cfg.runner["nncf_config"], "accuracy_aware_training.params.maximal_total_epochs", 1
