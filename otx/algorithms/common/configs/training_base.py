@@ -194,8 +194,9 @@ class BaseConfig(ConfigurableParameters):
             default_value=False,
             header="Decrease batch size if current batch size isn't fit to CUDA memory.",
             description="Find a proper batch size by training for an iteration with various batch size a few times.",
-            warning="Checking a current batch size is available and adapting it if necessary "
-            "needs a little additional time.",
+            warning="It can decrease batch size if default or user's input batch size isn't available. "
+            "If batch size decreases, learning rate is also adapted depending on adapted batch size. "
+            "Because it needs additional training to check, it spends a little bit extra time.",
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 

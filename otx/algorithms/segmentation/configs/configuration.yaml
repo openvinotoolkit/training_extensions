@@ -243,7 +243,10 @@ learning_parameters:
       rules: []
       type: UI_RULES
     visible_in_ui: true
-    warning: Checking a current batch size is available and adapting it if necessary needs a little additional time.
+    warning:
+      It can decrease batch size if default or user's input batch size isn't available.
+      If batch size decreases, learning rate is also adapted depending on adapted batch size.
+      Because it needs additional training to check, it spends a little bit extra time.
 postprocessing:
   confidence_threshold:
     affects_outcome_of: INFERENCE
