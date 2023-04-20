@@ -370,6 +370,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         flatten_detection_config_groups(config)
         try:
             if self.model is not None and self.model.get_data("config.json"):
+                # TODO[EUGENE]: ir scale config handling
                 json_dict = json.loads(self.model.get_data("config.json"))
                 flatten_config_values(json_dict)
                 config = merge_a_into_b(json_dict, config)
@@ -413,6 +414,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 logger.info("Tile classifier is enabled. Load tile classifier model.")
                 tile_classifier_model_file = self.model.get_data("tile_classifier.xml")
                 tile_classifier_weight_file = self.model.get_data("tile_classifier.bin")
+            # TODO[EUGENE]: ir scale config handling
             inferencer = OpenVINOTileClassifierWrapper(
                 inferencer,
                 self.config.tiling_parameters.tile_size,

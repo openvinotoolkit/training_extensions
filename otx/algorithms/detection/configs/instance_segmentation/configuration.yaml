@@ -536,5 +536,24 @@ tiling_parameters:
     visible_in_ui: true
     warning: null
 
+  # TODO[EUGENE]: ir scale
+  ir_scale_value:
+    header: OpenVINO IR Scale Value
+    description: IR Scale Value
+    affects_outcome_of: TRAINING
+    default_value: 1.0
+    min_value: 0.0
+    max_value: 1.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+
   type: PARAMETER_GROUP
   visible_in_ui: true
