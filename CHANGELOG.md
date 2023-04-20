@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 - Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
 - Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
 - Optimize data preprocessing time and enhance overall performance in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2020>)
-- Support decreasing batch size if CUDA OOM occurs (<https://github.com/openvinotoolkit/training_extensions/pull/2022>)
+- Support automatic batch size decrease when there is no enough GPU memory (<https://github.com/openvinotoolkit/training_extensions/pull/2022>)
 
 ### Bug fixes
 
