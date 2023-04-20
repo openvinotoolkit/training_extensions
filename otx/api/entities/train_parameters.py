@@ -54,9 +54,6 @@ class TrainParameters:
             of an epoch). If this callback has been used to save
             temporary weights, those weights will be used to resume
             training if for some reason training was suspended.
-        auto_adapt_bs: Set to ``True`` to check current batch size is
-            available in current GPU device and if not, adpat batch size
-            for current GPU device.
     """
 
     resume: bool = False

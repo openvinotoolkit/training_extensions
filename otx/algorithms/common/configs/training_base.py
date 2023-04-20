@@ -190,10 +190,12 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
-        auto_decrease_bs = configurable_boolean(
+        auto_decrease_batch_size = configurable_boolean(
             default_value=False,
             header="Decrease batch size if current batch size isn't fit to CUDA memory.",
             description="Find a proper batch size by training for an iteration with various batch size a few times.",
+            warning="Checking a current batch size is available and adapting it if necessary "
+                    "needs a little additional time.",
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 

@@ -198,7 +198,7 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: This will automatically control the patience and interval when early stopping is enabled.
-  auto_decrease_bs:
+  auto_decrease_batch_size:
     affects_outcome_of: TRAINING
     default_value: false
     description: Find a proper batch size by training for an iteration with various batch size a few times.
@@ -211,7 +211,7 @@ learning_parameters:
       rules: []
       type: UI_RULES
     visible_in_ui: true
-    warning: null
+    warning: Checking a current batch size is available and adapting it if necessary needs a little additional time.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
