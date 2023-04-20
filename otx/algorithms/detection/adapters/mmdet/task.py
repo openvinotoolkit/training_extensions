@@ -320,10 +320,7 @@ class MMDetectionTask(OTXDetectionTask):
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
 
-        samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
-        if samples_per_gpu > 1:
-            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-            cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+        samples_per_gpu = 1
 
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
