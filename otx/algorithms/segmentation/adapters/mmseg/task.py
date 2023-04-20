@@ -375,7 +375,6 @@ class MMSegmentationTask(OTXSegmentationTask):
             validate = isinstance(self, NNCFBaseTask)  # nncf needs eval hooks
             train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(train_func, cfg, datasets, validate)
-            breakpoint()
 
         train_segmentor(
             model,
