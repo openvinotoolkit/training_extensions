@@ -75,7 +75,13 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 ### Installation
 
-Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/installation.html).
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/installation.html) for installing it using Python venv (virtual environment), or use the following steps to run it in a containerised environment:
+
+```bash
+$ docker build -t trainer <path to training_extensions>
+$ docker run -it --rm -v "$(pwd)/shared:/mnt/shared" trainer
+trainer$ otx # installed on Ubuntu 20.04 with /mnt/shared as shared directory
+```
 
 ### OpenVINO™ Training Extensions CLI Commands
 
