@@ -1652,43 +1652,6 @@ explain_predicted_classes: If set to True, provide explanations only for predict
 
 <span class="target" id="module-otx.api.entities.label_schema"></span><p>This module implements the LabelSchema entity.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph" title="Permalink to this definition">#</a></dt>
-<dd><p>Represents connectivity between labels as a graph. For example exclusivity or hierarchy.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>directed (bool): whether the relationships are directed or undirected</dt><dd><p>(symmetrical)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.add_edges">
-<span class="sig-name descname"><span class="pre">add_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.add_edges" title="Permalink to this definition">#</a></dt>
-<dd><p>Add edges between Labels.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.num_labels">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_labels</span></span><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.num_labels" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns the number of nodes in the graph.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.subgraph">
-<span class="sig-name descname"><span class="pre">subgraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.label_schema.LabelGraph" title="otx.api.entities.label_schema.LabelGraph"><span class="pre">LabelGraph</span></a></span></span><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.subgraph" title="Permalink to this definition">#</a></dt>
-<dd><p>Return the subgraph containing the given labels.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.type">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.type" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns the type of the LabelGraph.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroupType" title="otx.api.entities.label_schema.LabelGroupType"><span class="pre">LabelGroupType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LabelGroupType.EXCLUSIVE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">ID</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup" title="Permalink to this definition">#</a></dt>
 <dd><p>A label group which has exclusive (multiclass) or contains the empty label.</p>
@@ -5632,53 +5595,6 @@ training if for some reason training was suspended.</p>
     </span>
    </code>
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.api.entities.label_schema.LabelGraph">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     LabelGraph
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.label_schema.LabelGraph.add_edges">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       LabelGraph.add_edges()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.label_schema.LabelGraph.num_labels">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       LabelGraph.num_labels
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.label_schema.LabelGraph.subgraph">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       LabelGraph.subgraph()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.label_schema.LabelGraph.type">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       LabelGraph.type
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.api.entities.label_schema.LabelGroup">
