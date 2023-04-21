@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import time
 from typing import Any, Tuple, Union
 
 import numpy as np
@@ -58,9 +59,12 @@ class AsyncExecutor:
             next_frame_id += 1
         self.async_pipeline.await_all()
         for next_frame_id_to_show in range(next_frame_id_to_show, next_frame_id):
+            start_time = time.perf_counter()
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             output = self.render_result(results)
             self.visualizer.show(output)
+            # visualize video not faster then 30 FRS
+            self.visualizer.video_delay(time.perf_counter() - start_time, str(streamer.get_type()))
         dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)
 
     def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:

@@ -38,11 +38,12 @@ def build_argparser():
     args.add_argument(
         "-m",
         "--models",
-        help="Required. Path to directory with trained model and configuration file. "
+        help="Optional. Path to directory with trained model and configuration file. "
         "If you provide several models you will start the task chain pipeline with "
-        "the provided models in the order in which they were specified.",
+        "the provided models in the order in which they were specified. Default value "
+        "points to deployed model folder '../model'.",
         nargs="+",
-        required=True,
+        default=[Path("../model")],
         type=Path,
     )
     args.add_argument(

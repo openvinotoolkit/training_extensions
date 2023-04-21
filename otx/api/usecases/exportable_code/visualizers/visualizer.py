@@ -5,6 +5,7 @@
 #
 
 import abc
+import time
 from typing import Optional
 
 import cv2
@@ -45,6 +46,17 @@ class IVisualizer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def is_quit(self) -> bool:
         """Check if user wishes to quit."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def video_delay(self, elapsed_time: float, streamer_type: str) -> None:
+        """Check if video frames were inferenced faster than 30 FPS, and delay visualizer if so.
+
+        Args:
+            elapsed_time (float): Time spent on frame inference
+            streamer_type (str): Type of streamer
+        """
 
         raise NotImplementedError
 
@@ -113,3 +125,16 @@ class Visualizer(IVisualizer):
             return False
 
         return ord("q") == cv2.waitKey(self.delay)
+
+    def video_delay(self, elapsed_time: float, streamer_type: str):
+        """Check if video frames were inferenced faster than 30 FPS and delay visualizer if so.
+
+        Args:
+            elapsed_time (float): Time spent on frame inference
+            streamer_type (str): Type of streamer
+        """
+        if self.no_show:
+            return
+        if "VIDEO" in streamer_type:
+            if elapsed_time < 1 / 30:
+                time.sleep(1 / 30 - elapsed_time)

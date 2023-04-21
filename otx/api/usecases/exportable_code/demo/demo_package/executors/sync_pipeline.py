@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import time
 from typing import List, Tuple, Union
 
 import numpy as np
@@ -83,6 +84,7 @@ class ChainExecutor:
 
         for frame in streamer:
             # getting result for single image
+            start_time = time.perf_counter()
             annotation_scene = self.single_run(frame)
             output = self.visualizer.draw(frame, annotation_scene, {})
             self.visualizer.show(output)
@@ -90,5 +92,6 @@ class ChainExecutor:
                 saved_frames.append(frame)
             if self.visualizer.is_quit():
                 break
-
+            # visualize video not faster then 30 FRS
+            self.visualizer.video_delay(time.perf_counter() - start_time, str(streamer.get_type()))
         dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)

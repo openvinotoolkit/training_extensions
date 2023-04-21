@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import time
 from typing import Union
 
 from otx.api.usecases.exportable_code.demo.demo_package.model_container import (
@@ -36,6 +37,7 @@ class SyncExecutor:
 
         for frame in streamer:
             # getting result include preprocessing, infer, postprocessing for sync infer
+            start_time = time.perf_counter()
             predictions, frame_meta = self.model(frame)
             annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
             output = self.visualizer.draw(frame, annotation_scene, frame_meta)
@@ -44,5 +46,7 @@ class SyncExecutor:
                 saved_frames.append(frame)
             if self.visualizer.is_quit():
                 break
+            # visualize video not faster then 30 FRS
+            self.visualizer.video_delay(time.perf_counter() - start_time, str(streamer.get_type()))
 
         dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)
