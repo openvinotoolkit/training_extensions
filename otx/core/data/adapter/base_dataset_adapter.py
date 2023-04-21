@@ -9,6 +9,7 @@
 import abc
 import os
 from abc import abstractmethod
+from difflib import get_close_matches
 from typing import Any, Dict, List, Optional, Union
 
 import cv2
@@ -162,13 +163,15 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     def _get_subset_data(self, subset: str, dataset: DatumDataset) -> DatumDatasetSubset:
         """Get subset dataset according to subset."""
         with eager_mode(True, dataset):
-            for k, v in dataset.subsets().items():
-                if subset in k or "default" in k:
-                    v = v.as_dataset()
-                    return v
-                if subset == "test" and "val" in k:
-                    v = v.as_dataset()
-                    return v
+            subsets = list(dataset.subsets().keys())
+
+            for s in [subset, "default"]:
+                if subset == "test":
+                    s = "val"
+                exact_subset = get_close_matches(s, subsets)
+
+                if exact_subset:
+                    return dataset.subsets()[exact_subset[0]].as_dataset()
 
         raise ValueError("Can't find proper dataset.")
 
