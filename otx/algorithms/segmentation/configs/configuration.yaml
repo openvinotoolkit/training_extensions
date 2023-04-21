@@ -70,7 +70,7 @@ learning_parameters:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: 300
+    default_value: 100
     description: ""
     editable: true
     header: Number of iterations for learning rate warmup
@@ -82,7 +82,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 300
+    value: 100
     visible_in_ui: true
     warning: null
   num_checkpoints:
@@ -163,7 +163,7 @@ learning_parameters:
     warning: null
   early_stop_start:
     affects_outcome_of: TRAINING
-    default_value: 10
+    default_value: 3
     editable: true
     header: Start epoch for early stopping
     max_value: 1000
@@ -174,11 +174,11 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 10
+    value: 3
     visible_in_ui: false
   early_stop_patience:
     affects_outcome_of: TRAINING
-    default_value: 10
+    default_value: 8
     description: Training will stop if the model does not improve within the number of epochs of patience.
     editable: true
     header: Patience for early stopping
@@ -190,7 +190,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 10
+    value: 8
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
   early_stop_iteration_patience:
@@ -230,6 +230,23 @@ learning_parameters:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
+  auto_decrease_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Find a proper batch size by training for an iteration with various batch size a few times.
+    editable: true
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning:
+      Enabling this option could reduce the actual batch size if the current setting results in out-of-memory error.
+      The learning rate also could be adjusted according to the adapted batch size.
+      This process might take some extra computation time to try a few batch size candidates.
 postprocessing:
   confidence_threshold:
     affects_outcome_of: INFERENCE
@@ -290,7 +307,7 @@ algo_backend:
       rules: []
       type: UI_RULES
     value: Incremental
-    visible_in_ui: True
+    visible_in_ui: false
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
@@ -301,6 +318,28 @@ algo_backend:
     max_value: 9223372036854775807
     min_value: 0
     type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme fort storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
