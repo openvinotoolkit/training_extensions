@@ -1,7 +1,7 @@
 #!/bin/bash
 
 GPU_ID="all"
-VER_CUDA="11.1.1"
+VER_CUDA="11.7.1"
 TAG_RUNNER="latest"
 DEBUG_CONTAINER=false
 POSITIONAL=()
@@ -57,7 +57,8 @@ fi
 
 CONTAINER_NAME=$1
 GITHUB_TOKEN=$2
-CODACY_TOKEN=$3
+INSTANCE_NAME=$3
+LABELS="self-hosted,Linux,X64,debug"
 
 if [ "$DEBUG_CONTAINER" = true ]; then
     CONTAINER_NAME="otx-ci-container-debug"
@@ -76,8 +77,9 @@ if [ "$DEBUG_CONTAINER" = true ]; then
     docker run -itd \
         --env NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         --runtime=nvidia \
-        --ipc=host \
-        --cpus=40 \
+        --ipc=private \
+        --shm-size=10g \
+        --cpu-shares=1024 \
         --name "$CONTAINER_NAME" \
         registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
 
@@ -92,8 +94,9 @@ else
     docker run -itd \
         --env NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         --runtime=nvidia \
-        --ipc=host \
-        --cpus=40 \
+        --ipc=private \
+        --shm-size=10g \
+        --cpu-shares=1024 \
         --name "$CONTAINER_NAME" \
         registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
 
@@ -108,8 +111,12 @@ echo "Successfully started ci container - $CONTAINER_NAME"
 
 docker exec -it "$CONTAINER_NAME" bash -c \
     "./actions-runner/config.sh  \
+    --unattended \
     --url https://github.com/openvinotoolkit/training_extensions \
-    --token $GITHUB_TOKEN" ; RET=$?
+    --token $GITHUB_TOKEN \
+    --name $INSTANCE_NAME \
+    --labels $LABELS \
+    --replace true" ; RET=$?
 
 if [ $RET -ne 0 ]; then
     echo "failed to configure the runner. $RET"
@@ -117,8 +124,7 @@ if [ $RET -ne 0 ]; then
 fi
 
 docker exec -d "$CONTAINER_NAME" bash -c \
-    "export CODACY_PROJECT_TOKEN=$CODACY_TOKEN && \
-    ./actions-runner/run.sh" ; RET=$?
+    "./actions-runner/run.sh" ; RET=$?
 
 if [ $RET -ne 0 ]; then
     echo "failed to start actions runner. $RET"
