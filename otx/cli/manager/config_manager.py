@@ -24,6 +24,7 @@ from otx.cli.utils.errors import (
     NotSupportedError,
 )
 from otx.cli.utils.importing import get_otx_root_path
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
 
@@ -437,6 +438,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
 
         # Create OTX-workspace
+        if is_multigpu_child_process():
+            return
         # Check whether the workspace is existed or not
         if self.check_workspace() and not self.rebuild:
             return
