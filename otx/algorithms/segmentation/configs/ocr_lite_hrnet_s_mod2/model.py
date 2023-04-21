@@ -49,12 +49,12 @@ model = dict(
                 loss_weight=1.0,
             ),
         ],
-    ),
-    init_cfg=dict(
-        type="Normal",
-        mean=0,
-        std=0.01,
-        override=dict(name="conv_seg"),
+        init_cfg=dict(
+            type="Normal",
+            mean=0,
+            std=0.01,
+            override=dict(name="conv_seg"),
+        ),
     ),
 )
 
