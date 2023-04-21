@@ -39,7 +39,6 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
-    get_configs_by_pairs,
     patch_data_pipeline,
     patch_from_hyperparams,
 )
@@ -60,7 +59,12 @@ from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
 )
-from otx.algorithms.detection.adapters.mmdet.utils import patch_tiling, patch_input_preprocessing, patch_input_shape, patch_ir_scale_factor
+from otx.algorithms.detection.adapters.mmdet.utils import (
+    patch_input_preprocessing,
+    patch_input_shape,
+    patch_ir_scale_factor,
+    patch_tiling,
+)
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,

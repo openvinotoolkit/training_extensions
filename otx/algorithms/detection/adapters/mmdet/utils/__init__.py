@@ -9,10 +9,10 @@ from .config_utils import (
     patch_config,
     patch_datasets,
     patch_evaluation,
-    patch_tiling,
     patch_input_preprocessing,
     patch_input_shape,
     patch_ir_scale_factor,
+    patch_tiling,
     prepare_for_training,
     set_hyperparams,
 )

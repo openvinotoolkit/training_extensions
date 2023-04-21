@@ -374,7 +374,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 json_dict = json.loads(self.model.get_data("config.json"))
                 flatten_config_values(json_dict)
                 # NOTE: for backward compatibility
-                json_dict['tiling_parameters']['ir_scale_factor'] = json_dict['tiling_parameters'].get("ir_scale_factor", 1.0)
+                json_dict["tiling_parameters"]["ir_scale_factor"] = json_dict["tiling_parameters"].get(
+                    "ir_scale_factor", 1.0
+                )
                 config = merge_a_into_b(json_dict, config)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Failed to load config.json: {e}")

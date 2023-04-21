@@ -389,17 +389,17 @@ def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
     """
-    normalize_cfg = get_configs_by_pairs(cfg.data.test.pipeline, dict(type="Normalize"))
-    assert len(normalize_cfg) == 1
-    normalize_cfg = normalize_cfg[0]
+    normalize_cfgs = get_configs_by_pairs(cfg.data.test.pipeline, dict(type="Normalize"))
+    assert len(normalize_cfgs) == 1
+    normalize_cfg: dict = normalize_cfgs[0]
 
     # Set options based on Normalize config
     options = {
         "flags": ["--reverse_input_channels"] if normalize_cfg.get("to_rgb", False) else [],
         "args": {
             "--mean_values": list(normalize_cfg.get("mean", [])),
-            "--scale_values": list(normalize_cfg.get("std", []))
-        }
+            "--scale_values": list(normalize_cfg.get("std", [])),
+        },
     }
 
     # Set default backend configuration
@@ -435,12 +435,12 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
     """
-    resize_cfg = get_configs_by_pairs(
+    resize_cfgs = get_configs_by_pairs(
         cfg.data.test.pipeline,
         dict(type="Resize"),
     )
-    assert len(resize_cfg) == 1
-    resize_cfg = resize_cfg[0]
+    assert len(resize_cfgs) == 1
+    resize_cfg: ConfigDict = resize_cfgs[0]
     size = resize_cfg.size
     if isinstance(size, int):
         size = (size, size)
@@ -451,7 +451,7 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
 
 
 def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionConfig):
-    """ Patch IR scale factor inplace from hyper parameters to deploy config.
+    """Patch IR scale factor inplace from hyper parameters to deploy config.
 
     Args:
         deploy_cfg (ConfigDict): mmcv deploy config
