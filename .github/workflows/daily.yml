@@ -12,8 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Daily-Tests:
-    name: action
+  Daily-Tests-action:
     runs-on: [self-hosted, linux, x64, debug]
     timeout-minutes: 1440
     steps:
@@ -34,8 +33,7 @@ jobs:
           path: .tox/test-results-pre-merge-act-py310.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
-  Daily-Tests:
-    name: anomaly
+  Daily-Tests-anomaly:
     runs-on: [self-hosted, linux, x64, debug]
     timeout-minutes: 1440
     steps:
@@ -56,8 +54,7 @@ jobs:
           path: .tox/test-results-pre-merge-ano-py310.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
-  Daily-Tests:
-    name: classification
+  Daily-Tests-classification:
     runs-on: [self-hosted, linux, x64, debug]
     timeout-minutes: 1440
     steps:
@@ -78,8 +75,7 @@ jobs:
           path: .tox/test-results-pre-merge-cls-py310.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
-  Daily-Tests:
-    name: detection
+  Daily-Tests-detection:
     runs-on: [self-hosted, linux, x64, debug]
     timeout-minutes: 1440
     steps:
@@ -100,8 +96,7 @@ jobs:
           path: .tox/test-results-pre-merge-det-py310.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
-  Daily-Tests:
-    name: instance_segmentation
+  Daily-Tests-instance_segmentation:
     runs-on: [self-hosted, linux, x64, debug]
     timeout-minutes: 1440
     steps:
@@ -122,8 +117,7 @@ jobs:
           path: .tox/test-results-pre-merge-iseg-py310.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ always() }}
-  Daily-Tests:
-    name: semantic_segmentation
+  Daily-Tests-semantic_segmentation:
     runs-on: [self-hosted, linux, x64, debug]
     timeout-minutes: 1440
     steps:
