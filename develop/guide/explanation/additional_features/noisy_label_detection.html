@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Models Optimization &#8212; OpenVINO™ Training Extensions 1.3.0 documentation</title>
+    <title>Noisy label detection &#8212; OpenVINO™ Training Extensions 1.3.0 documentation</title>
   
   
   
@@ -42,11 +42,11 @@
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/models_optimization';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/noisy_label_detection';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Hyperparameters Optimization" href="hpo.html" />
-    <link rel="prev" title="Additional Features" href="index.html" />
+    <link rel="next" title="API" href="../../reference/api/index.html" />
+    <link rel="prev" title="Explainable AI (XAI)" href="xai.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -286,11 +286,11 @@
 </ul>
 </li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Additional Features</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">Models Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models_optimization.html">Models Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_configuration.html">Auto-configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xai.html">Explainable AI (XAI)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="noisy_label_detection.html">Noisy label detection</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Noisy label detection</a></li>
 </ul>
 </li>
 </ul>
@@ -464,29 +464,37 @@
             
             <article class="bd-article" role="main">
               
-  <section id="models-optimization">
-<h1>Models Optimization<a class="headerlink" href="#models-optimization" title="Permalink to this heading">#</a></h1>
-<p>OpenVINO™ Training Extensions provides two types of optimization algorithms: <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction">Post-training Optimization Tool (POT)</a> and <a class="reference external" href="https://github.com/openvinotoolkit/nncf">Neural Network Compression Framework (NNCF)</a>.</p>
-<section id="post-training-optimization-tool">
-<h2>Post-training Optimization Tool<a class="headerlink" href="#post-training-optimization-tool" title="Permalink to this heading">#</a></h2>
-<p>POT is designed to optimize the inference of models by applying post-training methods that do not require model retraining or fine-tuning. If you want to know more details about how POT works and to be more familiar with model optimization methods, please refer to <a class="reference external" href="https://docs.openvino.ai/latest/pot_introduction.html#doxid-pot-introduction">documentation</a>.</p>
-<p>To run Post-training optimization it is required to convert the model to OpenVINO™ intermediate representation (IR) first. To perform fast and accurate quantization we use <code class="docutils literal notranslate"><span class="pre">DefaultQuantization</span> <span class="pre">Algorithm</span></code> for each task. Please, see the <a class="reference external" href="https://docs.openvino.ai/latest/pot_compression_algorithms_quantization_default_README.html#doxid-pot-compression-algorithms-quantization-default-r-e-a-d-m-e">DefaultQuantization Parameters</a> for further information about configuring the optimization.</p>
-<p>POT parameters can be found and configured in <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">configuration.yaml</span></code> for each task. For Anomaly and Semantic Segmentation tasks, we have separate configuration files for POT, that can be found in the same directory with <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code>, for example for <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/anomaly/configs/classification/padim/pot_optimization_config.json">PaDiM</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/pot_optimization_config.json">OCR-Lite-HRNe-18-mod2</a> model.</p>
-</section>
-<section id="neural-network-compression-framework">
-<h2>Neural Network Compression Framework<a class="headerlink" href="#neural-network-compression-framework" title="Permalink to this heading">#</a></h2>
-<p>NNCF utilizes Training-time Optimization algorithms. It is a set of advanced algorithms for training-time model optimization within the Deep Learning framework such as Pytorch.
-The process of optimization is controlled by the NNCF configuration file. A JSON configuration file is used for easier setup of the parameters of the compression algorithm. See <a class="reference external" href="https://github.com/openvinotoolkit/nncf/blob/develop/docs/ConfigFile.md">configuration file description</a>.</p>
-<p>You can refer to configuration files for default templates for each task accordingly: <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/compression_config.json">Classification</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_atss/compression_config.json">Object Detection</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/compression_config.json">Semantic segmentation</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/compression_config.json">Instance segmentation</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/anomaly/configs/classification/padim/compression_config.json">Anomaly classification</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/anomaly/configs/detection/padim/compression_config.json">Anomaly Detection</a>, <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/anomaly/configs/segmentation/padim/compression_config.json">Anomaly segmentation</a>. Configs for other templates can be found in the same directory.</p>
-<p>NNCF tends to provide better quality in terms of preserving accuracy as it uses training compression approaches.
-Compression results achievable with the NNCF can be found <a class="reference external" href="https://github.com/openvinotoolkit/nncf#nncf-compressed-model-zoo">here</a> .
-Meanwhile, the POT is faster but can degrade accuracy more than the training-enabled approach.</p>
+  <section id="noisy-label-detection">
+<h1>Noisy label detection<a class="headerlink" href="#noisy-label-detection" title="Permalink to this heading">#</a></h1>
+<p>OpenVINO™ Training Extensions provide a feature for detecting noisy labels during model training.
+With this feature, you can identify noisy labeled samples in your training dataset.
+Our algorithm accumulates the training loss dynamics during the model training
+and exports it to <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>.
+The training loss dynamics are then post-processed by exponential moving average (EMA),
+a strong criterion for detecting noisy label samples <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.
+Finally, Datumaro ranks the top-k samples, which can be considered as noisy labeled candidates.
+We provide an end-to-end example written in a Jupyter notebook, which you can find at the link in the note below.</p>
+<p>In OpenVINO™ Training Extensions CLI, you can enable this feature
+by adding the argument <code class="docutils literal notranslate"><span class="pre">--algo_backend.enable_noisy_label_detection</span> <span class="pre">true</span></code> as follows.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train ... params --algo_backend.enable_noisy_label_detection true
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The main recommendation is to start with post-training compression and use NNCF compression during training if you are not satisfied with the results.</p>
+<p>Currently, it only supports multi-class classification task and single GPU training.</p>
 </div>
-<p>Please, refer to our <a class="reference internal" href="../../tutorials/base/how_to_train/index.html"><span class="doc">dedicated tutorials</span></a> on how to optimize your model using POT or NNCF.</p>
-</section>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Important!</strong>
+The post-processing step to analyze the training loss dynamics requires <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>.
+Please see <a class="reference external" href="https://github.com/openvinotoolkit/datumaro/blob/develop/notebooks/10_noisy_label_detection.ipynb">this end-to-end Jupyter notebook example</a>.</p>
+</div>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Zhou, Tianyi, Shengjie Wang, and Jeff Bilmes. “Robust curriculum learning: from clean label detection to noisy label self-correction.” International Conference on Learning Representations. 2021.</p>
+</aside>
+</aside>
 </section>
 
 
@@ -497,17 +505,17 @@ Meanwhile, the POT is faster but can degrade accuracy more than the training-ena
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="index.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="xai.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Additional Features</p>
+          <p class="prev-next-title">Explainable AI (XAI)</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="hpo.html" title="next page">
+  <a class='right-next' id="next-link" href="../../reference/api/index.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Hyperparameters Optimization</p>
+      <p class="prev-next-title">API</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -522,28 +530,6 @@ Meanwhile, the POT is faster but can degrade accuracy more than the training-ena
               
 <div class="toc-item">
   
-<div class="tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-</div>
-<nav id="bd-toc-nav" class="page-toc">
-    <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#post-training-optimization-tool">
-   Post-training Optimization Tool
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#neural-network-compression-framework">
-   Neural Network Compression Framework
-  </a>
- </li>
-</ul>
-
-</nav>
-</div>
-
-<div class="toc-item">
-  
 <div id="searchbox"></div>
 </div>
 
@@ -554,7 +540,7 @@ Meanwhile, the POT is faster but can degrade accuracy more than the training-ena
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/explanation/additional_features/models_optimization.rst.txt">
+    <a href="../../../_sources/guide/explanation/additional_features/noisy_label_detection.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>
