@@ -5,5 +5,5 @@ mmdet==2.28.1
 pytorchcv
 mmcls==0.25.0
 timm
-otxdeploy==0.12.1  # FIXME: mmdeploy==? when PyPI packages are available
+mmdeploy==0.14.0
 scikit-image

@@ -20,6 +20,7 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
+from functools import partial
 from typing import Any, Dict, Optional, Union
 
 import torch
@@ -35,6 +36,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_data_pipeline,
@@ -45,6 +47,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.training_base import TrainType
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
@@ -352,7 +355,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             )
 
         # Model
-        model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        model = self.build_model(cfg, fp16=cfg.get("fp16", False), is_training=self._is_training)
         model.train()
         model.CLASSES = target_classes
 
@@ -367,6 +370,12 @@ class MMSegmentationTask(OTXSegmentationTask):
                 cfg.optimizer.lr = new_lr
 
         validate = bool(cfg.data.get("val", None))
+
+        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+            validate = isinstance(self, NNCFBaseTask)  # nncf needs eval hooks
+            train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(train_func, cfg, datasets, validate)
+
         train_segmentor(
             model,
             datasets,

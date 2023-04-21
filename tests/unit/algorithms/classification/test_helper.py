@@ -168,13 +168,13 @@ def setup_mpa_task_parameters(task_type, create_val=False, create_test=False):
     model_cfg.model.multilabel = False
     model_cfg.model.hierarchical = False
     data_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "data_pipeline.py")
-    data_cfg.data.train.data_dir = "tests/assets/imagenet_dataset"
+    data_cfg.data.train.data_dir = "tests/assets/classification_dataset"
     if create_val:
-        data_cfg.data.val.data_dir = "tests/assets/imagenet_dataset"
+        data_cfg.data.val.data_dir = "tests/assets/classification_dataset"
     else:
         data_cfg.data.val = None
     if create_test:
-        data_cfg.data.test.data_dir = "tests/assets/imagenet_dataset"
+        data_cfg.data.test.data_dir = "tests/assets/classification_dataset"
     else:
         data_cfg.data.test = None
     dummy_dataset = generate_cls_dataset(number_of_images=1)
