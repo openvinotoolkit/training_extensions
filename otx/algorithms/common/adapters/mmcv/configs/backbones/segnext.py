@@ -15,9 +15,9 @@
 # and limitations under the License.
 
 model = dict(
-    type='EncoderDecoder',
+    type="EncoderDecoder",
     backbone=dict(
-        type='MSCAN',
+        type="MSCAN",
         embed_dims=[32, 64, 160, 256],
         mlp_ratios=[8, 8, 4, 4],
         drop_rate=0.0,
@@ -25,10 +25,12 @@ model = dict(
         depths=[3, 3, 5, 2],
         attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
         attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
-        act_cfg=dict(type='GELU'),
-        norm_cfg=dict(type='BN', requires_grad=True)),
+        act_cfg=dict(type="GELU"),
+        norm_cfg=dict(type="BN", requires_grad=True),
+    ),
     # model training and testing settings
     train_cfg=dict(),
-    test_cfg=dict(mode='whole'))
+    test_cfg=dict(mode="whole"),
+)
 
 load_from = None

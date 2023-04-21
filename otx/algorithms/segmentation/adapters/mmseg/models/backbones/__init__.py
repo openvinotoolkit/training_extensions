@@ -19,8 +19,4 @@ from .litehrnet import LiteHRNet
 from .mmov_backbone import MMOVBackbone
 from .mscan import MSCAN
 
-__all__ = [
-    "LiteHRNet",
-    "MMOVBackbone",
-    "MSCAN"
-]
+__all__ = ["LiteHRNet", "MMOVBackbone", "MSCAN"]

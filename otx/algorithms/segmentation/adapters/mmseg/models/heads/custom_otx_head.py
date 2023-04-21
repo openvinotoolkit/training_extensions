@@ -6,8 +6,8 @@
 
 from mmseg.models.decode_heads.fcn_head import FCNHead
 from mmseg.models.decode_heads.sep_aspp_head import DepthwiseSeparableASPPHead
-from .light_ham import LightHamHead
 
+from .light_ham import LightHamHead
 from .mixin import SegMixinModule
 
 KNOWN_HEADS = {"FCNHead": FCNHead, "ASPPHead": DepthwiseSeparableASPPHead, "LightHamHead": LightHamHead}
