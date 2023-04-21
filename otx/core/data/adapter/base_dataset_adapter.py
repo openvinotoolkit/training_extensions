@@ -166,12 +166,20 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             subsets = list(dataset.subsets().keys())
 
             for s in [subset, "default"]:
-                if subset == "test":
-                    s = "val"
+                if subset == "val" and s != "default":
+                    s = "valid"
                 exact_subset = get_close_matches(s, subsets)
+                print(subset, s, subsets, exact_subset)
 
                 if exact_subset:
                     return dataset.subsets()[exact_subset[0]].as_dataset()
+                elif subset == "test":
+                    # If there is not test dataset in data.yml, then validation set will be test dataset
+                    s = "valid"
+                    exact_subset = get_close_matches(s, subsets)
+                    print(subset, s, subsets, exact_subset)
+                    if exact_subset:
+                        return dataset.subsets()[exact_subset[0]].as_dataset()
 
         raise ValueError("Can't find proper dataset.")
 
