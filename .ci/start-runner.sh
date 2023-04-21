@@ -44,7 +44,7 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [[ "$#" -lt 3 ||  "$DEFAULT" == "yes" ]] && [ $DEBUG_CONTAINER = false ]; then
 cat << EndofMessage
-    USAGE: $0 <container-name> <github-token> <codacy-token> [Options]
+    USAGE: $0 <container-name> <github-token> <instance-name> [Options]
     Options
         -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
         -c|--cuda           Specify CUDA version
@@ -64,6 +64,11 @@ if [ "$DEBUG_CONTAINER" = true ]; then
     CONTAINER_NAME="otx-ci-container-debug"
 fi
 
+CONTAINER_NAME="$CONTAINER_NAME"-${GPU_ID//,/_}
+INSTANCE_NAME="$INSTANCE_NAME"-${GPU_ID//,/_}
+
+echo "container name = $CONTAINER_NAME, instance name = $INSTANCE_NAME"
+
 docker inspect "$CONTAINER_NAME"; RET=$?
 
 if [ $RET -eq 0 ]; then
@@ -78,7 +83,7 @@ if [ "$DEBUG_CONTAINER" = true ]; then
         --env NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         --runtime=nvidia \
         --ipc=private \
-        --shm-size=10g \
+        --shm-size=24g \
         --cpu-shares=1024 \
         --name "$CONTAINER_NAME" \
         registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
@@ -95,7 +100,7 @@ else
         --env NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         --runtime=nvidia \
         --ipc=private \
-        --shm-size=10g \
+        --shm-size=24g \
         --cpu-shares=1024 \
         --name "$CONTAINER_NAME" \
         registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?

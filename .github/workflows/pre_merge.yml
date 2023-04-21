@@ -133,7 +133,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Run integration test
-        run: tox -e pre-merge-det-py310 -- tests/integration/cli/instance_segmentation
+        run: tox -e pre-merge-iseg-py310 -- tests/integration/cli/instance_segmentation
   Pre-Merge-Integration-Semantic-Seg-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Pre-Merge-Unit-Test
