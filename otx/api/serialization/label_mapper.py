@@ -6,13 +6,12 @@
 
 
 import json
-from typing import Dict, Union, cast
+from typing import Dict, cast
 
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import (
-    LabelGraph,
     LabelGroup,
     LabelGroupType,
     LabelSchemaEntity,
@@ -112,11 +111,11 @@ class LabelGroupMapper:
         )
 
 
-class LabelGraphMapper:
-    """This class maps a `LabelGraph` entity to a serialized dictionary, and vice versa."""
+class LabelTreeMapper:
+    """This class maps a `LabelTree` entity to a serialized dictionary, and vice versa."""
 
     @staticmethod
-    def forward(instance: Union[LabelGraph, LabelTree]) -> dict:
+    def forward(instance: LabelTree) -> dict:
         """Serializes to dict."""
 
         return {
@@ -127,16 +126,14 @@ class LabelGraphMapper:
         }
 
     @staticmethod
-    def backward(instance: dict, all_labels: Dict[ID, LabelEntity]) -> Union[LabelTree, LabelGraph]:
+    def backward(instance: dict, all_labels: Dict[ID, LabelEntity]) -> LabelTree:
         """Deserializes from dict."""
 
-        output: Union[LabelTree, LabelGraph]
+        output: LabelTree
 
         instance_type = instance["type"]
         if instance_type == "tree":
             output = LabelTree()
-        elif instance_type == "graph":
-            output = LabelGraph(instance["directed"])
         else:
             raise ValueError(f"Unsupported type `{instance_type}` for label graph")
 
@@ -161,7 +158,7 @@ class LabelSchemaMapper:
         label_groups = [LabelGroupMapper().forward(group) for group in instance.get_groups(include_empty=True)]
 
         return {
-            "label_tree": LabelGraphMapper().forward(instance.label_tree),
+            "label_tree": LabelTreeMapper().forward(instance.label_tree),
             "label_groups": label_groups,
             "all_labels": {
                 IDMapper().forward(label.id_): LabelMapper().forward(label) for label in instance.get_labels(True)
@@ -176,7 +173,7 @@ class LabelSchemaMapper:
             IDMapper().backward(id): LabelMapper().backward(label) for id, label in instance["all_labels"].items()
         }
 
-        label_tree = LabelGraphMapper().backward(instance["label_tree"], all_labels)
+        label_tree = LabelTreeMapper().backward(instance["label_tree"], all_labels)
         label_groups = [
             LabelGroupMapper().backward(label_group, all_labels) for label_group in instance["label_groups"]
         ]

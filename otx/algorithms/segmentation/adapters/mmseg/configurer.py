@@ -187,7 +187,6 @@ class SegmentationConfigurer:
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
             logger.info(f"task config!!!!: training={training}")
-            cfg["task_adapt"].get("op", "REPLACE")
 
             # Task classes
             self.configure_classes(cfg)
@@ -455,7 +454,9 @@ class SegmentationConfigurer:
             # drop the last batch if the last batch size is 1
             # batch size of 1 is a runtime error for training batch normalization layer
             if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
-                dataloader_cfg.drop_last = True
+                dataloader_cfg["drop_last"] = True
+            else:
+                dataloader_cfg["drop_last"] = False
 
             cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
@@ -536,10 +537,13 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
         """Patch config to support incremental learning."""
         super().configure_task(cfg, training)
 
-        new_classes: List[str] = np.setdiff1d(self.model_classes, self.org_model_classes).tolist()
-
-        # Check if new classes are added
-        has_new_class: bool = len(new_classes) > 0
+        # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
+        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
+            self.model_classes
+        ):
+            is_cls_incr = False
+        else:
+            is_cls_incr = True
 
         # Update TaskAdaptHook (use incremental sampler)
         task_adapt_hook = ConfigDict(
@@ -547,7 +551,7 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
             src_classes=self.org_model_classes,
             dst_classes=self.model_classes,
             model_type=cfg.model.type,
-            sampler_flag=has_new_class,
+            sampler_flag=is_cls_incr,
             efficient_mode=cfg["task_adapt"].get("efficient_mode", False),
         )
         update_or_add_custom_hook(cfg, task_adapt_hook)
