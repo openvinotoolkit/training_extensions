@@ -10,6 +10,9 @@ from .config_utils import (
     patch_datasets,
     patch_evaluation,
     patch_tiling,
+    patch_input_preprocessing,
+    patch_input_shape,
+    patch_ir_scale_factor,
     prepare_for_training,
     set_hyperparams,
 )
@@ -23,4 +26,7 @@ __all__ = [
     "set_hyperparams",
     "build_detector",
     "patch_tiling",
+    "patch_input_preprocessing",
+    "patch_input_shape",
+    "patch_ir_scale_factor",
 ]

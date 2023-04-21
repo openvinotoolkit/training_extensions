@@ -70,7 +70,7 @@ class Tiler:
         return coords
 
     def filter_tiles_by_objectness(
-        self, image: np.ndarray, tile_coords: List[List[int]], confidence_threshold: float = 0.45
+        self, image: np.ndarray, tile_coords: List[List[int]], confidence_threshold: float = 0.35
     ):
         """Filter tiles by objectness score by running tile classifier.
 
