@@ -26,10 +26,10 @@ model = dict(
     pretrained=None,
     decode_head=dict(
         type="CustomFCNHead",
-        in_channels=60,
-        in_index=1,
-        input_transform=None,
-        channels=60,
+        in_channels=[18, 60, 80, 160, 320],
+        in_index=[0, 1, 2, 3, 4],
+        input_transform="resize_concat",
+        channels=sum([18, 60, 80, 160, 320]),
         kernel_size=1,
         num_convs=1,
         concat_input=False,
@@ -37,8 +37,14 @@ model = dict(
         num_classes=2,
         norm_cfg=dict(type="BN", requires_grad=True),
         align_corners=False,
-        loss_decode=[dict(type="CrossEntropyLoss", loss_weight=1.0)],
-        enable_loss_equalizer=False,
+        enable_aggregator=False,
+        loss_decode=[
+            dict(
+                type="CrossEntropyLoss",
+                use_sigmoid=False,
+                loss_weight=1.0,
+            ),
+        ],
     ),
 )
 

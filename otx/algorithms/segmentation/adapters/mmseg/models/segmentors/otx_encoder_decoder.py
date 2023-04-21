@@ -11,15 +11,27 @@ from mmseg.utils import get_root_logger
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.task_adapt import map_class_names
 
+import functools
 
 # pylint: disable=unused-argument, line-too-long
 @SEGMENTORS.register_module()
 class OTXEncoderDecoder(EncoderDecoder):
     """OTX encoder decoder."""
 
-    def __init__(self, *args, **kwargs):
-        kwargs.pop("task_adapt", None)
+    def __init__(self, task_adapt=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Hook for class-sensitive weight loading
+        assert task_adapt is not None, "When using task_adapt, task_adapt must be set."
+
+        self._register_load_state_dict_pre_hook(
+            functools.partial(
+                self.load_state_dict_pre_hook,
+                self,  # model
+                task_adapt["dst_classes"],  # model_classes
+                task_adapt["src_classes"],  # chkpt_classes
+            )
+        )
 
     def simple_test(self, img, img_meta, rescale=True, output_logits=False):
         """Simple test with single image."""
