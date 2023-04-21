@@ -17,7 +17,7 @@ from otx.api.usecases.exportable_code.demo.demo_package.utils import (
 )
 from otx.api.usecases.exportable_code.streamer import get_streamer
 from otx.api.usecases.exportable_code.visualizers import Visualizer
-from otx.cli.tools.utils.demo.visualization import dump_frames
+from otx.api.utils.vis_utils import dump_frames
 
 
 class AsyncExecutor:

@@ -119,7 +119,7 @@ def regression_openvino_testing(
 
         if (
             exported_performance[k] < trained_performance[k]
-            or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) > threshold
+            and abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) > threshold
         ):
             regression_result["passed"] = False
             regression_result["log"] = f"{trained_performance[k]=}, {exported_performance[k]=}"
@@ -169,7 +169,7 @@ def regression_deployment_testing(
                 ] = f"Deploy performance: ({deployed_performance[k]}) < Criteria: ({modified_criteria})."
         if (
             deployed_performance[k] < exported_performance[k]
-            or abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) > threshold
+            and abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) > threshold
         ):
             regression_result["passed"] = False
             regression_result["log"] = f"{exported_performance[k]=}, {deployed_performance[k]=}"
@@ -219,7 +219,7 @@ def regression_nncf_eval_testing(
                 ] = f"NNCF performance: ({evaluated_performance[k]}) < Criteria: ({modified_criteria})."
         if (
             evaluated_performance[k] < trained_performance[k]
-            or abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) > threshold
+            and abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) > threshold
         ):
             regression_result["passed"] = False
             regression_result["log"] = f"{trained_performance[k]=}, {evaluated_performance[k]=}"

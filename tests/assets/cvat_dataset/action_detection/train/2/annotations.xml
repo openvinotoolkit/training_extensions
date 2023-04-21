@@ -21,45 +21,45 @@
           <attributes></attributes>
         </label>
         <label>
-          <name>3</name>
+          <name>Down</name>
           <attributes></attributes>
         </label>
       </labels>
       <segments></segments>
       <original_size>
-        <width>256</width>
-        <height>192</height>
+        <width>24</width>
+        <height>24</height>
       </original_size>
     </task>
   </meta>
-  <track id="0" label="EmptyFrame">
-    <box frame="20" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="00" outside="0" occluded="0" xtl="0.25" ytl="0.08" xbr="0.75" ybr="0.50" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="21" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="01" outside="0" occluded="0" xtl="0.25" ytl="0.12" xbr="0.75" ybr="0.54" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="22" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="02" outside="0" occluded="0" xtl="0.25" ytl="0.16" xbr="0.75" ybr="0.58" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="23" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="03" outside="0" occluded="0" xtl="0.25" ytl="0.20" xbr="0.75" ybr="0.62" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="3">
-    <box frame="24" outside="0" occluded="0" xtl="0.27434978" ytl="0.13449906" xbr="0.65134937" ybr="0.99163747" z_order="0" label="3"></box>
+  <track id="0" label="Down">
+    <box frame="04" outside="0" occluded="0" xtl="0.25" ytl="0.25" xbr="0.75" ybr="0.67" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="25" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="05" outside="0" occluded="0" xtl="0.25" ytl="0.29" xbr="0.75" ybr="0.71" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="26" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="06" outside="0" occluded="0" xtl="0.25" ytl="0.33" xbr="0.75" ybr="0.75" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="27" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="07" outside="0" occluded="0" xtl="0.25" ytl="0.37" xbr="0.75" ybr="0.79" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="28" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="08" outside="0" occluded="0" xtl="0.25" ytl="0.41" xbr="0.75" ybr="0.83" z_order="0" label="Down"></box>
   </track>
-  <track id="0" label="EmptyFrame">
-    <box frame="29" outside="0" occluded="0" xtl="0" ytl="0" xbr="0" ybr="0" z_order="0" label="EmptyFrame"></box>
+  <track id="0" label="Down">
+    <box frame="09" outside="0" occluded="0" xtl="0.25" ytl="0.45" xbr="0.75" ybr="0.87" z_order="0" label="Down"></box>
   </track>
 </annotations>

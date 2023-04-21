@@ -22,3 +22,14 @@ class POTQuantizationPreset(ConfigurableEnum):
 
     PERFORMANCE = "Performance"
     MIXED = "Mixed"
+
+
+class StorageCacheScheme(ConfigurableEnum):
+    """This Enum represents the storage scheme for Datumaro arrow format."""
+
+    NONE = "NONE"
+    AS_IS = "AS-IS"
+    JPEG_75 = "JPEG/75"
+    JPEG_95 = "JPEG/95"
+    PNG = "PNG"
+    TIFF = "TIFF"

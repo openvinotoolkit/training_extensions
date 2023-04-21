@@ -588,7 +588,7 @@ class DetectionConfigurer:
             # drop the last batch if the last batch size is 1
             # batch size of 1 is a runtime error for training batch normalization layer
             if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
-                dataloader_cfg.drop_last = True
+                dataloader_cfg["drop_last"] = True
 
             cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
