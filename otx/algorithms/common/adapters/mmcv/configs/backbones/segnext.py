@@ -1,4 +1,4 @@
-"""Backbone config of Resnet architecture."""
+"""Backbone config of SegNext models."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,22 +14,21 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-norm_cfg = dict(type="BN", requires_grad=True)
 model = dict(
-    type="EncoderDecoder",
+    type='EncoderDecoder',
     backbone=dict(
-        type="ResNetV1c",
-        depth=50,
-        num_stages=4,
-        out_indices=(0, 1, 2, 3),
-        dilations=(1, 1, 2, 4),
-        strides=(1, 2, 1, 1),
-        norm_cfg=norm_cfg,
-        norm_eval=False,
-        style="pytorch",
-        contract_dilation=True,
-    ),
+        type='MSCAN',
+        embed_dims=[32, 64, 160, 256],
+        mlp_ratios=[8, 8, 4, 4],
+        drop_rate=0.0,
+        drop_path_rate=0.1,
+        depths=[3, 3, 5, 2],
+        attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
+        attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
+        act_cfg=dict(type='GELU'),
+        norm_cfg=dict(type='BN', requires_grad=True)),
     # model training and testing settings
     train_cfg=dict(),
-    test_cfg=dict(mode="whole"),
-)
+    test_cfg=dict(mode='whole'))
+
+load_from = None

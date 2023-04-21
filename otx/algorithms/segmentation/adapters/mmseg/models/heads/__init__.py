@@ -17,5 +17,6 @@
 from .custom_otx_head import otx_head_factory
 from .detcon_head import DetConHead
 from .mmov_decode_head import MMOVDecodeHead
+from .light_ham import LightHamHead
 
-__all__ = ["MMOVDecodeHead", "DetConHead", "otx_head_factory"]
+__all__ = ["MMOVDecodeHead", "DetConHead", "otx_head_factory", "LightHamHead"]
