@@ -229,9 +229,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(train, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
-        if template.task_type in (TaskType.ACTION_CLASSIFICATION, TaskType.ACTION_DETECTION):
-            print("Multi-GPU training for action tasks isn't supported yet. A single GPU will be used for a training.")
-        elif (
+        if (
             multigpu_manager.is_available()
             and not template.task_type.is_anomaly  # anomaly tasks don't use this way for multi-GPU training
         ):

@@ -152,3 +152,10 @@ def get_logger():
     #     return _logger
     # return _DummyLogger('dummy')
     return _logger
+
+
+def set_all_logger_level(level):
+    """Set the threshold for all exsisting logger to level."""
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    for each_logger in loggers:
+        each_logger.setLevel(level)
