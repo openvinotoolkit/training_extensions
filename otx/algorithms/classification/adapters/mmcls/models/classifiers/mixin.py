@@ -49,7 +49,11 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
                 dm.DatasetItem(
                     id=item.id_,
                     subset="train",
-                    media=dm.Image(path=item.media.path, size=(item.media.height, item.media.width)),
+                    media=dm.Image.from_file(path=item.media.path, size=(item.media.height, item.media.width))
+                    if item.media.path
+                    else dm.Image.from_numpy(
+                        data=getattr(item.media, "_Image__data"), size=(item.media.height, item.media.width)
+                    ),
                     annotations=_convert_anns(item),
                 )
                 for item in otx_dataset

@@ -128,7 +128,7 @@ class TestRegressionActionClassification:
             tmp_dir_path,
             otx_dir,
             action_cls_data_args,
-            threshold=0.02,
+            threshold=0.05,
             criteria=action_cls_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],

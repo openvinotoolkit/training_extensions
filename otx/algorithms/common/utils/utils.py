@@ -22,7 +22,6 @@ from collections import defaultdict
 from typing import Callable, Optional, Tuple
 
 import numpy as np
-import torch
 import yaml
 
 
@@ -106,6 +105,8 @@ def set_random_seed(seed, logger, deterministic=False):
             to True and `torch.backends.cudnn.benchmark` to False.
             Default: False.
     """
+    import torch
+
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

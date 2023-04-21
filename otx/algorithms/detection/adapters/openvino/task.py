@@ -584,6 +584,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             )
             # model_wrappers files
             for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
+                if "__pycache__" in root:
+                    continue
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(
@@ -600,8 +602,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 os.path.join("python", "requirements.txt"),
             )
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
-            arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
             arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+            arch.write(os.path.join(work_dir, "README.md"), os.path.join(".", "README.md"))
         output_model.exportable_code = zip_buffer.getvalue()
         logger.info("Deploying completed")
 
