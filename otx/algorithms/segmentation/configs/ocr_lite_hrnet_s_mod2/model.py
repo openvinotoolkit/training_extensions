@@ -28,8 +28,8 @@ model = dict(
         type="CustomFCNHead",
         in_channels=[60, 120, 240],
         in_index=[0, 1, 2],
-        input_transform="resize_concat",
-        channels=sum([60, 120, 240]),
+        input_transform="multiple_select",
+        channels=60,
         kernel_size=1,
         num_convs=1,
         concat_input=False,
@@ -37,7 +37,11 @@ model = dict(
         num_classes=2,
         norm_cfg=dict(type="BN", requires_grad=True),
         align_corners=False,
-        enable_aggregator=False,
+        enable_aggregator=True,
+        aggregator_merge_norm=None,
+        aggregator_use_concat=False,
+        #enable_out_norm=False,
+        #enable_loss_equalizer=True,
         loss_decode=[
             dict(
                 type="CrossEntropyLoss",
@@ -45,12 +49,12 @@ model = dict(
                 loss_weight=1.0,
             ),
         ],
-        init_cfg=dict(
-            type="Normal",
-            mean=0,
-            std=0.01,
-            override=dict(name="conv_seg"),
-        ),
+        #init_cfg=dict(
+        #    type="Normal",
+        #    mean=0,
+        #    std=0.01,
+        #    override=dict(name="conv_seg"),
+        #),
     ),
 )
 

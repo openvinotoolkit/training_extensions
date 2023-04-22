@@ -9,7 +9,6 @@ from mmseg.models.builder import LOSSES
 from mmseg.models.losses import CrossEntropyLoss
 from mmseg.models.losses.utils import get_class_weight, weight_reduce_loss
 
-
 @LOSSES.register_module()
 class CrossEntropyLossWithIgnore(CrossEntropyLoss):
     """CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.
@@ -31,32 +30,28 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
                 label,
                 weight=None,
                 avg_factor=None,
-                reduction_override=None,
+                reduction_override="mean",
                 ignore_index=255,
                 valid_label_mask=None,
                 **kwargs):
-        
+
+        # valid_label_mask=None
         if valid_label_mask is None:
             losses =  super().forward(cls_score, label, weight, avg_factor, reduction_override, ignore_index, **kwargs)
             return losses
         else:
             assert reduction_override in (None, "none", "mean", "sum")
             reduction = reduction_override if reduction_override else self.reduction
-
-
-
-
             batch_size = label.shape[0]
             probs_all = cls_score
             for i in range(batch_size):
-
                 probs_all[i, valid_label_mask[i] == 0] = float('-inf')
+                # add label masking
 
             losses = F.cross_entropy(probs_all, label, reduction=reduction, ignore_index=ignore_index)
             
             if weight is not None:
                 weight = weight.float()
             losses = weight_reduce_loss(losses, weight=weight, reduction=reduction, avg_factor=avg_factor)
-
 
             return losses
