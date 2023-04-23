@@ -98,9 +98,9 @@ class AggregatorMixin(nn.Module):
         self.in_index = in_index
 
     def _transform_inputs(self, inputs):
-        out_inputs = super()._transform_inputs(inputs)
+        inputs = super()._transform_inputs(inputs)
         if self.aggregator is not None:
-            inputs = self.aggregator(out_inputs)[0]
+            inputs = self.aggregator(inputs)[0]
         return inputs
 
 

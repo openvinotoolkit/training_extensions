@@ -40,8 +40,6 @@ model = dict(
         enable_aggregator=True,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        #enable_out_norm=False,
-        #enable_loss_equalizer=True,
         loss_decode=[
             dict(
                 type="CrossEntropyLoss",
@@ -49,12 +47,6 @@ model = dict(
                 loss_weight=1.0,
             ),
         ],
-        #init_cfg=dict(
-        #    type="Normal",
-        #    mean=0,
-        #    std=0.01,
-        #    override=dict(name="conv_seg"),
-        #),
     ),
 )
 

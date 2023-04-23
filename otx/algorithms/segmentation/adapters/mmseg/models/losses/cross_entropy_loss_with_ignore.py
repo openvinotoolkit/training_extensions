@@ -35,11 +35,6 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
                 valid_label_mask=None,
                 **kwargs):
 
-        # breakpoint()
-        # label = torch.where(label==ignore_index, 0, label)
-        # breakpoint()
-
-        # valid_label_mask=None
         if valid_label_mask is None:
             losses =  super().forward(cls_score, label, weight, avg_factor, reduction_override, ignore_index, **kwargs)
             return losses
@@ -48,7 +43,6 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             reduction = reduction_override if reduction_override else self.reduction
             batch_size = label.shape[0]
             for i in range(batch_size):
-                # valid_label_mask[i] = torch.tensor([1,0,0])
                 cls_score[i, valid_label_mask[i] == 0] = float('-inf')
                 invalid_labels = (valid_label_mask[i] == 0).nonzero(as_tuple=False)
                 

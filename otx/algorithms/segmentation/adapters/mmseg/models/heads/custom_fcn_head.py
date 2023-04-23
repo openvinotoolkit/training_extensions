@@ -23,7 +23,6 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         aggregator_min_channels=None,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        enable_loss_equalizer=False,
         *args, **kwargs):
 
         in_channels = kwargs.get("in_channels")
@@ -31,7 +30,6 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         norm_cfg = kwargs.get("norm_cfg")
         conv_cfg = kwargs.get("conv_cfg")
         input_transform = kwargs.get("input_transform")
-        self.loss_equalizer = None
 
         aggregator = None
         if enable_aggregator: # Lite-HRNet aggregator
@@ -55,9 +53,6 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
                 kwargs["in_index"] = in_index[0]
 
         super().__init__(*args, **kwargs)
-
-        if enable_loss_equalizer:
-            self.loss_equalizer = LossEqualizer()
 
         self.aggregator = aggregator
 
@@ -144,10 +139,5 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
 
         loss['acc_seg'] = accuracy(
             seg_logit, seg_label, ignore_index=self.ignore_index)
-
-        if self.loss_equalizer:
-            out_loss = self.loss_equalizer.reweight(loss)
-            for loss_name, loss_value in out_loss.items():
-                loss[loss_name] = loss_value
 
         return loss
