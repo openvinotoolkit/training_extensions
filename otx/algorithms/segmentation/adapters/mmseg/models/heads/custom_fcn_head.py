@@ -137,6 +137,6 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
                     ignore_index=self.ignore_index, 
                     valid_label_mask=valid_label_mask)
 
-        loss['acc_seg'] = accuracy(seg_logit, seg_label)
+        loss['acc_seg'] = accuracy(seg_logit, seg_label, ignore_index=self.ignore_index)
 
         return loss
