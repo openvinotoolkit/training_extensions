@@ -30,7 +30,7 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
                 label,
                 weight=None,
                 avg_factor=None,
-                reduction_override="none",
+                reduction_override="mean",
                 ignore_index=255,
                 valid_label_mask=None,
                 **kwargs):
@@ -40,8 +40,8 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             losses =  super().forward(cls_score, label, weight, avg_factor, reduction_override, ignore_index, **kwargs)
             return losses
         else:
-            assert reduction_override in (None, "none", "mean", "sum")
-            reduction = reduction_override if reduction_override else self.reduction
+            #assert reduction_override in (None, "none", "mean", "sum")
+            #reduction = reduction_override if reduction_override else self.reduction
             batch_size = label.shape[0]
             for i in range(batch_size):
                 cls_score[i, valid_label_mask[i] == 0] = float('-inf')
@@ -50,9 +50,11 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
                 for inv_l in invalid_labels:
                     label[i] = torch.where(label[i]==inv_l.item(), ignore_index, label[i])
 
-            losses = F.cross_entropy(cls_score, label, reduction=reduction, ignore_index=ignore_index)
+            losses = F.cross_entropy(cls_score, label, reduction="none", ignore_index=ignore_index)
+            # avg_factor = label.numel() - (label == ignore_index).sum().item()
+
             if weight is not None:
                 weight = weight.float()
-            losses = weight_reduce_loss(losses, weight=weight, reduction=reduction, avg_factor=avg_factor)
+            losses = weight_reduce_loss(losses, weight=weight, reduction="mean", avg_factor=avg_factor)
 
             return losses
