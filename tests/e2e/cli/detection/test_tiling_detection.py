@@ -124,8 +124,6 @@ class TestToolsTilingDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
-        if template.name in ["SSD", "ATSS"]:
-            pytest.skip(reason="Tiling ATSS, SSD show performance drop")
         tmp_dir_path = tmp_dir_path / "tiling_det"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05, half_precision=half_precision)
 
@@ -168,8 +166,6 @@ class TestToolsTilingDetection:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
-        if template.name in ["ATSS", "SSD"]:
-            pytest.skip(reason="Tiling ATSS, SSD show performance drop")
         tmp_dir_path = tmp_dir_path / "tiling_det"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
