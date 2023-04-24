@@ -78,10 +78,22 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/installation.html) for installing it using Python venv (virtual environment), or use the following steps to run it in a containerised environment:
 
 ```bash
-$ docker build -t trainer <path to training_extensions>
-$ docker run -it --rm -v "$(pwd)/shared:/mnt/shared" trainer
-trainer$ otx # installed on Ubuntu 20.04 with /mnt/shared as shared directory
+$ docker build
+    -t trainer \ # image tag, required
+    --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
+    --build-arg PYTHON_VER=3.9 \ # default Python version, optional
+    --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
+    . # training_extensions/
+$ docker run \
+    -it \ # enter interactive terminal
+    --rm \ # remove container after use
+    -v "$(pwd)/shared:/mnt/shared:rw" \ # shared volume to host machine
+    --shm-size=4g \ # increase mounted shared memory
+    trainer
+trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
 ```
+
+Note: Python 3.8 and 3.9 were tested, along with Ubuntu 18.04 and 20.04.
 
 ### OpenVINO™ Training Extensions CLI Commands
 
