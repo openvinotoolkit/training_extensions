@@ -114,15 +114,11 @@ class DiceAverage(IPerformanceProvider):
         labels = sorted(resultset_labels.intersection(model_labels))
         hard_predictions = []
         hard_references = []
-        import numpy as np
-
         for prediction_item, reference_item in zip(
             list(resultset.prediction_dataset), list(resultset.ground_truth_dataset)
         ):
-            h_p = mask_from_dataset_item(prediction_item, labels).squeeze(2).astype(np.uint8)
-            h_r = mask_from_dataset_item(reference_item, labels).squeeze(2).astype(np.uint8)
-            hard_predictions.append(h_p)
-            hard_references.append(h_r)
+            hard_predictions.append(mask_from_dataset_item(prediction_item, labels))
+            hard_references.append(mask_from_dataset_item(reference_item, labels))
 
         all_intersection, all_cardinality = get_intersections_and_cardinalities(
             hard_references, hard_predictions, labels
@@ -182,12 +178,10 @@ class DiceAverage(IPerformanceProvider):
                 overall_intersection, overall_cardinality
             )
             overall_dice = ScoreMetric(value=dice_score, name="Dice Average")
-
         elif average == MetricAverageMethod.MACRO:
             scores = [item.value for item in dice_per_label.values()]
             macro_average_score = sum(scores) / len(scores)
             overall_dice = ScoreMetric(value=macro_average_score, name="Dice Average")
-            print(dice_per_label)
 
         return overall_dice, dice_per_label
 

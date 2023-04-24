@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import functools
+
 import torch
 from mmseg.models import SEGMENTORS
 from mmseg.models.segmentors.encoder_decoder import EncoderDecoder
@@ -11,7 +13,6 @@ from mmseg.utils import get_root_logger
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.task_adapt import map_class_names
 
-import functools
 
 # pylint: disable=unused-argument, line-too-long
 @SEGMENTORS.register_module()
@@ -57,7 +58,7 @@ class OTXEncoderDecoder(EncoderDecoder):
     ):  # pylint: disable=too-many-locals, unused-argument
         """Modify input state_dict according to class name matching before weight loading."""
         logger = get_root_logger("INFO")
-        logger.info(f"----------------- ClassIncrEncoderDecoder.load_state_dict_pre_hook() called w/ prefix: {prefix}")
+        logger.info(f"----------------- OTXEncoderDecoder.load_state_dict_pre_hook() called w/ prefix: {prefix}")
 
         # Dst to src mapping index
         model_classes = list(model_classes)

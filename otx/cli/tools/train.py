@@ -255,8 +255,6 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
 
-    end_time = time.time()
-
     performance = None
     if config_manager.data_config["val_subset"]["data_root"]:
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
@@ -275,6 +273,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
         assert performance is not None
         print(performance)
 
+    end_time = time.time()
     sec = end_time - start_time
     total_time = str(datetime.timedelta(seconds=sec))
     print("otx train time elapsed: ", total_time)
