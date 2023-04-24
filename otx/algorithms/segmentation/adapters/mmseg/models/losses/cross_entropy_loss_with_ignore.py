@@ -14,7 +14,13 @@ from mmseg.models.losses.utils import weight_reduce_loss
 
 @LOSSES.register_module()
 class CrossEntropyLossWithIgnore(CrossEntropyLoss):
-    """CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning."""
+    """CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.
+
+    When new classes are added through continual training cycles, images from previous cycles
+    may become partially annotated if they are not revisited.
+    To prevent the model from predicting these new classes for such images,
+    CrossEntropyLossWithIgnore can be used to ignore the unseen classes.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,7 +37,31 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
         valid_label_mask: Optional[torch.Tensor] = None,
         **kwargs
     ):
-        """Forward."""
+        """Forward.
+
+        Args:
+            cls_score (torch.Tensor, optional): The prediction with shape (N, 1).
+            label (torch.Tensor, optional): The learning label of the prediction.
+            weight (torch.Tensor, optional): Sample-wise loss weight.
+                Default: None.
+            class_weight (list[float], optional): The weight for each class.
+                Default: None.
+            avg_factor (int, optional): Average factor that is used to average
+                the loss. Default: None.
+            reduction_override (str, optional): The method used to reduce the loss.
+                Options are 'none', 'mean' and 'sum'. Default: 'mean'.
+            ignore_index (int): Specifies a target value that is ignored and
+                does not contribute to the input gradients. When
+                ``avg_non_ignore `` is ``True``, and the ``reduction`` is
+                ``''mean''``, the loss is averaged over non-ignored targets.
+                Defaults: 255.
+            valid_label_mask (torch.Tensor, optional): The valid labels with
+                shape (N, num_classes).
+                If the value in the valid_label_mask is 0, mask label of the
+                the mask label of the class corresponding to its index will be
+                ignored like ignore_index.
+            **kwargs (Any): Additional keyword arguments.
+        """
         if valid_label_mask is None:
             losses = super().forward(cls_score, label, weight, avg_factor, reduction_override, ignore_index, **kwargs)
             return losses

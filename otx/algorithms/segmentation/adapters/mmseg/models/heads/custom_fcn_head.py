@@ -22,7 +22,22 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 
 @HEADS.register_module()
 class CustomFCNHead(FCNHead):
-    """Custom Fully Convolution Networks for Semantic Segmentation."""
+    """Custom Fully Convolution Networks for Semantic Segmentation.
+
+    This FCN Head added head aggregator used in Lite-HRNet by
+    DepthwiseSeparableConvModule.
+    Please refer to https://github.com/HRNet/Lite-HRNet.
+
+    Args:
+        enable_aggregator (bool): If true, will use Lite-HRNet aggregator
+            concating all inputs from backbone by DepthwiseSeparableConvModule.
+        aggregator_min_channels (int, optional): The number of channels of output of aggregator.
+            It would work only if enable_aggregator is true.
+        aggregator_merge_norm (str, optional): normalize the output of expanders of aggregator.
+            options : "none", "channel", or None
+        aggregator_use_concat (str, optional): Whether to concat the last input
+            with the output of expanders.
+    """
 
     def __init__(
         self,
