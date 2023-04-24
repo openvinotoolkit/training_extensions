@@ -7,23 +7,29 @@
 from mmcv.runner import force_fp32
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.fcn_head import FCNHead
-from mmseg.ops import resize
 from mmseg.models.losses import accuracy
-from otx.algorithms.segmentation.adapters.mmseg.models.utils import IterativeAggregator, LossEqualizer
-import torch.nn as nn
+from mmseg.ops import resize
+from torch import nn
+
+from otx.algorithms.segmentation.adapters.mmseg.models.utils import IterativeAggregator
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     get_valid_label_mask_per_batch,
 )
 
+
 @HEADS.register_module()
 class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
     """Custom Fully Convolution Networks for Semantic Segmentation."""
-    def __init__(self,
+
+    def __init__(
+        self,
         enable_aggregator=False,
         aggregator_min_channels=None,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        *args, **kwargs):
+        *args,
+        **kwargs
+    ):
 
         in_channels = kwargs.get("in_channels")
         in_index = kwargs.get("in_index")
@@ -32,7 +38,7 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         input_transform = kwargs.get("input_transform")
 
         aggregator = None
-        if enable_aggregator: # Lite-HRNet aggregator
+        if enable_aggregator:  # Lite-HRNet aggregator
             assert isinstance(in_channels, (tuple, list))
             assert len(in_channels) > 1
 
@@ -60,7 +66,7 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         self.in_channels = in_channels
         self.input_transform = input_transform
         self.in_index = in_index
-        
+
         self.ignore_index = 255
 
         # get rid of last activation of convs module
@@ -71,7 +77,6 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         if kwargs.get("init_cfg", {}):
             self.init_weights()
 
-
     def _transform_inputs(self, inputs):
         if self.aggregator is not None:
             inputs = self.aggregator(inputs)[0]
@@ -80,9 +85,9 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
 
         return inputs
 
-
     def forward_train(self, inputs, img_metas, gt_semantic_seg, train_cfg):
         """Forward function for training.
+
         Args:
             inputs (list[Tensor]): List of multi-level img features.
             img_metas (list[dict]): List of image info dict where each dict
@@ -102,15 +107,12 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         losses = self.losses(seg_logits, gt_semantic_seg, valid_label_mask=valid_label_mask)
         return losses
 
-    @force_fp32(apply_to=('seg_logit', ))
+    @force_fp32(apply_to=("seg_logit",))
     def losses(self, seg_logit, seg_label, valid_label_mask=None):
         """Compute segmentation loss."""
         loss = dict()
-        seg_logit = resize(
-            input=seg_logit,
-            size=seg_label.shape[2:],
-            mode='bilinear',
-            align_corners=self.align_corners)
+
+        seg_logit = resize(input=seg_logit, size=seg_label.shape[2:], mode="bilinear", align_corners=self.align_corners)
         if self.sampler is not None:
             seg_weight = self.sampler.sample(seg_logit, seg_label)
         else:
@@ -122,21 +124,18 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         else:
             losses_decode = self.loss_decode
         for loss_decode in losses_decode:
+            valid_label_mask_cfg = dict()
+            if loss_decode.loss_name == "loss_ce_ignore":
+                valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
             if loss_decode.loss_name not in loss:
                 loss[loss_decode.loss_name] = loss_decode(
-                    seg_logit,
-                    seg_label,
-                    weight=seg_weight,
-                    ignore_index=self.ignore_index, 
-                    valid_label_mask=valid_label_mask)
+                    seg_logit, seg_label, weight=seg_weight, ignore_index=self.ignore_index, **valid_label_mask_cfg
+                )
             else:
                 loss[loss_decode.loss_name] += loss_decode(
-                    seg_logit,
-                    seg_label,
-                    weight=seg_weight,
-                    ignore_index=self.ignore_index, 
-                    valid_label_mask=valid_label_mask)
+                    seg_logit, seg_label, weight=seg_weight, ignore_index=self.ignore_index, **valid_label_mask_cfg
+                )
 
-        loss['acc_seg'] = accuracy(seg_logit, seg_label, ignore_index=self.ignore_index)
+        loss["acc_seg"] = accuracy(seg_logit, seg_label, ignore_index=self.ignore_index)
 
         return loss
