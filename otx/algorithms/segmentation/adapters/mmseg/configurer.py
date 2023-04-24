@@ -535,7 +535,7 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
         super().configure_task(cfg, training, **kwargs)
 
         # Don't pass task_adapt arg to semi-segmentor
-        if cfg.model.type != "ClassIncrEncoderDecoder" and cfg.model.get("task_adapt", False):
+        if cfg.model.type != "OTXEncoderDecoder" and cfg.model.get("task_adapt", False):
             cfg.model.pop("task_adapt")
 
         # Remove task adapt hook (set default torch random sampler)
