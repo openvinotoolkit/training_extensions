@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional
+
 import torch
 import torch.nn.functional as F
 from mmseg.models.builder import LOSSES
@@ -20,13 +22,13 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
 
     def forward(
         self,
-        cls_score,
-        label,
-        weight=None,
-        avg_factor=None,
-        reduction_override="mean",
-        ignore_index=255,
-        valid_label_mask=None,
+        cls_score: Optional[torch.Tensor],
+        label: Optional[torch.Tensor],
+        weight: Optional[torch.Tensor] = None,
+        avg_factor: Optional[int] = None,
+        reduction_override: Optional[str] = "mean",
+        ignore_index: int = 255,
+        valid_label_mask: Optional[torch.Tensor] = None,
         **kwargs
     ):
         """Forward."""

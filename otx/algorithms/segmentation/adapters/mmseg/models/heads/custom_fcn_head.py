@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Dict, List, Optional
+
+import torch
 from mmcv.runner import force_fp32
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.fcn_head import FCNHead
@@ -18,15 +21,15 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 
 
 @HEADS.register_module()
-class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
+class CustomFCNHead(FCNHead):
     """Custom Fully Convolution Networks for Semantic Segmentation."""
 
     def __init__(
         self,
-        enable_aggregator=False,
-        aggregator_min_channels=None,
-        aggregator_merge_norm=None,
-        aggregator_use_concat=False,
+        enable_aggregator: bool = False,
+        aggregator_min_channels: Optional[int] = None,
+        aggregator_merge_norm: Optional[str] = None,
+        aggregator_use_concat: bool = False,
         *args,
         **kwargs
     ):
@@ -77,7 +80,7 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         if kwargs.get("init_cfg", {}):
             self.init_weights()
 
-    def _transform_inputs(self, inputs):
+    def _transform_inputs(self, inputs: torch.Tensor):
         if self.aggregator is not None:
             inputs = self.aggregator(inputs)[0]
         else:
@@ -85,7 +88,9 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
 
         return inputs
 
-    def forward_train(self, inputs, img_metas, gt_semantic_seg, train_cfg):
+    def forward_train(
+        self, inputs: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, train_cfg: Dict
+    ):
         """Forward function for training.
 
         Args:
@@ -108,7 +113,7 @@ class CustomFCNHead(FCNHead):  # pylint: disable=too-many-ancestors
         return losses
 
     @force_fp32(apply_to=("seg_logit",))
-    def losses(self, seg_logit, seg_label, valid_label_mask=None):
+    def losses(self, seg_logit: torch.Tensor, seg_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None):
         """Compute segmentation loss."""
         loss = dict()
 
