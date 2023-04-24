@@ -9,6 +9,7 @@
 import abc
 import os
 from abc import abstractmethod
+from copy import deepcopy
 from difflib import get_close_matches
 from typing import Any, Dict, List, Optional, Union
 
@@ -132,7 +133,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             unlabeled_file_list (Optional[str]): Path for unlabeled file list
 
         Returns:
-            DatumaroDataset: Datumaro Dataset
+            DatumDataset: Datumaro Dataset
         """
         dataset = {}
         if train_data_roots is None and test_data_roots is None:
@@ -146,7 +147,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
             train_dataset = DatumDataset.import_from(train_data_roots, format=self.data_type)
             if train_ann_files is not None:
-                train_dataset = DatumaroDataset.import_from(train_ann_files, format=self.data_type, subset="train")
+                train_dataset = DatumDataset.import_from(train_ann_files, format=self.data_type, subset="train")
 
             # Prepare subsets by using Datumaro dataset
             dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
@@ -158,7 +159,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 val_data_type = self._select_data_type(val_data_candidates)
                 val_dataset = DatumDataset.import_from(val_data_roots, format=val_data_type)
                 if val_ann_files is not None:
-                    val_dataset = DatumaroDataset.import_from(val_ann_files, format=self.data_type, subset="val")
+                    val_dataset = DatumDataset.import_from(val_ann_files, format=self.data_type, subset="val")
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
             elif "val" in train_dataset.subsets():
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
@@ -168,7 +169,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             self.data_type = self._select_data_type(self.data_type_candidates)
             test_dataset = DatumDataset.import_from(test_data_roots, format=self.data_type)
             if test_ann_files is not None:
-                test_dataset = DatumaroDataset.import_from(test_ann_files, format=self.data_type, subset="test")
+                test_dataset = DatumDataset.import_from(test_ann_files, format=self.data_type, subset="test")
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
             self.is_train_phase = False
 
@@ -336,8 +337,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             clean_label_entities.append(self.label_entities[used_label])
         self.label_entities = clean_label_entities
 
-<<<<<<< HEAD
-    def _filter_unlabeled_data(self, unlabeled_dataset: DatumaroDataset, unlabeled_file_list: str):
+    def _filter_unlabeled_data(self, unlabeled_dataset: DatumDataset, unlabeled_file_list: str):
         """Filter out unlabeled dataset which isn't included in unlabeled file list."""
         allowed_extensions = ["jpg", "png", "jpeg"]
         file_list = []
@@ -353,7 +353,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         for item in copy_dataset:
             if item.id not in file_list:
                 unlabeled_dataset.remove(item.id, item.subset)
-=======
+
     @staticmethod
     def datum_media_2_otx_media(datumaro_media: DatumMediaElement) -> IMediaEntity:
         """Convert Datumaro media to OTX media."""
@@ -380,4 +380,3 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
             return Image(data=helper, size=size)
         raise NotImplementedError
->>>>>>> 9858139d9f0aceafc4e0c27e8cdd85b6fed743c9

@@ -49,9 +49,13 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
 
         Args:
             train_data_roots (Optional[str]): Path for training data
+            train_ann_files (Optional[str]): Path for training annotation file
             val_data_roots (Optional[str]): Path for validation data
+            val_ann_files (Optional[str]): Path for validation annotation file
             test_data_roots (Optional[str]): Path for test data
+            test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data
+            unlabeled_file_list (Optional[str]): Path of unlabeled file list
 
         Returns:
             DatumaroDataset: Datumaro Dataset

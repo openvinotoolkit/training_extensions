@@ -140,6 +140,27 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 
     Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` documentation.
 
+If you have multiple annotation files like below, add additional arguments (ann-files). Then, you could use the annotation what you selected.
+
+.. code-block::
+
+  coco_data_root
+    |---- annotations
+      |---- instances_train.json
+      |---- instances_train_1percent.json
+      |---- instances_train_10percent.json
+      |---- instances_val.json
+    |---- images
+      |---- train
+        |---- 000.jpg
+        ....
+    |---- val
+        |---- 000.jpg
+        ....
+
+.. code-block::
+
+  --train-data-roots coco_data_root --train-ann-files coco_data_root/annotations/instances_train_10percent.json
 
 *********
 Training

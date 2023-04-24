@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
--
+- Support direct annotation input for COCO format (<https://github.com/openvinotoolkit/training_extensions/pull/1921>)
 
 ### Enhancements
 
