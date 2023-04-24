@@ -179,18 +179,21 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     if not config_manager.check_workspace():
         config_manager.build_workspace(new_workspace_path=args.workspace)
 
+    # Update Hyper Parameter Configs
+    hyper_parameters = config_manager.get_hyparams_config(override_param=override_param)
+
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
-    dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
+    dataset_config = config_manager.get_dataset_config(
+        subsets=["train", "val", "unlabeled"],
+        hyper_parameters=hyper_parameters,
+    )
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     template = config_manager.template
     task_class = get_impl_class(template.entrypoints.base)
-
-    # Update Hyper Parameter Configs
-    hyper_parameters = config_manager.get_hyparams_config(override_param=override_param)
 
     environment = TaskEnvironment(
         model=None,
@@ -277,6 +280,11 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     print("otx train time elapsed: ", total_time)
     model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
 
+    if args.gpus and exit_stack is None:
+        multigpu_manager.finalize()
+    elif is_multigpu_child_process():
+        return
+
     get_otx_report(
         model_template=config_manager.template,
         task_config=task.config,
@@ -295,8 +303,6 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     if not is_multigpu_child_process():
         task.cleanup()
-    elif args.gpus and exit_stack is None:
-        multigpu_manager.finalize()
 
     return dict(retcode=0, template=template.name)
 

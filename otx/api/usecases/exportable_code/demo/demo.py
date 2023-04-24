@@ -3,9 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import os
 import sys
 from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
+
+os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
 
 # pylint: disable=no-name-in-module, import-error
 from otx.api.usecases.exportable_code.demo.demo_package import (

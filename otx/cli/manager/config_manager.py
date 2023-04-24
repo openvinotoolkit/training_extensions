@@ -24,6 +24,7 @@ from otx.cli.utils.errors import (
     NotSupportedError,
 )
 from otx.cli.utils.importing import get_otx_root_path
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
 
@@ -350,21 +351,35 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         override_parameters(updated_hyper_parameters, hyper_parameters)
         return create(hyper_parameters)
 
-    def get_dataset_config(self, subsets: List[str]) -> dict:
+    def get_dataset_config(self, subsets: List[str], hyper_parameters: Optional[ConfigurableParameters] = None) -> dict:
         """Returns dataset_config in a format suitable for each subset.
 
         Args:
             subsets (list, str): Defaults to ["train", "val", "unlabeled"].
+            hyper_parameters (ConfigurableParameters): Set of hyper parameters.
 
         Returns:
             dict: dataset_config
         """
         if str(self.train_type).upper() == "INCREMENTAL" and "unlabeled" in subsets:
             subsets.remove("unlabeled")
-        dataset_config = {"task_type": self.task_type, "train_type": self.train_type}
+        dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
             if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
                 dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})
+        if hyper_parameters is not None:
+            dataset_config["cache_config"] = {}
+            algo_backend = getattr(hyper_parameters, "algo_backend", None)
+            if algo_backend:
+                storage_cache_scheme = getattr(algo_backend, "storage_cache_scheme", None)
+                if storage_cache_scheme is not None:
+                    storage_cache_scheme = str(storage_cache_scheme)
+                dataset_config["cache_config"]["scheme"] = storage_cache_scheme
+
+            learning_parameters = getattr(hyper_parameters, "learning_parameters", None)
+            if learning_parameters:
+                num_workers = getattr(learning_parameters, "num_workers", 0)
+                dataset_config["cache_config"]["num_workers"] = num_workers
         return dataset_config
 
     def update_data_config(self, data_yaml: dict) -> None:
@@ -423,6 +438,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
 
         # Create OTX-workspace
+        if is_multigpu_child_process():
+            return
         # Check whether the workspace is existed or not
         if self.check_workspace() and not self.rebuild:
             return

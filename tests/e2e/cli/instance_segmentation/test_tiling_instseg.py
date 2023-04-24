@@ -192,7 +192,6 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
@@ -203,7 +202,6 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
     def test_nncf_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
@@ -214,7 +212,6 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
     def test_nncf_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
@@ -225,7 +222,6 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
     def test_nncf_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
@@ -236,7 +232,6 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
