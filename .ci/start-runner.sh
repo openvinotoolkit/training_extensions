@@ -71,7 +71,7 @@ GITHUB_TOKEN=$2
 INSTANCE_NAME=$3
 LABELS="self-hosted,Linux,X64"
 
-if [ "$ADDITIONAL_LABELS" -eq "" ]; then
+if [ -z "$ADDITIONAL_LABELS" ]; then
     LABELS="$LABELS,$ADDITIONAL_LABELS"
 fi
 
