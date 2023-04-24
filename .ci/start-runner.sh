@@ -3,6 +3,7 @@
 GPU_ID="all"
 VER_CUDA="11.7.1"
 TAG_RUNNER="latest"
+ADDITIONAL_LABELS=""
 DEBUG_CONTAINER=false
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -21,6 +22,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -t|--tag)
       TAG_RUNNER="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -l|=--labels)
+      ADDITIONAL_LABELS="$2"
       shift # past argument
       shift # past value
       ;;
@@ -45,10 +51,15 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 if [[ "$#" -lt 3 ||  "$DEFAULT" == "yes" ]] && [ $DEBUG_CONTAINER = false ]; then
 cat << EndofMessage
     USAGE: $0 <container-name> <github-token> <instance-name> [Options]
+    Positional args
+        <container-name>    Prefix to the ci container
+        <github-token>      Github token string
+        <instance-name>     Prefix to the actions-runner
     Options
         -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
         -c|--cuda           Specify CUDA version
         -t|--tag            Specify TAG for the CI container
+        -l|--labels         Additional label string to set the actions-runner
         -d|--debug          Flag to start debugging CI container
         -h|--help           Print this message
 EndofMessage
@@ -58,7 +69,11 @@ fi
 CONTAINER_NAME=$1
 GITHUB_TOKEN=$2
 INSTANCE_NAME=$3
-LABELS="self-hosted,Linux,X64,debug"
+LABELS="self-hosted,Linux,X64"
+
+if [ "$ADDITIONAL_LABELS" -eq "" ]; then
+    LABELS="$LABELS,$ADDITIONAL_LABELS"
+fi
 
 if [ "$DEBUG_CONTAINER" = true ]; then
     CONTAINER_NAME="otx-ci-container-debug"
@@ -86,7 +101,7 @@ if [ "$DEBUG_CONTAINER" = true ]; then
         --shm-size=24g \
         --cpu-shares=1024 \
         --name "$CONTAINER_NAME" \
-        registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
+        "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
 
     if [ $RET -ne 0 ]; then
         echo "failed to start ci container. $RET"
@@ -103,7 +118,7 @@ else
         --shm-size=24g \
         --cpu-shares=1024 \
         --name "$CONTAINER_NAME" \
-        registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
+        "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
 
     if [ $RET -ne 0 ]; then
         echo "failed to start ci container. $RET"

@@ -1,11 +1,19 @@
 # Guide to Setting up the CI using the Docker images
 
+> **_Note_**: Environment variable `DOCKER_REG_ADDR` is required for using scripts below. It contains the path to the docker registry to push/pull the docker image for the CI instances.
+>
+> ```bash
+> ..$ export DOCKER_REG_ADDR=<your-docker-registry-url>
+> ```
+
 1. Build the docker image using the `build.sh` in the .ci directory.
    Make sure you are in the root directory of `training_extensions`.
 
    ```bash
    training_extensions$ .ci/build.sh --help
      USAGE: .ci/build.sh <tag> [Options]
+     Positional args
+        <tag>               Tag to the built docker image
      Options
         -p|--push           Push built image(s) to registry
         -u|--url            url to get Github actions-runner package
@@ -29,18 +37,24 @@
 
    ```bash
    training_extensions$ .ci/start-runner.sh --help
-     USAGE: .ci/start-runner.sh <container-name> <github-token> <codacy-token> [Options]
+     USAGE: .ci/start-runner.sh <container-name> <github-token> <instance-name> [Options]
+         Positional args
+            <container-name>     Prefix to the ci container
+            <github-token>       Github token string
+            <instance-name>      Prefix to the actions-runner
          Options
              -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
              -c|--cuda           Specify CUDA version
+             -t|--tag            Specify TAG for the CI container
+             -l|--labels         Additional label string to set the actions-runner
              -d|--debug          Flag to start debugging CI container
              -h|--help           Print this message
    ```
 
-   Below example starts a runner named as `otx-ci-container` with GPU ID 0
+   Below example starts the "otx-ci-container-0" container on the host and an `actions-runner` named as "ci-runner-0" would be registered to Github of the OpenVINO training extensions. The container name and `actions-runner` name would be composed with given `<container-name>/<instance-name>` and the `GPU ID(s)`.
 
    ```bash
-   training_extensions$ .ci/start-runner.sh otx-ci-container <github-token> <codacy-token> -g 0
+   training_extensions$ .ci/start-runner.sh otx-ci-container <github-token> ci-runner -g 0
    ```
 
    Once it executed, An interactive session for the runner configuration will be started and you should input some information to each prompt.
