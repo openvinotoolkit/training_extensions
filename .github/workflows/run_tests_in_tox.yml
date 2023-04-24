@@ -8,7 +8,7 @@ on:
       toxenv-pyver:
         description: "[py38, py39, py310]"
         required: true
-        trype: string
+        type: string
         default: "py310"
       toxenv-task:
         description: "[all, act, ano, cls, det, seg, iseg]"
