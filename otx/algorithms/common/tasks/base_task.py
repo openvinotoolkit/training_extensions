@@ -30,7 +30,7 @@ from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import UncopiableDefaultDict
-from otx.algorithms.common.utils.logger import get_logger, set_all_logger_level
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -140,7 +140,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
             rank = dist.get_rank()
             logger.info(f"Dist info: rank {rank} / {dist.get_world_size()} world_size")
             if rank != 0:
-                set_all_logger_level(logging.ERROR)
+                logging.disable(logging.WARNING)
 
     def _get_tmp_dir(self):
         self._work_dir_is_temp = True
