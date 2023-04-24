@@ -197,7 +197,7 @@ class MMActionTask(OTXActionTask):
         self._config = recipe_cfg
         return recipe_cfg
 
-    def _configure_device(self, cfg, training):
+    def _configure_device(self, cfg: Config, training: bool):
         """Setting device for training and inference."""
         cfg.distributed = False
         if torch.distributed.is_initialized():
@@ -221,7 +221,7 @@ class MMActionTask(OTXActionTask):
             cfg.device = "cuda"
 
     @staticmethod
-    def configure_distributed(cfg):
+    def configure_distributed(cfg: Config):
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
             new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
