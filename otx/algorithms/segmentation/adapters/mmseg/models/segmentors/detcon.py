@@ -497,7 +497,6 @@ class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
         img,
         img_metas,
         gt_semantic_seg,
-        pixel_weights=None,
         **kwargs,
     ):
         """Forward function for training.
@@ -507,7 +506,6 @@ class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
             img_metas (list[dict]): Input information.
             gt_semantic_seg (Tensor): Ground truth masks.
                 It is used to organize features among the same classes.
-            pixel_weights (Tensor): Pixels weights.
             **kwargs (Any): Addition keyword arguments.
 
         Returns:
@@ -527,9 +525,7 @@ class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
             img_metas += img_metas
 
         # decode head
-        loss_decode, _ = self._decode_head_forward_train(
-            embds, img_metas, gt_semantic_seg=masks, pixel_weights=pixel_weights
-        )
+        loss_decode = self._decode_head_forward_train(embds, img_metas, gt_semantic_seg=masks)
         losses.update(loss_decode)
 
         return losses
