@@ -33,7 +33,7 @@ from tests.unit.algorithms.detection.test_helpers import (
 
 
 def create_otx_dataset(height: int, width: int, labels: List[str]):
-    """Create a random OTX dataset
+    """Create a random OTX dataset.
 
     Args:
         height (int): The height of the image
@@ -54,11 +54,11 @@ def create_otx_dataset(height: int, width: int, labels: List[str]):
 
 
 class TestTilingDetection:
-    """Test the tiling functionality"""
+    """Test the tiling detection algorithm."""
 
     @pytest.fixture(autouse=True)
     def setUp(self) -> None:
-        """Setup the test case"""
+        """Setup the test case."""
         self.height = 1024
         self.width = 1024
         self.label_names = ["rectangle", "ellipse", "triangle"]
@@ -132,7 +132,7 @@ class TestTilingDetection:
 
     @e2e_pytest_unit
     def test_tiling_train_dataloader(self):
-        """Test that the training dataloader is built correctly for tiling"""
+        """Test that the training dataloader is built correctly for tiling."""
 
         dataset = build_dataset(self.train_data_cfg)
         train_dataloader = build_dataloader(dataset, **self.dataloader_cfg)
@@ -143,7 +143,7 @@ class TestTilingDetection:
 
     @e2e_pytest_unit
     def test_tiling_test_dataloader(self):
-        """Test that the testing dataloader is built correctly for tiling"""
+        """Test that the testing dataloader is built correctly for tiling."""
 
         dataset = build_dataset(self.test_data_cfg)
         stride = int((1 - self.tile_cfg["overlap_ratio"]) * self.tile_cfg["tile_size"])
@@ -160,7 +160,7 @@ class TestTilingDetection:
 
     @e2e_pytest_unit
     def test_inference_merge(self):
-        """Test that the inference merge works correctly"""
+        """Test that the inference merge works correctly."""
         dataset = build_dataset(self.test_data_cfg)
 
         # create simulated inference results
@@ -222,7 +222,7 @@ class TestTilingDetection:
 
     @e2e_pytest_unit
     def test_patch_tiling_func(self):
-        """Test that patch_tiling function works correctly"""
+        """Test that patch_tiling function works correctly."""
         cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)

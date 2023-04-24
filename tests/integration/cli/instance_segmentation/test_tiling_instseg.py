@@ -146,7 +146,6 @@ class TestTilingInstanceSegmentationCLI:
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-109001")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"

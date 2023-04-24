@@ -404,6 +404,7 @@ def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
 
     # Set default backend configuration
     mo_options = deploy_cfg.backend_config.get("mo_options", ConfigDict())
+    mo_options = ConfigDict() if mo_options is None else mo_options
     mo_options.args = mo_options.get("args", ConfigDict())
     mo_options.flags = mo_options.get("flags", [])
 
