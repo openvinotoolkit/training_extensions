@@ -530,7 +530,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     # FIXME: In the CLI, there is currently no case for using the ignore label.
                     # so the workspace's model patches ignore to False.
                     # FIXME: Segmentation -> ignore=True
-                    if config.get("ignore", None) and str(self.task_type).upper() not in ("SEGMENTATION"):
+                    if config.get("ignore", None):
                         config.ignore = False
                         print("In the CLI, Update ignore to false in model configuration.")
                     config.dump(str(dest_dir / file_name))
