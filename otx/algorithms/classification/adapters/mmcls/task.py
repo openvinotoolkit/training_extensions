@@ -408,9 +408,8 @@ class MMClassificationTask(OTXClassificationTask):
             )
 
         if self._hyperparams.learning_parameters.auto_decrease_batch_size:
-            validate = isinstance(self, NNCFBaseTask)  # nncf needs eval hooks
             train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, validate)
+            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
 
         train_model(
             model,
