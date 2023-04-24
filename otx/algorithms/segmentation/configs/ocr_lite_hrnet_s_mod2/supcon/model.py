@@ -54,7 +54,7 @@ model = dict(
         loss_cfg=dict(type="DetConLoss", temperature=0.1),
     ),
     decode_head=dict(
-        type="FCNHead",
+        type="CustomFCNHead",
         in_channels=[60, 120, 240],
         in_index=[0, 1, 2],
         input_transform="multiple_select",
@@ -69,8 +69,6 @@ model = dict(
         enable_aggregator=True,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        enable_out_norm=False,
-        enable_loss_equalizer=True,
         loss_decode=[
             dict(
                 type="CrossEntropyLoss",
