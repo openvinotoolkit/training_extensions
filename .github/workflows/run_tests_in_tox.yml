@@ -2,21 +2,17 @@ on:
   workflow_call:
     inputs:
       python-version:
-        required: true
         type: string
         default: "3.10"
       toxenv-pyver:
         description: "[py38, py39, py310]"
-        required: true
         type: string
         default: "py310"
       toxenv-task:
         description: "[all, act, ano, cls, det, seg, iseg]"
-        required: true
         type: string
         default: "all"
       tests-dir:
-        required: true
         type: string
         default: "tests/integration"
       timeout-minutes:
@@ -45,6 +41,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}
-          path: .tox/test-results-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.xml
+          path: .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.xml
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ inputs.upload-artifact && always() }}
