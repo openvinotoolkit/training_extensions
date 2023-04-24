@@ -26,7 +26,7 @@ from torch import nn
 
 from otx.algorithms.common.utils.logger import get_logger
 
-from .class_incr_encoder_decoder import ClassIncrEncoderDecoder
+from .class_incr_encoder_decoder import OTXEncoderDecoder
 
 logger = get_logger()
 
@@ -442,7 +442,7 @@ class DetConB(nn.Module):
 
 # pylint: disable=too-many-locals
 @SEGMENTORS.register_module()
-class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancestors
+class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
     """Apply DetConB as a contrastive part of `Supervised Contrastive Learning` (https://arxiv.org/abs/2004.11362).
 
     SupCon with DetConB uses ground truth masks instead of pseudo masks to organize features among the same classes.
