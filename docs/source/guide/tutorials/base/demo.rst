@@ -8,7 +8,7 @@ It allows you to apply the model on the custom data or the online footage from a
 
     This tutorial uses an object detection model for example, however for other tasks the functionality remains the same - you just need to replace the input dataset with your own.
 
-For visualization you use images from WGISD dataset from the :doc: `object detection tutorial <how_to_train/detection>`.
+For visualization you use images from WGISD dataset from the :doc:`object detection tutorial <how_to_train/detection>`.
 
 1. Activate the virtual environment 
 created in the previous step.
@@ -34,9 +34,14 @@ But if we'll provide a single image the demo processes and renders it quickly, t
     (demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
                          --load-weights outputs/weights.pth --loop
 
-In this case, you can stop the demo by killing the process in the terminal (``Ctrl+C`` for Linux).
+In this case, you can stop the demo by pressing `Q` button or killing the process in the terminal (``Ctrl+C`` for Linux).
 
-3. In WGISD dataset we have high-resolution images, 
+3. If we want to pass an images folder, it's better to specify the delay parameter, that defines, how much millisecond pause will be held between showing the next image.
+For example ``--delay 100`` will make this pause 0.1 ms.
+If you want to skip showing the resulting image and instead see the number of predictions and time spent on each image inference, specify ``--delay 0``.
+
+
+4. In WGISD dataset we have high-resolution images, 
 so the ``--fit-to-size`` parameter would be quite useful. It resizes the resulting image to a specified:
 
 .. code-block::
@@ -44,11 +49,17 @@ so the ``--fit-to-size`` parameter would be quite useful. It resizes the resulti
     (demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
                          --load-weights outputs/weights.pth --loop --fit-to-size 800 600
 
-4. If we want to pass an images folder, it's better to specify the delay parameter, that defines, how much millisecond pause will be held between showing the next image.
-For example ``--delay 100`` will make this pause 0.1 ms.
 
+5. To save inferenced results with predictions on it, we can specify the folder path, using ``--output``. 
+It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a ``--loop`` parameter.
 
-5. If we want to show inference speed right on images, 
+.. code-block::
+
+    (demo) ...$ otx demo --input docs/utils/images/wgisd_dataset_sample.jpg \
+                         --load-weights outputs/weights.pth \
+                         --output resulted_images
+
+6. If we want to show inference speed right on images, 
 we can run the following line:
 
 .. code-block::
@@ -57,20 +68,14 @@ we can run the following line:
                          --load-weights outputs/weights.pth --loop \
                          --fit-to-size 800 600 --display-perf
 
-.. The result will look like this:
-
-.. .. image:: ../../../../utils/images/wgisd_pr_sample.jpg
-..   :width: 600
-..   :alt: this image shows the inference results with inference time on the WGISD dataset
-.. image to be generated and added
 
 6. To run a demo on a web camera, you need to know its ID. 
 You can check a list of camera devices by running the command line below on Linux system:
 
 .. code-block::
 
-    sudo apt-get install v4l-utils
-    v4l2-ctl --list-devices
+    (demo) ...$ sudo apt-get install v4l-utils
+    (demo) ...$ v4l2-ctl --list-devices
 
 The output will look like this:
 

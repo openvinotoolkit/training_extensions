@@ -12,6 +12,7 @@ import pytest
 from otx.cli.tools import cli
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
+    check_run,
     otx_build_auto_config,
     otx_build_backbone_testing,
     otx_build_testing,
@@ -36,9 +37,9 @@ rebuild_args = {
         "default": "EfficientNet-B0",
         "--task": "classification",
         "--model": "MobileNet-V3-large-1x",
-        "--train-type": "semisupervised",
+        "--train-type": "Semisupervised",
     },
-    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "semisupervised"},
+    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "Semisupervised"},
 }
 
 
@@ -59,25 +60,28 @@ class TestToolsOTXCLI:
         tmp_dir_path = tmp_dir_path / "test_rebuild" / case
         # 1. Only Task
         build_arg = {"--task": rebuild_args[case]["--task"]}
-        expected = {"model": rebuild_args[case]["default"], "train_type": "INCREMENTAL"}
+        expected = {"model": rebuild_args[case]["default"], "train_type": "Incremental"}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
         # 2. Change Model
         build_arg = {"--model": rebuild_args[case]["--model"]}
-        expected = {"model": rebuild_args[case]["--model"], "train_type": "INCREMENTAL"}
+        expected = {"model": rebuild_args[case]["--model"], "train_type": "Incremental"}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
         # 3. Change Train-type
         build_arg = {"--train-type": rebuild_args[case]["--train-type"]}
         expected = {"model": rebuild_args[case]["--model"], "train_type": rebuild_args[case]["--train-type"]}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
         # 4. Change to Default
-        build_arg = {"--model": rebuild_args[case]["default"], "--train-type": "INCREMENTAL"}
-        expected = {"model": rebuild_args[case]["default"], "train_type": "INCREMENTAL"}
+        build_arg = {"--model": rebuild_args[case]["default"], "--train-type": "Incremental"}
+        expected = {"model": rebuild_args[case]["default"], "train_type": "Incremental"}
         otx_build_testing(tmp_dir_path, build_arg, expected=expected)
 
 
 build_auto_config_args = {
-    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
-    "classification_with_task": {"--task": "classification", "--train-data-roots": "tests/assets/imagenet_dataset"},
+    "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
+    "classification_with_task": {
+        "--task": "classification",
+        "--train-data-roots": "tests/assets/classification_dataset",
+    },
     "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
     "detection_with_task": {"--task": "detection", "--train-data-roots": "tests/assets/car_tree_bug"},
 }
@@ -93,10 +97,10 @@ class TestToolsOTXBuildAutoConfig:
 
 
 train_auto_config_args = {
-    "classification": {"--train-data-roots": "tests/assets/imagenet_dataset"},
+    "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
     "classification_with_template": {
         "template": "otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
-        "--train-data-roots": "tests/assets/imagenet_dataset",
+        "--train-data-roots": "tests/assets/classification_dataset",
     },
     "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
     "detection_with_template": {
@@ -120,6 +124,122 @@ class TestToolsOTXTrainAutoConfig:
         tmp_dir_path = tmp_dir_path / "test_train_auto_config" / case
         train_auto_config_args[case]["train_params"] = train_params
         otx_train_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=train_auto_config_args[case])
+        # check output (use --workspace & --output)
+        output_path = os.path.join(tmp_dir_path, "otx-workspace")
+        assert os.path.exists(os.path.join(output_path, "outputs"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(output_path, "outputs", "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(
+            os.path.join(output_path, "outputs", "latest_trained_model", "models", "label_schema.json")
+        )
+        assert os.path.exists(os.path.join(output_path, "models"))
+        assert os.path.exists(os.path.join(output_path, "models", "weights.pth"))
+
+    @e2e_pytest_component
+    def test_otx_train_wo_output_args(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_train_auto_config_wo_output" / case
+        train_auto_config_args[case]["train_params"] = train_params
+        otx_train_auto_config(root=tmp_dir_path, otx_dir=otx_dir, args=train_auto_config_args[case], use_output=False)
+
+        # check output (without --output -> Default outputs)
+        output_path = os.path.join(tmp_dir_path, "otx-workspace", "outputs")
+        assert os.path.exists(output_path)
+        file_list = sorted(os.listdir(output_path))
+        assert len(file_list) == 2
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(os.path.join(output_path, "latest_trained_model", "models", "label_schema.json"))
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "models"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "models", "weights.pth"))
+
+    @e2e_pytest_component
+    def test_otx_export_wo_output_args(self, tmp_dir_path):
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_train_auto_config_wo_output" / case
+        workspace_path = os.path.join(tmp_dir_path, "otx-workspace")
+        command_line = [
+            "otx",
+            "export",
+            "--workspace",
+            os.path.join(tmp_dir_path, "otx-workspace"),
+        ]
+        check_run(command_line)
+
+        # check output (without --output -> Default outputs)
+        output_path = os.path.join(workspace_path, "outputs")
+        assert os.path.exists(output_path)
+        file_list = sorted(os.listdir(output_path))
+        assert len(file_list) == 3
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "openvino.xml"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "openvino.bin"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "openvino", "label_schema.json"))
+
+    @e2e_pytest_component
+    def test_otx_optimize_wo_output_args(self, tmp_dir_path):
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_train_auto_config_wo_output" / case
+        workspace_path = os.path.join(tmp_dir_path, "otx-workspace")
+        command_line = [
+            "otx",
+            "optimize",
+            "--workspace",
+            os.path.join(tmp_dir_path, "otx-workspace"),
+        ]
+        check_run(command_line)
+
+        # check output (without --output -> Default outputs)
+        output_path = os.path.join(workspace_path, "outputs")
+        assert os.path.exists(output_path)
+        file_list = sorted(os.listdir(output_path))
+        assert len(file_list) == 4
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf", "weights.pth"))
+        assert os.path.exists(os.path.join(output_path, file_list[-1], "nncf", "label_schema.json"))
+
+    @e2e_pytest_component
+    def test_otx_train_wo_workspace_and_output_args(self, tmp_dir_path):
+        otx_dir = os.getcwd()
+        case = list(train_auto_config_args.keys())[0]
+        tmp_dir_path = tmp_dir_path / "test_otx_train_wo_workspace_and_output_args"
+        tmp_dir_path.mkdir(exist_ok=True)
+        expected_workspace_path = os.path.join(tmp_dir_path, f"otx-workspace-{case.upper()}")
+        command_line = [
+            "otx",
+            "train",
+        ]
+        args = train_auto_config_args[case]
+        for option, value in args.items():
+            if option in ["--train-data-roots", "--val-data-roots"]:
+                command_line.extend([option, f"{os.path.join(otx_dir, value)}"])
+        command_line.extend(train_params)
+        check_run(command_line, cwd=tmp_dir_path)
+
+        # check output (without --output -> Default outputs)
+        assert os.path.exists(expected_workspace_path)
+        expected_output_path = os.path.join(expected_workspace_path, "outputs")
+        assert os.path.exists(expected_output_path)
+        file_list = sorted(os.listdir(expected_output_path))
+        assert len(file_list) == 2
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "weights.pth"))
+        assert os.path.exists(os.path.join(expected_output_path, "latest_trained_model", "models", "label_schema.json"))
+        file_list.remove("latest_trained_model")
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1]))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models"))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "weights.pth"))
+        assert os.path.exists(os.path.join(expected_output_path, file_list[-1], "models", "label_schema.json"))
 
 
 class TestTelemetryIntegration:

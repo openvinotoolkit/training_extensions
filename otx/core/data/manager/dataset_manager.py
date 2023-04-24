@@ -73,9 +73,11 @@ class DatasetManager:
         return data_format
 
     @staticmethod
-    def get_image_path(data_item: DatasetItem) -> str:
+    def get_image_path(data_item: DatasetItem) -> Optional[str]:
         """Returns the path of image."""
-        return data_item.media.path
+        if hasattr(data_item.media, "path"):
+            return data_item.media.path
+        return None
 
     @staticmethod
     def export_dataset(dataset: Dataset, output_dir: str, data_format: str, save_media=True):

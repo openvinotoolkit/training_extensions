@@ -151,7 +151,7 @@ By running this example command, the performance results evaluated by our splitt
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                       --load-weights models/weights.pth \
-                      --save-performance performance.json
+                      --output outputs
 
 Finally, we get the validation output:
 
@@ -165,7 +165,7 @@ Finally, we get the validation output:
   2023-02-21 18:09:58,508 | INFO : mDice after evaluation: 0.9659400544959128
   Performance(score: 0.9659400544959128, dashboard: (1 metric groups))
 
-In ``performance.json`` file, the validation output score is saved as:
+In ``outputs/performance.json`` file, the validation output score is saved as:
 
 .. code-block::
 
@@ -185,7 +185,7 @@ and save the exported model to the ``openvino_model`` folder.
 .. code-block::
 
   (otx) ...$ otx export --load-weights models/weights.pth \
-                        --save-model-to openvino_model
+                        --output openvino_model
 
   ...
 
@@ -200,7 +200,7 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
   (otx) ...$ otx eval --test-data-roots splitted_dataset/val \
                       --load-weights openvino_model/openvino.xml \
-                      --save-performance openvino_model/performance.json
+                      --output openvino_model
 
   ...
 
@@ -220,7 +220,7 @@ a PyTorch model (`.pth`) with OpenVINO™ NNCF.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights models/weights.pth --save-model-to nncf_model
+  (otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
 
   ...
 
@@ -239,7 +239,7 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 .. code-block::
 
   (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                          --save-model-to pot_model
+                          --output pot_model
 
   ...
 

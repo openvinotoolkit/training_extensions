@@ -9,13 +9,15 @@ import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.atss import ATSS
 
-from otx.algorithms.detection.adapters.mmdet.hooks.det_saliency_map_hook import (
-    DetSaliencyMapHook,
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    FeatureVectorHook,
 )
-from otx.mpa.deploy.utils import is_mmdeploy_enabled
-from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
-from otx.mpa.modules.utils.task_adapt import map_class_names
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.task_adapt import map_class_names
+from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
+    DetClassProbabilityMapHook,
+)
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin
@@ -97,7 +99,7 @@ if is_mmdeploy_enabled():
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(feat)
             cls_scores = outs[0]
-            saliency_map = DetSaliencyMapHook(self).func(feature_map=cls_scores, cls_scores_provided=True)
+            saliency_map = DetClassProbabilityMapHook(self).func(feature_map=cls_scores, cls_scores_provided=True)
             return (*bbox_results, feature_vector, saliency_map)
 
         return bbox_results

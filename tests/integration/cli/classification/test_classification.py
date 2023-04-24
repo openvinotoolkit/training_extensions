@@ -4,6 +4,7 @@
 #
 
 import copy
+import glob
 import os
 
 import pytest
@@ -19,10 +20,13 @@ from tests.test_suite.run_test_command import (
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_explain_all_classes_openvino_testing,
     otx_explain_openvino_testing,
+    otx_explain_process_saliency_maps_openvino_testing,
     otx_explain_testing,
+    otx_explain_testing_all_classes,
+    otx_explain_testing_process_saliency_maps,
     otx_export_testing,
-    otx_export_testing_w_features,
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
@@ -30,10 +34,10 @@ from tests.test_suite.run_test_command import (
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--test-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--input": "tests/assets/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/classification_dataset",
+    "--val-data-roots": "tests/assets/classification_dataset",
+    "--test-data-roots": "tests/assets/classification_dataset",
+    "--input": "tests/assets/classification_dataset/0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -45,7 +49,7 @@ args = {
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--train-data-roots": "tests/assets/imagenet_dataset",
+    "--train-data-roots": "tests/assets/classification_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -53,7 +57,7 @@ args_selfsl = {
         "--learning_parameters.batch_size",
         "4",
         "--algo_backend.train_type",
-        "SELFSUPERVISED",
+        "Selfsupervised",
     ],
 }
 
@@ -108,20 +112,23 @@ class TestMultiClassClassificationCLI:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
-        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_export_w_features(self, template, tmp_dir_path):
+    def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -137,15 +144,40 @@ class TestMultiClassClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
+        otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -175,7 +207,6 @@ class TestMultiClassClassificationCLI:
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
@@ -190,18 +221,17 @@ class TestMultiClassClassificationCLI:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args)
         args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         args_semisl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
 
@@ -212,7 +242,6 @@ class TestMultiClassClassificationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-101246 Multi-GPU tests are stuck while CI is running")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
@@ -220,6 +249,28 @@ class TestMultiClassClassificationCLI:
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_enable_noisy_lable_detection(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        new_args = copy.deepcopy(args)
+        new_args["train_params"] += ["--algo_backend.enable_noisy_label_detection", "True"]
+        otx_train_testing(template, tmp_dir_path, otx_dir, new_args)
+
+        has_export_dir = False
+        for root, _, _ in os.walk(tmp_dir_path):
+            if "noisy_label_detection" == os.path.basename(root):
+                has_export_dir = True
+        assert has_export_dir
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_auto_decrease_batch_size(self, template, tmp_dir_path):
+        decrease_bs_args = copy.deepcopy(args)
+        decrease_bs_args["train_params"].extend(["--learning_parameters.auto_decrease_batch_size", "true"])
+        tmp_dir_path = tmp_dir_path / "multi_class_cls_auto_decrease_batch_size"
+        otx_train_testing(template, tmp_dir_path, otx_dir, decrease_bs_args)
 
 
 # Multi-label training w/ 'car', 'tree', 'bug' classes
@@ -247,15 +298,16 @@ class TestMultilabelClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_export_w_features(self, template, tmp_dir_path):
+    def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -271,15 +323,40 @@ class TestMultilabelClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
+    def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m, threshold=1.0)
+        otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls"
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m, threshold=1.0, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -308,7 +385,7 @@ class TestMultilabelClassificationCLI:
         tmp_dir_path = tmp_dir_path / "multi_label_cls" / "test_semisl"
         args_semisl = copy.deepcopy(args_m)
         args_semisl["--unlabeled-data-roots"] = args_m["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
 
@@ -336,15 +413,16 @@ class TestHierarchicalClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_export(self, template, tmp_dir_path):
+    @pytest.mark.parametrize("dump_features", [True, False])
+    def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, dump_features)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_export_w_features(self, template, tmp_dir_path):
+    def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_export_testing_w_features(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -360,15 +438,40 @@ class TestHierarchicalClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_eval_openvino(self, template, tmp_dir_path):
+    def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h, threshold=1.0)
+        otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
+        tmp_dir_path = tmp_dir_path / "h_label_cls"
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h, threshold=1.0, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

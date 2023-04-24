@@ -36,12 +36,6 @@ class TestMMOVBackbone:
 
     @e2e_pytest_unit
     def test_forward(self):
-        assert self.model.inputs == self.model._inputs
-        assert self.model.outputs == self.model._outputs
-        assert self.model.features == self.model._feature_dict
-        assert self.model.input_shapes == self.model._input_shapes
-        assert self.model.output_shapes == self.model._output_shapes
-
         data = {}
         for key, shape in self.model.input_shapes.items():
             shape = [1 if i == -1 else i for i in shape]

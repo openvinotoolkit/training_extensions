@@ -2,6 +2,107 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.3.0\]
+
+### New features
+
+-
+
+### Enhancements
+
+-
+
+### Bug fixes
+
+-
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
+## \[v1.2.0\]
+
+### New features
+
+- Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
+- Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
+- Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
+- Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
+- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
+- Add noisy label detection for multi-class classification task (<https://github.com/openvinotoolkit/training_extensions/pull/1985>, <https://github.com/openvinotoolkit/training_extensions/pull/2034>)
+
+### Enhancements
+
+- Clean up and refactor the output of the OTX CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1946>)
+- Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
+- Detection task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1955>)
+- Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
+- Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
+- Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
+- Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
+- Optimize data preprocessing time and enhance overall performance in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2020>)
+- Support automatic batch size decrease when there is no enough GPU memory (<https://github.com/openvinotoolkit/training_extensions/pull/2022>)
+
+### Bug fixes
+
+- Fix backward compatibility with OpenVINO SSD-like detection models from OTE 0.5 (<https://github.com/openvinotoolkit/training_extensions/pull/1970>)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
+## \[v1.1.2\]
+
+### Bug fixes
+
+- Fix exception -> warning for anomaly dump_feature option
+- Remove `dataset.with_empty_annotations()` to keep original input structure (<https://github.com/openvinotoolkit/training_extensions/pull/1964>)
+- Fix OV batch inference (saliency map generation) (<https://github.com/openvinotoolkit/training_extensions/pull/1965>)
+- Replace EfficentNetB0 model download logic by pytorchcv to resolve zip issue (<https://github.com/openvinotoolkit/training_extensions/pull/1967>)
+
+## \[v1.1.1\]
+
+### Bug fixes
+
+- Add missing OpenVINO dependency in exportable code requirement
+
+## \[v1.1.0\]
+
+### New features
+
+- Add FP16 IR export support (<https://github.com/openvinotoolkit/training_extensions/pull/1683>)
+- Add in-memory caching in dataloader (<https://github.com/openvinotoolkit/training_extensions/pull/1694>)
+- Add MoViNet template for action classification (<https://github.com/openvinotoolkit/training_extensions/pull/1742>)
+- Add Semi-SL multilabel classification algorithm (<https://github.com/openvinotoolkit/training_extensions/pull/1805>)
+- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (<https://github.com/openvinotoolkit/training_extensions/pull/1534>)
+- Add train-type parameter to otx train (<https://github.com/openvinotoolkit/training_extensions/pull/1874>)
+- Add embedding of inference configuration to IR for classification (<https://github.com/openvinotoolkit/training_extensions/pull/1842>)
+- Enable VOC dataset in OTX (<https://github.com/openvinotoolkit/training_extensions/pull/1862>)
+- Add mmcls.VisionTransformer backbone support (<https://github.com/openvinotoolkit/training_extensions/pull/1908>)
+
+### Enhancements
+
+- Parametrize saliency maps dumping in export (<https://github.com/openvinotoolkit/training_extensions/pull/1888>)
+- Bring mmdeploy to action recognition model export & Test optimization of action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/1848>)
+- Update backbone lists (<https://github.com/openvinotoolkit/training_extensions/pull/1835>)
+- Add explanation for XAI & minor doc fixes (<https://github.com/openvinotoolkit/training_extensions/pull/1923>)
+- Refactor phase#1: MPA modules
+
+### Bug fixes
+
+- Handle unpickable update_progress_callback (<https://github.com/openvinotoolkit/training_extensions/pull/1892>)
+- Dataset Adapter: Avoid duplicated annotation and permit empty image (<https://github.com/openvinotoolkit/training_extensions/pull/1873>)
+- Arrange scale between bbox preds and bbox targets in ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/1880>)
+- Fix label mismatch of evaluation and validation with large dataset in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1851>)
+- Fix packaging errors including cython module build / import issues (<https://github.com/openvinotoolkit/training_extensions/pull/1936>)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
 ## \[v1.0.1\]
 
 ### Enhancements
@@ -9,6 +110,7 @@ All notable changes to this project will be documented in this file.
 - Refine documents by proof review
 - Separate installation for each tasks
 - Improve POT efficiency by setting stat_requests_number parameter to 1
+- Introduce new tile classifier to enhance tiling inference performance in MaskRCNN.
 
 ### Bug fixes
 

@@ -32,10 +32,8 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
-from otx.api.utils.argument_checks import check_input_parameters_type
 
 
-@check_input_parameters_type()
 def find_label_by_name(labels: List[LabelEntity], name: str, domain: Domain):
     """Return label from name."""
     matching_labels = [label for label in labels if label.name == name]

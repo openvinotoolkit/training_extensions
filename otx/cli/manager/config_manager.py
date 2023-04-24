@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -16,7 +17,14 @@ from otx.api.configuration.helper import create
 from otx.api.entities.model_template import ModelTemplate, parse_model_template
 from otx.cli.registry import Registry as OTXRegistry
 from otx.cli.utils.config import configure_dataset, override_parameters
+from otx.cli.utils.errors import (
+    CliException,
+    ConfigValueError,
+    FileNotExistError,
+    NotSupportedError,
+)
 from otx.cli.utils.importing import get_otx_root_path
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
 
@@ -26,7 +34,7 @@ DEFAULT_MODEL_TEMPLATE_ID = {
     "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
     "ROTATED_DETECTION": "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50",
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
-    "ACTION_CLASSIFICATION": "Custom_Action_Classificaiton_X3D",
+    "ACTION_CLASSIFICATION": "Custom_Action_Classification_X3D",
     "ACTION_DETECTION": "Custom_Action_Detection_X3D_FAST_RCNN",
     "ANOMALY_CLASSIFICATION": "ote_anomaly_classification_padim",
     "ANOMALY_DETECTION": "ote_anomaly_detection_padim",
@@ -54,9 +62,9 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
 }
 
 TASK_TYPE_TO_SUB_DIR_NAME = {
-    "INCREMENTAL": "",
-    "SEMISUPERVISED": "semisl",
-    "SELFSUPERVISED": "selfsl",
+    "Incremental": "",
+    "Semisupervised": "semisl",
+    "Selfsupervised": "selfsl",
 }
 
 
@@ -88,6 +96,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.workspace_root = Path(workspace_root) if workspace_root else Path(".")
         self.mode = mode
         self.rebuild: bool = False
+        self.create_date: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         self.args = args
         self.template = args.template
@@ -112,8 +121,23 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if "data" in self.args and self.args.data:
             if Path(self.args.data).exists():
                 return Path(self.args.data)
-            raise FileNotFoundError(f"Not found: {self.args.data}")
+            raise FileNotExistError(f"Not found: {self.args.data}")
         return self.workspace_root / "data.yaml"
+
+    @property
+    def output_path(self) -> Path:
+        """The path of output directory for workspace.
+
+        Returns:
+            Path: Path of output directory.
+        """
+        if "output" in self.args and self.args.output:
+            output_path = Path(self.args.output)
+        else:
+            output_path = self.workspace_root / "outputs" / f"{self.create_date}_{self.mode}"
+        if not output_path.exists():
+            output_path.mkdir(exist_ok=True, parents=True)
+        return output_path
 
     def check_workspace(self) -> bool:
         """Check that the class's workspace_root is an actual workspace folder.
@@ -140,6 +164,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         else:
             task_type = self.task_type
             if not task_type and not model:
+                if not hasattr(self.args, "train_data_roots"):
+                    raise ConfigValueError("Can't find the argument 'train_data_roots'")
                 task_type = self.auto_task_detection(self.args.train_data_roots)
             self.template = self._get_template(task_type, model=model)
         self.task_type = self.template.task_type
@@ -149,14 +175,14 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
     def _check_rebuild(self):
         """Checking for Rebuild status."""
         if self.args.task and str(self.template.task_type) != self.args.task.upper():
-            raise NotImplementedError("Task Update is not yet supported.")
+            raise NotSupportedError("Task Update is not yet supported.")
         result = False
         if self.args.model and self.template.name != self.args.model.upper():
             print(f"[*] Rebuild model: {self.template.name} -> {self.args.model.upper()}")
             result = True
         template_train_type = self._get_train_type(ignore_args=True)
-        if self.args.train_type and template_train_type != self.args.train_type.upper():
-            self.train_type = self.args.train_type.upper()
+        if self.args.train_type and template_train_type != self.args.train_type:
+            self.train_type = self.args.train_type
             print(f"[*] Rebuild train-type: {template_train_type} -> {self.train_type}")
             result = True
         return result
@@ -165,7 +191,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """Configure data_config according to the situation and create data.yaml."""
         data_yaml_path = self.data_config_file_path
         data_yaml = configure_dataset(self.args, data_yaml_path=data_yaml_path)
-        if self.mode in ("train", "build"):
+        if self.mode in ("train", "build", "optimize"):
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
             # FIXME: Hardcoded for Self-Supervised Learning
             if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
@@ -186,25 +212,29 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             args_hyper_parameters = gen_params_dict_from_args(self.args)
             arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
             if arg_algo_backend:
-                train_type = arg_algo_backend.get("train_type", {"value": "INCREMENTAL"})  # type: ignore
-                return train_type.get("value", "INCREMENTAL")
-            if hasattr(self.args, "train_type") and self.mode in ("build", "train") and self.args.train_type:
-                self.train_type = self.args.train_type.upper()
+                train_type = arg_algo_backend.get("train_type", {"value": "Incremental"})  # type: ignore
+                return train_type.get("value", "Incremental")
+            if (
+                hasattr(self.args, "train_type")
+                and self.mode in ("build", "train", "optimize")
+                and self.args.train_type
+            ):
+                self.train_type = self.args.train_type
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
-                    raise ValueError(f"{self.train_type} is not currently supported by otx.")
+                    raise NotSupportedError(f"{self.train_type} is not currently supported by otx.")
             if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
                 return self.train_type
 
         algo_backend = self.template.hyper_parameters.parameter_overrides.get("algo_backend", False)
         if algo_backend:
-            train_type = algo_backend.get("train_type", {"default_value": "INCREMENTAL"})
-            return train_type.get("default_value", "INCREMENTAL")
-        return "INCREMENTAL"
+            train_type = algo_backend.get("train_type", {"default_value": "Incremental"})
+            return train_type.get("default_value", "Incremental")
+        return "Incremental"
 
     def auto_task_detection(self, data_roots: str) -> str:
         """Detect task type automatically."""
         if not data_roots:
-            raise ValueError("Workspace must already exist or one of {task or model or train-data-roots} must exist.")
+            raise CliException("Workspace must already exist or one of {task or model or train-data-roots} must exist.")
         self.data_format = self.dataset_manager.get_data_format(data_roots)
         return self._get_task_type_from_data_format(self.data_format)
 
@@ -227,7 +257,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self.task_type = task_key
                 print(f"[*] Detected task type: {self.task_type}")
                 return task_key
-        raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
+        raise ConfigValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
     def auto_split_data(self, data_roots: str, task: str, train_ann_file: Optional[str]):
         """Automatically Split train data --> train/val dataset."""
@@ -258,7 +288,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         # TODO: This should modify data yaml format to data_config format.
         """Save the splitted dataset and data.yaml to the workspace."""
         data_yaml = self._create_empty_data_cfg()
-        if self.mode == "train":
+        if self.mode in ("train", "optimize"):
             if self.args.train_data_roots:
                 data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
             if self.args.train_ann_files:
@@ -339,25 +369,40 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         override_parameters(updated_hyper_parameters, hyper_parameters)
         return create(hyper_parameters)
 
-    def get_dataset_config(self, subsets: List[str]) -> dict:
+    def get_dataset_config(self, subsets: List[str], hyper_parameters: Optional[ConfigurableParameters] = None) -> dict:
         """Returns dataset_config in a format suitable for each subset.
 
         Args:
             subsets (list, str): Defaults to ["train", "val", "unlabeled"].
+            hyper_parameters (ConfigurableParameters): Set of hyper parameters.
 
         Returns:
             dict: dataset_config
         """
-        print(self.data_config)
-        dataset_config = {"task_type": self.task_type, "train_type": self.train_type}
+        if str(self.train_type).upper() == "INCREMENTAL" and "unlabeled" in subsets:
+            subsets.remove("unlabeled")
+        dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
-            if f"{subset}_subset" in self.data_config:
-                if self.data_config[f"{subset}_subset"]["data_roots"]:
-                    dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_roots"]})
+            if f"{subset}_subset" in self.data_config 
+                if self.data_config[f"{subset}_subset"]["data_root"]:
+                    dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})
                 if "ann_files" in self.data_config[f"{subset}_subset"]:
                     dataset_config.update({f"{subset}_ann_files": self.data_config[f"{subset}_subset"]["ann_files"]})
                 if "file_list" in self.data_config[f"{subset}_subset"]:
                     dataset_config.update({f"{subset}_file_list": self.data_config[f"{subset}_subset"]["file_list"]})
+        if hyper_parameters is not None:
+            dataset_config["cache_config"] = {}
+            algo_backend = getattr(hyper_parameters, "algo_backend", None)
+            if algo_backend:
+                storage_cache_scheme = getattr(algo_backend, "storage_cache_scheme", None)
+                if storage_cache_scheme is not None:
+                    storage_cache_scheme = str(storage_cache_scheme)
+                dataset_config["cache_config"]["scheme"] = storage_cache_scheme
+
+            learning_parameters = getattr(hyper_parameters, "learning_parameters", None)
+            if learning_parameters:
+                num_workers = getattr(learning_parameters, "num_workers", 0)
+                dataset_config["cache_config"]["num_workers"] = num_workers
         return dataset_config
 
     def update_data_config(self, data_yaml: dict) -> None:
@@ -385,7 +430,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 "file_list": data_yaml["data"]["unlabeled"]["file-list"],
             }
         # FIXME: Hardcoded for Self-Supervised Learning
-        if self.mode == "train" and str(self.train_type).upper() == "SELFSUPERVISED":
+        if self.mode in ("train", "optimize") and str(self.train_type).upper() == "SELFSUPERVISED":
             self.data_config["val_subset"] = {"data_root": None}
 
     def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:
@@ -402,7 +447,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if model:
             template_lst = [temp for temp in otx_registry.templates if temp.name.lower() == model.lower()]
             if not template_lst:
-                raise ValueError(
+                raise NotSupportedError(
                     f"[*] {model} is not a type supported by OTX {task_type}."
                     f"\n[*] Please refer to 'otx find --template --task {task_type}'"
                 )
@@ -422,6 +467,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
 
         # Create OTX-workspace
+        if is_multigpu_child_process():
+            return
         # Check whether the workspace is existed or not
         if self.check_workspace() and not self.rebuild:
             return
@@ -456,7 +503,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         model_dir = template_dir.absolute() / train_type_rel_path
         if not model_dir.exists():
-            raise ValueError(f"[*] {self.train_type} is not a type supported by OTX {self.task_type}")
+            raise NotSupportedError(f"[*] {self.train_type} is not a type supported by OTX {self.task_type}")
         train_type_dir = self.workspace_root / train_type_rel_path
         train_type_dir.mkdir(exist_ok=True)
 
@@ -504,12 +551,20 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if (target_dir / file_name).exists():
             if file_name.endswith(".py"):
                 try:
-                    from otx.mpa.utils.config_utils import MPAConfig
+                    from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+                        MPAConfig,
+                    )
 
                     config = MPAConfig.fromfile(str(target_dir / file_name))
+                    # FIXME: In the CLI, there is currently no case for using the ignore label.
+                    # so the workspace's model patches ignore to False.
+                    # FIXME: Segmentation -> ignore=True
+                    if config.get("ignore", None) and str(self.task_type).upper() not in ("SEGMENTATION"):
+                        config.ignore = False
+                        print("In the CLI, Update ignore to false in model configuration.")
                     config.dump(str(dest_dir / file_name))
                 except Exception as exc:
-                    raise ImportError(f"{self.task_type} requires mmcv-full to be installed.") from exc
+                    raise CliException(f"{self.task_type} requires mmcv-full to be installed.") from exc
             elif file_name.endswith((".yml", ".yaml")):
                 config = OmegaConf.load(str(target_dir / file_name))
                 (dest_dir / file_name).write_text(OmegaConf.to_yaml(config))

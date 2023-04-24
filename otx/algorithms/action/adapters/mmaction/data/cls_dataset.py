@@ -25,10 +25,6 @@ from mmaction.datasets.rawframe_dataset import RawframeDataset
 from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 
 
 # pylint: disable=too-many-instance-attributes
@@ -96,7 +92,6 @@ class OTXActionClsDataset(RawframeDataset):
             item = self.video_info[list(self.video_info.keys())[index]]
             return item
 
-    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     # pylint: disable=too-many-arguments, invalid-name, super-init-not-called
     # TODO Check need for additional params such as multi_class, with_offset
     def __init__(
@@ -109,6 +104,7 @@ class OTXActionClsDataset(RawframeDataset):
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
+        self.CLASSES = [label.name for label in labels]
         self.test_mode = test_mode
         self.modality = modality
 
@@ -123,7 +119,6 @@ class OTXActionClsDataset(RawframeDataset):
         """Return length of dataset."""
         return len(self.video_infos)
 
-    @check_input_parameters_type()
     def prepare_train_frames(self, idx: int) -> Dict[str, Any]:
         """Get training data and annotations after pipeline.
 
@@ -133,7 +128,6 @@ class OTXActionClsDataset(RawframeDataset):
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
         return self.pipeline(item)
 
-    @check_input_parameters_type()
     def prepare_test_frames(self, idx: int) -> Dict[str, Any]:
         """Get testing data after pipeline.
 

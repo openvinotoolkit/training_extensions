@@ -1,6 +1,6 @@
 """Adapters for OTX Common Algorithm. - mmseg.model."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,36 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
-from .losses import DetConLoss
+from .backbones import LiteHRNet, MMOVBackbone
+from .heads import CustomFCNHead, DetConHead, MMOVDecodeHead
+from .losses import CrossEntropyLossWithIgnore, DetConLoss
 from .necks import SelfSLMLP
-from .segmentors import DetConB, SupConDetConB
+from .schedulers import (
+    ConstantScalarScheduler,
+    PolyScalarScheduler,
+    StepScalarScheduler,
+)
+from .segmentors import (
+    ClassIncrEncoderDecoder,
+    DetConB,
+    MeanTeacherSegmentor,
+    SupConDetConB,
+)
 
-__all__ = ["DetConLoss", "SelfSLMLP", "DetConB", "SupConDetConB"]
+__all__ = [
+    "LiteHRNet",
+    "MMOVBackbone",
+    "CustomFCNHead",
+    "MMOVDecodeHead",
+    "DetConLoss",
+    "SelfSLMLP",
+    "ConstantScalarScheduler",
+    "PolyScalarScheduler",
+    "StepScalarScheduler",
+    "DetConB",
+    "CrossEntropyLossWithIgnore",
+    "SupConDetConB",
+    "ClassIncrEncoderDecoder",
+    "MeanTeacherSegmentor",
+    "DetConHead",
+]

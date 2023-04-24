@@ -23,11 +23,9 @@ from openvino.model_zoo.model_api.adapters.model_adapter import ModelAdapter
 from openvino.model_zoo.model_api.models import SegmentationModel
 from openvino.model_zoo.model_api.models.types import NumericalValue
 
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.api.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
 
 
-@check_input_parameters_type()
 def get_activation_map(features: Union[np.ndarray, Iterable, int, float]):
     """Getter activation_map functions."""
     min_soft_score = np.min(features)
@@ -46,7 +44,6 @@ class BlurSegmentation(SegmentationModel):
 
     __model__ = "blur_segmentation"
 
-    @check_input_parameters_type()
     def __init__(self, model_adapter: ModelAdapter, configuration: Optional[dict] = None, preload: bool = False):
         super().__init__(model_adapter, configuration, preload)
         self.out_channels = 0
@@ -80,7 +77,6 @@ class BlurSegmentation(SegmentationModel):
 
         return layer_name
 
-    @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):
         """BlurSegmentation.postprocess function."""
         predictions = outputs[self.output_blob_name].squeeze()

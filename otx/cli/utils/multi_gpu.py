@@ -22,7 +22,7 @@ import sys
 import threading
 import time
 from contextlib import closing
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import psutil
 import torch
@@ -74,34 +74,39 @@ def get_gpu_ids(gpus: str) -> List[int]:
     return gpu_ids
 
 
-def set_arguments_to_argv(key: str, value: Optional[str] = None, after_params: bool = False):
+def set_arguments_to_argv(keys: Union[str, List[str]], value: Optional[str] = None, after_params: bool = False):
     """Add arguments at proper position in `sys.argv`.
 
     Args:
-        key (str): arguement key.
+        keys (str or List[str]): arguement keys.
         value (str or None): argument value.
         after_params (bool): whether argument should be after `param` or not.
     """
-    if key in sys.argv:
+    if not isinstance(keys, list):
+        keys = [keys]
+    for key in keys:
+        if key in sys.argv:
+            if value is not None:
+                sys.argv[sys.argv.index(key) + 1] = value
+            return
+
+    key = keys[0]
+    if not after_params and "params" in sys.argv:
+        sys.argv.insert(sys.argv.index("params"), key)
         if value is not None:
-            sys.argv[sys.argv.index(key) + 1] = value
+            sys.argv.insert(sys.argv.index("params"), value)
     else:
-        if not after_params and "params" in sys.argv:
-            sys.argv.insert(sys.argv.index("params"), key)
-            if value is not None:
-                sys.argv.insert(sys.argv.index("params"), value)
+        if after_params and "params" not in sys.argv:
+            sys.argv.append("params")
+        if value is not None:
+            sys.argv.extend([key, value])
         else:
-            if after_params and "params" not in sys.argv:
-                sys.argv.append("params")
-            if value is not None:
-                sys.argv.extend([key, value])
-            else:
-                sys.argv.append(key)
+            sys.argv.append(key)
 
 
 def is_multigpu_child_process():
     """Check current process is a child process for multi GPU training."""
-    return dist.is_initialized() and os.environ["LOCAL_RANK"] != "0"
+    return (dist.is_initialized() or "TORCHELASTIC_RUN_ID" in os.environ) and os.environ["LOCAL_RANK"] != "0"
 
 
 class MultiGPUManager:
@@ -114,6 +119,8 @@ class MultiGPUManager:
         base_rank (int): Base rank of the worker.
         world_size (int): Total number of workers in a worker group.
     """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(
         self,
@@ -139,7 +146,7 @@ class MultiGPUManager:
             world_size = len(self._gpu_ids)
         self._world_size = world_size
         self._main_pid = os.getpid()
-        self._processes: Optional[List[mp.Process]] = None
+        self._processes: List[mp.Process] = []
 
     def is_available(self) -> bool:
         """Check multi GPU training is available.
@@ -148,7 +155,11 @@ class MultiGPUManager:
             bool:
                 whether multi GPU training is available.
         """
-        return len(self._gpu_ids) > 1
+        return (
+            len(self._gpu_ids) > 1
+            and "TORCHELASTIC_RUN_ID"
+            not in os.environ  # If otx is executed by torchrun, then otx multi gpu interface is disabled.
+        )
 
     def setup_multi_gpu_train(
         self,
@@ -160,6 +171,10 @@ class MultiGPUManager:
         Args:
             output_path (str): output path where task output are saved.
             optimized_hyper_parameters (ConfigurableParameters or None): hyper parameters reflecting HPO result.
+
+        Returns:
+            str:
+                If output_path is None, make a temporary directory and return it.
         """
         if optimized_hyper_parameters is not None:  # if HPO is executed, optimized HPs are applied to child processes
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
@@ -175,9 +190,9 @@ class MultiGPUManager:
 
     def finalize(self):
         """Join all child processes."""
-        if self._processes is not None:
-            for p in self._processes:
-                p.join()
+        for p in self._processes:
+            if p.join(30) is None and p.exitcode is None:
+                p.kill()
 
     @staticmethod
     def initialize_multigpu_train(
@@ -204,9 +219,6 @@ class MultiGPUManager:
         os.environ["WORLD_SIZE"] = str(world_size)
         os.environ["LOCAL_RANK"] = str(local_rank)
         os.environ["RANK"] = str(rank)
-        torch.cuda.set_device(gpu_ids[local_rank])
-        dist.init_process_group(backend="nccl", world_size=world_size, rank=rank)
-        logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     @staticmethod
     def run_child_process(
@@ -238,7 +250,7 @@ class MultiGPUManager:
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove("--enable-hpo")
-        set_arguments_to_argv("--work-dir", output_path)
+        set_arguments_to_argv(["-o", "--output"], output_path)
         set_arguments_to_argv("--rdzv-endpoint", rdzv_endpoint)
 
         MultiGPUManager.initialize_multigpu_train(rdzv_endpoint, rank, local_rank, gpu_ids, world_size)
@@ -263,6 +275,15 @@ class MultiGPUManager:
     def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
         processes = []
         ctx = mp.get_context("spawn")
+
+        # set CUDA_VISIBLE_DEVICES to make child process use proper GPU
+        origin_cuda_visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES")
+        if origin_cuda_visible_devices is not None:
+            cuda_visible_devices = origin_cuda_visible_devices.split(",")
+        else:
+            cuda_visible_devices = [str(i) for i in range(torch.cuda.device_count())]
+        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([cuda_visible_devices[gpu_idx] for gpu_idx in self._gpu_ids])
+
         for rank in range(1, len(self._gpu_ids)):
             task_p = ctx.Process(
                 target=MultiGPUManager.run_child_process,
@@ -279,6 +300,11 @@ class MultiGPUManager:
             task_p.start()
             processes.append(task_p)
 
+        if origin_cuda_visible_devices is None:
+            del os.environ["CUDA_VISIBLE_DEVICES"]
+        else:
+            os.environ["CUDA_VISIBLE_DEVICES"] = origin_cuda_visible_devices
+
         return processes
 
     def _terminate_signal_handler(self, signum, _frame):
@@ -294,9 +320,6 @@ class MultiGPUManager:
         sys.exit(1)
 
     def _kill_child_process(self):
-        if self._processes is None:
-            return
-
         for process in self._processes:
             if process.is_alive():
                 logger.warning(f"Kill child process {process.pid}")

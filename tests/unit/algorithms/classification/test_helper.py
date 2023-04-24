@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2 as cv
 import numpy as np
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
@@ -25,7 +26,6 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.mpa.utils.config_utils import MPAConfig
 
 DEFAULT_CLS_TEMPLATE_DIR = Path("otx") / "algorithms" / "classification" / "configs" / "mobilenet_v3_large_1_cls_incr"
 DEFAULT_CLS_TEMPLATE = DEFAULT_CLS_TEMPLATE_DIR / "template.yaml"
@@ -168,13 +168,13 @@ def setup_mpa_task_parameters(task_type, create_val=False, create_test=False):
     model_cfg.model.multilabel = False
     model_cfg.model.hierarchical = False
     data_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "data_pipeline.py")
-    data_cfg.data.train.data_dir = "tests/assets/imagenet_dataset"
+    data_cfg.data.train.data_dir = "tests/assets/classification_dataset"
     if create_val:
-        data_cfg.data.val.data_dir = "tests/assets/imagenet_dataset"
+        data_cfg.data.val.data_dir = "tests/assets/classification_dataset"
     else:
         data_cfg.data.val = None
     if create_test:
-        data_cfg.data.test.data_dir = "tests/assets/imagenet_dataset"
+        data_cfg.data.test.data_dir = "tests/assets/classification_dataset"
     else:
         data_cfg.data.test = None
     dummy_dataset = generate_cls_dataset(number_of_images=1)

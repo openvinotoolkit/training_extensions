@@ -21,8 +21,8 @@ from abc import ABC, abstractmethod
 from enum import IntEnum
 from typing import Any, Dict, List, Optional, Union
 
-from otx.algorithms.common.utils.utils import check_mode_input, check_positive
 from otx.hpo.search_space import SearchSpace
+from otx.hpo.utils import check_mode_input, check_positive
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,7 @@ class HpoBase(ABC):
         self.non_pure_train_ratio = non_pure_train_ratio
         self.full_dataset_size = full_dataset_size
         self.expected_time_ratio = expected_time_ratio
-        self.maximum_resource = maximum_resource
+        self.maximum_resource: Optional[Union[int, float]] = maximum_resource
         self.subset_ratio = subset_ratio
         self.min_subset_size = min_subset_size
         self.resume = resume

@@ -20,8 +20,6 @@ from typing import Any, Dict
 
 import numpy as np
 
-from otx.api.utils.argument_checks import check_input_parameters_type
-
 try:
     from openvino.model_zoo.model_api.models.classification import Classification
     from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
@@ -86,7 +84,6 @@ class OTXClassification(Classification):
                 )
         return layer_name
 
-    @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
         """Post-process."""
         logits = outputs[self.out_layer_name].squeeze()
@@ -98,7 +95,6 @@ class OTXClassification(Classification):
         return get_multiclass_predictions(logits)
 
     # pylint: disable=unused-argument
-    @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         """Post-process for auxiliary outputs."""
         logits = outputs[self.out_layer_name].squeeze()
@@ -119,20 +115,17 @@ class OTXClassification(Classification):
         return probs, saliency_map, repr_vector, act_score
 
 
-@check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
     """Sigmoid numpy."""
     return 1.0 / (1.0 + np.exp(-1.0 * x))
 
 
-@check_input_parameters_type()
 def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
     """Softmax numpy."""
     x = np.exp(x - np.max(x))
     return x / (np.sum(x) + eps)
 
 
-@check_input_parameters_type()
 def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
     """Activate multi-head output."""
     for i in range(multihead_class_info["num_multiclass_heads"]):
@@ -146,7 +139,6 @@ def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
     return logits
 
 
-@check_input_parameters_type()
 def get_hierarchical_predictions(
     logits: np.ndarray, multihead_class_info: dict, pos_thr: float = 0.5, activate: bool = True
 ):
@@ -175,7 +167,6 @@ def get_hierarchical_predictions(
     return predicted_labels
 
 
-@check_input_parameters_type()
 def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
     """Get multiclass predictions."""
     index = np.argmax(logits)
@@ -184,7 +175,6 @@ def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
     return [(index, logits[index])]
 
 
-@check_input_parameters_type()
 def get_multilabel_predictions(logits: np.ndarray, pos_thr: float = 0.5, activate: bool = True):
     """Get multilabel predictions."""
     if activate:

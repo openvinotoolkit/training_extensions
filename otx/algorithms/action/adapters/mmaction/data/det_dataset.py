@@ -35,10 +35,6 @@ from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metadata import VideoMetadata
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 from otx.api.utils.shape_factory import ShapeFactory
 
 root_logger = get_root_logger()
@@ -209,7 +205,6 @@ class OTXActionDetDataset(AVADataset):
                 metadata.update("proposals", proposals[:, :4])
                 metadata.update("scores", proposals[:, 4])
 
-    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     # TODO Remove duplicated codes with mmaction's AVADataset
     def __init__(
         self,
@@ -224,6 +219,7 @@ class OTXActionDetDataset(AVADataset):
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
+        self.CLASSES = [label.name for label in labels]
         self.test_mode = test_mode
         self.modality = modality
         self._FPS = fps
@@ -245,7 +241,6 @@ class OTXActionDetDataset(AVADataset):
         # TODO. Handle exclude file for AVA dataset
         self.exclude_file = None
 
-    @check_input_parameters_type()
     def prepare_train_frames(self, idx: int) -> Dict[str, Any]:
         """Get training data and annotations after pipeline.
 
@@ -255,7 +250,6 @@ class OTXActionDetDataset(AVADataset):
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
         return self.pipeline(item)
 
-    @check_input_parameters_type()
     def prepare_test_frames(self, idx: int) -> Dict[str, Any]:
         """Get testing data after pipeline.
 

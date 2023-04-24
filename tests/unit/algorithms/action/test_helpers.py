@@ -22,6 +22,8 @@ from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.api.entities.model_template import ModelTemplate
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
 
 
 class MockImage(Image):
@@ -57,6 +59,10 @@ def generate_action_cls_otx_dataset(video_len: int, frame_len: int, labels: List
 
     items: List[DatasetItemEntity] = []
     for video_id in range(video_len):
+        if video_id > 1:
+            subset = Subset.VALIDATION
+        else:
+            subset = Subset.TRAINING
         for frame_idx in range(frame_len):
             item = DatasetItemEntity(
                 media=MockImage(f"{video_id}_{frame_idx}.png"),
@@ -65,6 +71,7 @@ def generate_action_cls_otx_dataset(video_len: int, frame_len: int, labels: List
                     kind=AnnotationSceneKind.ANNOTATION,
                 ),
                 metadata=[MetadataItemEntity(data=VideoMetadata(video_id, frame_idx, is_empty_frame=False))],
+                subset=subset,
             )
             items.append(item)
     dataset = DatasetEntity(items=items)
@@ -77,6 +84,10 @@ def generate_action_det_otx_dataset(video_len: int, frame_len: int, labels: List
     items: List[DatasetItemEntity] = []
     proposals: Dict[str, List[float]] = {}
     for video_id in range(video_len):
+        if video_id > 1:
+            subset = Subset.VALIDATION
+        else:
+            subset = Subset.TRAINING
         for frame_idx in range(frame_len):
             if frame_idx % 2 == 0:
                 item = DatasetItemEntity(
@@ -86,6 +97,7 @@ def generate_action_det_otx_dataset(video_len: int, frame_len: int, labels: List
                         kind=AnnotationSceneKind.ANNOTATION,
                     ),
                     metadata=[MetadataItemEntity(data=VideoMetadata(str(video_id), frame_idx, is_empty_frame=False))],
+                    subset=subset,
                 )
                 proposals[f"{video_id},{frame_idx:04d}"] = [0.0, 0.0, 1.0, 1.0]
             else:
@@ -96,6 +108,7 @@ def generate_action_det_otx_dataset(video_len: int, frame_len: int, labels: List
                         kind=AnnotationSceneKind.ANNOTATION,
                     ),
                     metadata=[MetadataItemEntity(data=VideoMetadata(str(video_id), frame_idx, is_empty_frame=True))],
+                    subset=subset,
                 )
             items.append(item)
     dataset = DatasetEntity(items=items)
@@ -117,3 +130,14 @@ def return_args(*args, **kwargs):
 def return_inputs(inputs):
     """This function returns its input."""
     return inputs
+
+
+def init_environment(params, model_template, label_schema):
+    """Initialize environment."""
+    environment = TaskEnvironment(
+        model=None,
+        hyper_parameters=params,
+        label_schema=label_schema,
+        model_template=model_template,
+    )
+    return environment

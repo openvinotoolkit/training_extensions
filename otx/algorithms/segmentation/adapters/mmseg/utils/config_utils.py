@@ -35,15 +35,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.utils.argument_checks import (
-    DirectoryPathCheck,
-    check_input_parameters_type,
-)
 
 logger = logging.getLogger(__name__)
 
 
-@check_input_parameters_type({"work_dir": DirectoryPathCheck})
 def patch_config(
     config: Config,
     work_dir: str,
@@ -80,7 +75,6 @@ def patch_config(
     config.work_dir = work_dir
 
 
-@check_input_parameters_type()
 def patch_model_config(
     config: Config,
     labels: List[LabelEntity],
@@ -96,7 +90,6 @@ def patch_model_config(
     set_distributed_mode(config, distributed)
 
 
-@check_input_parameters_type()
 def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
     """Set function for hyperparams (SegmentationConfig)."""
     config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
@@ -128,7 +121,6 @@ def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
     rescale_num_iterations(config, schedule_scale)
 
 
-@check_input_parameters_type()
 def rescale_num_iterations(config: Union[Config, ConfigDict], schedule_scale: float):
     """Rescale number of iterations for lr scheduler."""
     if config.lr_config.policy == "customstep":
@@ -166,7 +158,6 @@ def rescale_num_iterations(config: Union[Config, ConfigDict], schedule_scale: fl
         config.model[head_type] = heads
 
 
-@check_input_parameters_type()
 def patch_adaptive_repeat_dataset(
     config: Union[Config, ConfigDict], num_samples: int, decay: float = 0.002, factor: float = 10
 ):
@@ -199,7 +190,6 @@ def patch_adaptive_repeat_dataset(
     rescale_num_iterations(config, schedule_scale)
 
 
-@check_input_parameters_type()
 def prepare_for_training(
     config: Config,
     data_config: ConfigDict,
@@ -230,7 +220,6 @@ def prepare_for_training(
     return config
 
 
-@check_input_parameters_type()
 def set_distributed_mode(config: Config, distributed: bool):
     """Setter distributed into config."""
     if distributed:
@@ -257,7 +246,6 @@ def set_distributed_mode(config: Config, distributed: bool):
             _replace_syncbn(head, norm_cfg)
 
 
-@check_input_parameters_type()
 def set_data_classes(config: Config, label_names: List[str]):
     """Setter data classes into config."""
     # Save labels in data configs.
@@ -270,7 +258,6 @@ def set_data_classes(config: Config, label_names: List[str]):
         config.data[subset].classes = label_names
 
 
-@check_input_parameters_type()
 def set_num_classes(config: Config, num_classes: int):
     """Setter num_classes function."""
     assert num_classes > 1
@@ -290,7 +277,6 @@ def set_num_classes(config: Config, num_classes: int):
             heads["num_classes"] = num_classes
 
 
-@check_input_parameters_type()
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.SEGMENTATION,

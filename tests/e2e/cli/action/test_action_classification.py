@@ -68,14 +68,14 @@ class TestToolsOTXActionClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_cls"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
         if template.name == "MoViNet":
-            pytest.skip(reason="[CVS-106020] MoViNet fails with POT")
+            pytest.skip(reason="[CVS-106939] MoViNet fails with POT")
         tmp_dir_path = tmp_dir_path / "action_cls"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -84,6 +84,6 @@ class TestToolsOTXActionClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         if template.name == "MoViNet":
-            pytest.skip(reason="[CVS-106020] MoViNet fails with POT")
+            pytest.skip(reason="[CVS-106939] MoViNet fails with POT")
         tmp_dir_path = tmp_dir_path / "action_cls"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)

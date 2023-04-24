@@ -21,7 +21,13 @@ from .callback import (
 )
 from .data import get_cls_img_indices, get_image, get_old_new_img_indices
 from .ir import embed_ir_model_data
-from .utils import UncopiableDefaultDict, get_arg_spec, get_task_class, load_template
+from .utils import (
+    UncopiableDefaultDict,
+    get_arg_spec,
+    get_task_class,
+    load_template,
+    set_random_seed,
+)
 
 __all__ = [
     "embed_ir_model_data",
@@ -35,4 +41,5 @@ __all__ = [
     "get_task_class",
     "get_arg_spec",
     "get_image",
+    "set_random_seed",
 ]

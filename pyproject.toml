@@ -28,12 +28,6 @@ omit = [
     "otx/recipes/*",
 ]
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# ISORT CONFIGURATION.                                                        #
-[tool.isort]
-profile = "black"
-known_first_party = ["ote_cli", "ote_sdk"]
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # MYPY CONFIGURATION.                                                         #
@@ -45,97 +39,21 @@ show_error_codes = true
 # TODO: Need to be edited
 follow_imports = "skip"
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# PYLINT CONFIGURATION                                                        #
-[tool.pylint.master]
-ignore = "CVS"
-ignore-patterns = "^.*test_.*.py"
-
-[tool.pylint.messages_control]
-disable = [
-    "logging-fstring-interpolation",
-    "too-few-public-methods",
-    "fixme",
-    "duplicate-code",
-    "raw-checker-failed",
-    "bad-inline-option",
-    "locally-disabled",
-    "file-ignored",
-    "suppressed-message",
-    "useless-suppression",
-    "deprecated-pragma",
-    "use-symbolic-message-instead",
-    "import-outside-toplevel",
-    "arguments-differ",
-    "use-dict-literal",
-    "broad-exception-raised",
-]
-
-[tool.pylint.typecheck]
-generated-members = ["numpy.*", "torch.*"]
-ignored-modules = [
-    "otx",
-    "ote_sdk",
-    "mmseg",
-    "segmentation_tasks",
-    "mmdet",
-    "detection_tasks",
-    "torchreid",
-    "torchreid_tasks",
-    "cv2",
-    "anomalib",
-    "pytorch_lightning",
-    "torch",
-    "addict",
-    "compression",
-    "openvino",
-    "pandas",
-]
-
-[tool.pylint.format]
-max-line-length = 120
-
-[tool.pylint.basic]
-good-names = [
-    "i",
-    "j",
-    "k",
-    "e",
-    "ex",
-    "Run",
-    "_",
-    "x1",
-    "x2",
-    "y1",
-    "y2",
-    "x",
-    "y",
-    "r",
-    "id",
-    "type",
-    "xs",
-    "ys",
-    "p",
-    "f",
-    "b",
-    "c",
-    "t",
-    "w",
-    "h",
-]
-
-[tool.pylint.imports]
-known-third-party = ["enchant", "ote_sdk", "otx"]
-
-[tool.pylint.design]
-max-args = 7
-
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# PYDOCSTYLE CONFIGURATION                                                    #
-[tool.pydocstyle]
-inherit = false
+# RUFF CONFIGURATION                                                          #
+[tool.ruff]
+# Enable rules
+# pydocstyle (`D`)
+# pycodestyle error (`E`)
+# pycodestyle warning (`W`)
+# Pyflakes (`F`)
+# isort (`I`)
+# pylint (`PL`)
+select = ["D", "E", "F", "I", "W", "PL"]
+
 ignore = [
+    # pydocstyle
     "D107", # Missing docstring in __init__
     "D202", # No blank lines allowed after function docstring
     "D203", # 1 blank line required before class docstring
@@ -146,4 +64,64 @@ ignore = [
     "D407", # Missing dashed underline after section
     "D413", # Missing blank line after last section
     "D418", # Methods decorated with @overload shouldn't contain a docstring
+
+    # pylint
+    "PLW2901" # Redefine loop name
 ]
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+unfixable = [
+    "F401",     # disable autofix for unused imports
+]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Extended exclude for the project specific
+extend-exclude = [
+    "otx/api"
+]
+
+# Same as Black.
+line-length = 120
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# minimum target version
+target-version = "py38"
+
+format = "grouped"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.pylint]
+allow-magic-value-types = ["str", "bytes", "int", "float"]
+max-args = 20
+max-branches = 25
+max-statements = 120
+max-returns = 10

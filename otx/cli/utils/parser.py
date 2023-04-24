@@ -52,12 +52,12 @@ class MemSizeAction(argparse.Action):
         units = {
             "": 1,
             "B": 1,
-            "KB": 2**10,
-            "MB": 2**20,
-            "GB": 2**30,
-            "KIB": 10**3,
-            "MIB": 10**6,
-            "GIB": 10**9,
+            "KIB": 2**10,
+            "MIB": 2**20,
+            "GIB": 2**30,
+            "KB": 10**3,
+            "MB": 10**6,
+            "GB": 10**9,
             "K": 2**10,
             "M": 2**20,
             "G": 2**30,
@@ -143,6 +143,11 @@ def gen_params_dict_from_args(
         value_type = None
         if type_hint is not None:
             value_type = type_hint.get(origin_key, {}).get("type", None)
+        # FIXME[HARIM]: There's no template in args, and it's not inside the workspace, but with --workspace,
+        # the template is not found in args, so params, which are all bools, go into str.
+        # This is a temporary solution.
+        if isinstance(value, str) and value.lower() in ("true", "false"):
+            value_type = str2bool
 
         leaf_node_dict, node_key = _get_leaf_node(params_dict, origin_key)
         leaf_node_dict[node_key] = {"value": value_type(value) if value_type else value}
@@ -249,6 +254,8 @@ def get_parser_and_hprams_data():
         template_config = parse_model_template("./template.yaml")
         hyper_parameters = template_config.hyper_parameters.data
         parser.add_argument("template", nargs="?", default="./template.yaml", help=template_help_str)
+    # TODO: Need fix for how to get hyper_parameters when no template is given and ./template.yaml doesn't exist
+    # Ex. When using --workspace outside of a workspace, but cannot access --workspace from this function.
     else:
         parser.add_argument("template", nargs="?", default=None, help=template_help_str)
 

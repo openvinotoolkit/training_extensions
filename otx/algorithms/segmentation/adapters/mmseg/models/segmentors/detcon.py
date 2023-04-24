@@ -4,7 +4,7 @@ Original papers:
 - 'Efficient Visual Pretraining with Contrastive Detection', https://arxiv.org/abs/2103.10957
 """
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=unused-argument, invalid-name, unnecessary-pass, not-callable
@@ -18,16 +18,15 @@ from mmcv.runner import load_checkpoint
 from mmseg.models.builder import (  # pylint: disable=no-name-in-module
     SEGMENTORS,
     build_backbone,
-    build_loss,
+    build_head,
     build_neck,
 )
 from mmseg.ops import resize
 from torch import nn
 
-from otx.mpa.modules.models.segmentors.class_incr_encoder_decoder import (
-    ClassIncrEncoderDecoder,
-)
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
+
+from .class_incr_encoder_decoder import ClassIncrEncoderDecoder
 
 logger = get_logger()
 
@@ -125,7 +124,9 @@ class MaskPooling(nn.Module):
 # pylint: disable=too-many-arguments, dangerous-default-value, too-many-instance-attributes
 @SEGMENTORS.register_module()
 class DetConB(nn.Module):
-    """Implementation of 'Efficient Visual Pretraining with Contrastive Detection' \
+    """DetCon Implementation.
+
+    Implementation of 'Efficient Visual Pretraining with Contrastive Detection'
         (https://arxiv.org/abs/2103.10957).
 
     Args:
@@ -143,7 +144,6 @@ class DetConB(nn.Module):
         in_index (list): Feature index to be used for DetCon if the backbone outputs
             multi-scale features wrapped by list or tuple. Default: [0].
         align_corners (bool): Whether apply `align_corners` during resize. Default: False.
-        loss_cfg (dict): DetCon loss configuration.
     """
 
     def __init__(
@@ -159,7 +159,6 @@ class DetConB(nn.Module):
         input_transform: str = "resize_concat",
         in_index: Union[List[int], int] = [0],
         align_corners: bool = False,
-        loss_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
         super().__init__()
@@ -182,15 +181,12 @@ class DetConB(nn.Module):
         self.target_projector = build_neck(neck)
 
         # build head with predictor
-        self.predictor = build_neck(head)
+        self.predictor = build_head(head)
 
         # set maskpooling
         self.mask_pool = MaskPooling(num_classes, num_samples, downsample)
 
         self.init_weights(pretrained=pretrained)
-
-        # build detcon loss
-        self.detcon_loss = build_loss(loss_cfg)
 
         # Hooks for super_type transparent weight save
         self._register_state_dict_hook(self.state_dict_hook)
@@ -320,40 +316,22 @@ class DetConB(nn.Module):
             dict[str, Tensor]: A dictionary of loss components.
         """
         assert img.ndim == 5 and gt_semantic_seg.ndim == 5
-        img1, img2 = img[:, 0], img[:, 1]
-        mask1, mask2 = gt_semantic_seg[:, :, 0], gt_semantic_seg[:, :, 1]
+        batch_size = img.shape[0]
+        imgs = torch.cat((img[:, 0], img[:, 1]), dim=0)
+        masks = torch.cat((gt_semantic_seg[:, :, 0], gt_semantic_seg[:, :, 1]), dim=0)
 
-        embd1 = self.online_backbone(img1)
-        proj1, id1 = self.sample_masked_feats(embd1, mask1, self.online_projector)
-        proj2, id2 = self.sample_masked_feats(self.online_backbone(img2), mask2, self.online_projector)
+        embds = self.online_backbone(imgs)
+        projs, ids = self.sample_masked_feats(embds, masks, self.online_projector)
 
         with torch.no_grad():
             self._momentum_update()
-            proj1_tgt, id1_tgt = self.sample_masked_feats(self.target_backbone(img1), mask1, self.target_projector)
-            proj2_tgt, id2_tgt = self.sample_masked_feats(self.target_backbone(img2), mask2, self.target_projector)
+            projs_tgt, ids_tgt = self.sample_masked_feats(self.target_backbone(imgs), masks, self.target_projector)
 
         # predictor
-        # TODO (sungchul): predictor + loss -> head?
-        pred1, pred2 = self.predictor(proj1), self.predictor(proj2)
-        pred1 = pred1.reshape((-1, self.num_samples, pred1.shape[-1]))
-        pred2 = pred2.reshape((-1, self.num_samples, pred2.shape[-1]))
-        proj1_tgt = proj1_tgt.reshape((-1, self.num_samples, proj1_tgt.shape[-1]))
-        proj2_tgt = proj2_tgt.reshape((-1, self.num_samples, proj2_tgt.shape[-1]))
-
-        # decon loss
-        loss = self.detcon_loss(
-            pred1=pred1,
-            pred2=pred2,
-            target1=proj1_tgt,
-            target2=proj2_tgt,
-            pind1=id1,
-            pind2=id2,
-            tind1=id1_tgt,
-            tind2=id2_tgt,
-        )
+        loss = self.predictor(projs, projs_tgt, ids, ids_tgt, batch_size, self.num_samples)
 
         if return_embedding:
-            return loss, embd1
+            return loss, embds, masks
         return loss
 
     def forward(self, img, img_metas, return_loss=True, **kwargs):
@@ -383,6 +361,7 @@ class DetConB(nn.Module):
             optimizer (:obj:`torch.optim.Optimizer` | dict): The optimizer of
                 runner is passed to ``train_step()``. This argument is unused
                 and reserved.
+            **kwargs (Any): Addition keyword arguments.
 
         Returns:
             dict: It should contain at least 3 keys: ``loss``, ``log_vars``,
@@ -487,7 +466,6 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
         input_transform: str = "resize_concat",
         in_index: Union[List[int], int] = [0],
         align_corners: bool = False,
-        loss_cfg: Optional[Dict[str, Any]] = None,
         train_cfg: Optional[Dict[str, Any]] = None,
         test_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
@@ -506,7 +484,6 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             input_transform=input_transform,
             in_index=in_index,
             align_corners=align_corners,
-            loss_cfg=loss_cfg,
             **kwargs,
         )
         self.backbone = self.detconb.online_backbone
@@ -517,10 +494,10 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
     # pylint: disable=arguments-renamed
     def forward_train(
         self,
-        img: torch.Tensor,
-        img_metas: List[Dict],
-        gt_semantic_seg: torch.Tensor,
-        pixel_weights: Optional[torch.Tensor] = None,
+        img,
+        img_metas,
+        gt_semantic_seg,
+        pixel_weights=None,
         **kwargs,
     ):
         """Forward function for training.
@@ -531,6 +508,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             gt_semantic_seg (Tensor): Ground truth masks.
                 It is used to organize features among the same classes.
             pixel_weights (Tensor): Pixels weights.
+            **kwargs (Any): Addition keyword arguments.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
@@ -538,19 +516,19 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
         losses = {}
         if img.ndim == 4:
             # supervised learning with interval
-            embd = self.detconb.online_backbone(img)
-            mask = gt_semantic_seg
+            embds = self.detconb.online_backbone(img)
+            masks = gt_semantic_seg
         else:
             # supcon training
-            mask = gt_semantic_seg[:, :, 0]
-            loss_detcon, embd = self.detconb.forward_train(
+            loss_detcon, embds, masks = self.detconb.forward_train(
                 img=img, img_metas=img_metas, gt_semantic_seg=gt_semantic_seg, return_embedding=True
             )
             losses.update(dict(loss_detcon=loss_detcon["loss"]))
+            img_metas += img_metas
 
         # decode head
         loss_decode, _ = self._decode_head_forward_train(
-            embd, img_metas, gt_semantic_seg=mask, pixel_weights=pixel_weights
+            embds, img_metas, gt_semantic_seg=masks, pixel_weights=pixel_weights
         )
         losses.update(loss_decode)
 

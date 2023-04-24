@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER_CUDA="11.1.1"
+VER_CUDA="11.7.1"
 ACTIONS_RUNNER_URL="https://github.com/actions/runner/releases/download/v2.299.1/actions-runner-linux-x64-2.299.1.tar.gz"
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do

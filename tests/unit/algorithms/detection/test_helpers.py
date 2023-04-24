@@ -18,6 +18,7 @@ from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.model_template import TaskType, task_type_to_label_domain
+from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_helpers import generate_random_annotated_image
@@ -72,7 +73,11 @@ def generate_det_dataset(task_type, number_of_images=1):
     label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
 
     items = []
-    for _ in range(number_of_images):
+    for idx in range(number_of_images):
+        if idx < 30:
+            subset = Subset.VALIDATION
+        else:
+            subset = Subset.TRAINING
         image_numpy, annos = generate_random_annotated_image(
             image_width=640,
             image_height=480,
@@ -86,7 +91,7 @@ def generate_det_dataset(task_type, number_of_images=1):
                 anno.shape = ShapeFactory.shape_as_polygon(anno.shape)
         image = Image(data=image_numpy)
         annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=annos)
-        items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene))
+        items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset))
     dataset = DatasetEntity(items)
     return dataset, dataset.get_labels()
 

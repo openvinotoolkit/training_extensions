@@ -8,8 +8,8 @@ import functools
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.vfnet import VFNet
 
-from otx.mpa.modules.utils.task_adapt import map_class_names
-from otx.mpa.utils.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.task_adapt import map_class_names
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .sam_detector_mixin import SAMDetectorMixin

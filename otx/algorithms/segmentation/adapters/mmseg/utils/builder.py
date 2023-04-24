@@ -1,5 +1,5 @@
 """MMseg model builder."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -9,6 +9,23 @@ from typing import Optional, Union
 import torch
 from mmcv.runner import load_checkpoint
 from mmcv.utils import Config, ConfigDict
+from mmseg.models.builder import MODELS
+
+SCALAR_SCHEDULERS = MODELS
+
+
+def build_scalar_scheduler(cfg, default_value=None):
+    """Build scalar scheduler."""
+    if cfg is None:
+        if default_value is not None:
+            assert isinstance(default_value, (int, float))
+            cfg = dict(type="ConstantScalarScheduler", scale=float(default_value))
+        else:
+            return None
+    elif isinstance(cfg, (int, float)):
+        cfg = dict(type="ConstantScalarScheduler", scale=float(cfg))
+
+    return SCALAR_SCHEDULERS.build(cfg)
 
 
 def build_segmentor(
@@ -19,6 +36,7 @@ def build_segmentor(
     device: Union[str, torch.device] = "cpu",
     cfg_options: Optional[Union[Config, ConfigDict]] = None,
     from_scratch: bool = False,
+    is_training: bool = False,
 ) -> torch.nn.Module:
     """A builder function for mmseg model.
 
@@ -41,9 +59,12 @@ def build_segmentor(
     model = origin_build_segmentor(model_cfg, train_cfg=train_cfg, test_cfg=test_cfg)
     model = model.to(device)
 
-    checkpoint = checkpoint if checkpoint else config.pop("load_from", None)
+    checkpoint = checkpoint if checkpoint else config.get("load_from", None)
+    config.load_from = checkpoint
+
     if checkpoint is not None and not from_scratch:
         load_checkpoint(model, checkpoint, map_location=device)
-    config.load_from = checkpoint
+        if is_training is True:
+            config.load_from = None  # To prevent the repeated ckpt loading in mmseg.apis.train_segmentor
 
     return model

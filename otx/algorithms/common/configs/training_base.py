@@ -30,17 +30,19 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import POTQuantizationPreset
+from .configuration_enums import POTQuantizationPreset, StorageCacheScheme
+
+# pylint: disable=invalid-name
 
 
 class TrainType(ConfigurableEnum):
     """TrainType for OTX Algorithms."""
 
-    FINETUNE = "FINETUNE"
-    SEMISUPERVISED = "SEMISUPERVISED"
-    SELFSUPERVISED = "SELFSUPERVISED"
-    INCREMENTAL = "INCREMENTAL"
-    FUTUREWORK = "FUTUREWORK"
+    Finetune = "Finetune"
+    Semisupervised = "Semisupervised"
+    Selfsupervised = "Selfsupervised"
+    Incremental = "Incremental"
+    Futurework = "Futurework"
 
 
 class LearningRateSchedule(ConfigurableEnum):
@@ -65,7 +67,7 @@ class BaseConfig(ConfigurableParameters):
         batch_size = configurable_integer(
             default_value=5,
             min_value=1,
-            max_value=512,
+            max_value=2048,
             header="Batch size",
             description="The number of training samples seen in each iteration of training. Increasing thisvalue "
             "improves training time and may make the training more stable. A larger batch size has higher "
@@ -188,6 +190,16 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        auto_decrease_batch_size = configurable_boolean(
+            default_value=False,
+            header="Decrease batch size if current batch size isn't fit to CUDA memory.",
+            description="Find a proper batch size by training for an iteration with various batch size a few times.",
+            warning="Enabling this option could reduce the actual batch size if the current setting results in "
+            "out-of-memory error. The learning rate also could be adjusted according to the adapted batch size. "
+            "This process might take some extra computation time to try a few batch size candidates.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""
@@ -275,11 +287,11 @@ class BaseConfig(ConfigurableParameters):
         """BaseAlgoBackendParameters for OTX Algorithms."""
 
         train_type = selectable(
-            default_value=TrainType.INCREMENTAL,
+            default_value=TrainType.Incremental,
             header="train type",
             description="Training scheme option that determines how to train the model",
             editable=False,
-            visible_in_ui=True,
+            visible_in_ui=False,
         )
 
         mem_cache_size = configurable_integer(
@@ -292,6 +304,14 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        storage_cache_scheme = selectable(
+            default_value=StorageCacheScheme.NONE,
+            header="Scheme for storage cache",
+            description="Scheme for storage cache",
+            editable=False,
+            visible_in_ui=False,
+        )
+
     @attrs
     class BaseTilingParameters(ParameterGroup):
         """BaseTilingParameters for OTX Algorithms."""
@@ -302,6 +322,18 @@ class BaseConfig(ConfigurableParameters):
             header="Enable tiling",
             description="Set to True to allow tiny objects to be better detected.",
             warning="Tiling trades off speed for accuracy as it increases the number of images to be processed.",
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        enable_tile_classifier = configurable_boolean(
+            default_value=False,
+            header="Enable tile classifier",
+            description="Enabling tile classifier enhances the speed of tiling inference by incorporating a tile "
+            "classifier into the instance segmentation model. This feature prevents the detector from "
+            "making predictions on tiles that do not contain any objects, thus optimizing its "
+            "speed performance.",
+            warning="The tile classifier prioritizes inference speed over training speed, it requires more training "
+            "in order to achieve its optimized performance.",
             affects_outcome_of=ModelLifecycle.NONE,
         )
 

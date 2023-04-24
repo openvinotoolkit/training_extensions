@@ -198,6 +198,23 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: This will automatically control the patience and interval when early stopping is enabled.
+  auto_decrease_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Find a proper batch size by training for an iteration with various batch size a few times.
+    editable: true
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning:
+      Enabling this option could reduce the actual batch size if the current setting results in out-of-memory error.
+      The learning rate also could be adjusted according to the adapted batch size.
+      This process might take some extra computation time to try a few batch size candidates.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -245,22 +262,22 @@ algo_backend:
   header: Algo backend parameters
   train_type:
     affects_outcome_of: TRAINING
-    default_value: INCREMENTAL
+    default_value: Incremental
     description: Training scheme option that determines how to train the model
     editable: True
     enum_name: TrainType
     header: Train type
     options:
-      INCREMENTAL: "INCREMENTAL"
-      SEMISUPEVISED: "SEMISUPERVISED"
+      Incremental: "Incremental"
+      SEMISUPEVISED: "Semisupervised"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: INCREMENTAL
-    visible_in_ui: True
+    value: Incremental
+    visible_in_ui: false
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
@@ -271,6 +288,28 @@ algo_backend:
     max_value: 9223372036854775807
     min_value: 0
     type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme fort storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
@@ -427,6 +466,22 @@ tiling_parameters:
     value: true
     visible_in_ui: true
     warning: Tiling trades off speed for accuracy as it increases the number of images to be processed.
+
+  enable_tile_classifier:
+    header: Enable tile classifier
+    description: Enabling tile classifier enhances the speed of tiling inference by incorporating a tile classifier into the instance segmentation model. This feature prevents the detector from making predictions on tiles that do not contain any objects, thus optimizing its speed performance.
+    default_value: false
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: The tile classifier prioritizes inference speed over training speed, it requires more training in order to achieve its optimized performance.
 
   enable_adaptive_params:
     header: Enable adaptive tiling parameters

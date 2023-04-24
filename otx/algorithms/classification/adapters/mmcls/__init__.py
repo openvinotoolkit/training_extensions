@@ -15,8 +15,12 @@
 # and limitations under the License.
 
 
-from .data import OTXClsDataset, SelfSLDataset
+# The import required to register the backbone used by the OTX Template with the Registry.
+import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+
+from .datasets import OTXClsDataset, SelfSLDataset
 from .models import BYOL, ConstrastiveHead, SelfSLMLP
+from .optimizer import LARS
 
 # fmt: off
 # isort: off
@@ -27,10 +31,4 @@ get_root_logger().propagate = False
 # isort:on
 # fmt: on
 
-__all__ = [
-    "OTXClsDataset",
-    "SelfSLDataset",
-    "BYOL",
-    "SelfSLMLP",
-    "ConstrastiveHead",
-]
+__all__ = ["OTXClsDataset", "SelfSLDataset", "BYOL", "SelfSLMLP", "ConstrastiveHead", "LARS", "OTXBackbones"]

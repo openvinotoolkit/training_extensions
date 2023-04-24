@@ -12,11 +12,8 @@ import numpy as np
 import pytest
 from bson import ObjectId
 
-from otx.algorithms.classification.tasks import (
-    ClassificationInferenceTask,
-    ClassificationTrainTask,
-)
-from otx.algorithms.common.tasks.training_base import BaseTask
+from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
+from otx.algorithms.common.tasks.base_task import OTXTask
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
@@ -45,7 +42,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_api
 DEFAULT_CLS_TEMPLATE_DIR = osp.join("otx/algorithms/classification", "configs", "efficientnet_b0_cls_incr")
 
 
-def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
+def task_eval(task: OTXTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
     start_time = time.time()
     result_dataset = task.infer(dataset.with_empty_annotations())
     end_time = time.time()
@@ -203,7 +200,7 @@ class TestClassificationTaskAPI(ClassificationTaskAPIBase):
         task_environment, dataset = self.init_environment(
             hyper_parameters, model_template, multilabel, hierarchical, 20
         )
-        task = ClassificationTrainTask(task_environment=task_environment)
+        task = MMClassificationTask(task_environment=task_environment)
         print("Task initialized, model training starts.")
 
         training_progress_curve = []
@@ -233,7 +230,7 @@ class TestClassificationTaskAPI(ClassificationTaskAPIBase):
         task_environment, dataset = self.init_environment(
             hyper_parameters, model_template, multilabel, hierarchical, 20
         )
-        task = ClassificationInferenceTask(task_environment=task_environment)
+        task = MMClassificationTask(task_environment=task_environment)
         print("Task initialized, model inference starts.")
 
         inference_progress_curve = []
@@ -262,7 +259,7 @@ class TestClassificationTaskAPI(ClassificationTaskAPIBase):
         )
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
-        train_task = ClassificationTrainTask(task_environment=classification_environment)
+        train_task = MMClassificationTask(task_environment=classification_environment)
 
         training_progress_curve = []
 
@@ -280,7 +277,7 @@ class TestClassificationTaskAPI(ClassificationTaskAPIBase):
 
         # Create InferenceTask
         classification_environment.model = trained_model
-        inference_task = ClassificationInferenceTask(task_environment=classification_environment)
+        inference_task = MMClassificationTask(task_environment=classification_environment)
 
         performance_after_load = task_eval(inference_task, trained_model, val_dataset)
 

@@ -1,5 +1,5 @@
 """NNCF wrapped mmcls models builder."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -34,6 +34,7 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
     device: Union[str, torch.device] = "cpu",
     cfg_options: Optional[Union[Config, ConfigDict]] = None,
     distributed=False,
+    **kwargs
 ):
     """A function to build NNCF wrapped mmcls model."""
 

@@ -58,7 +58,6 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="CVS-102941 ONNX export of action detection model keeps failed")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
@@ -66,15 +65,15 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="CVS-102941 ONNX export of action detection model keeps failed")
+    @pytest.mark.skip(reason="CVS-104657 ONNX export of action detection model keeps failed")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="CVS-102941 ONNX export of action detection model keeps failed")
+    @pytest.mark.skip(reason="CVS-104657 ONNX export of action detection model keeps failed")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
@@ -82,7 +81,7 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="CVS-102941 ONNX export of action detection model keeps failed")
+    @pytest.mark.skip(reason="CVS-104657 ONNX export of action detection model keeps failed")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"

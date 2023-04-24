@@ -22,6 +22,7 @@ from otx.api.usecases.exportable_code.demo.demo_package.utils import (
 from otx.api.usecases.exportable_code.streamer import get_streamer
 from otx.api.usecases.exportable_code.visualizers import Visualizer
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.api.utils.vis_utils import dump_frames
 
 
 class ChainExecutor:
@@ -78,11 +79,16 @@ class ChainExecutor:
     def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
         """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
+        saved_frames = []
 
         for frame in streamer:
             # getting result for single image
             annotation_scene = self.single_run(frame)
             output = self.visualizer.draw(frame, annotation_scene, {})
             self.visualizer.show(output)
+            if self.visualizer.output:
+                saved_frames.append(frame)
             if self.visualizer.is_quit():
                 break
+
+        dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)

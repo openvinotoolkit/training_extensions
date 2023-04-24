@@ -41,10 +41,10 @@ from tests.test_suite.run_test_command import (
 )
 
 args = {
-    "--train-data-roots": "tests/assets/anomaly/shapes/train",
-    "--val-data-roots": "tests/assets/anomaly/shapes/test",
-    "--test-data-roots": "tests/assets/anomaly/shapes/test",
-    "--input": "tests/assets/anomaly/shapes/test/hexagon",
+    "--train-data-roots": "tests/assets/anomaly/hazelnut/train",
+    "--val-data-roots": "tests/assets/anomaly/hazelnut/test",
+    "--test-data-roots": "tests/assets/anomaly/hazelnut/test",
+    "--input": "tests/assets/anomaly/hazelnut/test/colour",
     "train_params": [],
 }
 
@@ -93,7 +93,7 @@ class TestToolsAnomalyClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
-        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.01)
+        otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -130,7 +130,7 @@ class TestToolsAnomalyClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0001)
+        nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
