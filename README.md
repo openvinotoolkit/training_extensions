@@ -78,7 +78,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/installation.html) for installing it using Python venv (virtual environment), or use the following steps to run it in a containerised environment:
 
 ```bash
-$ docker build
+$ docker build \
     -t trainer \ # image tag, required
     --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
     --build-arg PYTHON_VER=3.9 \ # default Python version, optional
