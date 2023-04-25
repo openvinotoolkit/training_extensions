@@ -201,10 +201,7 @@ class SegmentationConfigurer:
             )
 
             if "decode_head" in cfg.model:
-                decode_head = cfg.model.decode_head
-                if decode_head.type == "FCNHead":
-                    decode_head.type = "CustomFCNHead"
-                    decode_head.loss_decode = cfg_loss_decode
+                cfg.model.decode_head.loss_decode = cfg_loss_decode
 
     # pylint: disable=too-many-branches
     def configure_classes(self, cfg: Config) -> None:
@@ -536,10 +533,6 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
     def configure_task(self, cfg: ConfigDict, training: bool, **kwargs: Any) -> None:
         """Adjust settings for task adaptation."""
         super().configure_task(cfg, training, **kwargs)
-
-        # Don't pass task_adapt arg to semi-segmentor
-        if cfg.model.type != "ClassIncrEncoderDecoder" and cfg.model.get("task_adapt", False):
-            cfg.model.pop("task_adapt")
 
         # Remove task adapt hook (set default torch random sampler)
         remove_custom_hook(cfg, "TaskAdaptHook")

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.2.1\]
+
+### Enhancements
+
+- Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>)
+
 ## \[v1.2.0\]
 
 ### New features
