@@ -100,7 +100,7 @@ class TestOTXDatasetManager:
         if data_format == "coco":
             ann_files = "tests/assets/car_tree_bug/annotations/instances_train_5_imgs.json"
             train_dataset = DatasetManager.import_dataset(ann_files, data_format=data_format, subset="train")
-            assert train_dataset.get_annotated_items() == 5
+            assert train_dataset.get_subset("train").get_annotated_items() == 5
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("task", AVAILABLE_TASKS)

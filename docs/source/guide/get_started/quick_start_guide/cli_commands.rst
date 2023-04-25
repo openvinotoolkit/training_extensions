@@ -140,7 +140,8 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 
     Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` documentation.
 
-If you have multiple annotation files like below, add additional arguments (ann-files). Then, you could use the annotation what you selected.
+If you have multiple annotation files like below, add additional argument (``--train-ann-files``). Then, you could use the annotation what you selected.
+OpenVINO™ Training Extensions could randomly selects the train annotation file if you do not use additional argument (``--train-ann-files``)
 
 .. code-block::
 

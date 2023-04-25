@@ -76,10 +76,47 @@ def test_get_dataset_adapter_selfsl_segmentation(task_name, train_type):
             test_data_roots=os.path.join(root_path, data_root["test"]),
         )
 
+#TODO: direct annotation function is only supported in COCO format for now.
+@e2e_pytest_unit
+@pytest.mark.parametrize("task_name", ["detection"])
+@pytest.mark.parametrize("train_type", [TrainType.Incremental.value])
+def test_direct_annotation(task_name, train_type):
+    root_path = os.getcwd()
+    task_type = TASK_NAME_TO_TASK_TYPE[task_name]
+    data_root = TASK_NAME_TO_DATA_ROOT[task_name]
+
+    t_adapter = get_dataset_adapter(
+        task_type=task_type,
+        train_type=train_type,
+        train_data_roots=os.path.join(root_path, data_root["train"]),
+        train_ann_files="tests/assets/car_tree_bug/annotations/instances_train_5_imgs.json",
+        val_data_roots=os.path.join(root_path, data_root["val"])
+    )
+    assert t_adapter.dataset[Subset.TRAINING].get_subset("train").get_annotated_items() == 5
+
+    v_adapter = get_dataset_adapter(
+        task_type=task_type,
+        train_type=train_type,
+        train_data_roots=os.path.join(root_path, data_root["train"]),
+        val_data_roots=os.path.join(root_path, data_root["val"]),
+        val_ann_files="tests/assets/car_tree_bug/annotations/instances_val_1_imgs.json",
+    )
+    assert v_adapter.dataset[Subset.VALIDATION].get_subset("val").get_annotated_items() == 1
+
+    tv_adapter = get_dataset_adapter(
+        task_type=task_type,
+        train_type=train_type,
+        train_data_roots=os.path.join(root_path, data_root["train"]),
+        train_ann_files="tests/assets/car_tree_bug/annotations/instances_train_5_imgs.json",
+        val_data_roots=os.path.join(root_path, data_root["val"]),
+        val_ann_files="tests/assets/car_tree_bug/annotations/instances_val_1_imgs.json",
+    )
+    assert tv_adapter.dataset[Subset.TRAINING].get_subset("train").get_annotated_items() == 5
+    assert tv_adapter.dataset[Subset.VALIDATION].get_subset("val").get_annotated_items() == 1
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("task_name", ["classification", "detection", "segmentation"])
-@pytest.mark.parametrize("train_type", [TrainType.INCREMENTAL.value])
+@pytest.mark.parametrize("train_type", [TrainType.Incremental.value])
 def test_unlabeled_file_list(task_name, train_type):
     root_path = os.getcwd()
     task_type = TASK_NAME_TO_TASK_TYPE[task_name]
