@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## \[v1.1.2\]
+## \[v1.2.1\]
 
 ### Enhancements
 
