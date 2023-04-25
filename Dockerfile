@@ -6,8 +6,8 @@ ARG PYTHON_VER=3.9
 ARG SOURCE=https://download.pytorch.org/whl/cpu
 ENV DEBIAN_FRONTEND=noninteractive
 
-# hadolint ignore=DL3008
 RUN apt-get update && \
+    # hadolint ignore=DL3008
     apt-get install curl python$PYTHON_VER python$PYTHON_VER-dev python$PYTHON_VER-distutils g++ ffmpeg libsm6 libxext6 libgl1-mesa-glx -y && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python$PYTHON_VER get-pip.py && \
