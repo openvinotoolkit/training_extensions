@@ -1845,7 +1845,7 @@ class TestLabelSchemaEntity:
         ]
         assert ref_labels == resloved_labels
 
-        resloved_labels_greedy = label_schema.resolve_labels_greedy(predicted_labels)
+        resloved_labels_greedy = label_schema.resolve_labels_greedily(predicted_labels)
         assert ref_labels == resloved_labels_greedy
 
         # supress children of non-maximum labels
@@ -1858,7 +1858,7 @@ class TestLabelSchemaEntity:
         ref_labels = [ScoredLabel(labels_2[1], 0.5)]
         assert ref_labels == resloved_labels
 
-        resloved_labels_greedy = label_schema.resolve_labels_greedy(predicted_labels)
+        resloved_labels_greedy = label_schema.resolve_labels_greedily(predicted_labels)
         assert ref_labels == resloved_labels_greedy
 
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -1913,4 +1913,4 @@ class TestLabelSchemaEntity:
             ScoredLabel(g4_labels[0], 0.9),
         ]
 
-        assert ref_labels == label_schema.resolve_labels_greedy(predicted_labels)
+        assert ref_labels == label_schema.resolve_labels_greedily(predicted_labels)

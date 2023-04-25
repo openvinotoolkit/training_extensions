@@ -558,12 +558,12 @@ class LabelSchemaEntity:
         label_group = LabelGroup(name="from_label_list", labels=labels)
         return LabelSchemaEntity(label_groups=[label_group])
 
-    def resolve_labels_greedy(self, scored_labels: List[ScoredLabel]) -> List[ScoredLabel]:
+    def resolve_labels_greedily(self, scored_labels: List[ScoredLabel]) -> List[ScoredLabel]:
         """Resolves hierarchical labels and exclusivity based on a list of ScoredLabels (labels with probability).
 
         The following two steps are taken:
 
-        - selects the most likely label from each label group
+        - select the most likely label from each label group
         - add their predecessors if they are also most likely labels (greedy approach).
 
         Args:
