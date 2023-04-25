@@ -97,11 +97,6 @@ class TestOTXDatasetManager:
         data_format = DATA_ROOTS2FORMAT[data_root]
         assert DatasetManager.import_dataset(data_root, data_format=data_format) is not None
 
-        if data_format == "coco":
-            ann_files = "tests/assets/car_tree_bug/annotations/instances_train_5_imgs.json"
-            train_dataset = DatasetManager.import_dataset(ann_files, data_format=data_format, subset="train")
-            assert train_dataset.get_subset("train").get_annotated_items() == 5
-
     # TODO: Currently, direct annotation only supports COCO format
     @e2e_pytest_unit
     @pytest.mark.parametrize("data_root", [AVAILABLE_DATA_ROOTS[1]])

@@ -384,8 +384,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
             if f"{subset}_subset" in self.data_config:
-                if self.data_config[f"{subset}_subset"]["data_root"]:
-                    dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})
+                if self.data_config[f"{subset}_subset"]["data_roots"]:
+                    dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_roots"]})
                 if "ann_files" in self.data_config[f"{subset}_subset"]:
                     dataset_config.update({f"{subset}_ann_files": self.data_config[f"{subset}_subset"]["ann_files"]})
                 if "file_list" in self.data_config[f"{subset}_subset"]:
@@ -431,7 +431,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             }
         # FIXME: Hardcoded for Self-Supervised Learning
         if self.mode in ("train", "optimize") and str(self.train_type).upper() == "SELFSUPERVISED":
-            self.data_config["val_subset"] = {"data_root": None}
+            self.data_config["val_subset"] = {"data_roots": None}
 
     def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:
         """Returns the appropriate template for each situation.
