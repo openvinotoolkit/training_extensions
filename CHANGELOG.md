@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.1.2\]
+
+### Enhancements
+
+- Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>)
+
 ## \[v1.2.0\]
 
 ### New features
@@ -24,7 +30,6 @@ All notable changes to this project will be documented in this file.
 - Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
 - Optimize data preprocessing time and enhance overall performance in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2020>)
 - Support automatic batch size decrease when there is no enough GPU memory (<https://github.com/openvinotoolkit/training_extensions/pull/2022>)
-- Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>)
 
 ### Bug fixes
 
