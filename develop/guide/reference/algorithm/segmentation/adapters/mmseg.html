@@ -519,33 +519,113 @@ For details on the values of these keys see
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">CrossEntropyLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">CrossEntropyLossWithIgnore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore" title="Permalink to this definition">#</a></dt>
 <dd><p>CrossEntropyLossWithIgnore with Ignore Mode Support for Class Incremental Learning.</p>
+<p>When new classes are added through continual training cycles, images from previous cycles
+may become partially annotated if they are not revisited.
+To prevent the model from predicting these new classes for such images,
+CrossEntropyLossWithIgnore can be used to ignore the unseen classes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">255</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.forward" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward.</p>
 <dl>
-<dt>Args:</dt><dd><p>model_classes (list[str]): Model classes
-bg_aware (bool, optional): Whether to enable BG-aware loss</p>
+<dt>Args:</dt><dd><p>cls_score (torch.Tensor, optional): The prediction with shape (N, 1).
+label (torch.Tensor, optional): The learning label of the prediction.
+weight (torch.Tensor, optional): Sample-wise loss weight.</p>
 <blockquote>
-<div><p>‘background’ class would be added the start of model classes/label schema</p>
+<div><p>Default: None.</p>
 </div></blockquote>
 <dl class="simple">
-<dt>reduction (str, optional): . Defaults to ‘mean’.</dt><dd><p>Options are “none”, “mean” and “sum”.</p>
+<dt>class_weight (list[float], optional): The weight for each class.</dt><dd><p>Default: None.</p>
+</dd>
+<dt>avg_factor (int, optional): Average factor that is used to average</dt><dd><p>the loss. Default: None.</p>
+</dd>
+<dt>reduction_override (str, optional): The method used to reduce the loss.</dt><dd><p>Options are ‘none’, ‘mean’ and ‘sum’. Default: ‘mean’.</p>
+</dd>
+<dt>ignore_index (int): Specifies a target value that is ignored and</dt><dd><p>does not contribute to the input gradients. When
+<code class="docutils literal notranslate"><span class="pre">avg_non_ignore</span> <span class="pre">``</span> <span class="pre">is</span> <span class="pre">``True</span></code>, and the <code class="docutils literal notranslate"><span class="pre">reduction</span></code> is
+<code class="docutils literal notranslate"><span class="pre">''mean''</span></code>, the loss is averaged over non-ignored targets.
+Defaults: 255.</p>
+</dd>
+<dt>valid_label_mask (torch.Tensor, optional): The valid labels with</dt><dd><p>shape (N, num_classes).
+If the value in the valid_label_mask is 0, mask label of the
+the mask label of the class corresponding to its index will be
+ignored like ignore_index.</p>
 </dd>
 </dl>
-<p>loss_weight (float, optional): Weight of the loss. Defaults to 1.0.</p>
+<p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs (Any): Additional keyword arguments.</p>
 </dd>
 </dl>
+</dd></dl>
+
 <dl class="py property">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.name" title="Permalink to this definition">#</a></dt>
-<dd><p>name.</p>
+<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.loss_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loss_name</span></span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.loss_name" title="Permalink to this definition">#</a></dt>
+<dd><p>Loss Name.</p>
+<p>This function must be implemented and will return the name of this
+loss function. This name will be used to combine different loss items
+by simple sum operation. In addition, if you want this loss item to be
+included into the backward graph, <cite>loss_</cite> must be the prefix of the
+name.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>str: The name of this loss item.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">CustomFCNHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">CustomFCNHead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable_aggregator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator_min_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator_merge_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator_use_concat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead" title="Permalink to this definition">#</a></dt>
 <dd><p>Custom Fully Convolution Networks for Semantic Segmentation.</p>
+<p>This FCN Head added head aggregator used in Lite-HRNet by
+DepthwiseSeparableConvModule.
+Please refer to <a class="github reference external" href="https://github.com/HRNet/Lite-HRNet">HRNet/Lite-HRNet</a>.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>enable_aggregator (bool): If true, will use Lite-HRNet aggregator</dt><dd><p>concating all inputs from backbone by DepthwiseSeparableConvModule.</p>
+</dd>
+<dt>aggregator_min_channels (int, optional): The number of channels of output of aggregator.</dt><dd><p>It would work only if enable_aggregator is true.</p>
+</dd>
+<dt>aggregator_merge_norm (str, optional): normalize the output of expanders of aggregator.</dt><dd><p>options : “none”, “channel”, or None</p>
+</dd>
+<dt>aggregator_use_concat (str, optional): Whether to concat the last input</dt><dd><p>with the output of expanders.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead.forward_train">
+<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead.forward_train" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward function for training.</p>
+<dl>
+<dt>Args:</dt><dd><p>inputs (list[Tensor]): List of multi-level img features.
+img_metas (list[dict]): List of image info dict where each dict</p>
+<blockquote>
+<div><p>has: ‘img_shape’, ‘scale_factor’, ‘flip’, and may also contain
+‘filename’, ‘ori_shape’, ‘pad_shape’, and ‘img_norm_cfg’.
+For details on the values of these keys see
+<cite>mmseg/datasets/pipelines/formatting.py:Collect</cite>.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>gt_semantic_seg (Tensor): Semantic segmentation masks</dt><dd><p>used if the architecture supports semantic segmentation task.</p>
+</dd>
+</dl>
+<p>train_cfg (dict): The training config.</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict[str, Tensor]: a dictionary of loss components</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead.losses">
+<span class="sig-name descname"><span class="pre">losses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg_logit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_label_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead.losses" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute segmentation loss.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -676,7 +756,7 @@ optimizer (<code class="xref py py-obj docutils literal notranslate"><span class
 <div><p>runner is passed to <code class="docutils literal notranslate"><span class="pre">train_step()</span></code>. This argument is unused
 and reserved.</p>
 </div></blockquote>
-<p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs (Any): Addition keyword arguments.</p>
+<p><a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs (Any): Addition keyword arguments.</p>
 </dd>
 <dt>Returns:</dt><dd><dl class="simple">
 <dt>dict: It should contain at least 3 keys: <code class="docutils literal notranslate"><span class="pre">loss</span></code>, <code class="docutils literal notranslate"><span class="pre">log_vars</span></code>,</dt><dd><p><code class="docutils literal notranslate"><span class="pre">num_samples</span></code>.
@@ -989,7 +1069,7 @@ train_cfg (dict, optional): Config dict for training. Default: None.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.SupConDetConB.forward_train">
-<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB.forward_train" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.SupConDetConB.forward_train" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward function for training.</p>
 <dl>
 <dt>Args:</dt><dd><p>img (Tensor): Input images.
@@ -998,8 +1078,7 @@ gt_semantic_seg (Tensor): Ground truth masks.</p>
 <blockquote>
 <div><p>It is used to organize features among the same classes.</p>
 </div></blockquote>
-<p>pixel_weights (Tensor): Pixels weights.
-<a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs (Any): Addition keyword arguments.</p>
+<p><a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs (Any): Addition keyword arguments.</p>
 </dd>
 <dt>Returns:</dt><dd><p>dict[str, Tensor]: A dictionary of loss components.</p>
 </dd>
@@ -1096,10 +1175,19 @@ gt_semantic_seg (Tensor): Ground truth masks.</p>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.name">
+    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.forward">
      <code class="docutils literal notranslate">
       <span class="pre">
-       CrossEntropyLossWithIgnore.name
+       CrossEntropyLossWithIgnore.forward()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.CrossEntropyLossWithIgnore.loss_name">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CrossEntropyLossWithIgnore.loss_name
       </span>
      </code>
     </a>
@@ -1114,6 +1202,26 @@ gt_semantic_seg (Tensor): Ground truth masks.</p>
     </span>
    </code>
   </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead.forward_train">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomFCNHead.forward_train()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.CustomFCNHead.losses">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CustomFCNHead.losses()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.DetConB">
