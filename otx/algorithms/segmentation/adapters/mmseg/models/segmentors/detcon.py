@@ -26,7 +26,7 @@ from torch import nn
 
 from otx.algorithms.common.utils.logger import get_logger
 
-from .class_incr_encoder_decoder import OTXEncoderDecoder
+from .otx_encoder_decoder import OTXEncoderDecoder
 
 logger = get_logger()
 

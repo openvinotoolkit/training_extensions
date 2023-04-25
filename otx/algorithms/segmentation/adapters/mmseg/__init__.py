@@ -17,7 +17,6 @@
 
 from .datasets import MPASegDataset
 from .models import (
-    ClassIncrEncoderDecoder,
     ConstantScalarScheduler,
     CrossEntropyLossWithIgnore,
     CustomFCNHead,
@@ -57,6 +56,5 @@ __all__ = [
     "DetConB",
     "CrossEntropyLossWithIgnore",
     "SupConDetConB",
-    "ClassIncrEncoderDecoder",
     "MeanTeacherSegmentor",
 ]
