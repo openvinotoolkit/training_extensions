@@ -7,6 +7,7 @@ import os
 from copy import deepcopy
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -29,6 +30,7 @@ args = {
 
 otx_dir = os.getcwd()
 
+MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
@@ -77,3 +79,13 @@ class TestToolsOTXActionClassification:
         decrease_bs_args["train_params"].extend(["--learning_parameters.auto_decrease_batch_size", "true"])
         tmp_dir_path = tmp_dir_path / "action_cls_auto_decrease_batch_size"
         otx_train_testing(template, tmp_dir_path, otx_dir, decrease_bs_args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "action_cls/test_multi_gpu"
+        args1 = deepcopy(args)
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)

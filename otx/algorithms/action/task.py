@@ -67,6 +67,7 @@ from otx.api.usecases.evaluation.f_measure import FMeasure
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.vis_utils import get_actmap
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
 logger = get_logger()
 
@@ -430,6 +431,9 @@ class OTXActionTask(OTXTask, ABC):
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in ActionTrainTask."""
+        if is_multigpu_child_process():
+            return
+
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))

@@ -207,7 +207,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/models/label_schema.json")
 
 
-def otx_export_testing(template, root, dump_features=False, half_precision=False):
+def otx_export_testing(template, root, dump_features=False, half_precision=False, check_ir_meta=False):
     template_work_dir = get_template_dir(template, root)
     save_path = f"{template_work_dir}/exported_{template.model_template_id}"
     command_line = [
@@ -245,6 +245,13 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         with open(path_to_xml, encoding="utf-8") as stream:
             xml_model = stream.read()
             assert "FP16" in xml_model
+
+    if check_ir_meta:
+        with open(path_to_xml, encoding="utf-8") as stream:
+            xml_model = stream.read()
+            assert "model_info" in xml_model
+            assert "model_type" in xml_model
+            assert "labels" in xml_model
 
 
 def otx_eval_testing(template, root, otx_dir, args):

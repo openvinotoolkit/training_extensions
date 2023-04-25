@@ -29,11 +29,13 @@ from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
     TrainingProgressCallback,
 )
+from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
 )
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
+from otx.algorithms.segmentation.utils.metadata import get_seg_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -228,6 +230,9 @@ class OTXSegmentationTask(OTXTask, ABC):
         xml_file = outputs.get("xml")
         onnx_file = outputs.get("onnx")
 
+        ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
+        embed_ir_model_data(xml_file, ir_extra_data)
+
         if xml_file is None or bin_file is None or onnx_file is None:
             raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
         with open(bin_file, "rb") as f:
@@ -268,7 +273,6 @@ class OTXSegmentationTask(OTXTask, ABC):
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
         """Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTX format."""
-
         for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
             hard_prediction = create_hard_prediction_from_soft_prediction(
