@@ -591,15 +591,15 @@ class LabelSchemaEntity:
             return predecessors
 
         label_to_prob = {lbl: 0.0 for lbl in self.get_labels(include_empty=True)}
-        for lbl in scored_labels:
-            label_to_prob[lbl.label] = lbl.probability
+        for s_lbl in scored_labels:
+            label_to_prob[s_lbl.label] = s_lbl.probability
 
         candidates = []
         for g in self.get_groups():
             if g.is_single_label():
                 candidates.append(g.labels[0])
             else:
-                max_prob = 0
+                max_prob = 0.0
                 max_label = None
                 for lbl in g.labels:
                     if label_to_prob[lbl] > max_prob:
