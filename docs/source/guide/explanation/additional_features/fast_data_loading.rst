@@ -10,10 +10,10 @@ Faster Augmentation
 ===================
 
 
-*************
-AugMixAugment
-*************
-`AugMix <https://arxiv.org/pdf/1912.02781.pdf>`_ is a simple yet powerful augmentation technique
+******
+AugMix
+******
+AugMix [1]_ is a simple yet powerful augmentation technique
 to improve robustness and uncertainty estimates of image classification task.
 OpenVINO™ Training Extensions implemented it in `Cython <https://cython.org/>`_ for faster augmentation.
 Users do not need to configure anything as cythonized AugMix is used by default.
@@ -69,3 +69,5 @@ One could change it by modifying ``OTX_CACHE`` environment variable.
 
 Please refere `Datumaro document <https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/arrow.html#export-to-arrow>`_
 for available schemes to choose but we recommend ``JPEG/75`` for fast data loaidng.
+
+.. [1] Dan Hendrycks, Norman Mu, Ekin D. Cubuk, Barret Zoph, Justin Gilmer, and Balaji Lakshminarayanan. "AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty" International Conference on Learning Representations. 2020.
