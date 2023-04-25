@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
--
+- Action task supports multi GPU training. (<https://github.com/openvinotoolkit/training_extensions/pull/2057>)
 
 ### Enhancements
 
