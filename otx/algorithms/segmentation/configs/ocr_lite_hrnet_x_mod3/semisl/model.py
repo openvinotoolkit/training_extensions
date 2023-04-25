@@ -30,7 +30,7 @@ model = dict(
     test_cfg=dict(mode="whole", output_scale=5.0),
     pretrained=None,
     decode_head=dict(
-        type="FCNHead",
+        type="CustomFCNHead",
         in_channels=[18, 60, 80, 160, 320],
         in_index=[0, 1, 2, 3, 4],
         input_transform="multiple_select",
@@ -46,8 +46,6 @@ model = dict(
         aggregator_min_channels=60,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        enable_out_norm=False,
-        enable_loss_equalizer=True,
         loss_decode=[
             dict(
                 type="CrossEntropyLoss",
