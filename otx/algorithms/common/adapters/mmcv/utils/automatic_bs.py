@@ -10,8 +10,6 @@ import numpy as np
 
 from otx.algorithms.common.adapters.torch.utils import adapt_batch_size as adapt_torch_model_bs
 from otx.algorithms.common.utils.logger import get_logger
-from otx.api.entities.train_parameters import default_progress_callback
-from otx.algorithms.common.utils.callback import TrainingProgressCallback
 
 logger = get_logger()
 
