@@ -470,43 +470,6 @@
 </div>
 <span class="target" id="module-otx.algorithms.segmentation.adapters.mmseg"></span><p>OTX Adapters - mmseg.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">ClassIncrEncoderDecoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_adapt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder" title="Permalink to this definition">#</a></dt>
-<dd><p>Encoder-decoder for incremental learning.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.forward_train">
-<span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aux_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.forward_train" title="Permalink to this definition">#</a></dt>
-<dd><p>Forward function for training.</p>
-<dl>
-<dt>Args:</dt><dd><p>img (Tensor): Input images.
-img_metas (list[dict]): List of image info dict where each dict</p>
-<blockquote>
-<div><p>has: ‘img_shape’, ‘scale_factor’, ‘flip’, and may also contain
-‘filename’, ‘ori_shape’, ‘pad_shape’, and ‘img_norm_cfg’.
-For details on the values of these keys see
-<cite>mmseg/datasets/pipelines/formatting.py:Collect</cite>.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>gt_semantic_seg (Tensor): Semantic segmentation masks</dt><dd><p>used if the architecture supports semantic segmentation task.</p>
-</dd>
-</dl>
-<p>aux_img (Tensor): Auxiliary images.
-<a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs (Any): Addition keyword arguments.</p>
-</dd>
-<dt>Returns:</dt><dd><p>dict[str, Tensor]: a dictionary of loss components</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.load_state_dict_pre_hook">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_state_dict_pre_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chkpt_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chkpt_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.load_state_dict_pre_hook" title="Permalink to this definition">#</a></dt>
-<dd><p>Modify input state_dict according to class name matching before weight loading.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.ConstantScalarScheduler">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">ConstantScalarScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.ConstantScalarScheduler" title="Permalink to this definition">#</a></dt>
 <dd><p>The learning rate remains constant over time.</p>
@@ -554,7 +517,7 @@ the mask label of the class corresponding to its index will be
 ignored like ignore_index.</p>
 </dd>
 </dl>
-<p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs (Any): Additional keyword arguments.</p>
+<p><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs (Any): Additional keyword arguments.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -756,7 +719,7 @@ optimizer (<code class="xref py py-obj docutils literal notranslate"><span class
 <div><p>runner is passed to <code class="docutils literal notranslate"><span class="pre">train_step()</span></code>. This argument is unused
 and reserved.</p>
 </div></blockquote>
-<p><a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs (Any): Addition keyword arguments.</p>
+<p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs (Any): Addition keyword arguments.</p>
 </dd>
 <dt>Returns:</dt><dd><dl class="simple">
 <dt>dict: It should contain at least 3 keys: <code class="docutils literal notranslate"><span class="pre">loss</span></code>, <code class="docutils literal notranslate"><span class="pre">log_vars</span></code>,</dt><dd><p><code class="docutils literal notranslate"><span class="pre">num_samples</span></code>.
@@ -1078,7 +1041,7 @@ gt_semantic_seg (Tensor): Ground truth masks.</p>
 <blockquote>
 <div><p>It is used to organize features among the same classes.</p>
 </div></blockquote>
-<p><a href="#id7"><span class="problematic" id="id8">**</span></a>kwargs (Any): Addition keyword arguments.</p>
+<p><a href="#id5"><span class="problematic" id="id6">**</span></a>kwargs (Any): Addition keyword arguments.</p>
 </dd>
 <dt>Returns:</dt><dd><p>dict[str, Tensor]: A dictionary of loss components.</p>
 </dd>
@@ -1127,35 +1090,6 @@ gt_semantic_seg (Tensor): Ground truth masks.</p>
 </div>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     ClassIncrEncoderDecoder
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.forward_train">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ClassIncrEncoderDecoder.forward_train()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.ClassIncrEncoderDecoder.load_state_dict_pre_hook">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ClassIncrEncoderDecoder.load_state_dict_pre_hook()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.ConstantScalarScheduler">
    <code class="docutils literal notranslate">
