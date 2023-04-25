@@ -2,7 +2,27 @@ Fast Data Loading
 =================
 
 OpenVINO™ Training Extensions provides several ways to boost model training speed,
-one of which is fast data loading with in-memory cache and storage cache.
+one of which is fast data loading.
+
+
+===================
+Faster Augmentation
+===================
+
+
+*************
+AugMixAugment
+*************
+`AugMix <https://arxiv.org/pdf/1912.02781.pdf>`_ is a simple yet powerful augmentation technique
+to improve robustness and uncertainty estimates of image classification task.
+OpenVINO™ Training Extensions implemented it in `Cython <https://cython.org/>`_ for faster augmentation.
+Users do not need to configure anything as cythonized AugMix is used by default.
+
+
+
+=======
+Caching
+=======
 
 
 *****************
@@ -12,7 +32,6 @@ OpenVINO™ Training Extensions provides in-memory caching for decoded images in
 If the batch size is large, such as for classification tasks, or if dataset contains
 high-resolution images, image decoding can account for a non-negligible overhead
 in data pre-processing.
-
 One can enable in-memory caching for maximizing GPU utilization and reducing model
 training time in those cases.
 
