@@ -418,7 +418,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 logger.info("Tile classifier is enabled. Load tile classifier model.")
                 tile_classifier_model_file = self.model.get_data("tile_classifier.xml")
                 tile_classifier_weight_file = self.model.get_data("tile_classifier.bin")
-            # TODO[EUGENE]: ir scale config handling
             inferencer = OpenVINOTileClassifierWrapper(
                 inferencer,
                 self.config.tiling_parameters.tile_size,

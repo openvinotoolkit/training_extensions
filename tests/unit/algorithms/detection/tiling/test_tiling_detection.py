@@ -8,10 +8,14 @@ from typing import List
 import numpy as np
 import pytest
 import torch
-from mmcv import ConfigDict
+from mmcv import Config, ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
+from mmdet.models import DETECTORS
+from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from otx.api.configuration.helper import create
@@ -30,6 +34,24 @@ from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_ISEG_TEMPLATE_DIR,
     init_environment,
 )
+
+
+@DETECTORS.register_module(force=True)
+class MockDetModel(nn.Module):
+    def __init__(self, backbone, train_cfg=None, test_cfg=None, init_cfg=None):
+        super().__init__()
+        self.conv = torch.nn.Conv2d(3, 3, 3)
+        self.box_dummy = torch.nn.AdaptiveAvgPool2d((1, 5))
+        self.label_dummy = torch.nn.AdaptiveAvgPool2d((1))
+        self.mask_dummy = torch.nn.AdaptiveAvgPool2d((28, 28))
+
+    def forward(self, *args, **kwargs):
+        img = args[0]
+        x = self.conv(img)
+        boxes = self.box_dummy(x).mean(1)
+        labels = self.label_dummy(x).mean(1)
+        masks = self.mask_dummy(x).mean(1)
+        return boxes, labels, masks
 
 
 def create_otx_dataset(height: int, width: int, labels: List[str]):
@@ -235,6 +257,60 @@ class TestTilingDetection:
         patch_tiling(cfg, hyper_parameters, self.otx_dataset)
 
     @e2e_pytest_unit
-    def test_openvino(self):
-        # TODO[EUGENE]: implement unittest for tiling prediction with openvino
-        pass
+    @pytest.mark.parametrize("scale_factor", [1, 1.5, 2, 3, 4])
+    def test_ir_scale_deploy(self, tmp_dir_path, scale_factor):
+        """Test that the IR scale factor is correctly applied during inference."""
+        model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
+        hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.tiling_parameters.enable_tiling = True
+        hyper_parameters.tiling_parameters.ir_scale_factor = scale_factor
+        task_env = init_environment(hyper_parameters, model_template)
+        img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+        task = MMDetectionTask(task_env)
+        pipeline = [
+            dict(type="LoadImageFromFile"),
+            dict(
+                type="MultiScaleFlipAug",
+                img_scale=(800, 800),
+                flip=False,
+                transforms=[
+                    dict(type="Resize", keep_ratio=False),
+                    dict(type="RandomFlip"),
+                    dict(type="Normalize", **img_norm_cfg),
+                    dict(type="Pad", size_divisor=32),
+                    dict(type="DefaultFormatBundle"),
+                    dict(type="Collect", keys=["img"]),
+                ],
+            ),
+        ]
+        config = Config(
+            dict(model=dict(type="MockDetModel", backbone=dict(init_cfg=None)), data=dict(test=dict(pipeline=pipeline)))
+        )
+
+        deploy_cfg = task._init_deploy_cfg(config)
+        onnx_path = MMdeployExporter.torch2onnx(
+            tmp_dir_path,
+            np.zeros((50, 50, 3), dtype=np.float32),
+            config,
+            deploy_cfg,
+        )
+        assert isinstance(onnx_path, str)
+        assert os.path.exists(onnx_path)
+
+        openvino_paths = MMdeployExporter.onnx2openvino(
+            tmp_dir_path,
+            onnx_path,
+            deploy_cfg,
+        )
+        for openvino_path in openvino_paths:
+            assert os.path.exists(openvino_path)
+
+        task._init_task()
+        original_width, original_height = task._recipe_cfg.data.test.pipeline[0].img_scale  # w, h
+
+        model_adapter = OpenvinoAdapter(create_core(), openvino_paths[0], openvino_paths[1])
+
+        ir_input_shape = model_adapter.get_input_layers()["image"].shape
+        _, _, ir_height, ir_width = ir_input_shape
+        assert ir_height == original_height * scale_factor
+        assert ir_width == original_width * scale_factor
