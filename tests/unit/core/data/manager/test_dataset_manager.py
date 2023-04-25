@@ -104,7 +104,7 @@ class TestOTXDatasetManager:
 
     # TODO: Currently, direct annotation only supports COCO format
     @e2e_pytest_unit
-    @pytest.mark.parametrize("data_root", AVAILABLE_DATA_ROOTS[1])
+    @pytest.mark.parametrize("data_root", [AVAILABLE_DATA_ROOTS[1]])
     def test_import_dataset_with_direct_annotation(self, data_root):
         data_format = DATA_ROOTS2FORMAT[data_root]
         assert DatasetManager.import_dataset(data_root, data_format=data_format) is not None
