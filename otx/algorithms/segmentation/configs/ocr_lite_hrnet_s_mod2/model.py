@@ -22,10 +22,10 @@ _base_ = [
 ]
 
 model = dict(
-    type="ClassIncrEncoderDecoder",
+    type="OTXEncoderDecoder",
     pretrained=None,
     decode_head=dict(
-        type="FCNHead",
+        type="CustomFCNHead",
         in_channels=[60, 120, 240],
         in_index=[0, 1, 2],
         input_transform="multiple_select",
@@ -40,8 +40,6 @@ model = dict(
         enable_aggregator=True,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        enable_out_norm=False,
-        enable_loss_equalizer=True,
         loss_decode=[
             dict(
                 type="CrossEntropyLoss",
@@ -49,12 +47,6 @@ model = dict(
                 loss_weight=1.0,
             ),
         ],
-        init_cfg=dict(
-            type="Normal",
-            mean=0,
-            std=0.01,
-            override=dict(name="conv_seg"),
-        ),
     ),
 )
 
