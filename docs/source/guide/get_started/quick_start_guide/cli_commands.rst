@@ -163,6 +163,10 @@ OpenVINO™ Training Extensions could randomly selects the train annotation file
 
   --train-data-roots coco_data_root --train-ann-files coco_data_root/annotations/instances_train_10percent.json
 
+.. note::
+
+   For now, only COCO format data could be used for direct annotation input 
+  
 *********
 Training
 *********
