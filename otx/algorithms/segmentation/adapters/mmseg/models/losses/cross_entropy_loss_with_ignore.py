@@ -66,6 +66,8 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             losses = super().forward(cls_score, label, weight, avg_factor, reduction_override, ignore_index, **kwargs)
             return losses
         else:
+            assert reduction_override in (None, "none", "mean", "sum")
+            reduction = reduction_override if reduction_override else self.reduction
             batch_size = label.shape[0]
             for i in range(batch_size):
                 invalid_labels = (valid_label_mask[i] == 0).nonzero(as_tuple=False)
@@ -77,7 +79,7 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
 
             if weight is not None:
                 weight = weight.float()
-            losses = weight_reduce_loss(losses, weight=weight, reduction="mean", avg_factor=avg_factor)
+            losses = weight_reduce_loss(losses, weight=weight, reduction=reduction, avg_factor=avg_factor)
 
             return losses
 
