@@ -1,4 +1,4 @@
-"""Configs Initialization of OTX Segmentation."""
+"""Initialization of SegNext-B model for Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

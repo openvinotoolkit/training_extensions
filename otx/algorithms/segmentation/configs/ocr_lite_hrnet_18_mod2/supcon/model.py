@@ -54,7 +54,7 @@ model = dict(
         loss_cfg=dict(type="DetConLoss", temperature=0.1),
     ),
     decode_head=dict(
-        type="CustomFCNHead",
+        type="FCNHead",
         in_channels=[40, 80, 160, 320],
         in_index=[0, 1, 2, 3],
         input_transform="multiple_select",

@@ -1,0 +1,14 @@
+{
+  "algorithms": [
+    {
+      "name": "DefaultQuantization",
+      "params": {
+        "preset": "mixed",
+        "target_device": "ANY",
+        "range_estimator": {
+          "preset": "quantile"
+        }
+      }
+    }
+  ]
+}

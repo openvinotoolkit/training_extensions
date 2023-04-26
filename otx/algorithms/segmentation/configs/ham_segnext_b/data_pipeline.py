@@ -1,4 +1,4 @@
-"""Backbones for semantic segmentation."""
+"""Data Pipeline of SegNext model for Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,9 +14,5 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
-from .litehrnet import LiteHRNet
-from .mmov_backbone import MMOVBackbone
-from .mscan import MSCAN
-
-__all__ = ["LiteHRNet", "MMOVBackbone", "MSCAN"]
+# pylint: disable=invalid-name
+_base_ = ["../base/data/data_pipeline.py"]

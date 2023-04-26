@@ -78,10 +78,12 @@ class TestMPASegDataset:
             new_classes=self.classes,
         )
 
-        assert self.dataset.CLASSES != ["background"] + self.classes
-        assert self.dataset.CLASSES == ["background"] + [label.name for label in sorted(labels_entities)]
+        assert self.dataset.CLASSES == ["background"] + self.classes
+        assert self.dataset.CLASSES == ["background"] + [
+            label.name for label in sorted(labels_entities, key=lambda x: int(x.id))
+        ]
 
-        assert self.dataset.label_map == {0: 0, 1: 1, 2: 2, 3: 11, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9, 11: 10}
+        assert self.dataset.label_map == {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11}
 
     @e2e_pytest_unit
     def test_getitem_method(self) -> None:

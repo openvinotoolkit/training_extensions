@@ -19,7 +19,6 @@ from .datasets import MPASegDataset
 from .models import (
     ConstantScalarScheduler,
     CrossEntropyLossWithIgnore,
-    CustomFCNHead,
     DetConB,
     DetConLoss,
     LiteHRNet,
@@ -46,7 +45,6 @@ __all__ = [
     "MPASegDataset",
     "LiteHRNet",
     "MMOVBackbone",
-    "CustomFCNHead",
     "MMOVDecodeHead",
     "DetConLoss",
     "SelfSLMLP",
