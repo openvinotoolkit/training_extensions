@@ -145,9 +145,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
 
-            train_dataset = DatumDataset.import_from(train_data_roots, format=self.data_type)
+            dataset_kwargs = {"path": train_data_roots, "format": self.data_type}
             if train_ann_files is not None:
-                train_dataset = DatumDataset.import_from(train_ann_files, format=self.data_type, subset="train")
+                if self.data_type not in ("coco"):
+                    raise NotImplementedError(f"Specifying '--train-ann-files' is not supported for data type '{self.data_type}'")
+                dataset_kwargs["path"] = train_ann_files
+                dataset_kwargs["subset"] = "train"
+            train_dataset = DatumDataset.import_from(**dataset_kwargs)
 
             # Prepare subsets by using Datumaro dataset
             dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
