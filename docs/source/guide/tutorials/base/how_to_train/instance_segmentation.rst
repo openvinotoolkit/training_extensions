@@ -166,7 +166,7 @@ Let's prepare an OpenVINO™ Training Extensions instance segmentation workspace
 
   .. code-block::
 
-  (otx) ...$ otx build --task instance_segmentation --model <Model-Name>
+    (otx) ...$ otx build --task instance_segmentation --model <Model-Name>
 
 It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessary configs for MaskRCNN-ResNet50, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
