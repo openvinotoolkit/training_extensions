@@ -527,12 +527,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     )
 
                     config = MPAConfig.fromfile(str(target_dir / file_name))
-                    # FIXME: In the CLI, there is currently no case for using the ignore label.
-                    # so the workspace's model patches ignore to False.
-                    # FIXME: Segmentation -> ignore=True
-                    if config.get("ignore", None):
-                        config.ignore = False
-                        print("In the CLI, Update ignore to false in model configuration.")
+                    self._patch_cli_configs(config)
                     config.dump(str(dest_dir / file_name))
                 except Exception as exc:
                     raise CliException(f"{self.task_type} requires mmcv-full to be installed.") from exc
@@ -540,3 +535,15 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 config = OmegaConf.load(str(target_dir / file_name))
                 (dest_dir / file_name).write_text(OmegaConf.to_yaml(config))
             print(f"[*] \t- Updated: {str(dest_dir / file_name)}")
+
+    def _patch_cli_configs(self, config):
+        """Patch for CLI configurations."""
+        if config.get("ignore", None):
+            # FIXME: In the CLI, there is currently no case for using the ignore label.
+            # so the workspace's model patches ignore to False.
+            config.ignore = False
+            print("In the CLI, Update ignore to false in model configuration.")
+        if hasattr(config, "deterministic") and hasattr(self.args, "deterministic"):
+            config.deterministic = self.args.deterministic
+        if hasattr(config, "seed") and hasattr(self.args, "seed"):
+            config.seed = self.args.seed

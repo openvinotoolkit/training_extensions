@@ -97,6 +97,8 @@ Building workspace folder
       --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
       --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'.
                             If there is an already created backbone configuration yaml file, enter the corresponding path.
+      --deterministic       Set deterministic to True, default=False.
+      --seed SEED           Set seed for configuration.
 
 
 For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
@@ -201,6 +203,8 @@ However, if you created a workspace with ``otx build``, the training process can
                             Total number of workers in a worker group.
       --mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE
                             Size of memory pool for caching decoded data to load data faster. For example, you can use digits for bytes size (e.g. 1024) or a string with size units (e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).
+      --deterministic       Set deterministic to True, default=False.
+      --seed SEED           Change seed for training.
       --data DATA           The data.yaml path want to use in train task.
 
 

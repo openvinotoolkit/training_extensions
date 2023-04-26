@@ -78,6 +78,16 @@ def get_args():
         help="Available Backbone Type can be found using 'otx find --backbone {framework}'.\n"
         "If there is an already created backbone configuration yaml file, enter the corresponding path.",
     )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Set deterministic to True, default=False.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Set seed for configuration.",
+    )
 
     return parser.parse_args()
 

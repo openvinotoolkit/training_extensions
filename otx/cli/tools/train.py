@@ -135,6 +135,16 @@ def get_args():
         "(e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).",
     )
     parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Set deterministic to True, default=False.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Set seed for training.",
+    )
+    parser.add_argument(
         "--data",
         type=str,
         default=None,
