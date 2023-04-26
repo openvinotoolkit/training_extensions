@@ -133,10 +133,10 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
         state_dict = None
 
     test_pipeline = [LoadImage()]
-    for aug in config.data.test.pipeline:
-        if aug.type == "MultiScaleFlipAug":
-            test_pipeline.append(aug)
-            break
+    if len(config.data.test.pipeline) > 1:
+        test_pipeline.extend(config.data.test.pipeline[1:])
+    else:
+        test_pipeline.extend(config.data.test.pipeline)
 
     test_pipeline = Compose(test_pipeline)
     get_fake_input_fn = partial(
