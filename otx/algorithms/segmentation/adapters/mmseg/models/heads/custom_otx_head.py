@@ -3,21 +3,22 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from typing import Dict, List, Optional
+
 import torch
 from mmcv.runner import force_fp32
+from mmseg.models.decode_heads.fcn_head import FCNHead
+from mmseg.models.decode_heads.sep_aspp_head import DepthwiseSeparableASPPHead
 from mmseg.models.losses import accuracy
 from mmseg.ops import resize
 from torch import nn
-from mmseg.models.decode_heads.fcn_head import FCNHead
-from mmseg.models.decode_heads.sep_aspp_head import DepthwiseSeparableASPPHead
-
-from .light_ham import LightHamHead
-from typing import Dict, List, Optional
 
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import IterativeAggregator
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     get_valid_label_mask_per_batch,
 )
+
+from .light_ham import LightHamHead
 
 KNOWN_HEADS = {"FCNHead": FCNHead, "ASPPHead": DepthwiseSeparableASPPHead, "LightHamHead": LightHamHead}
 
@@ -136,11 +137,15 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             return losses
 
         @force_fp32(apply_to=("seg_logit",))
-        def losses(self, seg_logit: torch.Tensor, seg_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None):
+        def losses(
+            self, seg_logit: torch.Tensor, seg_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None
+        ):
             """Compute segmentation loss."""
             loss = dict()
 
-            seg_logit = resize(input=seg_logit, size=seg_label.shape[2:], mode="bilinear", align_corners=self.align_corners)
+            seg_logit = resize(
+                input=seg_logit, size=seg_label.shape[2:], mode="bilinear", align_corners=self.align_corners
+            )
             if self.sampler is not None:
                 seg_weight = self.sampler.sample(seg_logit, seg_label)
             else:
