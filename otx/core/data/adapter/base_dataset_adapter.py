@@ -171,9 +171,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         if test_data_roots is not None and train_data_roots is None:
             self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
-            test_dataset = DatumDataset.import_from(test_data_roots, format=self.data_type)
+            dataset_kwargs = {"path": test_data_roots, "format": self.data_type}
             if test_ann_files is not None:
-                test_dataset = DatumDataset.import_from(test_ann_files, format=self.data_type, subset="test")
+                if self.data_type not in ("coco"):
+                    raise NotImplementedError(f"Specifying '--test-ann-files' is not supported for data type '{self.data_type}'")
+                dataset_kwargs["path"] = test_ann_files
+                dataset_kwargs["subset"] = "test"
+            test_dataset = DatumDataset.import_from(**dataset_kwargs)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
             self.is_train_phase = False
 
