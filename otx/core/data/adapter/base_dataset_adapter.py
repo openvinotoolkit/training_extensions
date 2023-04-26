@@ -148,7 +148,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             dataset_kwargs = {"path": train_data_roots, "format": self.data_type}
             if train_ann_files is not None:
                 if self.data_type not in ("coco"):
-                    raise NotImplementedError(f"Specifying '--train-ann-files' is not supported for data type '{self.data_type}'")
+                    raise NotImplementedError(
+                        f"Specifying '--train-ann-files' is not supported for data type '{self.data_type}'"
+                    )
                 dataset_kwargs["path"] = train_ann_files
                 dataset_kwargs["subset"] = "train"
             train_dataset = DatumDataset.import_from(**dataset_kwargs)
@@ -164,7 +166,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 dataset_kwargs = {"path": val_data_roots, "format": val_data_type}
                 if val_ann_files is not None:
                     if val_data_type not in ("coco"):
-                        raise NotImplementedError(f"Specifying '--val-ann-files' is not supported for data type '{val_data_type}'")
+                        raise NotImplementedError(
+                            f"Specifying '--val-ann-files' is not supported for data type '{val_data_type}'"
+                        )
                     dataset_kwargs["path"] = val_ann_files
                     dataset_kwargs["subset"] = "val"
                 val_dataset = DatumDataset.import_from(**dataset_kwargs)
@@ -178,7 +182,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             dataset_kwargs = {"path": test_data_roots, "format": self.data_type}
             if test_ann_files is not None:
                 if self.data_type not in ("coco"):
-                    raise NotImplementedError(f"Specifying '--test-ann-files' is not supported for data type '{self.data_type}'")
+                    raise NotImplementedError(
+                        f"Specifying '--test-ann-files' is not supported for data type '{self.data_type}'"
+                    )
                 dataset_kwargs["path"] = test_ann_files
                 dataset_kwargs["subset"] = "test"
             test_dataset = DatumDataset.import_from(**dataset_kwargs)

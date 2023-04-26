@@ -265,9 +265,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         dataset = self.dataset_manager.import_dataset(data_root=data_roots, data_format=self.data_format)
         train_dataset = self.dataset_manager.get_train_dataset(dataset)
         if ann_file is not None:
-            train_dataset = self.dataset_manager.import_dataset(
-                ann_file, data_format=self.data_format, subset="train"
-            )
+            train_dataset = self.dataset_manager.import_dataset(ann_file, data_format=self.data_format, subset="train")
         val_dataset = self.dataset_manager.get_val_dataset(dataset)
         splitted_dataset = None
         if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
