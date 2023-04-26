@@ -359,7 +359,7 @@ class BaseConfig(ConfigurableParameters):
             description="Overlap between each two neighboring tiles.",
             default_value=0.2,
             min_value=0.0,
-            max_value=1.0,
+            max_value=0.9,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
