@@ -161,9 +161,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             if val_data_roots:
                 val_data_candidates = self._detect_dataset_format(path=val_data_roots)
                 val_data_type = self._select_data_type(val_data_candidates)
-                val_dataset = DatumDataset.import_from(val_data_roots, format=val_data_type)
+                dataset_kwargs = {"path": val_data_roots, "format": val_data_type}
                 if val_ann_files is not None:
-                    val_dataset = DatumDataset.import_from(val_ann_files, format=self.data_type, subset="val")
+                    if val_data_type not in ("coco"):
+                        raise NotImplementedError(f"Specifying '--val-ann-files' is not supported for data type '{val_data_type}'")
+                    dataset_kwargs["path"] = val_ann_files
+                    dataset_kwargs["subset"] = "val"
+                val_dataset = DatumDataset.import_from(**dataset_kwargs)
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
             elif "val" in train_dataset.subsets():
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
