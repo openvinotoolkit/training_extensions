@@ -51,7 +51,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
 
         def __init__(
             self,
-            base_type: bool = "FCNHead",
+            base_type: str = "FCNHead",
             enable_aggregator: bool = False,
             aggregator_min_channels: Optional[int] = None,
             aggregator_merge_norm: Optional[str] = None,
