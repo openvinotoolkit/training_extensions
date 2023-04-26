@@ -85,5 +85,3 @@ load_from = None
 resume_from = None
 
 fp16 = dict(loss_scale=512.0)
-
-optimizer = dict(paramwise_cfg=None)
