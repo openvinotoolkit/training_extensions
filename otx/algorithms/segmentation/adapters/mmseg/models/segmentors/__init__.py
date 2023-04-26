@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .class_incr_encoder_decoder import ClassIncrEncoderDecoder
 from .detcon import DetConB, SupConDetConB
 from .mean_teacher_segmentor import MeanTeacherSegmentor
 
-__all__ = ["DetConB", "SupConDetConB", "ClassIncrEncoderDecoder", "MeanTeacherSegmentor"]
+__all__ = ["DetConB", "SupConDetConB", "MeanTeacherSegmentor"]

@@ -207,7 +207,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/models/label_schema.json")
 
 
-def otx_export_testing(template, root, dump_features=False, half_precision=False):
+def otx_export_testing(template, root, dump_features=False, half_precision=False, check_ir_meta=False):
     template_work_dir = get_template_dir(template, root)
     save_path = f"{template_work_dir}/exported_{template.model_template_id}"
     command_line = [
@@ -245,6 +245,13 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         with open(path_to_xml, encoding="utf-8") as stream:
             xml_model = stream.read()
             assert "FP16" in xml_model
+
+    if check_ir_meta:
+        with open(path_to_xml, encoding="utf-8") as stream:
+            xml_model = stream.read()
+            assert "model_info" in xml_model
+            assert "model_type" in xml_model
+            assert "labels" in xml_model
 
 
 def otx_eval_testing(template, root, otx_dir, args):
@@ -323,8 +330,11 @@ def otx_demo_testing(template, root, otx_dir, args):
         os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
+        "--output",
+        os.path.join(template_work_dir, "output"),
     ]
     check_run(command_line)
+    assert os.path.exists(os.path.join(template_work_dir, "output"))
 
 
 def otx_demo_openvino_testing(template, root, otx_dir, args):
@@ -339,8 +349,11 @@ def otx_demo_openvino_testing(template, root, otx_dir, args):
         os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
+        "--output",
+        os.path.join(template_work_dir, "output"),
     ]
     check_run(command_line)
+    assert os.path.exists(os.path.join(template_work_dir, "output"))
 
 
 def otx_deploy_openvino_testing(template, root, otx_dir, args):
@@ -394,9 +407,12 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
             "-i",
             os.path.join(otx_dir, args["--input"]),
             "--no_show",
+            "--output",
+            os.path.join(deployment_dir, "output"),
         ],
         cwd=os.path.join(deployment_dir, "python"),
     )
+    assert os.path.exists(os.path.join(deployment_dir, "output"))
 
 
 def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
@@ -429,18 +445,22 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0):
 
 def otx_demo_deployment_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
+    deployment_dir = f"{template_work_dir}/deployed_{template.model_template_id}"
     command_line = [
         "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/deployed_{template.model_template_id}/openvino.zip",
+        f"{deployment_dir}/openvino.zip",
         "--input",
         os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
+        "--output",
+        os.path.join(deployment_dir, "output"),
     ]
     check_run(command_line)
+    assert os.path.exists(os.path.join(deployment_dir, "output"))
 
 
 def pot_optimize_testing(template, root, otx_dir, args):

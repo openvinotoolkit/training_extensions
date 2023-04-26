@@ -28,7 +28,6 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
         # Prepare label information
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
-
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
         for subset, subset_data in self.dataset.items():
@@ -38,6 +37,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     assert isinstance(image, Image)
                     shapes = []
                     for ann in datumaro_item.annotations:
+
                         if (
                             self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
                             and ann.type == DatumAnnotationType.polygon

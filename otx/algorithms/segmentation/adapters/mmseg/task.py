@@ -59,8 +59,6 @@ from otx.algorithms.segmentation.adapters.mmseg.configurer import (
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegmentationExporter
 from otx.algorithms.segmentation.task import OTXSegmentationTask
-
-# from otx.algorithms.segmentation.utils import get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -372,9 +370,8 @@ class MMSegmentationTask(OTXSegmentationTask):
         validate = bool(cfg.data.get("val", None))
 
         if self._hyperparams.learning_parameters.auto_decrease_batch_size:
-            validate = isinstance(self, NNCFBaseTask)  # nncf needs eval hooks
             train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, validate)
+            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
 
         train_segmentor(
             model,

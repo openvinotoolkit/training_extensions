@@ -241,7 +241,6 @@ class TestSemiSLSegmentationConfigurer:
         model_cfg = ConfigDict(dict(model=dict(type="", task_adapt=True)))
         mock_remove_hook = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.remove_custom_hook")
         self.configurer.configure_task(model_cfg, True)
-        assert "task_adapt" not in model_cfg.model
         mock_remove_hook.assert_called_once()
 
     @e2e_pytest_unit

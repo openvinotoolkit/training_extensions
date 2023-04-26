@@ -24,7 +24,6 @@ from .schedulers import (
     StepScalarScheduler,
 )
 from .segmentors import (
-    ClassIncrEncoderDecoder,
     DetConB,
     MeanTeacherSegmentor,
     SupConDetConB,
@@ -43,7 +42,6 @@ __all__ = [
     "DetConB",
     "CrossEntropyLossWithIgnore",
     "SupConDetConB",
-    "ClassIncrEncoderDecoder",
     "MeanTeacherSegmentor",
     "DetConHead",
     "LightHamHead",

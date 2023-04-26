@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import io
+import logging
 import os
 import shutil
 import tempfile
@@ -136,7 +137,10 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         if not dist.is_initialized():
             torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
             dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
-            logger.info(f"Dist info: rank {dist.get_rank()} / {dist.get_world_size()} world_size")
+            rank = dist.get_rank()
+            logger.info(f"Dist info: rank {rank} / {dist.get_world_size()} world_size")
+            if rank != 0:
+                logging.disable(logging.WARNING)
 
     def _get_tmp_dir(self):
         self._work_dir_is_temp = True
