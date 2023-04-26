@@ -259,14 +259,14 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 return task_key
         raise ConfigValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
-    def auto_split_data(self, data_roots: str, task: str, train_ann_file: Optional[str] = None):
+    def auto_split_data(self, data_roots: str, task: str, ann_file: Optional[str] = None):
         """Automatically Split train data --> train/val dataset."""
         self.data_format = self.dataset_manager.get_data_format(data_roots)
         dataset = self.dataset_manager.import_dataset(data_root=data_roots, data_format=self.data_format)
         train_dataset = self.dataset_manager.get_train_dataset(dataset)
-        if train_ann_file is not None:
+        if ann_file is not None:
             train_dataset = self.dataset_manager.import_dataset(
-                train_ann_file, data_format=self.data_format, subset="train"
+                ann_file, data_format=self.data_format, subset="train"
             )
         val_dataset = self.dataset_manager.get_val_dataset(dataset)
         splitted_dataset = None
