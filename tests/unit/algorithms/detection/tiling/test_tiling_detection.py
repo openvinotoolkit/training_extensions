@@ -258,12 +258,12 @@ class TestTilingDetection:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("scale_factor", [1, 1.5, 2, 3, 4])
-    def test_ir_scale_deploy(self, tmp_dir_path, scale_factor):
+    def test_tile_ir_scale_deploy(self, tmp_dir_path, scale_factor):
         """Test that the IR scale factor is correctly applied during inference."""
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.tiling_parameters.enable_tiling = True
-        hyper_parameters.tiling_parameters.ir_scale_factor = scale_factor
+        hyper_parameters.tiling_parameters.tile_ir_scale_factor = scale_factor
         task_env = init_environment(hyper_parameters, model_template)
         img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
         task = MMDetectionTask(task_env)

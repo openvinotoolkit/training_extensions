@@ -372,7 +372,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
-        ir_scale_factor = configurable_float(
+        tile_ir_scale_factor = configurable_float(
             header="OpenVINO IR Scale Factor",
             description="The purpose of the scale parameter is to optimize the performance and "
             "efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and "

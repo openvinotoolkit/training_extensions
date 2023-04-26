@@ -462,9 +462,9 @@ def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionCon
     if hyper_parameters.tiling_parameters.enable_tiling:
         scale_ir_input = deploy_cfg.get("scale_ir_input", False)
         if scale_ir_input:
-            ir_scale_factor = hyper_parameters.tiling_parameters.ir_scale_factor
-            logger.info(f"Apply OpenVINO IR scale factor: {ir_scale_factor}")
+            tile_ir_scale_factor = hyper_parameters.tiling_parameters.tile_ir_scale_factor
+            logger.info(f"Apply OpenVINO IR scale factor: {tile_ir_scale_factor}")
             ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
-            ir_input_shape[2] = int(ir_input_shape[2] * ir_scale_factor)  # height
-            ir_input_shape[3] = int(ir_input_shape[3] * ir_scale_factor)  # width
+            ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
+            ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
             deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
