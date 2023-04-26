@@ -539,9 +539,9 @@ class TestConfigManager:
         config_manager = ConfigManager(args=mock_args)
         config_manager.task_type = "DETECTION"
         config_manager.data_config = {
-            "train_subset": {"data_root": "train_path"},
-            "val_subset": {"data_root": "val_path"},
-            "test_subset": {"data_root": "test_path"},
+            "train_subset": {"data_roots": "train_path"},
+            "val_subset": {"data_roots": "val_path"},
+            "test_subset": {"data_roots": "test_path"},
         }
         dataset_config = config_manager.get_dataset_config(["train", "val", "test"])
         assert dataset_config["task_type"] == "DETECTION"
