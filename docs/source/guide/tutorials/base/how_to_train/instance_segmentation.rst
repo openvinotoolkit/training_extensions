@@ -272,7 +272,7 @@ These are needed as inputs for the further commands: ``export``, ``eval``,  ``op
           └── cli_report.log
   ...
 
-After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
+After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation
