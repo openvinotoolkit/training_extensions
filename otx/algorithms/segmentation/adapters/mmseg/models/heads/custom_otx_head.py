@@ -38,6 +38,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
         inside OTX framework.
 
         Args:
+            base_type (bool): base type of segmentation head
             enable_aggregator (bool): If true, will use aggregator
                 concating all inputs from backbone by DepthwiseSeparableConvModule.
             aggregator_min_channels (int, optional): The number of channels of output of aggregator.
@@ -50,6 +51,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
 
         def __init__(
             self,
+            base_type: bool = "FCNHead",
             enable_aggregator: bool = False,
             aggregator_min_channels: Optional[int] = None,
             aggregator_merge_norm: Optional[str] = None,
@@ -97,7 +99,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             self.ignore_index = 255
 
             # get rid of last activation of convs module
-            if self.act_cfg:
+            if self.act_cfg and base_type == "FCNHead":
                 self.convs[-1].with_activation = False
                 delattr(self.convs[-1], "activate")
 
