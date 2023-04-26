@@ -69,11 +69,9 @@ This dataset contains images of grapevines with the annotation for different var
 - ``SVB`` - Sauvignon Blanc
 - ``SYH`` - Syrah
 
-It's a great example to start with. The model achieves high accuracy right from the beginning of the training due to relatively large and focused objects. Also, these objects are distinguished by a person, so we can check inference results just by looking at images.
-
 |
 
-.. image:: ../../../../../utils/images/wgisd_gt_sample.jpg
+.. image:: ../../../../../utils/images/wgisd_dataset_sample.jpg
   :width: 600
   :alt: this image uploaded from this `source <https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg>`_
 
