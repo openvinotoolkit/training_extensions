@@ -549,12 +549,7 @@ class DetectionConfigurer:
                 cfg.distributed = True
                 self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
-            gpu_ids = os.environ.get("CUDA_VISIBLE_DEVICES")
-            logger.info(f"CUDA_VISIBLE_DEVICES = {gpu_ids}")
-            if gpu_ids is not None:
-                cfg.gpu_ids = range(len(gpu_ids.split(",")))
-            else:
-                cfg.gpu_ids = range(1)
+            cfg.gpu_ids = range(1)
 
         # consider "cuda" and "cpu" device only
         if not torch.cuda.is_available():
