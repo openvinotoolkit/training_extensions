@@ -78,7 +78,7 @@ class TestToolsOTXActionClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
         if template.name == "MoViNet":
-            pytest.skip(reason="MoViNet fails with OpenVINO inference occasionally")
+            pytest.skip(reason="Issue#2058: MoViNet fails with OpenVINO inference occasionally")
         tmp_dir_path = tmp_dir_path / "action_cls"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -87,7 +87,7 @@ class TestToolsOTXActionClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         if template.name == "MoViNet":
-            pytest.skip(reason="MoViNet fails with OpenVINO inference occasionally")
+            pytest.skip(reason="Issue#2058: MoViNet fails with OpenVINO inference occasionally")
         tmp_dir_path = tmp_dir_path / "action_cls"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
