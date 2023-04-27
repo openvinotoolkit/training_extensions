@@ -24,7 +24,7 @@ on:
 
 jobs:
   run_tests_in_tox:
-    runs-on: [self-hosted, linux, x64, dev]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository
