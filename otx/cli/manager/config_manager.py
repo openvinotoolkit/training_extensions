@@ -195,7 +195,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
             # FIXME: Hardcoded for Self-Supervised Learning
             if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
-                splitted_dataset = self.auto_split_data(data_yaml["data"]["train"]["data-roots"], str(self.task_type))
+                splitted_dataset = self.auto_split_data(
+                    data_yaml["data"]["train"]["data-roots"], str(self.task_type), self.args.train_ann_files
+                )
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
@@ -257,11 +259,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 return task_key
         raise ConfigValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
-    def auto_split_data(self, data_roots: str, task: str):
+    def auto_split_data(self, data_roots: str, task: str, ann_file: Optional[str] = None):
         """Automatically Split train data --> train/val dataset."""
         self.data_format = self.dataset_manager.get_data_format(data_roots)
         dataset = self.dataset_manager.import_dataset(data_root=data_roots, data_format=self.data_format)
         train_dataset = self.dataset_manager.get_train_dataset(dataset)
+        if ann_file is not None:
+            train_dataset = self.dataset_manager.import_dataset(ann_file, data_format=self.data_format, subset="train")
         val_dataset = self.dataset_manager.get_val_dataset(dataset)
         splitted_dataset = None
         if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
@@ -285,13 +289,21 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if self.mode in ("train", "optimize"):
             if self.args.train_data_roots:
                 data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
+            if self.args.train_ann_files:
+                data_yaml["data"]["train"]["ann-files"] = self.args.train_ann_files
             if self.args.val_data_roots:
                 data_yaml["data"]["val"]["data-roots"] = self.args.val_data_roots
+            if self.args.val_ann_files:
+                data_yaml["data"]["val"]["ann-files"] = self.args.val_ann_files
             if self.args.unlabeled_data_roots:
                 data_yaml["data"]["unlabeled"]["data-roots"] = self.args.unlabeled_data_roots
+            if self.args.unlabeled_file_list:
+                data_yaml["data"]["unlabeled"]["file-list"] = self.args.unlabeled_file_list
         elif self.mode == "test":
             if self.args.test_data_roots:
                 data_yaml["data"]["test"]["data-roots"] = self.args.test_data_roots
+            if self.args.test_ann_files:
+                data_yaml["data"]["test"]["ann-files"] = self.args.test_ann_files
         return data_yaml
 
     def _save_data(
@@ -326,6 +338,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if data_config["data"]["unlabeled"]["data-roots"] is not None:
             data_config["data"]["unlabeled"]["data-roots"] = str(
                 Path(data_config["data"]["unlabeled"]["data-roots"]).absolute()
+            )
+        if data_config["data"]["unlabeled"]["file-list"] is not None:
+            data_config["data"]["unlabeled"]["file-list"] = str(
+                Path(data_config["data"]["unlabeled"]["file-list"]).absolute()
             )
 
     def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
@@ -365,8 +381,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             subsets.remove("unlabeled")
         dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
-            if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
-                dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})
+            if f"{subset}_subset" in self.data_config:
+                if self.data_config[f"{subset}_subset"]["data_roots"]:
+                    dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_roots"]})
+                if "ann_files" in self.data_config[f"{subset}_subset"]:
+                    dataset_config.update({f"{subset}_ann_files": self.data_config[f"{subset}_subset"]["ann_files"]})
+                if "file_list" in self.data_config[f"{subset}_subset"]:
+                    dataset_config.update({f"{subset}_file_list": self.data_config[f"{subset}_subset"]["file_list"]})
         if hyper_parameters is not None:
             dataset_config["cache_config"] = {}
             algo_backend = getattr(hyper_parameters, "algo_backend", None)
@@ -389,20 +410,26 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         Args:
             data_yaml (dict): data.yaml format
         """
-        if data_yaml["data"]["train"]["data-roots"]:
-            self.data_config["train_subset"] = {"data_root": data_yaml["data"]["train"]["data-roots"]}
-        if data_yaml["data"]["val"]["data-roots"]:
-            self.data_config["val_subset"] = {"data_root": data_yaml["data"]["val"]["data-roots"]}
-        if data_yaml["data"]["test"]["data-roots"]:
-            self.data_config["test_subset"] = {"data_root": data_yaml["data"]["test"]["data-roots"]}
+        if "data-roots" in data_yaml["data"]["train"]:
+            self.data_config["train_subset"] = {"data_roots": data_yaml["data"]["train"]["data-roots"]}
+            if "ann-files" in data_yaml["data"]["train"]:
+                self.data_config["train_subset"]["ann_files"] = data_yaml["data"]["train"]["ann-files"]
+        if "data-roots" in data_yaml["data"]["val"]:
+            self.data_config["val_subset"] = {"data_roots": data_yaml["data"]["val"]["data-roots"]}
+            if "ann-files" in data_yaml["data"]["val"]:
+                self.data_config["val_subset"]["ann_files"] = data_yaml["data"]["val"]["ann-files"]
+        if "data-roots" in data_yaml["data"]["test"]:
+            self.data_config["test_subset"] = {"data_roots": data_yaml["data"]["test"]["data-roots"]}
+            if "ann-files" in data_yaml["data"]["test"]:
+                self.data_config["test_subset"]["ann_files"] = data_yaml["data"]["test"]["ann-files"]
         if "unlabeled" in data_yaml["data"] and data_yaml["data"]["unlabeled"]["data-roots"]:
             self.data_config["unlabeled_subset"] = {
-                "data_root": data_yaml["data"]["unlabeled"]["data-roots"],
+                "data_roots": data_yaml["data"]["unlabeled"]["data-roots"],
                 "file_list": data_yaml["data"]["unlabeled"]["file-list"],
             }
         # FIXME: Hardcoded for Self-Supervised Learning
         if self.mode in ("train", "optimize") and str(self.train_type).upper() == "SELFSUPERVISED":
-            self.data_config["val_subset"] = {"data_root": None}
+            self.data_config["val_subset"] = {"data_roots": None}
 
     def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:
         """Returns the appropriate template for each situation.

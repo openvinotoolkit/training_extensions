@@ -5,8 +5,6 @@
 #
 
 import json
-
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches
 import os
 from typing import Any, Dict, List, Optional
 
@@ -33,6 +31,9 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches,
+# pylint: too-many-arguments
+
 
 class SegmentationDatasetAdapter(BaseDatasetAdapter):
     """Segmentation adapter inherited from BaseDatasetAdapter.
@@ -44,17 +45,25 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         self,
         task_type: TaskType,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
         cache_config: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(
             task_type,
             train_data_roots,
+            train_ann_files,
             val_data_roots,
+            val_ann_files,
             test_data_roots,
+            test_ann_files,
             unlabeled_data_roots,
+            unlabeled_file_list,
             cache_config,
         )
         self.updated_label_id: Dict[int, int] = {}
@@ -150,9 +159,13 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
     def _import_dataset(
         self,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
         pseudo_mask_dir: str = "detcon_mask",
     ) -> Dict[Subset, DatumDataset]:
         """Import custom Self-SL dataset for using DetCon.
@@ -163,9 +176,13 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         Args:
             train_data_roots (Optional[str]): Path for training data.
+            train_ann_files (Optional[str]): Path for training annotation file
             val_data_roots (Optional[str]): Path for validation data
+            val_ann_files (Optional[str]): Path for validation annotation file
             test_data_roots (Optional[str]): Path for test data.
+            test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data.
+            unlabeled_file_list (Optional[str]): Path of unlabeled file list
             pseudo_mask_dir (str): Directory to save pseudo masks. Defaults to "detcon_mask".
 
         Returns:

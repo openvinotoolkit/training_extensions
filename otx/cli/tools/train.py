@@ -53,10 +53,12 @@ def get_args():
         "--train-data-roots",
         help="Comma-separated paths to training data folders.",
     )
+    parser.add_argument("--train-ann-files", help="Comma-separated paths to train annotation files.")
     parser.add_argument(
         "--val-data-roots",
         help="Comma-separated paths to validation data folders.",
     )
+    parser.add_argument("--val-ann-files", help="Comma-separated paths to train annotation files.")
     parser.add_argument(
         "--unlabeled-data-roots",
         help="Comma-separated paths to unlabeled data folders",
@@ -253,7 +255,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     save_model_data(output_model, str(model_path))
 
     performance = None
-    if config_manager.data_config["val_subset"]["data_root"]:
+    if config_manager.data_config["val_subset"]["data_roots"]:
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
         predicted_validation_dataset = task.infer(
             validation_dataset.with_empty_annotations(),

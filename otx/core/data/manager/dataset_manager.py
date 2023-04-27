@@ -85,9 +85,9 @@ class DatasetManager:
         return dataset.export(output_dir, data_format, save_media=save_media)
 
     @staticmethod
-    def import_dataset(data_root: str, data_format: str) -> dict:
+    def import_dataset(data_root: str, data_format: str, subset: Optional[str] = None) -> dict:
         """Import dataset."""
-        return Dataset.import_from(data_root, format=data_format)
+        return Dataset.import_from(data_root, format=data_format, subset=subset)
 
     @staticmethod
     def auto_split(task: str, dataset: Dataset, split_ratio: List[Tuple[str, float]]) -> dict:

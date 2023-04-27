@@ -4,11 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-instance-attributes, unused-argument
+# pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, unused-argument, too-many-arguments
 
 import abc
 import os
 from abc import abstractmethod
+from copy import deepcopy
 from difflib import get_close_matches
 from typing import Any, Dict, List, Optional, Union
 
@@ -53,9 +54,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     Args:
         task_type [TaskType]: type of the task
         train_data_roots (Optional[str]): Path for training data
+        train_ann_files (Optional[str]): Path for training annotation file
         val_data_roots (Optional[str]): Path for validation data
+        val_ann_files (Optional[str]): Path for validation annotation file
         test_data_roots (Optional[str]): Path for test data
+        test_ann_files (Optional[str]): Path for test annotation file
         unlabeled_data_roots (Optional[str]): Path for unlabeled data
+        unlabeled_file_list (Optional[str]): Path of unlabeled file list
 
     Since all adapters can be used for training and validation,
     the default value of train/val/test_data_roots was set to None.
@@ -69,9 +74,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         self,
         task_type: TaskType,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
         cache_config: Optional[Dict[str, Any]] = None,
     ):
         self.task_type = task_type
@@ -81,9 +90,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         self.dataset = self._import_dataset(
             train_data_roots=train_data_roots,
+            train_ann_files=train_ann_files,
             val_data_roots=val_data_roots,
+            val_ann_files=val_ann_files,
             test_data_roots=test_data_roots,
+            test_ann_files=test_ann_files,
             unlabeled_data_roots=unlabeled_data_roots,
+            unlabeled_file_list=unlabeled_file_list,
         )
 
         if cache_config is None:
@@ -99,20 +112,28 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     def _import_dataset(
         self,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
     ) -> Dict[Subset, DatumDataset]:
         """Import dataset by using Datumaro.import_from() method.
 
         Args:
             train_data_roots (Optional[str]): Path for training data
+            train_ann_files (Optional[str]): Path for training annotation files
             val_data_roots (Optional[str]): Path for validation data
+            val_ann_files (Optional[str]): Path for validation annotation files
             test_data_roots (Optional[str]): Path for test data
+            test_ann_files (Optional[str]): Path for test annotation files
             unlabeled_data_roots (Optional[str]): Path for unlabeled data
+            unlabeled_file_list (Optional[str]): Path for unlabeled file list
 
         Returns:
-            DatumaroDataset: Datumaro Dataset
+            DatumDataset: Datumaro Dataset
         """
         dataset = {}
         if train_data_roots is None and test_data_roots is None:
@@ -124,7 +145,15 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
 
-            train_dataset = DatumDataset.import_from(train_data_roots, format=self.data_type)
+            dataset_kwargs = {"path": train_data_roots, "format": self.data_type}
+            if train_ann_files is not None:
+                if self.data_type not in ("coco"):
+                    raise NotImplementedError(
+                        f"Specifying '--train-ann-files' is not supported for data type '{self.data_type}'"
+                    )
+                dataset_kwargs["path"] = train_ann_files
+                dataset_kwargs["subset"] = "train"
+            train_dataset = DatumDataset.import_from(**dataset_kwargs)
 
             # Prepare subsets by using Datumaro dataset
             dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
@@ -134,7 +163,15 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             if val_data_roots:
                 val_data_candidates = self._detect_dataset_format(path=val_data_roots)
                 val_data_type = self._select_data_type(val_data_candidates)
-                val_dataset = DatumDataset.import_from(val_data_roots, format=val_data_type)
+                dataset_kwargs = {"path": val_data_roots, "format": val_data_type}
+                if val_ann_files is not None:
+                    if val_data_type not in ("coco"):
+                        raise NotImplementedError(
+                            f"Specifying '--val-ann-files' is not supported for data type '{val_data_type}'"
+                        )
+                    dataset_kwargs["path"] = val_ann_files
+                    dataset_kwargs["subset"] = "val"
+                val_dataset = DatumDataset.import_from(**dataset_kwargs)
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
             elif "val" in train_dataset.subsets():
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
@@ -142,13 +179,22 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         if test_data_roots is not None and train_data_roots is None:
             self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
             self.data_type = self._select_data_type(self.data_type_candidates)
-            test_dataset = DatumDataset.import_from(test_data_roots, format=self.data_type)
+            dataset_kwargs = {"path": test_data_roots, "format": self.data_type}
+            if test_ann_files is not None:
+                if self.data_type not in ("coco"):
+                    raise NotImplementedError(
+                        f"Specifying '--test-ann-files' is not supported for data type '{self.data_type}'"
+                    )
+                dataset_kwargs["path"] = test_ann_files
+                dataset_kwargs["subset"] = "test"
+            test_dataset = DatumDataset.import_from(**dataset_kwargs)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
             self.is_train_phase = False
 
         if unlabeled_data_roots is not None:
             dataset[Subset.UNLABELED] = DatumDataset.import_from(unlabeled_data_roots, format="image_dir")
-
+            if unlabeled_file_list is not None:
+                self._filter_unlabeled_data(dataset[Subset.UNLABELED], unlabeled_file_list)
         return dataset
 
     @abstractmethod
@@ -308,6 +354,23 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         for used_label in used_labels:
             clean_label_entities.append(self.label_entities[used_label])
         self.label_entities = clean_label_entities
+
+    def _filter_unlabeled_data(self, unlabeled_dataset: DatumDataset, unlabeled_file_list: str):
+        """Filter out unlabeled dataset which isn't included in unlabeled file list."""
+        allowed_extensions = ["jpg", "png", "jpeg"]
+        file_list = []
+        with open(unlabeled_file_list, "r", encoding="utf-8") as f:
+            for line in f.readlines():
+                file_ext = line.rstrip().split(".")[-1]
+                file_list.append(line.split(".")[0])
+
+                if file_ext.lower() not in allowed_extensions:
+                    raise ValueError(f"{file_ext} is not supported type for unlabeled data.")
+
+        copy_dataset = deepcopy(unlabeled_dataset)
+        for item in copy_dataset:
+            if item.id not in file_list:
+                unlabeled_dataset.remove(item.id, item.subset)
 
     @staticmethod
     def datum_media_2_otx_media(datumaro_media: DatumMediaElement) -> IMediaEntity:
