@@ -578,6 +578,30 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 <p class="admonition-title">Note</p>
 <p>Not all of the tasks support the auto-split feature. If the task isn’t supported - unexpected behavior or errors may appear. Please, refer to <a class="reference internal" href="../../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a> documentation.</p>
 </div>
+<p>If you have multiple annotation files like below, add additional argument (<code class="docutils literal notranslate"><span class="pre">--train-ann-files</span></code>). Then, you could use the annotation what you selected.
+OpenVINO™ Training Extensions could randomly selects the train annotation file if you do not use additional argument (<code class="docutils literal notranslate"><span class="pre">--train-ann-files</span></code>)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coco_data_root</span>
+  <span class="o">|----</span> <span class="n">annotations</span>
+    <span class="o">|----</span> <span class="n">instances_train</span><span class="o">.</span><span class="n">json</span>
+    <span class="o">|----</span> <span class="n">instances_train_1percent</span><span class="o">.</span><span class="n">json</span>
+    <span class="o">|----</span> <span class="n">instances_train_10percent</span><span class="o">.</span><span class="n">json</span>
+    <span class="o">|----</span> <span class="n">instances_val</span><span class="o">.</span><span class="n">json</span>
+  <span class="o">|----</span> <span class="n">images</span>
+    <span class="o">|----</span> <span class="n">train</span>
+      <span class="o">|----</span> <span class="mf">000.</span><span class="n">jpg</span>
+      <span class="o">....</span>
+  <span class="o">|----</span> <span class="n">val</span>
+      <span class="o">|----</span> <span class="mf">000.</span><span class="n">jpg</span>
+      <span class="o">....</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">coco_data_root</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">ann</span><span class="o">-</span><span class="n">files</span> <span class="n">coco_data_root</span><span class="o">/</span><span class="n">annotations</span><span class="o">/</span><span class="n">instances_train_10percent</span><span class="o">.</span><span class="n">json</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For now, only COCO format data could be used for direct annotation input</p>
+</div>
 </section>
 </section>
 <section id="training">
