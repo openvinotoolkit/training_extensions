@@ -12,51 +12,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Run-e2e-tests-action:
+  E2E-tests:
+    strategy:
+      matrix:
+        include:
+          - task: "act"
+            test_dir: "tests/e2e/cli/action"
+          - task: "ano"
+            test_dir: "tests/e2e/cli/anomaly"
+          - task: "cls"
+            test_dir: "tests/e2e/cli/classification"
+          - task: "det"
+            test_dir: "tests/e2e/cli/detection"
+          - task: "iseg"
+            test_dir: "tests/e2e/cli/instance_segmentation"
+          - task: "seg"
+            test_dir: "tests/e2e/cli/semantic_segmentation"
+    name: E2E-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"
       toxenv-pyver: "py310"
-      toxenv-task: "act"
-      tests-dir: "tests/e2e/cli/action"
-      upload-artifact: true
-  Run-e2e-tests-anomaly:
-    uses: ./.github/workflows/run_tests_in_tox.yml
-    with:
-      python-version: "3.10"
-      toxenv-pyver: "py310"
-      toxenv-task: "ano"
-      tests-dir: "tests/e2e/cli/anomaly"
-      upload-artifact: true
-  Run-e2e-tests-classification:
-    uses: ./.github/workflows/run_tests_in_tox.yml
-    with:
-      python-version: "3.10"
-      toxenv-pyver: "py310"
-      toxenv-task: "cls"
-      tests-dir: "tests/e2e/cli/classification"
-      upload-artifact: true
-  Run-e2e-tests-detection:
-    uses: ./.github/workflows/run_tests_in_tox.yml
-    with:
-      python-version: "3.10"
-      toxenv-pyver: "py310"
-      toxenv-task: "det"
-      tests-dir: "tests/e2e/cli/detection"
-      upload-artifact: true
-  Run-e2e-tests-instance_segmentation:
-    uses: ./.github/workflows/run_tests_in_tox.yml
-    with:
-      python-version: "3.10"
-      toxenv-pyver: "py310"
-      toxenv-task: "iseg"
-      tests-dir: "tests/e2e/cli/instance_segmentation"
-      upload-artifact: true
-  Run-e2e-tests-semantic_segmentation:
-    uses: ./.github/workflows/run_tests_in_tox.yml
-    with:
-      python-version: "3.10"
-      toxenv-pyver: "py310"
-      toxenv-task: "seg"
-      tests-dir: "tests/e2e/cli/semantic_segmentation"
+      toxenv-task: ${{ matrix.task }}
+      tests-dir: ${{ matrix.test_dir }}
+      timeout-minutes: 360
       upload-artifact: true

@@ -79,26 +79,26 @@ jobs:
     strategy:
       matrix:
         include:
-          - tasks: "all"
+          - task: "all"
             test_dir: "tests/integration/cli/test_cli.py"
-          - tasks: "cls"
+          - task: "cls"
             test_dir: "tests/integration/cli/classification"
-          - tasks: "det"
+          - task: "det"
             test_dir: "tests/integration/cli/detection"
-          - tasks: "iseg"
+          - task: "iseg"
             test_dir: "tests/integration/cli/instance_segmentation"
-          - tasks: "seg"
+          - task: "seg"
             test_dir: "tests/integration/cli/semantic_segmentation"
-          - tasks: "act"
+          - task: "act"
             test_dir: "tests/integration/cli/action"
-          - tasks: "ano"
+          - task: "ano"
             test_dir: "tests/integration/cli/anomaly"
-    name: Integration-Test-${{ matrix.tasks }}
+    name: Integration-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"
       toxenv-pyver: "py310"
-      toxenv-task: ${{ matrix.tasks }}
+      toxenv-task: ${{ matrix.task }}
       tests-dir: ${{ matrix.test_dir }}
       timeout-minutes: 120
       upload-artifact: true
