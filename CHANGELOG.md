@@ -6,7 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
+- Upgrade mmdeploy==0.14.0 from official PyPI (<https://github.com/openvinotoolkit/training_extensions/pull/2047>)
 - Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>)
+- Optimize YOLOX data pipeline (<https://github.com/openvinotoolkit/training_extensions/pull/2075>)
+
+### Bug fixes
+
+- Bug fix: value of validation variable is changed after auto decrease batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2053>)
+- Fix tiling 0 stride issue in parameter adapter (<https://github.com/openvinotoolkit/training_extensions/pull/2078>)
 
 ## \[v1.2.0\]
 

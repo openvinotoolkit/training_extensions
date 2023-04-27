@@ -359,7 +359,7 @@ class BaseConfig(ConfigurableParameters):
             description="Overlap between each two neighboring tiles.",
             default_value=0.2,
             min_value=0.0,
-            max_value=1.0,
+            max_value=0.9,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
@@ -369,6 +369,22 @@ class BaseConfig(ConfigurableParameters):
             default_value=1500,
             min_value=1,
             max_value=10000,
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        tile_ir_scale_factor = configurable_float(
+            header="OpenVINO IR Scale Factor",
+            description="The purpose of the scale parameter is to optimize the performance and "
+            "efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and "
+            "input size, the scale parameter allows for more efficient parallelization of the workload and "
+            "improve the overall performance and efficiency of the inference process on OpenVINO.",
+            warning="Setting the scale factor value too high may cause the application "
+            "to crash or result in out-of-memory errors. It is recommended to "
+            "adjust the scale factor value carefully based on the available "
+            "hardware resources and the needs of the application.",
+            default_value=2.0,
+            min_value=1.0,
+            max_value=4.0,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
