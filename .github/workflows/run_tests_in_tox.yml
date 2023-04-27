@@ -14,7 +14,7 @@ on:
         default: "all"
       tests-dir:
         type: string
-        default: "tests/integration"
+        default: ""
       timeout-minutes:
         type: number
         default: 720
@@ -24,7 +24,7 @@ on:
 
 jobs:
   run_tests_in_tox:
-    runs-on: [self-hosted, linux, x64, debug]
+    runs-on: [self-hosted, linux, x64, dev]
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository
@@ -33,6 +33,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python-version }}
+          cache: pip
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: E2E Tests
