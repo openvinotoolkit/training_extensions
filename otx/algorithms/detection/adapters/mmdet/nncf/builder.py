@@ -133,10 +133,9 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
         state_dict = None
 
     test_pipeline = [LoadImage()]
-    if len(config.data.test.pipeline) > 1:
-        test_pipeline.extend(config.data.test.pipeline[1:])
-    else:
-        test_pipeline.extend(config.data.test.pipeline)
+    for pipeline in config.data.test.pipeline:
+        if not pipeline.type.startswith("LoadImage"):
+            test_pipeline.append(pipeline)
 
     test_pipeline = Compose(test_pipeline)
     get_fake_input_fn = partial(
