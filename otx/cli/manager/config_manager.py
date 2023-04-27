@@ -545,5 +545,5 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             print("In the CLI, Update ignore to false in model configuration.")
         if hasattr(config, "deterministic") and hasattr(self.args, "deterministic"):
             config.deterministic = self.args.deterministic
-        if hasattr(config, "seed") and hasattr(self.args, "seed"):
+        if hasattr(config, "seed") and hasattr(self.args, "seed") and self.args.seed:
             config.seed = self.args.seed

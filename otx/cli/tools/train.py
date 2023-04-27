@@ -257,7 +257,9 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
-    task.train(dataset, output_model, train_parameters=TrainParameters())
+    task.train(
+        dataset, output_model, train_parameters=TrainParameters(), seed=args.seed, deterministic=args.deterministic
+    )
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
