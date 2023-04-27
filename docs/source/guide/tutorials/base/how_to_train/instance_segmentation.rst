@@ -245,7 +245,7 @@ For example, to decrease the batch size to 4, fix the number of epochs to 100 an
                               --learning_parameters.num_iters 100 \
                               --learning_parameters.enable_early_stopping false
 
-5. The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``outputs/**_train/models`` folder, 
+5. The training results are ``weights.pth`` and ``label_schema.json`` files located in ``outputs/**_train/models`` folder, 
 while training logs can be found in the ``outputs/**_train/logs`` dir.
 
 - ``weights.pth`` - a model snapshot
@@ -272,7 +272,7 @@ These are needed as inputs for the further commands: ``export``, ``eval``,  ``op
           └── cli_report.log
   ...
 
-After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaliation, export, optimization and deployment.
+After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
 ***********
 Validation
