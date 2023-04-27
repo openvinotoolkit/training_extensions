@@ -313,7 +313,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
 
     def set_seed(self):
         """Set seed and deterministic."""
-        if self.seed is not None:
+        if self.seed is None:
             # If the seed is not present via task.train, it will be found in the recipe.
             self.seed = self.config.get("seed", 5)
         if not self.deterministic:
