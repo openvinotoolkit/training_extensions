@@ -57,8 +57,8 @@ class TrainingTask(InferenceTask, ITrainingTask):
             dataset (DatasetEntity): Input dataset.
             output_model (ModelEntity): Output model to save the model weights.
             train_parameters (TrainParameters): Training parameters
-            seed: (Optional[int]): Setting seed to a value other than 0
-            deterministic: Setting PytorchLightning trainer's deterministic flag.
+            seed (Optional[int]): Setting seed to a value other than 0
+            deterministic (bool): Setting PytorchLightning trainer's deterministic flag.
         """
         logger.info("Training the model.")
 
