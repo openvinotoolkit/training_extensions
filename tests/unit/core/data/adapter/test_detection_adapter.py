@@ -64,6 +64,73 @@ class TestOTXDetectionDatasetAdapter:
         assert isinstance(det_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
     @e2e_pytest_unit
+    def test_get_subset_data(self):
+        class MockDatumDataset:
+            def __init__(self, subsets):
+                self._subsets = subsets
+                self.eager = None
+
+            def subsets(self):
+                return self._subsets
+
+        class MockDataset:
+            def __init__(self, string):
+                self.string = string
+
+            def as_dataset(self):
+                return self.string
+
+        task = "detection"
+
+        task_type: TaskType = TASK_NAME_TO_TASK_TYPE[task]
+        data_root_dict: dict = TASK_NAME_TO_DATA_ROOT[task]
+
+        train_data_roots: str = os.path.join(self.root_path, data_root_dict["train"])
+        val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
+
+        det_train_dataset_adapter = DetectionDatasetAdapter(
+            task_type=task_type,
+            train_data_roots=train_data_roots,
+            val_data_roots=val_data_roots,
+        )
+
+        dataset = MockDatumDataset(
+            {
+                "train": MockDataset("train"),
+                "val": MockDataset("val"),
+                "test": MockDataset("test"),
+            }
+        )
+        assert det_train_dataset_adapter._get_subset_data("val", dataset) == "val"
+
+        dataset = MockDatumDataset(
+            {
+                "train": MockDataset("train"),
+                "validation": MockDataset("validation"),
+                "test": MockDataset("test"),
+            }
+        )
+        assert det_train_dataset_adapter._get_subset_data("val", dataset) == "validation"
+
+        dataset = MockDatumDataset(
+            {
+                "train": MockDataset("train"),
+                "trainval": MockDataset("trainval"),
+                "val": MockDataset("val"),
+            }
+        )
+        assert det_train_dataset_adapter._get_subset_data("val", dataset) == "val"
+
+        dataset = MockDatumDataset(
+            {
+                "train2017": MockDataset("train2017"),
+                "val2017": MockDataset("val2017"),
+                "test2017": MockDataset("test2017"),
+            }
+        )
+        assert det_train_dataset_adapter._get_subset_data("val", dataset) == "val2017"
+
+    @e2e_pytest_unit
     def test_instance_segmentation(self):
         task = "instance_segmentation"
 
