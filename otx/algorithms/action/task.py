@@ -99,7 +99,12 @@ class OTXActionTask(OTXTask, ABC):
         self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
     ):
         """Train function for OTX action task.
 
@@ -113,6 +118,8 @@ class OTXActionTask(OTXTask, ABC):
             self._should_stop = False
             self._is_training = False
             return
+        self.seed = seed
+        self.deterministic = deterministic
 
         # Set OTX LoggerHook & Time Monitor
         if train_parameters:

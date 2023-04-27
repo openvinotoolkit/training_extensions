@@ -137,6 +137,16 @@ def get_args():
         "(e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).",
     )
     parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Set deterministic to True, default=False.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Set seed for training.",
+    )
+    parser.add_argument(
         "--data",
         type=str,
         default=None,
@@ -249,7 +259,9 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
-    task.train(dataset, output_model, train_parameters=TrainParameters())
+    task.train(
+        dataset, output_model, train_parameters=TrainParameters(), seed=args.seed, deterministic=args.deterministic
+    )
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
