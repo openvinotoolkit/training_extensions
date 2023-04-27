@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 - Upgrade mmdeploy==0.14.0 from official PyPI (<https://github.com/openvinotoolkit/training_extensions/pull/2047>)
 - Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>)
 - Optimize YOLOX data pipeline (<https://github.com/openvinotoolkit/training_extensions/pull/2075>)
+- Tiling Spatial Concatenation for OpenVINO IR (<https://github.com/openvinotoolkit/training_extensions/pull/2052>)
 
 ### Bug fixes
 
