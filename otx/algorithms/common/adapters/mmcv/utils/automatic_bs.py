@@ -8,7 +8,7 @@ from typing import Callable, Dict, List
 
 import numpy as np
 
-from otx.algorithms.common.adapters.torch.utils import adapt_batch_size as adapt_torch_model_bs
+from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
@@ -86,19 +86,20 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
 
     default_bs = _get_batch_size(cfg)
 
-    available_bs = adapt_torch_model_bs(
+    bs_search_ago = BsSearchAlgo(
         train_func=train_func_single_iter,
-        current_bs=default_bs,
-        trainset_size=len(datasets[0]),
+        default_bs=default_bs,
+        max_bs=len(datasets[0]),
     )
+    runnable_bs = bs_search_ago.auto_decrease_batch_size()
 
-    if default_bs != available_bs:
-        _set_batch_size(cfg, available_bs)
+    if default_bs != runnable_bs:
+        _set_batch_size(cfg, runnable_bs)
         origin_lr = cfg.optimizer.lr
-        cfg.optimizer.lr *= available_bs / default_bs
+        cfg.optimizer.lr *= runnable_bs / default_bs
 
         logger.info("Adapting batch size is done.")
-        logger.info(f"Batch size is adapted : {default_bs} -> {available_bs}")
+        logger.info(f"Batch size is adapted : {default_bs} -> {runnable_bs}")
         logger.info(f"learning rate is adapted : {origin_lr} -> {cfg.optimizer.lr}")
     else:
         logger.info("Adapting batch size is done. Current batch size is availble.")
