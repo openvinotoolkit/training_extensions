@@ -27,6 +27,7 @@ from .metadata_keys import (
     MAX_VALUE,
     MIN_VALUE,
     OPTIONS,
+    STEP_SIZE,
     TYPE,
     UI_RULES,
     VISIBLE_IN_UI,
@@ -168,6 +169,7 @@ def configurable_float(
     header: str,
     min_value: float = 0.0,
     max_value: float = 255.0,
+    step_size: Optional[float] = None,
     description: str = "Default float description",
     warning: str = None,
     editable: bool = True,
@@ -187,6 +189,8 @@ def configurable_float(
             take. Defaults to 0.0
         max_value: upper bound of the range of values this parameter can
             take Defaults to 255.0
+        step_size: Recommended step size to increment/decrement this parameter,
+            mainly for visualization purposes. If None, step size is arbitrary.
         description: A user friendly description of what this parameter
             does, what does it represent and what are the effects of
             changing it?
@@ -236,7 +240,7 @@ def configurable_float(
         auto_hpo_value=auto_hpo_value,
     )
 
-    metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value})
+    metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value, STEP_SIZE: step_size})
     value_validator = construct_attr_value_validator(min_value, max_value)
     type_validator = attr_strict_float_on_setattr
 

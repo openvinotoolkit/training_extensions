@@ -9,6 +9,7 @@ from typing import List
 DEFAULT_VALUE = "default_value"
 MIN_VALUE = "min_value"
 MAX_VALUE = "max_value"
+STEP_SIZE = "step_size"
 DESCRIPTION = "description"
 HEADER = "header"
 WARNING = "warning"
