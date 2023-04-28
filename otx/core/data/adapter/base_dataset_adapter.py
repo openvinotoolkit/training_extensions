@@ -99,10 +99,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             unlabeled_file_list=unlabeled_file_list,
         )
 
-        if cache_config is None:
-            cache_config = {}
+        cache_config = cache_config if cache_config is not None else {}
         for subset, dataset in self.dataset.items():
-            self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
+            # cache these subsets only
+            if subset not in (Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED, Subset.PSEUDOLABELED):
+                self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
 
         self.category_items: Dict[DatumAnnotationType, DatumCategories]
         self.label_groups: List[str]
