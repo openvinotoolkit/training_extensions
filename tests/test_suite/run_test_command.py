@@ -116,7 +116,7 @@ def check_run(cmd, **kwargs):
     assert rc == 0, stderr
 
 
-def otx_train_testing(template, root, otx_dir, args):
+def otx_train_testing(template, root, otx_dir, args, deterministic=True):
     template_work_dir = get_template_dir(template, root)
     command_line = ["otx", "train", template.model_template_path]
     for arg in [
@@ -138,6 +138,8 @@ def otx_train_testing(template, root, otx_dir, args):
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
             command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
+    if deterministic:
+        command_line.extend(["--deterministic"])
     if "train_params" in args:
         command_line.extend(args["train_params"])
     check_run(command_line)
