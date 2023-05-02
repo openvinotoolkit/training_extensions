@@ -54,9 +54,6 @@ If you organized supported dataset format, starting training will be very simple
 
     Due to some internal limitations, the dataset should always consist of a "background" label. If your dataset doesn't have a background label, rename the first label to "background" in the ``meta.json`` file.
 
-.. note::
-
-    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` for more information on how to train, validate and optimize the semantic segmentation model.
 
 .. note::
 
@@ -113,6 +110,10 @@ In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%
 +-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
 | SegNext-b             | 87.92                                                        | 76.94                                               | 85.01                                                                | 55.49                                                           | 73.45  |
 +-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
+
+.. note::
+
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` for more information on how to train, validate and optimize the semantic segmentation model.
 
 ************************
 Semi-supervised Learning

@@ -1,8 +1,5 @@
-Release Notes
-=============
-
-.. toctree::
-   :maxdepth: 2
+Releases
+========
 
 *************
 v1.2.0 (1Q23)

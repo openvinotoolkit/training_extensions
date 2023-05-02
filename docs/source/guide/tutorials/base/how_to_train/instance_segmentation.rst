@@ -26,7 +26,7 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 2. Activate your virtual
@@ -50,7 +50,7 @@ Dataset preparation
   - `COCO <https://cocodataset.org/#format-data>`_
 
 
-1. Clone a repository with 
+1. Clone a repository with
 `WGISD dataset <https://github.com/thsant/wgisd>`_.
 
 .. code-block::
@@ -232,7 +232,7 @@ command in our workspace:
 
 The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 20 minutes with full dataset.
 
-4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations. 
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
 Learn more about template-specific parameters using ``otx train params --help``.
 
 It can be done by manually updating parameters in the ``template.yaml`` file in your workplace or via the command line.
@@ -240,12 +240,12 @@ It can be done by manually updating parameters in the ``template.yaml`` file in 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
 .. code-block::
-  
+
                       otx train params --learning_parameters.batch_size 4 \
                               --learning_parameters.num_iters 100 \
                               --learning_parameters.enable_early_stopping false
 
-5. The training results are ``weights.pth`` and ``label_schema.json`` files located in ``outputs/**_train/models`` folder, 
+5. The training results are ``weights.pth`` and ``label_schema.json`` files located in ``outputs/**_train/models`` folder,
 while training logs can be found in the ``outputs/**_train/logs`` dir.
 
 - ``weights.pth`` - a model snapshot
