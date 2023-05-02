@@ -94,7 +94,7 @@ Besides this, we added new templates in experimental phase. For now, they suppor
 | `Custom_Semantic_Segmentation_SegNext_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ham_segnext_b/template_experimental.yaml>`_                                 | SegNext-b              |   32.08             | 27.56           |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 
-New templates use `SegNext <https://arxiv.org/abs/2209.08575>` model which can achieve superior perfomance while preserving fast inference and fast training.
+New templates use `SegNext <https://arxiv.org/abs/2209.08575>`_ model which can achieve superior perfomance while preserving fast inference and fast training.
 
 In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ on some academic datasets using our :ref:`supervised pipeline <semantic_segmentation_supervised_pipeline>` is presented. We use 512x512 image crop resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 

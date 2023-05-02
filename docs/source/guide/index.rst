@@ -18,8 +18,8 @@ Guide
 
 
 .. toctree::
-  :maxdepth: 3
-  :titlesonly:
+  :hidden:
+  :caption: Explanation
 
   explanation/index
 
