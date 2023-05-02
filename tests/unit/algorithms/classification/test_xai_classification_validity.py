@@ -17,7 +17,9 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
+EXPLAIN_SUPPORTED_TEMPLATES = ["EfficientNet-B0", "MobileNet-V3-large-1x", "EfficientNet-V2-S"]
 templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates
+templates_cls = [template for template in templates_cls if template.name in EXPLAIN_SUPPORTED_TEMPLATES]
 templates_cls_ids = [template.model_template_id for template in templates_cls]
 
 
