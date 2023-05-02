@@ -1,7 +1,7 @@
 import argparse
 import json
 import os
-from typing import Dict, Union
+from typing import Dict, Union, List, Any
 
 import pandas as pd
 
@@ -55,14 +55,43 @@ NON_ANOMALY_DATA = {
 }
 
 
-def get_metric_dict(dict_type, idx: int, model: str):
-    if dict_type:
-        return dict_type[idx][model]
+def get_metric_dict(dict_data: Union[List[Dict[str, Any]], None], idx: int, model: str):
+    """Get the proper dict item by referencing the index and model information.
+    
+    Since all models could be optimized by POT or NNCF, we need to check that there are proper values in the data.
+    For example, if A model could be optimized by both POT and NNCF and B model couldn't be supported by POT and NNCF.
+    In this case, we have POT, NNCF results about A, however, we don't have POT, NNCF results about B.
+    
+    So, if we don't have results, we need to mark the empty result as "-".
+    
+    """
+    if dict_data:
+        if len(dict_data) > idx:
+            return dict_data[idx][model]
+        else:
+            return "-"
     else:
         return "-"
 
 
-def get_metric_items(input_data):
+def get_metric_items(input_data: Union[str, List[Dict[str, Any]]]):
+    """ Divide the data by using the model name.
+    
+    i.e.
+    input_data : {
+        'A': {
+            'Accuracy': 0.5,
+            'Model size (MB)': 12.65,
+            ...
+        },
+        'B':{
+            ...
+        }
+    }
+    
+    --> return_list: [(A, {'Accuracy': 0.5, 'Model size(MB)': 12.65, ...}), (B, {...})]
+    
+    """
     if isinstance(input_data, dict):
         return_list = []
         for k, v in input_data.items():
@@ -88,6 +117,7 @@ def is_anomaly_task(task: str) -> bool:
 
 
 def fill_model_performance(items: Union[list, str], test_type: str, result_data: dict):
+    """Fill the result_data by checking the index of data."""
     if isinstance(items, list):
         result_data[test_type].append(f"{items[0][0]}: {items[0][1]}")
         if test_type == "train":
@@ -111,10 +141,10 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
             train_data = task_data.get("train")
             if train_data is None:
                 raise ValueError("Train data can't be empty.")
-            export_data = task_data.get("export")
-            deploy_data = task_data.get("deploy")
-            nncf_data = task_data.get("nncf")
-            pot_data = task_data.get("pot")
+            export_data = task_data.get("export", None)
+            deploy_data = task_data.get("deploy", None)
+            nncf_data = task_data.get("nncf", None)
+            pot_data = task_data.get("pot", None)
 
             for i, per_model_data in enumerate(train_data):
                 for model in per_model_data:
