@@ -47,12 +47,20 @@ If you organized supported dataset format, starting training will be very simple
 
 .. code-block::
 
-    $ otx train --template <model_template> --train-data-roots <path_to_data_root> \
+    $ otx train  <model_template> --train-data-roots <path_to_data_root> \
                                             --val-data-roots <path_to_data_root>
 
 .. note::
 
-    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` for more information on how to train, validate and optimize semantic segmentation model for more details.
+    Due to some internal limitations, the dataset should always consist of a "background" label. If your dataset doesn't have a background label, rename the first label to "background" in the ``meta.json`` file.
+
+.. note::
+
+    Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` for more information on how to train, validate and optimize the semantic segmentation model.
+
+.. note::
+
+    Currently, metrics with models trained with our OTX dataset adapter can differ from popular benchmarks. To avoid this and train the model on exactly the same segmentation masks as intended by the authors, please, set the parameter ``use_otx_adapter`` to ``False``.
 
 ******
 Models
@@ -74,17 +82,37 @@ We support the following ready-to-use model templates:
 All of these models are members of the same `Lite-HRNet <https://arxiv.org/abs/2104.06403>`_ backbones family. They differ in the trade-off between accuracy and inference/training speed. ``Lite-HRNet-x-mod3`` is the template with heavy-size architecture for accurate predictions but it requires long training.
 Whereas the ``Lite-HRNet-s-mod2`` is the lightweight architecture for fast inference and training. It is the best choice for the scenario of a limited amount of data. The ``Lite-HRNet-18-mod2`` model is the middle-sized architecture for the balance between fast inference and training time.
 
-.. In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ on some academic datasets using our :ref:`supervised pipeline <semantic_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 512x512 image crop resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+Besides this, we added new templates in experimental phase. For now, they support only supervised incremental training type. To run training with new templates we should use direct path to ``template_experimental.yaml``.
 
-.. +-----------------------+--------------+------------+-----------------+
-.. | Model name            | ADE20k       | Cityscapes | Pascal-VOC 2012 |
-.. +=======================+==============+============+=================+
-.. | Lite-HRNet-s-mod2     | N/A          | N/A        | N/A             |
-.. +-----------------------+--------------+------------+-----------------+
-.. | Lite-HRNet-18-mod2    | N/A          | N/A        | N/A             |
-.. +-----------------------+--------------+------------+-----------------+
-.. | Lite-HRNet-x-mod3     | N/A          | N/A        | N/A             |
-.. +-----------------------+--------------+------------+-----------------+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
+| Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFLOPs) | Model size (MB) |
++==============================================================================================================================================================================================================================+========================+=====================+=================+
+| `Custom_Semantic_Segmentation_SegNext_T <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ham_segnext_t/template_experimental.yaml>`_                                 | SegNext-t              | 6.07                | 4.23            |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
+| `Custom_Semantic_Segmentation_SegNext_S <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ham_segnext_s/template_experimental.yaml>`_                                 | SegNext-s              | 15.35               | 13.9            |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
+| `Custom_Semantic_Segmentation_SegNext_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ham_segnext_b/template_experimental.yaml>`_                                 | SegNext-b              |   32.08             | 27.56           |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
+
+New templates use `SegNext <https://arxiv.org/abs/2209.08575>` model which can achieve superior perfomance while preserving fast inference and fast training.
+
+In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ on some academic datasets using our :ref:`supervised pipeline <semantic_segmentation_supervised_pipeline>` is presented. We use 512x512 image crop resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
+
++-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
+| Model name            | `DIS5K <https://xuebinqin.github.io/dis/index.html>`_        | `Cityscapes <https://www.cityscapes-dataset.com/>`_ | `Pascal-VOC 2012 <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/>`_ | `KITTI full <https://www.cvlibs.net/datasets/kitti/index.php>`_ | Mean   |
++=======================+==============================================================+=====================================================+======================================================================+=================================================================+========+
+| Lite-HRNet-s-mod2     | 79.95                                                        | 62.38                                               | 58.26                                                                | 36.06                                                           | 59.16  |
++-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
+| Lite-HRNet-18-mod2    | 81.12                                                        | 65.04                                               | 63.48                                                                | 39.14                                                           | 62.20  |
++-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
+| Lite-HRNet-x-mod3     | 79.98                                                        | 59.97                                               | 61.9                                                                 | 41.55                                                           | 60.85  |
++-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
+| SegNext-t             | 85.05                                                        | 70.67                                               | 80.73                                                                | 51.25                                                           | 68.99  |
++-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
+| SegNext-s             | 85.62                                                        | 70.91                                               | 82.31                                                                | 52.94                                                           | 69.82  |
++-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
+| SegNext-b             | 87.92                                                        | 76.94                                               | 85.01                                                                | 55.49                                                           | 73.45  |
++-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
 
 ************************
 Semi-supervised Learning
@@ -191,7 +219,7 @@ The below table shows how much performance (mDice) SupCon improved compared with
 Each subset dataset has 8, 16, and 24 images, respectively.
 
 +--------------------+-------+--------+-------+-------+--------+-------+-------+--------+-------+
-| Model name         | #8    |        |       | #16   |        |       | #24   |        |       | 
+| Model name         | #8    |        |       | #16   |        |       | #24   |        |       |
 +====================+=======+========+=======+=======+========+=======+========+=======+=======+
 |                    | SL    | SupCon | TR    | SL    | SupCon | TR    | SL    | SupCon | TR    |
 +--------------------+-------+--------+-------+-------+--------+-------+-------+--------+-------+

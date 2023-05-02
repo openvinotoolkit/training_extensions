@@ -56,10 +56,10 @@ Learn more about the formats by following the links above. Here is an example of
 
 If you have your dataset in those formats, then you can simply run using one line of code:
 
-.. code::
+.. code-block::
 
-    $ otx train ATSS --train-data-roots <path_to_data_root> \
-                     --val-data-roots <path_to_data_root>
+    $ otx train  <model_template> --train-data-roots <path_to_data_root> \
+                                            --val-data-roots <path_to_data_root>
 
 .. note::
 
@@ -97,8 +97,8 @@ To see which public backbones are available for the task, the following command 
 
 In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
 
-For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights is shown. That means that weights are undertrained for COCO dataset and don't achieve the best result. 
-That is because the purpose of pretrained models is to learn basic features from a such large and diverse dataset as COCO and to use these weights to get good results for other custom datasets right from the start. 
+For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights is shown. That means that weights are undertrained for COCO dataset and don't achieve the best result.
+That is because the purpose of pretrained models is to learn basic features from a such large and diverse dataset as COCO and to use these weights to get good results for other custom datasets right from the start.
 
 The results on `Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/>`_,  `BCCD <https://public.roboflow.com/object-detection/bccd/3>`_, `MinneApple <https://rsn.umn.edu/projects/orchard-monitoring/minneapple>`_ and `WGISD <https://github.com/thsant/wgisd>`_  were obtained on our templates without any changes.
 BCCD is an easy dataset with focused large objects, while MinneApple and WGISD have small objects that are hard to distinguish from the background.
