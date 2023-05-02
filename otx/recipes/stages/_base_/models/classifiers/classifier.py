@@ -5,7 +5,6 @@ model = dict(
     task="classification",
     pretrained=None,
     backbone=dict(),
-    neck=dict(type="GlobalAveragePooling"),
     head=dict(in_channels=-1, loss=dict(type="CrossEntropyLoss", loss_weight=1.0), topk=(1, 5)),
 )
 
