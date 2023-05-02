@@ -280,11 +280,11 @@ class MMClassificationTask(OTXClassificationTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
-        if not dump_saliency_map or cfg.model.backbone.type in TRANSFORMER_BACKBONES:
+        if not dump_saliency_map or "Transformer" in cfg.model.backbone.type:
             forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
-        if not dump_features or cfg.model.backbone.type in TRANSFORMER_BACKBONES:
+        if not dump_features or "Transformer" in cfg.model.backbone.type:
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)
@@ -642,13 +642,13 @@ class MMClassificationTask(OTXClassificationTask):
     def _init_hparam(self) -> dict:
         params = self._hyperparams.learning_parameters
         warmup_iters = int(params.learning_rate_warmup_iters)
-        # if self._multilabel: # TODO: resolve this hack
-        #     # hack to use 1cycle policy
-        #     lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-        # else:
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
-        )
+        if self._multilabel and self._recipe_cfg.model.backbone.get("arch", True) != "deit-tiny": # TODO: resolve this hack
+            # hack to use 1cycle policy
+            lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
+        else:
+            lr_config = (
+                ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
+            )
 
         early_stop = False
         if self._recipe_cfg is not None:
