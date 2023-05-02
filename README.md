@@ -95,21 +95,14 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.1.0 (1Q23)
+### v1.2.0 (2Q23)
 
-- Add FP16 IR export support (<https://github.com/openvinotoolkit/training_extensions/pull/1683>)
-- Add in-memory caching in dataloader (<https://github.com/openvinotoolkit/training_extensions/pull/1694>)
-- Add MoViNet template for action classification (<https://github.com/openvinotoolkit/training_extensions/pull/1742>)
-- Add Semi-SL multilabel classification algorithm (<https://github.com/openvinotoolkit/training_extensions/pull/1805>)
-- Integrate multi-gpu training for semi-supervised learning and self-supervised learning (<https://github.com/openvinotoolkit/training_extensions/pull/1534>)
-- Add train-type parameter to otx train (<https://github.com/openvinotoolkit/training_extensions/pull/1874>)
-- Add embedding of inference configuration to IR for classification (<https://github.com/openvinotoolkit/training_extensions/pull/1842>)
-- Enable VOC dataset in OTX (<https://github.com/openvinotoolkit/training_extensions/pull/1862>)
-- Add mmcls.VisionTransformer backbone support (<https://github.com/openvinotoolkit/training_extensions/pull/1908>)
-
-### v1.2+ (2Q23)
-
-- In planning
+- Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
+- Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
+- Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
+- Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
+- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
+- Add noisy label detection for multi-class classification task (<https://github.com/openvinotoolkit/training_extensions/pull/1985>, <https://github.com/openvinotoolkit/training_extensions/pull/2034>)
 
 ### Release History
 

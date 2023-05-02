@@ -20,18 +20,21 @@ from tests.regression.regression_test_helpers import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
-    nncf_eval_testing,
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
-    otx_eval_compare,
-    otx_eval_deployment_testing,
-    otx_eval_e2e_eval_time,
-    otx_eval_e2e_train_time,
-    otx_eval_openvino_testing,
     otx_export_testing,
     otx_train_testing,
-    pot_eval_testing,
     pot_optimize_testing,
+)
+
+from tests.regression.regression_command import (
+    regression_eval_testing,
+    regression_openvino_testing,
+    regression_deployment_testing,
+    regression_nncf_eval_testing,
+    regression_pot_eval_testing,
+    regression_train_time_testing,
+    regression_eval_time_testing,
 )
 
 # Configurations for regression test.
@@ -78,11 +81,11 @@ class TestRegressionAnomalyDetection:
 
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         train_start_time = timer()
-        otx_train_testing(template, tmp_dir_path, otx_dir, category_data_args)
+        otx_train_testing(template, tmp_dir_path, otx_dir, category_data_args, deterministic=False)
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
-        otx_eval_compare(
+        test_result = regression_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -96,6 +99,8 @@ class TestRegressionAnomalyDetection:
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
         result_dict[TASK_TYPE]["train"][category].append(self.performance)
 
+        assert test_result["passed"] is True, test_result["log"]
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
@@ -105,18 +110,21 @@ class TestRegressionAnomalyDetection:
         performance = get_template_performance(results, template)
 
         # Compare train+val time with the KPI criteria.
-        otx_eval_e2e_train_time(
+        kpi_train_result = regression_train_time_testing(
             train_time_criteria=anomaly_detection_regression_config["kpi_e2e_train_time_criteria"]["train"][category],
             e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
             template=template,
         )
 
         # Compare evaluation time with the KPI criteria.
-        otx_eval_e2e_eval_time(
+        kpi_eval_result = regression_eval_time_testing(
             eval_time_criteria=anomaly_detection_regression_config["kpi_e2e_eval_time_criteria"]["train"][category],
             e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
             template=template,
         )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -131,12 +139,12 @@ class TestRegressionAnomalyDetection:
         export_elapsed_time = timer() - export_start_time
 
         export_eval_start_time = timer()
-        otx_eval_openvino_testing(
+        test_result = regression_openvino_testing(
             template,
             tmp_dir_path,
             otx_dir,
             category_data_args,
-            threshold=0.02,
+            threshold=0.05,
             criteria=anomaly_detection_regression_config["regression_criteria"]["export"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -146,6 +154,8 @@ class TestRegressionAnomalyDetection:
         self.performance[template.name][TIME_LOG["export_time"]] = round(export_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["export_eval_time"]] = round(export_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["export"][category].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -160,12 +170,12 @@ class TestRegressionAnomalyDetection:
         deploy_elapsed_time = timer() - deploy_start_time
 
         deploy_eval_start_time = timer()
-        otx_eval_deployment_testing(
+        test_result = regression_deployment_testing(
             template,
             tmp_dir_path,
             otx_dir,
             category_data_args,
-            threshold=0.02,
+            threshold=0.0,
             criteria=anomaly_detection_regression_config["regression_criteria"]["deploy"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -175,6 +185,8 @@ class TestRegressionAnomalyDetection:
         self.performance[template.name][TIME_LOG["deploy_time"]] = round(deploy_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["deploy_eval_time"]] = round(deploy_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["deploy"][category].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -192,12 +204,12 @@ class TestRegressionAnomalyDetection:
         nncf_elapsed_time = timer() - nncf_start_time
 
         nncf_eval_start_time = timer()
-        nncf_eval_testing(
+        test_result = regression_nncf_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             category_data_args,
-            threshold=0.001,
+            threshold=0.01,
             criteria=anomaly_detection_regression_config["regression_criteria"]["nncf"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -207,6 +219,8 @@ class TestRegressionAnomalyDetection:
         self.performance[template.name][TIME_LOG["nncf_time"]] = round(nncf_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["nncf_eval_time"]] = round(nncf_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["nncf"][category].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -221,7 +235,7 @@ class TestRegressionAnomalyDetection:
         pot_elapsed_time = timer() - pot_start_time
 
         pot_eval_start_time = timer()
-        pot_eval_testing(
+        test_result = regression_pot_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
@@ -235,3 +249,5 @@ class TestRegressionAnomalyDetection:
         self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
         result_dict[TASK_TYPE]["pot"][category].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]

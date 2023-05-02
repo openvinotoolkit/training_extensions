@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .backbones import LiteHRNet, MMOVBackbone
-from .heads import CustomFCNHead, DetConHead, MMOVDecodeHead
+from .backbones import MSCAN, LiteHRNet, MMOVBackbone
+from .heads import DetConHead, LightHamHead, MMOVDecodeHead
 from .losses import CrossEntropyLossWithIgnore, DetConLoss
 from .necks import SelfSLMLP
 from .schedulers import (
@@ -24,7 +24,6 @@ from .schedulers import (
     StepScalarScheduler,
 )
 from .segmentors import (
-    ClassIncrEncoderDecoder,
     DetConB,
     MeanTeacherSegmentor,
     SupConDetConB,
@@ -32,8 +31,8 @@ from .segmentors import (
 
 __all__ = [
     "LiteHRNet",
+    "MSCAN",
     "MMOVBackbone",
-    "CustomFCNHead",
     "MMOVDecodeHead",
     "DetConLoss",
     "SelfSLMLP",
@@ -43,7 +42,7 @@ __all__ = [
     "DetConB",
     "CrossEntropyLossWithIgnore",
     "SupConDetConB",
-    "ClassIncrEncoderDecoder",
     "MeanTeacherSegmentor",
     "DetConHead",
+    "LightHamHead",
 ]

@@ -19,6 +19,7 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
+from functools import partial
 from typing import Any, Dict, Optional, Union
 
 import torch
@@ -40,6 +41,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_data_pipeline,
@@ -53,7 +55,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.training_base import TrainType
-from otx.algorithms.common.utils import set_random_seed
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -105,7 +107,7 @@ class MMClassificationTask(OTXClassificationTask):
             self._recipe_cfg.model.head.hierarchical_info = self._hierarchical_info
         self._config = self._recipe_cfg
 
-        set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
+        self.set_seed()
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
@@ -404,6 +406,10 @@ class MMClassificationTask(OTXClassificationTask):
                 )
             )
 
+        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
+
         train_model(
             model,
             datasets,
@@ -537,7 +543,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
-        export_options["deploy_cfg"] = self._init_deploy_cfg()
+        export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
         if export_options.get("precision", None) is None:
             assert len(self._precision) == 1
             export_options["precision"] = str(self._precision[0])
@@ -562,7 +568,7 @@ class MMClassificationTask(OTXClassificationTask):
         )
         return results
 
-    def _init_deploy_cfg(self) -> Union[Config, None]:
+    def _init_deploy_cfg(self, cfg: Config) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
@@ -571,7 +577,7 @@ class MMClassificationTask(OTXClassificationTask):
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Normalize"),
                 )
                 assert len(normalize_cfg) == 1
@@ -614,7 +620,7 @@ class MMClassificationTask(OTXClassificationTask):
 
             def patch_input_shape(deploy_cfg):
                 resize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Resize"),
                 )
                 assert len(resize_cfg) == 1

@@ -8,7 +8,6 @@ on:
 
 jobs:
   Trivy-scan:
-    name: Build
     runs-on: ubuntu-20.04
     permissions:
       security-events: write
@@ -28,7 +27,6 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
   Trivy-gen-sbom:
-    name: Checks
     runs-on: ubuntu-20.04
     permissions:
       contents: write
@@ -51,7 +49,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install tox
       - name: Bandit Scanning
@@ -73,7 +71,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Snyk Scanning

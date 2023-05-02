@@ -231,10 +231,10 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
-        soft_predictions = metadata.get("soft_predictions", np.ones(predictions.shape))
+        soft_prediction = metadata.get("soft_prediction", np.ones(predictions.shape))
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=predictions,
-            soft_prediction=soft_predictions,
+            soft_prediction=soft_prediction,
             label_map=self.label_map,
         )
 

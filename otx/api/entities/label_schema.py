@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Sequence, Union
 import numpy as np
 from bson import ObjectId
 
-from otx.api.entities.graph import Graph, MultiDiGraph
+from otx.api.entities.graph import MultiDiGraph
 from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -132,44 +132,6 @@ class LabelGroup:
     def __repr__(self) -> str:
         """Returns the string representation of the LabelGroup."""
         return f"LabelGroup(id={self.id_}, name={self.name}, group_type={self.group_type}," f" labels={self.labels})"
-
-
-class LabelGraph(Graph):
-    """Represents connectivity between labels as a graph. For example exclusivity or hierarchy.
-
-    Args:
-        directed (bool): whether the relationships are directed or undirected
-            (symmetrical)
-    """
-
-    def __init__(self, directed: bool):
-        super().__init__(directed)
-
-    def add_edges(self, edges):
-        """Add edges between Labels."""
-        self._graph.add_edges_from(edges)
-
-    @property
-    def num_labels(self):
-        """Returns the number of nodes in the graph."""
-        return self.num_nodes()
-
-    @property
-    def type(self):
-        """Returns the type of the LabelGraph."""
-        return "graph"
-
-    def subgraph(self, labels: Sequence[LabelEntity]) -> "LabelGraph":
-        """Return the subgraph containing the given labels."""
-        new_graph = LabelGraph(self.directed)
-        new_graph.set_graph(self.get_graph().subgraph(labels).copy())
-        return new_graph
-
-    def __eq__(self, other) -> bool:
-        """Returns True if the LabelGraph is equal to the other LabelGraph."""
-        if isinstance(other, LabelGraph):
-            return super().__eq__(other)
-        return False
 
 
 class LabelTree(MultiDiGraph):

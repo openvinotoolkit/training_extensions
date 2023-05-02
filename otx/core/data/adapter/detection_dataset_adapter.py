@@ -7,7 +7,7 @@
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from typing import List
 
-from datumaro.components.annotation import AnnotationType
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -28,22 +28,23 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
         # Prepare label information
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
-
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
-                    image = Image(file_path=datumaro_item.media.path)
+                    image = self.datum_media_2_otx_media(datumaro_item.media)
+                    assert isinstance(image, Image)
                     shapes = []
                     for ann in datumaro_item.annotations:
+
                         if (
                             self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
-                            and ann.type == AnnotationType.polygon
+                            and ann.type == DatumAnnotationType.polygon
                         ):
                             if self._is_normal_polygon(ann):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
-                        if self.task_type is TaskType.DETECTION and ann.type == AnnotationType.bbox:
+                        if self.task_type is TaskType.DETECTION and ann.type == DatumAnnotationType.bbox:
                             if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 

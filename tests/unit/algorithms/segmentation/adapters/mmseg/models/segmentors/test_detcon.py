@@ -88,7 +88,7 @@ def setup_module(monkeypatch, mocker):
     )
     mocker.patch(
         "otx.algorithms.segmentation.adapters.mmseg.models.segmentors.detcon.SupConDetConB._decode_head_forward_train",
-        return_value=(dict(loss=1.0), None),
+        return_value=dict(loss=1.0),
     )
 
 

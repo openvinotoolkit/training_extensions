@@ -2,8 +2,10 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-from typing import List
+from typing import List, Optional
+import os
 
+import cv2
 import datumaro as dm
 import numpy as np
 
@@ -24,10 +26,10 @@ TASK_NAME_TO_TASK_TYPE = {
 
 TASK_NAME_TO_DATA_ROOT = {
     "classification": {
-        "train": "tests/assets/imagenet_dataset",
-        "val": "tests/assets/imagenet_dataset",
-        "test": "tests/assets/imagenet_dataset",
-        "unlabeled": "tests/assets/imagenet_dataset",
+        "train": "tests/assets/classification_dataset",
+        "val": "tests/assets/classification_dataset",
+        "test": "tests/assets/classification_dataset",
+        "unlabeled": "tests/assets/classification_dataset",
     },
     "detection": {
         "train": "tests/assets/car_tree_bug",
@@ -86,6 +88,7 @@ def generate_datumaro_dataset_item(
     task: str,
     image_shape: np.array = np.array((5, 5, 3)),
     mask_shape: np.array = np.array((5, 5)),
+    temp_dir: Optional[str] = None,
 ) -> dm.DatasetItem:
     """Generate Datumaro DatasetItem.
 
@@ -95,6 +98,7 @@ def generate_datumaro_dataset_item(
         task (str): task type, e.g. "classification"
         image_shape (np.array): the shape of image.
         image_shape (np.array): the shape of mask.
+        temp_dir (str): directory to save image data
 
     Returns:
         dm.DatasetItem: Datumaro DatasetItem
@@ -104,6 +108,11 @@ def generate_datumaro_dataset_item(
         "detection": dm.Bbox(1, 2, 3, 4, label=0),
         "segmentation": dm.Mask(np.zeros(mask_shape)),
     }
+
+    if temp_dir:
+        path = os.path.join(temp_dir, "image.png")
+        cv2.imwrite(path, np.ones(image_shape))
+        return dm.DatasetItem(id=item_id, subset=subset, image=path, annotations=[ann_task_dict[task]])
 
     return dm.DatasetItem(id=item_id, subset=subset, image=np.ones(image_shape), annotations=[ann_task_dict[task]])
 

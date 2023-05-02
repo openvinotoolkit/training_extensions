@@ -594,7 +594,7 @@ class TestSegmentationToAnnotation:
         label_group = LabelGroup(name="Segmentation labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
         converter = SegmentationToAnnotationConverter(label_schema=label_schema)
-        soft_predictions = np.array(
+        soft_prediction = np.array(
             [
                 (
                     [0.8, 0.1, 0.2],
@@ -627,7 +627,7 @@ class TestSegmentationToAnnotation:
         metadata = {
             "non-required key": 1,
             "other non-required key": 2,
-            "soft_predictions": soft_predictions,
+            "soft_prediction": soft_prediction,
         }
 
         predictions_to_annotations = converter.convert_to_annotation(predictions=hard_predictions, metadata=metadata)

@@ -21,7 +21,7 @@ def _create_dummy_config() -> Config:
 
     config: dict = dict(
         model=dict(
-            type="ClassIncrEncoderDecoder",
+            type="OTXEncoderDecoder",
             backbone=dict(),
             decode_head=dict(
                 norm_cfg=dict(type="BN", requires_grad=True),

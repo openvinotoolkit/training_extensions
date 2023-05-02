@@ -106,7 +106,7 @@ def set_arguments_to_argv(keys: Union[str, List[str]], value: Optional[str] = No
 
 def is_multigpu_child_process():
     """Check current process is a child process for multi GPU training."""
-    return dist.is_initialized() and os.environ["LOCAL_RANK"] != "0"
+    return (dist.is_initialized() or "TORCHELASTIC_RUN_ID" in os.environ) and os.environ["LOCAL_RANK"] != "0"
 
 
 class MultiGPUManager:
@@ -191,7 +191,7 @@ class MultiGPUManager:
     def finalize(self):
         """Join all child processes."""
         for p in self._processes:
-            if p.join(10) is None and p.exitcode is None:
+            if p.join(30) is None and p.exitcode is None:
                 p.kill()
 
     @staticmethod

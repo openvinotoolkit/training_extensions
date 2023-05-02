@@ -198,6 +198,23 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: This will automatically control the patience and interval when early stopping is enabled.
+  auto_decrease_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Find a proper batch size by training for an iteration with various batch size a few times.
+    editable: true
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning:
+      Enabling this option could reduce the actual batch size if the current setting results in out-of-memory error.
+      The learning rate also could be adjusted according to the adapted batch size.
+      This process might take some extra computation time to try a few batch size candidates.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -260,7 +277,7 @@ algo_backend:
       rules: []
       type: UI_RULES
     value: Incremental
-    visible_in_ui: True
+    visible_in_ui: false
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
@@ -271,6 +288,28 @@ algo_backend:
     max_value: 9223372036854775807
     min_value: 0
     type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme fort storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND

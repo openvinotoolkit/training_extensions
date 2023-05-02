@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.3.0\]
+
+### New features
+
+- Support direct annotation input for COCO format (<https://github.com/openvinotoolkit/training_extensions/pull/1921>)
+- Action task supports multi GPU training. (<https://github.com/openvinotoolkit/training_extensions/pull/2057>)
+
+### Enhancements
+
+- Make semantic segmentation OpenVINO models compatible with ModelAPI (<https://github.com/openvinotoolkit/training_extensions/pull/2029>).
+
+### Bug fixes
+
+-
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
 ## \[v1.2.0\]
 
 ### New features
@@ -9,14 +29,21 @@ All notable changes to this project will be documented in this file.
 - Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
 - Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
 - Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
+- Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
+- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
+- Add noisy label detection for multi-class classification task (<https://github.com/openvinotoolkit/training_extensions/pull/1985>, <https://github.com/openvinotoolkit/training_extensions/pull/2034>)
 
 ### Enhancements
 
 - Clean up and refactor the output of the OTX CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1946>)
 - Enhance DetCon logic and SupCon for semantic segmentation(<https://github.com/openvinotoolkit/training_extensions/pull/1958>)
+- Detection task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1955>)
 - Classification task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1972>)
 - Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
 - Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
+- Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
+- Optimize data preprocessing time and enhance overall performance in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2020>)
+- Support automatic batch size decrease when there is no enough GPU memory (<https://github.com/openvinotoolkit/training_extensions/pull/2022>)
 
 ### Bug fixes
 
@@ -84,6 +111,7 @@ All notable changes to this project will be documented in this file.
 - Refine documents by proof review
 - Separate installation for each tasks
 - Improve POT efficiency by setting stat_requests_number parameter to 1
+- Introduce new tile classifier to enhance tiling inference performance in MaskRCNN.
 
 ### Bug fixes
 

@@ -4,7 +4,6 @@
 #
 
 import copy
-import os.path as osp
 import tempfile
 import uuid
 from itertools import product
@@ -12,7 +11,6 @@ from multiprocessing import Pool
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
-import mmcv
 import numpy as np
 import pycocotools.mask as mask_util
 from mmcv.ops import nms
@@ -74,7 +72,7 @@ class Tile:
         iou_threshold: float = 0.45,
         max_per_img: int = 1500,
         filter_empty_gt: bool = True,
-        nproc: int = 4,
+        nproc: int = 2,
     ):
         self.min_area_ratio = min_area_ratio
         self.filter_empty_gt = filter_empty_gt
@@ -95,45 +93,30 @@ class Tile:
                 break
 
         self.dataset = dataset
-        self.tiles = self.gen_tile_ann()
-        self.cache_tiles()
+        self.tiles, self.cached_results = self.gen_tile_ann()
 
     @timeit
-    def cache_tiles(self):
-        """Cache tiles to disk."""
-        pbar = tqdm(total=len(self.tiles))
-        pre_img_idx = None
-        for i, tile in enumerate(self.tiles):
-            tile["tile_path"] = osp.join(
-                self.tmp_folder, "_".join([str(i), tile["uuid"], tile["ori_filename"], ".jpg"])
-            )
-            x_1, y_1, x_2, y_2 = tile["tile_box"]
-            dataset_idx = tile["dataset_idx"]
-            if dataset_idx != pre_img_idx:
-                ori_img = self.dataset[dataset_idx]["img"]
-                pre_img_idx = dataset_idx
-
-            mmcv.imwrite(ori_img[y_1:y_2, x_1:x_2, :], tile["tile_path"])
-            pbar.update(1)
-
-    @timeit
-    def gen_tile_ann(self) -> List[Dict]:
-        """Generate tile information and tile annotation from dataset.
+    def gen_tile_ann(self) -> Tuple[List[Dict], List[Dict]]:
+        """Generate tile annotations and cache the original image-level annotations.
 
         Returns:
-            List[Dict]: A list of tiles generated from the dataset. Each item comprises tile annotation and tile
-                        coordinates relative to the original image.
+            tiles: a list of tile annotations with some other useful information for data pipeline.
+            cache_result: a list of original image-level annotations.
         """
         tiles = []
-        pbar = tqdm(total=len(self.dataset))
+        cache_result = []
+        for result in tqdm(self.dataset, desc="Loading dataset annotations..."):
+            cache_result.append(result)
 
-        for idx, result in enumerate(self.dataset):
+        pbar = tqdm(total=len(self.dataset) * 2, desc="Generating tile annotations...")
+        for idx, result in enumerate(cache_result):
             tiles.append(self.gen_single_img(result, dataset_idx=idx))
+            pbar.update(1)
 
-        for idx, result in enumerate(self.dataset):
+        for idx, result in enumerate(cache_result):
             tiles.extend(self.gen_tiles_single_img(result, dataset_idx=idx))
             pbar.update(1)
-        return tiles
+        return tiles, cache_result
 
     def gen_single_img(self, result: Dict, dataset_idx: int) -> Dict:
         """Add full-size image for inference or training.
@@ -145,7 +128,7 @@ class Tile:
         Returns:
             Dict: annotation with some other useful information for data pipeline.
         """
-        result["tile_box"] = (0, 0, result["dataset_item"].width, result["dataset_item"].height)
+        result["tile_box"] = (0, 0, result["img_shape"][1], result["img_shape"][0])
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
@@ -163,11 +146,11 @@ class Tile:
             List[Dict]: a list of tile annotation with some other useful information for data pipeline.
         """
         tile_list = []
-        gt_bboxes = result.pop("gt_bboxes", np.zeros((0, 4), dtype=np.float32))
-        gt_masks = result.pop("gt_masks", None)
-        gt_bboxes_ignore = result.pop("gt_bboxes_ignore", np.zeros((0, 4), dtype=np.float32))
-        gt_labels = result.pop("gt_labels", np.array([], dtype=np.int64))
-        img_shape = result.pop("img_shape")
+        gt_bboxes = result.get("gt_bboxes", np.zeros((0, 4), dtype=np.float32))
+        gt_masks = result.get("gt_masks", None)
+        gt_bboxes_ignore = result.get("gt_bboxes_ignore", np.zeros((0, 4), dtype=np.float32))
+        gt_labels = result.get("gt_labels", np.array([], dtype=np.int64))
+        img_shape = result.get("img_shape")
         height, width = img_shape[:2]
         _tile = self.prepare_result(result)
 
@@ -371,18 +354,13 @@ class Tile:
             dict: Training/test data.
         """
         result = copy.deepcopy(self.tiles[idx])
-        if result.get("tile_path") and osp.isfile(result["tile_path"]):
-            img = mmcv.imread(result["tile_path"])
-            if self.img2fp32:
-                img = img.astype(np.float32)
-            result["img"] = img
-            return result
         dataset_idx = result["dataset_idx"]
         x_1, y_1, x_2, y_2 = result["tile_box"]
-        ori_img = self.dataset[dataset_idx]["img"]
+        ori_img = self.cached_results[dataset_idx]["dataset_item"].media.numpy
+        cropped_tile = ori_img[y_1:y_2, x_1:x_2, :]
         if self.img2fp32:
-            ori_img = ori_img.astype(np.float32)
-        result["img"] = ori_img[y_1:y_2, x_1:x_2, :]
+            cropped_tile = cropped_tile.astype(np.float32)
+        result["img"] = cropped_tile
         return result
 
     @staticmethod
@@ -390,10 +368,10 @@ class Tile:
         """Shift tile-level mask to image-level mask.
 
         Args:
-            tile_rle (Dict): _description_
+            tile_rle (Dict): tile-level mask result.
 
         Returns:
-            _type_: _description_
+            np.ndarray: image-level mask result.
         """
         x1, y1, x2, y2 = tile_rle.pop("tile_box")
         height, width = tile_rle.pop("img_size")
@@ -401,17 +379,19 @@ class Tile:
         tile_mask = np.pad(tile_mask, ((y1, height - y2), (x1, width - x2)))
         return mask_util.encode(tile_mask)
 
-    def process_masks(self, tile_masks: List[Dict]):
+    def process_masks(self, tile_masks: List) -> List[np.ndarray]:
         """Decode Mask Result to Numpy mask, add paddings then encode masks again.
 
         Args:
-            tile_masks (_type_): _description_
+            tile_masks (List): list of tile-level mask results.
 
         Returns:
-            _type_: _description_
+            List[np.ndarray]: list of image-level mask results.
         """
-        with Pool(self.nproc) as pool:
-            results = pool.map(Tile.readjust_tile_mask, tile_masks)
+        results = []
+        if tile_masks:
+            with Pool(self.nproc) as pool:
+                results = pool.map(Tile.readjust_tile_mask, tile_masks)
         return results
 
     # pylint: disable=too-many-locals

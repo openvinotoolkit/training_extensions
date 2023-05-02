@@ -3,6 +3,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .task import OTXSegmentationTask
+MMSEG_AVAILABLE = True
 
-__all__ = ["OTXSegmentationTask"]
+try:
+    import mmseg  # noqa: F401
+except ImportError:
+    MMSEG_AVAILABLE = False

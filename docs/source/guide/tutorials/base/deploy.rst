@@ -100,11 +100,20 @@ For example, the model inference on image from WGISD dataset, which we used for 
 
     If you provide a single image as input, the demo processes and renders it quickly, then exits. To continuously
     visualize inference results on the screen, apply the ``loop`` option, which enforces processing a single image in a loop.
-    In this case, you can stop the demo by killing the process in the terminal (``Ctrl+C`` for Linux).
+    In this case, you can stop the demo by pressing `Q` button or killing the process in the terminal (``Ctrl+C`` for Linux).
 
 To learn how to run the demo on Windows and MacOS, please refer to the ``outputs/deploy/python/README.md`` file in exportable code.
 
-4. To run a demo on a web camera, we need to know its ID. 
+4. To save inferenced results with predictions on it, we can specify the folder path, using ``--output``. 
+It works for images, videos, image folders and web cameras. To prevent issues, do not specify it together with a ``--loop`` parameter.
+
+.. code-block::
+
+    (demo) ...$ python outputs/deploy/python/demo.py --input docs/utils/images/wgisd_dataset_sample.jpg \
+                                                      --models outputs/deploy/model \
+                                                      --output resulted_images
+
+5. To run a demo on a web camera, we need to know its ID. 
 We can check a list of camera devices by running this command line on Linux system:
 
 .. code-block::
@@ -121,7 +130,7 @@ The output will look like this:
 
 After that, we can use this ``/dev/video0`` as a camera ID for ``--input``.
 
-5. We can also change ``config.json`` that specifies the confidence threshold and 
+6. We can also change ``config.json`` that specifies the confidence threshold and 
 color for each class visualization, but any changes should be made with caution. 
 
 For example, in our image of the winery we see, that a lot of objects weren't detected.

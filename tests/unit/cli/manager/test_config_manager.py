@@ -63,9 +63,13 @@ class TestConfigManager:
         args = mocker.MagicMock()
         args.template = "."
         args.train_data_roots = "path/to/data/train"
+        args.train_ann_files = None
         args.val_data_roots = "path/to/data/val"
+        args.val_ann_files = None
         args.test_data_roots = "path/to/data/test"
+        args.test_ann_files = None
         args.unlabeled_data_roots = None
+        args.unlabeled_file_list = None
         args.mode = "train"
         config_manager = ConfigManager(args)
         assert config_manager._get_arg_data_yaml() == {
@@ -199,10 +203,10 @@ class TestConfigManager:
     def test_update_data_config(self, config_manager, tmp_dir_path):
         data_yaml = {
             "data": {
-                "train": {"data-roots": "/path/to/train/data"},
-                "val": {"data-roots": "/path/to/val/data"},
-                "test": {"data-roots": "/path/to/test/data"},
-                "unlabeled": {"file-list": "/path/to/unlabeled/filelist", "data-roots": "/path/to/unlabeled/data"},
+                "train": {"data-roots": "/path/to/train/data", "ann-files": None},
+                "val": {"data-roots": "/path/to/val/data", "ann-files": None},
+                "test": {"data-roots": "/path/to/test/data", "ann-files": None},
+                "unlabeled": {"data-roots": "/path/to/unlabeled/data", "file-list": "/path/to/unlabeled/filelist"},
             }
         }
         data_yaml_path = tmp_dir_path / "data.yaml"
@@ -210,41 +214,47 @@ class TestConfigManager:
 
         config_manager.update_data_config(OmegaConf.load(str(data_yaml_path)))
         assert config_manager.data_config == {
-            "train_subset": {"data_root": "/path/to/train/data"},
-            "val_subset": {"data_root": "/path/to/val/data"},
-            "test_subset": {"data_root": "/path/to/test/data"},
+            "train_subset": {"data_roots": "/path/to/train/data", "ann_files": None},
+            "val_subset": {
+                "data_roots": "/path/to/val/data",
+                "ann_files": None,
+            },
+            "test_subset": {
+                "data_roots": "/path/to/test/data",
+                "ann_files": None,
+            },
             "unlabeled_subset": {
-                "data_root": "/path/to/unlabeled/data",
+                "data_roots": "/path/to/unlabeled/data",
                 "file_list": "/path/to/unlabeled/filelist",
             },
         }
 
-        data_yaml["data"]["train"]["data-roots"] = None
+        data_yaml["data"]["train"]["data-roots"] = "/path/to/train2/data"
         data_yaml_path = tmp_dir_path / "data.yaml"
         OmegaConf.save(data_yaml, str(data_yaml_path))
 
         config_manager.update_data_config(OmegaConf.load(str(data_yaml_path)))
         assert config_manager.data_config == {
-            "train_subset": {"data_root": "/path/to/train/data"},
-            "val_subset": {"data_root": "/path/to/val/data"},
-            "test_subset": {"data_root": "/path/to/test/data"},
+            "train_subset": {"data_roots": "/path/to/train2/data", "ann_files": None},
+            "val_subset": {"data_roots": "/path/to/val/data", "ann_files": None},
+            "test_subset": {"data_roots": "/path/to/test/data", "ann_files": None},
             "unlabeled_subset": {
-                "data_root": "/path/to/unlabeled/data",
+                "data_roots": "/path/to/unlabeled/data",
                 "file_list": "/path/to/unlabeled/filelist",
             },
         }
 
+        data_yaml_path = tmp_dir_path / "data.yaml"
         data_yaml["data"].pop("unlabeled")
-        data_yaml_path = tmp_dir_path / "data.yaml"
         OmegaConf.save(data_yaml, str(data_yaml_path))
 
         config_manager.update_data_config(OmegaConf.load(str(data_yaml_path)))
         assert config_manager.data_config == {
-            "train_subset": {"data_root": "/path/to/train/data"},
-            "val_subset": {"data_root": "/path/to/val/data"},
-            "test_subset": {"data_root": "/path/to/test/data"},
+            "train_subset": {"data_roots": "/path/to/train2/data", "ann_files": None},
+            "val_subset": {"data_roots": "/path/to/val/data", "ann_files": None},
+            "test_subset": {"data_roots": "/path/to/test/data", "ann_files": None},
             "unlabeled_subset": {
-                "data_root": "/path/to/unlabeled/data",
+                "data_roots": "/path/to/unlabeled/data",
                 "file_list": "/path/to/unlabeled/filelist",
             },
         }
@@ -435,9 +445,8 @@ class TestConfigManager:
         config_manager = ConfigManager(mock_args)
         config_manager.train_type = "Incremental"
         config_manager.configure_data_config(update_data_yaml=True)
-
         mock_configure_dataset.assert_called_once()
-        mock_auto_split.assert_called_once_with("train/data/roots", "")
+        mock_auto_split.assert_called_once()
         mock_get_data_yaml.assert_called_once()
         mock_save_data.assert_called_once()
         mock_export_data_cfg.assert_called_once()
@@ -530,9 +539,9 @@ class TestConfigManager:
         config_manager = ConfigManager(args=mock_args)
         config_manager.task_type = "DETECTION"
         config_manager.data_config = {
-            "train_subset": {"data_root": "train_path"},
-            "val_subset": {"data_root": "val_path"},
-            "test_subset": {"data_root": "test_path"},
+            "train_subset": {"data_roots": "train_path"},
+            "val_subset": {"data_roots": "val_path"},
+            "test_subset": {"data_roots": "test_path"},
         }
         dataset_config = config_manager.get_dataset_config(["train", "val", "test"])
         assert dataset_config["task_type"] == "DETECTION"

@@ -97,6 +97,8 @@ Building workspace folder
       --model MODEL         Enter the name of the model you want to use. (Ex. EfficientNet-B0).
       --backbone BACKBONE   Available Backbone Type can be found using 'otx find --backbone {framework}'.
                             If there is an already created backbone configuration yaml file, enter the corresponding path.
+      --deterministic       Set deterministic to True, default=False.
+      --seed SEED           Set seed for configuration.
 
 
 For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
@@ -140,7 +142,33 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 
     Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` documentation.
 
+If you have multiple annotation files like below, add additional argument (``--train-ann-files``). Then, you could use the annotation what you selected.
+OpenVINO™ Training Extensions could randomly selects the train annotation file if you do not use additional argument (``--train-ann-files``)
 
+.. code-block::
+
+  coco_data_root
+    |---- annotations
+      |---- instances_train.json
+      |---- instances_train_1percent.json
+      |---- instances_train_10percent.json
+      |---- instances_val.json
+    |---- images
+      |---- train
+        |---- 000.jpg
+        ....
+    |---- val
+        |---- 000.jpg
+        ....
+
+.. code-block::
+
+  --train-data-roots coco_data_root --train-ann-files coco_data_root/annotations/instances_train_10percent.json
+
+.. note::
+
+   For now, only COCO format data could be used for direct annotation input 
+  
 *********
 Training
 *********
@@ -201,6 +229,8 @@ However, if you created a workspace with ``otx build``, the training process can
                             Total number of workers in a worker group.
       --mem-cache-size PARAMS.ALGO_BACKEND.MEM_CACHE_SIZE
                             Size of memory pool for caching decoded data to load data faster. For example, you can use digits for bytes size (e.g. 1024) or a string with size units (e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).
+      --deterministic       Set deterministic to True, default=False.
+      --seed SEED           Change seed for training.
       --data DATA           The data.yaml path want to use in train task.
 
 
@@ -474,7 +504,7 @@ Demonstration
 .. code-block::
 
     (otx) ...$ otx demo --help
-    usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] [template] {params} ...
+    usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] [--output OUTPUT] [template] {params} ...
 
     positional arguments:
       template              Enter the path or ID or name of the template file.
@@ -493,7 +523,8 @@ Demonstration
       --loop                Enable reading the input in a loop.
       --delay DELAY         Frame visualization time in ms.
       --display-perf        This option enables writing performance metrics on displayed frame. These metrics take into account not only model inference time, but also frame reading, pre-processing and post-processing.
-
+      --output OUTPUT
+                            Output path to save input data with predictions.
 
 Command example of the demonstration:
 

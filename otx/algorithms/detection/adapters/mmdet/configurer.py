@@ -549,12 +549,7 @@ class DetectionConfigurer:
                 cfg.distributed = True
                 self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
-            gpu_ids = os.environ.get("CUDA_VISIBLE_DEVICES")
-            logger.info(f"CUDA_VISIBLE_DEVICES = {gpu_ids}")
-            if gpu_ids is not None:
-                cfg.gpu_ids = range(len(gpu_ids.split(",")))
-            else:
-                cfg.gpu_ids = range(1)
+            cfg.gpu_ids = range(1)
 
         # consider "cuda" and "cpu" device only
         if not torch.cuda.is_available():
@@ -588,7 +583,7 @@ class DetectionConfigurer:
             # drop the last batch if the last batch size is 1
             # batch size of 1 is a runtime error for training batch normalization layer
             if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
-                dataloader_cfg.drop_last = True
+                dataloader_cfg["drop_last"] = True
 
             cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
