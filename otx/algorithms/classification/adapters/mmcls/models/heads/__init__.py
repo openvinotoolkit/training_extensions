@@ -30,8 +30,8 @@ from .semisl_multilabel_cls_head import (
     SemiNonLinearMultilabelClsHead,
 )
 from .supcon_cls_head import SupConClsHead
-from .vision_transformer_multi_label_cls_head import VisionTransformerMultiLabelClsHead
 from .vision_transformer_hierarchical_cls_head import VisionTransformerHierarchicalClsHead
+from .vision_transformer_multi_label_cls_head import VisionTransformerMultiLabelClsHead
 
 __all__ = [
     "ConstrastiveHead",

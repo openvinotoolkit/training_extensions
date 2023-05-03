@@ -28,7 +28,7 @@ from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
-from otx.algorithms import TRANSFORMER_BACKBONES
+
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
@@ -642,7 +642,9 @@ class MMClassificationTask(OTXClassificationTask):
     def _init_hparam(self) -> dict:
         params = self._hyperparams.learning_parameters
         warmup_iters = int(params.learning_rate_warmup_iters)
-        if self._multilabel and self._recipe_cfg.model.backbone.get("arch", True) != "deit-tiny": # TODO: resolve this hack
+        if (
+            self._multilabel and self._recipe_cfg.model.backbone.get("arch", True) != "deit-tiny"
+        ):  # TODO: resolve this hack
             # hack to use 1cycle policy
             lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
         else:

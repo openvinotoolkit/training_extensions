@@ -25,9 +25,7 @@ class VisionTransformerHierarchicalClsHead(VisionTransformerClsHead):
         *args,
         **kwargs,
     ):
-        multilabel_loss = (
-            kwargs.pop("multilabel_loss", dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0))
-        )
+        multilabel_loss = kwargs.pop("multilabel_loss", dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0))
         loss = kwargs.pop("loss", dict(type="CrossEntropyLoss", use_sigmoid=False, reduction="mean", loss_weight=1.0))
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
         assert self.hierarchical_info
@@ -37,7 +35,6 @@ class VisionTransformerHierarchicalClsHead(VisionTransformerClsHead):
         self.compute_multilabel_loss = False
         if self.hierarchical_info["num_multilabel_classes"] > 0:
             self.compute_multilabel_loss = build_loss(multilabel_loss)
-
 
     def loss(self, cls_score, gt_label, multilabel=False, valid_label_mask=None):
         """Calculate loss for given cls_score/gt_label."""
