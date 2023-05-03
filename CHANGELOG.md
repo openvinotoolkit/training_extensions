@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 - Bug fix: value of validation variable is changed after auto decrease batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2053>)
 - Fix tiling 0 stride issue in parameter adapter (<https://github.com/openvinotoolkit/training_extensions/pull/2078>)
+- Fix Tiling NNCF (<https://github.com/openvinotoolkit/training_extensions/pull/2081>)
 
 ## \[v1.2.0\]
 
