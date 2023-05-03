@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.8
+  python: python3.10
   node: 16.15.0
   ruby: 2.7.2
 
@@ -23,9 +23,8 @@ repos:
     hooks:
       - id: mypy
         files: '^(otx)/.*\.py'
-        additional_dependencies:
-          [
-            numpy==1.19.5,
+        additional_dependencies: [
+            # numpy==1.19.5,
             types-PyYAML,
             attrs==21.2.*,
             types-requests,
