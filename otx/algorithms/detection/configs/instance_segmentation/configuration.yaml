@@ -298,7 +298,7 @@ algo_backend:
   storage_cache_scheme:
     affects_outcome_of: TRAINING
     default_value: NONE
-    description: Scheme fort storage cache
+    description: Scheme for storage cache
     editable: true
     enum_name: StorageCacheScheme
     header: Scheme for storage cache
@@ -523,7 +523,7 @@ tiling_parameters:
     affects_outcome_of: TRAINING
     default_value: 0.2
     min_value: 0.0
-    max_value: 1.0
+    max_value: 0.9
     type: FLOAT
     editable: true
     ui_rules:
@@ -550,6 +550,24 @@ tiling_parameters:
       rules: []
       type: UI_RULES
     value: 1500
+    visible_in_ui: true
+    warning: null
+
+  tile_ir_scale_factor:
+    header: OpenVINO IR Scale Factor
+    description: The purpose of the scale parameter is to optimize the performance and efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and input size, the scale parameter allows for more efficient parallelization of the workload and improve the overall performance and efficiency of the inference process on OpenVINO.
+    affects_outcome_of: TRAINING
+    default_value: 2.0
+    min_value: 1.0
+    max_value: 4.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 2.0
     visible_in_ui: true
     warning: null
 

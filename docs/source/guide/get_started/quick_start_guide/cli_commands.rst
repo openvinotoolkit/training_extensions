@@ -273,6 +273,18 @@ For example, that is how you can change the learning rate and the batch size for
                              --learning_parameters.batch_size 16 \
                              --learning_parameters.learning_rate 0.001
 
+You could also enable storage caching to boost data loading at the expanse of storage:
+
+.. code-block::
+
+    (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> \
+                             --val-data-roots <path/to/val/root> \
+                             params \
+                             --algo_backend.storage_cache_scheme JPEG/75
+
+.. note::
+  Not all templates support stroage cache. We are working on extending supported templates.
+
 
 As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the ``--gpus`` argument. It will start the distributed data-parallel training with the GPUs you have specified.
 
