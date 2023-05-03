@@ -178,7 +178,6 @@ class TestRegressionTilingInstanceSegmentation:
         assert test_result["passed"] is True, test_result["log"]
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-98026")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
