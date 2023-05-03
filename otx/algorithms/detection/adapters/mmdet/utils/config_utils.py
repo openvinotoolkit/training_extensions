@@ -373,3 +373,98 @@ def patch_tiling(config, hparams, dataset=None):
         config.update(dict(evaluation=dict(iou_thr=[0.5])))
 
     return config
+
+
+def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
+    """Update backend configuration with input preprocessing options.
+
+    - If `"to_rgb"` in Normalize config is truthy, it adds `"--reverse_input_channels"` as a flag.
+
+    The function then sets default values for the backend configuration in `deploy_cfg`.
+
+    Args:
+        cfg (mmcv.ConfigDict): Config object containing test pipeline and other configurations.
+        deploy_cfg (mmcv.ConfigDict): DeployConfig object containing backend configuration.
+
+    Returns:
+        None: This function updates the input `deploy_cfg` object directly.
+    """
+    normalize_cfgs = get_configs_by_pairs(cfg.data.test.pipeline, dict(type="Normalize"))
+    assert len(normalize_cfgs) == 1
+    normalize_cfg: dict = normalize_cfgs[0]
+
+    # Set options based on Normalize config
+    options = {
+        "flags": ["--reverse_input_channels"] if normalize_cfg.get("to_rgb", False) else [],
+        "args": {
+            "--mean_values": list(normalize_cfg.get("mean", [])),
+            "--scale_values": list(normalize_cfg.get("std", [])),
+        },
+    }
+
+    # Set default backend configuration
+    mo_options = deploy_cfg.backend_config.get("mo_options", ConfigDict())
+    mo_options = ConfigDict() if mo_options is None else mo_options
+    mo_options.args = mo_options.get("args", ConfigDict())
+    mo_options.flags = mo_options.get("flags", [])
+
+    # Override backend configuration with options from Normalize config
+    mo_options.args.update(options["args"])
+    mo_options.flags = list(set(mo_options.flags + options["flags"]))
+
+    deploy_cfg.backend_config.mo_options = mo_options
+
+
+def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
+    """Update backend configuration with input shape information.
+
+    This function retrieves the Resize config from `cfg.data.test.pipeline`, checks
+    that only one Resize then sets the input shape for the backend model in `deploy_cfg`
+
+    ```
+    {
+        "opt_shapes": {
+            "input": [1, 3, *size]
+        }
+    }
+    ```
+
+    Args:
+        cfg (Config): Config object containing test pipeline and other configurations.
+        deploy_cfg (DeployConfig): DeployConfig object containing backend configuration.
+
+    Returns:
+        None: This function updates the input `deploy_cfg` object directly.
+    """
+    resize_cfgs = get_configs_by_pairs(
+        cfg.data.test.pipeline,
+        dict(type="Resize"),
+    )
+    assert len(resize_cfgs) == 1
+    resize_cfg: ConfigDict = resize_cfgs[0]
+    size = resize_cfg.size
+    if isinstance(size, int):
+        size = (size, size)
+    assert all(isinstance(i, int) and i > 0 for i in size)
+    # default is static shape to prevent an unexpected error
+    # when converting to OpenVINO IR
+    deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
+
+
+def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionConfig):
+    """Patch IR scale factor inplace from hyper parameters to deploy config.
+
+    Args:
+        deploy_cfg (ConfigDict): mmcv deploy config
+        hyper_parameters (DetectionConfig): OTX detection hyper parameters
+    """
+
+    if hyper_parameters.tiling_parameters.enable_tiling:
+        scale_ir_input = deploy_cfg.get("scale_ir_input", False)
+        if scale_ir_input:
+            tile_ir_scale_factor = hyper_parameters.tiling_parameters.tile_ir_scale_factor
+            logger.info(f"Apply OpenVINO IR scale factor: {tile_ir_scale_factor}")
+            ir_input_shape = deploy_cfg.backend_config.model_inputs[0].opt_shapes.input
+            ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
+            ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
+            deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
