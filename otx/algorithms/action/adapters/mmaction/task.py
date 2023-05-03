@@ -421,7 +421,7 @@ class MMActionTask(OTXActionTask):
                     with torch.no_grad():
                         result = model(return_loss=False, **data)
                     eval_predictions.extend(result)
-                    for _ in range(len(data)):
+                    for _ in range(videos_per_gpu):
                         prog_bar.update()
         prog_bar.file.write("\n")
 
@@ -450,6 +450,8 @@ class MMActionTask(OTXActionTask):
         state_dict = torch.load(self._model_ckpt)
         if "model" in state_dict.keys():
             state_dict = state_dict["model"]
+        if "state_dict" in state_dict.keys():
+            state_dict = state_dict["state_dict"]
 
         self._precision[0] = precision
         half_precision = precision == ModelPrecision.FP16
