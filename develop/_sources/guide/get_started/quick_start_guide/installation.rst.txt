@@ -83,7 +83,7 @@ Install ``tox`` and create a development environment:
 
     pip install tox
     # -- need to replace '310' below if another python version needed
-    tox devenv venv/otx -e pre-merge-all-py310
+    tox devenv venv/otx -e tests-all-py310
     source venv/otx/bin/activate
 
 Then you may change code, and all fixes will be directly applied to the editable package.
