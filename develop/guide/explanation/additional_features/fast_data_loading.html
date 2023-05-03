@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Hyperparameters Optimization &#8212; OpenVINO™ Training Extensions 1.3.0 documentation</title>
+    <title>Fast Data Loading &#8212; OpenVINO™ Training Extensions 1.3.0 documentation</title>
   
   
   
@@ -42,11 +42,11 @@
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/hpo';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/fast_data_loading';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Auto-configuration" href="auto_configuration.html" />
-    <link rel="prev" title="Models Optimization" href="models_optimization.html" />
+    <link rel="next" title="API" href="../../reference/api/index.html" />
+    <link rel="prev" title="Noisy Label Detection" href="noisy_label_detection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -287,11 +287,11 @@
 </li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Additional Features</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-12"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="models_optimization.html">Models Optimization</a></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">Hyperparameters Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_configuration.html">Auto-configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xai.html">Explainable AI (XAI)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="noisy_label_detection.html">Noisy Label Detection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fast_data_loading.html">Fast Data Loading</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Fast Data Loading</a></li>
 </ul>
 </li>
 </ul>
@@ -465,114 +465,57 @@
             
             <article class="bd-article" role="main">
               
-  <section id="hyperparameters-optimization">
-<h1>Hyperparameters Optimization<a class="headerlink" href="#hyperparameters-optimization" title="Permalink to this heading">#</a></h1>
-<p>Hyper-parameter optimization (HPO) can be a time-consuming process, even with state-of-the-art off-the-shelf libraries. OpenVINO™ Training Extensions makes HPO faster and easier by providing an easy-to-use interface and automatic configuration.</p>
-<p>With OpenVINO™ Training Extensions, you can run hyper-parameter optimization by simply adding a time constraint parameter. The auto-config feature automatically sets internal control parameters, guaranteeing that HPO will finish within the given time constraint.</p>
-<p>OpenVINO™ Training Extensions provides both sequential and parallel methods, making it scalable for different training environments. If you have multiple GPUs, you can accelerate HPO by utilizing all available GPU resources.</p>
-<p>Key features of OpenVINO™ Training Extensions include:</p>
-<ul class="simple">
-<li><p><strong>Easy usability</strong> : By using time as the control parameter, OpenVINO™ Training Extensions offers a straightforward and intuitive interface for users.</p></li>
-<li><p><strong>Auto-config</strong> : The automatic configuration feature sets internal control parameters automatically, ensuring that HPO finishes within the given time constraint.</p></li>
-<li><p><strong>Scalability</strong> : OpenVINO™ Training Extensions offers both sequential and parallel methods, making it scalable for different training environments. If you have multiple GPUs, you can take advantage of all available GPU resources to accelerate HPO.</p></li>
-</ul>
-<p>You can run HPO by just adding <strong>–enable-hpo</strong> argument as below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train \
-      ... \
-      --enable-hpo
+  <section id="fast-data-loading">
+<h1>Fast Data Loading<a class="headerlink" href="#fast-data-loading" title="Permalink to this heading">#</a></h1>
+<p>OpenVINO™ Training Extensions provides several ways to boost model training speed,
+one of which is fast data loading.</p>
+<section id="faster-augmentation">
+<h2>Faster Augmentation<a class="headerlink" href="#faster-augmentation" title="Permalink to this heading">#</a></h2>
+<section id="augmix">
+<h3>AugMix<a class="headerlink" href="#augmix" title="Permalink to this heading">#</a></h3>
+<p>AugMix <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> is a simple yet powerful augmentation technique
+to improve robustness and uncertainty estimates of image classification task.
+OpenVINO™ Training Extensions implemented it in <a class="reference external" href="https://cython.org/">Cython</a> for faster augmentation.
+Users do not need to configure anything as cythonized AugMix is used by default.</p>
+</section>
+</section>
+<section id="caching">
+<h2>Caching<a class="headerlink" href="#caching" title="Permalink to this heading">#</a></h2>
+<section id="in-memory-caching">
+<h3>In-Memory Caching<a class="headerlink" href="#in-memory-caching" title="Permalink to this heading">#</a></h3>
+<p>OpenVINO™ Training Extensions provides in-memory caching for decoded images in main memory.
+If the batch size is large, such as for classification tasks, or if dataset contains
+high-resolution images, image decoding can account for a non-negligible overhead
+in data pre-processing.
+One can enable in-memory caching for maximizing GPU utilization and reducing model
+training time in those cases.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train --mem-cache-size=8GB ..
 </pre></div>
 </div>
-<section id="algorithm">
-<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this heading">#</a></h2>
-<p>If you have abundant GPU resources, it’s better to run HPO in parallel.
-In that case, <a class="reference external" href="https://arxiv.org/pdf/1810.05934.pdf">ASHA</a> is a good choice.
-Currently, OpenVINO™ Training Extensions uses the ASHA algorithm.</p>
-<p>The <strong>Asynchronous Successive Halving Algorithm (ASHA)</strong> is a hyperparameter optimization algorithm that is based on Successive Halving Algorithm (SHA) but is designed to be more efficient in a parallel computing environment. It is used to efficiently search for the best hyperparameters for machine learning models.</p>
-<p>ASHA involves running multiple trials in parallel and evaluating them based on their validation metrics. It starts by running many trials for a short time, with only the best-performing trials advancing to the next round. In each subsequent round, the number of trials is reduced, and the amount of time spent on each trial is increased. This process is repeated until only one trial remains.</p>
-<p>ASHA is designed to be more efficient than SHA in parallel computing environments because it allows for asynchronous training of the trials. This means that each trial can be trained independently of the others, and they do not have to wait for all the other trials to be complete before advancing to the next round. This reduces the amount of time it takes to complete the optimization process.</p>
-<p>ASHA also includes a technique called Hyperband, which is used to determine how much time to allocate to each trial in each round. Hyperband allocates more time to the best-performing trials, with the amount of time allocated decreasing as the performance of the trials decreases. This technique helps to reduce the overall amount of training time required to find the best hyperparameters.</p>
-<section id="how-to-configure-hyper-parameter-optimization">
-<h3>How to configure hyper-parameter optimization<a class="headerlink" href="#how-to-configure-hyper-parameter-optimization" title="Permalink to this heading">#</a></h3>
-<p>You can configure HPO by modifying the <code class="docutils literal notranslate"><span class="pre">hpo_config.yaml</span></code> file. This file contains everything related to HPO, including the hyperparameters to optimize, the HPO algorithm, and more. The <code class="docutils literal notranslate"><span class="pre">hpo_config.yaml</span></code> file already exists with default values in the same directory where <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> resides. Here is the default <code class="docutils literal notranslate"><span class="pre">hpo_config.yaml</span></code> file for classification:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metric</span><span class="p">:</span> <span class="n">accuracy</span>
-<span class="n">search_algorithm</span><span class="p">:</span> <span class="n">asha</span>
-<span class="n">hp_space</span><span class="p">:</span>
-  <span class="n">learning_parameters</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">:</span>
-    <span class="n">param_type</span><span class="p">:</span> <span class="n">qloguniform</span>
-    <span class="nb">range</span><span class="p">:</span>
-      <span class="o">-</span> <span class="mf">0.0007</span>
-      <span class="o">-</span> <span class="mf">0.07</span>
-      <span class="o">-</span> <span class="mf">0.0001</span>
-  <span class="n">learning_parameters</span><span class="o">.</span><span class="n">batch_size</span><span class="p">:</span>
-    <span class="n">param_type</span><span class="p">:</span> <span class="n">qloguniform</span>
-    <span class="nb">range</span><span class="p">:</span>
-      <span class="o">-</span> <span class="mi">32</span>
-      <span class="o">-</span> <span class="mi">128</span>
-      <span class="o">-</span> <span class="mi">2</span>
+</section>
+<section id="storage-caching">
+<h3>Storage Caching<a class="headerlink" href="#storage-caching" title="Permalink to this heading">#</a></h3>
+<p>OpenVINO™ Training Extensions uses <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>
+under the hood for dataset managements.
+Since Datumaro <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/arrow.html">supports</a>
+<a class="reference external" href="https://arrow.apache.org/overview/">Apache Arrow</a>, OpenVINO™ Training Extensions
+can exploit fast data loading using memory-mapped arrow file at the expanse of storage consumtion.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train .. params --algo_backend.storage_cache_scheme JPEG/75
 </pre></div>
 </div>
-<p>As you can see, there are a few attributes required to run HPO.
-Fortunately, there are not many attributes, so it’s not difficult to write your own <code class="docutils literal notranslate"><span class="pre">hpo_config.yaml</span></code> file. The more detailed description is as follows:</p>
-<ul class="simple">
-<li><p><strong>hp_space</strong> (<em>List[Dict[str, Any]]</em>, <cite>required</cite>) - Hyper parameter search space to find. It should be list of dictionary. Each dictionary has a hyperparameter name as the key and param_type and range as the values. You can optimize any learning parameters of each task.</p>
-<ul>
-<li><p><strong>Keys of each hyper parameter</strong></p>
-<ul>
-<li><p><strong>param_type</strong> (<em>str</em>, <cite>required</cite>) : Hyper parameter search space type. It must be one of the following:</p>
-<ul>
-<li><p>uniform : Samples a float value uniformly between the lower and upper bounds.</p></li>
-<li><p>quniform : Samples a quantized float value uniformly between the lower and upper bounds.</p></li>
-<li><p>loguniform : Samples a float value after scaling search space by logarithm scale.</p></li>
-<li><p>qloguniform : Samples a quantized float value after scaling the search space by logarithm scale.</p></li>
-<li><p>choice : Samples a categorical value.</p></li>
-</ul>
-</li>
-<li><p><strong>range</strong> (<em>List[Any]</em>, <cite>required</cite>)</p>
-<ul>
-<li><p>uniform : List[Union[float, int]]</p>
-<ul>
-<li><p>min (<em>Union[float, int]</em>, <cite>required</cite>) : The lower bound of search space.</p></li>
-<li><p>max (<em>Union[float, int]</em>, <cite>required</cite>) : The upper bound of search space.</p></li>
-</ul>
-</li>
-<li><p>quniform : List[Union[float, int]]</p>
-<ul>
-<li><p>min (<em>Union[float, int]</em>, <cite>required</cite>) : The lower bound of search space.</p></li>
-<li><p>max (<em>Union[float, int]</em>, <cite>required</cite>) : The upper bound of search space.</p></li>
-<li><p>step (<em>Union[float, int]</em>, <cite>required</cite>) : The unit value of search space.</p></li>
-</ul>
-</li>
-<li><p>loguniform : List[Union[float, int])</p>
-<ul>
-<li><p>min (<em>Union[float, int]</em>, <cite>required</cite>) : The lower bound of search space.</p></li>
-<li><p>max (<em>Union[float, int]</em>, <cite>required</cite>) : The upper bound of search space.</p></li>
-<li><p>log_base (<em>Union[float, int]</em>, <em>default=10</em>) : The logarithm base.</p></li>
-</ul>
-</li>
-<li><p>qloguniform : List[Union[float, int]]</p>
-<ul>
-<li><p>min (<em>Union[float, int]</em>, <cite>required</cite>) : The lower bound of search space</p></li>
-<li><p>max (<em>Union[float, int]</em>, <cite>required</cite>) : The upper bound of search space</p></li>
-<li><p>step (<em>Union[float, int]</em>, <cite>required</cite>) : The unit value of search space</p></li>
-<li><p>log_base (<em>Union[float, int]</em>, <em>default=10</em>) : The logarithm base.</p></li>
-</ul>
-</li>
-<li><p>choice : List[Any]</p>
-<ul>
-<li><p>vaule : values to be chosen from candidates.</p></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p><strong>metric</strong> (<em>str</em>, <em>default=’mAP</em>’) - Name of the metric that will be used to evaluate the performance of each trial. The hyperparameter optimization algorithm will aim to maximize or minimize this metric depending on the value of the mode hyperparameter. The default value is ‘mAP’.</p></li>
-<li><p><strong>mode</strong> (<em>str</em>, <em>default=’max</em>’) - Optimization mode for the metric. It determines whether the metric should be maximized or minimized. The possible values are ‘max’ and ‘min’, respectively. The default value is ‘max’.</p></li>
-<li><p><strong>maximum_resource</strong> (<em>int</em>, <em>default=None</em>) - Maximum number of training epochs for each trial. When the number of training epochs reaches this value, the training of the trial will stop. The default value is None.</p></li>
-<li><p><strong>minimum_resource</strong> (<em>int</em>, <em>default=None</em>) - Minimum number of training epochs for each trial. Each trial will run for at least this many epochs, even if the performance of the model is not improving. The default value is None.</p></li>
-</ul>
+<p>The cache would be saved in <code class="docutils literal notranslate"><span class="pre">$HOME/.cache/otx</span></code> by default.
+One could change it by modifying <code class="docutils literal notranslate"><span class="pre">OTX_CACHE</span></code> environment variable.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ OTX_CACHE=/path/to/cache otx train .. params --algo_backend.storage_cache_scheme JPEG/75
+</pre></div>
+</div>
+<p>Please refere <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/arrow.html#export-to-arrow">Datumaro document</a>
+for available schemes to choose but we recommend <code class="docutils literal notranslate"><span class="pre">JPEG/75</span></code> for fast data loaidng.</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Dan Hendrycks, Norman Mu, Ekin D. Cubuk, Barret Zoph, Justin Gilmer, and Balaji Lakshminarayanan. “AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty” International Conference on Learning Representations. 2020.</p>
+</aside>
+</aside>
 </section>
 </section>
 </section>
@@ -585,17 +528,17 @@ Fortunately, there are not many attributes, so it’s not difficult to write you
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="models_optimization.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="noisy_label_detection.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Models Optimization</p>
+          <p class="prev-next-title">Noisy Label Detection</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="auto_configuration.html" title="next page">
+  <a class='right-next' id="next-link" href="../../reference/api/index.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Auto-configuration</p>
+      <p class="prev-next-title">API</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -616,13 +559,30 @@ Fortunately, there are not many attributes, so it’s not difficult to write you
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#algorithm">
-   Algorithm
+  <a class="reference internal nav-link" href="#faster-augmentation">
+   Faster Augmentation
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#how-to-configure-hyper-parameter-optimization">
-     How to configure hyper-parameter optimization
+    <a class="reference internal nav-link" href="#augmix">
+     AugMix
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#caching">
+   Caching
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#in-memory-caching">
+     In-Memory Caching
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#storage-caching">
+     Storage Caching
     </a>
    </li>
   </ul>
@@ -644,7 +604,7 @@ Fortunately, there are not many attributes, so it’s not difficult to write you
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/explanation/additional_features/hpo.rst.txt">
+    <a href="../../../_sources/guide/explanation/additional_features/fast_data_loading.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

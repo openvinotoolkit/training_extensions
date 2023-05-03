@@ -290,7 +290,8 @@
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/auto_configuration.html">Auto-configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/xai.html">Explainable AI (XAI)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/noisy_label_detection.html">Noisy label detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/noisy_label_detection.html">Noisy Label Detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../explanation/additional_features/fast_data_loading.html">Fast Data Loading</a></li>
 </ul>
 </li>
 </ul>
@@ -693,6 +694,17 @@ For example, you can cache approximately 10,000 of <code class="docutils literal
                          --learning_parameters.batch_size 16 \
                          --learning_parameters.learning_rate 0.001
 </pre></div>
+</div>
+<p>You could also enable storage caching to boost data loading at the expanse of storage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train SSD --train-data-roots &lt;path/to/train/root&gt; \
+                         --val-data-roots &lt;path/to/val/root&gt; \
+                         params \
+                         --algo_backend.storage_cache_scheme JPEG/75
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Not all templates support stroage cache. We are working on extending supported templates.</p>
 </div>
 <p>As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the <code class="docutils literal notranslate"><span class="pre">--gpus</span></code> argument. It will start the distributed data-parallel training with the GPUs you have specified.</p>
 <div class="admonition note">
