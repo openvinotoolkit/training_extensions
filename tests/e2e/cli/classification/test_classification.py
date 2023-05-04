@@ -285,6 +285,8 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Fake quantization for DeiT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
@@ -532,6 +534,8 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Fake quantization for DeiT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
@@ -739,6 +743,8 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Fake quantization for DeiT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
