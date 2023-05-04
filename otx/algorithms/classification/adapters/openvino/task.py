@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import tempfile
+import time
 import warnings
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -37,6 +38,7 @@ from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
 )
+from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -116,7 +118,6 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
         self.callback_exceptions: List[Exception] = []
         self.model.model_adapter.set_callback(self.callback)
-        self.num_running_reqs = 0
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Classification Inferencer."""
@@ -133,8 +134,6 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
             processed_prediciton = self.post_process(prediction, preprocessing_meta)
             aux_data = self.model.postprocess_aux_outputs(prediction, preprocessing_meta)
             result_handler(id, processed_prediciton, aux_data)
-
-            self.num_running_reqs -= 1
 
         except Exception as e:
             self.callback_exceptions.append(e)
@@ -158,11 +157,16 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         return predictions, probs, actmap, repr_vectors, act_score
 
     def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any):
-        """Runs async infer request inference."""
+        """Runs async inference."""
+        if not self.model.is_ready():
+            self.model.await_any()
         image, metadata = self.pre_process(image)
         callback_data = id, metadata, result_handler
-        self.num_running_reqs += 1
         self.model.infer_async(image, callback_data)
+
+    def await_all(self, ):
+        """Await all running infer requests if any."""
+        self.model.await_all()
 
     def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Classification Inferencer."""
@@ -213,6 +217,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
             self.model.get_data("openvino.bin"),
+            num_requests=get_default_async_reqs_num(),
         )
 
     # pylint: disable-msg=too-many-locals
@@ -225,14 +230,14 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         dump_features = False
         process_saliency_maps = False
         explain_predicted_classes = True
-        max_num_infer_requests = 1
+        enable_async_inference = True
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
             dump_features = not inference_parameters.is_evaluation
             process_saliency_maps = inference_parameters.process_saliency_maps
             explain_predicted_classes = inference_parameters.explain_predicted_classes
-            max_num_infer_requests = inference_parameters.max_num_infer_requests
+            enable_async_inference = inference_parameters.enable_async_inference
 
         def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
             dataset_item = dataset[id]
@@ -265,14 +270,11 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                         "Please rerun OpenVINO export or retrain the model."
                     )
 
-        max_num_infer_requests = 8
         dataset_size = len(dataset)
+        total_time = 0.0
         for i, dataset_item in enumerate(dataset, 1):
-            if max_num_infer_requests > 1:
-                assert self.inferencer.num_running_reqs <=1
-                if self.inferencer.num_running_reqs >= max_num_infer_requests:
-                    self.inferencer.model.await_any()
-
+            start_time = time.perf_counter()
+            if enable_async_inference:
                 self.inferencer.enqueue_prediction(dataset_item.numpy, i - 1, add_prediction)
             else:
                 predicted_scene, probs, saliency_map, repr_vector, act_score = self.inferencer.predict(
@@ -280,9 +282,15 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                 )
                 add_prediction(i - 1, predicted_scene, (probs, saliency_map, repr_vector, act_score))
 
+            end_time = time.perf_counter() - start_time
+            total_time += end_time
             update_progress_callback(int(i / dataset_size * 100))
 
-        self.inferencer.model.await_all()
+        self.inferencer.await_all()
+
+        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        logger.info(f"Total time: {total_time} secs")
+        logger.info("Classification OpenVINO inference completed")
 
         return dataset
 
