@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List
+from typing import List, Optional
 
 import datumaro as dm
 
@@ -16,7 +16,7 @@ __all__ = ["LossDynamicsTracker", "LossDynamicsTrackingMixin"]
 class LossDynamicsTracker:
     """Class to track loss dynamics and export it to Datumaro format."""
 
-    TASK_NAME = None
+    TASK_NAME: Optional[str] = None
 
     def __init__(self) -> None:
         self.initialized = False

@@ -29,7 +29,7 @@ from mmdet.datasets.pipelines import Compose
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
 from otx.algorithms.detection.adapters.mmdet.evaluation import eval_segm
-from otx.api.entities.dataset_item import DatasetItemEntityWithID
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.utils.shape_factory import ShapeFactory
@@ -39,7 +39,7 @@ from .tiling import Tile
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 def get_annotation_mmdet_format(
-    dataset_item: DatasetItemEntityWithID,
+    dataset_item: DatasetItemEntity,
     labels: List[LabelEntity],
     domain: Domain,
     min_size: int = -1,
