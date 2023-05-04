@@ -157,8 +157,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self.rebuild = True
                 model = model if model else self.template.name
                 self.template = self._get_template(str(self.task_type), model=model)
-            # FIXME: Inside the workspace, ignore the --train-type args.
-            self.train_type = self._get_train_type(ignore_args=True)
+                self.train_type = self._get_train_type()
+            else:
+                # FIXME: Inside the workspace, ignore the --train-type args.
+                self.train_type = self._get_train_type(ignore_args=True)
         elif self.template and Path(self.template).exists():
             # No workspace -> template O
             self.template = parse_model_template(self.template)
