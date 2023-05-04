@@ -261,6 +261,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
         tile_size (int): tile size
         overlap (float): overlap ratio between tiles
         max_number (int): maximum number of objects per image
+        tile_ir_scale_factor (float, optional): scale factor for tile size
         tile_classifier_model_file (Union[str, bytes, None], optional): tile classifier xml. Defaults to None.
         tile_classifier_weight_file (Union[str, bytes, None], optional): til classifier weight bin. Defaults to None.
         device (str, optional): device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
@@ -274,6 +275,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
         tile_size: int = 400,
         overlap: float = 0.5,
         max_number: int = 100,
+        tile_ir_scale_factor: float = 1.0,
         tile_classifier_model_file: Union[str, bytes, None] = None,
         tile_classifier_weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
@@ -293,7 +295,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
             classifier = Model(model_adapter=adapter, preload=True)
 
         self.tiler = Tiler(
-            tile_size=tile_size,
+            tile_size=int(tile_size * tile_ir_scale_factor),
             overlap=overlap,
             max_number=max_number,
             detector=inferencer.model,
@@ -372,6 +374,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             if self.model is not None and self.model.get_data("config.json"):
                 json_dict = json.loads(self.model.get_data("config.json"))
                 flatten_config_values(json_dict)
+                # NOTE: for backward compatibility
+                json_dict["tiling_parameters"]["tile_ir_scale_factor"] = json_dict["tiling_parameters"].get(
+                    "tile_ir_scale_factor", 1.0
+                )
                 config = merge_a_into_b(json_dict, config)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Failed to load config.json: {e}")
@@ -418,6 +424,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 self.config.tiling_parameters.tile_size,
                 self.config.tiling_parameters.tile_overlap,
                 self.config.tiling_parameters.tile_max_number,
+                self.config.tiling_parameters.tile_ir_scale_factor,
                 tile_classifier_model_file,
                 tile_classifier_weight_file,
             )

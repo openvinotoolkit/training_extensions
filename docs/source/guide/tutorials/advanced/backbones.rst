@@ -32,10 +32,10 @@ The following libraries are currently available for backbone replacement.
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -48,7 +48,7 @@ environment:
 Backbone replacement tutorial
 *****************************
 
-1. First, we need to configure the workspace 
+1. First, we need to configure the workspace
 for the backbone replacement:
 
 .. note::
@@ -107,7 +107,7 @@ we want to replace via ``otx find``:
   |   12  |     mmdet.CSPDarknet    |               |                               |
   +-------+-------------------------+---------------+-------------------------------+
 
-3. We need to run the command below to replace 
+3. We need to run the command below to replace
 the backbone:
 
 In this example, we'll replace the classification model using the default EfficientNet with ``mmdet.ResNet``.
@@ -148,8 +148,8 @@ Then we get ``model.py``, which has been changed to ``mmdet.ResNet``.
 
     (otx) ...$ otx build --backbone backbone.yaml
 
-4. After that, you can use any other OpenVINO™ Training Extensions command with the 
-new model: :doc:`quick start guide <../../get_started/quick_start_guide/installation>`
+4. After that, you can use any other OpenVINO™ Training Extensions command with the
+new model: :doc:`quick start guide <../../get_started/installation>`
 
 You can use the backbones provided by ``mmdet``, ``mmseg``, ``torchvision``, and ``omz.mmcls`` in the same way as above.
 

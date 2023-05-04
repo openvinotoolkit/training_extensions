@@ -356,7 +356,7 @@ class Tile:
         result = copy.deepcopy(self.tiles[idx])
         dataset_idx = result["dataset_idx"]
         x_1, y_1, x_2, y_2 = result["tile_box"]
-        ori_img = self.cached_results[dataset_idx]["dataset_item"].media.numpy
+        ori_img = self.cached_results[dataset_idx]["img"]
         cropped_tile = ori_img[y_1:y_2, x_1:x_2, :]
         if self.img2fp32:
             cropped_tile = cropped_tile.astype(np.float32)

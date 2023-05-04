@@ -43,16 +43,7 @@
    training_extensions$ .ci/start-runner.sh otx-ci-container <github-token> <codacy-token> -g 0
    ```
 
-   Once it executed, An interactive session for the runner configuration will be started and you should input some information to each prompt.
-
-   - `Enter the name of the runner group to add this runner to:`
-     - Just press Enter key for default
-   - `Enter the name of runner:`
-     - Input the runner name which would be used by Github. If you want to replace an existing runner to this one, input the same runner's name.
-   - [`Optional`] If you input the existing runner's name to replace in the step above, confirmation prompt will be shown.
-     - Input 'y' for the replacing
-     - `Enter name of work folder:`
-     - Just press Enter key for default
+   If there exist the container named as same, it will be stopped before starting a new container.
 
    All configurations were configured and the runner is started successfully, you can see the messages below.
 

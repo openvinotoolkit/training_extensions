@@ -298,7 +298,7 @@ algo_backend:
   storage_cache_scheme:
     affects_outcome_of: TRAINING
     default_value: NONE
-    description: Scheme fort storage cache
+    description: Scheme for storage cache
     editable: true
     enum_name: StorageCacheScheme
     header: Scheme for storage cache
@@ -507,7 +507,7 @@ tiling_parameters:
     affects_outcome_of: TRAINING
     default_value: 0.2
     min_value: 0.0
-    max_value: 1.0
+    max_value: 0.9
     type: FLOAT
     editable: true
     ui_rules:

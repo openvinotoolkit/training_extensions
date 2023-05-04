@@ -68,7 +68,7 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="OpenVINO exported model shows 0.0 AP50 in torch1.13")
+    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
@@ -76,7 +76,7 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="OpenVINO exported model shows 0.0 AP50 in torch1.13")
+    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
@@ -84,7 +84,7 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="OpenVINO exported model shows 0.0 AP50 in torch1.13")
+    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"

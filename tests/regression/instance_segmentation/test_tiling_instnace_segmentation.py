@@ -179,7 +179,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
+    @pytest.mark.skip("Issue#2060: Tiling nncf shows errors")
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 

@@ -115,9 +115,9 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_resume"
-        otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        args1 = copy.deepcopy(args0)
+        args1 = copy.deepcopy(args)
         args1["train_params"] = resume_params
         args1[
             "--resume-from"

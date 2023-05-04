@@ -1,11 +1,11 @@
 OpenVINO™ Training Extensions CLI commands
 ==========================================
 
-All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
+All possible OpenVINO™ Training Extensions CLI commands are presented below along with some general examples of how to run specific functionality. There are :doc:`dedicated tutorials <../tutorials/base/how_to_train/index>` in our documentation with life-practical examples on specific datasets for each task.
 
 .. note::
 
-    To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../../explanation/index>` in the documentation.
+    To run CLI commands you need to prepare a dataset. Each task requires specific data formats. To know more about which formats are supported by each task, refer to :doc:`explanation section <../explanation/algorithms/index>` in the documentation.
 
 *****
 Find
@@ -102,7 +102,7 @@ Building workspace folder
 
 
 For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
-To learn more about backbone replacement, please refer to the :doc:`following advanced tutorial <../../tutorials/advanced/backbones>`.
+To learn more about backbone replacement, please refer to the :doc:`following advanced tutorial <../tutorials/advanced/backbones>`.
 
 .. code-block::
 
@@ -140,7 +140,7 @@ OpenVINO™ Training Extensions supports also auto-split functionality. If you d
 
 .. note::
 
-    Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` documentation.
+    Not all of the tasks support the auto-split feature. If the task isn't supported - unexpected behavior or errors may appear. Please, refer to :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` documentation.
 
 If you have multiple annotation files like below, add additional argument (``--train-ann-files``). Then, you could use the annotation what you selected.
 OpenVINO™ Training Extensions could randomly selects the train annotation file if you do not use additional argument (``--train-ann-files``)
@@ -167,8 +167,8 @@ OpenVINO™ Training Extensions could randomly selects the train annotation file
 
 .. note::
 
-   For now, only COCO format data could be used for direct annotation input 
-  
+   For now, only COCO format data could be used for direct annotation input
+
 *********
 Training
 *********
@@ -253,7 +253,7 @@ Example of the command line to start object detection training:
   If your machine has enough main memory, we recommend increasing this value as much as possible.
   For example, you can cache approximately 10,000 of ``500x375~500x439`` sized images with ``--mem-cache-size=8GB``.
 
-It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
+It is also possible to start training by omitting the template and just passing the paths to dataset roots, then the :doc:`auto-configuration <../explanation/additional_features/auto_configuration>` will be enabled. Based on the dataset, OpenVINO™ Training Extensions will choose the task type and template with the best accuracy/speed trade-off.
 
 You also can modify model template-specific parameters through the command line. To print all the available parameters the following command can be executed:
 
@@ -272,6 +272,18 @@ For example, that is how you can change the learning rate and the batch size for
                              params \
                              --learning_parameters.batch_size 16 \
                              --learning_parameters.learning_rate 0.001
+
+You could also enable storage caching to boost data loading at the expanse of storage:
+
+.. code-block::
+
+    (otx) ...$ otx train SSD --train-data-roots <path/to/train/root> \
+                             --val-data-roots <path/to/val/root> \
+                             params \
+                             --algo_backend.storage_cache_scheme JPEG/75
+
+.. note::
+  Not all templates support stroage cache. We are working on extending supported templates.
 
 
 As can be seen from the parameters list, the model can be trained using multiple GPUs. To do so, you simply need to specify a comma-separated list of GPU indices after the ``--gpus`` argument. It will start the distributed data-parallel training with the GPUs you have specified.
@@ -294,7 +306,7 @@ With the ``--help`` command, you can list additional information, such as its pa
     usage: otx export [-h] [--load-weights LOAD_WEIGHTS] [-o OUTPUT] [--workspace WORKSPACE] [--dump-features] [--half-precision] [template]
 
     positional arguments:
-      template              Enter the path or ID or name of the template file. 
+      template              Enter the path or ID or name of the template file.
                             This can be omitted if you have train-data-roots or run inside a workspace.
 
     optional arguments:
@@ -320,7 +332,7 @@ To use the exported model as an input for ``otx explain``, please dump additiona
 
 .. code-block::
 
-    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --output outputs/openvino/with_features --dump-features 
+    (otx) ...$ otx export Custom_Object_Detection_Gen3_SSD --load-weights <path/to/trained/weights.pth> --output outputs/openvino/with_features --dump-features
 
 
 ************

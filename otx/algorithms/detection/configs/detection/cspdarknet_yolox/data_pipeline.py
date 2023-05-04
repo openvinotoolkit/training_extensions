@@ -74,7 +74,7 @@ data = dict(
             ann_file=__data_root + "annotations/instances_train2017.json",
             img_prefix=__data_root + "train2017/",
             pipeline=[
-                dict(type="LoadImageFromFile", to_float32=True),
+                dict(type="LoadImageFromFile", to_float32=False),
                 dict(type="LoadAnnotations", with_bbox=True),
             ],
         ),

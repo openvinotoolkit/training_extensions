@@ -139,14 +139,14 @@ class TestTilingInstanceSegmentationCLI:
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-107743")
+    @pytest.mark.skip("Tiling w/ HPO fails in CI")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.skip(reason="CVS-98026")
+    @pytest.mark.skip("Issue#2060: Tiling nncf shows errors")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
